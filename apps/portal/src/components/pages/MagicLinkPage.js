@@ -4,8 +4,6 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
-import InputField from '../common/InputField';
-
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
         width: 44px;

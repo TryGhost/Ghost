@@ -772,7 +772,7 @@ html[dir="rtl"] .gh-portal-list-toggle-wrapper .gh-portal-list-detail {
 }
 
 .gh-portal-otp-field-container {
-    font-size: 2rem;
+    font-size: 2rem !important;
     font-weight: 400;
     letter-spacing: 2ch;
     border: 1px solid var(--grey12);
@@ -811,7 +811,7 @@ html[dir="rtl"] .gh-portal-list-toggle-wrapper .gh-portal-list-detail {
 }
 
 .gh-portal-otp .gh-portal-input {
-    font-size: 2rem;
+    font-size: 2rem !important;
     font-weight: 400;
     letter-spacing: 2ch;
     padding: 0;

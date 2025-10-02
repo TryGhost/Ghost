@@ -22,7 +22,7 @@ import RecommendationsPage from './components/pages/RecommendationsPage';
  * Any new page added to portal needs to be mapped here
 */
 const Pages = {
-    signin: MagicLinkPage,
+    signin: SigninPage,
     signup: SignupPage,
     accountHome: AccountHomePage,
     accountPlan: AccountPlanPage,
