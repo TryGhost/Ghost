@@ -41,7 +41,7 @@ export class TagFactory extends Factory<Partial<Tag>, Tag> {
         const baseSlug = generateSlug(tagName);
         const slugSuffix = faker.string.alphanumeric(6).toLowerCase();
 
-        const defaults: Tag = {
+        const tag: Tag = {
             id: options.id ?? generateId(),
             name: tagName,
             slug: options.slug ?? `${baseSlug}-${slugSuffix}`,
@@ -65,9 +65,6 @@ export class TagFactory extends Factory<Partial<Tag>, Tag> {
             updated_at: options.updated_at ?? now
         };
 
-        return {
-            ...defaults,
-            ...options
-        } as Tag;
+        return tag;
     }
 }
