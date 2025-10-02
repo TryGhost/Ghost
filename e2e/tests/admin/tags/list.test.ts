@@ -1,7 +1,7 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
 import {mockTagsResponse} from './helpers/mock-tags-response';
-import {GhostClient} from '../../../helpers/services/ghost-api/GhostClient';
+import {GhostClient} from '../../../helpers/services/ghost-client/GhostClient';
 
 test.describe('Ghost Admin - Tags', () => {
     test.beforeEach(async ({page}) => {

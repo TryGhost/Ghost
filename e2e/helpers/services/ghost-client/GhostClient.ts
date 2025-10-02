@@ -9,7 +9,6 @@ export interface SettingsResponse {
     settings: Setting[];
 }
 
-
 export class GhostClient {
     private readonly httpClient: HttpClient;
     private readonly adminEndpoint: string;
