@@ -2,7 +2,7 @@ import FollowButton from './FollowButton';
 import React, {useEffect, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
-import {stripHtml} from '../../utils/content-formatters';
+import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
 
 type ProfilePreviewHoverCardProps = {
@@ -68,7 +68,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     const followsYou = Boolean(displayData?.followsMe);
     const followingCount = typeof displayData?.followingCount === 'number' ? displayData.followingCount : (Number(displayData?.followingCount) || 0);
     const followerCount = typeof displayData?.followerCount === 'number' ? displayData.followerCount : (Number(displayData?.followerCount) || 0);
-    const bio = displayData?.bio ? stripHtml(displayData.bio, ['a']) : undefined;
+    const bio = displayData?.bio ? openLinksInNewTab(stripHtml(displayData.bio, ['a'])) : undefined;
 
     return (
         <HoverCard>
