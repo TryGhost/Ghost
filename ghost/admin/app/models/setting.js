@@ -47,6 +47,7 @@ export default Model.extend(ValidationEngine, {
     portalButtonSignupText: attr('string'),
     portalSignupTermsHtml: attr('string'),
     portalSignupCheckboxRequired: attr('boolean'),
+    postmarkApiToken: attr('string'),
     sharedViews: attr('string'),
     announcementContent: attr('string'),
     announcementBackground: attr('string'),
