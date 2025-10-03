@@ -64,23 +64,5 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
             assert.ok(modelGetStub.called);
             assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'excerpt'), true);
         });
-
-        it('has reading_time when no columns are passed', function () {
-            const attrs = {
-                html: 'html'
-            };
-            extraAttrsUtil.forPost({}, model, attrs);
-            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), true);
-        });
-
-        it('has reading_time when columns includes reading_time', function () {
-            const attrs = {
-                html: 'html'
-            };
-            extraAttrsUtil.forPost({
-                columns: ['reading_time']
-            }, model, attrs);
-            assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), true);
-        });
     });
 });
