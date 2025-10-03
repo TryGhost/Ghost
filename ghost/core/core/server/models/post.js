@@ -548,7 +548,6 @@ Post = ghostBookshelf.Model.extend({
         const prevSlug = this.previous('slug');
         const publishedAt = this.get('published_at');
         const publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true});
-        const generatedFields = ['html', 'plaintext', 'reading_time'];
         let tagsToSave;
         const ops = [];
 
@@ -672,6 +671,8 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         // do not allow generated fields to be overridden via the API
+        const generatedFields = ['html', 'plaintext', 'reading_time'];
+
         if (!options.migrating) {
             generatedFields.forEach((field) => {
                 if (this.hasChanged(field)) {
