@@ -2,7 +2,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
-const OTC_ERROR_REGEX = /Enter code below/i;
+const OTC_ERROR_REGEX = /Enter code/i;
 
 const setupTest = (options = {}) => {
     const {
@@ -33,7 +33,7 @@ const setupTest = (options = {}) => {
 // Helper for OTC-enabled tests
 const setupOTCTest = (options = {}) => {
     return setupTest({
-        labs: {membersSigninOTC: true},
+        labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
         otcRef: 'test-otc-ref',
         ...options
     });
@@ -87,7 +87,7 @@ describe('MagicLinkPage', () => {
         test('does not render OTC form when conditions not met', () => {
             const scenarios = [
                 {labs: {membersSigninOTC: false}, otcRef: 'test-ref'},
-                {labs: {membersSigninOTC: true}, otcRef: null},
+                {labs: {membersSigninOTC: true, membersSigninOTCAlpha: true}, otcRef: null},
                 {labs: {membersSigninOTC: false}, otcRef: null}
             ];
 
@@ -106,7 +106,6 @@ describe('MagicLinkPage', () => {
             const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
 
             expect(otcInput).toHaveAttribute('type', 'text');
-            expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
             expect(otcInput).toHaveAccessibleName(OTC_LABEL_REGEX);
@@ -316,7 +315,7 @@ describe('MagicLinkPage', () => {
     describe('OTC flow edge cases', () => {
         test('does not render form without otcRef even with lab flag', () => {
             const utils = setupTest({
-                labs: {membersSigninOTC: true},
+                labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
                 otcRef: null
             });
 
