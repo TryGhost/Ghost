@@ -2,6 +2,7 @@ const ParentRouter = require('./ParentRouter');
 const urlUtils = require('../../../shared/url-utils');
 
 const controllers = require('./controllers');
+const rssAuthMiddleware = require('../../../server/services/members/rss-auth-middleware');
 
 /**
  * @description RSS Router, which should be used as a sub-router in other routes.
@@ -21,7 +22,10 @@ class RSSRouter extends ParentRouter {
      * @private
      */
     _registerRoutes() {
-        this.mountRoute(this.route.value, controllers.rss);
+        // Add RSS authentication middleware before the controller
+        // We need to use the router directly to chain middleware
+        this._router.get(this.route.value, rssAuthMiddleware.authenticateRssFeed, controllers.rss);
+        this._router.post(this.route.value, rssAuthMiddleware.authenticateRssFeed, controllers.rss);
 
         // REGISTER: redirect rule
         this.mountRoute('/feed/', this._redirectFeedRequest.bind(this));
