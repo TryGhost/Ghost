@@ -20,6 +20,7 @@ const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const {setIsRoles} = require('./role-utils');
+const {readingMinutes} = require('@tryghost/helpers').utils;
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -547,7 +548,7 @@ Post = ghostBookshelf.Model.extend({
         const prevSlug = this.previous('slug');
         const publishedAt = this.get('published_at');
         const publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true});
-        const generatedFields = ['html', 'plaintext'];
+        const generatedFields = ['html', 'plaintext', 'reading_time'];
         let tagsToSave;
         const ops = [];
 
@@ -747,6 +748,16 @@ Post = ghostBookshelf.Model.extend({
             //        value was modified.
             if (plaintext || plaintext !== this.get('plaintext')) {
                 this.set('plaintext', plaintext);
+            }
+        }
+
+        // Calculate and store reading_time whenever html or feature_image changes
+        if (this.hasChanged('html') || this.hasChanged('feature_image')) {
+            if (this.get('html')) {
+                const additionalImages = this.get('feature_image') ? 1 : 0;
+                this.set('reading_time', readingMinutes(this.get('html'), additionalImages));
+            } else {
+                this.set('reading_time', null);
             }
         }
 
