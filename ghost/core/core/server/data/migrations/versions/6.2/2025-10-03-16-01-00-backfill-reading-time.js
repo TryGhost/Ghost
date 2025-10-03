@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
-const {readingMinutes} = require('@tryghost/helpers').utils;
+const {calculatePostReadingTime} = require('../../../../../shared/post-reading-time');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -10,9 +10,7 @@ module.exports = createTransactionalMigration(
 
         // eslint-disable-next-line no-restricted-syntax
         for (const post of posts) {
-            const additionalImages = post.feature_image ? 1 : 0;
-            const readingTime = readingMinutes(post.html, additionalImages);
-
+            const readingTime = calculatePostReadingTime(post.html, post.feature_image);
             await knex('posts').update('reading_time', readingTime).where('id', post.id);
         }
     },
