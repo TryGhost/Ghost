@@ -1,4 +1,4 @@
-@import "@tryghost/shade/styles.css";
+@import "./tailwind.css";
 
 .admin-x-base.shade-stats {
     animation-name: none;

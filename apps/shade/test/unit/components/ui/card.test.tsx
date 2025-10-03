@@ -12,13 +12,13 @@ import {
 import {render} from '../../utils/test-utils';
 
 describe('Card Components', () => {
-    it('renders Card with default outline variant', () => {
+    it('renders Card with default outline-solid variant', () => {
         render(<Card data-testid="card">Card Content</Card>);
         const card = screen.getByTestId('card');
 
         assert.ok(card, 'Card should be rendered');
         assert.equal(card.textContent, 'Card Content', 'Card should render its content');
-        assert.ok(card.className.includes('rounded-xl border'), 'Should have outline variant styling');
+        assert.ok(card.className.includes('rounded-xl border'), 'Should have outline-solid variant styling');
     });
 
     it('renders Card with plain variant', () => {
@@ -26,7 +26,7 @@ describe('Card Components', () => {
         const card = screen.getByTestId('card');
 
         assert.ok(card, 'Card should be rendered');
-        assert.ok(!card.className.includes('rounded-xl border'), 'Should not have outline variant styling');
+        assert.ok(!card.className.includes('rounded-xl border'), 'Should not have outline-solid variant styling');
     });
 
     it('applies custom className to Card correctly', () => {
@@ -88,7 +88,7 @@ describe('Card Components', () => {
         const content = screen.getByTestId('card-content');
         assert.ok(content, 'CardContent should be rendered');
         assert.equal(content.textContent, 'Content', 'CardContent should render its content');
-        assert.ok(content.className.includes('p-6 pt-0'), 'Should have outline variant styling');
+        assert.ok(content.className.includes('p-6 pt-0'), 'Should have outline-solid variant styling');
     });
 
     it('renders CardContent with plain variant styling', () => {
@@ -112,7 +112,7 @@ describe('Card Components', () => {
         const footer = screen.getByTestId('card-footer');
         assert.ok(footer, 'CardFooter should be rendered');
         assert.equal(footer.textContent, 'Footer Content', 'CardFooter should render its content');
-        assert.ok(footer.className.includes('p-6 pt-0'), 'Should have outline variant styling');
+        assert.ok(footer.className.includes('p-6 pt-0'), 'Should have outline-solid variant styling');
     });
 
     it('renders CardFooter with plain variant styling', () => {

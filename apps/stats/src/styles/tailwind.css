@@ -1,0 +1,5 @@
+/* Import Shade's complete styles which includes preflight, theme tokens, and Tailwind directives */
+@import "@tryghost/shade/styles.css";
+
+/* TailwindCSS v4: Scan stats app files for additional Tailwind classes */
+@source "../";

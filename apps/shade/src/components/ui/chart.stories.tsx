@@ -38,11 +38,11 @@ export const Default = {
             },
             chrome: {
                 label: 'More like this',
-                color: 'hsl(var(--chart-blue))'
+                color: 'var(--chart-blue)'
             },
             safari: {
                 label: 'Less like this',
-                color: 'hsl(var(--chart-orange))'
+                color: 'var(--chart-orange)'
             }
         } satisfies ChartConfig;
 
@@ -162,10 +162,10 @@ export const LineChartExample = {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line 
+                    <Line
                         dataKey="revenue"
                         dot={false}
-                        stroke="var(--color-revenue)" 
+                        stroke="var(--color-revenue)"
                         strokeWidth={2}
                         type="monotone"
                     />

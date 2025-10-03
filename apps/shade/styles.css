@@ -1,122 +1,458 @@
-@import "./preflight.css";
+@import './preflight.css';
 
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/*
+Importing everything from Tailwind manually instead of adding it via @import 'tailwindcss'
 
-@import url(https://fonts.bunny.net/css?family=cardo:400,700);
-@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
-@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
-@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
-@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
-@import url(https://fonts.bunny.net/css?family=prata:400);
-@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
-@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
-@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
-@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
-@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
-@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
-@import url(https://fonts.bunny.net/css?family=poppins:400,700);
-@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
-@import url(https://fonts.bunny.net/css?family=inter:400,700);
-@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
-@import url(https://fonts.bunny.net/css?family=lora:400,700);
-@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
-@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
-@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
-@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+The reason is because Tailwind uses CSS layers and there are some legacy CSS
+in the Admin (mostly Spirit) with the same classnames as in TailwindCSS which
+don't use any CSS layering. TWCSS v4 layering sets the specificity of classnames
+lower than non-layered classnames so legacy classes would override TWCSS classes
+even if the CSS classname specificity would be higher. For example:
+
+```
+.flex {display: flex};
+```
+
+in the Admin's `globals.css` overrides
+
+```
+@layer utilities { .shade .grid {display: grid}}
+```
+
+If we import tailwindcss files directly we can omit the use of layers. This is
+not ideal but works with the current system.
+
+Note that another option could have been to add layer to legacy classes but
+that would have resulted in a much larger and riskier change.
+*/
+
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/preflight.css';
+@import 'tailwindcss/utilities.css';
+
+/* @plugin "tailwindcss-animate"; */
+@import 'tw-animate-css';
+@config './tailwind.config.cjs';
+
+/*
+    Note: all custom fonts were removed, since they are not yet used in Shade.
+    When migrating the settings app to Shade, they need to be added back.
+*/
+
+/* Tailwind v4 tokens */
+@theme inline {
+    /* Breakpoints */
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 640px;
+    --breakpoint-sidebar: 800px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-sidebarlg: 1240px;
+    --breakpoint-xl: 1320px;
+    --breakpoint-xxl: 1440px;
+    --breakpoint-xxxl: 1600px;
+    --breakpoint-tablet: 860px;
+
+    /* Base colors */
+    --color-transparent: transparent;
+    --color-current: currentColor;
+    --color-ghostaccent: var(--accent-color, #ff0095);
+    --color-white: #FFF;
+    --color-black: #15171A;
+
+    /* Gray palette (official) */
+    --color-gray: #ABB4BE;
+    --color-gray-DEFAULT: #ABB4BE;
+    --color-gray-50: #FAFAFB;
+    --color-gray-75: #F9FAFB;
+    --color-gray-100: #F4F5F6;
+    --color-gray-150: #F1F3F4;
+    --color-gray-200: #EBEEF0;
+    --color-gray-250: #E5E9ED;
+    --color-gray-300: #DDE1E5;
+    --color-gray-400: #CED4D9;
+    --color-gray-500: #AEB7C1;
+    --color-gray-600: #95A1AD;
+    --color-gray-700: #7C8B9A;
+    --color-gray-800: #626D79;
+    --color-gray-900: #394047;
+    --color-gray-925: #2E3338;
+    --color-gray-950: #222427;
+    --color-gray-975: #191B1E;
+
+    /* Legacy grey palette (keep for text-grey-*) */
+    --color-grey: #ABB4BE;
+    --color-grey-DEFAULT: #ABB4BE;
+    --color-grey-50: #FAFAFB;
+    --color-grey-75: #F9FAFB;
+    --color-grey-100: #F4F5F6;
+    --color-grey-150: #F1F3F4;
+    --color-grey-200: #EBEEF0;
+    --color-grey-250: #E5E9ED;
+    --color-grey-300: #DDE1E5;
+    --color-grey-400: #CED4D9;
+    --color-grey-500: #AEB7C1;
+    --color-grey-600: #95A1AD;
+    --color-grey-700: #7C8B9A;
+    --color-grey-800: #626D79;
+    --color-grey-900: #394047;
+    --color-grey-925: #2E3338;
+    --color-grey-950: #222427;
+    --color-grey-975: #191B1E;
+
+    /* Brand palettes */
+    --color-green: #30CF43;
+    --color-green-DEFAULT: #30CF43;
+    --color-green-100: #E1F9E4;
+    --color-green-400: #58DA67;
+    --color-green-500: #30CF43;
+    --color-green-600: #2AB23A;
+
+    --color-blue-DEFAULT: #14B8FF;
+    --color-blue: #14B8FF;
+    --color-blue-100: #DBF4FF;
+    --color-blue-400: #42C6FF;
+    --color-blue-500: #14B8FF;
+    --color-blue-600: #00A4EB;
+    --color-blue-700: #3778F1;
+
+    --color-purple: #8E42FF;
+    --color-purple-DEFAULT: #8E42FF;
+    --color-purple-100: #EDE0FF;
+    --color-purple-400: #A366FF;
+    --color-purple-500: #8E42FF;
+    --color-purple-600: #7B1FFF;
+
+    --color-pink: #FB2D8D;
+    --color-pink-DEFAULT: #FB2D8D;
+    --color-pink-100: #FFDFEE;
+    --color-pink-400: #FF5CA8;
+    --color-pink-500: #FB2D8D;
+    --color-pink-600: #F70878;
+
+    --color-red: #F50B23;
+    --color-red-DEFAULT: #F50B23;
+    --color-red-100: #FFE0E0;
+    --color-red-400: #F9394C;
+    --color-red-500: #F50B23;
+    --color-red-600: #DC091E;
+
+    --color-orange: #F97316;
+    --color-orange-DEFAULT: #F97316;
+    --color-orange-100: #FFEDD5;
+    --color-orange-400: #FB923C;
+    --color-orange-500: #F97316;
+    --color-orange-600: #EA580C;
+
+    --color-yellow: #FFB41F;
+    --color-yellow-DEFAULT: #FFB41F;
+    --color-yellow-100: #FFF1D6;
+    --color-yellow-400: #FFC247;
+    --color-yellow-500: #FFB41F;
+    --color-yellow-600: #F0A000;
+
+    --color-lime: #B5FF18;
+    --color-lime-DEFAULT: #B5FF18;
+
+    /* Semantic color tokens mapped to CSS variables (wrapped in hsl() at :root/.dark) */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-gray: var(--chart-gray);
+    --color-chart-darkgray: var(--chart-darkgray);
+    --color-chart-rose: var(--chart-rose);
+    --color-chart-orange: var(--chart-orange);
+    --color-chart-amber: var(--chart-amber);
+    --color-chart-yellow: var(--chart-yellow);
+    --color-chart-green: var(--chart-green);
+    --color-chart-teal: var(--chart-teal);
+    --color-chart-blue: var(--chart-blue);
+    --color-chart-purple: var(--chart-purple);
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Typography families */
+    --font-cardo: Cardo;
+    --font-manrope: Manrope;
+    --font-merriweather: Merriweather;
+    --font-nunito: Nunito;
+    --font-tenor-sans: "Tenor Sans";
+    --font-old-standard-tt: "Old Standard TT";
+    --font-prata: Prata;
+    --font-roboto: Roboto;
+    --font-rufina: Rufina;
+    --font-inter: Inter;
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    --font-serif: Georgia, serif;
+    --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
+    --font-inherit: inherit;
+    --font-space-grotesk: "Space Grotesk";
+    --font-chakra-petch: "Chakra Petch";
+    --font-noto-sans: "Noto Sans";
+    --font-poppins: Poppins;
+    --font-fira-sans: "Fira Sans";
+    --font-noto-serif: "Noto Serif";
+    --font-lora: Lora;
+    --font-ibm-plex-serif: "IBM Plex Serif";
+    --font-space-mono: "Space Mono";
+    --font-fira-mono: "Fira Mono";
+    --font-jetbrains-mono: "JetBrains Mono";
+
+    /* Letter spacing */
+    --tracking-tightest: -.05em;
+    --tracking-tighter: -.025em;
+    --tracking-tight: -.01em;
+    --tracking-normal: 0;
+    --tracking-wide: .01em;
+    --tracking-wider: .025em;
+    --tracking-widest: .5em;
+
+    /* Font sizes (Tailwind v4 expects --text-*) */
+    --text-2xs: 1.0rem;
+    --text-xs: 1.2rem;
+    --text-sm: 1.3rem;
+    --text-md: 1.4rem; /* custom size used in Shade */
+    --text-base: 1.4rem;
+    --text-lg: 1.5rem;
+    --text-xl: 1.7rem;
+    --text-2xl: 2.2rem;
+    --text-3xl: 2.8rem;
+    --text-4xl: 3.2rem;
+    --text-5xl: 4.0rem;
+    --text-6xl: 5.8rem;
+    --text-7xl: 7.0rem;
+    --text-8xl: 9.6rem;
+    --text-9xl: 12.8rem;
+    --text-inherit: inherit;
+
+    /* Matching line-heights for larger sizes (Tailwind v4 uses --leading-*) */
+    --leading-5xl: 1.15;
+    --leading-6xl: 1;
+    --leading-7xl: 1;
+    --leading-8xl: 1;
+    --leading-9xl: 1;
+
+    /* Line heights (Tailwind v4 uses --leading-*) */
+    --leading-normal: 1.5em;
+    --leading-tight: 1.35em;
+    --leading-tighter: 1.25em;
+    --leading-supertight: 1.1em;
+
+    /* Spacing scale */
+    --spacing-0: 0px;
+    --spacing-1: 0.4rem;
+    --spacing-2: 0.8rem;
+    --spacing-3: 1.2rem;
+    --spacing-4: 1.6rem;
+    --spacing-5: 2rem;
+    --spacing-6: 2.4rem;
+    --spacing-7: 2.8rem;
+    --spacing-8: 3.2rem;
+    --spacing-9: 3.6rem;
+    --spacing-10: 4rem;
+    --spacing-11: 4.4rem;
+    --spacing-12: 4.8rem;
+    --spacing-14: 5.6rem;
+    --spacing-16: 6.4rem;
+    --spacing-18: 7.2rem;
+    --spacing-20: 8rem;
+    --spacing-22: 9.2rem;
+    --spacing-24: 9.6rem;
+    --spacing-28: 11.2rem;
+    --spacing-32: 12.8rem;
+    --spacing-36: 14.4rem;
+    --spacing-40: 16rem;
+    --spacing-44: 17.6rem;
+    --spacing-48: 19.2rem;
+    --spacing-52: 20.8rem;
+    --spacing-56: 22.4rem;
+    --spacing-60: 24rem;
+    --spacing-64: 25.6rem;
+    --spacing-72: 28.8rem;
+    --spacing-80: 32rem;
+    --spacing-96: 38.4rem;
+    --spacing-px: 1px;
+    --spacing-0\.5: 0.2rem;
+    --spacing-1\.5: 0.6rem;
+    --spacing-2\.5: 1rem;
+    --spacing-3\.5: 1.4rem;
+
+    /* Border radius */
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius: 9px;
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: 1.2rem;
+    --radius-2xl: 1.6rem;
+    --radius-3xl: 2.4rem;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1);
+    --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
+    --shadow-md: 0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05);
+    --shadow-md-heavy: 0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+    --shadow-lg: 0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+    --shadow-inner: inset 0 0 4px 0 rgb(0 0 0 / 0.08);
+    --shadow-none: 0 0 #0000;
+
+    /* Max widths */
+    --container-0: 0rem;
+    --container-none: none;
+    --container-xs: 32rem;
+    --container-sm: 38.4rem;
+    --container-md: 44.8rem;
+    --container-lg: 51.2rem;
+    --container-xl: 57.6rem;
+    --container-2xl: 67.2rem;
+    --container-3xl: 76.8rem;
+    --container-4xl: 89.6rem;
+    --container-5xl: 102.4rem;
+    --container-6xl: 115.2rem;
+    --container-7xl: 132rem;
+    --container-8xl: 140rem;
+    --container-9xl: 156rem;
+    --container-full: 100%;
+    --container-min: min-content;
+    --container-max: max-content;
+    --container-fit: fit-content;
+    --container-prose: 65ch;
+    --container-page: 148rem;
+    --container-pageminsidebar: 116rem;
+
+    /* Animations */
+    --animate-toaster-in: toasterIn 0.8s cubic-bezier(0.445,0.050,0.550,0.950);
+    --animate-toaster-out: toasterOut 0.4s 0s 1 ease forwards;
+    --animate-toaster-top-in: toasterTopIn 0.8s cubic-bezier(0.445,0.050,0.550,0.950);
+    --animate-fade-in: fadeIn 0.15s ease forwards;
+    --animate-fade-out: fadeOut 0.15s ease forwards;
+    --animate-setting-highlight-fade-out: fadeOut 0.2s 1.4s ease forwards;
+    --animate-modal-backdrop-in: fadeIn 0.15s ease forwards;
+    --animate-modal-in: modalIn 0.25s ease forwards;
+    --animate-modal-in-from-right: modalInFromRight 0.25s ease forwards;
+    --animate-modal-in-reverse: modalInReverse 0.25s ease forwards;
+    --animate-spin: spin 1s linear infinite;
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Dark mode variant to match v3 behavior */
+@custom-variant dark (&:is(.dark *):not(.light *));
+
+/* Keyframes migrated from v3 config */
+@keyframes toasterIn {
+    0% { transform: translateY(100%); }
+    26.52% { transform: translateY(-3.90px); }
+    63.26% { transform: translateY(1.2px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes toasterTopIn {
+    0% { transform: translateY(-82px); }
+    26.52% { transform: translateY(5.90px); }
+    63.26% { transform: translateY(-1.77px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes toasterOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes modalIn {
+    0% { transform: translateY(32px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes modalInFromRight {
+    0% { transform: translateX(32px); opacity: 0; }
+    100% { transform: translateX(0px); opacity: 1; }
+}
+
+@keyframes modalInReverse {
+    0% { transform: translateY(-32px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+}
+
+/*
+    The default border color has changed to `currentcolor` in Tailwind CSS v4,
+    so we've added these compatibility styles to make sure everything still
+    looks the same as it did with Tailwind CSS v3.
+
+    If we ever want to remove these styles, we need to add an explicit border
+    color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+}
 
 /* Defaults */
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 216 11% 9%;
-        --muted: 200 12% 96%;
-        --muted-foreground: 210 13% 55%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 216 11% 9%;
-        --border: 204 15% 91%;
-        --input: 204 14% 93%;
-        --card: 0 0% 100%;
-        --card-foreground: 216 11% 9%;
-        --primary: 216 11% 9%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 204 14% 93%;
-        --secondary-foreground: 216 11% 9%;
-        --accent: 240 11% 98%;
-        --accent-foreground: 216 11% 9%;
-        --destructive: 354 92% 50%;
-        --destructive-foreground: 0 0% 100%;
-        --ring: 215 13% 63%;
-        --radius: 9px;
-        --chart-1: 201 100% 50%;
-        --chart-2: 201 88% 70%;
-        --chart-3: 201 85% 80%;
-        --chart-4: 201 82% 90%;
-        --chart-5: 201 87% 94%;
-        --chart-gray: 210 13% 88%;
-        --chart-darkgray: 210 13% 79%;
-        --chart-rose: 345 100% 56%;
-        --chart-orange: 25 100% 50%;
-        --chart-amber: 36 100% 50%;
-        --chart-yellow: 47 100% 50%;
-        --chart-green: 144 100% 39%;
-        --chart-teal: 174 100% 37%;
-        --chart-blue: 198 100% 51%;
-        --chart-darkblue: 226 91% 61%;
-        --chart-purple: 273 100% 64%;
-        --sidebar-background: 0 0% 100%;
-        --sidebar-foreground: 216 11% 9%;
-        --sidebar-primary: 216 11% 9%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 200 12% 96%;
-        --sidebar-accent-foreground: 216 11% 9%;
-        --sidebar-border: 210 13% 88%;
-        --sidebar-ring: 215 13% 63%;
-    }
-
-    .dark {
-        --background: 216 11% 9%;
-        --foreground: 210 13% 88%;
-        --muted: 210 11% 25%;
-        --muted-foreground: 210 13% 63%;
-        --accent: 210 11% 25%;
-        --accent-foreground: 200 12% 96%;
-        --popover: 216 11% 9%;
-        --popover-foreground: 212 13% 72%;
-        --border: 216 7% 14%;
-        --input: 210 11% 25%;
-        --card: 216 11% 9%;
-        --card-foreground: 213 31% 91%;
-        --primary: 200 12% 96%;
-        --primary-foreground: 216 11% 9%;
-        --secondary: 210 11% 25%;
-        --secondary-foreground: 200 12% 96%;
-        --destructive: 354 81% 31%;
-        --destructive-foreground: 240 11% 98%;
-        --ring: 210 11% 25%;
-        --chart-1: 201 100% 50%;
-        --chart-2: 201 88% 70%;
-        --chart-3: 201 85% 80%;
-        --chart-4: 201 82% 90%;
-        --chart-5: 201 87% 94%;
-        --chart-gray: 210 13% 55%;
-        --sidebar-background: 216 11% 9%;
-        --sidebar-foreground: 200 12% 96%;
-        --sidebar-primary: 210 11% 25%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 210 11% 25%;
-        --sidebar-accent-foreground: 200 12% 96%;
-        --sidebar-border: 210 11% 25%;
-        --sidebar-ring: 210 13% 55%;
-    }
-
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
-    @font-face {
-        font-family: "Inter";
-        src: local("Inter") format("truetype-variations");
-        font-weight: 100 900;
-    }
+        @font-face {
+            font-family: "Inter";
+            src: local("Inter") format("truetype-variations");
+            font-weight: 100 900;
+        }
 
     .shade {
         & {
@@ -125,68 +461,146 @@
     }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply font-sans antialiased bg-background text-foreground;
-    }
+/* Move color variables out of @layer base and wrap in hsl() */
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(216 11% 9%);
+    --muted: hsl(200 12% 96%);
+    --muted-foreground: hsl(210 13% 55%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(216 11% 9%);
+    --border: hsl(204 15% 91%);
+    --input: hsl(204 14% 93%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(216 11% 9%);
+    --primary: hsl(216 11% 9%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(204 14% 93%);
+    --secondary-foreground: hsl(216 11% 9%);
+    --accent: hsl(240 11% 98%);
+    --accent-foreground: hsl(216 11% 9%);
+    --destructive: hsl(354 92% 50%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --ring: hsl(215 13% 63%);
+    --radius: 9px;
+    --chart-1: hsl(201 100% 50%);
+    --chart-2: hsl(201 88% 70%);
+    --chart-3: hsl(201 85% 80%);
+    --chart-4: hsl(201 82% 90%);
+    --chart-5: hsl(201 87% 94%);
+    --chart-gray: hsl(210 13% 88%);
+    --chart-darkgray: hsl(210 13% 79%);
+    --chart-rose: hsl(345 100% 56%);
+    --chart-orange: hsl(25 100% 50%);
+    --chart-amber: hsl(36 100% 50%);
+    --chart-yellow: hsl(47 100% 50%);
+    --chart-green: hsl(144 100% 39%);
+    --chart-teal: hsl(174 100% 37%);
+    --chart-blue: hsl(198 100% 51%);
+    --chart-darkblue: hsl(226 91% 61%);
+    --chart-purple: hsl(273 100% 64%);
+    --sidebar-background: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(216 11% 9%);
+    --sidebar-primary: hsl(216 11% 9%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(200 12% 96%);
+    --sidebar-accent-foreground: hsl(216 11% 9%);
+    --sidebar-border: hsl(210 13% 88%);
+    --sidebar-ring: hsl(215 13% 63%);
 }
 
-.shade {
-    line-height: 1.5;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
-    letter-spacing: unset;
-
-    height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+.dark {
+    --background: hsl(216 11% 9%);
+    --foreground: hsl(210 13% 88%);
+    --muted: hsl(210 11% 25%);
+    --muted-foreground: hsl(210 13% 63%);
+    --accent: hsl(210 11% 25%);
+    --accent-foreground: hsl(200 12% 96%);
+    --popover: hsl(216 11% 9%);
+    --popover-foreground: hsl(212 13% 72%);
+    --border: hsl(216 7% 14%);
+    --input: hsl(210 11% 25%);
+    --card: hsl(216 11% 9%);
+    --card-foreground: hsl(213 31% 91%);
+    --primary: hsl(200 12% 96%);
+    --primary-foreground: hsl(216 11% 9%);
+    --secondary: hsl(210 11% 25%);
+    --secondary-foreground: hsl(200 12% 96%);
+    --destructive: hsl(354 81% 31%);
+    --destructive-foreground: hsl(240 11% 98%);
+    --ring: hsl(210 11% 25%);
+    --chart-1: hsl(201 100% 50%);
+    --chart-2: hsl(201 88% 70%);
+    --chart-3: hsl(201 85% 80%);
+    --chart-4: hsl(201 82% 90%);
+    --chart-5: hsl(201 87% 94%);
+    --chart-gray: hsl(210 13% 55%);
+    --sidebar-background: hsl(216 11% 9%);
+    --sidebar-foreground: hsl(200 12% 96%);
+    --sidebar-primary: hsl(210 11% 25%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(210 11% 25%);
+    --sidebar-accent-foreground: hsl(200 12% 96%);
+    --sidebar-border: hsl(210 11% 25%);
+    --sidebar-ring: hsl(210 13% 55%);
 }
 
-@media (max-width: 800px) {
+@layer utilities {
     .shade {
+        line-height: 1.5;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-size-adjust: 100%;
+        letter-spacing: unset;
+
+        height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    @media (max-width: 800px) {
+        .shade {
         height: calc(100vh - 55px);
+        }
+    }
+
+    .dark .shade {
+        color: #fafafb;
+    }
+
+    .dark .shade .gh-loading-orb-container {
+        background-color: #000000;
+    }
+
+    .dark .shade .gh-loading-orb {
+        filter: invert(100%);
+    }
+
+    .shade .no-scrollbar::-webkit-scrollbar {
+        display: none; /* Chrome */
+    }
+
+    .shade .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    /* Prose classes are for formatting arbitrary HTML that comes from the API */
+    .gh-prose-links a {
+        color: #30cf43;
     }
 }
 
-.dark .shade {
-    color: #fafafb;
+/* @layer base { */
+* {
+    @apply border-border;
 }
-
-.dark .shade .gh-loading-orb-container {
-    background-color: #000000;
+body {
+    @apply bg-background text-foreground font-sans antialiased;
 }
-
-.dark .shade .gh-loading-orb {
-    filter: invert(100%);
-}
-
-.shade .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome */
-}
-
-.shade .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-}
-
-/* Prose classes are for formatting arbitrary HTML that comes from the API */
-.gh-prose-links a {
-    color: #30cf43;
-}
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
-}
+/* } */
