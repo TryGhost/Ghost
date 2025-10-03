@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const camelCase = require('lodash/camelCase');
 
-const adminXApps = ['admin-x-settings', 'admin-x-activitypub', 'posts', 'stats'];
+const adminXApps = ['admin-x-settings', 'activitypub', 'posts', 'stats'];
 
 function generateHash(filePath) {
     const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -44,7 +44,7 @@ module.exports = {
                     console.log(`Asset-Delivery: ${key} = ${value}`);
                 }
 
-                this.packageConfig[`adminXActivitypubRemoteConfigUrl`] = '/.ghost/activitypub/stable/client-config';
+                this.packageConfig[`activitypubRemoteConfigUrl`] = '/.ghost/activitypub/stable/client-config';
             }
 
             return this.packageConfig;
