@@ -129,6 +129,15 @@ module.exports = class GhostMailer {
         }
 
         const messageToSend = createMessage(message);
+        if (this.state.usingMailgun) {
+            const tags = this.getTags(message['o:tag']);
+            if (tags.length > 0) {
+                messageToSend['o:tag'] = tags;
+            }
+            if (settingsCache.get('emailTrackOpens')) {
+                messageToSend['o:tracking-opens'] = true;
+            }
+        }
 
         const response = await this.sendMail(messageToSend);
 
@@ -183,5 +192,29 @@ module.exports = class GhostMailer {
         }
 
         return tpl(messages.messageSent);
+    }
+
+    getTags(existingTags) {
+        const siteId = config.get('hostSettings:siteId');
+
+        // Only add tags if siteId exists
+        if (!siteId) {
+            return [];
+        }
+
+        const tagList = ['transactional-email', `blog-${siteId}`];
+
+        // Handle existing tags
+        if (existingTags) {
+            if (Array.isArray(existingTags)) {
+                // If existing tags is an array, prepend them
+                return [...existingTags, ...tagList];
+            } else if (typeof existingTags === 'string') {
+                // If existing tags is a string, convert to array and prepend
+                return [existingTags, ...tagList];
+            }
+        }
+
+        return tagList;
     }
 };
