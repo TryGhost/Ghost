@@ -57,6 +57,7 @@ function parseDefaultSettings() {
         members_public_key: () => getMembersKey('public'),
         members_private_key: () => getMembersKey('private'),
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
+        members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
         site_uuid: () => getOrGenerateSiteUuid()

@@ -58,7 +58,7 @@ function createApiInstance(config) {
                 validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
                 validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
                 maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
-                secret: settingsCache.get('members_email_auth_secret')
+                secret: settingsCache.get('members_otc_secret')
             })
         },
         mail: {
