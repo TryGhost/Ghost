@@ -1,5 +1,6 @@
 import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Separator, Skeleton} from '@tryghost/shade';
 import {useEffect, useRef, useState} from 'react';
@@ -137,14 +138,16 @@ const SuggestedProfiles: React.FC = () => {
                                         {isLoadingSuggestedProfiles ? (
                                             <Skeleton className='size-16 rounded-full' />
                                         ) : (
-                                            <APAvatar
-                                                author={{
-                                                    icon: {url: profile?.avatarUrl || ''},
-                                                    name: profile?.name || '',
-                                                    handle: profile?.handle || ''
-                                                }}
-                                                size='md'
-                                            />
+                                            <ProfilePreviewHoverCard actor={profile} align='center'>
+                                                <APAvatar
+                                                    author={{
+                                                        icon: {url: profile?.avatarUrl || ''},
+                                                        name: profile?.name || '',
+                                                        handle: profile?.handle || ''
+                                                    }}
+                                                    size='md'
+                                                />
+                                            </ProfilePreviewHoverCard>
                                         )}
                                     </div>
 
