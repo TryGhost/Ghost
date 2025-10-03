@@ -1,7 +1,7 @@
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
  * New/Updated column maxlengths should meet these guidlines
- * 
+ *
  * Small strings = length 50
  * Medium strings = length 191
  * Large strings = length 2000 (use soft limits via validation for 191-2000)
@@ -96,6 +96,7 @@ module.exports = {
         canonical_url: {type: 'text', maxlength: 2000, nullable: true},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         show_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
+        reading_time: {type: 'integer', nullable: false, unsigned: true},
         '@@INDEXES@@': [
             ['type','status','updated_at']
         ],
