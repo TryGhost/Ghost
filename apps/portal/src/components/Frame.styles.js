@@ -764,6 +764,75 @@ html[dir="rtl"] .gh-portal-list-toggle-wrapper .gh-portal-list-detail {
     margin-top: 6px;
 }
 
+.gh-portal-otp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.gh-portal-otp-field-container {
+    font-size: 2rem !important;
+    font-weight: 400;
+    letter-spacing: 2ch;
+    border: 1px solid var(--grey12);
+    border-radius: 8px;
+    font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
+    width: 18.25ch;
+    overflow-hidden;
+    background: linear-gradient(to right,
+        transparent 0%,
+        transparent calc(16.666%),
+        var(--grey12) calc(16.666% - 1px),
+        var(--grey12) calc(16.666% + 1px),
+        transparent calc(16.666% + 1px),
+        transparent calc(33.333%),
+        var(--grey12) calc(33.333% - 1px),
+        var(--grey12) calc(33.333% + 1px),
+        transparent calc(33.333% + 1px),
+        transparent calc(50%),
+        var(--grey12) calc(50% - 1px),
+        var(--grey12) calc(50% + 1px),
+        transparent calc(50% + 1px),
+        transparent calc(66.666%),
+        var(--grey12) calc(66.666% - 1px),
+        var(--grey12) calc(66.666% + 1px),
+        transparent calc(66.666% + 1px),
+        transparent calc(83.333%),
+        var(--grey12) calc(83.333% - 1px),
+        var(--grey12) calc(83.333% + 1px),
+        transparent calc(83.333% + 1px),
+        transparent 100%
+    );
+}
+
+.gh-portal-otp-field-container.error {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+}
+
+.gh-portal-otp .gh-portal-input {
+    font-size: 2rem !important;
+    font-weight: 400;
+    letter-spacing: 2ch;
+    padding: 0;
+    font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
+    width: 21ch;
+    padding-left: 1ch;
+    clip-path: inset(0 3ch 0 0);
+    border: none;
+    margin-bottom: 0;
+}
+
+.gh-portal-otp-error {
+    margin-top: 8px;
+    color: var(--red);
+    font-size: 1.3rem;
+    letter-spacing: 0.35px;
+    line-height: 1.6em;
+    margin-bottom: 0;
+}
+
 /* Icons
 /* ----------------------------------------------------- */
 .gh-portal-icon {
