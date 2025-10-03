@@ -13,7 +13,7 @@
 const {checks} = require('../services/data');
 const {SafeString} = require('../services/handlebars');
 
-const {readingTime: calculateReadingTime} = require('@tryghost/helpers');
+const {readingTime: readingTimeText} = require('@tryghost/helpers');
 
 module.exports = function reading_time(options) {// eslint-disable-line camelcase
     options = options || {};
@@ -24,7 +24,7 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
         return null;
     }
 
-    let readingTime = calculateReadingTime(this, options.hash);
+    let readingTime = readingTimeText(this, options.hash);
 
     return new SafeString(readingTime);
 };
