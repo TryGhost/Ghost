@@ -8,6 +8,7 @@ import {task} from 'ember-concurrency';
 export default Service.extend({
     session: service(),
     store: service(),
+    onboarding: service(),
     response: null,
 
     entries: null,
@@ -48,6 +49,10 @@ export default Service.extend({
 
         let [latestEntry] = this.entries;
         return latestEntry.featured;
+    }),
+
+    shouldShowFeaturedBanner: computed('hasNewFeatured', 'onboarding.isChecklistShown', function () {
+        return this.hasNewFeatured && !this.onboarding.isChecklistShown;
     }),
 
     seen: action(function () {

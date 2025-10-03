@@ -48,7 +48,7 @@ export default class FooterBanner extends Component {
     }
 
     get showWhatsNew() {
-        return !this.showReferralInvite && this.whatsNew.hasNewFeatured;
+        return !this.showReferralInvite && this.whatsNew.shouldShowFeaturedBanner;
     }
 
     @task
