@@ -128,6 +128,15 @@ function InputField({
         autoComplete = 'off';
         autoCorrect = 'off';
         break;
+    case 'input-otc':
+        autoComplete = 'one-time-code';
+        autoCorrect = 'off';
+        autoCapitalize = 'off';
+        inputMode = 'numeric';
+        pattern = '[0-9]*';
+        placeholder ??= '• • • • • •';
+
+        break;
     default:
         break;
     }

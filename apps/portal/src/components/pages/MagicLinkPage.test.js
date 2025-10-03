@@ -2,7 +2,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
-const OTC_ERROR_REGEX = /Enter code/i;
+const OTC_ERROR_REGEX = /Enter code below/i;
 
 const setupTest = (options = {}) => {
     const {
@@ -106,6 +106,7 @@ describe('MagicLinkPage', () => {
             const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
 
             expect(otcInput).toHaveAttribute('type', 'text');
+            expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
             expect(otcInput).toHaveAccessibleName(OTC_LABEL_REGEX);
