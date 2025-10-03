@@ -137,5 +137,15 @@ module.exports = {
         frame.response = {
             users
         };
+    },
+
+    async fetchSettings(models, apiConfig, frame) {
+        debug('fetchSettings');
+
+        // Settings are already in the correct format from the controller
+        // Just pass them through
+        frame.response = {
+            settings: models.data
+        };
     }
 };

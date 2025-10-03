@@ -382,6 +382,7 @@ module.exports = function apiRoutes() {
     router.get('/search-index/pages', mw.authAdminApi, http(api.searchIndex.fetchPages));
     router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
     router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
+    router.get('/search-index/settings', mw.authAdminApi, http(api.searchIndex.fetchSettings));
 
     return router;
 };
