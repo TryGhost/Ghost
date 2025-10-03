@@ -6,6 +6,7 @@ import {toast} from 'sonner';
 
 import APAvatar from '../global/APAvatar';
 import ImageLightbox, {useLightboxImages} from '../global/ImageLightbox';
+import ProfilePreviewHoverCard from '../global/ProfilePreviewHoverCard';
 
 import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
@@ -376,13 +377,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const authorHandle = type === 'Announce'
-        ? (author ? getUsername(author) : null)
-        : (actor ? getUsername(actor) : null);
+    const authorHandle = author ? getUsername(author) : null;
 
-    const followedByMe = type === 'Announce'
-        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
-        : (actor?.followedByMe || false);
+    const followedByMe = author?.followedByMe || false;
 
     const isAuthorCurrentUser = type === 'Announce'
         ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
@@ -432,27 +429,35 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
-                            <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
-                                <div className='flex min-w-0 grow flex-col' onClick={(e) => {
-                                    if (!isPending) {
-                                        handleProfileClick(author, navigate, e);
-                                    }
-                                }}>
-                                    <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
-                                        data-test-activity-heading
-                                    >
-                                        {!isLoading ? author.name : <Skeleton className='w-24' />}
-                                    </span>
-                                    <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
-                                        <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
-                                            {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
-                                        </span>
-                                        <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
-                                            {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
+                            <div className='flex items-center justify-between'>
+                                <ProfilePreviewHoverCard actor={author} isCurrentUser={isAuthorCurrentUser}>
+                                    <div className='flex min-w-0 grow items-center gap-3'>
+                                        <APAvatar
+                                            author={author}
+                                            disabled={isPending}
+                                            showFollowButton={!isAuthorCurrentUser && !followedByMe}
+                                        />
+                                        <div className='flex min-w-0 grow flex-col' onClick={(e) => {
+                                            if (!isPending) {
+                                                handleProfileClick(author, navigate, e);
+                                            }
+                                        }}>
+                                            <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                                data-test-activity-heading
+                                            >
+                                                {!isLoading ? author.name : <Skeleton className='w-24' />}
+                                            </span>
+                                            <div className={`flex w-full text-md text-gray-700 dark:text-gray-600`}>
+                                                <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
+                                                    {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
+                                                </span>
+                                                <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                                    {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </ProfilePreviewHoverCard>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
                                     authoredByMe={isAuthorCurrentUser}
