@@ -256,6 +256,20 @@ module.exports = function apiRoutes() {
     router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
     router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
 
+    // ## SSO
+    router.get('/sso',
+        http(api.sso.enabled)
+    );
+    router.get('/sso/init',
+        shared.middleware.brute.globalBlock,
+        http(api.sso.init)
+    );
+    router.get('/sso/redirect',
+        shared.middleware.brute.globalBlock,
+        shared.middleware.brute.userLogin,
+        http(api.sso.redirect)
+    );
+
     // ## Identity
     router.get('/identities', mw.authAdminApi, http(api.identities.read));
 
