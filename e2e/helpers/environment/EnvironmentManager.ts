@@ -55,7 +55,23 @@ export class EnvironmentManager {
     }
 
     /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird)
+     * Get the Portal URL with the dynamically assigned port
+     */
+    private async getPortalUrl(): Promise<string> {
+        const portalContainer = await this.dockerCompose.getContainerForService('portal');
+        const containerInfo = await portalContainer.inspect();
+        const portMapping = containerInfo.NetworkSettings.Ports['4175/tcp'];
+        if (!portMapping || portMapping.length === 0) {
+            throw new Error('Portal container does not have port 4175 exposed');
+        }
+        const hostPort = portMapping[0].HostPort;
+        const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+        debug(`Portal is available at: ${portalUrl}`);
+        return portalUrl;
+    }
+
+    /**
+     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
      * This should be called once before all tests run.
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
@@ -101,7 +117,8 @@ export class EnvironmentManager {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            return await this.ghost.startInstance(instanceId, siteUuid);
+            const portalUrl = await this.getPortalUrl();
+            return await this.ghost.startInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);

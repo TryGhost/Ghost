@@ -115,6 +115,15 @@ COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types a
 RUN cd apps/posts && yarn build
 
 # --------------------
+# Portal Builder
+# --------------------
+FROM development-base AS portal-builder
+WORKDIR /home/ghost
+COPY ghost/i18n ghost/i18n
+COPY apps/portal apps/portal
+RUN cd apps/portal && yarn build
+
+# --------------------
 # Admin-x-settings Builder
 # --------------------
 FROM development-base AS admin-x-settings-builder
@@ -177,6 +186,7 @@ COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist ap
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
 COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
 COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
+COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist

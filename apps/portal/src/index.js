@@ -8,6 +8,7 @@ const ROOT_DIV_ID = 'ghost-portal-root';
 function addRootDiv() {
     const elem = document.createElement('div');
     elem.id = ROOT_DIV_ID;
+    elem.setAttribute('data-portal-docker-test', 'true');
     document.body.appendChild(elem);
 }
 
