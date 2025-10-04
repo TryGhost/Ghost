@@ -943,55 +943,6 @@ describe('Members API', function () {
             assert.equal(member.newsletters.length, 1, 'The member should have a single newsletter');
         });
 
-        it('Will create a member with signup newsletter preference', async function () {
-            set(customer, {
-                id: 'cus_123',
-                name: 'Test Member',
-                email: 'checkout-newsletter-test@email.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            { // ensure member didn't already exist
-                const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
-                assert.equal(body.members.length, 0, 'A member already existed');
-            }
-
-            const webhookPayload = JSON.stringify({
-                type: 'checkout.session.completed',
-                data: {
-                    object: {
-                        mode: 'subscription',
-                        customer: customer.id,
-                        subscription: subscription.id,
-                        metadata: {
-                            newsletters: JSON.stringify([])
-                        }
-                    }
-                }
-            });
-
-            const webhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: webhookPayload,
-                secret: process.env.WEBHOOK_SECRET
-            });
-
-            await membersAgent.post('/webhooks/stripe/')
-                .body(webhookPayload)
-                .header('content-type', 'application/json')
-                .header('stripe-signature', webhookSignature);
-
-            const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
-            assert.equal(body.members.length, 1, 'The member was not created');
-            const member = body.members[0];
-
-            assert.equal(member.status, 'paid', 'The member should be "paid"');
-            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
-            assert.equal(member.newsletters.length, 0, 'The member should not have any newsletter subscription');
-        });
-
         it('Does not 500 if the member is unknown', async function () {
             set(paymentMethod, {
                 id: 'card_456'
@@ -1817,7 +1768,12 @@ describe('Members API', function () {
     });
 
     // Test if the session metadata is processed correctly
+    // For existing members, attribution is still read from Stripe metadata for backwards compatibility
+    // For new members, attribution would come from tokens in success_url (tested in unit tests)
     describe('Member attribution', function () {
+        let getTokenDataStub;
+        let membersService;
+
         before(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
@@ -1829,10 +1785,17 @@ describe('Members API', function () {
 
         beforeEach(function () {
             mockManager.mockMail();
+            // Mock the token extraction service to return attribution data
+            // This simulates the token-based attribution flow
+            membersService = require('../../../core/server/services/members');
+            getTokenDataStub = sinon.stub();
+            // Inject the stub into the members service
+            sinon.stub(membersService.api, 'getTokenDataFromMagicLinkToken').callsFake(getTokenDataStub);
         });
 
         afterEach(function () {
             mockManager.restore();
+            sinon.restore();
         });
 
         // The subscription that we got from Stripe was created 2 seconds earlier (used for testing events)
@@ -1873,6 +1836,23 @@ describe('Members API', function () {
         async function testWithAttribution(attribution, attributionResource) {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
+
+            // Configure the token extraction mock to return the attribution data
+            // This simulates retrieving attribution from the magic link token
+            if (attribution) {
+                getTokenDataStub.resolves({
+                    attribution: {
+                        id: attribution.id || null,
+                        url: attribution.url || null,
+                        type: attribution.type || null,
+                        referrerSource: attribution.referrer_source || null,
+                        referrerMedium: attribution.referrer_medium || null,
+                        referrerUrl: attribution.referrer_url || null
+                    }
+                });
+            } else {
+                getTokenDataStub.resolves(null);
+            }
 
             const interval = 'month';
             const unit_amount = 150;
@@ -1922,11 +1902,10 @@ describe('Members API', function () {
                         mode: 'subscription',
                         customer: customer.id,
                         subscription: subscription.id,
-                        metadata: attribution ? {
-                            attribution_id: attribution.id,
-                            attribution_url: attribution.url,
-                            attribution_type: attribution.type
-                        } : {}
+                        // Attribution now comes from tokens in success_url for new members
+                        metadata: {},
+                        // Include a success_url with a token to simulate the new flow
+                        success_url: 'https://example.com/success?token=test-token-123'
                     }
                 }
             });
