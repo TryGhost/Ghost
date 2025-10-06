@@ -28,6 +28,7 @@ services:
       database__connection__user: root
       database__connection__password: root
       database__connection__database: ghost_testing
+    restart: on-failure:3
     depends_on:
       mysql:
         condition: service_healthy
