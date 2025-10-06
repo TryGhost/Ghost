@@ -360,7 +360,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     <span>Your profile</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer text-red-600">
+                                <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => {
+                                    fetch("/ghost/api/admin/session", {
+                                        method: "DELETE",
+                                    }).then(() => {
+                                        window.location.href = "/ghost";
+                                    }).catch((error) => {
+                                        console.error(error);
+                                    });
+                                }}>
                                     <span>Sign out</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
