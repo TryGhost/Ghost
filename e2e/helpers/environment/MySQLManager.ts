@@ -28,8 +28,30 @@ export class MySQLManager {
      * Default path is written within the container filesystem.
      */
     async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
+        console.log(outputPath);
         logging.info('Creating database snapshot...');
         const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
+
+        // Debug: Check what tables exist before taking snapshot
+        try {
+            logging.info(`[DEBUG] Checking tables in ${sourceDatabase} before snapshot...`);
+            const tables = await this.execInContainer(
+                mysqlContainer,
+                `mysql -uroot -proot ${sourceDatabase} -e "SHOW TABLES;"`
+            );
+            logging.info(`[DEBUG] Tables in ${sourceDatabase}:\n${tables}`);
+
+            // Also check settings table specifically
+            const settingsCount = await this.execInContainer(
+                mysqlContainer,
+                `mysql -uroot -proot ${sourceDatabase} -e "SELECT COUNT(*) as count FROM settings;" 2>&1`
+            );
+            logging.info(`[DEBUG] Settings table row count: ${settingsCount}`);
+        } catch (error) {
+            logging.error(`[DEBUG] Failed to check tables before snapshot:`, error);
+            throw new Error(`Database ${sourceDatabase} does not appear to be ready for snapshot: ${error}`);
+        }
+
         await this.execInContainer(
             mysqlContainer,
             `mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`
@@ -50,6 +72,7 @@ export class MySQLManager {
 
     /** Restore a database from an existing snapshot file in the container. */
     async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+        console.log(snapshotPath);
         debug('Restoring database from snapshot:', database);
         const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
         await this.execInContainer(
