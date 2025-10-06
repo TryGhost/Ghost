@@ -1,3 +1,5 @@
+import {pluralize} from 'ember-inflector';
+
 export const SEARCHABLES = [
     {
         name: 'Staff',
@@ -30,6 +32,14 @@ export const SEARCHABLES = [
         idField: 'id',
         titleField: 'title',
         index: ['title']
+    },
+    {
+        name: 'Settings',
+        model: 'setting',
+        pathField: 'id',
+        idField: 'id',
+        titleField: 'title',
+        index: ['title', 'keywords']
     }
 ];
 
@@ -57,6 +67,7 @@ export function createSearchResult(searchable, item) {
     return {
         id: `${searchable.model}.${item[idField]}`,
         url: item.url,
+        path: item.path,
         title: item[searchable.titleField],
         groupName: searchable.name,
         status: item.status,
@@ -64,3 +75,33 @@ export function createSearchResult(searchable, item) {
         publishedAt: item.published_at
     };
 }
+
+/**
+ * Process response data from search-index endpoints
+ * Handles special cases like settings which have a different structure
+ */
+export function processSearchableResponse(searchable, response) {
+    // Special handling for settings which returns settings array
+    if (searchable.model === 'setting') {
+        const settings = response.settings || response.data;
+        if (settings && Array.isArray(settings)) {
+            return settings.map((item) => {
+                // For settings, we need to prepare both title and keywords
+                return {
+                    id: item.id,
+                    url: item.url,
+                    path: item.path,
+                    title: item.title,
+                    section: item.section,
+                    keywords: item.keywords ? item.keywords.join(' ') : ''
+                };
+            });
+        }
+        return [];
+    }
+
+    // Default handling for other models
+    const items = response[pluralize(searchable.model)];
+    return items || [];
+}
+
