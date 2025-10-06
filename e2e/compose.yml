@@ -11,9 +11,11 @@ services:
     tmpfs:
       - /var/lib/mysql
     healthcheck:
-      test: mysql -uroot -proot ghost_testing -e 'select 1'
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-uroot", "-proot", "ghost_testing", "-e", "SELECT 1"]
       interval: 1s
       retries: 120
+      timeout: 5s
+      start_period: 10s
 
   ghost-migrations:
     image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
