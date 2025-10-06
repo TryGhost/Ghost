@@ -949,7 +949,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             // Update the "isFollowing" and "followerCount" properties of the profile being unfollowed
             const profileQueryKey = QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle);
 
-            queryClient.setQueriesData({queryKey: profileQueryKey, exact: false}, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
@@ -1158,7 +1158,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             // Update the "isFollowing" and "followerCount" properties of the profile being followed
             const profileQueryKey = QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle);
 
-            queryClient.setQueriesData({queryKey: profileQueryKey, exact: false}, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
