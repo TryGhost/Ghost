@@ -220,9 +220,9 @@ describe('Unit: Service: whats-new', function () {
             sessionService.set('user', mockUser);
 
             server.respondWith('GET', 'https://ghost.org/changelog.json', [
-                404,
+                200,
                 {'Content-Type': 'application/json'},
-                JSON.stringify({error: 'Not Found'})
+                'not-json{{'
             ]);
 
             // Doesn't throw an error
@@ -254,10 +254,10 @@ describe('Unit: Service: whats-new', function () {
                 expected: false
             },
             {
-                description: 'uses default lastSeenDate when not set',
+                description: 'returns false for new users (lastSeenDate set to today)',
                 user: USERS.noWhatsNew,
                 entries: ENTRIES.newEntry,
-                expected: true
+                expected: false
             },
             {
                 description: 'returns false when entry published_at equals lastSeenDate exactly',
@@ -355,8 +355,12 @@ describe('Unit: Service: whats-new', function () {
             await service.fetchLatest.perform();
             await service.updateLastSeen.perform();
 
-            expect(mockUser.set.calledOnce).to.be.true;
-            const accessibilityArg = mockUser.set.firstCall.args[1];
+            // Called twice: once in fetchLatest (to set today), once in updateLastSeen
+            expect(mockUser.set.calledTwice).to.be.true;
+            expect(mockUser.save.calledTwice).to.be.true;
+
+            // Check the final state has the latest entry's date
+            const accessibilityArg = mockUser.set.secondCall.args[1];
             const parsedAccessibility = JSON.parse(accessibilityArg);
             expect(parsedAccessibility.whatsNew).to.exist;
             expect(parsedAccessibility.whatsNew.lastSeenDate).to.equal('2024-01-15T12:00:00.000+00:00');

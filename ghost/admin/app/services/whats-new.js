@@ -71,7 +71,17 @@ export default Service.extend({
             // Extract just the whatsNew settings from user.accessibility
             let user = yield this.session.user;
             let accessibility = JSON.parse(user.accessibility || '{}');
-            this.set('_whatsNewSettings', accessibility.whatsNew || {});
+            let whatsNewSettings = accessibility.whatsNew || {};
+
+            // If lastSeenDate doesn't exist, set it to today and persist
+            if (!whatsNewSettings.lastSeenDate) {
+                whatsNewSettings.lastSeenDate = moment.utc().toISOString();
+                accessibility.whatsNew = whatsNewSettings;
+                user.set('accessibility', JSON.stringify(accessibility));
+                yield user.save();
+            }
+
+            this.set('_whatsNewSettings', whatsNewSettings);
 
             this._changelog_response = yield fetch('https://ghost.org/changelog.json');
             if (!this._changelog_response.ok) {

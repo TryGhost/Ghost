@@ -1,5 +1,6 @@
+import moment from 'moment-timezone';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {click, find, settled, triggerKeyEvent, waitFor} from '@ember/test-helpers';
+import {click, find, triggerKeyEvent, waitFor} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -156,7 +157,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.newFeatured]);
 
             await visit('/site');
-            await settled();
 
             await toast.waitForToast();
 
@@ -185,17 +185,38 @@ describe('Acceptance: What\'s new', function () {
                 mockChangelog(this.server, entries);
 
                 await visit('/site');
-                await settled();
 
                 expect(toast.isVisible).to.be.false;
             });
+        });
+
+        it('does not show toast for new users and initializes lastSeenDate to today', async function () {
+            // Create a new user without whatsNew.lastSeenDate
+            this.server.schema.users.find(this.user.id).update({
+                accessibility: JSON.stringify({})
+            });
+
+            mockChangelog(this.server, [ENTRIES.newFeatured]);
+
+            await visit('/site');
+
+            // No toast should appear because lastSeenDate is set to today
+            expect(toast.isVisible).to.be.false;
+
+            // Verify lastSeenDate was initialized to today in ISO format
+            const updatedUser = this.server.schema.users.find(this.user.id);
+            const accessibility = JSON.parse(updatedUser.accessibility);
+            expect(accessibility.whatsNew.lastSeenDate).to.exist;
+
+            const lastSeenMoment = moment.utc(accessibility.whatsNew.lastSeenDate);
+            expect(lastSeenMoment.isValid()).to.be.true;
+            expect(lastSeenMoment.isSame(moment.utc(), 'day')).to.be.true;
         });
 
         it('updates lastSeenDate when toast is dismissed', async function () {
             mockChangelog(this.server, [ENTRIES.newFeatured]);
 
             await visit('/site');
-            await settled();
             await toast.waitForToast();
 
             expect(toast.isVisible).to.be.true;
@@ -215,7 +236,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.newFeatured]);
 
             await visit('/site');
-            await settled();
             await toast.waitForToast();
 
             await toast.clickLink();
@@ -240,7 +260,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.latest, ENTRIES.previous]);
 
             await visit('/site');
-            await settled();
 
             await modal.open();
 
@@ -262,7 +281,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.latest, ENTRIES.previous]);
 
             await visit('/site');
-            await settled();
 
             // Confirm the toast is visible
             await toast.waitForToast();
@@ -291,7 +309,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.newRegular]);
 
             await visit('/site');
-            await settled();
 
             // Verify badge is shown on avatar
             expect(find('.gh-user-avatar .gh-whats-new-badge-account')).to.exist;
@@ -301,7 +318,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.newRegular]);
 
             await visit('/site');
-            await settled();
 
             // Open user menu
             await click('[data-test-nav="arrow-down"]');
@@ -314,7 +330,6 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.old]);
 
             await visit('/site');
-            await settled();
 
             // Verify no badge on avatar
             expect(find('.gh-user-avatar .gh-whats-new-badge-account')).to.not.exist;
@@ -331,13 +346,11 @@ describe('Acceptance: What\'s new', function () {
             mockChangelog(this.server, [ENTRIES.newRegular]);
 
             await visit('/site');
-            await settled();
 
             // Verify badge exists initially
             expect(find('.gh-user-avatar .gh-whats-new-badge-account')).to.exist;
 
             await modal.open();
-            await settled();
 
             await modal.close();
 
