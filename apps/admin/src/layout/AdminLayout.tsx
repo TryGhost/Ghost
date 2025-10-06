@@ -38,6 +38,7 @@ import {
     ChevronDown,
 } from "lucide-react";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -50,8 +51,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const title = site.data?.site.title ?? "Loading...";
     const logo = site.data?.site.logo ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
 
+    const { data: currentUser } = useCurrentUser();
+
     return (
-        <SidebarProvider defaultOpen={true} open={true}>
+        <SidebarProvider open={!!currentUser}>
             <Sidebar className="border-none">
                 <SidebarHeader>
                     <div className="flex items-center justify-between px-4 pt-6">
@@ -360,7 +363,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     <span>Your profile</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer text-red-600">
+                                <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => {
+                                    fetch("/ghost/api/admin/session", {
+                                        method: "DELETE",
+                                    }).then(() => {
+                                        window.location.href = "/ghost";
+                                    }).catch((error) => {
+                                        console.error(error);
+                                    });
+                                }}>
                                     <span>Sign out</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

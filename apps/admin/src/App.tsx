@@ -1,51 +1,19 @@
-import {
-    FrameworkProvider,
-    Outlet,
-    RouterProvider,
-    AppProvider,
-} from "@tryghost/admin-x-framework";
-import { ShadeApp } from "@tryghost/shade";
-import { routes } from "./routes.tsx";
-import { EmberProvider } from "./ember-bridge/EmberProvider.tsx";
-import EmberRoot from "./ember-bridge/EmberRoot.tsx";
+import { Outlet } from "@tryghost/admin-x-framework";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { AdminLayout } from "./layout/AdminLayout.tsx";
-
-const framework = {
-    ghostVersion: "",
-    externalNavigate: () => {},
-    unsplashConfig: {
-        Authorization: "",
-        "Accept-Version": "",
-        "Content-Type": "",
-        "App-Pragma": "",
-        "X-Unsplash-Cache": true,
-    },
-    sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
-};
+import EmberRoot from "./ember-bridge/EmberRoot.tsx";
+import EmberFallback from "./ember-bridge/EmberFallback.tsx";
+import EmberAuthSync from "./ember-bridge/EmberAuthSync.tsx";
 
 function App() {
+    const { data: currentUser } = useCurrentUser();
+
     return (
-        <AppProvider>
-            <EmberProvider>
-                <FrameworkProvider {...framework}>
-                    <RouterProvider prefix={"/"} routes={routes}>
-                        <ShadeApp
-                            className="shade-admin"
-                            darkMode={false}
-                            fetchKoenigLexical={null}
-                        >
-                            <AdminLayout>
-                                <Outlet />
-                                <EmberRoot />
-                            </AdminLayout>
-                        </ShadeApp>
-                    </RouterProvider>
-                </FrameworkProvider>
-            </EmberProvider>
-        </AppProvider>
+        <AdminLayout>
+            {currentUser ? <Outlet /> : <EmberFallback />}
+            <EmberRoot />
+            <EmberAuthSync />
+        </AdminLayout>
     );
 }
 
