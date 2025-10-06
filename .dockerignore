@@ -29,3 +29,5 @@ compose.yml
 !.docker/**/*entrypoint.sh
 
 ghost/core/core/built/admin
+
+ghost/core/config.local.json*
