@@ -645,7 +645,7 @@ module.exports.normalizeSource = normalizeSource;
  * @typedef {object} UtmGrowthStat
  * @type {Object}
  * @property {string} utm_value - The UTM parameter value (e.g., 'google', 'facebook')
- * @property {string} utm_type - The UTM parameter type ('source', 'medium', 'campaign')
+ * @property {string} utm_type - The UTM parameter type ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
  * @property {number} free_members - Count of free member signups
  * @property {number} paid_members - Count of paid member conversions
  * @property {number} mrr - Total MRR from this UTM parameter (in cents)
