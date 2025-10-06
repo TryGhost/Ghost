@@ -321,7 +321,7 @@ export default function FeedbackPage() {
             await sendFeedback({siteUrl: site.url, uuid, key, postId, score: selectedScore}, api);
             setScore(selectedScore);
         } catch (e) {
-            const text = chooseBestErrorMessage(e, t('There was a problem submitting your feedback. Please try again a little later.'), t);
+            const text = chooseBestErrorMessage(e, t('There was a problem submitting your feedback. Please try again a little later.'));
             setError(text);
         }
         setLoading(false);
