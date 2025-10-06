@@ -1,9 +1,9 @@
 import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
-import {EmailMessageBody} from '../../helpers/email/EmailMessageBody';
+import {EmailClient, MailhogClient} from '../../helpers/services/email/MailhogClient';
+import {EmailMessageBody} from '../../helpers/services/email/EmailMessageBody';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
-import {extractMagicLink} from '../../helpers/email/utils';
+import {extractMagicLink} from '../../helpers/services/email/utils';
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;

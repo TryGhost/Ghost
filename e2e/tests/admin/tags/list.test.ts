@@ -1,12 +1,10 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
-import {overrideFeatureFlags} from '../../../helpers/utils';
 import {mockTagsResponse} from './helpers/mock-tags-response';
 
 test.describe('Ghost Admin - Tags', () => {
-    test.beforeEach(async ({page}) => {
-        await overrideFeatureFlags(page, {tagsX: true});
-    });
+    // Set labs flags for all tests in this describe block
+    test.use({labs: {tagsX: true}});
 
     test('shows empty state when no tags exist', async ({page}) => {
         const tagsPage = new TagsPage(page);
@@ -125,7 +123,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('loads tags on scroll with pagination', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        
+
         // Mock first page of tags
         await mockTagsResponse(page, async (request) => {
             const url = new URL(request.url());
@@ -166,11 +164,11 @@ test.describe('Ghost Admin - Tags', () => {
 
         // Verify first page loads
         await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
-        
+
         // Verify that only a limited number of tags are rendered
         expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
         expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
-        
+
         // Scroll to bottom to trigger pagination
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
 
@@ -186,10 +184,10 @@ test.describe('Ghost Admin - Tags', () => {
 
         // Wait for third page to load
         await expect(tagsPage.getRowByTitle('Tag 41')).toBeVisible();
-        
+
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-        
+
         // Verify last tag is visible
         await expect(tagsPage.getRowByTitle('Tag 50')).toBeVisible();
     });
