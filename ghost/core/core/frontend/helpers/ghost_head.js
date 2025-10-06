@@ -64,7 +64,8 @@ function getMembersHelper(data, frontendKey, excludeList) {
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
             locale: settingsCache.get('locale') || 'en',
-            'members-signin-otc': labs.isSet('membersSigninOTC') // html.dataset converts dash-attrs to camelCase
+            'members-signin-otc': labs.isSet('membersSigninOTC'), // html.dataset converts dash-attrs to camelCase
+            'members-signin-otc-alpha': labs.isSet('membersSigninOTCAlpha') // html.dataset converts dash-attrs to camelCase
         };
         if (colorString) {
             attributes['accent-color'] = colorString;

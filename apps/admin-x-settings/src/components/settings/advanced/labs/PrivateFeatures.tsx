@@ -28,9 +28,13 @@ const features: Feature[] = [{
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
 }, {
-    title: 'Members sign-in OTC (alpha)',
+    title: 'Members sign-in OTC (private beta)',
     description: 'Enables one-time codes alongside magic links for members signin',
     flag: 'membersSigninOTC'
+}, {
+    title: 'Members sign-in OTC (internal alpha)',
+    description: 'Testing changes to members sign-in OTC prior to private beta release',
+    flag: 'membersSigninOTCAlpha'
 }, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',

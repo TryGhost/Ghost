@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
     'contentVisibilityAlpha',
     'emailCustomization',
     'membersSigninOTC',
+    'membersSigninOTCAlpha',
     'tagsX',
     'utmTracking',
     'emailUniqueid'
