@@ -58,7 +58,7 @@ export class DockerCompose {
      * Returns null if no containers are found.
      */
     async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps --format json`;
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
         const output = execSync(command, {encoding: 'utf-8'}).trim();
         if (!output) {
             return null;
