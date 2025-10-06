@@ -58,16 +58,16 @@ export class EnvironmentManager {
      * Get the Portal URL with the dynamically assigned port
      */
     private async getPortalUrl(): Promise<string> {
-        const portalContainer = await this.dockerCompose.getContainerForService('portal');
-        const containerInfo = await portalContainer.inspect();
-        const portMapping = containerInfo.NetworkSettings.Ports['4175/tcp'];
-        if (!portMapping || portMapping.length === 0) {
-            throw new Error('Portal container does not have port 4175 exposed');
+        try {
+            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
+            const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+            debug(`Portal is available at: ${portalUrl}`);
+            return portalUrl;
+        } catch (error) {
+            logging.error('Failed to get Portal URL:', error);
+            // Fallback to default port if something goes wrong
+            return 'http://localhost:4175/portal.min.js';
         }
-        const hostPort = portMapping[0].HostPort;
-        const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
-        debug(`Portal is available at: ${portalUrl}`);
-        return portalUrl;
     }
 
     /**
