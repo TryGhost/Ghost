@@ -7,14 +7,17 @@ describe('Unit: Service: whats-new', function () {
     setupTest();
 
     let server;
+    let consoleErrorStub;
 
     beforeEach(function () {
         server = sinon.fakeServer.create();
         server.respondImmediately = true;
+        consoleErrorStub = sinon.stub(console, 'error');
     });
 
     afterEach(function () {
         server.restore();
+        consoleErrorStub.restore();
     });
 
     // User fixtures
@@ -109,7 +112,7 @@ describe('Unit: Service: whats-new', function () {
         ]
     };
 
-    function setup(context, {user, entries}) {
+    function setupService(context, {user, entries}) {
         const service = context.owner.lookup('service:whats-new');
         const sessionService = context.owner.lookup('service:session');
 
@@ -139,7 +142,7 @@ describe('Unit: Service: whats-new', function () {
 
     describe('fetchLatest', function () {
         it('fetches and stores changelog entries', async function () {
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: USERS.oldWhatsNew,
                 entries: [{
                     title: 'Test Update',
@@ -164,7 +167,7 @@ describe('Unit: Service: whats-new', function () {
 
             let requestCount = 0;
             server.respondWith('GET', 'https://ghost.org/changelog.json', function (request) {
-                requestCount++;
+                requestCount = requestCount + 1;
                 request.respond(200, {'Content-Type': 'application/json'}, JSON.stringify({
                     posts: ENTRIES.newEntry,
                     changelogUrl: 'https://ghost.org/changelog/'
@@ -179,7 +182,7 @@ describe('Unit: Service: whats-new', function () {
         });
 
         it('handles empty changelog response', async function () {
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: USERS.noWhatsNew,
                 entries: ENTRIES.empty
             });
@@ -214,12 +217,12 @@ describe('Unit: Service: whats-new', function () {
             const service = this.owner.lookup('service:whats-new');
             const sessionService = this.owner.lookup('service:session');
 
-            sessionService.set('user', USERS.noWhatsNew);
+            sessionService.set('user', mockUser);
 
             server.respondWith('GET', 'https://ghost.org/changelog.json', [
-                500,
+                404,
                 {'Content-Type': 'application/json'},
-                JSON.stringify({error: 'Internal Server Error'})
+                JSON.stringify({error: 'Not Found'})
             ]);
 
             // Doesn't throw an error
@@ -266,7 +269,7 @@ describe('Unit: Service: whats-new', function () {
 
         testCases.forEach(({description, user, entries, expected}) => {
             it(description, async function () {
-                const service = setup(this, {user, entries});
+                const service = setupService(this, {user, entries});
                 await service.fetchLatest.perform();
                 expect(service.hasNew).to.equal(expected);
             });
@@ -303,7 +306,7 @@ describe('Unit: Service: whats-new', function () {
 
         testCases.forEach(({description, user, entries, expected}) => {
             it(description, async function () {
-                const service = setup(this, {user, entries});
+                const service = setupService(this, {user, entries});
                 await service.fetchLatest.perform();
                 expect(service.hasNewFeatured).to.equal(expected);
             });
@@ -313,7 +316,7 @@ describe('Unit: Service: whats-new', function () {
     describe('updateLastSeen', function () {
         it('updates lastSeenDate to latest entry published_at', async function () {
             const mockUser = createMockUser(USERS.oldWhatsNew);
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: mockUser,
                 entries: ENTRIES.multipleEntries
             });
@@ -330,7 +333,7 @@ describe('Unit: Service: whats-new', function () {
 
         it('does not update when there are no entries', async function () {
             const mockUser = createMockUser(USERS.oldWhatsNew);
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: mockUser,
                 entries: ENTRIES.empty
             });
@@ -344,7 +347,7 @@ describe('Unit: Service: whats-new', function () {
 
         it('creates whatsNew object if it does not exist', async function () {
             const mockUser = createMockUser(USERS.noWhatsNew);
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: mockUser,
                 entries: ENTRIES.newEntry
             });
@@ -361,7 +364,7 @@ describe('Unit: Service: whats-new', function () {
 
         it('preserves other accessibility settings', async function () {
             const mockUser = createMockUser(USERS.withOtherSettings);
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: mockUser,
                 entries: ENTRIES.newEntry
             });
@@ -379,7 +382,7 @@ describe('Unit: Service: whats-new', function () {
     describe('seen action', function () {
         it('updates lastSeenDate to latest entry', async function () {
             const mockUser = createMockUser(USERS.oldWhatsNew);
-            const service = setup(this, {
+            const service = setupService(this, {
                 user: mockUser,
                 entries: ENTRIES.newEntry
             });
