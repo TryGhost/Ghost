@@ -8,6 +8,7 @@ declare global {
 }
 
 class PortalSection extends BasePage {
+    public readonly portalRoot: Locator;
     private readonly portalFrame: Locator;
     private readonly portalIframe: Locator;
     private readonly portalScript: Locator;
@@ -15,6 +16,7 @@ class PortalSection extends BasePage {
     constructor(page: Page) {
         super(page, '/');
 
+        this.portalRoot = page.getByTestId('portal-root');
         this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
         this.portalIframe = page.locator('iframe[title="portal-popup"]');
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
@@ -55,6 +57,7 @@ class PortalSection extends BasePage {
 }
 
 export class PublicPage extends BasePage {
+    public readonly portalRoot: Locator;
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
 
@@ -63,9 +66,10 @@ export class PublicPage extends BasePage {
     constructor(page: Page) {
         super(page, '/');
 
+        this.portal = new PortalSection(page);
+        this.portalRoot = this.portal.portalRoot;
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
-        this.portal = new PortalSection(page);
     }
 
     // This is necessary because Ghost blocks analytics requests when in Playwright by default

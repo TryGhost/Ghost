@@ -8,6 +8,7 @@
     "dev": "tsc --watch --preserveWatchOutput --noEmit",
     "build": "yarn test:types",
     "build:ts": "tsc --noEmit",
+    "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f .docker/Dockerfile .",
     "prepare": "tsc --noEmit",
     "test": "playwright test --project=main",
     "test:factory": "playwright test --project=factories",
