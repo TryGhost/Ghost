@@ -275,7 +275,8 @@ const otcVerificationEnumeration = () => {
                     return next(new errors.TooManyRequestsError({
                         message: `Too many verification attempts across multiple codes, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                         context: tpl(messages.tooManyOTCVerificationAttempts.context),
-                        help: tpl(messages.tooManyOTCVerificationAttempts.context)
+                        help: tpl(messages.tooManyOTCVerificationAttempts.context),
+                        code: 'OTC_TOTAL_ATTEMPTS_RATE_LIMITED'
                     }));
                 },
                 handleStoreError: handleStoreError
@@ -305,7 +306,8 @@ const otcVerification = () => {
                     return next(new errors.TooManyRequestsError({
                         message: `Too many attempts for this verification code, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                         context: tpl(messages.tooManyOTCVerificationAttempts.context),
-                        help: tpl(messages.tooManyOTCVerificationAttempts.context)
+                        help: tpl(messages.tooManyOTCVerificationAttempts.context),
+                        code: 'OTC_CODE_ATTEMPTS_RATE_LIMITED'
                     }));
                 },
                 handleStoreError: handleStoreError

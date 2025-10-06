@@ -5,7 +5,7 @@ const assert = require('assert/strict');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyErrorId, anyString} = matchers;
+const {anyErrorId, anyString, anyObject} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 let membersAgent, membersService;
@@ -1014,7 +1014,7 @@ describe('sendMagicLink', function () {
             describe('Rate limiting', function () {
                 before(async function () {
                     // Adjust rate limits for faster testing
-                    // Note: enumeration limit must be higher than specific limit for independence test
+                    // Note: enumeration limit must be higher than per-code limit for the "limits enforced per code" test
                     configUtils.set('spam:otc_verification:freeRetries', 2);
                     configUtils.set('spam:otc_verification_enumeration:freeRetries', 5);
                     await resetRateLimits();
@@ -1056,7 +1056,8 @@ describe('sendMagicLink', function () {
                             errors: [{
                                 id: anyErrorId,
                                 type: 'TooManyRequestsError',
-                                message: anyString
+                                message: anyString,
+                                code: anyString
                             }]
                         });
                 });
@@ -1088,7 +1089,8 @@ describe('sendMagicLink', function () {
                             errors: [{
                                 id: anyErrorId,
                                 type: 'TooManyRequestsError',
-                                message: anyString
+                                message: anyString,
+                                code: anyString
                             }]
                         });
                 });

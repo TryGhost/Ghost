@@ -22,7 +22,7 @@ exports[`sendMagicLink OTC With membersSigninOTC flag enabled Rate limiting Will
 Object {
   "errors": Array [
     Object {
-      "code": null,
+      "code": Any<String>,
       "context": "Too many verification code attempts.",
       "details": null,
       "ghostErrorCode": null,
@@ -40,7 +40,7 @@ exports[`sendMagicLink OTC With membersSigninOTC flag enabled Rate limiting Will
 Object {
   "errors": Array [
     Object {
-      "code": null,
+      "code": Any<String>,
       "context": "Too many verification code attempts.",
       "details": null,
       "ghostErrorCode": null,
