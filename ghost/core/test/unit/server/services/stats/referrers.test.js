@@ -403,4 +403,151 @@ describe('ReferrersStatsService', function () {
             assert.equal(twitterStats.paid_conversions, 1, 'Twitter should have 1 paid conversion');
         });
     });
+
+    describe('getUtmGrowthStats (fixture data)', function () {
+        let service;
+
+        beforeEach(function () {
+            const mockDb = {}; // No real DB needed for fixture tests
+            service = new ReferrersStatsService({knex: mockDb});
+        });
+
+        it('returns utm_source fixture data by default', async function () {
+            const result = await service.getUtmGrowthStats({});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have fixture data');
+            assert.equal(result.data[0].utm_type, 'utm_source', 'Should default to utm_source');
+            assert(result.data[0].utm_value, 'Should have utm_value');
+            assert.equal(typeof result.data[0].free_members, 'number', 'Should have free_members count');
+            assert.equal(typeof result.data[0].paid_members, 'number', 'Should have paid_members count');
+            assert.equal(typeof result.data[0].mrr, 'number', 'Should have mrr value');
+        });
+
+        it('returns utm_medium fixture data when specified', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_medium'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have fixture data');
+            assert.equal(result.data[0].utm_type, 'utm_medium', 'Should return utm_medium data');
+        });
+
+        it('returns utm_campaign fixture data when specified', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_campaign'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have fixture data');
+            assert.equal(result.data[0].utm_type, 'utm_campaign', 'Should return utm_campaign data');
+        });
+
+        it('returns utm_term fixture data when specified', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_term'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have fixture data');
+            assert.equal(result.data[0].utm_type, 'utm_term', 'Should return utm_term data');
+        });
+
+        it('returns utm_content fixture data when specified', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_content'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have fixture data');
+            assert.equal(result.data[0].utm_type, 'utm_content', 'Should return utm_content data');
+        });
+
+        it('throws error for invalid utm_type', async function () {
+            await assert.rejects(
+                async () => await service.getUtmGrowthStats({utm_type: 'invalid_field'}),
+                /Invalid utm_type/,
+                'Should reject invalid utm_type'
+            );
+        });
+
+        it('applies limit parameter', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_source', limit: 3});
+
+            assert.equal(result.data.length, 3, 'Should limit results to 3');
+        });
+
+        it('sorts by free_members desc by default', async function () {
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_source'});
+
+            // Check that results are sorted by free_members descending
+            for (let i = 0; i < result.data.length - 1; i++) {
+                assert(
+                    result.data[i].free_members >= result.data[i + 1].free_members,
+                    'Should be sorted by free_members descending'
+                );
+            }
+        });
+
+        it('sorts by paid_members desc when specified', async function () {
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                order: 'paid_members desc'
+            });
+
+            // Check that results are sorted by paid_members descending
+            for (let i = 0; i < result.data.length - 1; i++) {
+                assert(
+                    result.data[i].paid_members >= result.data[i + 1].paid_members,
+                    'Should be sorted by paid_members descending'
+                );
+            }
+        });
+
+        it('sorts by mrr desc when specified', async function () {
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                order: 'mrr desc'
+            });
+
+            // Check that results are sorted by mrr descending
+            for (let i = 0; i < result.data.length - 1; i++) {
+                assert(
+                    result.data[i].mrr >= result.data[i + 1].mrr,
+                    'Should be sorted by mrr descending'
+                );
+            }
+        });
+
+        it('scales down data when post_id is provided', async function () {
+            const globalResult = await service.getUtmGrowthStats({utm_type: 'utm_source'});
+            const postResult = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                post_id: 'test-post-id'
+            });
+
+            assert(postResult.data.length > 0, 'Should have post-specific data');
+            assert(postResult.data.length <= globalResult.data.length, 'Post data should be filtered');
+
+            // Values should be scaled down (approximately 25-30% of global)
+            if (postResult.data[0] && globalResult.data[0]) {
+                assert(
+                    postResult.data[0].free_members < globalResult.data[0].free_members,
+                    'Post free_members should be less than global'
+                );
+                assert(
+                    postResult.data[0].paid_members < globalResult.data[0].paid_members,
+                    'Post paid_members should be less than global'
+                );
+                assert(
+                    postResult.data[0].mrr < globalResult.data[0].mrr,
+                    'Post mrr should be less than global'
+                );
+            }
+        });
+
+        it('does not apply limit when post_id is provided', async function () {
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                post_id: 'test-post-id',
+                limit: 2
+            });
+
+            // Should return all post-specific results, not limited to 2
+            assert(result.data.length > 2, 'Should ignore limit for post-specific queries');
+        });
+    });
 });
