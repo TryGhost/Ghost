@@ -7,7 +7,7 @@ export * from './factories/user-factory';
 // Persistence Adapters
 export {KnexPersistenceAdapter} from './persistence/adapters/knex';
 export {ApiPersistenceAdapter} from './persistence/adapters/api';
-export type {HttpClient, HttpResponse} from './persistence/adapters/api';
+export type {HttpClient, HttpResponse} from './persistence/adapters/http-client';
 export {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 export type {PersistenceAdapter} from './persistence/adapter';
 
