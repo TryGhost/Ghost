@@ -7,7 +7,7 @@ import { useEmberContext } from './EmberContext';
  * When this component is mounted, it signals that the Ember app should be shown.
  * When unmounted, it unregisters itself.
  */
-export default function EmberFallback() {
+export function EmberFallback() {
   const { registerFallback, unregisterFallback } = useEmberContext();
 
   useEffect(() => {
