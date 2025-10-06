@@ -1,4 +1,4 @@
-import type {APIRequestContext} from '@playwright/test';
+import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
 
 export interface Setting {
     key: string;
@@ -10,10 +10,10 @@ export interface SettingsResponse {
 }
 
 export class SettingsService {
-    private readonly request: APIRequestContext;
+    private readonly request: APIRequest;
     private readonly adminEndpoint: string;
 
-    constructor(request: APIRequestContext) {
+    constructor(request: APIRequest) {
         this.request = request;
         this.adminEndpoint = '/ghost/api/admin';
     }
