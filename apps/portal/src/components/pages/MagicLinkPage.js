@@ -202,10 +202,13 @@ export default class MagicLinkPage extends React.Component {
                                 type="text"
                                 value={this.state.otc}
                                 inputMode="numeric"
-                                pattern="[0-9]*"
-                                aria-label={t('Code')}
-                                autoFocus={false}
                                 maxLength={6}
+                                pattern="[0-9]*"
+                                autoComplete="one-time-code"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                autoFocus={true}
+                                aria-label={t('Code')}
                                 onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                             />
                         </div>
