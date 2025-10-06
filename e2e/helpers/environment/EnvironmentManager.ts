@@ -65,8 +65,7 @@ export class EnvironmentManager {
             return portalUrl;
         } catch (error) {
             logging.error('Failed to get Portal URL:', error);
-            // Fallback to default port if something goes wrong
-            return 'http://localhost:4175/portal.min.js';
+            throw new Error(`Failed to get portal URL: ${error}. Ensure portal service is running.`);
         }
     }
 
