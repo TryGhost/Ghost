@@ -1,4 +1,5 @@
 const moment = require('moment');
+const errors = require('@tryghost/errors');
 
 // Import centralized date utilities
 const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
@@ -473,7 +474,9 @@ class ReferrersStatsService {
         // Validate utm_type is a valid UTM field
         const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
         if (!validUtmFields.includes(utmField)) {
-            throw new Error(`Invalid utm_type: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`);
+            throw new errors.BadRequestError({
+                message: `Invalid utm_type: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
         }
 
         // Fixture data; will replace with real data once members service is wired up fully
