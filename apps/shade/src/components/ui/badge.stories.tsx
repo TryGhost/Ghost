@@ -15,7 +15,7 @@ const meta = {
     argTypes: {
         variant: {
             control: {type: 'select'},
-            options: ['default', 'secondary', 'destructive', 'success', 'outline']
+            options: ['default', 'secondary', 'destructive', 'success', 'outline-solid']
         }
     }
 } satisfies Meta<typeof Badge>;
@@ -52,7 +52,7 @@ export const Success: Story = {
 
 export const Outline: Story = {
     args: {
-        variant: 'outline',
+        variant: 'outline-solid',
         children: 'Outline'
     }
 };

@@ -41,6 +41,14 @@ import ShadeApp from '@tryghost/shade';
 </ShadeApp>
 ```
 
+Tailwind v4 setup:
+
+- Shade uses the Tailwind CSS v4 CSS API. Theme tokens live directly in `styles.css` under a single `@theme { ... }` block (colors, spacing, fonts, radii, shadows, breakpoints, animations).
+- The JS config is minimal and only keeps `important: '.shade'` for scoping. All other theme values are defined in CSS.
+- Add or change tokens by editing `styles.css` and defining `--color-*`, `--spacing-*`, `--font-*`, `--radius-*`, `--shadow-*`, `--container-*`, etc. inside `@theme`.
+- Variants and plugins are registered in CSS: use `@custom-variant` (e.g., `dark`) and `@plugin "tailwindcss-animate"`.
+- Preflight is disabled via inline config: `@config { preflight: false; }` — we keep our own reset via `@import './preflight.css' layer(base);`.
+
 ## Develop
 
 This is a monorepo package.

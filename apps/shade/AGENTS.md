@@ -71,6 +71,11 @@ Refer to “Adding New Components” for the process. Story content should:
 - When changing tokens/config, verify Storybook and a library build still succeed.
 - When adding new components to Shade, always look for a ShadCN/UI equivalent and if it exists add it using `npx`.
 
+### Tailwind v4 tokens
+- Shade uses Tailwind v4 CSS API. Add tokens in `styles.css` under a single `@theme { ... }` block (`--color-*`, `--spacing-*`, `--font-*`, `--radius-*`, `--shadow-*`, `--container-*`, etc.).
+- Register variants/plugins in CSS (`@custom-variant`, `@plugin`). Keep `@import './preflight.css' layer(base);` and disable preflight with `@config { preflight: false; }`.
+- JS config remains minimal for scoping only: `important: '.shade'`.
+
 ## ShadCN Component Installation Guardrails
 - Never overwrite existing Shade components during `npx shadcn@latest add <name>` prompts. Choose “No” when asked to overwrite.
 - Always work on a fresh branch and commit a clean baseline before running the installer so you can easily revert: `git checkout -b chore/shadcn-add-<name>`.

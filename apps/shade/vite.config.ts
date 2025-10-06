@@ -4,6 +4,7 @@ import {glob} from 'glob';
 import {resolve} from 'path';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vitest/config';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
@@ -11,7 +12,8 @@ export default (function viteConfig() {
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
-            react()
+            react(),
+            tailwindcss()
         ],
         resolve: {
             alias: {
