@@ -5,7 +5,7 @@ const assert = require('assert/strict');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyErrorId, anyString, anyObject} = matchers;
+const {anyErrorId, anyString} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 let membersAgent, membersService;
