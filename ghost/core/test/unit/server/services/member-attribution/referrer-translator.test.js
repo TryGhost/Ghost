@@ -338,7 +338,7 @@ describe('ReferrerTranslator', function () {
         });
 
         describe('UTM parameter extraction', function () {
-            it('extracts all UTM parameters from first history entry with UTM data', async function () {
+            it('extracts all UTM parameters', async function () {
                 should(translator.getReferrerDetails([
                     {
                         referrerSource: 'google',
@@ -408,29 +408,29 @@ describe('ReferrerTranslator', function () {
                 });
             });
 
-            it('uses first entry with UTM data when multiple entries have UTM', async function () {
+            it('uses earliest entry with UTM data when multiple entries have UTM', async function () {
                 should(translator.getReferrerDetails([
                     {
                         referrerSource: 'google',
                         referrerMedium: null,
                         referrerUrl: null,
-                        utmSource: 'first_source',
-                        utmCampaign: 'first_campaign'
+                        utmSource: 'recent_source',
+                        utmCampaign: 'recent_campaign'
                     },
                     {
                         referrerSource: 'twitter',
                         referrerMedium: null,
                         referrerUrl: null,
-                        utmSource: 'second_source',
-                        utmCampaign: 'second_campaign'
+                        utmSource: 'earliest_source',
+                        utmCampaign: 'earliest_campaign'
                     }
                 ])).eql({
                     referrerSource: 'Google',
                     referrerMedium: 'unknown',
                     referrerUrl: null,
-                    utmSource: 'first_source',
+                    utmSource: 'earliest_source',
                     utmMedium: null,
-                    utmCampaign: 'first_campaign',
+                    utmCampaign: 'earliest_campaign',
                     utmTerm: null,
                     utmContent: null
                 });
@@ -460,7 +460,7 @@ describe('ReferrerTranslator', function () {
                 });
             });
 
-            it('extracts UTM from later entry when earlier entries have no UTM', async function () {
+            it('extracts UTM from earliest entry when more recent entries have no UTM', async function () {
                 should(translator.getReferrerDetails([
                     {
                         referrerSource: 'twitter',

@@ -50,7 +50,9 @@ class ReferrerTranslator {
             };
         }
 
-        // Look for UTM parameters first (most recent entry with UTM data)
+        // Look for UTM parameters (earliest entry with UTM data)
+        // Note: history is ordered newest-to-oldest, so we want the LAST match
+        // This captures the original campaign source rather than subsequent navigations
         let utmData = {
             utmSource: null,
             utmMedium: null,
@@ -59,6 +61,7 @@ class ReferrerTranslator {
             utmContent: null
         };
 
+        // In finding the 'campaign' that got the user here, we want the earliest entry with UTM data
         for (const item of history) {
             if (item.utmSource || item.utmMedium || item.utmCampaign || item.utmTerm || item.utmContent) {
                 utmData = {
@@ -68,10 +71,10 @@ class ReferrerTranslator {
                     utmTerm: item.utmTerm || null,
                     utmContent: item.utmContent || null
                 };
-                break;
             }
         }
 
+        // In finding the 'content' that got the user to sign up, we want the latest entry with referrer data
         for (const item of history) {
             let refUrl = this.getUrlFromStr(item.referrerUrl);
             if (refUrl?.hostname === 'checkout.stripe.com') {
