@@ -72,6 +72,10 @@ export class PublicPage extends BasePage {
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
 
+    linkWithPostName(name: string): Locator {
+        return this.page.getByRole('link', {name: name});
+    }
+
     // This is necessary because Ghost blocks analytics requests when in Playwright by default
     async enableAnalyticsRequests(): Promise<void> {
         await this.page.addInitScript(() => {
