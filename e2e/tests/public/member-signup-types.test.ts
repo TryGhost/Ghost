@@ -6,6 +6,7 @@ import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {extractMagicLink} from '../../helpers/services/email/utils';
 import {createPostFactory, PostFactory} from '../../data-factory';
+import {Page} from '@playwright/test';
 
 test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;
@@ -14,10 +15,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         emailClient = new MailhogClient();
     });
 
-    test('signed up with magic link - direct', async ({page}) => {
-        await new HomePage(page).goto();
-        const {emailAddress, name} = await signupViaPortal(page);
-
+    async function finishSignupByMagicLinkInEmail(page: Page, emailAddress: string) {
         const message = await emailClient.waitForEmail(emailAddress);
         const emailMessageBodyParts = new EmailMessageBody(message);
         const emailTextBody = emailMessageBodyParts.getTextContent();
@@ -26,9 +24,16 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         const publicPage = new PublicPage(page);
         await publicPage.goto(magicLink);
         await publicPage.waitForPageToFullyLoad();
+    }
+
+    test('signed up with magic link - direct', async ({page}) => {
+        await new HomePage(page).goto();
+        const {emailAddress, name} = await signupViaPortal(page);
+
+        await finishSignupByMagicLinkInEmail(page, emailAddress);
 
         const homePage = new HomePage(page);
-        await homePage.waitForSignedIn();
+        await expect(homePage.accountButton).toBeVisible();
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
@@ -50,16 +55,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         await homePage.linkWithPostName(post.title).click();
         const {emailAddress, name} = await signupViaPortal(page);
 
-        const message = await emailClient.waitForEmail(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(message);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
-
-        const magicLink = extractMagicLink(emailTextBody);
-        const publicPage = new PublicPage(page);
-        await publicPage.goto(magicLink);
-        await publicPage.waitForPageToFullyLoad();
-
-        await homePage.waitForSignedIn();
+        await finishSignupByMagicLinkInEmail(page, emailAddress);
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
@@ -81,16 +77,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         await homePage.linkWithPostName(post.title).click();
         const {emailAddress, name} = await signupViaPortal(page);
 
-        const message = await emailClient.waitForEmail(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(message);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
-
-        const magicLink = extractMagicLink(emailTextBody);
-        const publicPage = new PublicPage(page);
-        await publicPage.goto(magicLink);
-        await publicPage.waitForPageToFullyLoad();
-
-        await homePage.waitForSignedIn();
+        await finishSignupByMagicLinkInEmail(page, emailAddress);
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();

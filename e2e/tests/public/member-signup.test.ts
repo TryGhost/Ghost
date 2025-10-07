@@ -26,7 +26,6 @@ test.describe('Ghost Public - Member Signup', () => {
         await publicPage.waitForPageToFullyLoad();
 
         const homePage = new HomePage(page);
-        await homePage.waitForSignedIn();
         await expect(homePage.accountButton).toBeVisible();
     });
 
