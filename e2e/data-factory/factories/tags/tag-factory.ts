@@ -11,6 +11,7 @@ export interface Tag {
     feature_image: string | null;
     parent_id: string | null;
     visibility: 'public' | 'internal';
+    url?: string;
     og_image: string | null;
     og_title: string | null;
     og_description: string | null;
@@ -23,6 +24,9 @@ export interface Tag {
     codeinjection_foot: string | null;
     canonical_url: string | null;
     accent_color: string | null;
+    count?: {
+        posts: number;
+    };
     created_at: Date;
     updated_at: Date | null;
 }
@@ -49,6 +53,7 @@ export class TagFactory extends Factory<Partial<Tag>, Tag> {
             feature_image: options.feature_image ?? `https://picsum.photos/seed/tag-${faker.string.alphanumeric(8)}/1200/630`,
             parent_id: options.parent_id ?? null,
             visibility: options.visibility ?? 'public',
+            url: options.url,
             og_image: options.og_image ?? null,
             og_title: options.og_title ?? tagName,
             og_description: options.og_description ?? faker.lorem.sentence(),
@@ -61,6 +66,7 @@ export class TagFactory extends Factory<Partial<Tag>, Tag> {
             codeinjection_foot: options.codeinjection_foot ?? null,
             canonical_url: options.canonical_url ?? null,
             accent_color: options.accent_color ?? null,
+            count: options.count,
             created_at: options.created_at ?? now,
             updated_at: options.updated_at ?? now
         };

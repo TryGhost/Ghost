@@ -1,115 +1,92 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
 import {mockTagsResponse} from './helpers/mock-tags-response';
+import {createPostFactory, createTagFactory, type PostFactory, type TagFactory} from '../../../data-factory';
 
 test.describe('Ghost Admin - Tags', () => {
+    let tagFactory: TagFactory;
     // Set labs flags for all tests in this describe block
     test.use({labs: {tagsX: true}});
 
-    test('shows empty state when no tags exist', async ({page}) => {
-        const tagsPage = new TagsPage(page);
-        await mockTagsResponse(page, async () => ({
-            tags: []
-        }));
+    test.beforeEach(async ({page}) => {
+        tagFactory = createTagFactory(page);
+    });
 
+    test('lists the default tags list when no new tags were created', async ({page}) => {
+        const tagsPage = new TagsPage(page);
         await tagsPage.goto();
 
-        await expect(tagsPage.emptyStateTitle).toBeVisible();
-        await expect(tagsPage.emptyStateAction).toBeVisible();
-        await expect(tagsPage.tagList).not.toBeVisible();
+        await expect(tagsPage.activeTab).toHaveText('Public tags');
+        await expect(tagsPage.getRowByTitle('News')).toBeVisible();
+        await expect(tagsPage.tagListRow).toHaveCount(1);
     });
 
     test('lists public and internal tags separately', async ({page}) => {
+        await tagFactory.create(
+            {
+                name: '#Internal Tag Name',
+                slug: 'internal-tag',
+                url: 'https://example.com/internal-tag',
+                description: 'Internal Tag description'
+            }
+        );
+
+        await tagFactory.create({
+            name: 'Public Tag Name',
+            slug: 'public-tag',
+            url: 'https://example.com/public-tag',
+            description: 'Public Tag description'
+        });
+
+        await tagFactory.create({
+            name: 'Other Public Tag Name',
+            slug: 'other-public-tag',
+            url: 'https://example.com/other-public-tag',
+            description: 'Other Public Tag description'
+        });
+
         const tagsPage = new TagsPage(page);
-
-        await mockTagsResponse(page, async request => ({
-            tags: request.url().includes('internal')
-                ? [
-                    {
-                        id: '1',
-                        name: 'Internal Tag Name',
-                        slug: 'internal-tag',
-                        url: 'https://example.com/internal-tag',
-                        description: 'Internal Tag description'
-                    }
-                ]
-                : [
-                    {
-                        id: '2',
-                        name: 'Public Tag Name',
-                        slug: 'public-tag',
-                        url: 'https://example.com/public-tag',
-                        description: 'Public Tag description'
-                    },
-                    {
-                        id: '3',
-                        name: 'Other Public Tag Name',
-                        slug: 'other-public-tag',
-                        url: 'https://example.com/other-public-tag',
-                        description: 'Other Public Tag description'
-                    }
-                ]
-        }));
-
         await tagsPage.goto();
 
-        // Default to public tags
         await expect(tagsPage.activeTab).toHaveText('Public tags');
-
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toContainText('Public Tag description');
-        await expect(tagsPage.tagListRow).toHaveCount(2);
+        await expect(tagsPage.tagListRow).toHaveCount(3);
 
-        // Can switch to internal tags
         await tagsPage.selectTab('Internal tags');
         await expect(tagsPage.activeTab).toHaveText('Internal tags');
-        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toBeVisible();
-        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toContainText('Internal Tag description');
+        await expect(tagsPage.getRowByTitle('#Internal Tag Name')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('#Internal Tag Name')).toContainText('Internal Tag description');
         await expect(tagsPage.tagListRow).toHaveCount(1);
 
-        // Can switch back to public tags
         await tagsPage.selectTab('Public tags');
         await expect(tagsPage.activeTab).toHaveText('Public tags');
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
-        await expect(tagsPage.tagListRow).toHaveCount(2);
+        await expect(tagsPage.tagListRow).toHaveCount(3);
     });
 
-    test('lists tags', async ({page}) => {
+    test('lists tags with posts count', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await mockTagsResponse(page, async () => ({
-            tags: [
-                {
-                    id: '1',
-                    name: 'Tag 1',
-                    slug: 'tag-1',
-                    url: 'https://example.com/tag-1',
-                    description: 'Tag 1 description',
-                    count: {posts: 1}
-                },
-                {
-                    id: '2',
-                    name: 'Tag 2',
-                    slug: 'tag-2',
-                    url: 'https://example.com/tag-2',
-                    description: 'Tag 2 description'
-                },
-                {
-                    id: '3',
-                    name: 'Tag 3',
-                    slug: 'tag-3',
-                    url: 'https://example.com/tag-3',
-                    description: 'Tag 3 description'
-                }
-            ]
-        }));
+        const postFactory = createPostFactory(page);
+
+        const tag = await tagFactory.create({
+            name: 'Tag 1',
+            slug: 'tag-1',
+            url: 'https://example.com/tag-1',
+            description: 'Tag 1 description'
+        });
+
+        await postFactory.create({
+            status: 'published',
+            tags: [{id: tag.id}]
+        });
 
         await tagsPage.goto();
 
         await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
         await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('Tag 1 description');
         await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('1 post');
-
-        await expect(tagsPage.tagListRow).toHaveCount(3);
+        await expect(tagsPage.tagListRow).toHaveCount(2);
     });
 
     test('create new tag', async ({page}) => {
