@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, SourceTabs, TabType, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, TableFilterCampaignTab, TableFilterTab, TableFilterTabs, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -134,12 +134,15 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             <CardContent className='overflow-hidden'>
                 {utmTrackingEnabled && (
                     <div className='mb-2'>
-                        <SourceTabs
+                        <TableFilterTabs
                             selectedCampaign={selectedCampaign}
                             selectedTab={selectedTab}
                             onCampaignChange={onCampaignChange}
                             onTabChange={onTabChange}
-                        />
+                        >
+                            <TableFilterTab value='sources'>Sources</TableFilterTab>
+                            <TableFilterCampaignTab />
+                        </TableFilterTabs>
                     </div>
                 )}
                 <Separator />
