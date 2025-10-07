@@ -32,7 +32,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     render() {
-        const {member, site, t} = this.context;
+        const {member, site} = this.context;
         const supportAddress = getSupportAddress({site});
         if (!member) {
             return null;
@@ -47,7 +47,6 @@ export default class AccountHomePage extends React.Component {
                     onClose={() => this.context.doAction('closePopup')}
                     handleSignout={e => this.handleSignout(e)}
                     supportAddress={supportAddress}
-                    t={t}
                 />
             </div>
         );
