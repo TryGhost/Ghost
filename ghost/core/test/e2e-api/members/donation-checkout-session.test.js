@@ -356,4 +356,103 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .expectStatus(200)
             .matchBodySnapshot();
     });
+
+    it('Can create a donation checkout session with UTM parameters', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'utm-donation@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'utm_params',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'google',
+                            referrerUrl: 'https://google.com',
+                            utmSource: 'weekly_newsletter',
+                            utmMedium: 'email',
+                            utmCampaign: 'donation_drive_2024',
+                            utmTerm: 'support_ghost',
+                            utmContent: 'footer_cta'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        // Verify that the Stripe mocker captured the UTM parameters in metadata
+        const checkoutSession = stripeMocker.checkoutSessions[0];
+        should(checkoutSession.metadata.utm_source).eql('weekly_newsletter');
+        should(checkoutSession.metadata.utm_medium).eql('email');
+        should(checkoutSession.metadata.utm_campaign).eql('donation_drive_2024');
+        should(checkoutSession.metadata.utm_term).eql('support_ghost');
+        should(checkoutSession.metadata.utm_content).eql('footer_cta');
+    });
+
+    it('Stores UTM parameters in donation_payment_events when webhook is processed', async function () {
+        await membersAgent
+            .post('/api/donations/checkout')
+            .body({
+                identity: null,
+                amount: 1500,
+                currency: 'usd',
+                type: 'one-time',
+                attribution: {
+                    urlHistory: [
+                        {
+                            path: '/donate/',
+                            referrerSource: 'twitter',
+                            referrerMedium: null,
+                            referrerUrl: null,
+                            utmSource: 'weekly_newsletter',
+                            utmMedium: 'email',
+                            utmCampaign: 'donation_drive_2024',
+                            utmTerm: 'support_ghost',
+                            utmContent: 'footer_cta'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200);
+
+        // Send a webhook of a completed checkout session for this donation
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    mode: 'payment',
+                    amount_total: 1500,
+                    currency: 'usd',
+                    customer: stripeMocker.checkoutSessions[0].customer,
+                    customer_details: {
+                        name: 'UTM Test Donor',
+                        email: 'utmdonor@example.com'
+                    },
+                    metadata: stripeMocker.checkoutSessions[0].metadata,
+                    custom_fields: []
+                }
+            }
+        });
+
+        // Verify donation_payment_events table contains UTM parameters
+        const donationEvents = await models.DonationPaymentEvent.findAll();
+        const latestDonation = donationEvents.models[donationEvents.models.length - 1].toJSON();
+
+        should(latestDonation.email).eql('utmdonor@example.com');
+        should(latestDonation.amount).eql(1500);
+        should(latestDonation.currency).eql('usd');
+        should(latestDonation.utm_source).eql('weekly_newsletter');
+        should(latestDonation.utm_medium).eql('email');
+        should(latestDonation.utm_campaign).eql('donation_drive_2024');
+        should(latestDonation.utm_term).eql('support_ghost');
+        should(latestDonation.utm_content).eql('footer_cta');
+    });
 });
