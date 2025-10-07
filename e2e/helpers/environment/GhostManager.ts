@@ -165,4 +165,59 @@ export class GhostManager {
             debug('Failed to remove container:', error);
         }
     }
+
+    /** Remove all Ghost test containers (used during cleanup to remove orphaned containers). */
+    async removeAll(): Promise<void> {
+        try {
+            debug('Checking for Ghost test containers...');
+
+            // Retry a few times to catch any containers that might be created during cleanup
+            for (let attempt = 0; attempt < 3; attempt++) {
+                const containers = await this.docker.listContainers({
+                    all: true,
+                    filters: {
+                        label: ['tryghost/e2e=ghost']
+                    }
+                });
+
+                if (containers.length === 0) {
+                    if (attempt === 0) {
+                        debug('No Ghost test containers found');
+                    } else {
+                        debug(`No more Ghost test containers found after attempt ${attempt + 1}`);
+                    }
+                    break;
+                }
+
+                logging.info(`Found ${containers.length} Ghost test container(s), removing... (attempt ${attempt + 1})`);
+
+                // Remove all containers in parallel for faster cleanup
+                await Promise.all(containers.map(async (containerInfo) => {
+                    try {
+                        const container = this.docker.getContainer(containerInfo.Id);
+                        debug('Force removing Ghost container:', containerInfo.Id.substring(0, 12));
+
+                        // Just force kill and remove - don't wait for graceful shutdown
+                        await container.remove({force: true, v: true});
+                        debug('Ghost container removed:', containerInfo.Id.substring(0, 12));
+                    } catch (error: any) {
+                        // Ignore "already removed" errors
+                        if (error.statusCode !== 404) {
+                            logging.error(`Failed to remove Ghost container ${containerInfo.Id.substring(0, 12)}:`, error);
+                        }
+                    }
+                }));
+
+                // Small delay before checking again
+                if (attempt < 2) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            logging.info('Ghost test containers cleanup complete');
+        } catch (error) {
+            logging.error('Failed to remove Ghost test containers:', error);
+            // Don't throw - we want to continue with other cleanup steps
+        }
+    }
 }

@@ -93,9 +93,10 @@ export class EnvironmentManager {
     /**
      * Teardown global environment
      * This should be called once after all tests have finished.
-     * 1. Stop and remove all docker-compose services and volumes
-     * 2. Clean up any state files created during the tests
-     3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
+     * 1. Clean up any orphaned Ghost test containers
+     * 2. Stop and remove all docker-compose services and volumes
+     * 3. Clean up any state files created during the tests
+     * 4. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
     public async globalTeardown(): Promise<void> {
         if (this.shouldPreserveEnvironment()) {
@@ -103,6 +104,7 @@ export class EnvironmentManager {
             return;
         }
         logging.info('Starting global environment teardown...');
+        await this.ghost.removeAll();
         this.dockerCompose.down();
         this.cleanupStateFiles();
         logging.info('Global environment teardown complete');
