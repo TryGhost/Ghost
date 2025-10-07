@@ -42,7 +42,7 @@
     "docker:dev:analytics": "docker compose --profile analytics up -d --wait",
     "docker:dev:analytics:stop": "docker compose --profile analytics down",
     "docker:dev:analytics:logs": "docker compose --profile analytics logs -f",
-    "docker:build": "yarn docker:clean && docker compose --profile all build",
+    "docker:build": "yarn docker:clean && yarn build:clean && docker compose --profile all build",
     "docker:clean": "echo \"Deleting node_modules volumes...\" && docker compose --profile all down --remove-orphans && docker volume ls -q -f name=ghost_node_modules | xargs -I{} docker volume rm {}",
     "docker:shell": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost /bin/bash",
     "docker:mysql": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up mysql -d --wait && docker compose exec mysql mysql -u root -proot ghost",
