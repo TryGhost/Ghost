@@ -12,6 +12,7 @@ export {default as useForm} from './hooks/useForm';
 export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/useForm';
 export {default as useHandleError} from './hooks/useHandleError';
 export {default as useFilterableApi} from './hooks/useFilterableApi';
+export {usePermission} from './hooks/usePermissions';
 export {useTinybirdToken} from './hooks/useTinybirdToken';
 export type {UseTinybirdTokenResult} from './hooks/useTinybirdToken';
 export {useTinybirdQuery} from './hooks/useTinybirdQuery';
@@ -19,6 +20,9 @@ export type {UseTinybirdQueryOptions} from './hooks/useTinybirdQuery';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
+
+// Role utilities
+export {userHasRole} from './utils/roles';
 
 // Stats utilities
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
@@ -38,6 +42,7 @@ export type {RouterProviderProps} from './providers/RouterProvider';
 export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/RouterProvider';
 export {useNavigationStack} from './providers/NavigationStackProvider';
 export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes} from 'react-router';
+export * as RouterContext from './router-context';
 
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';

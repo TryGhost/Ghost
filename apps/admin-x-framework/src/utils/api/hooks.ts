@@ -5,6 +5,7 @@ import useHandleError from '../../hooks/useHandleError';
 import {usePermission} from '../../hooks/usePermissions';
 import {useFramework} from '../../providers/FrameworkProvider';
 import {RequestOptions, apiUrl, useFetchApi} from './fetchApi';
+import {UserRoleType} from '../../api/roles';
 
 export interface Meta {
     pagination: {
@@ -22,7 +23,7 @@ interface QueryOptions<ResponseData> {
     path: string
     headers?: Record<string, string>;
     defaultSearchParams?: Record<string, string>;
-    permissions?: string[];
+    permissions?: (UserRoleType & string)[];
     returnData?: (originalData: unknown) => ResponseData;
     useActivityPub?: boolean;
 }
@@ -38,7 +39,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const handleError = useHandleError();
 
     const result = useQuery<ResponseData>({
-        enabled: options.permissions ? usePermission(options.permissions) : true,
+        enabled: options.permissions ? usePermission(options.permissions as UserRoleType[]) : true,
         queryKey: [options.dataType, url],
         queryFn: () => fetchApi(url, {...options}),
         ...query

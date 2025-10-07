@@ -3,6 +3,8 @@ import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, Na
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
 import {ErrorPage} from '@tryghost/shade';
+import {useCurrentUser} from '../api/currentUser';
+import {createRouterContext, user as userContext} from '../router-context';
 
 /**
  * This provider uses React Router to provide a router context to React apps
@@ -104,6 +106,8 @@ export function RouterProvider({
     errorElement,
     children
 }: RouterProviderProps) {
+    const {data: currentUser} = useCurrentUser();
+
     // Memoize the router to avoid re-creating it on every render
     const router = useMemo(() => {
         // Ensure prefix has a leading slash and no double+ or trailing slashes
@@ -124,9 +128,14 @@ export function RouterProvider({
         };
 
         return createHashRouter([rootRoute], {
-            basename: normalizedPrefix
+            basename: normalizedPrefix,
+            getContext() {
+                const routerContext = createRouterContext();
+                routerContext.set(userContext, currentUser);
+                return routerContext;
+            }
         });
-    }, [routes, prefix, errorElement, children]);
+    }, [routes, prefix, errorElement, children, currentUser]);
 
     return (
         <ReactRouterProvider router={router} />
@@ -147,7 +156,7 @@ export function useNavigate() {
     const {externalNavigate} = useFramework();
 
     return useCallback((
-        to: string | number,
+        to: string | number, 
         options?: NavigateOptions
     ) => {
         if (typeof to === 'number') {

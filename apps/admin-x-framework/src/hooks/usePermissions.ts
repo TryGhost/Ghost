@@ -1,11 +1,14 @@
 import {useCurrentUser} from '../api/currentUser';
 import {UserRoleType} from '../api/roles';
+import {userHasRole} from '../utils/roles';
 
-export const usePermission = (userRoles:string[]) => {
+/**
+ * React hook to check if the current user has any of the required roles.
+ * 
+ * @param userRoles - Array of roles to check against
+ * @returns true if the current user has at least one of the required roles, false otherwise
+ */
+export const usePermission = (userRoles: UserRoleType[]) => {
     const {data: currentUser} = useCurrentUser();
-    const currentUserRoles = currentUser?.roles.map(role => role.name);
-    if (!currentUserRoles) {
-        return false;
-    }
-    return userRoles.some((role => currentUserRoles.includes(role as UserRoleType)));
+    return userHasRole(currentUser, userRoles);
 };
