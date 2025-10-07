@@ -1241,7 +1241,7 @@ class EmailRenderer {
                     }, true) : null
             },
             preheader: this.#getEmailPreheader(post, segment, html),
-            preheaderSpacing: '&zwnj;&nbsp;'.repeat(75),
+            preheaderSpacing: `${'&#8199;&#847; '.repeat(150)}${'&shy; '.repeat(200)} &nbsp;`,
             html,
 
             post: {

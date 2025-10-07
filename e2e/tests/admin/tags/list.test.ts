@@ -1,12 +1,10 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
-import {overrideFeatureFlags} from '../../../helpers/utils';
 import {mockTagsResponse} from './helpers/mock-tags-response';
 
 test.describe('Ghost Admin - Tags', () => {
-    test.beforeEach(async ({page}) => {
-        await overrideFeatureFlags(page, {tagsX: true});
-    });
+    // Set labs flags for all tests in this describe block
+    test.use({labs: {tagsX: true}});
 
     test('shows empty state when no tags exist', async ({page}) => {
         const tagsPage = new TagsPage(page);

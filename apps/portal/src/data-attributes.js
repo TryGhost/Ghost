@@ -12,7 +12,7 @@ function displayErrorIfElementExists(errorEl, message) {
 function handleError(error, form, errorEl, t) {
     form.classList.add('error');
     const defaultMessage = t('There was an error sending the email, please try again');
-    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
 }
 
 export async function formSubmitHandler(
@@ -116,7 +116,7 @@ export async function formSubmitHandler(
             }
         } else {
             const e = await HumanReadableError.fromApiResponse(magicLinkRes);
-            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'));
             displayErrorIfElementExists(errorEl, errorMessage);
             form.classList.add('error'); // Ensure error state is set here
         }

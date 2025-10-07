@@ -55,7 +55,22 @@ export class EnvironmentManager {
     }
 
     /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird)
+     * Get the Portal URL with the dynamically assigned port
+     */
+    private async getPortalUrl(): Promise<string> {
+        try {
+            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
+            const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+            debug(`Portal is available at: ${portalUrl}`);
+            return portalUrl;
+        } catch (error) {
+            logging.error('Failed to get Portal URL:', error);
+            throw new Error(`Failed to get portal URL: ${error}. Ensure portal service is running.`);
+        }
+    }
+
+    /**
+     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
      * This should be called once before all tests run.
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
@@ -101,7 +116,8 @@ export class EnvironmentManager {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            return await this.ghost.startInstance(instanceId, siteUuid);
+            const portalUrl = await this.getPortalUrl();
+            return await this.ghost.startInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);

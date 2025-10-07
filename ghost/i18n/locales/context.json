@@ -88,6 +88,7 @@
     "Emails": "A label for a list of emails",
     "Emails disabled": "Title for a message in portal telling members that they are not receiving emails, due to repeated delivery failures to their address",
     "Ends {offerEndDate}": "Portal - label for an offer that ends on a specific date",
+    "Enter code above": "Portal - error message when OTC code isn't filled in",
     "Enter code below": "",
     "Enter your email address": "Error message when an email address is missing",
     "Enter your name": "Placeholder input when editing your name in the comments app in the expertise dialog",

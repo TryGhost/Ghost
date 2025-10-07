@@ -139,12 +139,14 @@ export default class MagicLinkPage extends React.Component {
     }
 
     doVerifyOTC() {
+        const {t, labs} = this.context;
+        const missingCodeError = labs?.membersSigninOTCAlpha ? t('Enter code above') : t('Enter code below');
+
         this.setState((state) => {
-            const {t} = this.context;
             const code = (state.otc || '').trim();
             return {
                 errors: {
-                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
+                    [OTC_FIELD_NAME]: code ? '' : missingCodeError
                 }
             };
         }, () => {
@@ -161,9 +163,19 @@ export default class MagicLinkPage extends React.Component {
 
     handleInputChange(e, field) {
         const fieldName = field.name;
-        this.setState({
-            [fieldName]: e.target.value
-        });
+        const value = e.target.value;
+
+        // For OTC field, only allow numeric input
+        if (fieldName === OTC_FIELD_NAME) {
+            const numericValue = value.replace(/[^0-9]/g, '');
+            this.setState({
+                [fieldName]: numericValue
+            });
+        } else {
+            this.setState({
+                [fieldName]: value
+            });
+        }
     }
 
     renderOTCForm() {
@@ -180,21 +192,49 @@ export default class MagicLinkPage extends React.Component {
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
-                <section className='gh-portal-section'>
-                    {/* @TODO: create different input component with updated design */}
-                    <InputField
-                        id={`input-${OTC_FIELD_NAME}`}
-                        name={OTC_FIELD_NAME}
-                        type="text"
-                        value={this.state.otc}
-                        placeholder="• • • • • •"
-                        label={t('Code')}
-                        errorMessage={errors.otc || ''}
-                        autoFocus={false}
-                        maxLength={6}
-                        onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                    />
-                </section>
+                {labs?.membersSigninOTCAlpha ? (
+                    <section className='gh-portal-section gh-portal-otp'>
+                        <div className={`gh-portal-otp-field-container ${errors.otc ? 'error' : ''}`}>
+                            <input
+                                id={`input-${OTC_FIELD_NAME}`}
+                                className={`gh-portal-input ${errors.otc ? 'error' : ''}`}
+                                name={OTC_FIELD_NAME}
+                                type="text"
+                                value={this.state.otc}
+                                inputMode="numeric"
+                                maxLength={6}
+                                pattern="[0-9]*"
+                                autoComplete="one-time-code"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                autoFocus={true}
+                                aria-label={t('Code')}
+                                onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                            />
+                        </div>
+                        {errors.otc &&
+                        <div className="gh-portal-otp-error">
+                            {errors.otc}
+                        </div>}
+                    </section>
+                ) : (
+                    <section className='gh-portal-section'>
+                        {/* @TODO: create different input component with updated design */}
+                        <InputField
+                            id={`input-${OTC_FIELD_NAME}`}
+                            name={OTC_FIELD_NAME}
+                            type="text"
+                            value={this.state.otc}
+                            placeholder="• • • • • •"
+                            label={t('Code')}
+                            errorMessage={errors.otc || ''}
+                            autoFocus={false}
+                            maxLength={6}
+                            onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                        />
+                    </section>
+                )}
+
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
                         style={{width: '100%'}}

@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Sentry from '@sentry/react';
+import i18n from './utils/i18n';
 import TriggerButton from './components/TriggerButton';
 import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
@@ -14,8 +15,6 @@ import ActionHandler from './actions';
 import './App.css';
 import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
-
-import i18nLib from '@tryghost/i18n';
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -198,7 +197,7 @@ export default class App extends React.Component {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
-            const i18n = i18nLib(i18nLanguage, 'portal');
+            i18n.changeLanguage(i18nLanguage);
 
             const state = {
                 site,

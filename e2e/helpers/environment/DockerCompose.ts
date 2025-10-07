@@ -58,7 +58,7 @@ export class DockerCompose {
      * Returns null if no containers are found.
      */
     async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps --format json`;
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
         const output = execSync(command, {encoding: 'utf-8'}).trim();
         if (!output) {
             return null;
@@ -190,6 +190,27 @@ export class DockerCompose {
         const container = this.docker.getContainer(containers[0].Id);
         debug('getContainerForService returning container:', container.id);
         return container;
+    }
+
+    /**
+     * Get the host port for a service's container port.
+     * This is useful when services use dynamic port mapping.
+     *
+     * @param service The compose service name
+     * @param containerPort The container port (e.g., '4175')
+     * @returns The host port as a string
+     */
+    async getHostPortForService(service: string, containerPort: string): Promise<string> {
+        const container = await this.getContainerForService(service);
+        const containerInfo = await container.inspect();
+        const portKey = `${containerPort}/tcp`;
+        const portMapping = containerInfo.NetworkSettings.Ports[portKey];
+        if (!portMapping || portMapping.length === 0) {
+            throw new Error(`Service ${service} does not have port ${containerPort} exposed`);
+        }
+        const hostPort = portMapping[0].HostPort;
+        debug(`Service ${service} port ${containerPort} is mapped to host port ${hostPort}`);
+        return hostPort;
     }
 
     /**
