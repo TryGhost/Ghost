@@ -6,6 +6,11 @@
  * @prop {string} [referrerSource]
  * @prop {string} [referrerMedium]
  * @prop {string} [referrerUrl]
+ * @prop {string} [utmSource]
+ * @prop {string} [utmMedium]
+ * @prop {string} [utmCampaign]
+ * @prop {string} [utmTerm]
+ * @prop {string} [utmContent]
  * @prop {number} time
  */
 
