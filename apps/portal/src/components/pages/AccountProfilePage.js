@@ -6,6 +6,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
+import {t} from '../../utils/i18n';
 
 export default class AccountProfilePage extends React.Component {
     static contextType = AppContext;
@@ -41,7 +42,7 @@ export default class AccountProfilePage extends React.Component {
         e.preventDefault();
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, () => {
             const {email, name, errors} = this.state;
@@ -54,8 +55,6 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderSaveButton() {
-        const {t} = this.context;
-
         const isRunning = (this.context.action === 'updateProfile:running');
         let label = t('Save');
         if (this.context.action === 'updateProfile:failed') {
@@ -76,8 +75,6 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderDeleteAccountButton() {
-        const {t} = this.context;
-
         return (
             <div style={{cursor: 'pointer', color: 'red'}} role='button'>{t('Delete account')}</div>
         );
@@ -92,8 +89,6 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderHeader() {
-        const {t} = this.context;
-
         return (
             <header className='gh-portal-detail-header'>
                 <BackButton brandColor={this.context.brandColor} hidden={!this.context.lastPage} onClick={e => this.onBack(e)} />
@@ -134,8 +129,6 @@ export default class AccountProfilePage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
-        const {t} = this.context;
-
         const errors = state.errors || {};
         const fields = [
             {

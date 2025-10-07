@@ -208,7 +208,6 @@ export default class App extends React.Component {
                 showPopup,
                 pageData,
                 popupNotification,
-                t: i18n.t,
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success',

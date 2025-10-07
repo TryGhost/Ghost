@@ -5,6 +5,7 @@ import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
+import {t} from '../../utils/i18n';
 
 export const ProductsSectionStyles = () => {
     // const products = getSiteProducts({site});
@@ -580,7 +581,7 @@ function ProductCardAlternatePrice({price}) {
 }
 
 function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
-    const {site, t} = useContext(AppContext);
+    const {site} = useContext(AppContext);
 
     if (hasFreeTrialTier({site})) {
         if (trialDays) {
@@ -603,7 +604,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
 function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
-    const {t, site} = useContext(AppContext);
+    const {site} = useContext(AppContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
     const trialDays = product.trial_days;
@@ -653,7 +654,7 @@ function ProductCardPrice({product}) {
 }
 
 function FreeProductCard({products, handleChooseSignup, error}) {
-    const {site, action, t} = useContext(AppContext);
+    const {site, action} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     let cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
@@ -736,7 +737,6 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 }
 
 function ProductCardButton({selectedProduct, product, disabled, noOfProducts, trialDays}) {
-    const {t} = useContext(AppContext);
     if (selectedProduct === product.id && disabled) {
         return (
             <LoaderIcon className='gh-portal-loadingicon' />
@@ -839,7 +839,7 @@ function ProductCards({products, selectedInterval, handleChooseSignup, errors}) 
 }
 
 function YearlyDiscount({discount}) {
-    const {site, t} = useContext(AppContext);
+    const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
 
     if (discount === 0 || !portalPlans.includes('monthly')) {
@@ -862,7 +862,7 @@ function YearlyDiscount({discount}) {
 }
 
 function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
-    const {site, t} = useContext(AppContext);
+    const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     const paidProducts = products.filter(product => product.type !== 'free');
 
@@ -944,7 +944,7 @@ function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
-    const {site, member, t} = useContext(AppContext);
+    const {site, member} = useContext(AppContext);
     const {portal_plans: portalPlans, portal_default_plan: portalDefaultPlan} = site;
     const defaultProductId = products.length > 0 ? products[0].id : 'free';
 
@@ -1085,7 +1085,7 @@ function ProductDescription({product}) {
 }
 
 function ChangeProductCard({product, onPlanSelect}) {
-    const {member, site, t} = useContext(AppContext);
+    const {member, site} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct, selectedInterval} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
     const monthlyPrice = product.monthlyPrice;

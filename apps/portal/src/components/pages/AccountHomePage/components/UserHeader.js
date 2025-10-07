@@ -1,9 +1,10 @@
 import AppContext from '../../../../AppContext';
 import MemberAvatar from '../../../common/MemberGravatar';
 import {useContext} from 'react';
+import {t} from '../../../../utils/i18n';
 
 const UserHeader = () => {
-    const {member, brandColor, t} = useContext(AppContext);
+    const {member, brandColor} = useContext(AppContext);
     const avatar = member.avatar_image;
     return (
         <header className='gh-portal-account-header'>

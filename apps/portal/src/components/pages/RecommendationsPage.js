@@ -8,6 +8,7 @@ import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
 import {getRefDomain} from '../../utils/helpers';
+import {t} from '../../utils/i18n';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendations-header .gh-portal-main-title {
@@ -186,7 +187,7 @@ const openTab = (url) => {
 };
 
 const RecommendationItem = (recommendation) => {
-    const {t, doAction, member, site} = useContext(AppContext);
+    const {doAction, member, site} = useContext(AppContext);
     const {title, url, description, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
@@ -279,7 +280,7 @@ const RecommendationItem = (recommendation) => {
 };
 
 const RecommendationsPage = () => {
-    const {api, site, pageData, t, doAction} = useContext(AppContext);
+    const {api, site, pageData, doAction} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const [recommendations, setRecommendations] = useState(null);

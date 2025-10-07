@@ -1,6 +1,5 @@
-import {useContext} from 'react';
-import AppContext from '../../AppContext';
 import {ReactComponent as LeftArrowIcon} from '../../images/icons/arrow-left.svg';
+import {t} from '../../utils/i18n';
 
 export const BackButtonStyles = `
     .gh-portal-btn-back,
@@ -52,8 +51,6 @@ export const BackButtonStyles = `
 `;
 
 function ActionButton({label = null, hidden = false, onClick}) {
-    const {t} = useContext(AppContext);
-
     if (hidden) {
         return null;
     }

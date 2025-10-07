@@ -3,12 +3,13 @@ import SupportError from './SupportError';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
 import AppContext from '../../AppContext';
+import {t} from '../../utils/i18n';
 
 const SupportPage = () => {
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [disabledFeatureError, setDisabledFeatureError] = useState(null);
-    const {member, t, site} = useContext(AppContext);
+    const {member, site} = useContext(AppContext);
 
     useEffect(() => {
         async function checkoutDonation() {

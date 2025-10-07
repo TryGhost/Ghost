@@ -11,7 +11,6 @@ const AppContext = React.createContext({
     doAction: (action, data) => {
         return {action, data};
     },
-    t: () => {},
     dir: 'ltr'
 
 });

@@ -3,6 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as ConfettiIcon} from '../../images/icons/confetti.svg';
 import CloseButton from '../common/CloseButton';
 import ActionButton from '../common/ActionButton';
+import {t} from '../../utils/i18n';
 
 export const TipsAndDonationsSuccessStyle = `
     .gh-portal-tips-and-donations .gh-portal-signup-header {
@@ -33,7 +34,7 @@ export const TipsAndDonationsSuccessStyle = `
 `;
 
 const SupportSuccess = () => {
-    const {doAction, brandColor, site, t} = useContext(AppContext);
+    const {doAction, brandColor, site} = useContext(AppContext);
     const successTitle = t('Thank you for your support');
     const successDescription = t('To continue to stay up to date, subscribe to {publication} below.', {publication: site?.title});
     const buttonLabel = t('Sign up');
