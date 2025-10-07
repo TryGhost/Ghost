@@ -6,6 +6,7 @@ import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-sele
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
 import {disableNewsletters, enableNewsletters} from '../../helpers/newsletters';
+import {enableActivityPub, mockActivityPubFollowerCount} from '../../helpers/activitypub';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -633,5 +634,90 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
+    });
+
+    describe('ActivityPub follower count', function () {
+        it('shows follower count in publish confirmation when feature enabled', async function () {
+            enableMembers(this.server);
+            enableNewsletters(this.server);
+            enableActivityPub(this.server);
+
+            mockActivityPubFollowerCount(this.server, 42);
+
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+
+            await fillIn('[data-test-editor-title-input]', 'Test post');
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
+            expect(find('[data-test-activitypub-followers]')).to.exist;
+            expect(find('[data-test-activitypub-followers]')).to.contain.rendered
+                .text('It will also be shared with');
+            expect(find('[data-test-activitypub-followers]')).to.contain.rendered
+                .text('42 social web follower');
+        });
+
+        it('hides follower count when feature disabled', async function () {
+            enableMembers(this.server);
+            enableNewsletters(this.server);
+
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+
+            await fillIn('[data-test-editor-title-input]', 'Test post');
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
+            expect(find('[data-test-activitypub-followers]')).to.not.exist;
+        });
+
+        it('hides follower count when zero', async function () {
+            enableMembers(this.server);
+            enableNewsletters(this.server);
+            enableActivityPub(this.server);
+
+            mockActivityPubFollowerCount(this.server, 0);
+
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+
+            await fillIn('[data-test-editor-title-input]', 'Test post');
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
+            expect(find('[data-test-activitypub-followers]')).to.not.exist;
+        });
+
+        it('hides follower count when ActivityPub unavailable', async function () {
+            enableMembers(this.server);
+            enableNewsletters(this.server);
+            enableActivityPub(this.server);
+
+            this.server.get('identities/', function () {
+                return {identities: []};
+            });
+
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+
+            await fillIn('[data-test-editor-title-input]', 'Test post');
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
+            expect(find('[data-test-activitypub-followers]')).to.not.exist;
+        });
     });
 });

@@ -52,6 +52,17 @@
     {{/if}}
 </p>
 
+{{#if (and this.settings.socialWebEnabled this.willPublish)}}
+    {{#let (activitypub-follower-count-fetcher) as |followersFetcher|}}
+        {{#if (gt followersFetcher.count 0)}}
+            <p class="gh-publish-confirmation" data-test-activitypub-followers>
+                It will also be shared with
+                <strong>{{format-number followersFetcher.count}} social web {{gh-pluralize followersFetcher.count "follower" without-count=true}}</strong>.
+            </p>
+        {{/if}}
+    {{/let}}
+{{/if}}
+
 {{#if this.errorMessage}}
     <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>
         {{this.errorMessage}}
