@@ -30,6 +30,7 @@ describe('Settings', function () {
         'members_email_auth_secret',
         'members_stripe_webhook_id',
         'members_stripe_webhook_secret',
+        'members_otc_secret',
         'site_uuid'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration
