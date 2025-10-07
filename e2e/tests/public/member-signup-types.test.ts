@@ -45,8 +45,9 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         const postFactory: PostFactory = createPostFactory(page);
         const post = await postFactory.create({title: 'Test Post', status: 'published'});
 
-        await new HomePage(page).goto();
-        await new PublicPage(page).linkWithPostName(post.title).click();
+        const homePage = new HomePage(page);
+        await homePage.goto();
+        await homePage.linkWithPostName(post.title).click();
         const {emailAddress, name} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
@@ -58,7 +59,6 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         await publicPage.goto(magicLink);
         await publicPage.waitForPageToFullyLoad();
 
-        const homePage = new HomePage(page);
         await homePage.waitForSignedIn();
 
         const membersPage = new MembersPage(page);
@@ -69,6 +69,37 @@ test.describe('Ghost Public - Member Signup - Types', () => {
 
         await expect(membersDetailsPage.body).toContainText(/Source.*—.*Direct/);
         await expect(membersDetailsPage.body).toContainText(/Page.*—.*Test Post/);
+        await expect(membersDetailsPage.nameInput).toHaveValue(name);
+    });
+
+    test('signed up with magic link - from referrer', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page);
+        const post = await postFactory.create({title: 'Google Test Post', status: 'published'});
+
+        const homePage = new HomePage(page);
+        await homePage.goto('/', {referer: 'https://www.google.com', waitUntil: 'domcontentloaded'});
+        await homePage.linkWithPostName(post.title).click();
+        const {emailAddress, name} = await signupViaPortal(page);
+
+        const message = await emailClient.waitForEmail(emailAddress);
+        const emailMessageBodyParts = new EmailMessageBody(message);
+        const emailTextBody = emailMessageBodyParts.getTextContent();
+
+        const magicLink = extractMagicLink(emailTextBody);
+        const publicPage = new PublicPage(page);
+        await publicPage.goto(magicLink);
+        await publicPage.waitForPageToFullyLoad();
+
+        await homePage.waitForSignedIn();
+
+        const membersPage = new MembersPage(page);
+        await membersPage.goto();
+        await membersPage.clickMemberByEmail(emailAddress);
+
+        const membersDetailsPage = new MemberDetailsPage(page);
+
+        await expect(membersDetailsPage.body).toContainText(/Source.*—.*Google/);
+        await expect(membersDetailsPage.body).toContainText(/Page.*—.*Google Test Post/);
         await expect(membersDetailsPage.nameInput).toHaveValue(name);
     });
 });
