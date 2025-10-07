@@ -38,7 +38,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -62,7 +67,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
-                referrerUrl: 'ghost.org'
+                referrerUrl: 'ghost.org',
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -86,7 +96,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Ghost Explore',
                 referrerMedium: 'Ghost Network',
-                referrerUrl: 'admin.example.com'
+                referrerUrl: 'admin.example.com',
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -110,7 +125,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'publisher weekly newsletter',
                 referrerMedium: 'Email',
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -134,7 +154,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Ghost.org',
                 referrerMedium: 'Ghost Network',
-                referrerUrl: 'ghost.org'
+                referrerUrl: 'ghost.org',
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -158,7 +183,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Twitter',
                 referrerMedium: 'social',
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -172,7 +202,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Facebook',
                 referrerMedium: 'social',
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -202,7 +237,12 @@ describe('ReferrerTranslator', function () {
                 ])).eql({
                     referrerSource: 'Google Product Search',
                     referrerMedium: 'search',
-                    referrerUrl: 'google.ac'
+                    referrerUrl: 'google.ac',
+                    utmSource: null,
+                    utmMedium: null,
+                    utmCampaign: null,
+                    utmTerm: null,
+                    utmContent: null
                 });
             });
 
@@ -226,7 +266,12 @@ describe('ReferrerTranslator', function () {
                 ])).eql({
                     referrerSource: 'Twitter',
                     referrerMedium: 'social',
-                    referrerUrl: 't.co'
+                    referrerUrl: 't.co',
+                    utmSource: null,
+                    utmMedium: null,
+                    utmCampaign: null,
+                    utmTerm: null,
+                    utmContent: null
                 });
             });
         });
@@ -251,7 +296,12 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'sample.com',
                 referrerMedium: null,
-                referrerUrl: 'sample.com'
+                referrerUrl: 'sample.com',
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -259,7 +309,12 @@ describe('ReferrerTranslator', function () {
             should(translator.getReferrerDetails([])).eql({
                 referrerSource: null,
                 referrerMedium: null,
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         });
 
@@ -273,7 +328,183 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 referrerSource: 'Direct',
                 referrerMedium: null,
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
+            });
+        });
+
+        describe('UTM parameter extraction', function () {
+            it('extracts all UTM parameters from first history entry with UTM data', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'google',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'newsletter',
+                        utmMedium: 'email',
+                        utmCampaign: 'spring_sale',
+                        utmTerm: 'running_shoes',
+                        utmContent: 'header_link'
+                    },
+                    {
+                        referrerSource: 'twitter',
+                        referrerMedium: null,
+                        referrerUrl: null
+                    }
+                ])).eql({
+                    referrerSource: 'Google',
+                    referrerMedium: 'unknown',
+                    referrerUrl: null,
+                    utmSource: 'newsletter',
+                    utmMedium: 'email',
+                    utmCampaign: 'spring_sale',
+                    utmTerm: 'running_shoes',
+                    utmContent: 'header_link'
+                });
+            });
+
+            it('extracts partial UTM parameters (only utmSource)', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'facebook',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'twitter_campaign'
+                    }
+                ])).eql({
+                    referrerSource: 'Facebook',
+                    referrerMedium: 'social',
+                    referrerUrl: null,
+                    utmSource: 'twitter_campaign',
+                    utmMedium: null,
+                    utmCampaign: null,
+                    utmTerm: null,
+                    utmContent: null
+                });
+            });
+
+            it('extracts partial UTM parameters (source and campaign)', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: null,
+                        referrerMedium: null,
+                        referrerUrl: 'https://t.co/',
+                        utmSource: 'instagram',
+                        utmCampaign: 'summer_promo'
+                    }
+                ])).eql({
+                    referrerSource: 'Twitter',
+                    referrerMedium: 'social',
+                    referrerUrl: 't.co',
+                    utmSource: 'instagram',
+                    utmMedium: null,
+                    utmCampaign: 'summer_promo',
+                    utmTerm: null,
+                    utmContent: null
+                });
+            });
+
+            it('uses first entry with UTM data when multiple entries have UTM', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'google',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'first_source',
+                        utmCampaign: 'first_campaign'
+                    },
+                    {
+                        referrerSource: 'twitter',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'second_source',
+                        utmCampaign: 'second_campaign'
+                    }
+                ])).eql({
+                    referrerSource: 'Google',
+                    referrerMedium: 'unknown',
+                    referrerUrl: null,
+                    utmSource: 'first_source',
+                    utmMedium: null,
+                    utmCampaign: 'first_campaign',
+                    utmTerm: null,
+                    utmContent: null
+                });
+            });
+
+            it('returns null UTM values when no history entries contain UTM data', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'twitter',
+                        referrerMedium: null,
+                        referrerUrl: null
+                    },
+                    {
+                        referrerSource: 'facebook',
+                        referrerMedium: null,
+                        referrerUrl: null
+                    }
+                ])).eql({
+                    referrerSource: 'Twitter',
+                    referrerMedium: 'social',
+                    referrerUrl: null,
+                    utmSource: null,
+                    utmMedium: null,
+                    utmCampaign: null,
+                    utmTerm: null,
+                    utmContent: null
+                });
+            });
+
+            it('extracts UTM from later entry when earlier entries have no UTM', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'twitter',
+                        referrerMedium: null,
+                        referrerUrl: null
+                    },
+                    {
+                        referrerSource: 'facebook',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'delayed_utm',
+                        utmMedium: 'social_media'
+                    }
+                ])).eql({
+                    referrerSource: 'Twitter',
+                    referrerMedium: 'social',
+                    referrerUrl: null,
+                    utmSource: 'delayed_utm',
+                    utmMedium: 'social_media',
+                    utmCampaign: null,
+                    utmTerm: null,
+                    utmContent: null
+                });
+            });
+
+            it('combines Ghost referrer with UTM parameters', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        referrerSource: 'ghost-explore',
+                        referrerMedium: null,
+                        referrerUrl: null,
+                        utmSource: 'partner_site',
+                        utmCampaign: 'q1_2024'
+                    }
+                ])).eql({
+                    referrerSource: 'Ghost Explore',
+                    referrerMedium: 'Ghost Network',
+                    referrerUrl: null,
+                    utmSource: 'partner_site',
+                    utmMedium: null,
+                    utmCampaign: 'q1_2024',
+                    utmTerm: null,
+                    utmContent: null
+                });
             });
         });
     });

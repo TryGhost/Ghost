@@ -3,6 +3,11 @@
  * @prop {string|null} [referrerSource]
  * @prop {string|null} [referrerMedium]
  * @prop {string|null} [referrerUrl]
+ * @prop {string|null} [utmSource]
+ * @prop {string|null} [utmMedium]
+ * @prop {string|null} [utmCampaign]
+ * @prop {string|null} [utmTerm]
+ * @prop {string|null} [utmContent]
  */
 
 const {ReferrerParser} = require('@tryghost/referrer-parser');
@@ -36,8 +41,35 @@ class ReferrerTranslator {
             return {
                 referrerSource: null,
                 referrerMedium: null,
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             };
+        }
+
+        // Look for UTM parameters first (most recent entry with UTM data)
+        let utmData = {
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            utmTerm: null,
+            utmContent: null
+        };
+
+        for (const item of history) {
+            if (item.utmSource || item.utmMedium || item.utmCampaign || item.utmTerm || item.utmContent) {
+                utmData = {
+                    utmSource: item.utmSource || null,
+                    utmMedium: item.utmMedium || null,
+                    utmCampaign: item.utmCampaign || null,
+                    utmTerm: item.utmTerm || null,
+                    utmContent: item.utmContent || null
+                };
+                break;
+            }
         }
 
         for (const item of history) {
@@ -53,7 +85,8 @@ class ReferrerTranslator {
                 return {
                     referrerSource,
                     referrerMedium,
-                    referrerUrl
+                    referrerUrl,
+                    ...utmData
                 };
             }
         }
@@ -61,7 +94,8 @@ class ReferrerTranslator {
         return {
             referrerSource: 'Direct',
             referrerMedium: null,
-            referrerUrl: null
+            referrerUrl: null,
+            ...utmData
         };
     }
 
