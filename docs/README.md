@@ -67,7 +67,6 @@ yarn knex-migrator init
 ```
 Ghost/
 ├── apps/              # Frontend applications
-│   ├── admin/         # Legacy admin app
 │   ├── admin-x-*/     # New React-based admin apps
 │   ├── portal/        # Member portal
 │   ├── comments-ui/   # Comments widget
@@ -79,7 +78,6 @@ Ghost/
 │   └── i18n/          # Internationalization
 ├── e2e/               # End-to-end tests
 ├── adr/               # Architecture Decision Records
-└── .github/           # GitHub workflows and configurations
 ```
 
 ## Contributing
@@ -102,69 +100,6 @@ Before contributing, please read:
 4. **Run tests** to ensure everything works
 5. **Commit** following our commit message conventions
 6. **Submit a pull request** to the `main` branch
-
-## Common Tasks
-
-### Running Ghost
-
-```bash
-# Development mode (with hot reload)
-yarn dev
-
-# Development mode with debug logging
-yarn dev:debug
-
-# Admin only (faster for admin development)
-yarn dev:admin
-
-# Ghost backend only
-yarn dev:ghost
-```
-
-### Testing
-
-```bash
-# Run all tests
-yarn test
-
-# Unit tests only
-yarn test:unit
-
-# Integration tests
-yarn test:integration
-
-# E2E tests
-yarn test:e2e
-
-# Browser tests (Playwright)
-yarn test:browser
-```
-
-### Building
-
-```bash
-# Build all packages
-yarn build
-
-# Clean build
-yarn build:clean
-```
-
-### Docker Development
-
-```bash
-# Start Ghost in Docker
-yarn docker:dev
-
-# Run tests in Docker
-yarn docker:test:unit
-
-# Access MySQL console
-yarn docker:mysql
-
-# Shell into container
-yarn docker:shell
-```
 
 ## Additional Resources
 
