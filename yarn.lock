@@ -25718,7 +25718,12 @@ nodemailer-stub-transport@^1.1.0:
   resolved "https://registry.yarnpkg.com/nodemailer-stub-transport/-/nodemailer-stub-transport-1.1.0.tgz#11421d2d66b4ee6f405354f914c1f4641eb24b0d"
   integrity sha512-4fwl2f+647IIyuNuf6wuEMqK4oEU9FMJSYme8kPckVSr1rXIXcmI6BNcIWO+1cAK8XeexYKxYoFztam0jAwjkA==
 
-nodemailer@6.10.1, nodemailer@^6.6.3:
+nodemailer@7.0.7:
+  version "7.0.7"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-7.0.7.tgz#91a16235c08abb7805a4ec1537ca63edca79687f"
+  integrity sha512-jGOaRznodf62TVzdyhKt/f1Q/c3kYynk8629sgJHpRzGZj01ezbgMMWJSAjHADcwTKxco3B68/R+KHJY2T5BaA==
+
+nodemailer@^6.6.3:
   version "6.10.1"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.10.1.tgz#cbc434c54238f83a51c07eabd04e2b3e832da623"
   integrity sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==
