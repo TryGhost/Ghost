@@ -4,7 +4,7 @@ import {ChevronDown} from 'lucide-react';
 import React, {createContext, useContext} from 'react';
 
 export type CampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
-export type TabType = 'sources' | 'campaigns';
+export type TabType = string;
 
 export const CAMPAIGN_TYPES: readonly CampaignType[] = [
     '',
