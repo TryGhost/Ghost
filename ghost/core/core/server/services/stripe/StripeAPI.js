@@ -526,13 +526,18 @@ module.exports = class StripeAPI {
             items: [{
                 plan: priceId
             }],
-            metadata: { 
+            metadata: {
                 attribution_id: metadata?.attribution_id,
                 attribution_url: metadata?.attribution_url,
                 attribution_type: metadata?.attribution_type,
                 referrer_source: metadata?.referrer_source,
                 referrer_medium: metadata?.referrer_medium,
-                referrer_url: metadata?.referrer_url
+                referrer_url: metadata?.referrer_url,
+                utm_source: metadata?.utm_source,
+                utm_medium: metadata?.utm_medium,
+                utm_campaign: metadata?.utm_campaign,
+                utm_term: metadata?.utm_term,
+                utm_content: metadata?.utm_content
             }
         };
 
