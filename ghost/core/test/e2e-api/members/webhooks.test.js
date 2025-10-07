@@ -2170,6 +2170,58 @@ describe('Members API', function () {
             });
         });
 
+        it('Creates a SubscriptionCreatedEvent with UTM parameters', async function () {
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url',
+                referrerSource: 'google',
+                referrerMedium: 'cpc',
+                referrerUrl: 'google.com',
+                utmSource: 'newsletter',
+                utmMedium: 'email',
+                utmCampaign: 'spring_sale',
+                utmTerm: 'ghost_pro',
+                utmContent: 'header_link'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            const member = await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: 'Google',
+                referrer_medium: 'cpc',
+                referrer_url: 'google.com'
+            });
+
+            // Verify UTM parameters are stored in SubscriptionCreatedEvent
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+                        attribution_id: null,
+                        attribution_url: absoluteUrl,
+                        attribution_type: 'url',
+                        referrer_source: 'Google',
+                        referrer_medium: 'cpc',
+                        referrer_url: 'google.com',
+                        utm_source: 'newsletter',
+                        utm_medium: 'email',
+                        utm_campaign: 'spring_sale',
+                        utm_term: 'ghost_pro',
+                        utm_content: 'header_link'
+                    }
+                ]
+            });
+        });
+
         it('The customer.subscription.created webhook should set the attribution metadata', async function () {
             // set up all necessary resources
             const customer_id = createStripeID('cust');

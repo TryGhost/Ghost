@@ -176,6 +176,57 @@ describe('Members Signin', function () {
         assert(!member, 'Member should not have been created');
     });
 
+    it('Stores UTM parameters in MemberCreatedEvent', async function () {
+        const email = 'member-with-utm@test.com';
+        const urlHistory = [
+            {
+                path: '/test-page/',
+                referrerSource: 'google',
+                referrerMedium: null,
+                referrerUrl: null,
+                utmSource: 'newsletter',
+                utmMedium: 'email',
+                utmCampaign: 'spring_sale',
+                utmTerm: 'ghost_pro',
+                utmContent: 'header_link'
+            }
+        ];
+
+        const magicLink = await membersService.api.getMagicLink(email, 'signup', {urlHistory});
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        await membersAgent.get(`/?token=${token}&action=signup`)
+            .expectStatus(302)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
+            .expectHeader('Set-Cookie', /members-ssr.*/);
+
+        const member = await getMemberByEmail(email);
+
+        // Check event created with UTM parameters
+        await assertMemberEvents({
+            eventType: 'MemberCreatedEvent',
+            memberId: member.id,
+            asserts: [
+                {
+                    created_at: member.get('created_at'),
+                    attribution_url: null,
+                    attribution_id: null,
+                    attribution_type: null,
+                    source: 'member',
+                    referrer_source: 'Google',
+                    referrer_medium: 'unknown',
+                    referrer_url: null,
+                    utm_source: 'newsletter',
+                    utm_medium: 'email',
+                    utm_campaign: 'spring_sale',
+                    utm_term: 'ghost_pro',
+                    utm_content: 'header_link'
+                }
+            ]
+        });
+    });
+
     describe('Validity Period', function () {
         let clock;
         let startDate = new Date();
