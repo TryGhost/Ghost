@@ -64,7 +64,7 @@ export class TagFactory extends Factory<Partial<Tag>, Tag> {
             created_at: options.created_at ?? now,
             updated_at: options.updated_at ?? now
         };
-        
+
         return tag;
     }
 }
