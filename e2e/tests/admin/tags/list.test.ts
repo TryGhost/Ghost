@@ -1,7 +1,7 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
 import {mockTagsResponse} from './helpers/mock-tags-response';
-import {createPostFactory, createTagFactory, type PostFactory, type TagFactory} from '../../../data-factory';
+import {createPostFactory, createTagFactory, TagFactory} from '../../../data-factory';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;
