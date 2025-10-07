@@ -140,7 +140,8 @@ module.exports = {
      */
     otcVerification(req, res, next) {
         return spamPrevention.otcVerification().getMiddleware({
-            ignoreIP: false,
+            // ignoring IP here blocks rotating ip attacks, only one IP should receive an otcRef so it shouldn't cause false positives
+            ignoreIP: true,
             key(_req, _res, _next) {
                 if (_req.body.otcRef) {
                     return _next(`${_req.body.otcRef}otc_verification`);
