@@ -89,4 +89,46 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         await expect(membersDetailsPage.body).toContainText(/Page.*—.*Google Test Post/);
         await expect(membersDetailsPage.nameInput).toHaveValue(name);
     });
+
+    test('signed up with magic link - direct from newsletter', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page);
+        const post = await postFactory.create({title: 'Newsletter Post', status: 'published'});
+
+        const homePage = new HomePage(page);
+        await homePage.goto(`${post.slug}?ref=ghost-newsletter`);
+        const {emailAddress, name} = await signupViaPortal(page);
+
+        await finishSignupByMagicLinkInEmail(page, emailAddress);
+
+        const membersPage = new MembersPage(page);
+        await membersPage.goto();
+        await membersPage.clickMemberByEmail(emailAddress);
+
+        const membersDetailsPage = new MemberDetailsPage(page);
+
+        await expect(membersDetailsPage.body).toContainText(/Source.*—.*ghost newsletter/);
+        await expect(membersDetailsPage.body).toContainText(/Page.*—.*Newsletter Post/);
+        await expect(membersDetailsPage.nameInput).toHaveValue(name);
+    });
+
+    test('signed up with magic link - utm_source=twitter', async ({page}) => {
+        const postFactory: PostFactory = createPostFactory(page);
+        const post = await postFactory.create({title: 'UTM Source Post', status: 'published'});
+
+        const homePage = new HomePage(page);
+        await homePage.goto(`${post.slug}?utm_source=twitter`);
+        const {emailAddress, name} = await signupViaPortal(page);
+
+        await finishSignupByMagicLinkInEmail(page, emailAddress);
+
+        const membersPage = new MembersPage(page);
+        await membersPage.goto();
+        await membersPage.clickMemberByEmail(emailAddress);
+
+        const membersDetailsPage = new MemberDetailsPage(page);
+
+        await expect(membersDetailsPage.body).toContainText(/Source.*—.*Twitter/);
+        await expect(membersDetailsPage.body).toContainText(/Page.*—.*UTM Source Post/);
+        await expect(membersDetailsPage.nameInput).toHaveValue(name);
+    });
 });
