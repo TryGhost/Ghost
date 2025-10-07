@@ -129,6 +129,22 @@ Object {
 }
 `;
 
+exports[`Create Stripe Checkout Session Member attribution Does pass UTM parameters to session metadata 1: [body] 1`] = `
+Object {
+  "url": "https://site.com",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Does pass UTM parameters to session metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Create Stripe Checkout Session Member attribution Does pass post attribution source to session metadata 1: [body] 1`] = `
 Object {
   "url": "https://site.com",
