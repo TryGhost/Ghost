@@ -338,7 +338,7 @@ describe('ReferrerTranslator', function () {
         });
 
         describe('UTM parameter extraction', function () {
-            it('extracts all UTM parameters from most recent history entry with UTM data', async function () {
+            it('extracts all UTM parameters', async function () {
                 should(translator.getReferrerDetails([
                     {
                         referrerSource: 'google',
