@@ -200,7 +200,7 @@
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
-    "nodemailer": "6.10.1",
+    "nodemailer": "7.0.7",
     "otplib": "12.0.1",
     "papaparse": "5.3.2",
     "path-match": "1.2.4",
