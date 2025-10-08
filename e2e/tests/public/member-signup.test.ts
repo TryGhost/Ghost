@@ -13,6 +13,7 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     test('signed up with magic link in email', async ({page}) => {
+        await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
@@ -25,11 +26,11 @@ test.describe('Ghost Public - Member Signup', () => {
         await publicPage.waitForPageToFullyLoad();
 
         const homePage = new HomePage(page);
-        await homePage.waitForSignedIn();
         await expect(homePage.accountButton).toBeVisible();
     });
 
     test('received welcome email', async ({page}) => {
+        await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
