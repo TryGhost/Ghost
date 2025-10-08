@@ -1,4 +1,4 @@
-import {test as base, TestInfo} from '@playwright/test';
+import {Page, test as base, TestInfo, Browser} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
 import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
 import {SettingsService} from '../services/settings/SettingsService';
@@ -10,6 +10,49 @@ const debug = baseDebug('e2e:ghost-fixture');
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
+}
+
+async function loginToGetAuthenticatedSession(page: Page) {
+    const loginPage = new LoginPage(page);
+    await loginPage.waitForLoginPageAfterUserCreated();
+    await loginPage.signIn(appConfig.auth.email, appConfig.auth.password);
+    const analyticsPage = new AnalyticsOverviewPage(page);
+    await analyticsPage.header.waitFor({state: 'visible'});
+    debug('Authentication completed for Ghost instance');
+}
+
+async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
+    const analyticsPage = new AnalyticsOverviewPage(page);
+    await analyticsPage.goto();
+
+    debug('Updating labs settings:', labsFlags);
+    const settingsService = new SettingsService(page.request);
+    await settingsService.updateSettings(labsFlags);
+
+    // Reload the page to ensure the new labs settings take effect in the UI
+    await page.reload();
+    await analyticsPage.header.waitFor({state: 'visible'});
+    debug('Labs settings applied and page reloaded');
+}
+
+async function setupNewAuthenticatedPage(browser: Browser, baseURL: string) {
+    debug('Setting up authenticated page for Ghost instance:', baseURL);
+
+    // Create user in this Ghost instance
+    await setupUser(baseURL, {email: appConfig.auth.email, password: appConfig.auth.password});
+
+    // Create browser context with correct baseURL and extra HTTP headers
+    const context = await browser.newContext({
+        baseURL: baseURL,
+        extraHTTPHeaders: {
+            Origin: baseURL
+        }
+    });
+    const page = await context.newPage();
+
+    await loginToGetAuthenticatedSession(page);
+
+    return {page, context};
 }
 
 /**
@@ -37,48 +80,16 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(ghostInstance.baseUrl);
     },
     page: async ({browser, baseURL, labs}, use) => {
-        debug('Setting up authenticated page for Ghost instance:', baseURL);
         if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
 
-        // Create user in this Ghost instance
-        await setupUser(baseURL, {
-            email: appConfig.auth.email,
-            password: appConfig.auth.password
-        });
+        const {page, context} = await setupNewAuthenticatedPage(browser, baseURL);
 
-        // Create browser context with correct baseURL and extra HTTP headers
-        const context = await browser.newContext({
-            baseURL: baseURL,
-            extraHTTPHeaders: {
-                Origin: baseURL
-            }
-        });
-        const page = await context.newPage();
-
-        // Login to get authenticated session
-        const loginPage = new LoginPage(page);
-        await loginPage.waitForLoginPageAfterUserCreated();
-        await loginPage.signIn(appConfig.auth.email, appConfig.auth.password);
-
-        // Wait for successful login and navigate to admin to establish proper origin
-        const analyticsPage = new AnalyticsOverviewPage(page);
-        await analyticsPage.header.waitFor({state: 'visible'});
-
-        // If labs flags are specified, update them and reload the page to apply
-        if (labs && Object.keys(labs).length > 0) {
-            debug('Updating labs settings:', labs);
-            const settingsService = new SettingsService(page.request);
-            await settingsService.updateSettings(labs);
-
-            // Reload the page to ensure the new labs settings take effect in the UI
-            await page.reload();
-            await analyticsPage.header.waitFor({state: 'visible'});
-            debug('Labs settings applied and page reloaded');
+        const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
+        if (labsFlagsSpecified) {
+            await setupLabSettings(page, labs);
         }
-
-        debug('Authentication completed for Ghost instance');
 
         await use(page);
         await context.close();
