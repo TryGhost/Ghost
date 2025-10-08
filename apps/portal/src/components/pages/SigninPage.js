@@ -7,6 +7,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {t} from '../../utils/i18n';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -36,7 +37,7 @@ export default class SigninPage extends React.Component {
     doSignin() {
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, async () => {
             const {email, phonenumber, errors, token} = this.state;
@@ -63,8 +64,6 @@ export default class SigninPage extends React.Component {
     }
 
     getInputFields({state}) {
-        const {t} = this.context;
-
         const errors = state.errors || {};
         const fields = [
             {
@@ -94,7 +93,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, t} = this.context;
+        const {action} = this.context;
         let retry = false;
         const isRunning = (action === 'signin:running');
         let label = isRunning ? t('Sending login link...') : t('Continue');
@@ -118,7 +117,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSignupMessage() {
-        const {brandColor, t} = this.context;
+        const {brandColor} = this.context;
         return (
             <div className='gh-portal-signup-message'>
                 <div>{t('Don\'t have an account?')}</div>
@@ -135,7 +134,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderForm() {
-        const {site, t} = this.context;
+        const {site} = this.context;
         const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
@@ -189,7 +188,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSiteTitle() {
-        const {site, t} = this.context;
+        const {site} = this.context;
         const siteTitle = site.title;
 
         if (!isSigninAllowed({site})) {
