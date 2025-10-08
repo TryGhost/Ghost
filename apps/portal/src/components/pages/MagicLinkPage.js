@@ -5,7 +5,6 @@ import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
 import InputField from '../common/InputField';
-import {t} from '../../utils/i18n';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -45,6 +44,7 @@ export default class MagicLinkPage extends React.Component {
      * @returns {Object} Configuration object with message templates for signin/signup scenarios
      */
     getDescriptionConfig(submittedEmailOrInbox) {
+        const {t} = this.context;
         return {
             signin: {
                 withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
@@ -74,7 +74,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderFormHeader() {
-        const {otcRef, pageData, lastPage} = this.context;
+        const {t, otcRef, pageData, lastPage} = this.context;
         const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
 
         const popupTitle = t(`Now check your email!`);
@@ -96,6 +96,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderLoginMessage() {
+        const {t} = this.context;
+
         return (
             <>
                 <div
@@ -113,6 +115,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
+        const {t} = this.context;
+
         const label = t('Close');
         return (
             <ActionButton
@@ -135,7 +139,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     doVerifyOTC() {
-        const {labs} = this.context;
+        const {t, labs} = this.context;
         const missingCodeError = labs?.membersSigninOTCAlpha ? t('Enter code above') : t('Enter code below');
 
         this.setState((state) => {
@@ -175,7 +179,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, labs, otcRef} = this.context;
+        const {t, action, labs, otcRef} = this.context;
         const errors = this.state.errors || {};
 
         if (!labs?.membersSigninOTC || !otcRef) {

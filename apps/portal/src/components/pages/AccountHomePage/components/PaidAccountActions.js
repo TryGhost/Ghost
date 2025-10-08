@@ -4,10 +4,9 @@ import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
 import {useContext} from 'react';
-import {t} from '../../../../utils/i18n';
 
 const PaidAccountActions = () => {
-    const {member, site, doAction} = useContext(AppContext);
+    const {member, site, doAction, t} = useContext(AppContext);
 
     const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
@@ -34,7 +33,7 @@ const PaidAccountActions = () => {
             const {amount = 0, currency, interval} = price;
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
         }
-        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
+        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate, t});
         const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
             if (compExpiry) {
@@ -69,7 +68,7 @@ const PaidAccountActions = () => {
                     <p className={oldPriceClassName}>
                         {label}
                     </p>
-                    <FreeTrialLabel subscription={subscription} />
+                    <FreeTrialLabel subscription={subscription} t={t} />
                 </>
             );
         }
@@ -172,7 +171,7 @@ const PaidAccountActions = () => {
     return null;
 };
 
-function FreeTrialLabel({subscription}) {
+function FreeTrialLabel({subscription, t}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
         const trialEnd = getDateString(subscription.trial_end_at);
         return (
@@ -187,7 +186,7 @@ function FreeTrialLabel({subscription}) {
     return null;
 }
 
-function getOfferLabel({offer, price, subscriptionStartDate}) {
+function getOfferLabel({offer, price, subscriptionStartDate, t}) {
     let offerLabel = '';
 
     if (offer?.type === 'trial') {

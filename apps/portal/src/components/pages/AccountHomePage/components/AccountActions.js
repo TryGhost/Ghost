@@ -5,7 +5,6 @@ import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsle
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
-import {t} from '../../../../utils/i18n';
 
 const shouldShowEmailPreferences = (site, member) => {
     return (
@@ -24,7 +23,7 @@ const shouldShowEmailNewsletterAction = (site) => {
 };
 
 const AccountActions = () => {
-    const {member, doAction, site} = useContext(AppContext);
+    const {member, doAction, site, t} = useContext(AppContext);
     const {name, email} = member;
 
     const openEditProfile = () => {

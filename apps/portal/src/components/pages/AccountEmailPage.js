@@ -3,10 +3,9 @@ import {useContext, useEffect, useState} from 'react';
 import {isPaidMember, getSiteNewsletters, hasNewsletterSendingEnabled} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
 import Interpolate from '@doist/react-interpolate';
-import {t} from '../../utils/i18n';
 
 export default function AccountEmailPage() {
-    const {member, doAction, site, pageData} = useContext(AppContext);
+    const {member, doAction, site, t, pageData} = useContext(AppContext);
     let newsletterUuid;
     let action;
     if (pageData) {

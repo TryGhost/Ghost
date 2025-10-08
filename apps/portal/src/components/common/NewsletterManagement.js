@@ -5,10 +5,9 @@ import {useContext} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
-import {t} from '../../utils/i18n';
 
 function AccountHeader() {
-    const {brandColor, lastPage, doAction} = useContext(AppContext);
+    const {brandColor, lastPage, doAction, t} = useContext(AppContext);
     return (
         <header className='gh-portal-detail-header'>
             <BackButton brandColor={brandColor} hidden={!lastPage} onClick={() => {
@@ -50,7 +49,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
-    const {doAction} = useContext(AppContext);
+    const {t, doAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
 
     if (!isCommentsEnabled) {
@@ -97,6 +96,8 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNe
 }
 
 function ShowPaidMemberMessage({site, isPaid}) {
+    const {t} = useContext(AppContext);
+
     if (isPaid) {
         return (
             <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
@@ -116,7 +117,7 @@ export default function NewsletterManagement({
     isCommentsEnabled,
     enableCommentNotifications
 }) {
-    const {brandColor, doAction, member, site} = useContext(AppContext);
+    const {brandColor, doAction, member, site, t} = useContext(AppContext);
     const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
     const EmptyNotification = () => {
         return null;

@@ -1,7 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
-import {t} from './utils/i18n';
 
 function switchPage({data, state}) {
     return {
@@ -68,6 +67,7 @@ async function signout({api, state}) {
             action: 'signout:success'
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'signout:failed',
             popupNotification: createPopupNotification({
@@ -79,7 +79,7 @@ async function signout({api, state}) {
 }
 
 async function signin({data, api, state}) {
-    const {labs} = state;
+    const {t, labs} = state;
 
     const includeOTC = labs?.membersSigninOTC ? true : undefined;
 
@@ -146,6 +146,8 @@ function startSigninOTCFromCustomForm({data, state}) {
 }
 
 async function verifyOTC({data, api, state}) {
+    const {t} = state;
+
     try {
         const integrityToken = await api.member.getIntegrityToken();
         const response = await api.member.verifyOTC({...data, integrityToken});
@@ -199,6 +201,7 @@ async function signup({data, state, api}) {
             }
         };
     } catch (e) {
+        const {t} = state;
         const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',
@@ -226,6 +229,7 @@ async function checkoutPlan({data, state, api}) {
             }
         });
     } catch (e) {
+        const {t} = state;
         return {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
@@ -237,6 +241,7 @@ async function checkoutPlan({data, state, api}) {
 }
 
 async function updateSubscription({data, state, api}) {
+    const {t} = state;
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
         const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: planId});
@@ -285,6 +290,7 @@ async function cancelSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
@@ -309,6 +315,7 @@ async function continueSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'continueSubscription:failed',
             popupNotification: createPopupNotification({
@@ -323,6 +330,7 @@ async function editBilling({data, state, api}) {
     try {
         await api.member.editBilling(data);
     } catch (e) {
+        const {t} = state;
         return {
             action: 'editBilling:failed',
             popupNotification: createPopupNotification({
@@ -374,6 +382,7 @@ async function updateNewsletterPreference({data, state, api}) {
             member
         };
     } catch (e) {
+        const {t} = state;
         return {
             action: 'updateNewsletterPref:failed',
             popupNotification: createPopupNotification({
@@ -386,6 +395,7 @@ async function updateNewsletterPreference({data, state, api}) {
 }
 
 async function removeEmailFromSuppressionList({state, api}) {
+    const {t} = state;
     try {
         await api.member.deleteSuppression();
         const action = 'removeEmailFromSuppressionList:success';
@@ -409,6 +419,7 @@ async function removeEmailFromSuppressionList({state, api}) {
 }
 
 async function updateNewsletter({data, state, api}) {
+    const {t} = state;
     try {
         const {subscribed} = data;
         const member = await api.member.update({subscribed});
@@ -501,6 +512,7 @@ async function refreshMemberData({state, api}) {
 }
 
 async function updateProfile({data, state, api}) {
+    const {t} = state;
     const [dataUpdate, emailUpdate] = await Promise.all([updateMemberData({data, state, api}), updateMemberEmail({data, state, api})]);
     if (dataUpdate && emailUpdate) {
         if (emailUpdate.success) {

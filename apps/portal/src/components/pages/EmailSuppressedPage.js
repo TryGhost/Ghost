@@ -5,10 +5,9 @@ import CloseButton from '../../components/common/CloseButton';
 import BackButton from '../../components/common/BackButton';
 import ActionButton from '../../components/common/ActionButton';
 import {ReactComponent as EmailDeliveryFailedIcon} from '../../images/icons/email-delivery-failed.svg';
-import {t} from '../../utils/i18n';
 
 export default function EmailSuppressedPage() {
-    const {brandColor, lastPage, doAction, action, site} = useContext(AppContext);
+    const {brandColor, lastPage, doAction, action, site, t} = useContext(AppContext);
 
     useEffect(() => {
         if (['removeEmailFromSuppressionList:success'].includes(action)) {

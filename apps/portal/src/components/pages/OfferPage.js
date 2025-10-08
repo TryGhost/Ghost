@@ -8,7 +8,6 @@ import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameC
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
-import {t} from '../../utils/i18n';
 
 export const OfferPageStyles = () => {
     return `
@@ -170,14 +169,14 @@ export default class OfferPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
 
     getInputFields({state, fieldNames}) {
         const {portal_name: portalName} = this.context.site;
-        const {member} = this.context;
+        const {member, t} = this.context;
         const errors = state.errors || {};
         const fields = [
             {
@@ -377,7 +376,7 @@ export default class OfferPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, brandColor} = this.context;
+        const {action, brandColor, t} = this.context;
         const {pageData: offer} = this.context;
         let label = t('Continue');
 
@@ -417,7 +416,7 @@ export default class OfferPage extends React.Component {
         if (member) {
             return null;
         }
-        const {brandColor, doAction} = this.context;
+        const {brandColor, doAction, t} = this.context;
         return (
             <div className='gh-portal-signup-message'>
                 <div>{t('Already a member?')}</div>
@@ -433,7 +432,7 @@ export default class OfferPage extends React.Component {
     }
 
     renderOfferTag() {
-        const {pageData: offer} = this.context;
+        const {pageData: offer, t} = this.context;
 
         if (offer.amount <= 0) {
             return (
@@ -519,7 +518,7 @@ export default class OfferPage extends React.Component {
         return '';
     }
 
-    renderOfferMessage({offer, product}) {
+    renderOfferMessage({offer, product, t}) {
         const offerMessages = {
             forever: t(`{amount} off forever.`, {
                 amount: this.getOffAmount({offer})
@@ -569,7 +568,7 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductLabel({product, offer}) {
-        const {site} = this.context;
+        const {site, t} = this.context;
 
         if (hasMultipleProductsFeature({site})) {
             return (
@@ -612,6 +611,8 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits}) {
+        const {t} = this.context;
+
         if (this.state.showNewsletterSelection) {
             return null;
         }
@@ -622,7 +623,7 @@ export default class OfferPage extends React.Component {
                         <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
                         {this.renderOldTierPrice({offer, price})}
                         {this.renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price})}
-                        {this.renderOfferMessage({offer, product, price})}
+                        {this.renderOfferMessage({offer, product, price, t})}
                     </div>
                 </div>
 
@@ -647,7 +648,7 @@ export default class OfferPage extends React.Component {
     }
 
     render() {
-        const {pageData: offer, site} = this.context;
+        const {pageData: offer, site, t} = this.context;
         if (!offer) {
             return null;
         }

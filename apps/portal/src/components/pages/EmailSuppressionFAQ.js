@@ -3,10 +3,9 @@ import {useContext} from 'react';
 import BackButton from '../../components/common/BackButton';
 import CloseButton from '../../components/common/CloseButton';
 import {getSupportAddress} from '../../utils/helpers';
-import {t} from '../../utils/i18n';
 
 export default function EmailSuppressedPage() {
-    const {brandColor, doAction, site, pageData} = useContext(AppContext);
+    const {brandColor, doAction, site, t, pageData} = useContext(AppContext);
 
     const supportAddress = `mailto:${getSupportAddress({site})}`;
     const directAccess = (pageData && pageData.direct) || false;

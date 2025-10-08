@@ -3,10 +3,9 @@ import ActionButton from '../../../common/ActionButton';
 import {getMemberSubscription} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
-import {t} from '../../../../utils/i18n';
 
 const ContinueSubscriptionButton = () => {
-    const {member, doAction, action, brandColor} = useContext(AppContext);
+    const {member, doAction, action, brandColor, t} = useContext(AppContext);
     const subscription = getMemberSubscription({member});
     if (!subscription) {
         return null;

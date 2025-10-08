@@ -10,7 +10,6 @@ import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
-import {t} from '../../utils/i18n';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -396,7 +395,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -492,7 +491,7 @@ class SignupPage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
-        const {site: {portal_name: portalName}} = this.context;
+        const {site: {portal_name: portalName}, t} = this.context;
 
         const errors = state.errors || {};
         const fields = [
@@ -586,7 +585,7 @@ class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, site, brandColor, pageQuery} = this.context;
+        const {action, site, brandColor, pageQuery, t} = this.context;
 
         if (isInviteOnly({site}) || !hasAvailablePrices({site, pageQuery})) {
             return null;
@@ -628,7 +627,7 @@ class SignupPage extends React.Component {
     }
 
     renderProducts() {
-        const {site, pageQuery} = this.context;
+        const {site, pageQuery, t} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const errors = this.state.errors || {};
         const priceErrors = {};
@@ -651,7 +650,7 @@ class SignupPage extends React.Component {
     }
 
     renderFreeTrialMessage() {
-        const {site, pageQuery} = this.context;
+        const {site, t, pageQuery} = this.context;
         if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             return (
                 <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
@@ -663,7 +662,7 @@ class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const {brandColor, doAction} = this.context;
+        const {brandColor, doAction, t} = this.context;
         return (
             <div>
                 {this.renderFreeTrialMessage()}
@@ -769,6 +768,7 @@ class SignupPage extends React.Component {
     }
 
     renderPaidMembersOnlyMessage() {
+        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -785,6 +785,7 @@ class SignupPage extends React.Component {
     }
 
     renderInviteOnlyMessage() {
+        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -801,6 +802,7 @@ class SignupPage extends React.Component {
     }
 
     renderMembersDisabledMessage() {
+        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>

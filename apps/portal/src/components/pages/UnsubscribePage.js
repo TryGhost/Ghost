@@ -7,7 +7,6 @@ import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import Interpolate from '@doist/react-interpolate';
 import LoadingPage from './LoadingPage';
-import {t} from '../../utils/i18n';
 
 function SiteLogo() {
     const {site} = useContext(AppContext);
@@ -43,7 +42,7 @@ async function updateMemberNewsletters({api, memberUuid, key, newsletters, enabl
 // NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
 //  we need to update the member data in the context if logged in.
 export default function UnsubscribePage() {
-    const {site, api, pageData, member: loggedInMember, doAction} = useContext(AppContext);
+    const {site, api, pageData, member: loggedInMember, doAction, t} = useContext(AppContext);
     // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
     const [member, setMember] = useState();
     const [loading, setLoading] = useState(true);

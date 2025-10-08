@@ -4,10 +4,9 @@ import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
 import SubscribeButton from './SubscribeButton';
-import {t} from '../../../../utils/i18n';
 
 const AccountWelcome = () => {
-    const {member, site} = useContext(AppContext);
+    const {member, site, t} = useContext(AppContext);
     const {is_stripe_configured: isStripeConfigured} = site;
 
     if (!isStripeConfigured || hasOnlyFreePlan({site})) {

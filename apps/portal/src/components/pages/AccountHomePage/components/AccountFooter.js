@@ -1,6 +1,4 @@
-import {t} from '../../../../utils/i18n';
-
-const AccountFooter = ({handleSignout, supportAddress = ''}) => {
+const AccountFooter = ({handleSignout, supportAddress = '', t}) => {
     const supportAddressMail = `mailto:${supportAddress}`;
     return (
         <footer className='gh-portal-account-footer'>

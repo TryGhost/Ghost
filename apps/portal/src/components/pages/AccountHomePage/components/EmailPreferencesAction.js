@@ -2,9 +2,8 @@ import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
 import {isEmailSuppressed, hasNewsletterSendingEnabled, hasCommentsEnabled} from '../../../../utils/helpers';
 import {ReactComponent as EmailDeliveryFailedIcon} from '../../../../images/icons/email-delivery-failed.svg';
-import {t} from '../../../../utils/i18n';
 
-function DisabledEmailNotice() {
+function DisabledEmailNotice({t}) {
     return (
         <p className="gh-portal-email-notice">
             <EmailDeliveryFailedIcon className="gh-portal-email-notice-icon" />
@@ -15,7 +14,7 @@ function DisabledEmailNotice() {
 }
 
 function EmailPreferencesAction() {
-    const {doAction, member, site} = useContext(AppContext);
+    const {doAction, member, t, site} = useContext(AppContext);
 
     const emailSuppressed = isEmailSuppressed({member});
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
@@ -26,7 +25,7 @@ function EmailPreferencesAction() {
 
     const renderEmailNotice = () => {
         if (emailSuppressed || hasNewslettersAndCommentsDisabled) {
-            return <DisabledEmailNotice />;
+            return <DisabledEmailNotice t={t} />;
         }
         return <p>{t('Update your preferences')}</p>;
     };

@@ -4,10 +4,9 @@ import BackButton from '../../components/common/BackButton';
 import CloseButton from '../../components/common/CloseButton';
 import {getDefaultNewsletterSender, getSupportAddress} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
-import {t} from '../../utils/i18n';
 
 export default function EmailReceivingPage() {
-    const {brandColor, doAction, site, lastPage, member, pageData} = useContext(AppContext);
+    const {brandColor, doAction, site, lastPage, member, t, pageData} = useContext(AppContext);
 
     const supportAddressEmail = getSupportAddress({site});
     const supportAddress = `mailto:${supportAddressEmail}`;

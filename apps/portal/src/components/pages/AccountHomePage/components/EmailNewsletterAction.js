@@ -2,10 +2,9 @@ import AppContext from '../../../../AppContext';
 import Switch from '../../../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../../../utils/helpers';
 import {useContext} from 'react';
-import {t} from '../../../../utils/i18n';
 
 function EmailNewsletterAction() {
-    const {member, site, doAction} = useContext(AppContext);
+    const {member, site, doAction, t} = useContext(AppContext);
     let {newsletters} = member;
 
     const subscribed = !!newsletters?.length;

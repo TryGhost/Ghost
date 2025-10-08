@@ -7,7 +7,6 @@ import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
 import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
-import {t} from '../../utils/i18n';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -40,7 +39,7 @@ export const AccountPlanPageStyles = `
     }
 `;
 
-function getConfirmationPageTitle({confirmationType}) {
+function getConfirmationPageTitle({confirmationType, t}) {
     if (confirmationType === 'changePlan') {
         return t('Confirm subscription');
     } else if (confirmationType === 'cancel') {
@@ -51,10 +50,10 @@ function getConfirmationPageTitle({confirmationType}) {
 }
 
 const Header = ({showConfirmation, confirmationType}) => {
-    const {member} = useContext(AppContext);
+    const {member, t} = useContext(AppContext);
     let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
     if (showConfirmation) {
-        title = getConfirmationPageTitle({confirmationType});
+        title = getConfirmationPageTitle({confirmationType, t});
     }
     return (
         <header className='gh-portal-detail-header'>
@@ -64,7 +63,7 @@ const Header = ({showConfirmation, confirmationType}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site} = useContext(AppContext);
+    const {site, t} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -110,7 +109,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
 
 // For confirmation flows
 const PlanConfirmationSection = ({plan, type, onConfirm}) => {
-    const {site, action, member, brandColor} = useContext(AppContext);
+    const {site, action, member, brandColor, t} = useContext(AppContext);
     const [reason, setReason] = useState('');
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
