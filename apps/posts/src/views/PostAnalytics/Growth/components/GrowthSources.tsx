@@ -2,12 +2,15 @@ import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber} from '@tryghost/shade';
+import {getUtmType, useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
+
+// Number of top sources to show in the preview card
+const TOP_SOURCES_PREVIEW_LIMIT = 10;
 
 interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
@@ -117,59 +120,49 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
 
-    // Map campaign types to utm_type parameter
-    const campaignUtmTypeMap: Record<GrowthCampaignType, string> = {
-        '': '',
-        'UTM sources': 'utm_source',
-        'UTM mediums': 'utm_medium',
-        'UTM campaigns': 'utm_campaign',
-        'UTM contents': 'utm_content',
-        'UTM terms': 'utm_term'
-    };
+    const shouldFetchUtmData = utmTrackingEnabled
+        && selectedTab === 'campaigns'
+        && !!selectedCampaign
+        && !!postId;
 
-    // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
-    const utmType = selectedCampaign ? campaignUtmTypeMap[selectedCampaign] : '';
+    const utmType = getUtmType(selectedCampaign);
     const {data: utmData, isLoading: isUtmLoading} = useUtmGrowthStats({
         searchParams: {
             utm_type: utmType,
             post_id: postId || ''
         },
-        enabled: utmTrackingEnabled && selectedTab === 'campaigns' && !!selectedCampaign && !!postId
+        enabled: shouldFetchUtmData
     });
 
     // Select and transform the appropriate data based on current view
     const displayData = React.useMemo(() => {
-        // If we're viewing UTM campaigns, use and transform the UTM data
-        if (selectedTab === 'campaigns' && selectedCampaign) {
-            // If UTM data is still loading or undefined, return null
-            if (!utmData?.stats) {
-                return null;
-            }
+        const isShowingCampaigns = selectedTab === 'campaigns' && selectedCampaign;
 
-            // Transform the data to use 'source' as the key
-            return utmData.stats.map((item) => {
-                return {
-                    ...item,
-                    source: item.utm_value || '(not set)'
-                };
-            });
+        if (!isShowingCampaigns) {
+            return data;
         }
 
-        // Default to regular sources data
-        return data;
-    }, [data, utmData, selectedTab, selectedCampaign, campaignUtmTypeMap]);
+        if (!utmData?.stats) {
+            return null;
+        }
+
+        return utmData.stats.map(item => ({
+            ...item,
+            source: item.utm_value || '(not set)'
+        }));
+    }, [data, utmData, selectedTab, selectedCampaign]);
 
     // Process and group sources data with pre-computed icons and display values
-    const processedData = React.useMemo(() => {
-        // For UTM campaigns, manually process without icons since UTM values are not domains
+    const processedData = React.useMemo((): ProcessedSourceData[] => {
+        // UTM campaigns: UTM values are not domains, so don't show icons or links
         if (selectedTab === 'campaigns' && selectedCampaign && displayData) {
             return displayData.map(item => ({
-                source: item.source || '(not set)',
-                visits: 0, // Not relevant for growth mode
+                source: String(item.source || '(not set)'),
+                visits: 0,
                 isDirectTraffic: false,
-                iconSrc: '', // No icon for UTM values
-                displayName: item.source || '(not set)',
-                linkUrl: undefined, // No link for UTM values
+                iconSrc: '',
+                displayName: String(item.source || '(not set)'),
+                linkUrl: undefined,
                 free_members: item.free_members || 0,
                 paid_members: item.paid_members || 0,
                 mrr: item.mrr || 0
@@ -195,7 +188,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors, mode]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, TOP_SOURCES_PREVIEW_LIMIT);
 
     // Generate title and description based on mode, tab, and campaign
     const cardTitle = selectedTab === 'campaigns' && selectedCampaign ? selectedCampaign : title;
@@ -277,7 +270,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     )
                 )}
             </CardContent>
-            {extendedData.length > 10 &&
+            {extendedData.length > TOP_SOURCES_PREVIEW_LIMIT &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>
