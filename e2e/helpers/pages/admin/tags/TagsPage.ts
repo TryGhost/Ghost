@@ -12,7 +12,7 @@ export class TagsPage extends AdminPage {
     readonly newTagButton: Locator;
 
     readonly emptyStateTitle: Locator;
-    readonly emptyStateAction: Locator;
+    readonly createNewTagButton: Locator;
 
     readonly loadingPlaceholder: Locator;
 
@@ -30,7 +30,7 @@ export class TagsPage extends AdminPage {
         this.newTagButton = page.getByRole('link', {name: 'New tag'});
 
         this.emptyStateTitle = this.pageContent.getByRole('heading', {name: 'Start organizing your content'});
-        this.emptyStateAction = this.pageContent.getByRole('link', {name: 'Create a new tag'});
+        this.createNewTagButton = this.pageContent.getByRole('link', {name: 'Create a new tag'});
 
         this.loadingPlaceholder = page.getByTestId('loading-placeholder');
     }
@@ -45,6 +45,6 @@ export class TagsPage extends AdminPage {
     }
 
     getTagByName(name: string): Locator {
-        return this.tagNames.getByText(name, {exact: true});
+        return this.page.getByRole('link', {name: name, exact: true});
     }
 }

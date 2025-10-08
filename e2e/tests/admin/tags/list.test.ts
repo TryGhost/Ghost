@@ -1,5 +1,5 @@
 import {test, expect} from '../../../helpers/playwright';
-import {TagsPage} from '../../../helpers/pages/admin';
+import {TagsPage, TagDetailsPage} from '../../../helpers/pages/admin';
 import {createPostFactory, createTagFactory, TagFactory} from '../../../data-factory';
 import {Page} from '@playwright/test';
 
@@ -10,6 +10,22 @@ test.describe('Ghost Admin - Tags', () => {
 
     test.beforeEach(async ({page}) => {
         tagFactory = createTagFactory(page.request);
+    });
+
+    test.skip('shows empty list with call to action buttons', async ({page}) => {
+        const tagsPage = new TagsPage(page);
+        await tagsPage.goto();
+
+        // by default, there will be one tag with slug 'news' on newly created Ghost account
+        await tagsPage.getTagByName('News').click();
+
+        const tagDetailsPage = new TagDetailsPage(page);
+        await tagDetailsPage.deleteTag();
+
+        await tagsPage.goto();
+
+        await expect(tagsPage.emptyStateTitle).toBeVisible();
+        await expect(tagsPage.createNewTagButton).toBeVisible();
     });
 
     test('lists the default tags list when no new tags were created', async ({page}) => {
