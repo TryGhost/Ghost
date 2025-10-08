@@ -22,7 +22,36 @@ export const MagicLinkStyles = `
     .gh-portal-inbox-notification p {
         max-width: 420px;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+    }
+
+    .gh-portal-inbox-notification .gh-portal-header {
+        padding-bottom: 12px;
+    }
+
+    .gh-portal-otp {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .gh-portal-otp .gh-portal-input {
+        font-size: 2rem !important;
+        font-weight: 400;
+        text-align: center;
+        letter-spacing: 1ch;
+        font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
+        margin-bottom: 0;
+    }
+
+    .gh-portal-otp-error {
+        margin-top: 8px;
+        color: var(--red);
+        font-size: 1.3rem;
+        letter-spacing: 0.35px;
+        line-height: 1.6em;
+        margin-bottom: 0;
     }
 `;
 
@@ -35,7 +64,8 @@ export default class MagicLinkPage extends React.Component {
         super(props);
         this.state = {
             [OTC_FIELD_NAME]: '',
-            errors: {}
+            errors: {},
+            isFocused: false
         };
     }
 
@@ -190,24 +220,25 @@ export default class MagicLinkPage extends React.Component {
             <form onSubmit={e => this.handleSubmit(e)}>
                 {labs?.membersSigninOTCAlpha ? (
                     <section className='gh-portal-section gh-portal-otp'>
-                        <div className={`gh-portal-otp-field-container ${errors.otc ? 'error' : ''}`}>
-                            <input
-                                id={`input-${OTC_FIELD_NAME}`}
-                                className={`gh-portal-input ${errors.otc ? 'error' : ''}`}
-                                name={OTC_FIELD_NAME}
-                                type="text"
-                                value={this.state.otc}
-                                inputMode="numeric"
-                                maxLength={6}
-                                pattern="[0-9]*"
-                                autoComplete="one-time-code"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                autoFocus={true}
-                                aria-label={t('Code')}
-                                onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                            />
-                        </div>
+                        <input
+                            id={`input-${OTC_FIELD_NAME}`}
+                            className={`gh-portal-input  ${errors.otc ? 'error' : ''}`}
+                            placeholder={this.state.isFocused ? '' : '––––––'}
+                            name={OTC_FIELD_NAME}
+                            type="text"
+                            value={this.state.otc}
+                            inputMode="numeric"
+                            maxLength={6}
+                            pattern="[0-9]*"
+                            autoComplete="one-time-code"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            autoFocus={true}
+                            aria-label={t('Code')}
+                            onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                            onFocus={() => this.setState({isFocused: true})}
+                            onBlur={() => this.setState({isFocused: false})}
+                        />
                         {errors.otc &&
                         <div className="gh-portal-otp-error">
                             {errors.otc}
