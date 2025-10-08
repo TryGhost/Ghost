@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
-import i18nLib from '@tryghost/i18n';
+import i18n, {t} from './utils/i18n';
 
 function displayErrorIfElementExists(errorEl, message) {
     if (errorEl) {
@@ -9,15 +9,14 @@ function displayErrorIfElementExists(errorEl, message) {
     }
 }
 
-function handleError(error, form, errorEl, t) {
+function handleError(error, form, errorEl) {
     form.classList.add('error');
     const defaultMessage = t('There was an error sending the email, please try again');
     displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException},
-    t = str => str
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException}
 ) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
@@ -121,14 +120,13 @@ export async function formSubmitHandler(
             form.classList.add('error'); // Ensure error state is set here
         }
     } catch (err) {
-        handleError(err, form, errorEl, t);
+        handleError(err, form, errorEl);
     }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale || 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
+    i18n.changeLanguage(site.locale || 'en');
+
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -209,17 +207,17 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
-    const i18nLanguage = site.locale || 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
     if (!siteUrl) {
         return;
     }
+
+    i18n.changeLanguage(site.locale || 'en');
+
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException});
         }
         form.addEventListener('submit', submitHandler);
     });
