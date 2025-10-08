@@ -1,43 +1,43 @@
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {Tabs, TabsDropdownTrigger, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {ChevronDown} from 'lucide-react';
-import React, {createContext, useContext} from 'react';
+import React from 'react';
 
-export type CampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
-export type TabType = string;
-
-export const CAMPAIGN_TYPES: readonly CampaignType[] = [
-    '',
-    'UTM sources',
-    'UTM mediums',
-    'UTM campaigns',
-    'UTM contents',
-    'UTM terms'
-] as const;
-
-const getCampaignDisplayText = (campaign: CampaignType) => {
-    return campaign || 'Campaigns';
-};
-
-interface TableFilterTabsContextValue {
-    selectedCampaign: CampaignType;
-    onCampaignChange: (campaign: CampaignType) => void;
-    onTabChange: (tab: TabType) => void;
+// Generic tab container - no business logic
+interface TableFilterTabsProps {
+    className?: string;
+    selectedTab: string;
+    onTabChange: (tab: string) => void;
+    children: React.ReactNode;
+    defaultValue?: string;
 }
 
-const TableFilterTabsContext = createContext<TableFilterTabsContextValue | undefined>(undefined);
-
-const useTableFilterTabsContext = () => {
-    const context = useContext(TableFilterTabsContext);
-    if (!context) {
-        throw new Error('Tab components must be used within TableFilterTabs');
-    }
-    return context;
+const TableFilterTabs: React.FC<TableFilterTabsProps> = ({
+    className,
+    selectedTab,
+    onTabChange,
+    children,
+    defaultValue
+}) => {
+    return (
+        <Tabs
+            className={className}
+            defaultValue={defaultValue}
+            value={selectedTab}
+            variant='button-sm'
+            onValueChange={onTabChange}
+        >
+            <TabsList>
+                {children}
+            </TabsList>
+        </Tabs>
+    );
 };
 
+// Simple tab component
 interface TableFilterTabProps {
     value: string;
-    children?: React.ReactNode;
+    children: React.ReactNode;
 }
 
 const TableFilterTab: React.FC<TableFilterTabProps> = ({
@@ -47,27 +47,39 @@ const TableFilterTab: React.FC<TableFilterTabProps> = ({
     return <TabsTrigger value={value}>{children}</TabsTrigger>;
 };
 
-const TableFilterCampaignTab: React.FC = () => {
-    const {selectedCampaign, onCampaignChange, onTabChange} = useTableFilterTabsContext();
+// Generic dropdown tab for any options
+interface TableFilterDropdownTabProps {
+    value: string;
+    options: Array<{ value: string; label: string }>;
+    selectedOption: string;
+    onOptionChange: (option: string) => void;
+    placeholder?: string;
+}
+
+const TableFilterDropdownTab: React.FC<TableFilterDropdownTabProps> = ({
+    value,
+    options,
+    selectedOption,
+    onOptionChange,
+    placeholder = 'Select...'
+}) => {
+    const displayText = options.find(opt => opt.value === selectedOption)?.label || placeholder;
 
     return (
         <DropdownMenu>
             <TabsDropdownTrigger
                 className="flex items-center gap-2"
-                value={'campaigns'}
+                value={value}
             >
-                {getCampaignDisplayText(selectedCampaign)} <ChevronDown className="size-4" />
+                {displayText} <ChevronDown className="size-4" />
             </TabsDropdownTrigger>
             <DropdownMenuContent>
-                {CAMPAIGN_TYPES.filter(campaign => campaign !== '').map(campaign => (
+                {options.map(option => (
                     <DropdownMenuItem
-                        key={campaign}
-                        onClick={() => {
-                            onCampaignChange(campaign);
-                            onTabChange('campaigns');
-                        }}
+                        key={option.value}
+                        onClick={() => onOptionChange(option.value)}
                     >
-                        {campaign}
+                        {option.label}
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuContent>
@@ -75,62 +87,8 @@ const TableFilterCampaignTab: React.FC = () => {
     );
 };
 
-interface TableFilterTabsProps {
-    className?: string;
-    selectedTab: TabType;
-    onTabChange: (tab: TabType) => void;
-    selectedCampaign: CampaignType;
-    onCampaignChange: (campaign: CampaignType) => void;
-    children?: React.ReactNode;
-    defaultValue?: string;
-}
-
-const TableFilterTabs: React.FC<TableFilterTabsProps> = ({
-    className,
-    selectedTab,
-    onTabChange,
-    selectedCampaign,
-    onCampaignChange,
-    children,
-    defaultValue
-}) => {
-    const handleTabChange = (value: string) => {
-        const newTab = value as TabType;
-        // Only allow switching to campaigns tab if a campaign is selected
-        if (newTab === 'campaigns' && !selectedCampaign) {
-            return;
-        }
-        onTabChange(newTab);
-        if (newTab !== 'campaigns') {
-            onCampaignChange('');
-        }
-    };
-
-    const contextValue: TableFilterTabsContextValue = {
-        selectedCampaign,
-        onCampaignChange,
-        onTabChange
-    };
-
-    return (
-        <TableFilterTabsContext.Provider value={contextValue}>
-            <Tabs
-                className={className}
-                defaultValue={defaultValue}
-                value={selectedTab}
-                variant='button-sm'
-                onValueChange={handleTabChange}
-            >
-                <TabsList>
-                    {children}
-                </TabsList>
-            </Tabs>
-        </TableFilterTabsContext.Provider>
-    );
-};
-
 export {
     TableFilterTab,
-    TableFilterCampaignTab,
+    TableFilterDropdownTab,
     TableFilterTabs
 };
