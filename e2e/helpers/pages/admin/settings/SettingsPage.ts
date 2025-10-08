@@ -48,7 +48,6 @@ export class SettingsPage extends BasePage {
 
     async goto() {
         await super.goto();
-        await this.page.waitForLoadState('networkidle');
         await this.page.waitForSelector('h5', {timeout: 10000});
     }
 

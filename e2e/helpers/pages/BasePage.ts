@@ -27,13 +27,9 @@ export class BasePage {
         }
     }
 
-    async goto(url = null, options?: pageGotoOptions) {
+    async goto(url?: string, options?: pageGotoOptions) {
         const urlToVisit = url || this.pageUrl;
         await this.page.goto(urlToVisit, options);
-    }
-
-    public async waitForPageToFullyLoad() {
-        await this.page.waitForLoadState('networkidle');
     }
 
     async pressKey(key: string) {
