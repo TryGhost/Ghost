@@ -3,15 +3,15 @@ import {AdminPage} from '../AdminPage';
 
 export class TagsPage extends AdminPage {
     readonly pageContent: Locator;
+
     readonly tagList: Locator;
     readonly tagListRow: Locator;
+    readonly tagNames: Locator;
 
     readonly tabs: Locator;
     readonly activeTab: Locator;
     readonly newTagButton: Locator;
-
-    readonly emptyStateTitle: Locator;
-    readonly emptyStateAction: Locator;
+    readonly createNewTagButton: Locator;
 
     readonly loadingPlaceholder: Locator;
 
@@ -22,15 +22,18 @@ export class TagsPage extends AdminPage {
         this.pageContent = page.getByTestId('tags-page');
         this.tagList = page.getByTestId('tags-list');
         this.tagListRow = this.tagList.getByTestId('tag-list-row');
+        this.tagNames = page.locator('[data-test-tag-name]');
 
         this.tabs = page.getByTestId('tags-header-tabs');
         this.activeTab = this.tabs.locator('[data-state="active"]');
         this.newTagButton = page.getByRole('link', {name: 'New tag'});
-
-        this.emptyStateTitle = this.pageContent.getByRole('heading', {name: 'Start organizing your content'});
-        this.emptyStateAction = this.pageContent.getByRole('link', {name: 'Create a new tag'});
+        this.createNewTagButton = this.pageContent.getByRole('link', {name: 'Create a new tag'});
 
         this.loadingPlaceholder = page.getByTestId('loading-placeholder');
+    }
+
+    title(name: string) {
+        return this.pageContent.getByRole('heading', {name: name});
     }
 
     async selectTab(tabText: string) {
@@ -40,5 +43,9 @@ export class TagsPage extends AdminPage {
 
     getRowByTitle(title: string) {
         return this.tagListRow.filter({has: this.page.getByRole('link', {name: title, exact: true})});
+    }
+
+    getTagByName(name: string): Locator {
+        return this.page.getByRole('link', {name: name, exact: true});
     }
 }

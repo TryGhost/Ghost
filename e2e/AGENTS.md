@@ -33,7 +33,7 @@ PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps cont
 ```typescript
 test('action performed - expected result', async ({page}) => {
     const analyticsPage = new AnalyticsGrowthPage(page);
-    const postFactory = createPostFactory(page);
+    const postFactory = createPostFactory(page.request);
     const post = await postFactory.create({status: 'published'});
     
     await analyticsPage.goto();
@@ -91,7 +91,7 @@ export class AnalyticsPage extends AdminPage {
 ```typescript
 import {PostFactory, UserFactory} from '../data-factory';
 
-const postFactory = createPostFactory(page);
+const postFactory = createPostFactory(page.request);
 
 const post = await postFactory.create({userId: user.id});
 ```

@@ -7,7 +7,7 @@ test.describe('Post Preview Modal', () => {
     let postFactory: PostFactory;
 
     test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page);
+        postFactory = createPostFactory(page.request);
     });
 
     test('closes preview modal with ESC key when iframe has focus', async ({page}) => {
