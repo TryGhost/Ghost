@@ -22,7 +22,10 @@ export default Service.extend({
     init() {
         this._super(...arguments);
         this.entries = [];
-        this._whatsNewSettings = {};
+        // Set sensible default for new users - they've "seen" everything up to now
+        this._whatsNewSettings = {
+            lastSeenDate: moment.utc().toISOString()
+        };
     },
 
     hasNew: computed('_whatsNewSettings.lastSeenDate', 'entries.[]', function () {
@@ -31,11 +34,9 @@ export default Service.extend({
         }
 
         let [latestEntry] = this.entries;
+        let lastSeenMoment = moment(this._whatsNewSettings.lastSeenDate);
+        let latestMoment = moment(latestEntry.published_at);
 
-        let lastSeenDate = this._whatsNewSettings?.lastSeenDate || '2019-01-01 00:00:00';
-        let lastSeenMoment = moment(lastSeenDate);
-        let latestDate = latestEntry.published_at;
-        let latestMoment = moment(latestDate || lastSeenDate);
         return latestMoment.isAfter(lastSeenMoment);
     }),
 
@@ -68,21 +69,23 @@ export default Service.extend({
         }
 
         try {
-            // Extract just the whatsNew settings from user.accessibility
+            // Load user's persisted settings
             let user = yield this.session.user;
             let accessibility = JSON.parse(user.accessibility || '{}');
-            let whatsNewSettings = accessibility.whatsNew || {};
+            let whatsNewSettings = accessibility.whatsNew;
 
-            // If lastSeenDate doesn't exist, set it to today and persist
-            if (!whatsNewSettings.lastSeenDate) {
-                whatsNewSettings.lastSeenDate = moment.utc().toISOString();
+            if (!whatsNewSettings?.lastSeenDate) {
+                // New user - persist the defaults from init()
+                whatsNewSettings = this._whatsNewSettings;
                 accessibility.whatsNew = whatsNewSettings;
                 user.set('accessibility', JSON.stringify(accessibility));
                 yield user.save();
             }
 
+            // Always set (either loaded existing settings or the defaults we just persisted)
             this.set('_whatsNewSettings', whatsNewSettings);
 
+            // Fetch changelog
             this._changelog_response = yield fetch('https://ghost.org/changelog.json');
             if (!this._changelog_response.ok) {
                 // eslint-disable-next-line
