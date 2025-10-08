@@ -612,6 +612,27 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 },
                 body: JSON.stringify(body)
             });
+        },
+
+        async generateRssToken() {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'member/rss'});
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({identity})
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to generate RSS token');
+                }
+            });
         }
     };
 

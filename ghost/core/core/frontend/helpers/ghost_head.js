@@ -300,9 +300,19 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
         head.push('<meta name="generator" content="Ghost ' +
             escapeExpression(safeVersion) + '">');
+
+        // Add RSS URL with authentication token if member is logged in
+        let rssUrl = meta.rssUrl;
+        const member = options.data.member;
+        if (member && member.rss_token) {
+            const rssUrlObj = new URL(meta.rssUrl);
+            rssUrlObj.searchParams.set('token', member.rss_token);
+            rssUrl = rssUrlObj.toString();
+        }
+
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
-            escapeExpression(meta.rssUrl) + '">');
+            escapeExpression(rssUrl) + '">');
 
         head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
         if (!excludeList.has('search')) {

@@ -433,6 +433,7 @@ module.exports = {
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
         email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
+        rss_token: {type: 'string', maxlength: 191, nullable: true, unique: true},
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},

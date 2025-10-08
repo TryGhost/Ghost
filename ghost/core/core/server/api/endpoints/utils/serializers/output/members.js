@@ -179,7 +179,8 @@ function serializeMember(member, options) {
         status: json.status,
         last_seen_at: json.last_seen_at,
         attribution: serializeAttribution(json.attribution),
-        unsubscribe_url: json.unsubscribe_url
+        unsubscribe_url: json.unsubscribe_url,
+        rss_token: json.rss_token
     };
 
     if (json.products) {

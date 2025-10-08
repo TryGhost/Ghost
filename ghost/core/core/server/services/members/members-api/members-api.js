@@ -174,13 +174,15 @@ module.exports = function MembersAPI({
 
     const memberController = new MemberController({
         memberRepository,
+        memberBREADService,
         productRepository,
         paymentsService,
         tiersService,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink,
-        settingsCache
+        settingsCache,
+        urlUtils
     });
 
     const routerController = new RouterController({
@@ -360,6 +362,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
+        generateRssToken: Router().use(
+            body.json(),
+            forwardError((req, res) => memberController.generateRssToken(req, res))
+        ),
         wellKnown: Router()
             .get('/jwks.json',
                 (req, res) => wellKnownController.getPublicKeys(req, res)
@@ -399,6 +405,7 @@ module.exports = function MembersAPI({
         getMagicLink,
         members: users,
         memberBREADService,
+        memberRepository,
         events: eventRepository,
         productRepository,
 

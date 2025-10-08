@@ -5,6 +5,7 @@ import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsle
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
+import RSSFeedAction from './RSSFeedAction';
 
 const shouldShowEmailPreferences = (site, member) => {
     return (
@@ -58,6 +59,7 @@ const AccountActions = () => {
                 <PaidAccountActions />
                 {showEmailPreferences && <EmailPreferencesAction />}
                 {showEmailNewsletterAction && <EmailNewsletterAction />}
+                <RSSFeedAction />
             </div>
 
         </div>
