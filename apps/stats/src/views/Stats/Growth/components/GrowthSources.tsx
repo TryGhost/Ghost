@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
 import SourceIcon from '../../components/SourceIcon';
-import {Button, EmptyIndicator, GrowthCampaignType, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, EmptyIndicator, GrowthCampaignType, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber, getUtmType} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getUtmType, useMrrHistory, useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
+import {useMrrHistory, useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
 
