@@ -22,7 +22,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl [grid-area:title] py-2',
+                'text-2xl leading-[1.2em] lg:text-3xl [grid-area:title]',
                 className
             )}
         >
@@ -34,7 +34,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
 interface HeaderMetaProps extends PropsWithChildrenAndClassName {}
 function HeaderMeta({className, children}: HeaderMetaProps) {
     return (
-        <div className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4', className)}>
+        <div className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}>
             {children}
         </div>
     );
@@ -43,7 +43,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
 interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
 function HeaderActions({className, children}: HeaderActionsProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:actions] sm:justify-self-end place-self-baseline py-2', className)}>
+        <div className={cn('flex items-center gap-2 [grid-area:actions] sm:justify-self-end self-start', className)}>
             {children}
         </div>
     );
@@ -51,7 +51,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
 interface HeaderNavProps extends PropsWithChildrenAndClassName {}
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:nav] place-self-baseline py-2', className)}>
+        <div className={cn('flex items-center gap-2 [grid-area:nav] place-self-baseline', className)}>
             {children}
         </div>
     );
