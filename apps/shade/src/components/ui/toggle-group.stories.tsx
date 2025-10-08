@@ -160,6 +160,36 @@ export const WithText: Story = {
     }
 };
 
+const ButtonSizedComponent = () => {
+    const [value, setValue] = useState<string>('preview');
+
+    return (
+        <ToggleGroup size='button' type="single" value={value} onValueChange={(newValue) => {
+            if (newValue) {
+                setValue(newValue);
+            }
+        }}>
+            <ToggleGroupItem aria-label="Preview" value="preview">
+                Preview
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Code" value="code">
+                Code
+            </ToggleGroupItem>
+        </ToggleGroup>
+    );
+};
+
+export const ButtonSized: Story = {
+    render: () => <ButtonSizedComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Toggle group with text labels instead of icons for clearer meaning.'
+            }
+        }
+    }
+};
+
 const NoSelectionComponent = () => {
     const [value, setValue] = useState<string>('');
 

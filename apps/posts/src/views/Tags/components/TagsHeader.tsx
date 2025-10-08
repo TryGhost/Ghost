@@ -1,6 +1,6 @@
 import React from 'react';
-import {Button, Header, PageMenu, PageMenuItem} from '@tryghost/shade';
-import {Link} from '@tryghost/admin-x-framework';
+import {Button, Header, ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface TagsHeaderProps {
     currentTab?: string;
@@ -8,19 +8,23 @@ interface TagsHeaderProps {
 }
 
 const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
+    const navigate = useNavigate();
+
     return (
         <Header variant="inline-nav">
             <Header.Title>Tags</Header.Title>
 
             <Header.Nav>
-                <PageMenu data-testid="tags-header-tabs" defaultValue={currentTab}>
-                    <PageMenuItem value="public" asChild>
-                        <Link to="/tags">Public tags</Link>
-                    </PageMenuItem>
-                    <PageMenuItem value="internal" asChild>
-                        <Link to="/tags?type=internal">Internal tags</Link>
-                    </PageMenuItem>
-                </PageMenu>
+                <ToggleGroup size='button' type="single" value={currentTab} onValueChange={(newTab) => {
+                    navigate(newTab === 'internal' ? '/tags?type=internal' : '/tags');
+                }}>
+                    <ToggleGroupItem aria-label="Internal tags" value="public">
+                        Public tags
+                    </ToggleGroupItem>
+                    <ToggleGroupItem aria-label="Internal tags" value="internal">
+                        Internal tags
+                    </ToggleGroupItem>
+                </ToggleGroup>
             </Header.Nav>
 
             <Header.Actions>
