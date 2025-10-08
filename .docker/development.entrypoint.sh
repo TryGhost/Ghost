@@ -26,7 +26,6 @@ set -euo pipefail
     fi
 )
 
-<<<<<<< HEAD
 # Configure Ghost to use Tinybird Local
 if [ -f /mnt/shared-config/.env.tinybird ]; then
     source /mnt/shared-config/.env.tinybird
@@ -40,8 +39,6 @@ else
     echo "WARNING: Tinybird not enabled: .env file not found"
 fi
 
-=======
->>>>>>> f20979186b (Reverted unrelated changes)
 yarn nx reset
 
 # Execute the CMD
