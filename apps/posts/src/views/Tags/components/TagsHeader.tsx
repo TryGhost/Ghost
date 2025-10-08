@@ -18,7 +18,7 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
                 <ToggleGroup data-testid="tags-header-tabs" size='button' type="single" value={currentTab} onValueChange={(newTab) => {
                     navigate(newTab === 'internal' ? '/tags?type=internal' : '/tags');
                 }}>
-                    <ToggleGroupItem aria-label="Internal tags" value="public">
+                    <ToggleGroupItem aria-label="Public tags" value="public">
                         Public tags
                     </ToggleGroupItem>
                     <ToggleGroupItem aria-label="Internal tags" value="internal">
