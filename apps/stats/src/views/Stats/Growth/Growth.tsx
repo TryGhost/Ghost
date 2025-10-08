@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFilterDropdownTab, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -38,13 +38,25 @@ type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source desc';
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
+const GROWTH_CAMPAIGN_OPTIONS = [
+    {value: 'UTM sources', label: 'UTM sources'},
+    {value: 'UTM mediums', label: 'UTM mediums'},
+    {value: 'UTM campaigns', label: 'UTM campaigns'},
+    {value: 'UTM contents', label: 'UTM contents'},
+    {value: 'UTM terms', label: 'UTM terms'}
+];
+
 const Growth: React.FC = () => {
-    const {range, site} = useGlobalData();
+    const {range, site, data: globalData} = useGlobalData();
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
+    const [selectedCampaign, setSelectedCampaign] = useState<GrowthCampaignType>('');
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
+
+    // Check if UTM tracking is enabled
+    const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
@@ -160,14 +172,29 @@ const Growth: React.FC = () => {
                                 <TableHeader>
                                     <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
                                         <TableHead className='min-w-[320px] pl-0'>
-                                            <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                                            <Tabs value={selectedCampaign ? 'campaigns' : selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                                                 setSelectedContentType(value as ContentType);
+                                                // Clear campaign selection when switching away from campaigns
+                                                if (value !== 'campaigns') {
+                                                    setSelectedCampaign('');
+                                                }
                                             }}>
                                                 <TabsList>
                                                     <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
+                                                    {utmTrackingEnabled && (
+                                                        <TableFilterDropdownTab
+                                                            options={GROWTH_CAMPAIGN_OPTIONS}
+                                                            placeholder='Campaigns'
+                                                            selectedOption={selectedCampaign}
+                                                            value='campaigns'
+                                                            onOptionChange={(campaign) => {
+                                                                setSelectedCampaign(campaign as GrowthCampaignType);
+                                                            }}
+                                                        />
+                                                    )}
                                                 </TabsList>
                                             </Tabs>
                                         </TableHead>
@@ -196,10 +223,11 @@ const Growth: React.FC = () => {
                                         }
                                     </TableRow>
                                 </TableHeader>
-                                {selectedContentType === CONTENT_TYPES.SOURCES ?
+                                {(selectedContentType === CONTENT_TYPES.SOURCES || selectedCampaign) ?
                                     <GrowthSources
                                         limit={20}
                                         range={range}
+                                        selectedCampaign={selectedCampaign}
                                         setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
                                         showViewAll={true}
                                         sortBy={sortBy as SourcesOrder}

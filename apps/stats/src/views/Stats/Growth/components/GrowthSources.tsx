@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
 import SourceIcon from '../../components/SourceIcon';
-import {Button, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, EmptyIndicator, GrowthCampaignType, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
+import {useMrrHistory, useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
 
 interface ProcessedReferrerData {
@@ -82,6 +82,7 @@ interface GrowthSourcesProps {
     showViewAll?: boolean;
     sortBy?: SourcesOrder;
     setSortBy?: (sortBy: SourcesOrder) => void;
+    selectedCampaign?: GrowthCampaignType;
 }
 
 export const GrowthSources: React.FC<GrowthSourcesProps> = ({
@@ -89,7 +90,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     limit = 20,
     showViewAll = false,
     sortBy: externalSortBy,
-    setSortBy: externalSetSortBy
+    setSortBy: externalSetSortBy,
+    selectedCampaign = ''
 }) => {
     const {data: globalData} = useGlobalData();
     const {data: mrrHistoryResponse} = useMrrHistory();
@@ -104,8 +106,29 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     // Convert our sort format to backend format
     const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
 
-    // Use the new endpoint with server-side sorting and limiting
-    const {data: referrersData, isLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
+    // Map campaign types to utm_type parameter
+    const campaignUtmTypeMap: Record<GrowthCampaignType, string> = {
+        '': '',
+        'UTM sources': 'utm_source',
+        'UTM mediums': 'utm_medium',
+        'UTM campaigns': 'utm_campaign',
+        'UTM contents': 'utm_content',
+        'UTM terms': 'utm_term'
+    };
+
+    // Use the new endpoint with server-side sorting and limiting for regular sources
+    const {data: referrersData} = useTopSourcesGrowth(range, backendOrderBy, limit);
+
+    // Get UTM campaign data when a campaign is selected
+    const utmType = selectedCampaign ? campaignUtmTypeMap[selectedCampaign] : '';
+    const {data: utmData, isFetching: isUtmFetching} = useUtmGrowthStats({
+        searchParams: {
+            utm_type: utmType,
+            limit: String(limit),
+            order: backendOrderBy
+        },
+        enabled: !!selectedCampaign
+    });
 
     // Get site URL for favicon processing
     const siteUrl = globalData?.url as string | undefined;
@@ -133,6 +156,29 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     // Process data for display (no client-side sorting needed since backend handles it)
     const processedData = React.useMemo((): ProcessedReferrerData[] => {
+        // If a campaign is selected, only show UTM data (not regular sources)
+        if (selectedCampaign) {
+            // If we have UTM data and we're not fetching, show it
+            if (utmData?.stats && !isUtmFetching) {
+                return utmData.stats.map((item) => {
+                    const source = item.utm_value || '(not set)';
+                    // UTM values are campaign identifiers, not domains - don't show icons or links
+                    return {
+                        source,
+                        free_members: item.free_members,
+                        paid_members: item.paid_members,
+                        mrr: item.mrr,
+                        iconSrc: '', // No icon for UTM values
+                        displayName: source,
+                        linkUrl: undefined // No link for UTM values
+                    };
+                });
+            }
+            // If fetching or no data yet, return empty array (don't show regular sources)
+            return [];
+        }
+
+        // Default to regular sources data when no campaign is selected
         if (!referrersData?.stats) {
             return [];
         }
@@ -158,7 +204,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 linkUrl
             };
         });
-    }, [referrersData, siteUrl]);
+    }, [referrersData, utmData, selectedCampaign, campaignUtmTypeMap, siteUrl, defaultSourceIconUrl, isUtmFetching]);
 
     const title = 'Top sources';
     const description = `Where did your growth come from ${getPeriodText(range)}`;
@@ -183,12 +229,6 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                     </TableCell>
                 </TableRow>
             </TableBody>
-        );
-    }
-
-    if (isLoading) {
-        return (
-            <SkeletonTable lines={5} />
         );
     }
 
