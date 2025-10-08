@@ -176,7 +176,6 @@ RUN cd ghost/core && yarn build:assets
 # --------------------
 FROM development-base AS development
 COPY . .
-<<<<<<< HEAD
 COPY --from=ghost-assets-builder /home/ghost/ghost/core/core/frontend/public ghost/core/core/frontend/public
 COPY --from=shade-builder /home/ghost/apps/shade/es apps/shade/es
 COPY --from=shade-builder /home/ghost/apps/shade/types apps/shade/types
@@ -193,7 +192,3 @@ COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
 
 CMD ["yarn", "dev"]
-=======
-RUN yarn build
-CMD ["yarn", "dev"]
->>>>>>> f20979186b (Reverted unrelated changes)
