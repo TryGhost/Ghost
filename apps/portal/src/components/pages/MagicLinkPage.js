@@ -36,19 +36,33 @@ export const MagicLinkStyles = `
         margin-bottom: 12px;
     }
 
+    .gh-portal-otp-container {
+        border: 1px solid var(--grey12);
+        border-radius: 8px;
+        width: 100%;
+        transition: border-color 0.25s ease;
+    }
+
+    .gh-portal-otp-container.focused {
+        border-color: var(--grey8);
+    }
+
+    .gh-portal-otp-container.error {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+    }
+
     .gh-portal-otp .gh-portal-input {
+        margin: 0 auto;
         font-size: 2rem !important;
-        font-weight: 400;
-        text-align: center;
+        font-weight: 300;
+        border: none;
+        /*text-align: center;*/
         padding-left: 2ch;
         padding-right: 1ch;
         letter-spacing: 1ch;
         font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
-        margin-bottom: 0;
-    }
-
-    .gh-portal-otp .gh-portal-input.entry {
-        padding-left: 1ch;
+        width: 15ch;
     }
 
     .gh-portal-otp-error {
@@ -226,29 +240,32 @@ export default class MagicLinkPage extends React.Component {
             <form onSubmit={e => this.handleSubmit(e)}>
                 {labs?.membersSigninOTCAlpha ? (
                     <section className='gh-portal-section gh-portal-otp'>
-                        <input
-                            id={`input-${OTC_FIELD_NAME}`}
-                            className={`gh-portal-input ${(this.state.isFocused || this.state.otc) && 'entry'}  ${errors.otc ? 'error' : ''}`}
-                            placeholder={this.state.isFocused ? '' : '––––––'}
-                            name={OTC_FIELD_NAME}
-                            type="text"
-                            value={this.state.otc}
-                            inputMode="numeric"
-                            maxLength={6}
-                            pattern="[0-9]*"
-                            autoComplete="one-time-code"
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            autoFocus={true}
-                            aria-label={t('Code')}
-                            onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                            onFocus={() => this.setState({isFocused: true})}
-                            onBlur={() => this.setState({isFocused: false})}
-                        />
+                        <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${errors.otc && 'error'}`}>
+                            <input
+                                id={`input-${OTC_FIELD_NAME}`}
+                                className={`gh-portal-input ${this.state.otc && 'entry'}`}
+                                placeholder='––––––'
+                                name={OTC_FIELD_NAME}
+                                type="text"
+                                value={this.state.otc}
+                                inputMode="numeric"
+                                maxLength={6}
+                                pattern="[0-9]*"
+                                autoComplete="one-time-code"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                autoFocus={true}
+                                aria-label={t('Code')}
+                                onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                                onFocus={() => this.setState({isFocused: true})}
+                                onBlur={() => this.setState({isFocused: false})}
+                            />
+                        </div>
                         {errors.otc &&
-                        <div className="gh-portal-otp-error">
-                            {errors.otc}
-                        </div>}
+                            <div className="gh-portal-otp-error">
+                                {errors.otc}
+                            </div>
+                        }
                     </section>
                 ) : (
                     <section className='gh-portal-section'>
