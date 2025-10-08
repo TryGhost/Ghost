@@ -389,11 +389,66 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .matchBodySnapshot();
 
         // Verify that the Stripe mocker captured the UTM parameters in metadata
-        const checkoutSession = stripeMocker.checkoutSessions[0];
+        const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
         should(checkoutSession.metadata.utm_source).eql('weekly_newsletter');
         should(checkoutSession.metadata.utm_medium).eql('email');
         should(checkoutSession.metadata.utm_campaign).eql('donation_drive_2024');
         should(checkoutSession.metadata.utm_term).eql('support_ghost');
         should(checkoutSession.metadata.utm_content).eql('footer_cta');
+
+        // Send a webhook to complete the donation and verify UTM storage
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    mode: 'payment',
+                    amount_total: 2500,
+                    currency: 'usd',
+                    customer: checkoutSession.customer,
+                    customer_details: {
+                        name: 'UTM Donor',
+                        email: 'utm-donation@test.com'
+                    },
+                    metadata: {
+                        ...checkoutSession.metadata,
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Thanks for tracking my UTMs!'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Verify UTM parameters are stored in DonationPaymentEvent
+        const donation = await models.DonationPaymentEvent.findOne({
+            email: 'utm-donation@test.com'
+        }, {require: true});
+
+        assert.equal(donation.get('amount'), 2500);
+        assert.equal(donation.get('currency'), 'usd');
+        assert.equal(donation.get('email'), 'utm-donation@test.com');
+        assert.equal(donation.get('name'), 'UTM Donor');
+        assert.equal(donation.get('donation_message'), 'Thanks for tracking my UTMs!');
+
+        // Check UTM parameters
+        assert.equal(donation.get('utm_source'), 'weekly_newsletter');
+        assert.equal(donation.get('utm_medium'), 'email');
+        assert.equal(donation.get('utm_campaign'), 'donation_drive_2024');
+        assert.equal(donation.get('utm_term'), 'support_ghost');
+        assert.equal(donation.get('utm_content'), 'footer_cta');
+
+        // Check referrer parameters
+        assert.equal(donation.get('referrer_source'), 'Google');
+        assert.equal(donation.get('referrer_medium'), 'unknown');
+        assert.equal(donation.get('referrer_url'), 'google.com');
+
+        // Check attribution
+        assert.equal(donation.get('attribution_id'), post.id);
+        assert.equal(donation.get('attribution_type'), 'post');
+        assert.equal(donation.get('attribution_url'), url);
     });
 });

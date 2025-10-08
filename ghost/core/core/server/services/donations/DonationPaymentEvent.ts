@@ -13,6 +13,11 @@ export class DonationPaymentEvent {
     referrerSource: string | null;
     referrerMedium: string | null;
     referrerUrl: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmTerm: string | null;
+    utmContent: string | null;
 
     constructor(data: Omit<DonationPaymentEvent, 'timestamp'>, timestamp: Date) {
         this.timestamp = timestamp;
@@ -30,6 +35,11 @@ export class DonationPaymentEvent {
         this.referrerSource = data.referrerSource;
         this.referrerMedium = data.referrerMedium;
         this.referrerUrl = data.referrerUrl;
+        this.utmSource = data.utmSource;
+        this.utmMedium = data.utmMedium;
+        this.utmCampaign = data.utmCampaign;
+        this.utmTerm = data.utmTerm;
+        this.utmContent = data.utmContent;
     }
 
     static create(data: Omit<DonationPaymentEvent, 'timestamp'>, timestamp?: Date) {
