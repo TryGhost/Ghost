@@ -81,6 +81,11 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Profile'
             },
             {
+                path: 'profile/:handle/:tab',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
                 path: 'preferences',
                 element: <Preferences />,
                 pageTitle: 'Preferences'

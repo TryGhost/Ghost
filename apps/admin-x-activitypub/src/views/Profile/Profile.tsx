@@ -139,11 +139,30 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
 const Profile: React.FC<ProfileProps> = ({}) => {
     const params = useParams();
 
-    const {data: account, isLoading: isLoadingAccount, error: accountError, refetch} = useAccountForUser('index', (params.handle || 'me'));
+    // Validate and normalize the tab parameter
+    const validTabs = ['likes', 'following', 'followers'];
+    let activeTab: string = 'posts';
+    let actualHandle: string | undefined = params.handle;
+
+    // If we have a handle but no tab, check if the 'handle' is actually a tab name
+    if (!params.tab && params.handle && validTabs.includes(params.handle)) {
+        // This means the URL is /profile/likes (current user with tab)
+        activeTab = params.handle;
+        actualHandle = undefined;
+    } else if (params.tab) {
+        // We have both handle and tab
+        if (validTabs.includes(params.tab)) {
+            activeTab = params.tab;
+        }
+        // activeTab stays 'posts' if tab is invalid
+    }
+    // If no tab param, activeTab stays 'posts'
+
+    const {data: account, isLoading: isLoadingAccount, error: accountError, refetch} = useAccountForUser('index', (actualHandle || 'me'));
 
     useEffect(() => {
         refetch();
-    }, [params.handle, refetch]);
+    }, [actualHandle, refetch]);
 
     if (accountError && isApiError(accountError) && accountError.statusCode !== 404) {
         return <Error errorCode={accountError.code} statusCode={accountError.statusCode} />;
@@ -156,13 +175,15 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         };
     }) || [];
 
-    const postsTab = isLoadingAccount ? <></> : <PostsTab handle={params.handle || ''} />;
+    const postsTab = isLoadingAccount ? <></> : <PostsTab handle={actualHandle || ''} />;
     const likesTab = <LikesTab />;
-    const followingTab = <FollowingTab handle={params.handle || ''} />;
-    const followersTab = <FollowersTab handle={params.handle || ''} />;
+    const followingTab = <FollowingTab handle={actualHandle || ''} />;
+    const followersTab = <FollowersTab handle={actualHandle || ''} />;
 
     return <ProfilePage
         account={account!}
+        activeTab={activeTab}
+        actualHandle={actualHandle}
         customFields={customFields}
         followersTab={followersTab}
         followingTab={followingTab}
