@@ -46,6 +46,7 @@ COPY apps/posts/package.json apps/posts/package.json
 COPY apps/shade/package.json apps/shade/package.json
 COPY apps/signup-form/package.json apps/signup-form/package.json
 COPY apps/sodo-search/package.json apps/sodo-search/package.json
+COPY e2e/package.json e2e/package.json
 COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/package.json
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
