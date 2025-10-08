@@ -1,8 +1,7 @@
 import React from 'react';
 import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-filter-tabs/table-filter-tabs';
-import type {GrowthCampaignType} from '@tryghost/admin-x-framework/api/stats';
 
-export type {GrowthCampaignType} from '@tryghost/admin-x-framework/api/stats';
+export type GrowthCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
 export type GrowthTabType = 'sources' | 'campaigns';
 
 export const GROWTH_CAMPAIGN_TYPES = [
@@ -11,7 +10,19 @@ export const GROWTH_CAMPAIGN_TYPES = [
     'UTM campaigns',
     'UTM contents',
     'UTM terms'
-] as const satisfies readonly Exclude<import('@tryghost/admin-x-framework/api/stats').GrowthCampaignType, ''>[];
+] as const satisfies readonly Exclude<GrowthCampaignType, ''>[];
+
+export const UTM_TYPE_MAP: Record<Exclude<GrowthCampaignType, ''>, string> = {
+    'UTM sources': 'utm_source',
+    'UTM mediums': 'utm_medium',
+    'UTM campaigns': 'utm_campaign',
+    'UTM contents': 'utm_content',
+    'UTM terms': 'utm_term'
+};
+
+export const getUtmType = (campaign: GrowthCampaignType): string => {
+    return campaign ? UTM_TYPE_MAP[campaign as Exclude<GrowthCampaignType, ''>] || '' : '';
+};
 
 export const GROWTH_CAMPAIGN_OPTIONS = GROWTH_CAMPAIGN_TYPES.map(type => ({
     value: type,

@@ -93,20 +93,6 @@ export type UtmGrowthStatsResponseType = {
     meta: Meta;
 };
 
-export type GrowthCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
-
-export const UTM_TYPE_MAP: Record<Exclude<GrowthCampaignType, ''>, string> = {
-    'UTM sources': 'utm_source',
-    'UTM mediums': 'utm_medium',
-    'UTM campaigns': 'utm_campaign',
-    'UTM contents': 'utm_content',
-    'UTM terms': 'utm_term'
-};
-
-export const getUtmType = (campaign: GrowthCampaignType): string => {
-    return campaign ? UTM_TYPE_MAP[campaign as Exclude<GrowthCampaignType, ''>] || '' : '';
-};
-
 export type MrrHistoryItem = {
     date: string;
     mrr: number;
