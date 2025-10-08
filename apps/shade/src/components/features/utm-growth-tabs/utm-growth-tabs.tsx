@@ -1,18 +1,19 @@
 import React from 'react';
 import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-filter-tabs/table-filter-tabs';
+import type {GrowthCampaignType} from '@tryghost/admin-x-framework/api/stats';
 
-export type GrowthCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
+export type {GrowthCampaignType} from '@tryghost/admin-x-framework/api/stats';
 export type GrowthTabType = 'sources' | 'campaigns';
 
-export const GROWTH_CAMPAIGN_TYPES: readonly GrowthCampaignType[] = [
+export const GROWTH_CAMPAIGN_TYPES = [
     'UTM sources',
     'UTM mediums',
     'UTM campaigns',
     'UTM contents',
     'UTM terms'
-] as const;
+] as const satisfies readonly Exclude<import('@tryghost/admin-x-framework/api/stats').GrowthCampaignType, ''>[];
 
-const GROWTH_CAMPAIGN_OPTIONS = GROWTH_CAMPAIGN_TYPES.map(type => ({
+export const GROWTH_CAMPAIGN_OPTIONS = GROWTH_CAMPAIGN_TYPES.map(type => ({
     value: type,
     label: type
 }));
