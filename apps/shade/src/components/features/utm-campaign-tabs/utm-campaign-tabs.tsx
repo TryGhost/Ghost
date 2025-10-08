@@ -58,11 +58,11 @@ export const UtmCampaignTabs: React.FC<UtmCampaignTabsProps> = ({
         >
             <TableFilterTab value='sources'>Sources</TableFilterTab>
             <TableFilterDropdownTab
-                value='campaigns'
                 options={CAMPAIGN_OPTIONS}
-                selectedOption={selectedCampaign}
-                onOptionChange={handleCampaignChange}
                 placeholder='Campaigns'
+                selectedOption={selectedCampaign}
+                value='campaigns'
+                onOptionChange={handleCampaignChange}
             />
         </TableFilterTabs>
     );
