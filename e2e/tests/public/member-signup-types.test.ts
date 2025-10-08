@@ -23,7 +23,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
         const magicLink = extractMagicLink(emailTextBody);
         const publicPage = new PublicPage(page);
         await publicPage.goto(magicLink);
-        await publicPage.waitForPageToFullyLoad();
+        await new HomePage(page).waitUntilLoaded();
     }
 
     test('signed up with magic link - direct', async ({page}) => {

@@ -55,7 +55,6 @@ export class AnalyticsPage extends AdminPage {
     // Semantic action methods
     async saveSettings() {
         await this.saveButton.click();
-        await this.page.waitForLoadState('networkidle');
     }
 }
 ```
@@ -92,7 +91,6 @@ export class AnalyticsPage extends AdminPage {
 import {PostFactory, UserFactory} from '../data-factory';
 
 const postFactory = createPostFactory(page.request);
-
 const post = await postFactory.create({userId: user.id});
 ```
 
@@ -107,6 +105,7 @@ const post = await postFactory.create({userId: user.id});
 
 ### DON'T ❌
 - Hard-coded waits (`waitForTimeout`)
+- networkidle in waits** (`networkidle`) 
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test
