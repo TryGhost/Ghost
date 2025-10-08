@@ -40,9 +40,15 @@ export const MagicLinkStyles = `
         font-size: 2rem !important;
         font-weight: 400;
         text-align: center;
+        padding-left: 2ch;
+        padding-right: 1ch;
         letter-spacing: 1ch;
         font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
         margin-bottom: 0;
+    }
+
+    .gh-portal-otp .gh-portal-input.entry {
+        padding-left: 1ch;
     }
 
     .gh-portal-otp-error {
@@ -222,7 +228,7 @@ export default class MagicLinkPage extends React.Component {
                     <section className='gh-portal-section gh-portal-otp'>
                         <input
                             id={`input-${OTC_FIELD_NAME}`}
-                            className={`gh-portal-input  ${errors.otc ? 'error' : ''}`}
+                            className={`gh-portal-input ${(this.state.isFocused || this.state.otc) && 'entry'}  ${errors.otc ? 'error' : ''}`}
                             placeholder={this.state.isFocused ? '' : '––––––'}
                             name={OTC_FIELD_NAME}
                             type="text"
