@@ -95,7 +95,6 @@ export class FeaturePage extends AdminPage {
     // Action methods
     async performAction(): Promise<void> {
         await this.buttonName.click();
-        await this.page.waitForLoadState('networkidle');
     }
 
     async fillForm(data: {field1: string; field2: string}): Promise<void> {
@@ -285,6 +284,7 @@ New factories are added as needed. When you need test data that doesn't have a f
 ❌ **Never put selectors in test files**
 ❌ **Don't write comments** - make code self-documenting instead
 ❌ **Don't use hardcoded waits** (`page.waitForTimeout`)
+❌ **Don't use networkidle in waits** (`page.waitForLoadState('networkidle')`) - rely on web assertions to assess readiness instead
 ❌ **Don't depend on test execution order**
 ❌ **Don't manually log in** - use the pre-authenticated fixture
 ❌ **Avoid CSS/XPath selectors** - use semantic selectors
@@ -296,7 +296,6 @@ New factories are added as needed. When you need test data that doesn't have a f
 
 ```typescript
 // Good - explicit waits
-await page.waitForLoadState('networkidle');
 await element.waitFor({state: 'visible'});
 await page.waitForSelector('[data-test="element"]');
 

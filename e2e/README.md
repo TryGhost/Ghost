@@ -188,6 +188,9 @@ From the e2e directory:
 # Run all tests
 yarn test
 
+# Debug failed tests (keeps containers)
+PRESERVE_ENV=true yarn test
+
 # Run TypeScript type checking
 yarn test:types
 

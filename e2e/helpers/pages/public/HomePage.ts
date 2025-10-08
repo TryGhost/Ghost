@@ -14,4 +14,8 @@ export class HomePage extends PublicPage {
         this.title = page.getByRole('heading', {level: 1});
         this.accountButton = page.locator('[data-portal="account"]').first();
     }
+
+    async waitUntilLoaded(): Promise<void> {
+        return this.accountButton.waitFor({state: 'visible'});
+    }
 }
