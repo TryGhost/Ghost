@@ -9,7 +9,7 @@ test.describe('Ghost Admin - Tags', () => {
     test.use({labs: {tagsX: true}});
 
     test.beforeEach(async ({page}) => {
-        tagFactory = createTagFactory(page);
+        tagFactory = createTagFactory(page.request);
     });
 
     test('lists the default tags list when no new tags were created', async ({page}) => {
@@ -67,7 +67,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('lists tags with posts count', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        const postFactory = createPostFactory(page);
+        const postFactory = createPostFactory(page.request);
 
         const tag = await tagFactory.create({
             name: 'Tag 1',

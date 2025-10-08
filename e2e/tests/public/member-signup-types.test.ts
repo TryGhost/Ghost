@@ -47,7 +47,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - direct from post', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page);
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Test Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -69,7 +69,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - from referrer', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page);
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Google Test Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -91,7 +91,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - direct from newsletter', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page);
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Newsletter Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -112,7 +112,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - utm_source=twitter', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page);
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'UTM Source Post', status: 'published'});
 
         const homePage = new HomePage(page);

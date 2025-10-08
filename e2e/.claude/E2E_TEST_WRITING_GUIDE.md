@@ -197,7 +197,7 @@ test.describe('Feature Name', () => {
     test('should perform expected behavior', async ({page, ghostInstance}) => {
         // Arrange
         const featurePage = new FeaturePage(page);
-        const postFactory = createPostFactory(page);
+        const postFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Test Post'});
 
         // Act
@@ -240,7 +240,7 @@ Data factories provide a clean way to create test data. Import the factory you n
 import {createPostFactory, createMemberFactory} from '../../data-factory';
 
 test('test with data', async ({page}) => {
-    const postFactory = createPostFactory(page);
+    const postFactory = createPostFactory(page.request);
     const memberFactory = createMemberFactory(page);
 
     const post = await postFactory.create({
