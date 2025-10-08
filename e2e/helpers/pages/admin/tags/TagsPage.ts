@@ -48,4 +48,9 @@ export class TagsPage extends AdminPage {
     getTagByName(name: string): Locator {
         return this.page.getByRole('link', {name: name, exact: true});
     }
+
+    async waitForPageToFullyLoad() {
+        await this.page.waitForURL(this.pageUrl);
+        await this.pageContent.waitFor({state: 'visible'});
+    }
 }
