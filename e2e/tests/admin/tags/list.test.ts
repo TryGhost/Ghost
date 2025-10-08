@@ -12,7 +12,7 @@ test.describe('Ghost Admin - Tags', () => {
         tagFactory = createTagFactory(page.request);
     });
 
-    test.skip('shows empty list with call to action buttons', async ({page}) => {
+    test('shows empty list with call to action buttons', async ({page}) => {
         const tagsPage = new TagsPage(page);
         await tagsPage.goto();
 
@@ -22,9 +22,7 @@ test.describe('Ghost Admin - Tags', () => {
         const tagDetailsPage = new TagDetailsPage(page);
         await tagDetailsPage.deleteTag();
 
-        await tagsPage.goto();
-
-        await expect(tagsPage.emptyStateTitle).toBeVisible();
+        await expect(tagsPage.title('Start organizing your content')).toBeVisible();
         await expect(tagsPage.createNewTagButton).toBeVisible();
     });
 

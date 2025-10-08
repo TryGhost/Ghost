@@ -26,5 +26,6 @@ export class TagDetailsPage extends AdminPage {
     async deleteTag() {
         await this.deleteButton.click();
         await this.deleteConfirmButton.click();
+        await this.deleteCancelButton.waitFor({state: 'hidden'});
     }
 }

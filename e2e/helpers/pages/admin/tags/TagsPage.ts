@@ -3,6 +3,7 @@ import {AdminPage} from '../AdminPage';
 
 export class TagsPage extends AdminPage {
     readonly pageContent: Locator;
+
     readonly tagList: Locator;
     readonly tagListRow: Locator;
     readonly tagNames: Locator;
@@ -10,8 +11,6 @@ export class TagsPage extends AdminPage {
     readonly tabs: Locator;
     readonly activeTab: Locator;
     readonly newTagButton: Locator;
-
-    readonly emptyStateTitle: Locator;
     readonly createNewTagButton: Locator;
 
     readonly loadingPlaceholder: Locator;
@@ -28,11 +27,13 @@ export class TagsPage extends AdminPage {
         this.tabs = page.getByTestId('tags-header-tabs');
         this.activeTab = this.tabs.locator('[data-state="active"]');
         this.newTagButton = page.getByRole('link', {name: 'New tag'});
-
-        this.emptyStateTitle = this.pageContent.getByRole('heading', {name: 'Start organizing your content'});
         this.createNewTagButton = this.pageContent.getByRole('link', {name: 'Create a new tag'});
 
         this.loadingPlaceholder = page.getByTestId('loading-placeholder');
+    }
+
+    title(name: string) {
+        return this.pageContent.getByRole('heading', {name: name});
     }
 
     async selectTab(tabText: string) {
