@@ -184,7 +184,7 @@ export const ButtonSized: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Toggle group with text labels instead of icons for clearer meaning.'
+                story: 'Toggle group with button-sized variant for a more prominent appearance, suitable for primary navigation controls.'
             }
         }
     }
