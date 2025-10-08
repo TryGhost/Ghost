@@ -23,6 +23,7 @@ module.exports = class CheckoutSessionEventService {
      * @param {object} deps.memberRepository
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
+     * @param {function} deps.getTokenDataFromMagicLinkToken
      * @param {function} deps.sendSignupEmail
      */
     constructor(deps) {
@@ -171,6 +172,12 @@ module.exports = class CheckoutSessionEventService {
             expand: ['subscriptions.data.default_payment_method']
         });
 
+        if (customer.deleted) {
+            throw new errors.BadRequestError({
+                message: 'Cannot process checkout for deleted customer'
+            });
+        }
+
         const memberRepository = this.deps.memberRepository;
 
         let member = await memberRepository.get({
@@ -181,27 +188,37 @@ module.exports = class CheckoutSessionEventService {
 
         if (!member) {
             const metadataName = _.get(session, 'metadata.name');
-            const metadataNewsletters = _.get(session, 'metadata.newsletters');
-            const attribution = {
-                id: session.metadata?.attribution_id ?? null,
-                url: session.metadata?.attribution_url ?? null,
-                type: session.metadata?.attribution_type ?? null,
-                referrerSource: session.metadata?.referrer_source ?? null,
-                referrerMedium: session.metadata?.referrer_medium ?? null,
-                referrerUrl: session.metadata?.referrer_url ?? null
-            };
+
+            // Get newsletter and attribution data from the magic link token in success_url
+            let newsletters = null;
+            let attribution = null;
+
+            try {
+                const successUrl = session.success_url;
+                if (successUrl && this.deps.getTokenDataFromMagicLinkToken) {
+                    const url = new URL(successUrl);
+                    const token = url.searchParams.get('token');
+
+                    if (token) {
+                        const tokenData = await this.deps.getTokenDataFromMagicLinkToken(token);
+
+                        if (tokenData) {
+                            // Preserve the distinction between undefined (use defaults) and [] (opted out)
+                            if ('newsletters' in tokenData) {
+                                newsletters = tokenData.newsletters;
+                            }
+                            attribution = tokenData.attribution || null;
+                        }
+                    }
+                }
+            } catch (e) {
+                logging.warn(`Could not retrieve data from token: ${e.message}`);
+            }
 
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
             const name = metadataName || payerName || null;
 
-            const memberData = {email: customer.email, name, attribution};
-            if (metadataNewsletters) {
-                try {
-                    memberData.newsletters = JSON.parse(metadataNewsletters);
-                } catch (e) {
-                    logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
-                }
-            }
+            const memberData = {email: customer.email, name, attribution, newsletters};
 
             const offerId = session.metadata?.offer;
             const memberDataWithStripeCustomer = {
@@ -209,6 +226,7 @@ module.exports = class CheckoutSessionEventService {
                 stripeCustomer: customer,
                 offerId
             };
+
             member = await memberRepository.create(memberDataWithStripeCustomer);
         } else {
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
