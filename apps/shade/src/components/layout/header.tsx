@@ -51,7 +51,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
 interface HeaderNavProps extends PropsWithChildrenAndClassName {}
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:nav] place-self-baseline', className)}>
+        <div className={cn('flex items-center gap-2 [grid-area:nav] self-start mt-2 lg:mt-0.5', className)}>
             {children}
         </div>
     );
