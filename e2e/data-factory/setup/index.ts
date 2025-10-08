@@ -6,7 +6,7 @@ import {Page} from '@playwright/test';
  * Create a new PostFactory with API persistence
  * Uses the page.request context which already has the proper
  * storageState and baseURL configured for the current test worker
- * 
+ *
  * @param page - The Playwright page object from the test
  * @returns PostFactory ready to use with the specified Ghost backend
  */
