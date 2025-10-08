@@ -2,8 +2,6 @@ import {test, expect} from '../../../helpers/playwright';
 import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Tags Editor', () => {
-    test.use({labs: {tagsX: true}});
-
     test('can add tags', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
         const tagsPage = new TagsPage(page);

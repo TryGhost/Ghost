@@ -5,9 +5,6 @@ import {Page} from '@playwright/test';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;
-    // Set labs flags for all tests in this describe block
-    test.use({labs: {tagsX: true}});
-
     test.beforeEach(async ({page}) => {
         tagFactory = createTagFactory(page.request);
     });
