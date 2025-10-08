@@ -200,9 +200,9 @@ export class GhostManager {
                         // Just force kill and remove - don't wait for graceful shutdown
                         await container.remove({force: true, v: true});
                         debug('Ghost container removed:', containerInfo.Id.substring(0, 12));
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                         // Ignore "already removed" errors
-                        if (error.statusCode !== 404) {
+                        if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode !== 404) {
                             logging.error(`Failed to remove Ghost container ${containerInfo.Id.substring(0, 12)}:`, error);
                         }
                     }
@@ -210,7 +210,9 @@ export class GhostManager {
 
                 // Small delay before checking again
                 if (attempt < 2) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 500);
+                    });
                 }
             }
 
