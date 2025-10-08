@@ -4,7 +4,17 @@ import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
 import * as helpers from '../utils/helpers';
 import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../data-attributes';
-import * as i18nLib from '@tryghost/i18n';
+import i18n from '../utils/i18n';
+import {vi} from 'vitest';
+
+vi.mock('../utils/i18n', () => ({
+    default: {
+        changeLanguage: vi.fn(),
+        dir: vi.fn(),
+        t: vi.fn(str => str)
+    },
+    t: vi.fn(str => str)
+}));
 
 // Mock data
 function getMockData({newsletterQuerySelectorResult = null} = {}) {
@@ -75,6 +85,8 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
 
 describe('Member Data attributes:', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+
         // Mock global fetch
         jest.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
@@ -315,17 +327,10 @@ describe('Member Data attributes:', () => {
             // Override the site locale to 'de'
             site.locale = 'de';
 
-            // Mock i18nLib to verify it's called with correct parameters
-            const mockI18n = {
-                t: jest.fn(str => str)
-            };
-            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
-
             await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
 
             // Verify i18nLib was called with correct locale
-            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
-            expect(mockI18n.t).toBeDefined();
+            expect(i18n.changeLanguage).toHaveBeenCalledWith('de');
         });
 
         test('allows free member upgrade via direct checkout', async () => {
@@ -455,6 +460,8 @@ const setup = async ({site, member = null, showPopup = true}) => {
 
 describe('Portal Data attributes:', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+
         // Mock global fetch
         jest.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
@@ -718,17 +725,9 @@ describe('Portal Data attributes:', () => {
             // Override the site locale to 'de'
             site.locale = 'de';
 
-            // Mock i18nLib to verify it's called with correct parameters
-            const mockI18n = {
-                t: jest.fn(str => str)
-            };
-            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
-
             handleDataAttributes({siteUrl, site, member});
 
-            // Verify i18nLib was called with correct locale
-            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
-            expect(mockI18n.t).toBeDefined();
+            expect(i18n.changeLanguage).toHaveBeenCalledWith('de');
         });
     });
 });
