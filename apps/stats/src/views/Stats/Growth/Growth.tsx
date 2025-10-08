@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableFilterDropdownTab, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, GROWTH_CAMPAIGN_OPTIONS, GrowthCampaignType, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableFilterDropdownTab, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -37,14 +37,6 @@ interface UnifiedGrowthContentData {
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
 type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'source desc';
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
-
-const GROWTH_CAMPAIGN_OPTIONS = [
-    {value: 'UTM sources', label: 'UTM sources'},
-    {value: 'UTM mediums', label: 'UTM mediums'},
-    {value: 'UTM campaigns', label: 'UTM campaigns'},
-    {value: 'UTM contents', label: 'UTM contents'},
-    {value: 'UTM terms', label: 'UTM terms'}
-];
 
 const Growth: React.FC = () => {
     const {range, site, data: globalData} = useGlobalData();
