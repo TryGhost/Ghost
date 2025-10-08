@@ -2,9 +2,9 @@ import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
-import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
+import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
