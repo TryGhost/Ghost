@@ -5,6 +5,7 @@ const AppContext = React.createContext({
     site: {},
     member: {},
     action: '',
+    actionErrorMessage: null,
     lastPage: '',
     brandColor: '',
     pageData: {},

@@ -242,9 +242,9 @@ describe('Member Data attributes:', () => {
             });
 
             const labs = {membersSigninOTC: true};
-            const actionError = new Error('failed to start OTC sign-in');
+            const actionErrorMessage = new Error('failed to start OTC sign-in');
             const doAction = jest.fn(() => {
-                throw actionError;
+                throw actionErrorMessage;
             });
             const captureException = jest.fn();
             const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -275,8 +275,8 @@ describe('Member Data attributes:', () => {
                 email: 'jamie@example.com',
                 otcRef: 'otc_test_ref'
             });
-            expect(captureException).toHaveBeenCalledWith(actionError);
-            expect(consoleSpy).toHaveBeenCalledWith(actionError);
+            expect(captureException).toHaveBeenCalledWith(actionErrorMessage);
+            expect(consoleSpy).toHaveBeenCalledWith(actionErrorMessage);
             expect(form.classList.add).toHaveBeenCalledWith('success');
 
             consoleSpy.mockRestore();
