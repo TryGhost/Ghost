@@ -1,6 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import ActivityItem from '@src/components/activities/ActivityItem';
 import Layout from '@src/components/layout';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
@@ -101,55 +102,57 @@ const Moderation: React.FC = () => {
                                 </NoValueLabel>
                             ) : (
                                 blockedAccounts.map((account, index) => (
-                                    <ActivityItem
-                                        key={account.apId ? account.apId : `loading-${index}`}
-                                        onClick={!blockedAccountsLoading ? () => handleProfileClick(account.handle, navigate) : undefined}
-                                    >
-                                        <APAvatar
-                                            author={
-                                                {
-                                                    icon: {
-                                                        url: account.avatarUrl
-                                                    },
-                                                    name: account.name,
-                                                    handle: account.handle
-                                                }
-                                            } />
-                                        <div className='flex min-w-0  flex-col'>
-                                            <span className='block truncate font-semibold text-black dark:text-white'>{!blockedAccountsLoading ? account.name : <Skeleton className='w-24' />}</span>
-                                            <span className='block truncate text-sm text-gray-600'>{!blockedAccountsLoading ? account.handle : <Skeleton className='w-40' />}</span>
-                                        </div>
+                                    <ProfilePreviewHoverCard actor={account} isCurrentUser={true}>
+                                        <ActivityItem
+                                            key={account.apId ? account.apId : `loading-${index}`}
+                                            onClick={!blockedAccountsLoading ? () => handleProfileClick(account.handle, navigate) : undefined}
+                                        >
+                                            <APAvatar
+                                                author={
+                                                    {
+                                                        icon: {
+                                                            url: account.avatarUrl
+                                                        },
+                                                        name: account.name,
+                                                        handle: account.handle
+                                                    }
+                                                } />
+                                            <div className='flex min-w-0  flex-col'>
+                                                <span className='block truncate font-semibold text-black dark:text-white'>{!blockedAccountsLoading ? account.name : <Skeleton className='w-24' />}</span>
+                                                <span className='block truncate text-sm text-gray-600'>{!blockedAccountsLoading ? account.handle : <Skeleton className='w-40' />}</span>
+                                            </div>
 
-                                        {unblockedAccountIds.has(account.apId) ? (
-                                            <Button
-                                                className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
-                                                variant='outline'
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleBlock(account);
-                                                }}
-                                            >
-                                                Block
-                                            </Button>
-                                        ) : (
-                                            !blockedAccountsLoading ?
+                                            {unblockedAccountIds.has(account.apId) ? (
                                                 <Button
-                                                    className='ml-auto min-w-[90px]'
-                                                    variant='destructive'
+                                                    className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
+                                                    variant='outline'
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleUnblock(account);
+                                                        handleBlock(account);
                                                     }}
-                                                    onMouseEnter={() => setHoveredItemId(account.apId)}
-                                                    onMouseLeave={() => setHoveredItemId(null)}
                                                 >
-                                                    {hoveredItemId === account.apId ? 'Unblock' : 'Blocked'}
-                                                </Button> :
-                                                <div className='ml-auto w-16'>
-                                                    <Skeleton />
-                                                </div>
-                                        )}
-                                    </ActivityItem>
+                                                    Block
+                                                </Button>
+                                            ) : (
+                                                !blockedAccountsLoading ?
+                                                    <Button
+                                                        className='ml-auto min-w-[90px]'
+                                                        variant='destructive'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleUnblock(account);
+                                                        }}
+                                                        onMouseEnter={() => setHoveredItemId(account.apId)}
+                                                        onMouseLeave={() => setHoveredItemId(null)}
+                                                    >
+                                                        {hoveredItemId === account.apId ? 'Unblock' : 'Blocked'}
+                                                    </Button> :
+                                                    <div className='ml-auto w-16'>
+                                                        <Skeleton />
+                                                    </div>
+                                            )}
+                                        </ActivityItem>
+                                    </ProfilePreviewHoverCard>
                                 ))
                             )}
                         </TabsContent>

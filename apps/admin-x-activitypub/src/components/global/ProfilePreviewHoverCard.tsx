@@ -76,7 +76,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
 
     return (
         <HoverCard onOpenChange={setShouldFetch}>
-            <HoverCardTrigger asChild>
+            <HoverCardTrigger>
                 {children}
             </HoverCardTrigger>
             <HoverCardContent
@@ -92,6 +92,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                                 {avatarUrl && (
                                     <AvatarImage
                                         alt={displayName}
+                                        className='rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10'
                                         src={avatarUrl}
                                         onError={(event) => {
                                             (event.target as HTMLImageElement).src = '';

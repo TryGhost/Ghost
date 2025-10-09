@@ -1,6 +1,7 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
@@ -53,26 +54,28 @@ const Recommendations: React.FC = () => {
                     return (
                         <React.Fragment key={actorId}>
                             <li key={actorId} className={className}>
-                                <ActivityItem onClick={() => {
-                                    if (!isLoadingSuggested && profile) {
-                                        handleProfileClick(profile, navigate);
-                                    }
-                                }}>
-                                    {!isLoadingSuggested ? <APAvatar
-                                        author={{
-                                            icon: {
-                                                url: actorAvatarUrl
-                                            },
-                                            name: actorName,
-                                            handle: actorHandle
-                                        }}
-                                        showFollowButton={true}
-                                    /> : <Skeleton className='z-10 size-10' />}
-                                    <div className='flex min-w-0  flex-col'>
-                                        <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
-                                        <span className='block max-w-[190px] truncate text-sm text-gray-700 dark:text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>
-                                    </div>
-                                </ActivityItem>
+                                <ProfilePreviewHoverCard actor={profile} align='center' isCurrentUser={false} side='left'>
+                                    <ActivityItem onClick={() => {
+                                        if (!isLoadingSuggested && profile) {
+                                            handleProfileClick(profile, navigate);
+                                        }
+                                    }}>
+                                        {!isLoadingSuggested ? <APAvatar
+                                            author={{
+                                                icon: {
+                                                    url: actorAvatarUrl
+                                                },
+                                                name: actorName,
+                                                handle: actorHandle
+                                            }}
+                                            showFollowButton={true}
+                                        /> : <Skeleton className='z-10 size-10' />}
+                                        <div className='flex min-w-0  flex-col'>
+                                            <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
+                                            <span className='block max-w-[190px] truncate text-sm text-gray-700 dark:text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>
+                                        </div>
+                                    </ActivityItem>
+                                </ProfilePreviewHoverCard>
                             </li>
                         </React.Fragment>
                     );
