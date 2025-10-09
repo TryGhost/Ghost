@@ -1,6 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import React, {useEffect} from 'react';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
@@ -45,21 +46,25 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                 navigate(`/profile/${profile.handle}`);
             }}
         >
-            <APAvatar author={
-                {
-                    icon: {
-                        url: profile.avatarUrl
-                    },
-                    name: profile.name,
-                    handle: profile.handle
-                }
-            } onClick={() => onOpenChange?.(false)} />
             <div className='flex w-full flex-col gap-1 border-b border-gray-200 pb-4 dark:border-gray-950'>
                 <div className='flex items-center justify-between gap-3'>
-                    <div className='flex grow flex-col break-anywhere'>
-                        <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
-                        <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
-                    </div>
+                    <ProfilePreviewHoverCard actor={profile} isCurrentUser={isCurrentUser}>
+                        <div className='flex gap-3'>
+                            <APAvatar author={
+                                {
+                                    icon: {
+                                        url: profile.avatarUrl
+                                    },
+                                    name: profile.name,
+                                    handle: profile.handle
+                                }
+                            } onClick={() => onOpenChange?.(false)} />
+                            <div className='-mt-0.5 flex grow flex-col break-anywhere'>
+                                <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
+                                <span className='line-clamp-1 text-md text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
+                            </div>
+                        </div>
+                    </ProfilePreviewHoverCard>
                     {!isLoading ? (
                         !isCurrentUser ? (
                             <FollowButton
@@ -77,23 +82,25 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         </div>
                     )}
                 </div>
-                {isLoading ?
-                    <Skeleton className='w-full max-w-96' />
-                    :
-                    profile.bio &&
-                    <div
-                        dangerouslySetInnerHTML={{__html: profile.bio}}
-                        className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[500px] break-anywhere'
-                    />
-                }
-                {!isLoading ?
-                    <div className='mt-2 flex items-center gap-1 text-sm text-gray-700 dark:text-gray-600'>
-                        <LucideIcon.UserRound size={14} strokeWidth={1.5} />
-                        {formatFollowNumber(profile.followerCount)} followers
-                    </div>
-                    :
-                    <Skeleton className='w-24' />
-                }
+                <div className='pl-[52px]'>
+                    {isLoading ?
+                        <Skeleton className='w-full max-w-96' />
+                        :
+                        profile.bio &&
+                        <div
+                            dangerouslySetInnerHTML={{__html: profile.bio}}
+                            className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[500px] break-anywhere'
+                        />
+                    }
+                    {!isLoading ?
+                        <div className='mt-2 flex items-center gap-1 text-sm text-gray-700 dark:text-gray-600'>
+                            <LucideIcon.UserRound size={14} strokeWidth={1.5} />
+                            {formatFollowNumber(profile.followerCount)} followers
+                        </div>
+                        :
+                        <Skeleton className='w-24' />
+                    }
+                </div>
             </div>
         </div>
     );

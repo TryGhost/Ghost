@@ -1,6 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import ActivityItem from '@src/components/activities/ActivityItem';
 import FollowButton from '@src/components/global/FollowButton';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import React, {useEffect, useRef} from 'react';
 import getName from '@src/utils/get-name';
 import getUsername from '@src/utils/get-username';
@@ -29,7 +30,7 @@ const ActorList: React.FC<ActorListProps> = ({
 }) => {
     const currentAccountQuery = useAccountForUser('index', 'me');
     const {data: currentUser} = currentAccountQuery;
-    
+
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,35 +71,37 @@ const ActorList: React.FC<ActorListProps> = ({
                         {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
                             const actorHandle = actor.handle || getUsername(actor);
                             const isCurrentUser = actorHandle === currentUser?.handle;
-                            
+
                             return (
                                 <React.Fragment key={actor.id}>
-                                    <ActivityItem key={actor.id}
-                                        data-testid="actor-item"
-                                        onClick={() => {
-                                            handleProfileClick(actor, navigate);
-                                        }}
-                                    >
-                                        <APAvatar author={actor} />
-                                        <div>
-                                            <div className='text-gray-600 break-anywhere'>
-                                                <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
-                                                <div className='line-clamp-1 text-sm'>{actorHandle}</div>
+                                    <ProfilePreviewHoverCard actor={actor} isCurrentUser={false}>
+                                        <ActivityItem key={actor.id}
+                                            data-testid="actor-item"
+                                            onClick={() => {
+                                                handleProfileClick(actor, navigate);
+                                            }}
+                                        >
+                                            <APAvatar author={actor} />
+                                            <div>
+                                                <div className='text-gray-600 break-anywhere'>
+                                                    <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
+                                                    <div className='line-clamp-1 text-sm'>{actorHandle}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {blockedByMe || domainBlockedByMe ?
-                                            <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
-                                            !isCurrentUser ? (
-                                                <FollowButton
-                                                    className='ml-auto'
-                                                    data-testid="follow-button"
-                                                    following={isFollowing}
-                                                    handle={actorHandle}
-                                                    type='secondary'
-                                                />
-                                            ) : null
-                                        }
-                                    </ActivityItem>
+                                            {blockedByMe || domainBlockedByMe ?
+                                                <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                                                !isCurrentUser ? (
+                                                    <FollowButton
+                                                        className='ml-auto'
+                                                        data-testid="follow-button"
+                                                        following={isFollowing}
+                                                        handle={actorHandle}
+                                                        type='secondary'
+                                                    />
+                                                ) : null
+                                            }
+                                        </ActivityItem>
+                                    </ProfilePreviewHoverCard>
                                 </React.Fragment>
                             );
                         })}

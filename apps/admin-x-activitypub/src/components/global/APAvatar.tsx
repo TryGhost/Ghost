@@ -156,7 +156,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         unfollowMutation.mutate(handle);
     };
 
-    const title = `${author?.name} ${handle}`;
     const isClickedUser = avatarClickedUser === handle;
     const displayFollowButton = showFollowButton || isClickedUser;
 
@@ -164,7 +163,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         return (
             <div
                 className={containerClass}
-                title={title}
                 onClick={size === 'lg' || disabled ? undefined : handleClick}
             >
                 <img
@@ -181,7 +179,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     return (
         <div
             className={containerClass}
-            title={title}
             onClick={disabled ? undefined : handleClick}
         >
             <LucideIcon.UserRound className='text-gray-600' size={iconSize} strokeWidth={1.5} />

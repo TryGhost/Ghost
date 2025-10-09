@@ -10,6 +10,7 @@ import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
@@ -97,15 +98,17 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorText = (
         <>
-            <span
-                className={actorClass}
-                onClick={(e) => {
-                    e?.stopPropagation();
-                    handleProfileClick(firstActor.handle, navigate);
-                }}
-            >
-                {firstActor.name}
-            </span>
+            <ProfilePreviewHoverCard actor={firstActor as unknown as ActorProperties} isCurrentUser={false}>
+                <span
+                    className={actorClass}
+                    onClick={(e) => {
+                        e?.stopPropagation();
+                        handleProfileClick(firstActor.handle, navigate);
+                    }}
+                >
+                    {firstActor.name}
+                </span>
+            </ProfilePreviewHoverCard>
             {hasOthers && ` and ${otherActors.length} ${otherActors.length > 1 ? 'others' : 'other'}`}
         </>
     );
