@@ -25,7 +25,7 @@ export class TagsPage extends AdminPage {
         this.tagNames = page.locator('[data-test-tag-name]');
 
         this.tabs = page.getByTestId('tags-header-tabs');
-        this.activeTab = this.tabs.locator('[data-state="active"]');
+        this.activeTab = this.tabs.locator('[data-state="on"]');
         this.newTagButton = page.getByRole('link', {name: 'New tag'});
         this.createNewTagButton = this.pageContent.getByRole('link', {name: 'Create a new tag'});
 
@@ -37,7 +37,7 @@ export class TagsPage extends AdminPage {
     }
 
     async selectTab(tabText: string) {
-        const tab = this.tabs.getByRole('link', {name: tabText});
+        const tab = this.tabs.getByLabel(tabText);
         await tab.click();
     }
 
