@@ -404,19 +404,93 @@ describe('ReferrersStatsService', function () {
         });
     });
 
-    describe('getUtmGrowthStats (fixture data)', function () {
+    describe('getUtmGrowthStats', function () {
+        /** @type {import('knex').Knex} */
+        let db;
         let service;
 
-        beforeEach(function () {
-            const mockDb = {}; // No real DB needed for fixture tests
-            service = new ReferrersStatsService({knex: mockDb});
+        beforeEach(async function () {
+            db = knex({
+                client: 'sqlite3',
+                useNullAsDefault: true,
+                connection: {
+                    filename: ':memory:'
+                }
+            });
+
+            // Create tables with UTM fields
+            await db.schema.createTable('members_created_events', function (table) {
+                table.string('id');
+                table.string('member_id');
+                table.string('attribution_id');
+                table.string('attribution_type');
+                table.string('utm_source');
+                table.string('utm_medium');
+                table.string('utm_campaign');
+                table.string('utm_term');
+                table.string('utm_content');
+                table.dateTime('created_at');
+            });
+
+            await db.schema.createTable('members_subscription_created_events', function (table) {
+                table.string('id');
+                table.string('member_id');
+                table.string('subscription_id');
+                table.string('attribution_id');
+                table.string('attribution_type');
+                table.string('utm_source');
+                table.string('utm_medium');
+                table.string('utm_campaign');
+                table.string('utm_term');
+                table.string('utm_content');
+                table.dateTime('created_at');
+            });
+
+            await db.schema.createTable('members_paid_subscription_events', function (table) {
+                table.string('member_id');
+                table.string('subscription_id');
+                table.integer('mrr_delta');
+                table.dateTime('created_at');
+            });
+
+            service = new ReferrersStatsService({knex: db});
         });
 
-        it('returns utm_source fixture data by default', async function () {
+        afterEach(async function () {
+            await db.destroy();
+        });
+
+        async function insertUtmTestData() {
+            const now = DateTime.now();
+
+            // Insert free members with different UTM sources
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'free_member_1', utm_source: 'google', utm_medium: 'organic', utm_campaign: 'spring-sale', created_at: now.toISO()},
+                {id: '2', member_id: 'free_member_2', utm_source: 'google', utm_medium: 'organic', utm_campaign: 'spring-sale', created_at: now.toISO()},
+                {id: '3', member_id: 'free_member_3', utm_source: 'facebook', utm_medium: 'social', utm_campaign: 'product-launch', created_at: now.toISO()},
+                {id: '4', member_id: 'paid_member_1', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'spring-sale', created_at: now.toISO()},
+                {id: '5', member_id: 'paid_member_2', utm_source: 'twitter', utm_medium: 'social', utm_campaign: 'product-launch', created_at: now.toISO()}
+            ]);
+
+            // Insert paid conversions
+            await db('members_subscription_created_events').insert([
+                {id: '1', member_id: 'paid_member_1', subscription_id: 'sub_1', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'spring-sale', created_at: now.toISO()},
+                {id: '2', member_id: 'paid_member_2', subscription_id: 'sub_2', utm_source: 'twitter', utm_medium: 'social', utm_campaign: 'product-launch', created_at: now.toISO()}
+            ]);
+
+            // Insert MRR data
+            await db('members_paid_subscription_events').insert([
+                {member_id: 'paid_member_1', subscription_id: 'sub_1', mrr_delta: 1000, created_at: now.toISO()},
+                {member_id: 'paid_member_2', subscription_id: 'sub_2', mrr_delta: 500, created_at: now.toISO()}
+            ]);
+        }
+
+        it('returns utm_source data by default', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({});
 
             assert(result.data, 'Should return data');
-            assert(result.data.length > 0, 'Should have fixture data');
+            assert(result.data.length > 0, 'Should have data');
             assert.equal(result.data[0].utm_type, 'utm_source', 'Should default to utm_source');
             assert(result.data[0].utm_value, 'Should have utm_value');
             assert.equal(typeof result.data[0].free_members, 'number', 'Should have free_members count');
@@ -424,36 +498,22 @@ describe('ReferrersStatsService', function () {
             assert.equal(typeof result.data[0].mrr, 'number', 'Should have mrr value');
         });
 
-        it('returns utm_medium fixture data when specified', async function () {
+        it('returns utm_medium data when specified', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({utm_type: 'utm_medium'});
 
             assert(result.data, 'Should return data');
-            assert(result.data.length > 0, 'Should have fixture data');
+            assert(result.data.length > 0, 'Should have data');
             assert.equal(result.data[0].utm_type, 'utm_medium', 'Should return utm_medium data');
         });
 
-        it('returns utm_campaign fixture data when specified', async function () {
+        it('returns utm_campaign data when specified', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({utm_type: 'utm_campaign'});
 
             assert(result.data, 'Should return data');
-            assert(result.data.length > 0, 'Should have fixture data');
+            assert(result.data.length > 0, 'Should have data');
             assert.equal(result.data[0].utm_type, 'utm_campaign', 'Should return utm_campaign data');
-        });
-
-        it('returns utm_term fixture data when specified', async function () {
-            const result = await service.getUtmGrowthStats({utm_type: 'utm_term'});
-
-            assert(result.data, 'Should return data');
-            assert(result.data.length > 0, 'Should have fixture data');
-            assert.equal(result.data[0].utm_type, 'utm_term', 'Should return utm_term data');
-        });
-
-        it('returns utm_content fixture data when specified', async function () {
-            const result = await service.getUtmGrowthStats({utm_type: 'utm_content'});
-
-            assert(result.data, 'Should return data');
-            assert(result.data.length > 0, 'Should have fixture data');
-            assert.equal(result.data[0].utm_type, 'utm_content', 'Should return utm_content data');
         });
 
         it('throws error for invalid utm_type', async function () {
@@ -465,12 +525,14 @@ describe('ReferrersStatsService', function () {
         });
 
         it('applies limit parameter', async function () {
-            const result = await service.getUtmGrowthStats({utm_type: 'utm_source', limit: 3});
+            await insertUtmTestData();
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_source', limit: 1});
 
-            assert.equal(result.data.length, 3, 'Should limit results to 3');
+            assert.equal(result.data.length, 1, 'Should limit results to 1');
         });
 
         it('sorts by free_members desc by default', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({utm_type: 'utm_source'});
 
             // Check that results are sorted by free_members descending
@@ -483,6 +545,7 @@ describe('ReferrersStatsService', function () {
         });
 
         it('sorts by paid_members desc when specified', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({
                 utm_type: 'utm_source',
                 order: 'paid_members desc'
@@ -498,6 +561,7 @@ describe('ReferrersStatsService', function () {
         });
 
         it('sorts by mrr desc when specified', async function () {
+            await insertUtmTestData();
             const result = await service.getUtmGrowthStats({
                 utm_type: 'utm_source',
                 order: 'mrr desc'
@@ -512,42 +576,65 @@ describe('ReferrersStatsService', function () {
             }
         });
 
-        it('scales down data when post_id is provided', async function () {
-            const globalResult = await service.getUtmGrowthStats({utm_type: 'utm_source'});
-            const postResult = await service.getUtmGrowthStats({
+        it('filters data when post_id is provided', async function () {
+            const now = DateTime.now();
+            const postId = 'test-post-id';
+
+            // Insert members with different attribution
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'free_member_1', utm_source: 'google', attribution_id: postId, attribution_type: 'post', created_at: now.toISO()},
+                {id: '2', member_id: 'free_member_2', utm_source: 'facebook', attribution_id: 'other-post', attribution_type: 'post', created_at: now.toISO()}
+            ]);
+
+            const result = await service.getUtmGrowthStats({
                 utm_type: 'utm_source',
-                post_id: 'test-post-id'
+                post_id: postId
             });
 
-            assert(postResult.data.length > 0, 'Should have post-specific data');
-            assert(postResult.data.length <= globalResult.data.length, 'Post data should be filtered');
-
-            // Values should be scaled down (approximately 25-30% of global)
-            if (postResult.data[0] && globalResult.data[0]) {
-                assert(
-                    postResult.data[0].free_members < globalResult.data[0].free_members,
-                    'Post free_members should be less than global'
-                );
-                assert(
-                    postResult.data[0].paid_members < globalResult.data[0].paid_members,
-                    'Post paid_members should be less than global'
-                );
-                assert(
-                    postResult.data[0].mrr < globalResult.data[0].mrr,
-                    'Post mrr should be less than global'
-                );
-            }
+            assert.equal(result.data.length, 1, 'Should only return data for specified post');
+            assert.equal(result.data[0].utm_value, 'google', 'Should only include google source');
         });
 
         it('does not apply limit when post_id is provided', async function () {
+            const now = DateTime.now();
+            const postId = 'test-post-id';
+
+            // Insert multiple members for a specific post
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'free_member_1', utm_source: 'google', attribution_id: postId, attribution_type: 'post', created_at: now.toISO()},
+                {id: '2', member_id: 'free_member_2', utm_source: 'facebook', attribution_id: postId, attribution_type: 'post', created_at: now.toISO()},
+                {id: '3', member_id: 'free_member_3', utm_source: 'twitter', attribution_id: postId, attribution_type: 'post', created_at: now.toISO()}
+            ]);
+
             const result = await service.getUtmGrowthStats({
                 utm_type: 'utm_source',
-                post_id: 'test-post-id',
-                limit: 2
+                post_id: postId,
+                limit: 1
             });
 
-            // Should return all post-specific results, not limited to 2
-            assert(result.data.length > 2, 'Should ignore limit for post-specific queries');
+            // Should return all post-specific results, not limited to 1
+            assert(result.data.length === 3, 'Should ignore limit for post-specific queries');
+        });
+
+        it('correctly aggregates free members, paid members, and MRR', async function () {
+            await insertUtmTestData();
+
+            // Provide explicit date range to ensure the deduplication works
+            const now = DateTime.now();
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                date_from: now.minus({days: 1}).toISODate(),
+                date_to: now.plus({days: 1}).toISODate()
+            });
+
+            const googleData = result.data.find(item => item.utm_value === 'google');
+            assert(googleData, 'Should have google data');
+            // Google has 3 created events: free_member_1, free_member_2, paid_member_1
+            // paid_member_1 also has a subscription in the same window, so it's excluded from free
+            // Result: free_members = 2, paid_members = 1
+            assert.equal(googleData.free_members, 2, 'Should have 2 free members (excluding converted member)');
+            assert.equal(googleData.paid_members, 1, 'Should have 1 paid member');
+            assert.equal(googleData.mrr, 1000, 'Should have correct MRR');
         });
     });
 });

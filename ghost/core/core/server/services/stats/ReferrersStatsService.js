@@ -458,11 +458,131 @@ class ReferrersStatsService {
     }
 
     /**
-     * Get UTM growth stats broken down by UTM parameter (fixture data for now)
+     * Fetch free member counts by UTM parameter with date range
+     * Returns members who haven't converted to paid within the same time window
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, signups: number}[]>}
+     **/
+    async fetchMemberCountsByUtm(utmField, options) {
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        // Query: Free members who haven't converted to paid within the same time window
+        const freeSignupsQuery = knex('members_created_events as mce')
+            .select(knex.raw(`mce.${utmField} as utm_value`))
+            .select(knex.raw('COUNT(DISTINCT mce.member_id) as signups'))
+            .leftJoin('members_subscription_created_events as msce', function () {
+                this.on('mce.member_id', '=', 'msce.member_id')
+                    // Only join if the conversion happened within the same time window
+                    .andOn('msce.created_at', '>=', knex.raw('?', [startDateTime]))
+                    .andOn('msce.created_at', '<=', knex.raw('?', [endDateTime]));
+            })
+            .whereNull('msce.id')
+            .whereNotNull(`mce.${utmField}`)
+            .groupBy(`mce.${utmField}`);
+
+        // Apply date filtering
+        applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            freeSignupsQuery
+                .where('mce.attribution_id', postId)
+                .where('mce.attribution_type', 'post');
+        }
+
+        const results = await freeSignupsQuery;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            signups: parseInt(row.signups) || 0
+        }));
+    }
+
+    /**
+     * Fetch paid conversion counts by UTM parameter with date range
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, paid_conversions: number}[]>}
+     **/
+    async fetchPaidConversionsByUtm(utmField, options) {
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        const paidConversionsQuery = knex('members_subscription_created_events as msce')
+            .select(knex.raw(`msce.${utmField} as utm_value`))
+            .select(knex.raw('COUNT(DISTINCT msce.member_id) as paid_conversions'))
+            .whereNotNull(`msce.${utmField}`)
+            .groupBy(`msce.${utmField}`);
+
+        // Apply date filtering
+        applyDateFilter(paidConversionsQuery, startDateTime, endDateTime, 'msce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            paidConversionsQuery
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+        }
+
+        const results = await paidConversionsQuery;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            paid_conversions: parseInt(row.paid_conversions) || 0
+        }));
+    }
+
+    /**
+     * Fetch MRR by UTM parameter with date range
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, mrr: number}[]>}
+     **/
+    async fetchMrrByUtm(utmField, options) {
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        // Join subscription created events with paid subscription events to get MRR changes
+        let query = knex('members_subscription_created_events as msce')
+            .join('members_paid_subscription_events as mpse', function () {
+                this.on('msce.member_id', '=', 'mpse.member_id')
+                    .andOn('msce.subscription_id', '=', 'mpse.subscription_id');
+            })
+            .select(knex.raw(`msce.${utmField} as utm_value`))
+            .select(knex.raw(`SUM(mpse.mrr_delta) as mrr`))
+            .where('mpse.mrr_delta', '>', 0) // Only positive MRR changes (new subscriptions)
+            .whereNotNull(`msce.${utmField}`)
+            .groupBy(`msce.${utmField}`);
+
+        // Apply date filtering
+        applyDateFilter(query, startDateTime, endDateTime, 'msce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            query
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+        }
+
+        const results = await query;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            mrr: parseInt(row.mrr) || 0
+        }));
+    }
+
+    /**
+     * Get UTM growth stats broken down by UTM parameter
      * @param {Object} options
      * @param {string} [options.utm_type='utm_source'] - Which UTM field to group by ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
      * @param {string} [options.order='free_members desc'] - Sort order
      * @param {number} [options.limit=50] - Maximum number of results
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @param {string} [options.post_id] - Optional filter by post ID
      * @returns {Promise<{data: UtmGrowthStat[], meta: {}}>}
      */
@@ -470,6 +590,7 @@ class ReferrersStatsService {
         const utmField = options.utm_type || 'utm_source';
         const limit = options.limit || 50;
         const postId = options.post_id;
+        const orderBy = options.order || 'free_members desc';
 
         // Validate utm_type is a valid UTM field
         const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
@@ -479,115 +600,96 @@ class ReferrersStatsService {
             });
         }
 
-        // Fixture data; will replace with real data once members service is wired up fully
-        let fixtureData = this._getUtmFixtureData(utmField);
+        // Fetch data from database in parallel
+        const [freeMembers, paidConversions, mrrData] = await Promise.all([
+            this.fetchMemberCountsByUtm(utmField, options),
+            this.fetchPaidConversionsByUtm(utmField, options),
+            this.fetchMrrByUtm(utmField, options)
+        ]);
 
-        // If filtering by post, scale down the data
-        if (postId) {
-            fixtureData = fixtureData.map(item => ({
-                ...item,
-                free_members: Math.floor(item.free_members * 0.3), // 30% of global
-                paid_members: Math.floor(item.paid_members * 0.25), // 25% of global
-                mrr: Math.floor(item.mrr * 0.25) // 25% of global
-            })).filter(item => item.free_members > 0 || item.paid_members > 0); // Only include items with data
+        // Combine results by utm_value
+        const utmMap = new Map();
+
+        // Add free members
+        freeMembers.forEach((row) => {
+            utmMap.set(row.utm_value, {
+                utm_value: row.utm_value,
+                utm_type: utmField,
+                free_members: row.signups,
+                paid_members: 0,
+                mrr: 0
+            });
+        });
+
+        // Add paid conversions
+        paidConversions.forEach((row) => {
+            const existing = utmMap.get(row.utm_value);
+            if (existing) {
+                existing.paid_members = row.paid_conversions;
+            } else {
+                utmMap.set(row.utm_value, {
+                    utm_value: row.utm_value,
+                    utm_type: utmField,
+                    free_members: 0,
+                    paid_members: row.paid_conversions,
+                    mrr: 0
+                });
+            }
+        });
+
+        // Add MRR data
+        mrrData.forEach((row) => {
+            const existing = utmMap.get(row.utm_value);
+            if (existing) {
+                existing.mrr = row.mrr;
+            } else {
+                utmMap.set(row.utm_value, {
+                    utm_value: row.utm_value,
+                    utm_type: utmField,
+                    free_members: 0,
+                    paid_members: 0,
+                    mrr: row.mrr
+                });
+            }
+        });
+
+        // Convert to array
+        let results = Array.from(utmMap.values());
+
+        // Apply sorting
+        const [field, direction] = orderBy.split(' ');
+        const validFields = ['free_members', 'paid_members', 'mrr', 'utm_value'];
+
+        if (validFields.includes(field)) {
+            results.sort((a, b) => {
+                let valueA = a[field];
+                let valueB = b[field];
+
+                // Handle string sorting for utm_value
+                if (field === 'utm_value') {
+                    valueA = String(valueA).toLowerCase();
+                    valueB = String(valueB).toLowerCase();
+                }
+
+                if (direction === 'asc') {
+                    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                }
+                // Default to desc
+                return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+            });
         }
 
-        const sortedData = this._sortUtmData(fixtureData, options.order);
-        const limitedData = postId ? sortedData : (limit > 0 ? sortedData.slice(0, limit) : sortedData);
+        // Apply limit (but not when filtering by post as per original implementation)
+        if (!postId && limit && limit > 0) {
+            results = results.slice(0, limit);
+        }
 
         return {
-            data: limitedData,
+            data: results,
             meta: {}
         };
     }
 
-    /**
-     * Generate fixture data for UTM parameters
-     * @private
-     * @param {string} utmField - The UTM field ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
-     * @returns {UtmGrowthStat[]}
-     */
-    _getUtmFixtureData(utmField) {
-        const fixtures = {
-            utm_source: [
-                {utm_value: 'google', utm_type: 'utm_source', free_members: 100, paid_members: 20, mrr: 10000},
-                {utm_value: 'facebook', utm_type: 'utm_source', free_members: 80, paid_members: 15, mrr: 7500},
-                {utm_value: 'twitter', utm_type: 'utm_source', free_members: 60, paid_members: 10, mrr: 5000},
-                {utm_value: 'newsletter', utm_type: 'utm_source', free_members: 40, paid_members: 25, mrr: 12500},
-                {utm_value: 'linkedin', utm_type: 'utm_source', free_members: 35, paid_members: 12, mrr: 6000},
-                {utm_value: 'reddit', utm_type: 'utm_source', free_members: 25, paid_members: 5, mrr: 2500},
-                {utm_value: 'youtube', utm_type: 'utm_source', free_members: 20, paid_members: 8, mrr: 4000},
-                {utm_value: 'instagram', utm_type: 'utm_source', free_members: 18, paid_members: 6, mrr: 3000}
-            ],
-            utm_medium: [
-                {utm_value: 'organic', utm_type: 'utm_medium', free_members: 150, paid_members: 30, mrr: 15000},
-                {utm_value: 'cpc', utm_type: 'utm_medium', free_members: 90, paid_members: 20, mrr: 10000},
-                {utm_value: 'email', utm_type: 'utm_medium', free_members: 70, paid_members: 20, mrr: 10000},
-                {utm_value: 'social', utm_type: 'utm_medium', free_members: 30, paid_members: 10, mrr: 5000},
-                {utm_value: 'referral', utm_type: 'utm_medium', free_members: 25, paid_members: 8, mrr: 4000},
-                {utm_value: 'display', utm_type: 'utm_medium', free_members: 15, paid_members: 3, mrr: 1500}
-            ],
-            utm_campaign: [
-                {utm_value: 'spring-sale', utm_type: 'utm_campaign', free_members: 120, paid_members: 35, mrr: 17500},
-                {utm_value: 'product-launch', utm_type: 'utm_campaign', free_members: 80, paid_members: 20, mrr: 10000},
-                {utm_value: 'webinar-series', utm_type: 'utm_campaign', free_members: 60, paid_members: 15, mrr: 7500},
-                {utm_value: 'holiday-promo', utm_type: 'utm_campaign', free_members: 45, paid_members: 18, mrr: 9000},
-                {utm_value: 'content-upgrade', utm_type: 'utm_campaign', free_members: 30, paid_members: 8, mrr: 4000},
-                {utm_value: 'partner-collab', utm_type: 'utm_campaign', free_members: 25, paid_members: 12, mrr: 6000}
-            ],
-            utm_term: [
-                {utm_value: 'best-email-marketing', utm_type: 'utm_term', free_members: 85, paid_members: 22, mrr: 11000},
-                {utm_value: 'ghost-cms', utm_type: 'utm_term', free_members: 70, paid_members: 18, mrr: 9000},
-                {utm_value: 'newsletter-platform', utm_type: 'utm_term', free_members: 55, paid_members: 15, mrr: 7500},
-                {utm_value: 'content-management', utm_type: 'utm_term', free_members: 40, paid_members: 10, mrr: 5000},
-                {utm_value: 'publishing-platform', utm_type: 'utm_term', free_members: 30, paid_members: 8, mrr: 4000},
-                {utm_value: 'membership-software', utm_type: 'utm_term', free_members: 20, paid_members: 5, mrr: 2500}
-            ],
-            utm_content: [
-                {utm_value: 'hero-cta', utm_type: 'utm_content', free_members: 95, paid_members: 25, mrr: 12500},
-                {utm_value: 'sidebar-banner', utm_type: 'utm_content', free_members: 75, paid_members: 18, mrr: 9000},
-                {utm_value: 'footer-link', utm_type: 'utm_content', free_members: 50, paid_members: 12, mrr: 6000},
-                {utm_value: 'email-button', utm_type: 'utm_content', free_members: 45, paid_members: 15, mrr: 7500},
-                {utm_value: 'popup-form', utm_type: 'utm_content', free_members: 35, paid_members: 8, mrr: 4000},
-                {utm_value: 'text-link', utm_type: 'utm_content', free_members: 25, paid_members: 6, mrr: 3000}
-            ]
-        };
-
-        return fixtures[utmField] || fixtures.utm_source;
-    }
-
-    /**
-     * Sort UTM data by the specified order
-     * @private
-     * @param {UtmGrowthStat[]} data
-     * @param {string} [order='free_members desc']
-     * @returns {UtmGrowthStat[]}
-     */
-    _sortUtmData(data, order = 'free_members desc') {
-        const [field, direction] = order.split(' ');
-        const validFields = ['free_members', 'paid_members', 'mrr', 'utm_value'];
-
-        if (!validFields.includes(field)) {
-            return data;
-        }
-
-        return [...data].sort((a, b) => {
-            let valueA = a[field];
-            let valueB = b[field];
-
-            // Handle string sorting for utm_value
-            if (field === 'utm_value') {
-                valueA = String(valueA).toLowerCase();
-                valueB = String(valueB).toLowerCase();
-            }
-
-            if (direction === 'asc') {
-                return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-            }
-            // Default to desc
-            return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
-        });
-    }
 }
 
 module.exports = ReferrersStatsService;
