@@ -6,7 +6,6 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '../../lib/feature-flags';
 
 type ProfilePreviewHoverCardProps = {
     actor?: ActorProperties | Account | null;
@@ -29,7 +28,6 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     align = 'start',
     isCurrentUser = false
 }) => {
-    const {isEnabled} = useFeatureFlags();
     const [shouldFetch, setShouldFetch] = useState(false);
 
     let targetHandle = actor?.handle;
@@ -37,7 +35,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
         targetHandle = getUsername(actor);
     }
 
-    const bypassHover = !isEnabled('preview') || disabled || (!targetHandle && !actor);
+    const bypassHover = disabled || (!targetHandle && !actor);
 
     const accountQuery = useAccountForUser('index', targetHandle || '', {
         enabled: shouldFetch && Boolean(targetHandle)
