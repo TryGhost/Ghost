@@ -1,4 +1,4 @@
-import {expect, Locator, Page} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 
 export class TagEditorPage extends AdminPage {
@@ -19,7 +19,7 @@ export class TagEditorPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/tags';
-        
+
         this.nameInput = page.locator('[data-test-input="tag-name"]');
         this.slugInput = page.locator('[data-test-input="tag-slug"]');
         this.descriptionInput = page.locator('[data-test-input="tag-description"]');
