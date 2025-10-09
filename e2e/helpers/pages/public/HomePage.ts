@@ -19,7 +19,7 @@ export class HomePage extends PublicPage {
         return this.accountButton.waitFor({state: 'visible'});
     }
 
-    async gotoWithUTMParams(params: Record<string, string>): Promise<void> {
+    async gotoWithQueryParams(params: Record<string, string>): Promise<void> {
         const queryString = new URLSearchParams(params).toString();
         const url = `/?${queryString}`;
         await this.goto(url);
