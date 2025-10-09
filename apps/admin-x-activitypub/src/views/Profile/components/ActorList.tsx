@@ -74,33 +74,35 @@ const ActorList: React.FC<ActorListProps> = ({
 
                             return (
                                 <React.Fragment key={actor.id}>
-                                    <ProfilePreviewHoverCard actor={actor} isCurrentUser={false}>
-                                        <ActivityItem key={actor.id}
-                                            data-testid="actor-item"
-                                            onClick={() => {
-                                                handleProfileClick(actor, navigate);
-                                            }}
-                                        >
-                                            <APAvatar author={actor} />
-                                            <div>
-                                                <div className='text-gray-600 break-anywhere'>
-                                                    <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
-                                                    <div className='line-clamp-1 text-sm'>{actorHandle}</div>
+                                    <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={false} side='left'>
+                                        <div>
+                                            <ActivityItem key={actor.id}
+                                                data-testid="actor-item"
+                                                onClick={() => {
+                                                    handleProfileClick(actor, navigate);
+                                                }}
+                                            >
+                                                <APAvatar author={actor} />
+                                                <div>
+                                                    <div className='text-gray-600 break-anywhere'>
+                                                        <span className='mr-1 line-clamp-1 font-bold text-black dark:text-white'>{getName(actor)}</span>
+                                                        <div className='line-clamp-1 text-sm'>{actorHandle}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            {blockedByMe || domainBlockedByMe ?
-                                                <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
-                                                !isCurrentUser ? (
-                                                    <FollowButton
-                                                        className='ml-auto'
-                                                        data-testid="follow-button"
-                                                        following={isFollowing}
-                                                        handle={actorHandle}
-                                                        type='secondary'
-                                                    />
-                                                ) : null
-                                            }
-                                        </ActivityItem>
+                                                {blockedByMe || domainBlockedByMe ?
+                                                    <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                                                    !isCurrentUser ? (
+                                                        <FollowButton
+                                                            className='ml-auto'
+                                                            data-testid="follow-button"
+                                                            following={isFollowing}
+                                                            handle={actorHandle}
+                                                            type='secondary'
+                                                        />
+                                                    ) : null
+                                                }
+                                            </ActivityItem>
+                                        </div>
                                     </ProfilePreviewHoverCard>
                                 </React.Fragment>
                             );
