@@ -6,9 +6,11 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('can add tags', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
+        const tagsPage = new TagsPage(page);
 
         await tagEditor.createTag('New tag name', 'new-tag-slug');
-        const tagsPage = await tagEditor.goBackToTagsList();
+        await tagEditor.goBackToTagsList();
+        await tagsPage.waitForPageToFullyLoad();
 
         await expect(tagsPage.getRowByTitle('New tag name')).toBeVisible();
         await expect(tagsPage.getRowByTitle('New tag name')).toContainText('new-tag-slug');
@@ -17,9 +19,11 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('can edit tags', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
+        const tagsPage = new TagsPage(page);
 
         await tagEditor.createTag('To be edited', 'to-be-edited');
-        const tagsPage = await tagEditor.goBackToTagsList();
+        await tagEditor.goBackToTagsList();
+        await tagsPage.waitForPageToFullyLoad();
 
         await tagsPage.getRowByTitle('To be edited').click();
         await expect(page).toHaveURL('/ghost/#/tags/to-be-edited');
@@ -31,6 +35,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.fillTagSlug('new-tag-slug');
         await tagEditor.save();
         await tagEditor.goBackToTagsList();
+        await tagsPage.waitForPageToFullyLoad();
 
         await expect(tagsPage.getRowByTitle('New tag name')).toBeVisible();
         await expect(tagsPage.getRowByTitle('New tag name')).toContainText('new-tag-slug');
@@ -47,6 +52,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.fillTagName('Edited Tag Name');
         await tagEditor.save();
         await tagEditor.goBackToTagsList();
+        await tagsPage.waitForPageToFullyLoad();
 
         await expect(tagsPage.tagListRow).toHaveCount(1);
         await expect(tagsPage.getRowByTitle('Edited Tag Name')).toBeVisible();
@@ -54,8 +60,11 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('can delete tag without posts', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
+        const tagsPage = new TagsPage(page);
+        
         await tagEditor.createTag('To be deleted', 'to-be-deleted');
-        const tagsPage = await tagEditor.goBackToTagsList();
+        await tagEditor.goBackToTagsList();
+        await tagsPage.waitForPageToFullyLoad();
 
         await tagsPage.getRowByTitle('To be deleted').click();
         await tagEditor.deleteTag();

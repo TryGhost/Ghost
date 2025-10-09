@@ -75,11 +75,6 @@ export class TagEditorPage extends AdminPage {
 
     async goBackToTagsList() {
         await this.backLink.click();
-        
-        const tagsPage = new TagsPage(this.page);
-        await tagsPage.waitForPageToFullyLoad();
-
-        return tagsPage;
     }
 }
 
