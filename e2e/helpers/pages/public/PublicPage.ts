@@ -1,4 +1,4 @@
-import {Page, Locator} from '@playwright/test';
+import {Page, Locator, Response} from '@playwright/test';
 import {BasePage, pageGotoOptions} from '../BasePage';
 
 declare global {
@@ -88,10 +88,20 @@ export class PublicPage extends BasePage {
         await super.goto(url, options);
     }
 
-    async waitForPageHitRequest(): Promise<void> {
-        await this.page.waitForResponse((response) => {
+    async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
+        const pageHitPromise = this.pageHitRequestPromise();
+        await this.goto(url, options);
+        await pageHitPromise;
+    }
+
+    pageHitRequestPromise(): Promise<Response> {
+        return this.page.waitForResponse((response) => {
             return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
         }, {timeout: 10000});
+    }
+
+    async waitForPageHitRequest(): Promise<void> {
+        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
