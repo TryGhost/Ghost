@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
@@ -126,7 +126,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         && !!postId;
 
     const utmType = getUtmType(selectedCampaign);
-    const {data: utmData, isLoading: isUtmLoading} = useUtmGrowthStats({
+    const {data: utmData} = useUtmGrowthStats({
         searchParams: {
             utm_type: utmType,
             post_id: postId || ''
@@ -203,8 +203,6 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         ? 'Where did your growth come from?'
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
-    const isLoading = isUtmLoading;
-
     return (
         <Card className={cn('group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]', className)} data-testid='top-sources-card'>
             {topSources.length <= 0 &&
@@ -214,36 +212,34 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                 </CardHeader>
             }
             <CardContent>
-                {utmTrackingEnabled && mode === 'growth' && (
+                {mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
+                    <EmptyIndicator
+                        actions={
+                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                Open settings
+                            </Button>
+                        }
+                        className='py-10'
+                        description='Enable member source tracking in settings to see which content drives member growth.'
+                        title='Member sources have been disabled'
+                    >
+                        <LucideIcon.Activity />
+                    </EmptyIndicator>
+                ) : topSources.length > 0 ? (
                     <>
-                        <div className='mb-4'>
-                            <UtmGrowthTabs
-                                selectedCampaign={selectedCampaign}
-                                selectedTab={selectedTab}
-                                onCampaignChange={setSelectedCampaign}
-                                onTabChange={setSelectedTab}
-                            />
-                        </div>
-                        <Separator />
-                    </>
-                )}
-                {isLoading ? (
-                    <SkeletonTable className='mt-3' lines={5} />
-                ) : (
-                    mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
-                        <EmptyIndicator
-                            actions={
-                                <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
-                                    Open settings
-                                </Button>
-                            }
-                            className='py-10'
-                            description='Enable member source tracking in settings to see which content drives member growth.'
-                            title='Member sources have been disabled'
-                        >
-                            <LucideIcon.Activity />
-                        </EmptyIndicator>
-                    ) : topSources.length > 0 ? (
+                        {utmTrackingEnabled && mode === 'growth' && (
+                            <>
+                                <div className='mb-4'>
+                                    <UtmGrowthTabs
+                                        selectedCampaign={selectedCampaign}
+                                        selectedTab={selectedTab}
+                                        onCampaignChange={setSelectedCampaign}
+                                        onTabChange={setSelectedTab}
+                                    />
+                                </div>
+                                <Separator />
+                            </>
+                        )}
                         <SourcesTable
                             data={topSources}
                             defaultSourceIconUrl={defaultSourceIconUrl}
@@ -257,17 +253,17 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                                 <CardDescription>{cardDescription}</CardDescription>
                             </CardHeader>
                         </SourcesTable>
-                    ) : (
-                        <div className='py-20 text-center text-sm text-gray-700'>
-                            <EmptyIndicator
-                                className='h-full'
-                                description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
-                                title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
-                            >
-                                <LucideIcon.UserPlus strokeWidth={1.5} />
-                            </EmptyIndicator>
-                        </div>
-                    )
+                    </>
+                ) : (
+                    <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
+                        <EmptyIndicator
+                            className='h-full'
+                            description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
+                            title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
+                        >
+                            <LucideIcon.UserPlus strokeWidth={1.5} />
+                        </EmptyIndicator>
+                    </div>
                 )}
             </CardContent>
             {extendedData.length > TOP_SOURCES_PREVIEW_LIMIT &&
