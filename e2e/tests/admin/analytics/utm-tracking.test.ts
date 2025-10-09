@@ -17,7 +17,7 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
         test('displays utm_source data correctly', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithUTMParams({
+                await homePage.gotoWithQueryParams({
                     utm_source: 'newsletter',
                     utm_medium: 'email',
                     utm_campaign: 'launch'
@@ -36,7 +36,7 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
         test('displays utm_medium data correctly', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithUTMParams({
+                await homePage.gotoWithQueryParams({
                     utm_source: 'google',
                     utm_medium: 'cpc',
                     utm_campaign: 'spring2024'
@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
         test('displays utm_campaign data correctly', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithUTMParams({
+                await homePage.gotoWithQueryParams({
                     utm_source: 'twitter',
                     utm_medium: 'social',
                     utm_campaign: 'product_launch'
@@ -74,7 +74,7 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
         test('displays multiple utm parameters from single page hit', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithUTMParams({
+                await homePage.gotoWithQueryParams({
                     utm_source: 'test_source',
                     utm_term: 'test_term',
                     utm_content: 'test_content'
