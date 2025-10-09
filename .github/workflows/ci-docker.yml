@@ -334,10 +334,22 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
+      - name: Check for repeat label
+        id: check-repeat
+        if: github.event_name == 'pull_request'
+        run: |
+          LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          if echo "$LABELS" | jq -e 'index("repeat-e2e-tests")' > /dev/null; then
+            echo "repeat-flag=--repeat-each=10" >> $GITHUB_OUTPUT
+            echo "::notice::Running tests with --repeat-each=10 due to 'repeat-e2e-tests' label"
+          else
+            echo "repeat-flag=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: yarn test:e2e
+        run: yarn test:e2e ${{ steps.check-repeat.outputs.repeat-flag }}
 
       - name: Upload Playwright artifacts
         if: failure()
