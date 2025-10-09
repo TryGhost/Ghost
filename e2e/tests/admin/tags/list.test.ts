@@ -1,5 +1,5 @@
 import {test, expect} from '../../../helpers/playwright';
-import {TagsPage, TagDetailsPage} from '../../../helpers/pages/admin';
+import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
 import {createPostFactory, createTagFactory, TagFactory} from '../../../data-factory';
 import {Page} from '@playwright/test';
 
@@ -14,14 +14,15 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('shows empty list with call to action buttons', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await tagsPage.goto();
+        const tagEditorPage = new TagEditorPage(page);
+        
+        // By default there will be one tag with slug 'news'
+        await tagEditorPage.gotoTagBySlug('news');
+        await tagEditorPage.deleteTag();
+        await tagEditorPage.confirmDelete();
+        await tagsPage.waitForPageToFullyLoad();
 
-        // by default, there will be one tag with slug 'news' on newly created Ghost account
-        await tagsPage.getTagByName('News').click();
-
-        const tagDetailsPage = new TagDetailsPage(page);
-        await tagDetailsPage.deleteTag();
-
+        // Once the tag is deleted, the page will redirect to the tags list
         await expect(tagsPage.title('Start organizing your content')).toBeVisible();
         await expect(tagsPage.createNewTagButton).toBeVisible();
     });
