@@ -1,4 +1,4 @@
-import {Locator, Page} from '@playwright/test';
+import {expect, Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 
 export class TagEditorPage extends AdminPage {
@@ -63,9 +63,10 @@ export class TagEditorPage extends AdminPage {
 
     async save() {
         await this.saveButton.click();
-        // Wait for the save to complete - button becomes enabled again after save
-        await this.saveButton.waitFor({state: 'visible'});
-        await this.page.waitForLoadState('networkidle');
+        // Wait for save to start
+        await this.saveButton.locator('[data-test-task-button-state="running"]').waitFor();
+        // Wait for save to complete
+        await this.saveButton.locator('[data-test-task-button-state="success"]').waitFor();
     }
 
     async deleteTag() {
