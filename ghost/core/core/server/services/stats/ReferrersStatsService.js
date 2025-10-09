@@ -465,6 +465,14 @@ class ReferrersStatsService {
      * @returns {Promise<{utm_value: string, signups: number}[]>}
      **/
     async fetchMemberCountsByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
         const knex = this.knex;
         const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
         const {post_id: postId} = options;
@@ -475,7 +483,8 @@ class ReferrersStatsService {
             .select(knex.raw('COUNT(DISTINCT mce.member_id) as signups'))
             .leftJoin('members_subscription_created_events as msce', function () {
                 this.on('mce.member_id', '=', 'msce.member_id')
-                    // Only join if the conversion happened within the same time window
+                    // Filter msce.created_at: only count conversions within the same time window
+                    // This ensures we don't count conversions that happened outside our date range
                     .andOn('msce.created_at', '>=', knex.raw('?', [startDateTime]))
                     .andOn('msce.created_at', '<=', knex.raw('?', [endDateTime]));
             })
@@ -483,7 +492,7 @@ class ReferrersStatsService {
             .whereNotNull(`mce.${utmField}`)
             .groupBy(`mce.${utmField}`);
 
-        // Apply date filtering
+        // Filter mce.created_at: only include members created within the date range
         applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
 
         // Apply post filtering if post_id is provided
@@ -507,6 +516,14 @@ class ReferrersStatsService {
      * @returns {Promise<{utm_value: string, paid_conversions: number}[]>}
      **/
     async fetchPaidConversionsByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
         const knex = this.knex;
         const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
         const {post_id: postId} = options;
@@ -541,6 +558,14 @@ class ReferrersStatsService {
      * @returns {Promise<{utm_value: string, mrr: number}[]>}
      **/
     async fetchMrrByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
         const knex = this.knex;
         const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
         const {post_id: postId} = options;

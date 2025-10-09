@@ -636,5 +636,69 @@ describe('ReferrersStatsService', function () {
             assert.equal(googleData.paid_members, 1, 'Should have 1 paid member');
             assert.equal(googleData.mrr, 1000, 'Should have correct MRR');
         });
+
+        it('filters by date_from and date_to correctly', async function () {
+            const pastDate = DateTime.now().minus({days: 5});
+            const futureDate = DateTime.now().plus({days: 5});
+
+            // Insert data with different dates
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'old_member', utm_source: 'google', created_at: pastDate.toISO()},
+                {id: '2', member_id: 'new_member', utm_source: 'facebook', created_at: futureDate.toISO()}
+            ]);
+
+            // Query only for data from today onwards
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source',
+                date_from: DateTime.now().toISODate(),
+                date_to: futureDate.plus({days: 1}).toISODate()
+            });
+
+            // Should only include facebook (future date), not google (past date)
+            assert.equal(result.data.length, 1, 'Should only return future data');
+            assert.equal(result.data[0].utm_value, 'facebook', 'Should only include facebook');
+        });
+
+        it('returns empty array when no data matches the query', async function () {
+            // Don't insert any data
+            const result = await service.getUtmGrowthStats({
+                utm_type: 'utm_source'
+            });
+
+            assert(Array.isArray(result.data), 'Should return an array');
+            assert.equal(result.data.length, 0, 'Should return empty array when no data exists');
+        });
+
+        it('returns utm_term data when specified', async function () {
+            const now = DateTime.now();
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'member_1', utm_source: 'google', utm_term: 'ghost-cms', created_at: now.toISO()},
+                {id: '2', member_id: 'member_2', utm_source: 'google', utm_term: 'newsletter-platform', created_at: now.toISO()}
+            ]);
+
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_term'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have data');
+            assert.equal(result.data[0].utm_type, 'utm_term', 'Should return utm_term data');
+            assert(result.data.find(item => item.utm_value === 'ghost-cms'), 'Should include ghost-cms term');
+            assert(result.data.find(item => item.utm_value === 'newsletter-platform'), 'Should include newsletter-platform term');
+        });
+
+        it('returns utm_content data when specified', async function () {
+            const now = DateTime.now();
+            await db('members_created_events').insert([
+                {id: '1', member_id: 'member_1', utm_source: 'google', utm_content: 'hero-cta', created_at: now.toISO()},
+                {id: '2', member_id: 'member_2', utm_source: 'google', utm_content: 'sidebar-banner', created_at: now.toISO()}
+            ]);
+
+            const result = await service.getUtmGrowthStats({utm_type: 'utm_content'});
+
+            assert(result.data, 'Should return data');
+            assert(result.data.length > 0, 'Should have data');
+            assert.equal(result.data[0].utm_type, 'utm_content', 'Should return utm_content data');
+            assert(result.data.find(item => item.utm_value === 'hero-cta'), 'Should include hero-cta content');
+            assert(result.data.find(item => item.utm_value === 'sidebar-banner'), 'Should include sidebar-banner content');
+        });
     });
 });
