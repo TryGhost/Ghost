@@ -63,6 +63,9 @@ export class TagEditorPage extends AdminPage {
 
     async save() {
         await this.saveButton.click();
+        // Wait for the save to complete - button becomes enabled again after save
+        await this.saveButton.waitFor({state: 'visible'});
+        await this.page.waitForLoadState('networkidle');
     }
 
     async deleteTag() {

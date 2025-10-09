@@ -1,5 +1,6 @@
 import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
+import {pageGotoOptions} from '../../BasePage';
 
 export class TagsPage extends AdminPage {
     readonly pageContent: Locator;
@@ -49,8 +50,18 @@ export class TagsPage extends AdminPage {
         return this.page.getByRole('link', {name: name, exact: true});
     }
 
+    async goto(url?: string, options?: pageGotoOptions) {
+        await super.goto(url, options);
+        await this.waitForPageToFullyLoad();
+    }
+
     async waitForPageToFullyLoad() {
-        await this.page.waitForURL(this.pageUrl);
+        await this.page.waitForURL(this.pageUrl, {waitUntil: 'domcontentloaded'});
         await this.pageContent.waitFor({state: 'visible'});
+        // Wait for either tag list (when tags exist) or create button (empty state)
+        await Promise.race([
+            this.tagList.waitFor({state: 'visible'}),
+            this.createNewTagButton.waitFor({state: 'visible'})
+        ]);
     }
 }
