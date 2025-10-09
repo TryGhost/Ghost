@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "composite": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "declarationDir": "./node_modules/.tmp/types",
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+    },
+    "include": ["src"],
+    "exclude": ["src/**/*.stories.tsx"]
+}
