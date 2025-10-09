@@ -262,7 +262,7 @@ class ReferrersStatsService {
     async fetchMrrSourcesWithRange(options) {
         const knex = this.knex;
         const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
-        
+
         // Join subscription created events with paid subscription events to get MRR changes
         let query = knex('members_subscription_created_events as msce')
             .join('members_paid_subscription_events as mpse', function () {
@@ -276,10 +276,10 @@ class ReferrersStatsService {
             .whereNotNull('msce.referrer_source') // Only entries with attribution
             .groupBy('date', 'msce.referrer_source')
             .orderBy('date');
-            
+
         // Apply centralized date filtering
         applyDateFilter(query, startDateTime, endDateTime, 'msce.created_at');
-        
+
         const rows = await query;
 
         return rows;
@@ -294,7 +294,7 @@ class ReferrersStatsService {
     async fetchMemberCountsBySource(options) {
         const knex = this.knex;
         const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
-        
+
         // Query 1: Free members who haven't converted to paid within the same time window
         const freeSignupsQuery = knex('members_created_events as mce')
             .select('mce.referrer_source as source')
@@ -307,7 +307,7 @@ class ReferrersStatsService {
             })
             .whereNull('msce.id')
             .groupBy('mce.referrer_source');
-            
+
         // Apply date filtering to the main query
         applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
 
@@ -316,7 +316,7 @@ class ReferrersStatsService {
             .select('msce.referrer_source as source')
             .select(knex.raw('COUNT(DISTINCT msce.member_id) as paid_conversions'))
             .groupBy('msce.referrer_source');
-            
+
         // Apply date filtering to the paid conversions query
         applyDateFilter(paidConversionsQuery, startDateTime, endDateTime, 'msce.created_at');
 
@@ -328,7 +328,7 @@ class ReferrersStatsService {
 
         // Combine results by source
         const sourceMap = new Map();
-        
+
         // Add free signups
         freeResults.forEach((row) => {
             sourceMap.set(row.source, {
@@ -337,7 +337,7 @@ class ReferrersStatsService {
                 paid_conversions: 0
             });
         });
-        
+
         // Add paid conversions
         paidResults.forEach((row) => {
             const existing = sourceMap.get(row.source);
@@ -368,11 +368,11 @@ class ReferrersStatsService {
      */
     async getTopSourcesWithRange(options = {}) {
         const {orderBy = 'signups desc', limit = 50} = options;
-        
+
         // Get deduplicated member counts and MRR data in parallel
         const [memberCounts, mrrEntries] = await Promise.all([
             this.fetchMemberCountsBySource(options),
-            this.fetchMrrSourcesWithRange(options) 
+            this.fetchMrrSourcesWithRange(options)
         ]);
 
         // Aggregate by source (not by date + source)
@@ -417,10 +417,10 @@ class ReferrersStatsService {
 
         // Apply sorting - only allow descending sorts for sources
         const [field] = orderBy.split(' ');
-        
+
         results.sort((a, b) => {
             let valueA; let valueB;
-            
+
             switch (field) {
             case 'signups':
                 valueA = a.signups;
@@ -689,7 +689,6 @@ class ReferrersStatsService {
             meta: {}
         };
     }
-
 }
 
 module.exports = ReferrersStatsService;
