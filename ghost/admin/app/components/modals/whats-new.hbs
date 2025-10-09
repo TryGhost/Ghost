@@ -1,17 +1,17 @@
-<div class="modal-content">
-    <h1 class="gh-whasnew-modal-title">What’s new?</h1>
-    <section class="gh-whatsnew-modal-entries" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
+<div class="modal-content" data-test-modal="whats-new">
+    <h1 class="gh-whasnew-modal-title" data-test-modal-title>What’s new?</h1>
+    <section class="gh-whatsnew-modal-entries" data-test-entries {{did-insert (perform this.whatsNew.updateLastSeen)}}>
         {{#each this.whatsNew.entries as |entry|}}
-            <a class="gh-whatsnew-modal-entry" href={{entry.url}} target="_blank" rel="noopener noreferrer">
+            <a class="gh-whatsnew-modal-entry" data-test-entry href={{entry.url}} target="_blank" rel="noopener noreferrer">
                 {{#if entry.feature_image}}
-                    <img class="gh-whatsnew-modal-entry-featureimage" src={{entry.feature_image}} alt={{entry.title}}>
+                    <img class="gh-whatsnew-modal-entry-featureimage" data-test-entry-image src={{entry.feature_image}} alt={{entry.title}}>
                 {{/if}}
                 <div class="gh-whatsnew-modal-entrycontent">
-                    <h2>{{entry.title}}</h2>
+                    <h2 data-test-entry-title>{{entry.title}}</h2>
                     {{#if entry.custom_excerpt}}
-                        <p>{{entry.custom_excerpt}}</p>
+                        <p data-test-entry-excerpt>{{entry.custom_excerpt}}</p>
                     {{/if}}
-                    <span>{{moment-format entry.published_at "DD MMMM YYYY"}}</span>
+                    <span data-test-entry-date>{{moment-format entry.published_at "DD MMMM YYYY"}}</span>
                 </div>
             </a>
         {{/each}}
