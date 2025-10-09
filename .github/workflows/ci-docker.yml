@@ -292,8 +292,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2, 3]
-        shardTotal: [3]
+        shardIndex: [1, 2]
+        shardTotal: [2]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
