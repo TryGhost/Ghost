@@ -74,7 +74,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
 
     return (
         <HoverCard onOpenChange={setShouldFetch}>
-            <HoverCardTrigger>
+            <HoverCardTrigger asChild>
                 {children}
             </HoverCardTrigger>
             <HoverCardContent

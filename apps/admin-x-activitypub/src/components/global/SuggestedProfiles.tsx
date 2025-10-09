@@ -34,41 +34,43 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
     const navigate = useNavigate();
 
     return (
-        <ProfilePreviewHoverCard actor={profile} isCurrentUser={false}>
-            <ActivityItem
-                key={profile.id}
-                onClick={() => {
-                    onOpenChange?.(false);
-                    navigate(`/profile/${profile.handle}`);
-                }}
-            >
-                <APAvatar author={
-                    {
-                        icon: {
-                            url: profile.avatarUrl
-                        },
-                        name: profile.name,
-                        handle: profile.handle
-                    }
-                } onClick={() => onOpenChange?.(false)} />
-                <div className='flex grow flex-col break-anywhere'>
-                    <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
-                    <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
-                </div>
-                {!isLoading ?
-                    <FollowButton
-                        className='ml-auto'
-                        following={profile.followedByMe}
-                        handle={profile.handle}
-                        type='secondary'
-                        onFollow={onFollow}
-                        onUnfollow={onUnfollow}
-                    /> :
-                    <div className='inline-flex items-center'>
-                        <Skeleton className='w-12' />
+        <ProfilePreviewHoverCard actor={profile} align='center' isCurrentUser={false} side='left'>
+            <div>
+                <ActivityItem
+                    key={profile.id}
+                    onClick={() => {
+                        onOpenChange?.(false);
+                        navigate(`/profile/${profile.handle}`);
+                    }}
+                >
+                    <APAvatar author={
+                        {
+                            icon: {
+                                url: profile.avatarUrl
+                            },
+                            name: profile.name,
+                            handle: profile.handle
+                        }
+                    } onClick={() => onOpenChange?.(false)} />
+                    <div className='flex grow flex-col break-anywhere'>
+                        <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
+                        <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
                     </div>
-                }
-            </ActivityItem>
+                    {!isLoading ?
+                        <FollowButton
+                            className='ml-auto'
+                            following={profile.followedByMe}
+                            handle={profile.handle}
+                            type='secondary'
+                            onFollow={onFollow}
+                            onUnfollow={onUnfollow}
+                        /> :
+                        <div className='inline-flex items-center'>
+                            <Skeleton className='w-12' />
+                        </div>
+                    }
+                </ActivityItem>
+            </div>
         </ProfilePreviewHoverCard>
     );
 };

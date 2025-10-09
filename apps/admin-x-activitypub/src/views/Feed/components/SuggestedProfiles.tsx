@@ -139,14 +139,16 @@ const SuggestedProfiles: React.FC = () => {
                                             <Skeleton className='size-16 rounded-full' />
                                         ) : (
                                             <ProfilePreviewHoverCard actor={profile} align='center'>
-                                                <APAvatar
-                                                    author={{
-                                                        icon: {url: profile?.avatarUrl || ''},
-                                                        name: profile?.name || '',
-                                                        handle: profile?.handle || ''
-                                                    }}
-                                                    size='md'
-                                                />
+                                                <div>
+                                                    <APAvatar
+                                                        author={{
+                                                            icon: {url: profile?.avatarUrl || ''},
+                                                            name: profile?.name || '',
+                                                            handle: profile?.handle || ''
+                                                        }}
+                                                        size='md'
+                                                    />
+                                                </div>
                                             </ProfilePreviewHoverCard>
                                         )}
                                     </div>
