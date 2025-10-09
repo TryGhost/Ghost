@@ -15,7 +15,7 @@ export class HomePage extends PublicPage {
         this.accountButton = page.locator('[data-portal="account"]').first();
     }
 
-    async waitForSignedIn(): Promise<void> {
-        await this.accountButton.waitFor({state: 'visible'});
+    async waitUntilLoaded(): Promise<void> {
+        return this.accountButton.waitFor({state: 'visible'});
     }
 }

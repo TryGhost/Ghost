@@ -75,7 +75,12 @@ module.exports = class CheckoutSessionEventService {
             attributionType: session.metadata?.attribution_type ?? null,
             referrerSource: session.metadata?.referrer_source ?? null,
             referrerMedium: session.metadata?.referrer_medium ?? null,
-            referrerUrl: session.metadata?.referrer_url ?? null
+            referrerUrl: session.metadata?.referrer_url ?? null,
+            utmSource: session.metadata?.utm_source ?? null,
+            utmMedium: session.metadata?.utm_medium ?? null,
+            utmCampaign: session.metadata?.utm_campaign ?? null,
+            utmTerm: session.metadata?.utm_term ?? null,
+            utmContent: session.metadata?.utm_content ?? null
         });
 
         const donationRepository = this.deps.donationRepository;

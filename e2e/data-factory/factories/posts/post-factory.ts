@@ -30,6 +30,7 @@ export interface Post {
     canonical_url: string | null;
     newsletter_id: string | null;
     show_title_and_feature_image: boolean;
+    tags?: Array<{id: string}>;
 }
 
 export class PostFactory extends Factory<Partial<Post>, Post> {
@@ -71,7 +72,8 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             custom_template: null,
             canonical_url: null,
             newsletter_id: null,
-            show_title_and_feature_image: true
+            show_title_and_feature_image: true,
+            tags: undefined
         };
 
         // Determine published_at based on status and user options
