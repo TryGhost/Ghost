@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Sentry from '@sentry/react';
-import i18n from './utils/i18n';
+import i18n, {t} from './utils/i18n';
+import {chooseBestErrorMessage} from './utils/errors';
 import TriggerButton from './components/TriggerButton';
 import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
@@ -53,6 +54,7 @@ export default class App extends React.Component {
             page: 'loading',
             showPopup: false,
             action: 'init:running',
+            actionErrorMessage: null,
             initStatus: 'running',
             lastPage: null,
             customSiteUrl: props.customSiteUrl,
@@ -683,7 +685,8 @@ export default class App extends React.Component {
     async dispatchAction(action, data) {
         clearTimeout(this.timeoutId);
         this.setState({
-            action: `${action}:running`
+            action: `${action}:running`,
+            actionErrorMessage: null
         });
         try {
             const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi});
@@ -714,6 +717,7 @@ export default class App extends React.Component {
             });
             this.setState({
                 action: `${action}:failed`,
+                actionErrorMessage: chooseBestErrorMessage(error, t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')),
                 popupNotification
             });
         }
@@ -960,13 +964,14 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
+        const {site, member, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
             api: this.GhostApi,
             site,
             action,
+            actionErrorMessage,
             brandColor: this.getAccentColor(),
             page: contextPage,
             pageQuery,

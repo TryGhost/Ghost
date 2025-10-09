@@ -225,25 +225,26 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, labs, otcRef} = this.context;
+        const {action, actionErrorMessage, labs, otcRef} = this.context;
         const errors = this.state.errors || {};
 
         if (!labs?.membersSigninOTC || !otcRef) {
             return null;
         }
 
-        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
         const isError = (action === 'verifyOTC:failed');
+
+        const error = (isError && actionErrorMessage) ? actionErrorMessage : errors.otc;
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 {labs?.membersSigninOTCAlpha ? (
                     <section className='gh-portal-section gh-portal-otp'>
-                        <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${errors.otc && 'error'}`}>
+                        <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}>
                             <input
                                 id={`input-${OTC_FIELD_NAME}`}
-                                className={`gh-portal-input ${this.state.otc && 'entry'} ${errors.otc && 'error'}`}
+                                className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
                                 placeholder='––––––'
                                 name={OTC_FIELD_NAME}
                                 type="text"
@@ -261,11 +262,10 @@ export default class MagicLinkPage extends React.Component {
                                 onBlur={() => this.setState({isFocused: false})}
                             />
                         </div>
-                        {errors.otc &&
-                            <div className="gh-portal-otp-error">
-                                {errors.otc}
-                            </div>
-                        }
+                        {error &&
+                        <div className="gh-portal-otp-error">
+                            {error}
+                        </div>}
                     </section>
                 ) : (
                     <section className='gh-portal-section'>
@@ -277,7 +277,7 @@ export default class MagicLinkPage extends React.Component {
                             value={this.state.otc}
                             placeholder="• • • • • •"
                             label={t('Code')}
-                            errorMessage={errors.otc || ''}
+                            errorMessage={error || ''}
                             autoFocus={false}
                             maxLength={6}
                             onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
