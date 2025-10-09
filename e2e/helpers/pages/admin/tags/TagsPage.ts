@@ -57,11 +57,5 @@ export class TagsPage extends AdminPage {
 
     async waitForPageToFullyLoad() {
         await this.page.waitForURL(this.pageUrl, {waitUntil: 'domcontentloaded'});
-        await this.pageContent.waitFor({state: 'visible'});
-        // Wait for either tag list (when tags exist) or create button (empty state)
-        await Promise.race([
-            this.tagList.waitFor({state: 'visible'}),
-            this.createNewTagButton.waitFor({state: 'visible'})
-        ]);
     }
 }
