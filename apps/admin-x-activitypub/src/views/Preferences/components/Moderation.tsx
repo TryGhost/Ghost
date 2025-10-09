@@ -102,9 +102,8 @@ const Moderation: React.FC = () => {
                                 </NoValueLabel>
                             ) : (
                                 blockedAccounts.map((account, index) => (
-                                    <ProfilePreviewHoverCard actor={account} isCurrentUser={true}>
+                                    <ProfilePreviewHoverCard key={account.apId ? account.apId : `loading-${index}`} actor={account} isCurrentUser={true}>
                                         <ActivityItem
-                                            key={account.apId ? account.apId : `loading-${index}`}
                                             onClick={!blockedAccountsLoading ? () => handleProfileClick(account.handle, navigate) : undefined}
                                         >
                                             <APAvatar
