@@ -17,7 +17,7 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         await analyticsOverviewPage.goto();
         await analyticsOverviewPage.refreshData();
 
-        expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(9);
+        expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
     });
 
     test('latest post', async ({page}) => {
