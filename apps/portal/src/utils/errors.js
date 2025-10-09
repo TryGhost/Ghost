@@ -16,12 +16,14 @@ export class HumanReadableError extends Error {
                 }
             } catch (e) {
                 // Failed to decode: ignore
-                return false;
+                return undefined;
             }
         }
         if (res.status === 500) {
             return new HumanReadableError('A server error occurred');
         }
+
+        return undefined;
     }
 }
 
@@ -64,6 +66,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
             t('Signups from this email domain are currently restricted.');
             t('Too many sign-up attempts, try again later');
             t('Memberships from this email domain are currently restricted.');
+            t('Invalid verification code');
         }
     };
 

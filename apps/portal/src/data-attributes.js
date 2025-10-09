@@ -107,10 +107,10 @@ export async function formSubmitHandler(
                         email: (email || '').trim(),
                         otcRef
                     });
-                } catch (actionError) {
+                } catch (e) {
                     // eslint-disable-next-line no-console
-                    console.error(actionError);
-                    captureException?.(actionError);
+                    console.error(e);
+                    captureException?.(e);
                 }
             }
         } else {
