@@ -12,6 +12,8 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     readonly pagesButton: Locator;
 
     public readonly topSourcesCard: Locator;
+    public readonly sourcesTab: Locator;
+    public readonly campaignsDropdown: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -28,6 +30,28 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.pagesButton = this.topContentCard.getByRole('tab', {name: 'Pages', exact: true});
 
         this.topSourcesCard = page.getByTestId('top-sources-card');
+        this.sourcesTab = this.topSourcesCard.getByRole('tab', {name: 'Sources'});
+        this.campaignsDropdown = this.topSourcesCard.getByRole('tab', {name: /Campaigns|UTM/});
+    }
+
+    async selectCampaignType(campaignType: 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms') {
+        await this.campaignsDropdown.waitFor({state: 'visible'});
+        await this.campaignsDropdown.click({force: true});
+        await this.page.getByRole('menuitem', {name: campaignType}).click();
+        await this.page.waitForLoadState('networkidle');
+    }
+
+    /**
+     * Wait for Tinybird to process analytics data
+     * Tinybird's materialized views need time to process incoming events
+     */
+    async waitForTinybirdProcessing(): Promise<void> {
+        await this.page.waitForTimeout(5000);
+    }
+
+    async refreshData() {
+        await this.page.reload();
+        await this.page.waitForLoadState('networkidle');
     }
 
     async totalViewsContent() {
