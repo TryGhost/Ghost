@@ -6,7 +6,7 @@ test.describe('Ghost Public - Homepage', () => {
         const homePage = new HomePage(page);
 
         await homePage.goto();
-        await expect(homePage.title).not.toBeVisible();
+        await expect(homePage.title).toBeVisible();
         await expect(homePage.mainSubscribeButton).toBeVisible();
     });
 });

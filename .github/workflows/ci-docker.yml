@@ -345,7 +345,7 @@ jobs:
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: blob-report-${{ matrix.shardIndex }}
@@ -353,7 +353,7 @@ jobs:
           retention-days: 1
 
       - name: Upload test results artifacts
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.shardIndex }}
@@ -362,7 +362,7 @@ jobs:
 
   merge_reports:
     name: Merge Playwright Reports
-    if: always()
+    if: always() && needs.test_e2e.result == 'failure'
     needs: [test_e2e, setup]
     runs-on: ubuntu-latest
     steps:
