@@ -85,6 +85,7 @@
   "devDependencies": {
     "@actions/core": "1.11.1",
     "chalk": "4.1.2",
+    "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
     "eslint-plugin-ghost": "3.4.3",
