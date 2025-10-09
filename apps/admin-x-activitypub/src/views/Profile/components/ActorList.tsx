@@ -74,7 +74,7 @@ const ActorList: React.FC<ActorListProps> = ({
 
                             return (
                                 <React.Fragment key={actor.id}>
-                                    <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={false} side='left'>
+                                    <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={isCurrentUser} side='left'>
                                         <div>
                                             <ActivityItem key={actor.id}
                                                 data-testid="actor-item"
