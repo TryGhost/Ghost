@@ -25286,10 +25286,10 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.2, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-msw@2.11.4:
-  version "2.11.4"
-  resolved "https://registry.yarnpkg.com/msw/-/msw-2.11.4.tgz#05b8c13f65de145b0e90517b1e4e6eb39cc2a27e"
-  integrity sha512-CtRZ76gHVoTZiEhAM4zFJpglZ4Ptbg9g7qHn3wbKe55gCoWucC2CErXv/lAUPvOIr1kQw/V8AH4taOsREiNN/Q==
+msw@2.11.5:
+  version "2.11.5"
+  resolved "https://registry.yarnpkg.com/msw/-/msw-2.11.5.tgz#69572ab70a60b5d72c8b6aed344595a7604241c0"
+  integrity sha512-atFI4GjKSJComxcigz273honh8h4j5zzpk5kwG4tGm0TPcYne6bqmVrufeRll6auBeouIkXqZYXxVbWSWxM3RA==
   dependencies:
     "@inquirer/confirm" "^5.0.0"
     "@mswjs/interceptors" "^0.39.1"
