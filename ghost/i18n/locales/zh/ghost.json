@@ -62,7 +62,7 @@
     "View in browser": "在浏览器中打开",
     "Welcome back to {siteTitle}!": "欢迎回到 {siteTitle}！",
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "欢迎回到{siteTitle}！您的验证码是{otc}。",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "欢迎回来！这是您登录{siteTitle}的验证码。出于安全考虑，该验证码仅在24小时内有效",
+    "Welcome back! Here's your code to sign in to {siteTitle}": "欢迎回来！这是您登录{siteTitle}的验证码",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "欢迎回来！请使用此链接安全登录您的 {siteTitle} 账户：",
     "When:": "时间:",
     "Where:": "地点:",

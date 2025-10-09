@@ -62,7 +62,7 @@
     "View in browser": "用瀏覽器打開",
     "Welcome back to {siteTitle}!": "歡迎回到{siteTitle}！",
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "歡迎回到{siteTitle}！您的驗證碼為{otc}。",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "歡迎回來！以下是您登入{siteTitle}的驗證碼。為保障您的安全，此驗證碼僅在 24 小時內有效。",
+    "Welcome back! Here's your code to sign in to {siteTitle}": "歡迎回來！以下是您登入{siteTitle}的驗證碼",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "歡迎回來！請使用此連結安全地登入您的{siteTitle}帳號：",
     "When:": "時間：",
     "Where:": "地點：",
