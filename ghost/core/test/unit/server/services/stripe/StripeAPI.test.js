@@ -169,7 +169,12 @@ describe('StripeAPI', function () {
                     attribution_type: 'url',
                     referrer_source: 'source',
                     referrer_medium: 'medium',
-                    referrer_url: 'https://ghost.org/'
+                    referrer_url: 'https://ghost.org/',
+                    utm_source: 'newsletter',
+                    utm_medium: 'email',
+                    utm_campaign: 'spring_sale',
+                    utm_term: 'ghost_pro',
+                    utm_content: 'header_link'
                 }
             });
 
@@ -179,7 +184,12 @@ describe('StripeAPI', function () {
                 attribution_type: 'url',
                 referrer_source: 'source',
                 referrer_medium: 'medium',
-                referrer_url: 'https://ghost.org/'
+                referrer_url: 'https://ghost.org/',
+                utm_source: 'newsletter',
+                utm_medium: 'email',
+                utm_campaign: 'spring_sale',
+                utm_term: 'ghost_pro',
+                utm_content: 'header_link'
             });
         });
     });

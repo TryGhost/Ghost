@@ -8,6 +8,7 @@ import {chooseBestErrorMessage} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import LoadingPage from './LoadingPage';
+import {t} from '../../utils/i18n';
 
 export const FeedbackPageStyles = `
     .gh-portal-feedback {
@@ -170,7 +171,7 @@ export const FeedbackPageStyles = `
 `;
 
 function ErrorPage({error}) {
-    const {doAction, t} = useContext(AppContext);
+    const {doAction} = useContext(AppContext);
 
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
@@ -198,7 +199,7 @@ function ErrorPage({error}) {
 }
 
 const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
-    const {doAction, brandColor, t} = useContext(AppContext);
+    const {doAction, brandColor} = useContext(AppContext);
     const [score, setScore] = useState(initialScore);
 
     const stopPropagation = (event) => {
@@ -276,7 +277,7 @@ const LoadingFeedbackView = ({action, score}) => {
 };
 
 const ConfirmFeedback = ({positive}) => {
-    const {doAction, brandColor, t} = useContext(AppContext);
+    const {doAction, brandColor} = useContext(AppContext);
 
     const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
@@ -305,7 +306,7 @@ const ConfirmFeedback = ({positive}) => {
 };
 
 export default function FeedbackPage() {
-    const {site, pageData, member, t, api} = useContext(AppContext);
+    const {site, pageData, member, api} = useContext(AppContext);
     const {uuid, key, postId, score: initialScore} = pageData;
     const [score, setScore] = useState(initialScore);
     const positive = score === 1;

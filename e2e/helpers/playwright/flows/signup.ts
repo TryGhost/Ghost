@@ -1,13 +1,11 @@
 import {Page} from '@playwright/test';
 import {faker} from '@faker-js/faker';
-import {HomePage} from '../../pages/public';
-import {SignUpPage} from '../../pages/portal/SignUpPage';
-import {SignUpSuccessPage} from '../../pages/portal/SignUpSuccessPage';
+import {PublicPage} from '../../pages/public';
+import {SignUpPage, SignUpSuccessPage} from '../../pages/portal';
 
 export async function signupViaPortal(page: Page): Promise<{emailAddress: string; name: string}> {
-    const homePage = new HomePage(page);
-    await homePage.goto();
-    await homePage.openPortalViaSubscribeButton();
+    const publicPage = new PublicPage(page);
+    await publicPage.openPortalViaSubscribeButton();
 
     const signUpPage = new SignUpPage(page);
     const emailAddress = faker.internet.email();

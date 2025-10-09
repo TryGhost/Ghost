@@ -6,7 +6,7 @@ test.describe('Post Factory API Integration', () => {
     let postFactory: PostFactory;
 
     test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page);
+        postFactory = createPostFactory(page.request);
     });
 
     test('create a post and view it on the frontend', async ({page}) => {

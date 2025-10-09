@@ -1,11 +1,11 @@
 import React from 'react';
 import AppContext from '../../AppContext';
+import {t} from '../../utils/i18n';
 
 export default class SiteTitleBackButton extends React.Component {
     static contextType = AppContext;
 
     render() {
-        const {t} = this.context;
         return (
             <>
                 <button

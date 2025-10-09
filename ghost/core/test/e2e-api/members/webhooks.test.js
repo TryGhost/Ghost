@@ -1902,7 +1902,19 @@ describe('Members API', function () {
                 start_date: beforeNow / 1000,
                 current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                 cancel_at_period_end: false,
-                metadata: {}
+                metadata: attribution ? {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type,
+                    referrer_source: attribution.referrerSource,
+                    referrer_medium: attribution.referrerMedium,
+                    referrer_url: attribution.referrerUrl,
+                    utm_source: attribution.utmSource,
+                    utm_medium: attribution.utmMedium,
+                    utm_campaign: attribution.utmCampaign,
+                    utm_term: attribution.utmTerm,
+                    utm_content: attribution.utmContent
+                } : {}
             });
 
             set(customer, {
@@ -1925,7 +1937,15 @@ describe('Members API', function () {
                         metadata: attribution ? {
                             attribution_id: attribution.id,
                             attribution_url: attribution.url,
-                            attribution_type: attribution.type
+                            attribution_type: attribution.type,
+                            referrer_source: attribution.referrerSource,
+                            referrer_medium: attribution.referrerMedium,
+                            referrer_url: attribution.referrerUrl,
+                            utm_source: attribution.utmSource,
+                            utm_medium: attribution.utmMedium,
+                            utm_campaign: attribution.utmCampaign,
+                            utm_term: attribution.utmTerm,
+                            utm_content: attribution.utmContent
                         } : {}
                     }
                 }
@@ -2167,6 +2187,62 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with UTM parameters', async function () {
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url',
+                referrerSource: 'Google',
+                referrerMedium: 'cpc',
+                referrerUrl: 'google.com',
+                utmSource: 'newsletter',
+                utmMedium: 'email',
+                utmCampaign: 'spring_sale',
+                utmTerm: 'ghost_pro',
+                utmContent: 'header_link'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            const memberModel = await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: 'Google',
+                referrer_medium: 'cpc',
+                referrer_url: 'google.com'
+            });
+
+            // Fetch the member via API to get subscription data
+            const {body} = await adminAgent.get(`/members/${memberModel.id}/`);
+            const member = body.members[0];
+
+            // Verify UTM parameters are stored in SubscriptionCreatedEvent
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+                        attribution_id: null,
+                        attribution_url: '/',
+                        attribution_type: 'url',
+                        referrer_source: 'Google',
+                        referrer_medium: 'cpc',
+                        referrer_url: 'google.com',
+                        utm_source: 'newsletter',
+                        utm_medium: 'email',
+                        utm_campaign: 'spring_sale',
+                        utm_term: 'ghost_pro',
+                        utm_content: 'header_link'
+                    }
+                ]
             });
         });
 

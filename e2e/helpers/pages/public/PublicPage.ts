@@ -1,5 +1,5 @@
-import {Page, Locator} from '@playwright/test';
-import {BasePage} from '../BasePage';
+import {Page, Locator, Response} from '@playwright/test';
+import {BasePage, pageGotoOptions} from '../BasePage';
 
 declare global {
     interface Window {
@@ -72,6 +72,10 @@ export class PublicPage extends BasePage {
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
 
+    linkWithPostName(name: string): Locator {
+        return this.page.getByRole('link', {name: name});
+    }
+
     // This is necessary because Ghost blocks analytics requests when in Playwright by default
     async enableAnalyticsRequests(): Promise<void> {
         await this.page.addInitScript(() => {
@@ -79,15 +83,25 @@ export class PublicPage extends BasePage {
         });
     }
 
-    async goto(url: string | null = null): Promise<void> {
+    async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
-        await super.goto(url);
+        await super.goto(url, options);
+    }
+
+    async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
+        const pageHitPromise = this.pageHitRequestPromise();
+        await this.goto(url, options);
+        await pageHitPromise;
+    }
+
+    pageHitRequestPromise(): Promise<Response> {
+        return this.page.waitForResponse((response) => {
+            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+        }, {timeout: 10000});
     }
 
     async waitForPageHitRequest(): Promise<void> {
-        await this.page.waitForResponse((response) => {
-            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
-        }, {timeout: 10000});
+        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {

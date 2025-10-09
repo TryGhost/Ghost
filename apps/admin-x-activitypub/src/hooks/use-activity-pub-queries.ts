@@ -1114,7 +1114,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             });
 
             // Update suggested profiles cache (for all limit values)
-            queryClient.setQueriesData({queryKey: ['suggested_profiles_json'], exact: false}, (current: Account[] | undefined) => {
+            queryClient.setQueriesData({queryKey: ['suggested_profiles'], exact: false}, (current: Account[] | undefined) => {
                 if (!current) {
                     return current;
                 }
@@ -1278,7 +1278,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             });
 
             // Update suggested profiles cache (for all limit values)
-            queryClient.setQueriesData({queryKey: ['suggested_profiles_json'], exact: false}, (current: Account[] | undefined) => {
+            queryClient.setQueriesData({queryKey: ['suggested_profiles'], exact: false}, (current: Account[] | undefined) => {
                 if (!current) {
                     return current;
                 }
@@ -1616,9 +1616,12 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     });
 }
 
-export function useAccountForUser(handle: string, profileHandle: string) {
+export function useAccountForUser(handle: string, profileHandle: string, options?: { enabled?: boolean }) {
+    const enabled = options?.enabled !== false;
+
     return useQuery({
         queryKey: QUERY_KEYS.account(profileHandle === 'me' ? 'index' : profileHandle),
+        enabled,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);

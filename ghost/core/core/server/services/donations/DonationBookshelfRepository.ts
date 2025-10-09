@@ -23,6 +23,11 @@ type DonationEventModelInstance = BookshelfModelInstance & {
     referrer_source: string | null;
     referrer_medium: string | null;
     referrer_url: string | null;
+    utm_source: string | null;
+    utm_medium: string | null;
+    utm_campaign: string | null;
+    utm_term: string | null;
+    utm_content: string | null;
 }
 type DonationPaymentEventBookshelfModel = BookshelfModel<DonationEventModelInstance>;
 
@@ -47,7 +52,12 @@ export class DonationBookshelfRepository implements DonationRepository {
             attribution_type: event.attributionType,
             referrer_source: event.referrerSource,
             referrer_medium: event.referrerMedium,
-            referrer_url: event.referrerUrl
+            referrer_url: event.referrerUrl,
+            utm_source: event.utmSource,
+            utm_medium: event.utmMedium,
+            utm_campaign: event.utmCampaign,
+            utm_term: event.utmTerm,
+            utm_content: event.utmContent
         });
     }
 }
