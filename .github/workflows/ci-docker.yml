@@ -345,16 +345,24 @@ jobs:
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
+      - name: Upload test results artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.shardIndex }}
+          path: e2e/test-results
+          retention-days: 7
+
   merge_reports:
     name: Merge Playwright Reports
-    if: always() && needs.test_e2e.result == 'failure'
+    if: always()
     needs: [test_e2e, setup]
     runs-on: ubuntu-latest
     steps:
@@ -377,6 +385,13 @@ jobs:
           pattern: blob-report-*
           merge-multiple: true
 
+      - name: Download test results from GitHub Actions Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: e2e/all-test-results
+          pattern: test-results-*
+          merge-multiple: true
+
       - name: Merge into HTML Report
         run: npx playwright merge-reports --reporter html ./all-blob-reports
         working-directory: e2e
@@ -387,6 +402,13 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
+
+      - name: Upload merged test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: e2e/all-test-results
+          retention-days: 7
 
       - name: Output command to view report
         run: |
