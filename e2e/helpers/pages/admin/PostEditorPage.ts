@@ -20,9 +20,4 @@ export class PostEditorPage extends AdminPage {
         await this.page.goto(`/ghost/#/editor/post/${postId}`);
         await this.titleInput.waitFor({state: 'visible'});
     }
-
-    async openPreview(): Promise<void> {
-        await this.previewButton.click();
-        await this.previewModal.waitForVisible();
-    }
 }

@@ -64,7 +64,7 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
 }
 
 export default function NewsletterSelectionPage({pageData, onBack}) {
-    const {brandColor, site, onAction, action, t} = useContext(AppContext);
+    const {brandColor, site, doAction, action, t} = useContext(AppContext);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
@@ -111,7 +111,7 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                                     };
                                 });
                                 const {name, email, plan, phonenumber, offerId} = pageData;
-                                onAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
+                                doAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
                             }}
                             brandColor={brandColor}
                             label={label}

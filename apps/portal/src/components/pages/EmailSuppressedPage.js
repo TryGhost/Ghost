@@ -7,44 +7,44 @@ import ActionButton from '../../components/common/ActionButton';
 import {ReactComponent as EmailDeliveryFailedIcon} from '../../images/icons/email-delivery-failed.svg';
 
 export default function EmailSuppressedPage() {
-    const {brandColor, lastPage, onAction, action, site, t} = useContext(AppContext);
+    const {brandColor, lastPage, doAction, action, site, t} = useContext(AppContext);
 
     useEffect(() => {
         if (['removeEmailFromSuppressionList:success'].includes(action)) {
-            onAction('refreshMemberData');
+            doAction('refreshMemberData');
         }
 
         if (['removeEmailFromSuppressionList:failed', 'refreshMemberData:failed'].includes(action)) {
-            onAction('back');
+            doAction('back');
         }
 
         if (['refreshMemberData:success'].includes(action)) {
             const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site});
             if (showEmailPreferences) {
-                onAction('switchPage', {
+                doAction('switchPage', {
                     page: 'accountEmail',
                     lastPage: 'accountHome'
                 });
-                onAction('showPopupNotification', {
+                doAction('showPopupNotification', {
                     message: t('You have been successfully resubscribed')
                 });
             } else {
-                onAction('back');
+                doAction('back');
             }
         }
-    }, [action, onAction, site, t]);
+    }, [action, doAction, site, t]);
 
     const isRunning = ['removeEmailFromSuppressionList:running', 'refreshMemberData:running'].includes(action);
 
     const handleSubmit = () => {
-        onAction('removeEmailFromSuppressionList');
+        doAction('removeEmailFromSuppressionList');
     };
 
     return (
         <div className="gh-email-suppressed-page">
             <header className='gh-portal-detail-header'>
                 <BackButton brandColor={brandColor} hidden={!lastPage} onClick={() => {
-                    onAction('back');
+                    doAction('back');
                 }} />
                 <CloseButton />
             </header>

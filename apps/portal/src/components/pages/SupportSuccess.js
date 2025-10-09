@@ -33,7 +33,7 @@ export const TipsAndDonationsSuccessStyle = `
 `;
 
 const SupportSuccess = () => {
-    const {onAction, brandColor, site, t} = useContext(AppContext);
+    const {doAction, brandColor, site, t} = useContext(AppContext);
     const successTitle = t('Thank you for your support');
     const successDescription = t('To continue to stay up to date, subscribe to {publication} below.', {publication: site?.title});
     const buttonLabel = t('Sign up');
@@ -51,12 +51,12 @@ const SupportSuccess = () => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
-                onClick = {() => onAction('switchPage', {page: 'signup'})}
+                onClick = {() => doAction('switchPage', {page: 'signup'})}
                 disabled={false}
                 brandColor={brandColor}
                 label={buttonLabel}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
 
@@ -67,7 +67,7 @@ const SupportSuccess = () => {
                     data-testid='signin-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => onAction('switchPage', {page: 'signin'})}
+                    onClick={() => doAction('switchPage', {page: 'signin'})}
                 >
                     <span>{t('Sign in')}</span>
                 </button>

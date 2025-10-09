@@ -12,11 +12,11 @@ function displayErrorIfElementExists(errorEl, message) {
 function handleError(error, form, errorEl, t) {
     form.classList.add('error');
     const defaultMessage = t('There was an error sending the email, please try again');
-    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler},
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException},
     t = str => str
 ) {
     form.removeEventListener('submit', submitHandler);
@@ -48,6 +48,8 @@ export async function formSubmitHandler(
         emailType = form.dataset.membersForm;
     }
 
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true' && labs?.membersSigninOTC;
+
     form.classList.add('loading');
     const urlHistory = getUrlHistory();
     const reqBody = {
@@ -57,6 +59,9 @@ export async function formSubmitHandler(
         name: name,
         autoRedirect: (autoRedirect === 'true')
     };
+    if (wantsOTC) {
+        reqBody.includeOTC = true;
+    }
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
     }
@@ -86,9 +91,32 @@ export async function formSubmitHandler(
         form.classList.remove('loading');
         if (magicLinkRes.ok) {
             form.classList.add('success');
+
+            let responseBody;
+            if (wantsOTC) {
+                try {
+                    responseBody = await magicLinkRes.clone().json();
+                } catch (e) {
+                    responseBody = undefined;
+                }
+            }
+
+            const otcRef = responseBody?.otc_ref;
+            if (otcRef && typeof doAction === 'function') {
+                try {
+                    doAction('startSigninOTCFromCustomForm', {
+                        email: (email || '').trim(),
+                        otcRef
+                    });
+                } catch (actionError) {
+                    // eslint-disable-next-line no-console
+                    console.error(actionError);
+                    captureException?.(actionError);
+                }
+            }
         } else {
             const e = await HumanReadableError.fromApiResponse(magicLinkRes);
-            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'));
             displayErrorIfElementExists(errorEl, errorMessage);
             form.classList.add('error'); // Ensure error state is set here
         }
@@ -180,7 +208,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site, member}) {
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
     const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
@@ -191,7 +219,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException}, t);
         }
         form.addEventListener('submit', submitHandler);
     });

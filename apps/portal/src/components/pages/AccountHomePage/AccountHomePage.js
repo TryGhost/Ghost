@@ -13,11 +13,11 @@ export default class AccountHomePage extends React.Component {
         const {member, site} = this.context;
 
         if (!isSigninAllowed({site})) {
-            this.context.onAction('signout');
+            this.context.doAction('signout');
         }
 
         if (!member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'signin',
                 pageData: {
                     redirect: window.location.href // This includes the search/fragment of the URL (#/portal/account) which is missing from the default referer header
@@ -28,7 +28,7 @@ export default class AccountHomePage extends React.Component {
 
     handleSignout(e) {
         e.preventDefault();
-        this.context.onAction('signout');
+        this.context.doAction('signout');
     }
 
     render() {
@@ -44,7 +44,7 @@ export default class AccountHomePage extends React.Component {
             <div className='gh-portal-account-wrapper'>
                 <AccountMain />
                 <AccountFooter
-                    onClose={() => this.context.onAction('closePopup')}
+                    onClose={() => this.context.doAction('closePopup')}
                     handleSignout={e => this.handleSignout(e)}
                     supportAddress={supportAddress}
                     t={t}

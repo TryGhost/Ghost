@@ -72,7 +72,7 @@ class PopupContent extends React.Component {
         // If focused on input field, only allow close if no value entered
         const allowClose = eventTargetTag !== 'INPUT' || (eventTargetTag === 'INPUT' && !event?.target?.value);
         if (allowClose) {
-            this.context.onAction('closePopup');
+            this.context.doAction('closePopup');
         }
     }
 
@@ -108,7 +108,7 @@ class PopupContent extends React.Component {
             return;
         }
         if (e.target === e.currentTarget) {
-            this.context.onAction('closePopup');
+            this.context.doAction('closePopup');
         }
     }
 
@@ -260,7 +260,7 @@ export default class PopupModal extends React.Component {
     handlePopupClose(e) {
         e.preventDefault();
         if (e.target === e.currentTarget) {
-            this.context.onAction('closePopup');
+            this.context.doAction('closePopup');
         }
     }
 

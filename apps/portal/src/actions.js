@@ -118,10 +118,31 @@ async function signin({data, api, state}) {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'), t)
+                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'))
             })
         };
     }
+}
+
+function startSigninOTCFromCustomForm({data, state}) {
+    const email = (data?.email || '').trim();
+    const otcRef = data?.otcRef;
+
+    if (!otcRef) {
+        return {};
+    }
+
+    return {
+        showPopup: true,
+        page: 'magiclink',
+        lastPage: 'signin',
+        otcRef,
+        pageData: {
+            ...(state.pageData || {}),
+            email
+        },
+        popupNotification: null
+    };
 }
 
 async function verifyOTC({data, api, state}) {
@@ -147,7 +168,7 @@ async function verifyOTC({data, api, state}) {
             action: 'verifyOTC:failed',
             popupNotification: createPopupNotification({
                 type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'))
             })
         };
     }
@@ -181,7 +202,7 @@ async function signup({data, state, api}) {
         };
     } catch (e) {
         const {t} = state;
-        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'), t);
+        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
@@ -532,7 +553,7 @@ async function updateProfile({data, state, api}) {
         let message = '';
 
         if (emailUpdate.error) {
-            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'));
         } else {
             message = t('Check your inbox to verify email update');
         }
@@ -620,6 +641,7 @@ const Actions = {
     back,
     signout,
     signin,
+    startSigninOTCFromCustomForm,
     verifyOTC,
     signup,
     updateSubscription,
