@@ -13,6 +13,4 @@ export * from './MemberDetailsPage';
 export * from './PostEditorPage';
 export * from './settings/SettingsPage';
 export * from './tags/TagsPage';
-export * from './tags/TagDetailsPage';
-
 export * from './tags/TagEditorPage';
