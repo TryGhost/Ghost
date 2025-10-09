@@ -647,11 +647,11 @@ export default class App extends React.Component {
         siteDomain = siteDomain?.replace(/^(\S*\.)?(\S*\.\S*)$/i, '.$2');
 
         if (firstPromoterId && siteDomain) {
-            const t = document.createElement('script');
-            t.type = 'text/javascript';
-            t.async = !0;
-            t.src = 'https://cdn.firstpromoter.com/fprom.js';
-            t.onload = t.onreadystatechange = function () {
+            const fpScript = document.createElement('script');
+            fpScript.type = 'text/javascript';
+            fpScript.async = !0;
+            fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
+            fpScript.onload = fpScript.onreadystatechange = function () {
                 let _t = this.readyState;
                 if (!_t || 'complete' === _t || 'loaded' === _t) {
                     try {
@@ -674,8 +674,8 @@ export default class App extends React.Component {
                     }
                 }
             };
-            const e = document.getElementsByTagName('script')[0];
-            e.parentNode.insertBefore(t, e);
+            const firstScript = document.getElementsByTagName('script')[0];
+            firstScript.parentNode.insertBefore(fpScript, firstScript);
         }
     }
 
@@ -960,7 +960,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir, scrollbarWidth, labs, otcRef} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -976,7 +976,6 @@ export default class App extends React.Component {
             showPopup,
             popupNotification,
             customSiteUrl,
-            t,
             dir,
             scrollbarWidth,
             labs,
