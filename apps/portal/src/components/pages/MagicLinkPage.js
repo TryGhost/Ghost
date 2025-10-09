@@ -3,8 +3,6 @@ import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
-
-import InputField from '../common/InputField';
 import {t} from '../../utils/i18n';
 
 export const MagicLinkStyles = `
@@ -185,8 +183,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     doVerifyOTC() {
-        const {labs} = this.context;
-        const missingCodeError = labs?.membersSigninOTCAlpha ? t('Enter code above') : t('Enter code below');
+        const missingCodeError = t('Enter code above');
 
         this.setState((state) => {
             const code = (state.otc || '').trim();
@@ -238,52 +235,34 @@ export default class MagicLinkPage extends React.Component {
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
-                {labs?.membersSigninOTCAlpha ? (
-                    <section className='gh-portal-section gh-portal-otp'>
-                        <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${errors.otc && 'error'}`}>
-                            <input
-                                id={`input-${OTC_FIELD_NAME}`}
-                                className={`gh-portal-input ${this.state.otc && 'entry'} ${errors.otc && 'error'}`}
-                                placeholder='––––––'
-                                name={OTC_FIELD_NAME}
-                                type="text"
-                                value={this.state.otc}
-                                inputMode="numeric"
-                                maxLength={6}
-                                pattern="[0-9]*"
-                                autoComplete="one-time-code"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                autoFocus={true}
-                                aria-label={t('Code')}
-                                onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                                onFocus={() => this.setState({isFocused: true})}
-                                onBlur={() => this.setState({isFocused: false})}
-                            />
-                        </div>
-                        {errors.otc &&
-                            <div className="gh-portal-otp-error">
-                                {errors.otc}
-                            </div>
-                        }
-                    </section>
-                ) : (
-                    <section className='gh-portal-section'>
-                        {/* @TODO: create different input component with updated design */}
-                        <InputField
+                <section className='gh-portal-section gh-portal-otp'>
+                    <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${errors.otc && 'error'}`}>
+                        <input
                             id={`input-${OTC_FIELD_NAME}`}
+                            className={`gh-portal-input ${this.state.otc && 'entry'} ${errors.otc && 'error'}`}
+                            placeholder='––––––'
                             name={OTC_FIELD_NAME}
                             type="text"
                             value={this.state.otc}
-                            placeholder="• • • • • •"
-                            label={t('Code')}
-                            errorMessage={errors.otc || ''}
-                            autoFocus={false}
+                            inputMode="numeric"
                             maxLength={6}
+                            pattern="[0-9]*"
+                            autoComplete="one-time-code"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            autoFocus={true}
+                            aria-label={t('Code')}
                             onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                            onFocus={() => this.setState({isFocused: true})}
+                            onBlur={() => this.setState({isFocused: false})}
                         />
-                    </section>
-                )}
+                    </div>
+                    {errors.otc &&
+                        <div className="gh-portal-otp-error">
+                            {errors.otc}
+                        </div>
+                    }
+                </section>
 
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
