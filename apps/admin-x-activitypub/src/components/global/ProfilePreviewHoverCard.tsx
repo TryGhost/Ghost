@@ -1,5 +1,7 @@
 import FollowButton from './FollowButton';
 import React, {useEffect, useState} from 'react';
+import getUsername from '../../utils/get-username';
+import {Account} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
@@ -7,12 +9,16 @@ import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '../../lib/feature-flags';
 
 type ProfilePreviewHoverCardProps = {
-    actor?: ActorProperties | null;
+    actor?: ActorProperties | Account | null;
     children: React.ReactNode;
     disabled?: boolean;
     side?: 'top' | 'right' | 'bottom' | 'left';
     align?: 'start' | 'center' | 'end';
     isCurrentUser?: boolean;
+};
+
+const isActorProperties = (actor: ActorProperties | Account): actor is ActorProperties => {
+    return 'preferredUsername' in actor;
 };
 
 const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
@@ -27,12 +33,8 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     const [shouldFetch, setShouldFetch] = useState(false);
 
     let targetHandle = actor?.handle;
-    if (!targetHandle && actor?.preferredUsername && actor?.id) {
-        try {
-            targetHandle = `@${actor.preferredUsername}@${new URL(actor.id).hostname.replace(/^www\./, '')}`;
-        } catch {
-            targetHandle = null;
-        }
+    if (!targetHandle && actor && isActorProperties(actor)) {
+        targetHandle = getUsername(actor);
     }
 
     const bypassHover = !isEnabled('preview') || disabled || (!targetHandle && !actor);
@@ -66,25 +68,16 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
 
     const displayHandle = displayData?.handle ?? targetHandle ?? '';
     const displayName = displayData?.name ?? '';
-    const avatarUrl = displayData?.avatarUrl ?? (actor?.icon?.url) ?? null;
+    const avatarUrl = displayData?.avatarUrl ?? (actor && isActorProperties(actor) ? actor.icon?.url : null) ?? null;
     const followsYou = Boolean(displayData?.followsMe);
     const followingCount = typeof displayData?.followingCount === 'number' ? displayData.followingCount : (Number(displayData?.followingCount) || 0);
     const followerCount = typeof displayData?.followerCount === 'number' ? displayData.followerCount : (Number(displayData?.followerCount) || 0);
     const bio = displayData?.bio ? openLinksInNewTab(stripHtml(displayData.bio, ['a'])) : undefined;
 
     return (
-        <HoverCard>
+        <HoverCard onOpenChange={setShouldFetch}>
             <HoverCardTrigger asChild>
-                <div
-                    onMouseEnter={() => {
-                        setShouldFetch(true);
-                    }}
-                    onMouseLeave={() => {
-                        setShouldFetch(false);
-                    }}
-                >
-                    {children}
-                </div>
+                {children}
             </HoverCardTrigger>
             <HoverCardContent
                 align={align}
@@ -120,7 +113,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                         </div>
                         <div className='flex flex-col items-start'>
                             <H3 className='w-full truncate'>{displayName}</H3>
-                            <div className='flex gap-2'>
+                            <div className='flex w-full gap-2'>
                                 <span className='truncate text-gray-700 dark:text-gray-600'>{displayHandle}</span>
                                 {followsYou && !isCurrentUser && (
                                     <Badge className='mt-px whitespace-nowrap' variant='secondary'>Follows you</Badge>
