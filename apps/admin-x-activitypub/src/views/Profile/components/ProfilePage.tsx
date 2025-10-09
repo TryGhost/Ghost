@@ -11,7 +11,7 @@ import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
-import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
 
@@ -25,7 +25,9 @@ type ProfilePageProps = {
     likesTab: React.ReactNode,
     followingTab: React.ReactNode,
     followersTab: React.ReactNode,
-    isLoadingAccount: boolean
+    isLoadingAccount: boolean,
+    activeTab?: string,
+    actualHandle?: string
 }
 
 const ProfilePage:React.FC<ProfilePageProps> = ({
@@ -35,9 +37,11 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     postsTab,
     likesTab,
     followingTab,
-    followersTab
+    followersTab,
+    activeTab = 'posts',
+    actualHandle
 }) => {
-    const params = useParams();
+    const navigate = useNavigate();
     const {canGoBack} = useNavigationStack();
 
     const blockMutation = useBlockMutationForUser('index');
@@ -46,8 +50,8 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const unblockDomainMutation = useUnblockDomainMutationForUser('index');
 
     const currentAccountQuery = useAccountForUser('index', 'me');
-    const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
-    const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
+    const {data: currentUser} = actualHandle ? currentAccountQuery : {data: undefined};
+    const isCurrentUser = actualHandle === currentUser?.handle || !actualHandle;
 
     const isBlocked = account?.blockedByMe;
     const isDomainBlocked = account?.domainBlockedByMe;
@@ -246,10 +250,15 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     onClick={toggleExpand}
                                 >{isExpanded ? 'Show less' : 'Show all'}</Button>}
                             </div>)}
-                            <Tabs key={params.handle || account?.handle || 'current-user'} className='mt-5' defaultValue='posts' variant='underline'>
+                            <Tabs key={actualHandle || account?.handle || 'current-user'} className='mt-5' value={activeTab} variant='underline' onValueChange={(value) => {
+                                const basePath = actualHandle ? `/profile/${actualHandle}` : '/profile';
+                                // Don't add /posts to URL, just use the base path
+                                // Use replace to avoid creating multiple history entries when switching tabs
+                                navigate(value === 'posts' ? basePath : `${basePath}/${value}`, {replace: true});
+                            }}>
                                 <TabsList>
                                     <TabsTrigger value="posts">Posts</TabsTrigger>
-                                    {!params.handle && <TabsTrigger value="likes">
+                                    {!actualHandle && <TabsTrigger value="likes">
                                         Likes
                                         <TabsTriggerCount>{abbreviateNumber(account?.likedCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>}
@@ -275,7 +284,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                         postsTab
                                     }
                                 </TabsContent>
-                                {!params.handle && <TabsContent value='likes'>
+                                {!actualHandle && <TabsContent value='likes'>
                                     {likesTab}
                                 </TabsContent>}
                                 <TabsContent value='following'>

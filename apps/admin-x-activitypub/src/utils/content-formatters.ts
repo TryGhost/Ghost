@@ -100,6 +100,11 @@ export const openLinksInNewTab = (content: string) => {
 
     // Add target="_blank" and rel attributes to each link
     for (let i = 0; i < links.length; i++) {
+        const href = links[i].getAttribute('href') || '';
+        // Block javascript:, data:, and other dangerous protocols
+        if (href.match(/^\s*(javascript|data|vbscript):/i)) {
+            links[i].removeAttribute('href');
+        }
         links[i].setAttribute('target', '_blank');
         links[i].setAttribute('rel', 'noopener noreferrer');
     }
