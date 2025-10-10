@@ -126,6 +126,7 @@
     "jsdom": "24.1.3",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "rollup-plugin-esbuild": "6.1.1",
     "typescript": "5.7.3",
     "vite": "5.4.20",
     "vite-plugin-css-injected-by-js": "3.5.2",

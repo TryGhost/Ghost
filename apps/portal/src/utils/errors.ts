@@ -3,10 +3,10 @@ import {t} from './i18n';
 export class HumanReadableError extends Error {
     /**
      * Returns whether this response from the server is a human readable error and should be shown to the user.
-     * @param {Response} res
-     * @returns {HumanReadableError|undefined}
+     * @param res
+     * @returns HumanReadableError or undefined
      */
-    static async fromApiResponse(res) {
+    static async fromApiResponse(res: Response): Promise<HumanReadableError | false | undefined> {
         // Bad request + Too many requests
         if (res.status === 400 || res.status === 429) {
             try {
@@ -14,7 +14,7 @@ export class HumanReadableError extends Error {
                 if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[0].message) {
                     return new HumanReadableError(json.errors[0].message);
                 }
-            } catch (e) {
+            } catch {
                 // Failed to decode: ignore
                 return false;
             }
@@ -25,7 +25,7 @@ export class HumanReadableError extends Error {
     }
 }
 
-export const specialMessages = [];
+export const specialMessages: string[] = [];
 
 /**
  * Attempt to return the best available message to the user, after translating it.
@@ -33,8 +33,8 @@ export const specialMessages = [];
  * Many "alreadyTranslatedDefaultMessages" are pretty vague, so we want to replace them with a more specific message
  * whenever one is available.
  */
-export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
-    const translateMessage = (message, number = null) => {
+export function chooseBestErrorMessage(error: Error | HumanReadableError | null, alreadyTranslatedDefaultMessage?: string): string {
+    const translateMessage = (message: string, number: string | null = null): string => {
         if (number) {
             return t(message, {number});
         } else {
@@ -42,9 +42,9 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         }
     };
 
-    const setupSpecialMessages = () => {
+    const setupSpecialMessages = (): void => {
         // eslint-disable-next-line no-shadow
-        const t = message => specialMessages.push(message);
+        const t = (message: string) => specialMessages.push(message);
         if (specialMessages.length === 0) {
             // This formatting is intentionally weird. It causes the i18n-parser to pick these strings up.
             // Do not redefine this t. It's a local function and needs to stay that way.
@@ -67,7 +67,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         }
     };
 
-    const isSpecialMessage = (message) => {
+    const isSpecialMessage = (message: string): boolean => {
         if (specialMessages.length === 0) {
             setupSpecialMessages();
         }
@@ -77,7 +77,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         return false;
     };
 
-    const prepareErrorMessage = (message = null) => {
+    const prepareErrorMessage = (message: string | null = null): {preparedMessage: string; number: string | null} => {
         // Check for a number in message, if found, replace the number with {number} and return the number.
         // Assumes there's only one number in the message.
         if (!message) {
@@ -94,7 +94,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
         return t('An error occurred');
     }
 
-    if (error instanceof HumanReadableError || error.message) {
+    if (error instanceof HumanReadableError || (error && error.message)) {
         const {preparedMessage, number} = prepareErrorMessage(error.message);
         if (isSpecialMessage(preparedMessage)) {
             return translateMessage(preparedMessage, number);
@@ -104,6 +104,6 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
     } else {
         // use the default message if there's no error message
         // if we don't have a default message either, fall back to a generic message plus the actual error.
-        return alreadyTranslatedDefaultMessage || t('An error occurred') + ': ' + error.toString();
+        return alreadyTranslatedDefaultMessage || t('An error occurred') + ': ' + error?.toString();
     }
 }

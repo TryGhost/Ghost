@@ -1,5 +1,5 @@
-function copyTextToClipboard(text) {
-    let textarea = document.createElement('textarea');
+function copyTextToClipboard(text: string): void {
+    const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.setAttribute('readonly', '');
     textarea.style.position = 'absolute';

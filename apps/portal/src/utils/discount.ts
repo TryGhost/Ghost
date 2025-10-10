@@ -1,4 +1,4 @@
-function calculateDiscount(monthly, yearly) {
+function calculateDiscount(monthly: number, yearly: number): number {
     if (isNaN(monthly) || isNaN(yearly)) {
         return 0;
     }

@@ -1,5 +1,9 @@
-export function transformPortalAnchorToRelative(anchor) {
+export function transformPortalAnchorToRelative(anchor: HTMLAnchorElement): void {
     const href = anchor.getAttribute('href');
+    if (!href) {
+        return;
+    }
+
     const url = new URL(href, window.location.origin);
 
     // ignore non-portal links

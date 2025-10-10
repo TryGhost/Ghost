@@ -6,10 +6,53 @@ import {defineConfig} from 'vitest/config';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import reactPlugin from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
+import esbuild from 'rollup-plugin-esbuild';
+import {transform} from 'esbuild';
 
 import pkg from './package.json';
 
 import {SUPPORTED_LOCALES} from '@tryghost/i18n';
+
+// Custom plugin to pre-transform JSX in .js files using esbuild
+// This runs before the define plugin so that define's esbuild can parse the files
+function jsxInJsPlugin() {
+    return {
+        name: 'jsx-in-js',
+        enforce: 'pre',
+        async transform(code, id) {
+            // Only transform .js files in src directory
+            if (id.includes('/src/') && id.endsWith('.js')) {
+                try {
+                    const result = await transform(code, {
+                        loader: 'jsx',
+                        jsx: 'transform',
+                        jsxFactory: 'React.createElement',
+                        jsxFragment: 'React.Fragment',
+                        target: 'es2015',
+                        sourcefile: id
+                    });
+
+                    // Add React import if JSX was found and React isn't already imported
+                    if (result.code.includes('React.createElement') && !code.includes('import React')) {
+                        return {
+                            code: `import React from 'react';\n${result.code}`,
+                            map: result.map || null
+                        };
+                    }
+
+                    return {
+                        code: result.code,
+                        map: result.map || null
+                    };
+                } catch (e) {
+                    // If transform fails, return null to let other plugins handle it
+                    return null;
+                }
+            }
+            return null;
+        }
+    };
+}
 
 export default defineConfig((config) => {
     const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
@@ -31,28 +74,19 @@ export default defineConfig((config) => {
             port: 5368
         },
         plugins: [
+            jsxInJsPlugin(),
             cssInjectedByJsPlugin(),
             reactPlugin(),
             svgrPlugin()
         ],
         esbuild: {
-            loader: 'jsx',
-            include: [/src\/.*\.[jt]sx?$/, /__mocks__\/.*\.[jt]sx?$/],
-            exclude: []
+            jsxInject: `import React from 'react'`
         },
         optimizeDeps: {
             esbuildOptions: {
-                plugins: [
-                    {
-                        name: 'load-js-files-as-jsx',
-                        setup(build) {
-                            build.onLoad({filter: /src\/.*\.[jt]s$/}, async args => ({
-                                loader: 'jsx',
-                                contents: await fs.readFile(args.path, 'utf8')
-                            }));
-                        }
-                    }
-                ]
+                loader: {
+                    '.js': 'jsx'
+                }
             }
         },
         build: {
@@ -71,6 +105,30 @@ export default defineConfig((config) => {
             rollupOptions: {
                 output: {
                     manualChunks: false
+                },
+                plugins: [
+                    esbuild({
+                        target: 'es2015',
+                        include: /\.[jt]sx?$/,
+                        exclude: /node_modules/,
+                        sourceMap: true,
+                        minify: false,
+                        jsx: 'transform',
+                        jsxFactory: 'React.createElement',
+                        jsxFragment: 'React.Fragment',
+                        jsxImportSource: 'react',
+                        loaders: {
+                            '.js': 'jsx',
+                            '.jsx': 'jsx',
+                            '.ts': 'tsx',
+                            '.tsx': 'tsx'
+                        }
+                    })
+                ],
+                onwarn(warning, warn) {
+                    // Suppress certain warnings
+                    if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
+                    warn(warning);
                 }
             },
             commonjsOptions: {
