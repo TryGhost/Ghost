@@ -139,7 +139,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                     {(accountQuery.isLoading || accountQuery.isFetching) ? (
                         <Skeleton className='h-4 w-48' />
                     ) : bio ? (
-                        <div dangerouslySetInnerHTML={{__html: bio}} className='leading-tight dark:text-gray-300' />
+                        <div dangerouslySetInnerHTML={{__html: bio}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
                     ) : null}
                 </div>
             </HoverCardContent>
