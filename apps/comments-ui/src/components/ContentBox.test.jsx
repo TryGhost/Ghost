@@ -136,10 +136,74 @@ describe('ContentBox', () => {
         });
 
         const {container} = contextualRender(<ContentBox done={true} />);
-        
+
         const section = container.querySelector('section');
         expect(section).toHaveClass('dark');
-        
+
         window.getComputedStyle = originalGetComputedStyle;
+    });
+
+    describe('oklab/oklch color parsing', () => {
+        const originalGetComputedStyle = window.getComputedStyle;
+
+        afterEach(() => {
+            window.getComputedStyle = originalGetComputedStyle;
+        });
+
+        it.each([
+            {
+                color: 'oklab(0.7 0 0)',
+                description: 'oklab with high lightness (>0.6)',
+                expectedDark: true
+            },
+            {
+                color: 'oklab(0.5 0 0)',
+                description: 'oklab with low lightness (<0.6)',
+                expectedDark: false
+            },
+            {
+                color: 'oklch(0.8 0.1 120)',
+                description: 'oklch with high lightness (>0.6)',
+                expectedDark: true
+            },
+            {
+                color: 'oklch(0.4 0.1 240)',
+                description: 'oklch with low lightness (<0.6)',
+                expectedDark: false
+            },
+            {
+                color: 'oklab(none 0.5 0.2)',
+                description: 'oklab with "none" lightness',
+                expectedDark: false
+            },
+            {
+                color: 'oklch(none 0.1 180)',
+                description: 'oklch with "none" lightness',
+                expectedDark: false
+            }
+        ])('correctly handles $description using 0.6 threshold', ({color, expectedDark}) => {
+            window.getComputedStyle = vi.fn().mockImplementation((element) => {
+                if (element === rootDiv.parentElement) {
+                    return {
+                        getPropertyValue: (prop) => {
+                            if (prop === 'color') {
+                                return color;
+                            }
+                            return '';
+                        }
+                    };
+                }
+                return originalGetComputedStyle(element);
+            });
+
+            const {container} = contextualRender(<ContentBox done={true} />);
+            const section = container.querySelector('section');
+
+            if (expectedDark) {
+                expect(section).toHaveClass('dark');
+            } else {
+                expect(section).not.toHaveClass('dark');
+            }
+        });
     });
 });
