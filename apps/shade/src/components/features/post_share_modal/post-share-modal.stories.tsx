@@ -109,7 +109,7 @@ export const CopyLinkDemo: Story = {
             const [isOpen, setIsOpen] = useState(false);
 
             return (
-                <div className="space-y-4">
+                <div className="gap-4">
                     <PostShareModal
                         author="Jane Smith"
                         defaultOpen={isOpen}
@@ -141,7 +141,7 @@ export const PostSuccess: Story = {
             const [isOpen, setIsOpen] = useState(false);
 
             return (
-                <div className="space-y-4">
+                <div className="gap-4">
                     <PostShareModal
                         author="Jane Smith"
                         defaultOpen={isOpen}

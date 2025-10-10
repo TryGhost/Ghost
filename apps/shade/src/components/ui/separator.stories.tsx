@@ -31,7 +31,7 @@ export const Horizontal: Story = {
 
 export const WithLabel: Story = {
     render: args => (
-        <div className="space-y-4">
+        <div className="gap-4">
             <div className="text-sm text-muted-foreground">Section title</div>
             <Separator {...args} />
             <div className="text-sm">Content below the labeled section.</div>

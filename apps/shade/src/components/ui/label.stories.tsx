@@ -40,7 +40,7 @@ export const Default: Story = {
 
 export const WithInput: Story = {
     render: () => (
-        <div className="space-y-2">
+        <div className="gap-2">
             <Label htmlFor="email">Email address</Label>
             <Input id="email" placeholder="Enter your email..." type="email" />
         </div>
@@ -56,7 +56,7 @@ export const WithInput: Story = {
 
 export const Required: Story = {
     render: () => (
-        <div className="space-y-2">
+        <div className="gap-2">
             <Label htmlFor="password">
                 Password <span className="text-red-500">*</span>
             </Label>
@@ -74,7 +74,7 @@ export const Required: Story = {
 
 export const Disabled: Story = {
     render: () => (
-        <div className="space-y-2">
+        <div className="gap-2">
             <Label htmlFor="disabled-input">Disabled field</Label>
             <Input id="disabled-input" placeholder="This field is disabled..." disabled />
         </div>

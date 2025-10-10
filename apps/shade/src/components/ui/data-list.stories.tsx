@@ -29,7 +29,7 @@ export const Default: Story = {
                 <DataListRow>
                     <DataListBar />
                     <DataListItemContent>
-                        <div className='flex items-center space-x-4 overflow-hidden'>
+                        <div className='flex items-center gap-4 overflow-hidden'>
                             <div>🇺🇸</div>
                             <div className='truncate font-medium'>
                                 Clean Monochrome Workspace in Düsseldorf, Germany A Designer’s Dual Apple Studio Display Workspace in Canada
@@ -47,7 +47,7 @@ export const Default: Story = {
                         width: '93%'
                     }} />
                     <DataListItemContent>
-                        <div className='flex items-center space-x-4 overflow-hidden'>
+                        <div className='flex items-center gap-4 overflow-hidden'>
                             <div>🇺🇸</div>
                             <div className='truncate font-medium'>
                                 No percentage value, no animation
@@ -64,7 +64,7 @@ export const Default: Story = {
                         width: '74%'
                     }} />
                     <DataListItemContent>
-                        <div className='flex items-center space-x-4 overflow-hidden'>
+                        <div className='flex items-center gap-4 overflow-hidden'>
                             <div className='flex items-center gap-3 truncate'>
                                 <div>🏴‍☠️</div>
                                 <div className='overflow-hidden'>
@@ -100,7 +100,7 @@ export const WithoutHeader: Story = {
                 <DataListRow>
                     <DataListBar style={{width: '100%'}} />
                     <DataListItemContent>
-                        <div className='flex items-center space-x-4 overflow-hidden'>
+                        <div className='flex items-center gap-4 overflow-hidden'>
                             <div>🏆</div>
                             <div className='truncate font-medium'>
                                 Top Performer
@@ -115,7 +115,7 @@ export const WithoutHeader: Story = {
                 <DataListRow>
                     <DataListBar style={{width: '80%'}} />
                     <DataListItemContent>
-                        <div className='flex items-center space-x-4 overflow-hidden'>
+                        <div className='flex items-center gap-4 overflow-hidden'>
                             <div>🥈</div>
                             <div className='truncate font-medium'>
                                 Second Place

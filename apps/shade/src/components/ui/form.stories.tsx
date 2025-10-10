@@ -49,7 +49,7 @@ const DefaultFormComponent = () => {
     return (
         <div style={{padding: '24px', maxWidth: '400px'}}>
             <Form {...form}>
-                <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+                <form className="gap-6" onSubmit={form.handleSubmit(onSubmit)}>
                     <FormField
                         control={form.control}
                         name="name"
@@ -138,7 +138,7 @@ const WithErrorsFormComponent = () => {
     return (
         <div style={{padding: '24px', maxWidth: '400px'}}>
             <Form {...form}>
-                <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+                <form className="gap-6" onSubmit={form.handleSubmit(onSubmit)}>
                     <FormField
                         control={form.control}
                         name="name"
