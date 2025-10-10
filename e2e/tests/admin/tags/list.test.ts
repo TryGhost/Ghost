@@ -1,120 +1,109 @@
 import {test, expect} from '../../../helpers/playwright';
-import {TagsPage} from '../../../helpers/pages/admin';
-import {overrideFeatureFlags} from '../../../helpers/utils';
-import {mockTagsResponse} from './helpers/mock-tags-response';
+import {TagsPage, TagDetailsPage} from '../../../helpers/pages/admin';
+import {createPostFactory, createTagFactory, TagFactory} from '../../../data-factory';
+import {Page} from '@playwright/test';
 
 test.describe('Ghost Admin - Tags', () => {
+    let tagFactory: TagFactory;
+    // Set labs flags for all tests in this describe block
+    test.use({labs: {tagsX: true}});
+
     test.beforeEach(async ({page}) => {
-        await overrideFeatureFlags(page, {tagsX: true});
+        tagFactory = createTagFactory(page.request);
     });
 
-    test('shows empty state when no tags exist', async ({page}) => {
+    test('shows empty list with call to action buttons', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await mockTagsResponse(page, async () => ({
-            tags: []
-        }));
-
         await tagsPage.goto();
 
-        await expect(tagsPage.emptyStateTitle).toBeVisible();
-        await expect(tagsPage.emptyStateAction).toBeVisible();
-        await expect(tagsPage.tagList).not.toBeVisible();
+        // by default, there will be one tag with slug 'news' on newly created Ghost account
+        await tagsPage.getTagByName('News').click();
+
+        const tagDetailsPage = new TagDetailsPage(page);
+        await tagDetailsPage.deleteTag();
+
+        await expect(tagsPage.title('Start organizing your content')).toBeVisible();
+        await expect(tagsPage.createNewTagButton).toBeVisible();
+    });
+
+    test('lists the default tags list when no new tags were created', async ({page}) => {
+        const tagsPage = new TagsPage(page);
+        await tagsPage.goto();
+
+        await expect(tagsPage.activeTab).toHaveText('Public tags');
+        await expect(tagsPage.getRowByTitle('News')).toBeVisible();
+        await expect(tagsPage.tagListRow).toHaveCount(1);
     });
 
     test('lists public and internal tags separately', async ({page}) => {
+        await tagFactory.create(
+            {
+                name: '#Internal Tag Name',
+                slug: 'internal-tag',
+                url: 'https://example.com/internal-tag',
+                description: 'Internal Tag description'
+            }
+        );
+
+        await tagFactory.create({
+            name: 'Public Tag Name',
+            slug: 'public-tag',
+            url: 'https://example.com/public-tag',
+            description: 'Public Tag description'
+        });
+
+        await tagFactory.create({
+            name: 'Other Public Tag Name',
+            slug: 'other-public-tag',
+            url: 'https://example.com/other-public-tag',
+            description: 'Other Public Tag description'
+        });
+
         const tagsPage = new TagsPage(page);
-
-        await mockTagsResponse(page, async request => ({
-            tags: request.url().includes('internal')
-                ? [
-                    {
-                        id: '1',
-                        name: 'Internal Tag Name',
-                        slug: 'internal-tag',
-                        url: 'https://example.com/internal-tag',
-                        description: 'Internal Tag description'
-                    }
-                ]
-                : [
-                    {
-                        id: '2',
-                        name: 'Public Tag Name',
-                        slug: 'public-tag',
-                        url: 'https://example.com/public-tag',
-                        description: 'Public Tag description'
-                    },
-                    {
-                        id: '3',
-                        name: 'Other Public Tag Name',
-                        slug: 'other-public-tag',
-                        url: 'https://example.com/other-public-tag',
-                        description: 'Other Public Tag description'
-                    }
-                ]
-        }));
-
         await tagsPage.goto();
 
-        // Default to public tags
         await expect(tagsPage.activeTab).toHaveText('Public tags');
-
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toContainText('Public Tag description');
-        await expect(tagsPage.tagListRow).toHaveCount(2);
+        await expect(tagsPage.tagListRow).toHaveCount(3);
 
-        // Can switch to internal tags
         await tagsPage.selectTab('Internal tags');
         await expect(tagsPage.activeTab).toHaveText('Internal tags');
-        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toBeVisible();
-        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toContainText('Internal Tag description');
+        await expect(tagsPage.getRowByTitle('#Internal Tag Name')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('#Internal Tag Name')).toContainText('Internal Tag description');
         await expect(tagsPage.tagListRow).toHaveCount(1);
 
-        // Can switch back to public tags
         await tagsPage.selectTab('Public tags');
         await expect(tagsPage.activeTab).toHaveText('Public tags');
         await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
-        await expect(tagsPage.tagListRow).toHaveCount(2);
+        await expect(tagsPage.tagListRow).toHaveCount(3);
     });
 
-    test('lists tags', async ({page}) => {
+    test('lists tags with posts count', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await mockTagsResponse(page, async () => ({
-            tags: [
-                {
-                    id: '1',
-                    name: 'Tag 1',
-                    slug: 'tag-1',
-                    url: 'https://example.com/tag-1',
-                    description: 'Tag 1 description',
-                    count: {posts: 1}
-                },
-                {
-                    id: '2',
-                    name: 'Tag 2',
-                    slug: 'tag-2',
-                    url: 'https://example.com/tag-2',
-                    description: 'Tag 2 description'
-                },
-                {
-                    id: '3',
-                    name: 'Tag 3',
-                    slug: 'tag-3',
-                    url: 'https://example.com/tag-3',
-                    description: 'Tag 3 description'
-                }
-            ]
-        }));
+        const postFactory = createPostFactory(page.request);
+
+        const tag = await tagFactory.create({
+            name: 'Tag 1',
+            slug: 'tag-1',
+            url: 'https://example.com/tag-1',
+            description: 'Tag 1 description'
+        });
+
+        await postFactory.create({
+            status: 'published',
+            tags: [{id: tag.id}]
+        });
 
         await tagsPage.goto();
 
         await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
         await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('Tag 1 description');
         await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('1 post');
-
-        await expect(tagsPage.tagListRow).toHaveCount(3);
+        await expect(tagsPage.tagListRow).toHaveCount(2);
     });
 
-    test('create new tag', async ({page}) => {
+    test('creates new tag', async ({page}) => {
         const tagsPage = new TagsPage(page);
         await tagsPage.goto();
 
@@ -123,74 +112,62 @@ test.describe('Ghost Admin - Tags', () => {
         await expect(page).toHaveURL('/ghost/#/tags/new');
     });
 
-    test('loads tags on scroll with pagination', async ({page}) => {
-        const tagsPage = new TagsPage(page);
-        
-        // Mock first page of tags
-        await mockTagsResponse(page, async (request) => {
-            const url = new URL(request.url());
-            const pageParam = parseInt(url.searchParams.get('page') || '1');
-            const pageSize = 20;
-            const pages = 3;
-            const total = pageSize * (pages - 0.5);
-            const offset = (pageParam - 1) * pageSize + 1;
+    test.describe('slow requests', () => {
+        // Simulate slow response for subsequent pages so that we can test the loading state
+        async function slowDownApiRequests(page: Page, urlPattern: string) {
+            await page.route(urlPattern, async (route) => {
+                const url = new URL(route.request().url());
+                // Force smaller page size to enable pagination
+                url.searchParams.set('limit', '20');
 
-            if (pageParam > 1) {
-                // Simulate slow response for subsequent pages so that we can test the loading state
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 500);
-                });
-            }
+                const pageParam = parseInt(url.searchParams.get('page') || '1');
 
-            return {
-                meta: {
-                    pagination: {
-                        page: pageParam,
-                        limit: pageSize,
-                        pages,
-                        total,
-                        next: pageParam < pages ? pageParam + 1 : undefined
-                    }
-                },
-                tags: Array.from({length: pageParam < pages ? pageSize : pageSize / 2}, (_, i) => ({
-                    id: `${i + offset}`,
-                    name: `Tag ${i + offset}`,
-                    slug: `tag-${i + offset}`,
-                    url: `https://example.com/tag-${i + offset}`,
-                    description: `Tag ${i + offset} description`
-                }))
-            };
+                if (pageParam > 1) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 500);
+                    });
+                }
+
+                await route.continue({url: url.toString()});
+            });
+        }
+
+        test('loads tags on scroll with pagination', async ({page}) => {
+            await Promise.all(
+                Array.from({length: 50}, async (_, i) => {
+                    const num = String(i + 1).padStart(2, '0');
+                    return await tagFactory.create({
+                        name: `Tag ${num}`,
+                        slug: `tag-${num}`,
+                        url: 'https://example.com',
+                        description: 'description'
+                    });
+                })
+            );
+
+            await slowDownApiRequests(page, '**/ghost/api/admin/tags/*');
+            const tagsPage = new TagsPage(page);
+
+            await tagsPage.goto();
+
+            // Verify page loads
+            await expect(tagsPage.getRowByTitle('Tag 01')).toBeVisible();
+
+            // Verify that only a limited number of tags are rendered
+            expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
+            expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
+
+            // Scroll to the bottom to trigger loading and wait for more tags to appear
+            await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+            await expect(tagsPage.getRowByTitle('Tag 21')).toBeVisible();
+
+            // Scroll again to trigger loading and wait for more tags to appear
+            await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+            await expect(tagsPage.getRowByTitle('Tag 41')).toBeVisible();
+
+            // Verify that all tags including last are rendered
+            await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+            await expect(tagsPage.getRowByTitle('Tag 50')).toBeVisible();
         });
-
-        await tagsPage.goto();
-
-        // Verify first page loads
-        await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
-        
-        // Verify that only a limited number of tags are rendered
-        expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
-        expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
-        
-        // Scroll to bottom to trigger pagination
-        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-
-        // Wait for loading placeholders to appear
-        await expect(tagsPage.loadingPlaceholder.first()).toBeVisible();
-
-        // Wait for second page to load
-        await expect(tagsPage.getRowByTitle('Tag 21')).toBeVisible();
-
-        // Scroll again to trigger loading of third page
-        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-
-        // Wait for third page to load
-        await expect(tagsPage.getRowByTitle('Tag 41')).toBeVisible();
-        
-        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-        
-        // Verify last tag is visible
-        await expect(tagsPage.getRowByTitle('Tag 50')).toBeVisible();
     });
 });

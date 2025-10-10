@@ -1,4 +1,5 @@
-import {ApiPersistenceAdapter, HttpClient} from './api';
+import {ApiPersistenceAdapter} from './api';
+import {HttpClient} from './http-client';
 
 type GhostApiResponse = {
     [key: string]: unknown[] | unknown;
@@ -15,7 +16,7 @@ export class GhostAdminApiAdapter extends ApiPersistenceAdapter<unknown, GhostAp
     constructor(httpClient: HttpClient, resourcePath: string, queryParams?: Record<string, string>) {
         // Extract the resource name from the path (e.g., 'posts' from 'posts' or 'posts/1234')
         const resource = resourcePath.split('/')[0];
-        
+
         super({
             httpClient,
             endpoint: `/ghost/api/admin/${resourcePath}`,

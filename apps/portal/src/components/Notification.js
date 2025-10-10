@@ -7,6 +7,7 @@ import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.sv
 import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
 import {getPortalLink} from '../utils/helpers';
+import {t} from '../utils/i18n';
 
 const Styles = () => {
     return {
@@ -26,7 +27,6 @@ const Styles = () => {
 };
 
 const NotificationText = ({type, status, context}) => {
-    const t = context.t;
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
     const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
 

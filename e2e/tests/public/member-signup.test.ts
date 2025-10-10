@@ -1,9 +1,9 @@
 import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
-import {EmailMessageBody} from '../../helpers/email/EmailMessageBody';
+import {EmailClient, MailhogClient} from '../../helpers/services/email/MailhogClient';
+import {EmailMessageBody} from '../../helpers/services/email/EmailMessageBody';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
-import {extractMagicLink} from '../../helpers/email/utils';
+import {extractMagicLink} from '../../helpers/services/email/utils';
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
@@ -13,6 +13,8 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     test('signed up with magic link in email', async ({page}) => {
+        const homePage = new HomePage(page);
+        await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
@@ -22,14 +24,13 @@ test.describe('Ghost Public - Member Signup', () => {
         const magicLink = extractMagicLink(emailTextBody);
         const publicPage = new PublicPage(page);
         await publicPage.goto(magicLink);
-        await publicPage.waitForPageToFullyLoad();
+        await homePage.waitUntilLoaded();
 
-        const homePage = new HomePage(page);
-        await homePage.waitForSignedIn();
         await expect(homePage.accountButton).toBeVisible();
     });
 
     test('received welcome email', async ({page}) => {
+        await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);

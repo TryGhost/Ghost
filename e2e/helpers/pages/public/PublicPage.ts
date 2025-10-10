@@ -1,5 +1,5 @@
-import {Page, Locator} from '@playwright/test';
-import {BasePage} from '../BasePage';
+import {Page, Locator, Response} from '@playwright/test';
+import {BasePage, pageGotoOptions} from '../BasePage';
 
 declare global {
     interface Window {
@@ -8,6 +8,7 @@ declare global {
 }
 
 class PortalSection extends BasePage {
+    public readonly portalRoot: Locator;
     private readonly portalFrame: Locator;
     private readonly portalIframe: Locator;
     private readonly portalScript: Locator;
@@ -15,6 +16,7 @@ class PortalSection extends BasePage {
     constructor(page: Page) {
         super(page, '/');
 
+        this.portalRoot = page.getByTestId('portal-root');
         this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
         this.portalIframe = page.locator('iframe[title="portal-popup"]');
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
@@ -55,6 +57,7 @@ class PortalSection extends BasePage {
 }
 
 export class PublicPage extends BasePage {
+    public readonly portalRoot: Locator;
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
 
@@ -63,9 +66,14 @@ export class PublicPage extends BasePage {
     constructor(page: Page) {
         super(page, '/');
 
+        this.portal = new PortalSection(page);
+        this.portalRoot = this.portal.portalRoot;
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
-        this.portal = new PortalSection(page);
+    }
+
+    linkWithPostName(name: string): Locator {
+        return this.page.getByRole('link', {name: name});
     }
 
     // This is necessary because Ghost blocks analytics requests when in Playwright by default
@@ -75,15 +83,25 @@ export class PublicPage extends BasePage {
         });
     }
 
-    async goto(url = null): Promise<void> {
+    async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
-        await super.goto(url);
+        await super.goto(url, options);
+    }
+
+    async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
+        const pageHitPromise = this.pageHitRequestPromise();
+        await this.goto(url, options);
+        await pageHitPromise;
+    }
+
+    pageHitRequestPromise(): Promise<Response> {
+        return this.page.waitForResponse((response) => {
+            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+        }, {timeout: 10000});
     }
 
     async waitForPageHitRequest(): Promise<void> {
-        await this.page.waitForResponse((response) => {
-            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
-        }, {timeout: 10000});
+        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {

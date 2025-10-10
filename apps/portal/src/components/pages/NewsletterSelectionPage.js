@@ -4,8 +4,9 @@ import Switch from '../common/Switch';
 import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
+import {t} from '../../utils/i18n';
 
-function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters, t}) {
+function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
     const isChecked = subscribedNewsletters.some((d) => {
         return d.id === newsletter?.id;
     });
@@ -48,7 +49,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
-    const {site, t} = useContext(AppContext);
+    const {site} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
     return newsletters.map((newsletter) => {
         return (
@@ -57,14 +58,13 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
                 newsletter={newsletter}
                 subscribedNewsletters={subscribedNewsletters}
                 setSubscribedNewsletters={setSubscribedNewsletters}
-                t={t}
             />
         );
     });
 }
 
 export default function NewsletterSelectionPage({pageData, onBack}) {
-    const {brandColor, site, doAction, action, t} = useContext(AppContext);
+    const {brandColor, site, doAction, action} = useContext(AppContext);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
