@@ -37,7 +37,7 @@ export default defineConfig((config) => {
         ],
         esbuild: {
             loader: 'jsx',
-            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/],
+            include: [/src\/.*\.[jt]sx?$/, /__mocks__\/.*\.[jt]sx?$/],
             exclude: []
         },
         optimizeDeps: {
@@ -46,7 +46,7 @@ export default defineConfig((config) => {
                     {
                         name: 'load-js-files-as-jsx',
                         setup(build) {
-                            build.onLoad({filter: /src\/.*\.js$/}, async args => ({
+                            build.onLoad({filter: /src\/.*\.[jt]s$/}, async args => ({
                                 loader: 'jsx',
                                 contents: await fs.readFile(args.path, 'utf8')
                             }));
