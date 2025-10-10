@@ -12,9 +12,10 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
 
-        await expect(tagsPage.getRowByTitle('New tag name')).toBeVisible();
-        await expect(tagsPage.getRowByTitle('New tag name')).toContainText('new-tag-slug');
-        await expect(tagsPage.getRowByTitle('New tag name')).toContainText('0 posts');
+        const newTagRow = tagsPage.getRowByTitle('New tag name');
+        await expect(newTagRow).toBeVisible();
+        await expect(newTagRow).toContainText('new-tag-slug');
+        await expect(newTagRow).toContainText('0 posts');
     });
 
     test('can edit tags', async ({page}) => {
@@ -37,8 +38,9 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
 
-        await expect(tagsPage.getRowByTitle('New tag name')).toBeVisible();
-        await expect(tagsPage.getRowByTitle('New tag name')).toContainText('new-tag-slug');
+        const newTagRow = tagsPage.getRowByTitle('New tag name');
+        await expect(newTagRow).toBeVisible();
+        await expect(newTagRow).toContainText('new-tag-slug');
     });
 
     test('does not create duplicates when editing a tag', async ({page}) => {
@@ -47,7 +49,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagsPage.goto();
 
         await expect(tagsPage.tagListRow).toHaveCount(1);
-        
+
         await tagsPage.getRowByTitle('News').click();
         await tagEditor.fillTagName('Edited Tag Name');
         await tagEditor.save();
@@ -61,7 +63,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
     test('can delete tag without posts', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
         const tagsPage = new TagsPage(page);
-        
+
         await tagEditor.createTag('To be deleted', 'to-be-deleted');
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
@@ -72,16 +74,15 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await expect(tagEditor.deleteModal).toBeVisible();
         await tagEditor.confirmDelete();
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
-        await expect(page).toHaveURL('/ghost/#/tags');
+        await tagsPage.waitForPageToFullyLoad();
         await expect(tagsPage.tagListRow).toHaveCount(1);
     });
 
     test('can delete tags with posts', async ({page}) => {
         const tagsPage = new TagsPage(page);
         const tagEditor = new TagEditorPage(page);
-        await tagsPage.goto();        
-        
+        await tagsPage.goto();
+
         await tagsPage.getRowByTitle('News').click();
         await tagEditor.deleteTag();
 
@@ -89,9 +90,9 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await expect(tagEditor.deleteModalPostsCount).toContainText('1 post');
 
         await tagEditor.confirmDelete();
+        // confirmDelete waits for navigation, now just wait for content to load
+        await tagsPage.pageContent.waitFor({state: 'visible'});
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
-        await expect(page).toHaveURL('/ghost/#/tags');
         await expect(tagsPage.getRowByTitle('News')).not.toBeVisible();
     });
 
@@ -105,8 +106,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
     });
 
     test('redirects to 404 when tag does not exist', async ({page}) => {
-        const tagEditor = new TagEditorPage(page);
-        await tagEditor.gotoTagBySlug('unknown');
+        await page.goto('/ghost/#/tags/unknown');
 
         await expect(page.getByText('Page not found')).toBeVisible();
     });

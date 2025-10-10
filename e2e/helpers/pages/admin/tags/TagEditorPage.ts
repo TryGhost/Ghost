@@ -19,7 +19,7 @@ export class TagEditorPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/tags';
-        
+
         this.nameInput = page.locator('[data-test-input="tag-name"]');
         this.slugInput = page.locator('[data-test-input="tag-slug"]');
         this.descriptionInput = page.locator('[data-test-input="tag-description"]');
@@ -63,6 +63,10 @@ export class TagEditorPage extends AdminPage {
 
     async save() {
         await this.saveButton.click();
+        // Wait for save to start
+        await this.saveButton.locator('[data-test-task-button-state="running"]').waitFor();
+        // Wait for save to complete
+        await this.saveButton.locator('[data-test-task-button-state="success"]').waitFor();
     }
 
     async deleteTag() {
