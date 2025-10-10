@@ -166,18 +166,18 @@ class TriggerButtonContent extends React.Component {
         const {showPopup, member, site} = this.context;
 
         if (showPopup) {
-            this.context.onAction('closePopup');
+            this.context.doAction('closePopup');
             return;
         }
 
         if (member) {
-            this.context.onAction('openPopup', {page: 'accountHome'});
+            this.context.doAction('openPopup', {page: 'accountHome'});
             return;
         }
 
         if (isSigninAllowed({site})) {
             const page = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
-            this.context.onAction('openPopup', {page});
+            this.context.doAction('openPopup', {page});
             return;
         }
     }
@@ -231,7 +231,7 @@ export default class TriggerButton extends React.Component {
     componentDidMount() {
         window.addEventListener('resize', this.handleResize);
         this.handleResize();
-        
+
         setTimeout(() => {
             if (this.buttonRef.current) {
                 const iframeElement = this.buttonRef.current.node;

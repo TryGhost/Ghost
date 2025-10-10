@@ -7,6 +7,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {t} from '../../utils/i18n';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -22,7 +23,7 @@ export default class SigninPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'accountHome'
             });
         }
@@ -36,14 +37,14 @@ export default class SigninPage extends React.Component {
     doSignin() {
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, async () => {
             const {email, phonenumber, errors, token} = this.state;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, phonenumber, redirect, token});
+                this.context.doAction('signin', {email, phonenumber, redirect, token});
             }
         });
     }
@@ -63,8 +64,6 @@ export default class SigninPage extends React.Component {
     }
 
     getInputFields({state}) {
-        const {t} = this.context;
-
         const errors = state.errors || {};
         const fields = [
             {
@@ -85,8 +84,8 @@ export default class SigninPage extends React.Component {
                 label: 'Phone number',
                 name: 'phonenumber',
                 required: false,
-                tabindex: -1,
-                autocomplete: 'off',
+                tabIndex: -1,
+                autoComplete: 'off',
                 hidden: true
             }
         ];
@@ -94,7 +93,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, t} = this.context;
+        const {action} = this.context;
         let retry = false;
         const isRunning = (action === 'signin:running');
         let label = isRunning ? t('Sending login link...') : t('Continue');
@@ -118,7 +117,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSignupMessage() {
-        const {brandColor, t} = this.context;
+        const {brandColor} = this.context;
         return (
             <div className='gh-portal-signup-message'>
                 <div>{t('Don\'t have an account?')}</div>
@@ -126,7 +125,7 @@ export default class SigninPage extends React.Component {
                     data-test-button='signup-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
+                    onClick={() => this.context.doAction('switchPage', {page: 'signup'})}
                 >
                     <span>{t('Sign up')}</span>
                 </button>
@@ -135,7 +134,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderForm() {
-        const {site, t} = this.context;
+        const {site} = this.context;
         const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
@@ -189,7 +188,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSiteTitle() {
-        const {site, t} = this.context;
+        const {site} = this.context;
         const siteTitle = site.title;
 
         if (!isSigninAllowed({site})) {

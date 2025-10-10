@@ -1179,7 +1179,12 @@ module.exports = class MemberRepository {
                 type: data.attribution?.type ?? stripeSubscriptionData.metadata?.attribution_type ?? null,
                 referrerSource: data.attribution?.referrerSource ?? stripeSubscriptionData.metadata?.referrer_source ?? null,
                 referrerMedium: data.attribution?.referrerMedium ?? stripeSubscriptionData.metadata?.referrer_medium ?? null,
-                referrerUrl: data.attribution?.referrerUrl ?? stripeSubscriptionData.metadata?.referrer_url ?? null
+                referrerUrl: data.attribution?.referrerUrl ?? stripeSubscriptionData.metadata?.referrer_url ?? null,
+                utmSource: data.attribution?.utmSource ?? stripeSubscriptionData.metadata?.utm_source ?? null,
+                utmMedium: data.attribution?.utmMedium ?? stripeSubscriptionData.metadata?.utm_medium ?? null,
+                utmCampaign: data.attribution?.utmCampaign ?? stripeSubscriptionData.metadata?.utm_campaign ?? null,
+                utmTerm: data.attribution?.utmTerm ?? stripeSubscriptionData.metadata?.utm_term ?? null,
+                utmContent: data.attribution?.utmContent ?? stripeSubscriptionData.metadata?.utm_content ?? null
             };
 
             const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({

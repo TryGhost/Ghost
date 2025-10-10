@@ -4,9 +4,10 @@ import BackButton from '../../components/common/BackButton';
 import CloseButton from '../../components/common/CloseButton';
 import {getDefaultNewsletterSender, getSupportAddress} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
+import {t} from '../../utils/i18n';
 
 export default function EmailReceivingPage() {
-    const {brandColor, onAction, site, lastPage, member, t, pageData} = useContext(AppContext);
+    const {brandColor, doAction, site, lastPage, member, pageData} = useContext(AppContext);
 
     const supportAddressEmail = getSupportAddress({site});
     const supportAddress = `mailto:${supportAddressEmail}`;
@@ -19,9 +20,9 @@ export default function EmailReceivingPage() {
                 {!directAccess &&
                     <BackButton brandColor={brandColor} onClick={() => {
                         if (!lastPage) {
-                            onAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
+                            doAction('switchPage', {page: 'accountEmail', lastPage: 'accountHome'});
                         } else {
-                            onAction('switchPage', {page: 'accountHome'});
+                            doAction('switchPage', {page: 'accountHome'});
                         }
                     }} />
                 }
@@ -40,7 +41,7 @@ export default function EmailReceivingPage() {
                         string={t(`The email address we have for you is {memberEmail} — if that's not correct, you can update it in your <button>account settings area</button>.`)}
                         mapping={{
                             memberEmail: <strong>{member.email}</strong>,
-                            button: <button className="gh-portal-btn-text" onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}/>
+                            button: <button className="gh-portal-btn-text" onClick={() => doAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}/>
                         }}
                     />
                 </p>

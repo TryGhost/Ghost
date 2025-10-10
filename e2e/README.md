@@ -164,6 +164,7 @@ Test isolation is extremely important to avoid flaky tests that are hard to debu
 3. **Use `data-testid` attributes** for reliable element selection, in case you **cannot** locate elements in a simple way. Example: `page.getByLabel('User Name')`. Avoid, css, xpath locators - they make tests brittle. 
 4. **Clean up test data** when tests modify Ghost state
 5. **Group related tests** in describe blocks
+6. **Do not use should to describe test scenarios**
 
 ## CI Integration
 
@@ -186,6 +187,9 @@ From the e2e directory:
 ```bash
 # Run all tests
 yarn test
+
+# Debug failed tests (keeps containers)
+PRESERVE_ENV=true yarn test
 
 # Run TypeScript type checking
 yarn test:types

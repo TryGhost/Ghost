@@ -71,6 +71,7 @@ export default class FeatureService extends Service {
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('membersSigninOTC') membersSigninOTC;
+    @feature('membersSigninOTCAlpha') membersSigninOTCAlpha;
     @feature('tagsX') tagsX;
     @feature('utmTracking') utmTracking;
 

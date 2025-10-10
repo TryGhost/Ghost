@@ -249,6 +249,9 @@ Object {
   "encoding": "base64",
   "from": "\\"a test blog\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
   "replyTo": null,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
@@ -535,6 +538,9 @@ Object {
   "encoding": "base64",
   "from": "\\"a test blog\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
   "replyTo": null,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",

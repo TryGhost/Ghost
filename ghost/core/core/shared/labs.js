@@ -48,8 +48,10 @@ const PRIVATE_FEATURES = [
     'contentVisibilityAlpha',
     'emailCustomization',
     'membersSigninOTC',
+    'membersSigninOTCAlpha',
     'tagsX',
-    'utmTracking'
+    'utmTracking',
+    'emailUniqueid'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SourceTabs, TabType, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, UtmCampaignTabs, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -103,7 +103,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
     const {data: globalData, statsConfig, audience, post, isPostLoading} = useGlobalData();
     const [selectedTab, setSelectedTab] = useState<TabType>('sources');
     const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
-    
+
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
 
@@ -143,7 +143,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
 
     // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
     const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
-    const {data: utmData} = useTinybirdQuery({
+    const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
         endpoint: campaignEndpoint,
         statsConfig: statsConfig || {id: ''},
         params: params || {},
@@ -158,7 +158,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
             if (!utmData) {
                 return null;
             }
-            
+
             // Map UTM field names to the generic key name
             const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
@@ -168,12 +168,12 @@ export const Sources: React.FC<SourcesCardProps> = ({
                 'UTM contents': 'utm_content',
                 'UTM terms': 'utm_term'
             };
-            
+
             const utmKey = utmKeyMap[selectedCampaign];
             if (!utmKey) {
                 return utmData;
             }
-            
+
             // Transform the data to use 'source' as the key, omitting the original utm_* field
             return utmData.map((item: SourcesData) => {
                 const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
@@ -183,7 +183,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                 };
             });
         }
-        
+
         // Default to regular sources data
         return data;
     }, [data, utmData, selectedTab, selectedCampaign]);
@@ -255,6 +255,8 @@ export const Sources: React.FC<SourcesCardProps> = ({
         );
     }
 
+    const isLoading = isPostLoading || isUtmLoading;
+
     return (
         <Card className='group/datalist'>
             <div className='flex items-center justify-between p-6'>
@@ -267,7 +269,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
             <CardContent className='overflow-hidden'>
                 {utmTrackingEnabled && (
                     <div className='mb-4'>
-                        <SourceTabs
+                        <UtmCampaignTabs
                             selectedCampaign={selectedCampaign}
                             selectedTab={selectedTab}
                             onCampaignChange={setSelectedCampaign}
@@ -276,18 +278,22 @@ export const Sources: React.FC<SourcesCardProps> = ({
                     </div>
                 )}
                 <div className='h-[1px] w-full bg-border' />
-                {topSources.length > 0 ? (
-                    <SourcesTable
-                        data={topSources}
-                        dataTableHeader={false}
-                        defaultSourceIconUrl={defaultSourceIconUrl}
-                        range={range}
-                    />
-                ) : (
-                    <div className='py-20 text-center text-sm text-gray-700'>
-                        No sources data available.
-                    </div>
-                )}
+                {isLoading ?
+                    <SkeletonTable lines={5} />
+                    :
+                    (topSources.length > 0 ? (
+                        <SourcesTable
+                            data={topSources}
+                            dataTableHeader={false}
+                            defaultSourceIconUrl={defaultSourceIconUrl}
+                            range={range}
+                        />
+                    ) : (
+                        <div className='py-20 text-center text-sm text-gray-700'>
+                    No sources data available.
+                        </div>
+                    ))
+                }
             </CardContent>
             {extendedData.length > 10 &&
                 <CardFooter>

@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './card';
 import {Button} from './button';
 import {Eye, User, Coins} from 'lucide-react';

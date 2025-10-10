@@ -3,9 +3,10 @@ import ActionButton from '../../../common/ActionButton';
 import {getMemberSubscription} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
+import {t} from '../../../../utils/i18n';
 
 const ContinueSubscriptionButton = () => {
-    const {member, onAction, action, brandColor, t} = useContext(AppContext);
+    const {member, doAction, action, brandColor} = useContext(AppContext);
     const subscription = getMemberSubscription({member});
     if (!subscription) {
         return null;
@@ -35,7 +36,7 @@ const ContinueSubscriptionButton = () => {
             <CancelNotice />
             <ActionButton
                 onClick={() => {
-                    onAction('continueSubscription', {
+                    doAction('continueSubscription', {
                         subscriptionId: subscription.id
                     });
                 }}

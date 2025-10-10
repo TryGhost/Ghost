@@ -26,10 +26,6 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
 
-    // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing
-    const testingSiteUrl = siteUrl || 'https://levernews.com';
-
     let containerClass = 'flex flex-col items-stretch gap-8';
     let cardClass = '';
     if (!appSettings?.paidMembersEnabled) {
@@ -132,7 +128,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                             data={postReferrers}
                             mode="growth"
                             siteIcon={siteIcon}
-                            siteUrl={testingSiteUrl}
+                            siteUrl={siteUrl}
                         />
                     </div>
                 }

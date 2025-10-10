@@ -28,9 +28,13 @@ const features: Feature[] = [{
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
 }, {
-    title: 'Members sign-in OTC (alpha)',
+    title: 'Members sign-in OTC (private beta)',
     description: 'Enables one-time codes alongside magic links for members signin',
     flag: 'membersSigninOTC'
+}, {
+    title: 'Members sign-in OTC (internal alpha)',
+    description: 'Testing changes to members sign-in OTC prior to private beta release',
+    flag: 'membersSigninOTCAlpha'
 }, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
@@ -39,6 +43,10 @@ const features: Feature[] = [{
     title: 'UTM tracking',
     description: 'Enables UTM tracking for web traffic and member attribution',
     flag: 'utmTracking'
+}, {
+    title: 'Email Unique ID',
+    description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
+    flag: 'emailUniqueid'
 }];
 
 const AlphaFeatures: React.FC = () => {

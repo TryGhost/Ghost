@@ -774,6 +774,13 @@ class EmailRenderer {
                     return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
                 },
                 required: true // Used in email headers
+            },
+            // Unique ID used for ad images to bypass ESP image proxies
+            {
+                id: 'uniqueid',
+                getValue: () => {
+                    return crypto.randomUUID();
+                }
             }
         ];
 
@@ -1234,6 +1241,7 @@ class EmailRenderer {
                     }, true) : null
             },
             preheader: this.#getEmailPreheader(post, segment, html),
+            preheaderSpacing: `${'&#8199;&#847; '.repeat(150)}${'&shy; '.repeat(200)} &nbsp;`,
             html,
 
             post: {

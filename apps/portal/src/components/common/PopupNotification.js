@@ -6,6 +6,7 @@ import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
+import {t} from '../../utils/i18n';
 
 export const PopupNotificationStyles = `
     .gh-portal-popupnotification {
@@ -33,7 +34,7 @@ const CloseButton = ({hide = false, onClose}) => {
     );
 };
 
-const NotificationText = ({message, site, t}) => {
+const NotificationText = ({message, site}) => {
     const supportAddress = getSupportAddress({site});
     const supportAddressMail = `mailto:${supportAddress}`;
     if (message) {
@@ -71,12 +72,12 @@ export default class PopupNotification extends React.Component {
             if (type === 'stripe:billing-update') {
                 clearURLParams(['stripe']);
             }
-            this.context.onAction('clearPopupNotification');
+            this.context.doAction('clearPopupNotification');
         }
     }
 
     closeNotification() {
-        this.context.onAction('clearPopupNotification');
+        this.context.doAction('clearPopupNotification');
     }
 
     componentDidUpdate() {
@@ -117,7 +118,7 @@ export default class PopupNotification extends React.Component {
     }
 
     render() {
-        const {popupNotification, site, t} = this.context;
+        const {popupNotification, site} = this.context;
         const {className} = this.state;
         const {type, status, closeable, message} = popupNotification;
         const statusClass = status ? ` ${status}` : '';
@@ -126,7 +127,7 @@ export default class PopupNotification extends React.Component {
         return (
             <div className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
                 {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
-                <NotificationText type={type} status={status} message={message} site={site} t={t} />
+                <NotificationText type={type} status={status} message={message} site={site} />
                 <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
             </div>
         );
