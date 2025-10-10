@@ -25,7 +25,7 @@
     "test:watch": "vitest",
     "test:ci": "yarn test --coverage",
     "test:unit": "yarn test:ci",
-    "lint": "eslint src --ext .js --cache",
+    "lint": "eslint src --ext .js,.ts,.tsx --cache",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "yarn build"
@@ -43,7 +43,8 @@
       "plugin:ghost/browser",
       "plugin:i18next/recommended",
       "plugin:react/recommended",
-      "plugin:react/jsx-runtime"
+      "plugin:react/jsx-runtime",
+      "plugin:react-hooks/recommended"
     ],
     "plugins": [
       "ghost",
@@ -56,7 +57,35 @@
       "react": {
         "version": "detect"
       }
-    }
+    },
+    "overrides": [
+      {
+        "files": ["*.ts", "*.tsx"],
+        "extends": [
+          "plugin:ghost/ts",
+          "plugin:i18next/recommended",
+          "plugin:react/recommended",
+          "plugin:react/jsx-runtime",
+          "plugin:react-hooks/recommended"
+        ],
+        "rules": {
+          "react/prop-types": "off"
+        }
+      },
+      {
+        "files": ["*.test.ts", "*.test.tsx"],
+        "extends": [
+          "plugin:ghost/ts-test",
+          "plugin:i18next/recommended",
+          "plugin:react/recommended",
+          "plugin:react/jsx-runtime",
+          "plugin:react-hooks/recommended"
+        ],
+        "rules": {
+          "react/prop-types": "off"
+        }
+      }
+    ]
   },
   "browserslist": {
     "production": [
