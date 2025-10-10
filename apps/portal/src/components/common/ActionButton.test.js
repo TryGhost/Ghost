@@ -2,7 +2,7 @@ import {render, fireEvent} from '@testing-library/react';
 import ActionButton from './ActionButton';
 
 const setup = () => {
-    const mockOnClickFn = jest.fn();
+    const mockOnClickFn = vi.fn();
     const props = {
         label: 'Test Action Button', onClick: mockOnClickFn, disabled: false
     };

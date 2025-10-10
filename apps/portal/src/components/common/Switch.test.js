@@ -2,7 +2,7 @@ import {render, fireEvent} from '@testing-library/react';
 import Switch from './Switch';
 
 const setup = () => {
-    const mockOnToggle = jest.fn();
+    const mockOnToggle = vi.fn();
     const props = {
         onToggle: mockOnToggle,
         label: 'Test Switch',

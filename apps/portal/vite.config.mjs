@@ -83,7 +83,10 @@ export default defineConfig((config) => {
             globals: true,
             environment: 'jsdom',
             setupFiles: './src/setupTests.js',
-            testTimeout: 10000
+            testTimeout: 10000,
+            coverage: {
+                reporter: ['cobertura', 'text-summary', 'html']
+            }
         }
     };
 });
