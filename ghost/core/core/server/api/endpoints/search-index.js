@@ -15,7 +15,7 @@ const controller = {
         },
         query() {
             const options = {
-                filter: 'type:post',
+                filter: 'type:post+status:[draft,published,scheduled,sent]',
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: ['id', 'url', 'title', 'status', 'published_at', 'visibility']
@@ -34,7 +34,7 @@ const controller = {
         },
         query() {
             const options = {
-                filter: 'type:page',
+                filter: 'type:page+status:[draft,published,scheduled]',
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: ['id', 'url', 'title', 'status', 'published_at', 'visibility']

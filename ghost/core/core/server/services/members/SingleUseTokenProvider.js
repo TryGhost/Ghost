@@ -193,7 +193,7 @@ class SingleUseTokenProvider {
         }
 
         try {
-            const model = await this.model.findOne({id: otcRef});
+            const model = await this.model.findOne({uuid: otcRef});
 
             if (!model) {
                 return false;
@@ -208,16 +208,16 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method getIdByToken
-     * Retrieves the ID associated with a given token.
+     * @method getRefByToken
+     * Retrieves the ref associated with a given token.
      *
      * @param {string} token - The token to look up.
-     * @returns {Promise<string|null>} The ID if found, or null if not found or on error.
+     * @returns {Promise<string|null>} The ref if found, or null if not found or on error.
      */
-    async getIdByToken(token) {
+    async getRefByToken(token) {
         try {
             const model = await this.model.findOne({token});
-            return model ? model.get('id') : null;
+            return model ? model.get('uuid') : null;
         } catch (err) {
             return null;
         }
@@ -232,7 +232,7 @@ class SingleUseTokenProvider {
      */
     async getTokenByRef(ref) {
         try {
-            const model = await this.model.findOne({id: ref});
+            const model = await this.model.findOne({uuid: ref});
             return model ? model.get('token') : null;
         } catch (err) {
             return null;
@@ -300,7 +300,7 @@ class SingleUseTokenProvider {
                 return false;
             }
 
-            const tokenId = await this.getIdByToken(token);
+            const tokenId = await this.getRefByToken(token);
             if (!tokenId) {
                 return false;
             }

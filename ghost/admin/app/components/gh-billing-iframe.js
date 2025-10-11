@@ -8,7 +8,9 @@ import {tracked} from '@glimmer/tracking';
 export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
+    @service configManager;
     @service ghostPaths;
+    @service limit;
     @service notifications;
     @service session;
 
@@ -44,7 +46,7 @@ export default class GhBillingIframe extends Component {
             }
 
             if (event.data?.subscription) {
-                this._handleSubscriptionUpdate(event.data);
+                await this._handleSubscriptionUpdate(event.data);
             }
         }
     }
@@ -105,7 +107,31 @@ export default class GhBillingIframe extends Component {
         }, '*');
     }
 
-    _handleSubscriptionUpdate(data) {
+    async _handleSubscriptionUpdate(data) {
+        // Refresh config which includes billing limits and other plan-related settings
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // proceed anyway so we at least re-evaluate limits and nudge Admin-X to refetch
+        }
+
+        // Reload the limit service to ensure all admin pages can enforce limits
+        this.limit.reload();
+
+        // Invalidate React Query cache for config data in admin-x-settings
+        if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
+            try {
+                // React Query v5+
+                window.adminXQueryClient.refetchQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
+                window.adminXQueryClient.refetchQueries({queryKey: ['SettingsResponseType']}).catch(() => {});
+            } catch (_) {
+                // TODO: remove this fallback when Admin-X-Settings updates to React Query v5+ (@tanstack/react-query)
+                // React Query v4 fallback
+                window.adminXQueryClient.refetchQueries(['ConfigResponseType']).catch(() => {});
+                window.adminXQueryClient.refetchQueries(['SettingsResponseType']).catch(() => {});
+            }
+        }
+
         this.billing.subscription = data.subscription;
         this.billing.checkoutRoute = data?.checkoutRoute ?? '/plans';
 

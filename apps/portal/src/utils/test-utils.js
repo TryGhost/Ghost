@@ -16,7 +16,7 @@ const setupProvider = (context) => {
 };
 
 const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
-    const mockOnActionFn = jest.fn().mockResolvedValue(undefined);
+    const mockDoActionFn = jest.fn().mockResolvedValue(undefined);
 
     // Hardcode the locale to 'en' for testing
     const {t} = require('@tryghost/i18n')('en');
@@ -27,7 +27,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
         action: 'init:success',
         brandColor: testSite.accent_color,
         page: 'signup',
-        onAction: mockOnActionFn,
+        doAction: mockDoActionFn,
         t,
         ...overrideContext
     };
@@ -35,17 +35,17 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     return {
         ...utils,
         context,
-        mockOnActionFn
+        mockDoActionFn
     };
 };
 
 export const appRender = (ui, {options = {}} = {}) => {
-    const mockOnActionFn = jest.fn();
+    const mockDoActionFn = jest.fn();
 
     const utils = render(ui, options);
     return {
         ...utils,
-        mockOnActionFn
+        mockDoActionFn
     };
 };
 

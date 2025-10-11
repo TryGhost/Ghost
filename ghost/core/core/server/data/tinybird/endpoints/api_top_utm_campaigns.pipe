@@ -4,20 +4,14 @@ NODE top_utm_campaigns
 SQL >
     %
     select
-        case 
-            when length(source) % 6 = 0 then 'summer_sale_2024'
-            when length(source) % 6 = 1 then 'newsletter_weekly'
-            when length(source) % 6 = 2 then 'product_launch'
-            when length(source) % 6 = 3 then 'holiday_promo'
-            when length(source) % 6 = 4 then 'brand_awareness'
-            when length(source) % 6 = 5 then 'retention_q4'
-        end as utm_campaign,
+        utm_campaign,
         count() as visits
     from mv_session_data sd
       inner join filtered_sessions fs
          on fs.session_id = sd.session_id
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        and utm_campaign != ''
         {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
             and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
         {% else %}

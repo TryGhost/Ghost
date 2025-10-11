@@ -94,6 +94,20 @@ services:
     profiles: [ split, all ]
     tty: true
 
+  admin-apps:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost
+    command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
+    profiles: [ split ]
+    tty: true
+    restart: always
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - FORCE_COLOR=1
+
   caddy:
     image: caddy:latest
     container_name: ghost-caddy
@@ -179,10 +193,11 @@ services:
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
     container_name: ghost-analytics
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000" ]
+      # Simpler: use Node's global fetch (Node 18+)
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\"" ]
       interval: 1s
       retries: 120
     volumes:

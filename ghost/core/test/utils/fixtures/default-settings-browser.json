@@ -56,6 +56,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "site_uuid": {
             "defaultValue": null,
             "type": "string",

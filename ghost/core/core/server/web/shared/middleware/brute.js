@@ -129,6 +129,29 @@ module.exports = {
     },
 
     /**
+     * Block too many OTC verification attempts from same IP (blocks user enumeration)
+     */
+    otcVerificationEnumeration(req, res, next) {
+        return spamPrevention.otcVerificationEnumeration().prevent(req, res, next);
+    },
+
+    /**
+     * Block too many attempts for the same otcRef
+     */
+    otcVerification(req, res, next) {
+        return spamPrevention.otcVerification().getMiddleware({
+            // ignoring IP here blocks rotating ip attacks, only one IP should receive an otcRef so it shouldn't cause false positives
+            ignoreIP: true,
+            key(_req, _res, _next) {
+                if (_req.body.otcRef) {
+                    return _next(`${_req.body.otcRef}otc_verification`);
+                }
+                return _next();
+            }
+        })(req, res, next);
+    },
+
+    /**
      * Blocks webmention spam
      */
 

@@ -3,7 +3,7 @@ import SigninPage from './SigninPage';
 import {getSiteData} from '../../utils/fixtures-generator';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <SigninPage />,
         {
             overrideContext: {
@@ -29,7 +29,7 @@ const setup = (overrides) => {
         emailInput,
         submitButton,
         signupButton,
-        mockOnActionFn,
+        mockDoActionFn,
         ...utils
     };
 };
@@ -44,20 +44,20 @@ describe('SigninPage', () => {
     });
 
     test('can call signin action with email', () => {
-        const {emailInput, submitButton, mockOnActionFn} = setup();
+        const {emailInput, submitButton, mockDoActionFn} = setup();
 
         fireEvent.change(emailInput, {target: {value: 'member@example.com'}});
         expect(emailInput).toHaveValue('member@example.com');
 
         fireEvent.click(submitButton);
-        expect(mockOnActionFn).toHaveBeenCalledWith('signin', {email: 'member@example.com'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('signin', {email: 'member@example.com'});
     });
 
     test('can call swithPage for signup', () => {
-        const {signupButton, mockOnActionFn} = setup();
+        const {signupButton, mockDoActionFn} = setup();
 
         fireEvent.click(signupButton);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signup'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'signup'});
     });
 
     describe('when members are disabled', () => {

@@ -203,6 +203,11 @@ module.exports = class RouterController {
         delete metadata.referrer_source;
         delete metadata.referrer_medium;
         delete metadata.referrer_url;
+        delete metadata.utm_source;
+        delete metadata.utm_medium;
+        delete metadata.utm_campaign;
+        delete metadata.utm_term;
+        delete metadata.utm_content;
 
         if (metadata.urlHistory) {
             // The full attribution history doesn't fit in the Stripe metadata (can't store objects + limited to 50 keys and 500 chars values)
@@ -235,6 +240,27 @@ module.exports = class RouterController {
 
             if (attribution.referrerUrl) {
                 metadata.referrer_url = attribution.referrerUrl;
+            }
+
+            // UTM parameters
+            if (attribution.utmSource) {
+                metadata.utm_source = attribution.utmSource;
+            }
+
+            if (attribution.utmMedium) {
+                metadata.utm_medium = attribution.utmMedium;
+            }
+
+            if (attribution.utmCampaign) {
+                metadata.utm_campaign = attribution.utmCampaign;
+            }
+
+            if (attribution.utmTerm) {
+                metadata.utm_term = attribution.utmTerm;
+            }
+
+            if (attribution.utmContent) {
+                metadata.utm_content = attribution.utmContent;
             }
         }
     }

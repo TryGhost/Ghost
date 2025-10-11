@@ -1,0 +1,11 @@
+# CODEOWNERS for Ghost Repository
+# This file defines code ownership for automatic review assignment
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# E2E Test Ownership
+# The top-level e2e directory requires review from designated owners
+/e2e/ @9larsons @cmraible @ibalosh
+
+# Tinybird Analytics
+# Tinybird data pipelines and services require review from designated owners
+**/tinybird/ @9larsons @cmraible @troyciesco

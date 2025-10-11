@@ -1,11 +1,11 @@
-name: 'Label Issues'
+name: 'Label Issues & PRs'
 
 on:
   workflow_dispatch:
   issues:
     types: [opened, closed, labeled]
   pull_request_target:
-    types: [closed, labeled]
+    types: [opened, closed, labeled]
   schedule:
     - cron:  '0 * * * *'
 

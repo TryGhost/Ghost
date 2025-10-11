@@ -4,6 +4,7 @@ import CloseButton from '../common/CloseButton';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-outline.svg';
 import * as Sentry from '@sentry/react';
+import {t} from '../../utils/i18n';
 
 export const TipsAndDonationsErrorStyle = `
     .gh-portal-tips-and-donations .gh-tips-and-donations-icon-error {
@@ -25,7 +26,7 @@ export const TipsAndDonationsErrorStyle = `
 `;
 
 const SupportError = ({error}) => {
-    const {onAction, t} = useContext(AppContext);
+    const {doAction} = useContext(AppContext);
     const errorTitle = t('Sorry, that didn’t work.');
     const errorMessage = error || t('There was an error processing your payment. Please try again.');
     const buttonLabel = t('Close');
@@ -46,13 +47,13 @@ const SupportError = ({error}) => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={true}
-                onClick = {() => onAction('closePopup')}
+                onClick = {() => doAction('closePopup')}
                 disabled={false}
                 brandColor='#000000'
                 label={buttonLabel}
                 isDestructive={true}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>

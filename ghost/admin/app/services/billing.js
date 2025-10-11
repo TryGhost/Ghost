@@ -92,6 +92,13 @@ export default class BillingService extends Service {
         }
     }
 
+    sendUpdateLimits() {
+        // Send Billing app message to fetch fresh limit usage
+        this.getBillingIframe().contentWindow.postMessage({
+            query: 'limitUpdate'
+        }, '*');
+    }
+
     // Controls billing window modal visibility and sync of the URL visible in browser
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/pro" route in the URL or using history navigation (back and forward)
@@ -126,6 +133,7 @@ export default class BillingService extends Service {
         window.location.hash = childRoute || '/pro';
 
         this.sendRouteUpdate();
+        this.sendUpdateLimits();
 
         this.router.transitionTo(childRoute || '/pro');
     }

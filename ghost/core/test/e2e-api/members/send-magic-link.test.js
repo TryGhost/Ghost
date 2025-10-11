@@ -5,7 +5,7 @@ const assert = require('assert/strict');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyErrorId} = matchers;
+const {anyErrorId, anyString} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 let membersAgent, membersService;
@@ -425,7 +425,7 @@ describe('sendMagicLink', function () {
                         .expectStatus(201)
                         .expect(({body}) => {
                             Object.keys(body).should.eql(['otc_ref']);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
                         });
                 });
 
@@ -444,7 +444,7 @@ describe('sendMagicLink', function () {
                         .expectStatus(201)
                         .expect(({body}) => {
                             should.exist(body.otc_ref);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
                         });
                 });
             });
@@ -1009,6 +1009,128 @@ describe('sendMagicLink', function () {
 
                 const redirectUrl = new URL(verifyResponse.body.redirectUrl);
                 assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
+            });
+
+            describe('Rate limiting', function () {
+                before(async function () {
+                    // Adjust rate limits for faster testing
+                    // Note: enumeration limit must be higher than per-code limit for the "limits enforced per code" test
+                    configUtils.set('spam:otc_verification:freeRetries', 2);
+                    configUtils.set('spam:otc_verification_enumeration:freeRetries', 5);
+                    await resetRateLimits();
+                });
+
+                after(async function () {
+                    await configUtils.restore();
+                    await resetRateLimits();
+                });
+
+                beforeEach(async function () {
+                    await dbUtils.truncate('brute');
+                    await resetRateLimits();
+                });
+
+                it('Will rate limit OTC verification enumeration (IP-based)', async function () {
+                    const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
+
+                    // Make multiple verification attempts with *different* otcRefs from same IP
+                    for (let i = 0; i < otcVerificationEnumerationLimit; i++) {
+                        await membersAgent
+                            .post('/api/verify-otc')
+                            .body({
+                                otcRef: `fake-otc-ref-${i}`,
+                                otc: '000000'
+                            })
+                            .expectStatus(400);
+                    }
+
+                    // Now we should be rate limited (enumeration)
+                    await membersAgent
+                        .post('/api/verify-otc')
+                        .body({
+                            otcRef: 'fake-otc-ref-final',
+                            otc: '000000'
+                        })
+                        .expectStatus(429)
+                        .matchBodySnapshot({
+                            errors: [{
+                                id: anyErrorId,
+                                type: 'TooManyRequestsError',
+                                message: anyString,
+                                code: anyString
+                            }]
+                        });
+                });
+
+                it('Will rate limit OTC verification for specific otcRef', async function () {
+                    const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
+                    const otcRef = 'fake-otc-ref-single';
+
+                    // Make multiple failed attempts with the *same* otcRef
+                    for (let i = 0; i < otcVerificationLimit; i++) {
+                        await membersAgent
+                            .post('/api/verify-otc')
+                            .body({
+                                otcRef,
+                                otc: `00000${i + 1}`
+                            })
+                            .expectStatus(400);
+                    }
+
+                    // Now we should be rate limited for this specific otcRef
+                    await membersAgent
+                        .post('/api/verify-otc')
+                        .body({
+                            otcRef,
+                            otc: '000000'
+                        })
+                        .expectStatus(429)
+                        .matchBodySnapshot({
+                            errors: [{
+                                id: anyErrorId,
+                                type: 'TooManyRequestsError',
+                                message: anyString,
+                                code: anyString
+                            }]
+                        });
+                });
+
+                it('Different otcRefs are tracked independently', async function () {
+                    const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
+                    const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
+
+                    // Ensure we can test specific limits without hitting enumeration limit
+                    assert(otcVerificationLimit < otcVerificationEnumerationLimit, 'Specific otcRef limit must be lower than enumeration limit for this test');
+
+                    // Exhaust attempts for first otcRef
+                    for (let i = 0; i < otcVerificationLimit; i++) {
+                        await membersAgent
+                            .post('/api/verify-otc')
+                            .body({
+                                otcRef: 'fake-otc-ref-one',
+                                otc: '000000'
+                            })
+                            .expectStatus(400);
+                    }
+
+                    // First otcRef should be rate limited
+                    await membersAgent
+                        .post('/api/verify-otc')
+                        .body({
+                            otcRef: 'fake-otc-ref-one',
+                            otc: '000000'
+                        })
+                        .expectStatus(429);
+
+                    // But second otcRef should still work (independent counter)
+                    await membersAgent
+                        .post('/api/verify-otc')
+                        .body({
+                            otcRef: 'fake-otc-ref-two',
+                            otc: '000000'
+                        })
+                        .expectStatus(400);
+                });
             });
         });
     });

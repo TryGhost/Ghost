@@ -4,19 +4,20 @@ import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
 import {useContext} from 'react';
+import {t} from '../../../../utils/i18n';
 
 const PaidAccountActions = () => {
-    const {member, site, onAction, t} = useContext(AppContext);
+    const {member, site, doAction} = useContext(AppContext);
 
     const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
-        onAction('editBilling', {subscriptionId: subscription.id});
+        doAction('editBilling', {subscriptionId: subscription.id});
     };
 
     const openUpdatePlan = () => {
         const {is_stripe_configured: isStripeConfigured} = site;
         if (isStripeConfigured) {
-            onAction('switchPage', {
+            doAction('switchPage', {
                 page: 'accountPlan',
                 lastPage: 'accountHome'
             });
@@ -33,7 +34,7 @@ const PaidAccountActions = () => {
             const {amount = 0, currency, interval} = price;
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
         }
-        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate, t});
+        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
         const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
             if (compExpiry) {
@@ -68,7 +69,7 @@ const PaidAccountActions = () => {
                     <p className={oldPriceClassName}>
                         {label}
                     </p>
-                    <FreeTrialLabel subscription={subscription} t={t} />
+                    <FreeTrialLabel subscription={subscription} />
                 </>
             );
         }
@@ -171,7 +172,7 @@ const PaidAccountActions = () => {
     return null;
 };
 
-function FreeTrialLabel({subscription, t}) {
+function FreeTrialLabel({subscription}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
         const trialEnd = getDateString(subscription.trial_end_at);
         return (
@@ -186,7 +187,7 @@ function FreeTrialLabel({subscription, t}) {
     return null;
 }
 
-function getOfferLabel({offer, price, subscriptionStartDate, t}) {
+function getOfferLabel({offer, price, subscriptionStartDate}) {
     let offerLabel = '';
 
     if (offer?.type === 'trial') {

@@ -3,7 +3,7 @@ import {render, fireEvent, getByTestId, queryByTestId} from '../../utils/test-ut
 import SignupPage from './SignupPage';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <SignupPage />,
         {
             overrideContext: {
@@ -38,7 +38,7 @@ const setup = (overrides) => {
         chooseButton,
         signinButton,
         freeTrialMessage,
-        mockOnActionFn,
+        mockDoActionFn,
         ...utils
     };
 };
@@ -55,7 +55,7 @@ describe('SignupPage', () => {
     });
 
     test('can call signup action with name, email and plan', () => {
-        const {nameInput, emailInput, chooseButton, mockOnActionFn} = setup();
+        const {nameInput, emailInput, chooseButton, mockDoActionFn} = setup();
         const nameVal = 'J Smith';
         const emailVal = 'jsmith@example.com';
         const planVal = 'free';
@@ -66,14 +66,14 @@ describe('SignupPage', () => {
         expect(emailInput).toHaveValue(emailVal);
 
         fireEvent.click(chooseButton[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('signup', {email: emailVal, name: nameVal, plan: planVal});
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', {email: emailVal, name: nameVal, plan: planVal});
     });
 
     test('can call swithPage for signin', () => {
-        const {signinButton, mockOnActionFn} = setup();
+        const {signinButton, mockDoActionFn} = setup();
 
         fireEvent.click(signinButton);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
     });
 
     test('renders free trial message', () => {

@@ -2089,6 +2089,9 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <noreply@sendingdomain.com>",
   "generateTextFromHTML": false,
+  "headers": Object {
+    "Sender": "\\"Ghost\\" <noreply@sendingdomain.com>",
+  },
   "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",
@@ -3289,6 +3292,9 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <default@email.com>",
   "generateTextFromHTML": false,
+  "headers": Object {
+    "Sender": "\\"Ghost\\" <default@email.com>",
+  },
   "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",

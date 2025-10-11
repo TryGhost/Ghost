@@ -68,7 +68,10 @@ function createMessage(message) {
         ...message,
         ...addresses,
         generateTextFromHTML,
-        encoding
+        encoding,
+        headers: {
+            Sender: addresses.from
+        }
     };
 }
 

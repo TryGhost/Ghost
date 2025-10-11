@@ -1,6 +1,7 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {t} from './utils/i18n';
 
 function switchPage({data, state}) {
     return {
@@ -67,7 +68,6 @@ async function signout({api, state}) {
             action: 'signout:success'
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'signout:failed',
             popupNotification: createPopupNotification({
@@ -79,7 +79,7 @@ async function signout({api, state}) {
 }
 
 async function signin({data, api, state}) {
-    const {t, labs} = state;
+    const {labs} = state;
 
     const includeOTC = labs?.membersSigninOTC ? true : undefined;
 
@@ -97,28 +97,55 @@ async function signin({data, api, state}) {
             return {
                 page: 'magiclink',
                 lastPage: 'signin',
-                otcRef: response.otc_ref
+                otcRef: response.otc_ref,
+                pageData: {
+                    ...(state.pageData || {}),
+                    email: (data?.email || '').trim()
+                }
             };
         }
 
         return {
             page: 'magiclink',
-            lastPage: 'signin'
+            lastPage: 'signin',
+            pageData: {
+                ...(state.pageData || {}),
+                email: (data?.email || '').trim()
+            }
         };
     } catch (e) {
         return {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'), t)
+                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'))
             })
         };
     }
 }
 
-async function verifyOTC({data, api, state}) {
-    const {t} = state;
+function startSigninOTCFromCustomForm({data, state}) {
+    const email = (data?.email || '').trim();
+    const otcRef = data?.otcRef;
 
+    if (!otcRef) {
+        return {};
+    }
+
+    return {
+        showPopup: true,
+        page: 'magiclink',
+        lastPage: 'signin',
+        otcRef,
+        pageData: {
+            ...(state.pageData || {}),
+            email
+        },
+        popupNotification: null
+    };
+}
+
+async function verifyOTC({data, api, state}) {
     try {
         const integrityToken = await api.member.getIntegrityToken();
         const response = await api.member.verifyOTC({...data, integrityToken});
@@ -139,7 +166,7 @@ async function verifyOTC({data, api, state}) {
             action: 'verifyOTC:failed',
             popupNotification: createPopupNotification({
                 type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'))
             })
         };
     }
@@ -165,11 +192,14 @@ async function signup({data, state, api}) {
         }
         return {
             page: 'magiclink',
-            lastPage: 'signup'
+            lastPage: 'signup',
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim()
+            }
         };
     } catch (e) {
-        const {t} = state;
-        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'), t);
+        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
@@ -196,7 +226,6 @@ async function checkoutPlan({data, state, api}) {
             }
         });
     } catch (e) {
-        const {t} = state;
         return {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
@@ -208,7 +237,6 @@ async function checkoutPlan({data, state, api}) {
 }
 
 async function updateSubscription({data, state, api}) {
-    const {t} = state;
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
         const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: planId});
@@ -257,7 +285,6 @@ async function cancelSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
@@ -282,7 +309,6 @@ async function continueSubscription({data, state, api}) {
             member: member
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'continueSubscription:failed',
             popupNotification: createPopupNotification({
@@ -297,7 +323,6 @@ async function editBilling({data, state, api}) {
     try {
         await api.member.editBilling(data);
     } catch (e) {
-        const {t} = state;
         return {
             action: 'editBilling:failed',
             popupNotification: createPopupNotification({
@@ -349,7 +374,6 @@ async function updateNewsletterPreference({data, state, api}) {
             member
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'updateNewsletterPref:failed',
             popupNotification: createPopupNotification({
@@ -362,7 +386,6 @@ async function updateNewsletterPreference({data, state, api}) {
 }
 
 async function removeEmailFromSuppressionList({state, api}) {
-    const {t} = state;
     try {
         await api.member.deleteSuppression();
         const action = 'removeEmailFromSuppressionList:success';
@@ -386,7 +409,6 @@ async function removeEmailFromSuppressionList({state, api}) {
 }
 
 async function updateNewsletter({data, state, api}) {
-    const {t} = state;
     try {
         const {subscribed} = data;
         const member = await api.member.update({subscribed});
@@ -479,7 +501,6 @@ async function refreshMemberData({state, api}) {
 }
 
 async function updateProfile({data, state, api}) {
-    const {t} = state;
     const [dataUpdate, emailUpdate] = await Promise.all([updateMemberData({data, state, api}), updateMemberEmail({data, state, api})]);
     if (dataUpdate && emailUpdate) {
         if (emailUpdate.success) {
@@ -520,7 +541,7 @@ async function updateProfile({data, state, api}) {
         let message = '';
 
         if (emailUpdate.error) {
-            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'));
         } else {
             message = t('Check your inbox to verify email update');
         }
@@ -608,6 +629,7 @@ const Actions = {
     back,
     signout,
     signin,
+    startSigninOTCFromCustomForm,
     verifyOTC,
     signup,
     updateSubscription,

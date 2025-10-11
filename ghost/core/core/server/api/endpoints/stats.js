@@ -35,14 +35,20 @@ const controller = {
             docName: 'members',
             method: 'browse'
         },
+        options: [
+            'date_from'
+        ],
         cache: statsService.cache,
-        generateCacheKeyData() {
+        generateCacheKeyData(frame) {
             return {
-                method: 'mrr'
+                method: 'mrr',
+                options: frame.options
             };
         },
-        async query() {
-            return await statsService.api.getMRRHistory();
+        async query(frame) {
+            return await statsService.api.getMRRHistory({
+                dateFrom: frame?.options?.date_from
+            });
         }
     },
     subscriptions: {
@@ -508,7 +514,7 @@ const controller = {
         },
         options: [
             'order',
-            'limit', 
+            'limit',
             'date_from',
             'date_to',
             'timezone',
@@ -534,6 +540,42 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getTopSourcesWithRange(frame.options);
+        }
+    },
+    utmGrowth: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'utm_type',
+            'order',
+            'limit',
+            'date_from',
+            'date_to',
+            'timezone',
+            'post_id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'utmGrowth',
+                options: {
+                    utm_type: frame.options.utm_type,
+                    order: frame.options.order,
+                    limit: frame.options.limit,
+                    date_from: frame.options.date_from,
+                    date_to: frame.options.date_to,
+                    timezone: frame.options.timezone,
+                    post_id: frame.options.post_id
+                }
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getUtmGrowthStats(frame.options);
         }
     }
 

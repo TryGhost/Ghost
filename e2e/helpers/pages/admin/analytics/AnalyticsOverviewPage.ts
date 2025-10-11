@@ -2,6 +2,23 @@ import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 import {BasePage} from '../../BasePage';
 
+class UniqueVisitorsGraph extends BasePage {
+    public readonly graph: Locator;
+    public readonly value: Locator;
+    public readonly viewMoreButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.graph = page.getByTestId('Unique visitors');
+        this.value = this.graph.getByTestId('kpi-card-header-value');
+        this.viewMoreButton = this.graph.getByRole('button', {name: 'View more'});
+    }
+
+    async count() {
+        return parseInt(await this.value.textContent() || '0', 10);
+    }
+}
+
 class LatestPost extends BasePage {
     readonly post: Locator;
     readonly shareButton: Locator;
@@ -51,11 +68,10 @@ class TopPosts extends BasePage {
 
 export class AnalyticsOverviewPage extends AdminPage {
     public readonly header: Locator;
-    private readonly uniqueVisitorsGraph: Locator;
-    private readonly uniqueVisitorsViewMoreButton: Locator;
     private readonly membersGraph: Locator;
     private readonly membersViewMoreButton: Locator;
 
+    public readonly uniqueVisitors: UniqueVisitorsGraph;
     public readonly latestPost: LatestPost;
     public readonly topPosts: TopPosts;
 
@@ -65,17 +81,20 @@ export class AnalyticsOverviewPage extends AdminPage {
         this.pageUrl = '/ghost/#/analytics';
         this.header = page.getByRole('heading', {name: 'Analytics'});
 
-        this.uniqueVisitorsGraph = page.getByTestId('Unique visitors');
         this.membersGraph = page.getByTestId('Members');
-        this.uniqueVisitorsViewMoreButton = this.uniqueVisitorsGraph.getByRole('button', {name: 'View more'});
         this.membersViewMoreButton = this.membersGraph.getByRole('button', {name: 'View more'});
 
+        this.uniqueVisitors = new UniqueVisitorsGraph(page);
         this.latestPost = new LatestPost(page);
         this.topPosts = new TopPosts(page);
     }
 
+    async refreshData() {
+        await this.page.reload();
+    }
+
     async viewMoreUniqueVisitorDetails() {
-        return await this.uniqueVisitorsViewMoreButton.click();
+        return await this.uniqueVisitors.viewMoreButton.click();
     }
 
     async viewMoreMembersDetails() {

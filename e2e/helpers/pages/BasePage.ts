@@ -2,11 +2,17 @@ import {appConfig} from '../utils/app-config';
 import {PageHttpLogger} from './PageHttpLogger';
 import {Locator, Page} from '@playwright/test';
 
+export interface pageGotoOptions {
+    referer?: string;
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded'|'networkidle'|'commit';
+}
+
 export class BasePage {
     private logger?: PageHttpLogger;
     private readonly debugLogs = appConfig.debugLogs;
 
-    protected pageUrl: string = '';
+    public pageUrl: string = '';
     protected readonly page: Page;
     public readonly body: Locator;
 
@@ -21,9 +27,13 @@ export class BasePage {
         }
     }
 
-    async goto(url = null) {
+    async goto(url?: string, options?: pageGotoOptions) {
         const urlToVisit = url || this.pageUrl;
-        await this.page.goto(urlToVisit);
+        await this.page.goto(urlToVisit, options);
+    }
+
+    async pressKey(key: string) {
+        await this.page.keyboard.press(key);
     }
 
     private isDebugEnabled(): boolean {

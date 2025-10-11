@@ -33,8 +33,17 @@ fi
 #
 # Get the admin token from the Tinybird API
 ## This is different from the workspace admin token
-ADMIN_TOKEN=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "admin token") | .token')
+echo "Fetching tokens from Tinybird API..."
+TOKENS_RESPONSE=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens)
 
+# Check if curl succeeded
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to fetch tokens from Tinybird API. curl failed." >&2
+    exit 1
+fi
+
+# Find admin token by looking for ADMIN scope (more robust than name matching)
+ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.scopes[]? | .type == "ADMIN") | .token' | head -n1)
 
 # Check if admin token is valid
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
@@ -42,8 +51,10 @@ if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
     exit 1
 fi
 
-# Get the tracker token from the Tinybird API
-TRACKER_TOKEN=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "tracker") | .token')
+echo "Successfully found admin token with ADMIN scope"
+
+# Get the tracker token from the same response
+TRACKER_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.name == "tracker") | .token')
 
 # Check if tracker token is valid
 if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then

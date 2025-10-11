@@ -3,6 +3,7 @@ import APReplyBox from '@src/components/global/APReplyBox';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
+import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import React, {useEffect, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '@src/utils/get-username';
@@ -46,14 +47,8 @@ const Note = () => {
 
     const object = currentPost?.object;
 
-    const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
+    const replyCount = object?.replyCount ?? 0;
     const [hasScrolledToPost, setHasScrolledToPost] = useState(false);
-
-    useEffect(() => {
-        if (object?.replyCount !== undefined) {
-            setReplyCount(object.replyCount);
-        }
-    }, [object?.replyCount]);
 
     useEffect(() => {
         if (postRef.current && threadParents.length > 0 && !hasScrolledToPost) {
@@ -146,12 +141,8 @@ const Note = () => {
         );
     }
 
-    function handleReplyCountChange(increment: number) {
-        setReplyCount((current: number) => current + increment);
-    }
-
     function handleDelete() {
-        handleReplyCountChange(-1);
+        // Reply count will be updated via cache invalidation
     }
 
     function toggleChain(chainId: string) {
@@ -201,22 +192,24 @@ const Note = () => {
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5 max-lg:px-0`}>
                             {!threadParents.length &&
-                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10 max-md:pt-5' : 'pt-5'}`}>
-                                <div className='relative z-10'>
-                                    <APAvatar author={currentPost.actor} showFollowButton={!currentPost.object.authored && !currentPost.actor.followedByMe}/>
-                                </div>
-                                <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                    handleProfileClick(currentPost.actor, navigate, e);
-                                }}>
-                                    <div className='flex w-full'>
-                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
+                            <ProfilePreviewHoverCard actor={currentPost.actor} isCurrentUser={currentPost.object.authored}>
+                                <div className={`col-[2/3] mx-auto flex w-full cursor-pointer items-center gap-3 ${canGoBack ? 'pt-10 max-md:pt-5' : 'pt-5'}`}>
+                                    <div className='relative z-10'>
+                                        <APAvatar author={currentPost.actor} showFollowButton={!currentPost.object.authored && !currentPost.actor.followedByMe}/>
                                     </div>
-                                    <div className='flex w-full'>
-                                        <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
-                                        <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                    <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
+                                        handleProfileClick(currentPost.actor, navigate, e);
+                                    }}>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
+                                        </div>
+                                        <div className='flex w-full'>
+                                            <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
+                                            <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </ProfilePreviewHoverCard>
                             }
 
                             {threadParents.map((item) => {
@@ -258,8 +251,6 @@ const Note = () => {
                                     />
                                     <APReplyBox
                                         object={object}
-                                        onReply={() => handleReplyCountChange(1)}
-                                        onReplyError={() => handleReplyCountChange(-1)}
                                     />
                                     <FeedItemDivider />
                                     <div ref={repliesRef}>

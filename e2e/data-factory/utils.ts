@@ -10,16 +10,10 @@ export function generateId(): string {
     return timestamp + randomHex;
 }
 
-/**
- * Generate a UUID
- */
 export function generateUuid(): string {
     return faker.string.uuid();
 }
 
-/**
- * Generate a URL-friendly slug from text
- */
 export function generateSlug(text: string): string {
     return text
         .toLowerCase()

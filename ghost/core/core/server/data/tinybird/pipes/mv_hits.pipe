@@ -18,7 +18,12 @@ SQL >
         JSONExtractString(payload, 'member_status') as member_status,
         JSONExtractString(payload, 'post_uuid') as post_uuid,
         JSONExtractString(payload, 'post_type') as post_type,
-        lower(JSONExtractString(payload, 'user-agent')) as user_agent
+        lower(JSONExtractString(payload, 'user-agent')) as user_agent,
+        JSONExtractString(payload, 'utm_source') as utm_source,
+        JSONExtractString(payload, 'utm_medium') as utm_medium,
+        JSONExtractString(payload, 'utm_campaign') as utm_campaign,
+        JSONExtractString(payload, 'utm_term') as utm_term,
+        JSONExtractString(payload, 'utm_content') as utm_content
     FROM analytics_events
     where action = 'page_hit'
 
@@ -121,7 +126,12 @@ SQL >
             when match(user_agent, 'iphone|ipad|safari')
             then 'safari'
             else 'Unknown'
-        END as browser
+        END as browser,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content
     FROM mv_hits_0
 
 TYPE materialized

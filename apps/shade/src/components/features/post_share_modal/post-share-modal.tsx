@@ -58,8 +58,11 @@ const PostShareModal: React.FC<PostShareModalProps> = (
             <DialogTrigger className="cursor-pointer" asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className='max-w-[540px] p-8'>
-                <DialogHeader className='relative'>
+            <DialogContent className='max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8'>
+                <div className='sticky top-0 ml-auto size-0'>
+                    <Button className='absolute -right-5 -top-5 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:!size-6' size='lg' variant='link' onClick={onClose}><X size={24} strokeWidth={1} /></Button>
+                </div>
+                <DialogHeader className='relative -mt-5'>
                     <DialogTitle className='text-3xl font-bold leading-[1.15em]'>
                         <span className='text-green-500'>{primaryTitle}</span><br />
                         <span>{secondaryTitle}</span>
@@ -69,7 +72,6 @@ const PostShareModal: React.FC<PostShareModalProps> = (
                             {description}
                         </DialogDescription>
                     }
-                    <Button className='absolute -right-5 -top-6 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:!size-6' size='lg' variant='link' onClick={onClose}><X size={24} strokeWidth={1} /></Button>
                 </DialogHeader>
                 <a className='flex flex-col items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' href={postURL} rel="noopener noreferrer" target='_blank'>
                     {featureImageURL &&

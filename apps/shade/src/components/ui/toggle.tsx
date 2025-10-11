@@ -14,7 +14,8 @@ const toggleVariants = cva(
                 default: 'bg-transparent'
             },
             size: {
-                default: 'h-[26px] min-w-[26px] px-2'
+                default: 'h-[26px] min-w-[26px] px-2',
+                button: 'h-[32px] min-w-[32px] px-3'
             }
         },
         defaultVariants: {

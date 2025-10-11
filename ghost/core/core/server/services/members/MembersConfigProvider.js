@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const {URL} = require('url');
-const crypto = require('crypto');
 const createKeypair = require('keypair');
 
 class MembersConfigProvider {
@@ -40,20 +39,6 @@ class MembersConfigProvider {
      */
     isStripeConnected() {
         return this._settingsHelpers.isStripeConnected();
-    }
-
-    getAuthSecret() {
-        const hexSecret = this._settingsCache.get('members_email_auth_secret');
-        if (!hexSecret) {
-            logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
-            return crypto.randomBytes(64);
-        }
-        const secret = Buffer.from(hexSecret, 'hex');
-        if (secret.length < 64) {
-            logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
-            return crypto.randomBytes(64);
-        }
-        return secret;
     }
 
     getAllowSelfSignup() {

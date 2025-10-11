@@ -5,13 +5,14 @@ import {useContext} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
+import {t} from '../../utils/i18n';
 
 function AccountHeader() {
-    const {brandColor, lastPage, onAction, t} = useContext(AppContext);
+    const {brandColor, lastPage, doAction} = useContext(AppContext);
     return (
         <header className='gh-portal-detail-header'>
             <BackButton brandColor={brandColor} hidden={!lastPage} onClick={() => {
-                onAction('back');
+                doAction('back');
             }} />
             <h3 className='gh-portal-main-title'>{t('Email preferences')}</h3>
         </header>
@@ -49,7 +50,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
-    const {t, onAction} = useContext(AppContext);
+    const {doAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
 
     if (!isCommentsEnabled) {
@@ -58,7 +59,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
 
     const handleToggle = async (e, checked) => {
         await updateCommentNotifications(checked);
-        onAction('showPopupNotification', {
+        doAction('showPopupNotification', {
             action: 'updated:success',
             message: t('Comment preferences updated.')
         });
@@ -96,8 +97,6 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNe
 }
 
 function ShowPaidMemberMessage({site, isPaid}) {
-    const {t} = useContext(AppContext);
-
     if (isPaid) {
         return (
             <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
@@ -117,7 +116,7 @@ export default function NewsletterManagement({
     isCommentsEnabled,
     enableCommentNotifications
 }) {
-    const {brandColor, onAction, member, site, t} = useContext(AppContext);
+    const {brandColor, doAction, member, site} = useContext(AppContext);
     const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
     const EmptyNotification = () => {
         return null;
@@ -177,7 +176,7 @@ export default function NewsletterManagement({
                         <span className="gh-portal-footer-secondary-light">{t('Not receiving emails?')}</span>
                         <button
                             className="gh-portal-btn-text gh-email-faq-page-button"
-                            onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ', pageData: {direct: false}})}
+                            onClick={() => doAction('switchPage', {page: 'emailReceivingFAQ', pageData: {direct: false}})}
                         >
                             {/* eslint-disable-next-line i18next/no-literal-string */}
                             {t('Get help')} <span className="right-arrow">&rarr;</span>

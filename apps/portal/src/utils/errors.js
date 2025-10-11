@@ -1,3 +1,5 @@
+import {t} from './i18n';
+
 export class HumanReadableError extends Error {
     /**
      * Returns whether this response from the server is a human readable error and should be shown to the user.
@@ -31,7 +33,7 @@ export const specialMessages = [];
  * Many "alreadyTranslatedDefaultMessages" are pretty vague, so we want to replace them with a more specific message
  * whenever one is available.
  */
-export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t) {
+export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
     const translateMessage = (message, number = null) => {
         if (number) {
             return t(message, {number});

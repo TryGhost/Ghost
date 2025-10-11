@@ -1,36 +1,10 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
+import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
-
-export const SEARCHABLES = [
-    {
-        name: 'Staff',
-        model: 'user',
-        idField: 'slug',
-        titleField: 'name'
-    },
-    {
-        name: 'Tags',
-        model: 'tag',
-        idField: 'slug',
-        titleField: 'name'
-    },
-    {
-        name: 'Posts',
-        model: 'post',
-        idField: 'id',
-        titleField: 'title'
-    },
-    {
-        name: 'Pages',
-        model: 'page',
-        idField: 'id',
-        titleField: 'title'
-    }
-];
 
 export default class SearchProviderBasicService extends Service {
     @service ajax;
@@ -46,13 +20,15 @@ export default class SearchProviderBasicService extends Service {
         const results = [];
 
         SEARCHABLES.forEach((searchable) => {
-            const matchedContent = this.content.filter((item) => {
+            let matchedContent = this.content.filter((item) => {
                 const normalizedTitle = item.title.toString().toLowerCase();
                 return (
                     item.groupName === searchable.name &&
                     normalizedTitle.indexOf(normalizedTerm) >= 0
                 );
             });
+
+            matchedContent = sortSearchResultsByStatus(matchedContent, searchable.model);
 
             if (!isEmpty(matchedContent)) {
                 results.push({
@@ -88,15 +64,7 @@ export default class SearchProviderBasicService extends Service {
             const response = await this.ajax.request(url, {data: query});
 
             const items = response[pluralize(searchable.model)].map(
-                item => ({
-                    id: `${searchable.model}.${item[searchable.idField]}`,
-                    url: item.url,
-                    title: item[searchable.titleField],
-                    groupName: searchable.name,
-                    status: item.status,
-                    visibility: item.visibility,
-                    publishedAt: item.published_at
-                })
+                item => createSearchResult(searchable, item)
             );
 
             content.push(...items);

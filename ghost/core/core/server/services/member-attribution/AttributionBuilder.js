@@ -7,6 +7,11 @@
  * @prop {string|null} referrerSource
  * @prop {string|null} referrerMedium
  * @prop {string|null} referrerUrl
+ * @prop {string|null} utmSource
+ * @prop {string|null} utmMedium
+ * @prop {string|null} utmCampaign
+ * @prop {string|null} utmTerm
+ * @prop {string|null} utmContent
  */
 
 class Attribution {
@@ -21,9 +26,14 @@ class Attribution {
      * @param {string|null} [data.referrerSource]
      * @param {string|null} [data.referrerMedium]
      * @param {string|null} [data.referrerUrl]
+     * @param {string|null} [data.utmSource]
+     * @param {string|null} [data.utmMedium]
+     * @param {string|null} [data.utmCampaign]
+     * @param {string|null} [data.utmTerm]
+     * @param {string|null} [data.utmContent]
      */
     constructor({
-        id, url, type, referrerSource, referrerMedium, referrerUrl
+        id, url, type, referrerSource, referrerMedium, referrerUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent
     }, {urlTranslator}) {
         this.id = id;
         this.url = url;
@@ -31,6 +41,11 @@ class Attribution {
         this.referrerSource = referrerSource;
         this.referrerMedium = referrerMedium;
         this.referrerUrl = referrerUrl;
+        this.utmSource = utmSource;
+        this.utmMedium = utmMedium;
+        this.utmCampaign = utmCampaign;
+        this.utmTerm = utmTerm;
+        this.utmContent = utmContent;
 
         /**
          * @private
@@ -57,7 +72,12 @@ class Attribution {
                     title: null,
                     referrerSource: this.referrerSource,
                     referrerMedium: this.referrerMedium,
-                    referrerUrl: this.referrerUrl
+                    referrerUrl: this.referrerUrl,
+                    utmSource: this.utmSource,
+                    utmMedium: this.utmMedium,
+                    utmCampaign: this.utmCampaign,
+                    utmTerm: this.utmTerm,
+                    utmContent: this.utmContent
                 };
             }
             return {
@@ -67,7 +87,12 @@ class Attribution {
                 title: this.#urlTranslator.getUrlTitle(this.url),
                 referrerSource: this.referrerSource,
                 referrerMedium: this.referrerMedium,
-                referrerUrl: this.referrerUrl
+                referrerUrl: this.referrerUrl,
+                utmSource: this.utmSource,
+                utmMedium: this.utmMedium,
+                utmCampaign: this.utmCampaign,
+                utmTerm: this.utmTerm,
+                utmContent: this.utmContent
             };
         }
 
@@ -80,7 +105,12 @@ class Attribution {
             title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url),
             referrerSource: this.referrerSource,
             referrerMedium: this.referrerMedium,
-            referrerUrl: this.referrerUrl
+            referrerUrl: this.referrerUrl,
+            utmSource: this.utmSource,
+            utmMedium: this.utmMedium,
+            utmCampaign: this.utmCampaign,
+            utmTerm: this.utmTerm,
+            utmContent: this.utmContent
         };
     }
 
@@ -118,14 +148,19 @@ class AttributionBuilder {
     /**
      * Creates an Attribution object with the dependencies injected
      */
-    build({id, url, type, referrerSource, referrerMedium, referrerUrl}) {
+    build({id, url, type, referrerSource, referrerMedium, referrerUrl, utmSource, utmMedium, utmCampaign, utmTerm, utmContent}) {
         return new Attribution({
             id,
             url,
             type,
             referrerSource,
             referrerMedium,
-            referrerUrl
+            referrerUrl,
+            utmSource,
+            utmMedium,
+            utmCampaign,
+            utmTerm,
+            utmContent
         }, {urlTranslator: this.urlTranslator});
     }
 
@@ -142,14 +177,24 @@ class AttributionBuilder {
                 type: null,
                 referrerSource: null,
                 referrerMedium: null,
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             });
         }
 
         const referrerData = this.referrerTranslator.getReferrerDetails(history) || {
             referrerSource: null,
             referrerMedium: null,
-            referrerUrl: null
+            referrerUrl: null,
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            utmTerm: null,
+            utmContent: null
         };
 
         // Start at the end. Return the first post we find
@@ -194,10 +239,10 @@ class AttributionBuilder {
 
         // We only have history items without a path that have invalid ids
         return this.build({
-            ...referrerData,
             id: null,
             url: null,
-            type: null
+            type: null,
+            ...referrerData
         });
     }
 }

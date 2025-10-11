@@ -3,5 +3,6 @@ module.exports = {
     plugins: ['ghost'],
     extends: [
         'plugin:ghost/ts'
-    ]
+    ],
+    ignorePatterns: ['build/']
 };

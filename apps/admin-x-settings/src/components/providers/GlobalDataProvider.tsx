@@ -1,6 +1,7 @@
 import SpinningOrb from '../../assets/videos/logo-loader.mp4';
+import SpinningOrbDark from '../../assets/videos/logo-loader-dark.mp4';
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {ReactNode, createContext, useContext} from 'react';
+import {ReactNode, createContext, useContext, useEffect, useState} from 'react';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {User} from '@tryghost/admin-x-framework/api/users';
@@ -20,6 +21,13 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const site = useBrowseSite();
     const config = useBrowseConfig();
     const currentUser = useCurrentUser();
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // Check for dark mode on mount
+    useEffect(() => {
+        // Check if document has dark class (set by Ghost admin)
+        setIsDarkMode(document.documentElement.classList.contains('dark'));
+    }, []);
 
     const requests = [
         settings,
@@ -48,7 +56,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
                     width: '100px',
                     height: '100px'
                 }} width="100" loop muted playsInline>
-                    <source src={SpinningOrb} type="video/mp4" />
+                    <source src={isDarkMode ? SpinningOrbDark : SpinningOrb} type="video/mp4" />
                 </video>
             </div>
         );

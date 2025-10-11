@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, UtmCampaignTabs, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -75,6 +75,11 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     isLoading: boolean;
+    selectedTab: TabType;
+    selectedCampaign: CampaignType;
+    utmTrackingEnabled?: boolean;
+    onTabChange: (tab: TabType) => void;
+    onCampaignChange: (campaign: CampaignType) => void;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
@@ -84,7 +89,12 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     siteUrl,
     siteIcon,
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
-    isLoading
+    isLoading,
+    selectedTab,
+    selectedCampaign,
+    utmTrackingEnabled = false,
+    onTabChange,
+    onCampaignChange
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -109,22 +119,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
-    const title = 'Top sources';
+    const title = selectedTab === 'campaigns' && selectedCampaign ? `${selectedCampaign}` : 'Top sources';
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
-
-    if (isLoading) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
 
     return (
         <Card className='group/datalist' data-testid='top-sources-card'>
@@ -136,21 +132,33 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <Separator />
-                {topSources.length > 0 ? (
-                    <SourcesTable
-                        data={topSources}
-                        defaultSourceIconUrl={defaultSourceIconUrl}
-                        range={range}
-                        tableHeader={false} />
-                ) : (
-                    <EmptyIndicator
-                        className='mt-8 w-full py-20'
-                        title={`No visitors ${getPeriodText(range)}`}
-                    >
-                        <LucideIcon.Globe strokeWidth={1.5} />
-                    </EmptyIndicator>
+                {utmTrackingEnabled && (
+                    <div className='mb-2'>
+                        <UtmCampaignTabs
+                            selectedCampaign={selectedCampaign}
+                            selectedTab={selectedTab}
+                            onCampaignChange={onCampaignChange}
+                            onTabChange={onTabChange}
+                        />
+                    </div>
                 )}
+                <Separator />
+                {isLoading && !data ?
+                    <SkeletonTable className='mt-3' />
+                    : (topSources.length > 0 ? (
+                        <SourcesTable
+                            data={topSources}
+                            defaultSourceIconUrl={defaultSourceIconUrl}
+                            range={range}
+                            tableHeader={false} />
+                    ) : (
+                        <EmptyIndicator
+                            className='mt-8 w-full py-20'
+                            title={`No visitors ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.Globe strokeWidth={1.5} />
+                        </EmptyIndicator>
+                    ))}
             </CardContent>
             {extendedData.length > 11 &&
                 <CardFooter>

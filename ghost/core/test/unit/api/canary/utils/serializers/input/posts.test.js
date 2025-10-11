@@ -102,6 +102,33 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             frame.options.formats.should.containEql('plaintext');
         });
 
+        it('adds default order when no order is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            frame.options.order.should.eql('published_at desc, id desc');
+        });
+
+        it('keeps order when it is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    order: 'updated_at desc',
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            frame.options.order.should.eql('updated_at desc');
+        });
+
         describe('Content API', function () {
             it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
                 const apiConfig = {};

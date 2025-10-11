@@ -33,6 +33,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     setIsWebAnalyticsLimited(true);
                 }
             });
+        } else {
+            setIsWebAnalyticsLimited(false);
         }
     }, [limiter]);
 
