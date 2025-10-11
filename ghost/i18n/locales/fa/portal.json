@@ -102,7 +102,7 @@
     "In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.": "در صورتی که ارسال خبرنامه با یک خطای دائمی روبرو شود، ارسال ایمیل\u200cها برای آن حساب متوقف خواهد شد.",
     "In your email client add {senderEmail} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.": "در برنامه\u200cی ایمیل خود آدرس {senderEmail} را به عنوان مخاطب ذخیره کنید. این کار باعث می\u200cشود که سرویس\u200cدهنده ایمیل شما متوجه شود که این آدرس باید مورد تأیید قرار گیرد.",
     "Invalid email address": "آدرس ایمیل نامعتبر است",
-    "Invalid verification code": "کد تأییدیه نامعبتر است",
+    "Invalid verification code": "کد تأییدیه نامعتبر است",
     "Jamie Larson": "جیمی لارسن",
     "jamie@example.com": "jamie@example.com",
     "Less like this": "کمتر موردی مثل این نشان بده",
