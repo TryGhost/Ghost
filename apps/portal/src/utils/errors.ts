@@ -6,7 +6,7 @@ export class HumanReadableError extends Error {
      * @param res
      * @returns HumanReadableError or undefined
      */
-    static async fromApiResponse(res: Response): Promise<HumanReadableError | false | undefined> {
+    static async fromApiResponse(res: Response): Promise<HumanReadableError | undefined> {
         // Bad request + Too many requests
         if (res.status === 400 || res.status === 429) {
             try {
@@ -16,7 +16,7 @@ export class HumanReadableError extends Error {
                 }
             } catch {
                 // Failed to decode: ignore
-                return false;
+                return undefined;
             }
         }
         if (res.status === 500) {
