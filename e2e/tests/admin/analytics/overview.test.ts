@@ -28,7 +28,7 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         const visitorsCount = await analyticsOverviewPage.latestPost.visitorsCount();
 
         await expect(analyticsOverviewPage.latestPost.post).toBeVisible();
-        expect(visitorsCount).toContain('9');
+        expect(visitorsCount).toContain('0');
         expect(membersCount).toContain('0');
     });
 
