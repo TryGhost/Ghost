@@ -45,8 +45,8 @@ export class TagsPage extends AdminPage {
         return this.tagListRow.filter({has: this.page.getByRole('link', {name: title, exact: true})});
     }
 
-    getTagByName(name: string): Locator {
-        return this.page.getByRole('link', {name: name, exact: true});
+    getTagLinkByName(name: string) {
+        return this.getRowByTitle(name);
     }
 
     async waitForPageToFullyLoad() {
