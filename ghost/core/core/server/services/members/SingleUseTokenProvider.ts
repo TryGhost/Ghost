@@ -1,8 +1,9 @@
-// @ts-check
-const {ValidationError} = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const crypto = require('node:crypto');
-const {hotp} = require('otplib');
+/* eslint-disable ghost/filenames/match-regex */
+import {ValidationError} from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import crypto from 'node:crypto';
+import {hotp} from 'otplib';
+import {Knex} from 'knex';
 
 const messages = {
     OTC_SECRET_NOT_CONFIGURED: 'OTC secret not configured',
@@ -13,16 +14,54 @@ const messages = {
     DERIVE_OTC_MISSING_INPUT: 'tokenId and tokenValue are required'
 };
 
+interface TokenModel {
+    id: string;
+    get(key: 'token'): string;
+    get(key: 'data'): string;
+    get(key: 'uuid'): string;
+    get(key: 'used_count'): number;
+    get(key: 'otc_used_count'): number;
+    get(key: 'created_at'): Date;
+    get(key: 'first_used_at'): Date | null;
+    get(key: string): unknown;
+    save(data: Record<string, unknown>, options: {autoRefresh: boolean; patch: boolean; transacting: Knex.Transaction}): Promise<void>;
+}
+
+interface TokenModelStatic {
+    add(data: {data: string}): Promise<TokenModel>;
+    findOne(query: {token?: string; uuid?: string}, options?: {transacting?: Knex.Transaction; forUpdate?: boolean}): Promise<TokenModel | null>;
+    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
+}
+
+interface SingleUseTokenProviderDependencies {
+    SingleUseTokenModel: TokenModelStatic;
+    validityPeriod: number;
+    validityPeriodAfterUsage: number;
+    maxUsageCount: number;
+    secret?: string;
+}
+
+interface ValidateOptions {
+    transacting?: Knex.Transaction;
+    otcVerification?: string;
+}
+
 class SingleUseTokenProvider {
+    private model: TokenModelStatic;
+    private validityPeriod: number;
+    private validityPeriodAfterUsage: number;
+    private maxUsageCount: number;
+    private secret?: string;
+
     /**
-     * @param {Object} dependencies
-     * @param {import('../../models/base')} dependencies.SingleUseTokenModel - A model for creating and retrieving tokens.
-     * @param {number} dependencies.validityPeriod - How long a token is valid for from it's creation in milliseconds.
-     * @param {number} dependencies.validityPeriodAfterUsage - How long a token is valid after first usage, in milliseconds.
-     * @param {number} dependencies.maxUsageCount - How many times a token can be used.
-     * @param {string} [dependencies.secret] - Secret for generating and verifying OTP codes.
+     * @param dependencies - Configuration and dependencies for the token provider
+     * @param dependencies.SingleUseTokenModel - A model for creating and retrieving tokens.
+     * @param dependencies.validityPeriod - How long a token is valid for from its creation in milliseconds.
+     * @param dependencies.validityPeriodAfterUsage - How long a token is valid after first usage, in milliseconds.
+     * @param dependencies.maxUsageCount - How many times a token can be used.
+     * @param dependencies.secret - Secret for generating and verifying OTP codes.
      */
-    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, secret}) {
+    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, secret}: SingleUseTokenProviderDependencies) {
         this.model = SingleUseTokenModel;
         this.validityPeriod = validityPeriod;
         this.validityPeriodAfterUsage = validityPeriodAfterUsage;
@@ -31,15 +70,13 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method create
      * Creates and stores a token, with the passed data associated with it.
      * Returns the created token value.
      *
-     * @param {Object<string, any>} data
-     *
-     * @returns {Promise<string>}
+     * @param data - The data to associate with the token
+     * @returns The created token value
      */
-    async create(data) {
+    async create(data: Record<string, unknown>): Promise<string> {
         const model = await this.model.add({
             data: JSON.stringify(data)
         });
@@ -48,18 +85,16 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method validate
      * Validates a token, returning any parsable data associated.
      * If the token is invalid the returned Promise will reject.
      *
-     * @param {string} token
-     * @param {Object} [options] - Optional configuration object
-     * @param {Object} [options.transacting] - Database transaction object
-     * @param {string} [options.otcVerification] - OTC verification hash for additional validation
-     *
-     * @returns {Promise<Object<string, any>>}
+     * @param token - The token to validate
+     * @param options - Optional configuration object
+     * @param options.transacting - Database transaction object
+     * @param options.otcVerification - OTC verification hash for additional validation
+     * @returns The data associated with the token
      */
-    async validate(token, options = {}) {
+    async validate(token: string, options: ValidateOptions = {}): Promise<Record<string, unknown>> {
         if (!options.transacting) {
             return await this.model.transaction((transacting) => {
                 return this.validate(token, {
@@ -72,7 +107,7 @@ class SingleUseTokenProvider {
         const isOTC = !!options.otcVerification;
 
         if (isOTC) {
-            await this._validateOTCVerificationHash(options.otcVerification, token);
+            await this._validateOTCVerificationHash(options.otcVerification!, token);
         }
 
         const model = await this._findAndLockTokenModel(token, options.transacting);
@@ -90,29 +125,18 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method deriveCounter
      * Derives a counter from a token ID and value
-     *
-     * @param {string} tokenId
-     * @param {string} tokenValue
-     * @returns {number}
      */
-    deriveCounter(tokenId, tokenValue) {
+    deriveCounter(tokenId: string, tokenValue: string): number {
         const msg = `${tokenId}|${tokenValue}`;
         const digest = crypto.createHash('sha256').update(msg).digest();
         return digest.readUInt32BE(0);
     }
 
     /**
-     * @method deriveOTC
      * Derives an OTC (one-time code) from a token ID and value
-     *
-     * @param {string} tokenId - Token ID
-     * @param {string} tokenValue - Token value
-     * @returns {string} The generated one-time code
      */
-    deriveOTC(tokenId, tokenValue) {
+    deriveOTC(tokenId: string, tokenValue: string): string {
         if (!this.secret) {
             throw new ValidationError({
                 message: tpl(messages.OTC_SECRET_NOT_CONFIGURED),
@@ -132,14 +156,13 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method verifyOTC
      * Verifies an OTC (one-time code) by looking up the token and performing HOTP verification
      *
-     * @param {string} otcRef - Reference for the one-time code
-     * @param {string} otc - The one-time code to verify
-     * @returns {Promise<boolean>} Returns true if the OTC is valid, false otherwise
+     * @param otcRef - Reference for the one-time code
+     * @param otc - The one-time code to verify
+     * @returns Returns true if the OTC is valid, false otherwise
      */
-    async verifyOTC(otcRef, otc) {
+    async verifyOTC(otcRef: string, otc: string): Promise<boolean> {
         if (!this.secret || !otcRef || !otc) {
             return false;
         }
@@ -160,13 +183,11 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method getRefByToken
      * Retrieves the ref associated with a given token.
      *
-     * @param {string} token - The token to look up.
-     * @returns {Promise<string|null>} The ref if found, or null if not found or on error.
+     * @returns The ref if found, or null if not found or on error.
      */
-    async getRefByToken(token) {
+    async getRefByToken(token: string): Promise<string | null> {
         try {
             const model = await this.model.findOne({token});
             return model ? model.get('uuid') : null;
@@ -176,13 +197,11 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method getTokenByRef
      * Retrieves the token associated with a given reference.
      *
-     * @param {string} ref - The reference to look up.
-     * @returns {Promise<string|null>} The token if found, or null if not found or on error.
+     * @returns The token if found, or null if not found or on error.
      */
-    async getTokenByRef(ref) {
+    async getTokenByRef(ref: string): Promise<string | null> {
         try {
             const model = await this.model.findOne({uuid: ref});
             return model ? model.get('token') : null;
@@ -192,15 +211,14 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method createOTCVerificationHash
      * Creates an OTC verification hash for a given token and one-time code.
      *
-     * @param {string} otc - The one-time code
-     * @param {string} token - The token value
-     * @param {number} [timestamp] - Optional timestamp to use for the hash, defaults to current time
-     * @returns {string} The OTC verification hash
+     * @param otc - The one-time code
+     * @param token - The token value
+     * @param timestamp - Optional timestamp to use for the hash, defaults to current time
+     * @returns The OTC verification hash
      */
-    createOTCVerificationHash(otc, token, timestamp) {
+    createOTCVerificationHash(otc: string, token: string, timestamp?: number): string {
         if (!this.secret) {
             throw new ValidationError({
                 message: tpl(messages.OTC_SECRET_NOT_CONFIGURED),
@@ -221,15 +239,13 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _findAndLockTokenModel
      * Finds token in database and locks it for update
      *
-     * @param {string} token
-     * @param {Object} transacting
-     * @returns {Promise<Object>}
+     * @param token - The token to find
+     * @param transacting - Database transaction object
+     * @returns The token model
      */
-    async _findAndLockTokenModel(token, transacting) {
+    private async _findAndLockTokenModel(token: string, transacting: Knex.Transaction): Promise<TokenModel> {
         const model = await this.model.findOne({token}, {transacting, forUpdate: true});
 
         if (!model) {
@@ -243,15 +259,12 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _validateOTCVerificationHash
      * Validates OTC verification hash, throwing on invalid hash.
      *
-     * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
-     * @param {string} token - The token value
-     * @returns {Promise<void>}
+     * @param otcVerificationHash - The hash to validate (timestamp:hash format)
+     * @param token - The token value
      */
-    async _validateOTCVerificationHash(otcVerificationHash, token) {
+    private async _validateOTCVerificationHash(otcVerificationHash: string, token: string): Promise<void> {
         const isValid = await this._isValidOTCVerificationHash(otcVerificationHash, token);
 
         if (!isValid) {
@@ -263,16 +276,14 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _isValidOTCVerificationHash
      * Validates OTC verification hash by recreating and comparing the hash.
      * Returns true if the hash is valid, false otherwise.
      *
-     * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
-     * @param {string} token - The token value
-     * @returns {Promise<boolean>}
+     * @param otcVerificationHash - The hash to validate (timestamp:hash format)
+     * @param token - The token value
+     * @returns True if the hash is valid, false otherwise
      */
-    async _isValidOTCVerificationHash(otcVerificationHash, token) {
+    private async _isValidOTCVerificationHash(otcVerificationHash: string, token: string): Promise<boolean> {
         try {
             if (!this.secret || !otcVerificationHash || !token) {
                 return false;
@@ -315,15 +326,12 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _validateUsageCount
      * Validates that token has not exceeded usage limits, throws on over-used token
      *
-     * @param {Object} model
-     * @param {boolean} isOTC
-     * @returns {void}
+     * @param model - The token model
+     * @param isOTC - Whether this is an OTC validation
      */
-    _validateUsageCount(model, isOTC) {
+    private _validateUsageCount(model: TokenModel, isOTC: boolean): void {
         if (isOTC) {
             const otcUsedCount = model.get('otc_used_count') || 0;
             if (otcUsedCount >= 1) {
@@ -352,14 +360,12 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _validateTokenLifetime
      * Validates token has not exceeded its lifetime limits, throws on expired token
      *
-     * @param {Object} model
-     * @returns {void}
+     * @param model - The token model
+     * @param isOTC - Whether this is an OTC validation
      */
-    _validateTokenLifetime(model, isOTC) {
+    private _validateTokenLifetime(model: TokenModel, isOTC: boolean): void {
         const createdAtEpoch = model.get('created_at').getTime();
 
         // For magic links check token lifetime after first usage
@@ -386,16 +392,14 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @private
-     * @method _incrementUsageCount
      * Increments the usage count for a token
      *
-     * @param {Object} model
-     * @param {Object} transacting
-     * @returns {Promise<void>}
+     * @param model - The token model
+     * @param isOTC - Whether this is an OTC validation
+     * @param transacting - Database transaction object
      */
-    async _incrementUsageCount(model, isOTC, transacting) {
-        const updateData = {
+    private async _incrementUsageCount(model: TokenModel, isOTC: boolean, transacting: Knex.Transaction): Promise<void> {
+        const updateData: Record<string, unknown> = {
             updated_at: new Date()
         };
 
@@ -413,4 +417,4 @@ class SingleUseTokenProvider {
     }
 }
 
-module.exports = SingleUseTokenProvider;
+export = SingleUseTokenProvider;
