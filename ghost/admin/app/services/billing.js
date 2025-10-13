@@ -43,6 +43,10 @@ export default class BillingService extends Service {
         }
     }
 
+    _isBillingIframeLoaded() {
+        return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
+    }
+
     getIframeURL() {
         // initiate getting owner user in the background
         this.getOwnerUser();
@@ -81,7 +85,7 @@ export default class BillingService extends Service {
         const action = this.action;
 
         if (action) {
-            if (action === 'checkout') {
+            if (action === 'checkout' && this._isBillingIframeLoaded()) {
                 this.getBillingIframe().contentWindow.postMessage({
                     query: 'routeUpdate',
                     response: this.checkoutRoute
@@ -93,6 +97,10 @@ export default class BillingService extends Service {
     }
 
     sendUpdateLimits() {
+        if (!this._isBillingIframeLoaded()) {
+            return;
+        }
+
         // Send Billing app message to fetch fresh limit usage
         this.getBillingIframe().contentWindow.postMessage({
             query: 'limitUpdate'
