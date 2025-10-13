@@ -68,67 +68,18 @@ class SingleUseTokenProvider {
             });
         }
 
-        if (options.otcVerification) {
-            const isValidOTCVerification = await this._validateOTCVerificationHash(options.otcVerification, token);
-            if (!isValidOTCVerification) {
-                throw new ValidationError({
-                    message: tpl(messages.INVALID_OTC_VERIFICATION_HASH),
-                    code: 'INVALID_OTC_VERIFICATION_HASH'
-                });
-            }
+        const isOTC = !!options.otcVerification;
+
+        if (isOTC) {
+            await this._validateOTCVerificationHash(options.otcVerification, token);
         }
 
-        const model = await this.model.findOne({token}, {transacting: options.transacting, forUpdate: true});
+        const model = await this._findAndLockTokenModel(token, options.transacting);
 
-        if (!model) {
-            throw new ValidationError({
-                message: tpl(messages.INVALID_TOKEN),
-                code: 'INVALID_TOKEN'
-            });
-        }
+        this._validateUsageCount(model);
+        this._validateTokenLifetime(model);
 
-        if (model.get('used_count') >= this.maxUsageCount) {
-            throw new ValidationError({
-                message: tpl(messages.TOKEN_EXPIRED),
-                code: 'TOKEN_EXPIRED'
-            });
-        }
-
-        const createdAtEpoch = model.get('created_at').getTime();
-        const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
-
-        // Is this token already used?
-        if (model.get('used_count') > 0) {
-            const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
-
-            if (timeSinceFirstUsage > this.validityPeriodAfterUsage) {
-                throw new ValidationError({
-                    message: tpl(messages.TOKEN_EXPIRED),
-                    code: 'TOKEN_EXPIRED'
-                });
-            }
-        }
-        const tokenLifetimeMilliseconds = Date.now() - createdAtEpoch;
-
-        if (tokenLifetimeMilliseconds > this.validityPeriod) {
-            throw new ValidationError({
-                message: tpl(messages.TOKEN_EXPIRED),
-                code: 'TOKEN_EXPIRED'
-            });
-        }
-
-        if (!model.get('first_used_at')) {
-            await model.save({
-                first_used_at: new Date(),
-                updated_at: new Date(),
-                used_count: model.get('used_count') + 1
-            }, {autoRefresh: false, patch: true, transacting: options.transacting});
-        } else {
-            await model.save({
-                used_count: model.get('used_count') + 1,
-                updated_at: new Date()
-            }, {autoRefresh: false, patch: true, transacting: options.transacting});
-        }
+        await this._incrementUsageCount(model, options.transacting);
 
         try {
             return JSON.parse(model.get('data'));
@@ -270,15 +221,57 @@ class SingleUseTokenProvider {
 
     /**
      * @private
+     * @method _findAndLockTokenModel
+     * Finds token in database and locks it for update
+     *
+     * @param {string} token
+     * @param {Object} transacting
+     * @returns {Promise<Object>}
+     */
+    async _findAndLockTokenModel(token, transacting) {
+        const model = await this.model.findOne({token}, {transacting, forUpdate: true});
+
+        if (!model) {
+            throw new ValidationError({
+                message: tpl(messages.INVALID_TOKEN),
+                code: 'INVALID_TOKEN'
+            });
+        }
+
+        return model;
+    }
+
+    /**
+     * @private
      * @method _validateOTCVerificationHash
-     * Validates OTC verification hash by recreating and comparing the hash.
-     * Private because it's only used internally by the public validate method.
+     * Validates OTC verification hash, throwing on invalid hash.
      *
      * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
      * @param {string} token - The token value
-     * @returns {Promise<boolean>} - True if hash is valid, false otherwise
+     * @returns {Promise<void>}
      */
     async _validateOTCVerificationHash(otcVerificationHash, token) {
+        const isValid = await this._isValidOTCVerificationHash(otcVerificationHash, token);
+
+        if (!isValid) {
+            throw new ValidationError({
+                message: tpl(messages.INVALID_OTC_VERIFICATION_HASH),
+                code: 'INVALID_OTC_VERIFICATION_HASH'
+            });
+        }
+    }
+
+    /**
+     * @private
+     * @method _isValidOTCVerificationHash
+     * Validates OTC verification hash by recreating and comparing the hash.
+     * Returns true if the hash is valid, false otherwise.
+     *
+     * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
+     * @param {string} token - The token value
+     * @returns {Promise<boolean>}
+     */
+    async _isValidOTCVerificationHash(otcVerificationHash, token) {
         try {
             if (!this.secret || !otcVerificationHash || !token) {
                 return false;
@@ -318,6 +311,79 @@ class SingleUseTokenProvider {
         } catch (err) {
             return false;
         }
+    }
+
+    /**
+     * @private
+     * @method _validateUsageCount
+     * Validates that token has not exceeded usage limits, throws on over-used token
+     *
+     * @param {Object} model
+     * @returns {void}
+     */
+    _validateUsageCount(model) {
+        if (model.get('used_count') >= this.maxUsageCount) {
+            throw new ValidationError({
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
+            });
+        }
+    }
+
+    /**
+     * @private
+     * @method _validateTokenLifetime
+     * Validates token has not exceeded its lifetime limits, throws on expired token
+     *
+     * @param {Object} model
+     * @returns {void}
+     */
+    _validateTokenLifetime(model) {
+        const createdAtEpoch = model.get('created_at').getTime();
+
+        // Check token lifetime after first usage
+        if (model.get('used_count') > 0) {
+            const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
+            const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
+
+            if (timeSinceFirstUsage > this.validityPeriodAfterUsage) {
+                throw new ValidationError({
+                    message: tpl(messages.TOKEN_EXPIRED),
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+        }
+
+        // Check total token lifetime
+        const tokenLifetimeMilliseconds = Date.now() - createdAtEpoch;
+        if (tokenLifetimeMilliseconds > this.validityPeriod) {
+            throw new ValidationError({
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
+            });
+        }
+    }
+
+    /**
+     * @private
+     * @method _incrementUsageCount
+     * Increments the usage count for a token
+     *
+     * @param {Object} model
+     * @param {Object} transacting
+     * @returns {Promise<void>}
+     */
+    async _incrementUsageCount(model, transacting) {
+        const updateData = {
+            used_count: model.get('used_count') + 1,
+            updated_at: new Date()
+        };
+
+        if (!model.get('first_used_at')) {
+            updateData.first_used_at = new Date();
+        }
+
+        await model.save(updateData, {autoRefresh: false, patch: true, transacting});
     }
 }
 
