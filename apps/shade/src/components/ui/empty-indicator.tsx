@@ -37,7 +37,7 @@ const EmptyIndicator = React.forwardRef<HTMLDivElement, EmptyIndicatorProps>(({c
                 {children}
             </EmptyBadge>
             <div className='max-w-[320px] space-y-1.5'>
-                <h3 className='text-pretty text-sm font-medium tracking-normal text-foreground'>
+                <h3 className='text-pretty text-md font-medium tracking-normal text-foreground'>
                     {title}
                 </h3>
                 <p className='text-pretty text-sm leading-tight text-muted-foreground'>
