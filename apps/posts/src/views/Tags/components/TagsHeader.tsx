@@ -13,23 +13,27 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
             <Header.Title>Tags</Header.Title>
 
             <Header.Actions>
-                <ToggleGroup data-testid="tags-header-tabs" size='button' type="single" value={currentTab}>
-                    <ToggleGroupItem aria-label="Public tags" value="public" asChild>
-                        <Link to="/tags">
+                <Header.ActionGroup>
+                    <ToggleGroup data-testid="tags-header-tabs" size='button' type="single" value={currentTab}>
+                        <ToggleGroupItem aria-label="Public tags" value="public" asChild>
+                            <Link to="/tags">
                             Public tags
-                        </Link>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem aria-label="Internal tags" value="internal" asChild>
-                        <Link to="/tags?type=internal">
+                            </Link>
+                        </ToggleGroupItem>
+                        <ToggleGroupItem aria-label="Internal tags" value="internal" asChild>
+                            <Link to="/tags?type=internal">
                             Internal tags
-                        </Link>
-                    </ToggleGroupItem>
-                </ToggleGroup>
-                <Button asChild>
-                    <a className="font-bold" href="#/tags/new">
+                            </Link>
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </Header.ActionGroup>
+                <Header.ActionGroup>
+                    <Button asChild>
+                        <a className="font-bold" href="#/tags/new">
                         New tag
-                    </a>
-                </Button>
+                        </a>
+                    </Button>
+                </Header.ActionGroup>
             </Header.Actions>
         </Header>
     );

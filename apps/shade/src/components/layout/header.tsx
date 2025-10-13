@@ -43,7 +43,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
 interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
 function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:actions] sm:justify-self-end self-start', className)}>
+        <div className={cn('flex items-center gap-2', className)}>
             {children}
         </div>
     );
