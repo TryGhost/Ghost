@@ -39,7 +39,6 @@ export class TagEditorPage extends AdminPage {
     }
 
     async createTag(name: string, slug: string) {
-        await this.page.goto('/ghost/#/tags/new');
         await this.fillTagName(name);
         await this.fillTagSlug(slug);
         await this.save();

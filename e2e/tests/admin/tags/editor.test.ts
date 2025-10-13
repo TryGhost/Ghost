@@ -8,6 +8,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         const tagEditor = new TagEditorPage(page);
         const tagsPage = new TagsPage(page);
 
+        await tagEditor.gotoNew();
         await tagEditor.createTag('New tag name', 'new-tag-slug');
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
@@ -21,6 +22,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         const tagEditor = new TagEditorPage(page);
         const tagsPage = new TagsPage(page);
 
+        await tagEditor.gotoNew();
         await tagEditor.createTag('To be edited', 'to-be-edited');
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
@@ -47,7 +49,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagsPage.goto();
 
         await expect(tagsPage.tagListRow).toHaveCount(1);
-        
+
         await tagsPage.getRowByTitle('News').click();
         await tagEditor.fillTagName('Edited Tag Name');
         await tagEditor.save();
@@ -61,7 +63,8 @@ test.describe('Ghost Admin - Tags Editor', () => {
     test('can delete tag without posts', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
         const tagsPage = new TagsPage(page);
-        
+
+        await tagEditor.gotoNew();
         await tagEditor.createTag('To be deleted', 'to-be-deleted');
         await tagEditor.goBackToTagsList();
         await tagsPage.waitForPageToFullyLoad();
@@ -80,8 +83,8 @@ test.describe('Ghost Admin - Tags Editor', () => {
     test('can delete tags with posts', async ({page}) => {
         const tagsPage = new TagsPage(page);
         const tagEditor = new TagEditorPage(page);
-        await tagsPage.goto();        
-        
+
+        await tagsPage.goto();
         await tagsPage.getRowByTitle('News').click();
         await tagEditor.deleteTag();
 
@@ -113,7 +116,6 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('maintains active state in nav menu when creating a new tag', async ({page}) => {
         const tagEditor = new TagEditorPage(page);
-
         await tagEditor.gotoNew();
 
         await expect(page).toHaveURL('/ghost/#/tags/new');
