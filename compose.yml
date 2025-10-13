@@ -66,6 +66,9 @@ services:
       tb-cli:
         condition: service_completed_successfully
         required: false
+      stripe:
+        condition: service_started
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -282,6 +285,20 @@ services:
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
+    restart: always
+
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: ghost-stripe
+    profiles: [ stripe, all ]
+    entrypoint: [ "/entrypoint.sh" ]
+    volumes:
+      - ./.docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
     restart: always
 
 volumes:
