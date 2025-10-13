@@ -45,5 +45,11 @@ const initTestMode = () => {
 
 const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, events});
 
+// Add Node.js flags for TypeScript support in worker threads
+// This enables --experimental-strip-types for Node < 22.18.0
+jobManager.bree.config.worker = {
+    execArgv: ['--experimental-strip-types']
+};
+
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
