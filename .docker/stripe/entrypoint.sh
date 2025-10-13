@@ -23,14 +23,19 @@ _term() {
 # Set up signal handlers (POSIX-compliant signal names)
 trap _term TERM INT
 
+# Remove any stale config file from previous runs
+rm -f /mnt/shared-config/.env.stripe
+
 # Check if STRIPE_SECRET_KEY is set
 if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
-    echo "ERROR: STRIPE_SECRET_KEY is not set" >&2
-    echo "" >&2
-    echo "To use the Stripe service, you must set STRIPE_SECRET_KEY in your .env file:" >&2
-    echo "  STRIPE_SECRET_KEY=sk_test_..." >&2
-    echo "" >&2
-    echo "You can find your secret key at: https://dashboard.stripe.com/test/apikeys" >&2
+    echo "================================================================================"
+    echo "ERROR: STRIPE_SECRET_KEY is not set"
+    echo ""
+    echo "To use the Stripe service, you must set STRIPE_SECRET_KEY in your .env file:"
+    echo "  STRIPE_SECRET_KEY=sk_test_..."
+    echo ""
+    echo "You can find your secret key at: https://dashboard.stripe.com/test/apikeys"
+    echo "================================================================================"
     exit 1
 fi
 
@@ -42,8 +47,8 @@ WEBHOOK_SECRET=$(timeout 10s stripe listen --print-secret --api-key "${STRIPE_SE
 
 # Check if we got a timeout
 if [ "$WEBHOOK_SECRET" = "TIMEOUT" ]; then
-    echo "ERROR: Timed out waiting for Stripe CLI (10s)" >&2
-    echo "Please check that your STRIPE_SECRET_KEY is valid" >&2
+    echo "ERROR: Timed out waiting for Stripe CLI (10s)"
+    echo "Please check that your STRIPE_SECRET_KEY is valid"
     exit 1
 fi
 
@@ -51,9 +56,9 @@ fi
 if echo "$WEBHOOK_SECRET" | grep -q "^whsec_"; then
     echo "Successfully fetched webhook secret"
 else
-    echo "ERROR: Failed to fetch Stripe webhook secret" >&2
-    echo "Output: $WEBHOOK_SECRET" >&2
-    echo "Please ensure STRIPE_SECRET_KEY is set in your environment" >&2
+    echo "ERROR: Failed to fetch Stripe webhook secret"
+    echo "Output: $WEBHOOK_SECRET"
+    echo "Please ensure STRIPE_SECRET_KEY is set in your environment"
     exit 1
 fi
 
@@ -72,11 +77,11 @@ if [ $? -eq 0 ]; then
     if [ $? -eq 0 ]; then
         echo "Successfully wrote Stripe configuration to $ENV_FILE"
     else
-        echo "ERROR: Failed to move temporary file to $ENV_FILE" >&2
+        echo "ERROR: Failed to move temporary file to $ENV_FILE"
         exit 1
     fi
 else
-    echo "ERROR: Failed to create temporary configuration file" >&2
+    echo "ERROR: Failed to create temporary configuration file"
     rm -f "$TMP_ENV_FILE"
     exit 1
 fi

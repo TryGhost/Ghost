@@ -67,7 +67,7 @@ services:
         condition: service_completed_successfully
         required: false
       stripe:
-        condition: service_started
+        condition: service_healthy
         required: false
     environment:
       - DEBUG=${DEBUG:-}
@@ -299,7 +299,10 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
-    restart: always
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      interval: 1s
+      retries: 120
 
 volumes:
   mysql-data: {}
