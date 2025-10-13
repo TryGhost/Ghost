@@ -9,6 +9,7 @@ const messages = {
     INVALID_OTC_VERIFICATION_HASH: 'Invalid OTC verification hash',
     INVALID_TOKEN: 'Invalid token provided',
     TOKEN_EXPIRED: 'Token expired',
+    OTC_EXPIRED: 'One-time code expired',
     DERIVE_OTC_MISSING_INPUT: 'tokenId and tokenValue are required'
 };
 
@@ -76,10 +77,10 @@ class SingleUseTokenProvider {
 
         const model = await this._findAndLockTokenModel(token, options.transacting);
 
-        this._validateUsageCount(model);
-        this._validateTokenLifetime(model);
+        this._validateUsageCount(model, isOTC);
+        this._validateTokenLifetime(model, isOTC);
 
-        await this._incrementUsageCount(model, options.transacting);
+        await this._incrementUsageCount(model, isOTC, options.transacting);
 
         try {
             return JSON.parse(model.get('data'));
@@ -319,14 +320,34 @@ class SingleUseTokenProvider {
      * Validates that token has not exceeded usage limits, throws on over-used token
      *
      * @param {Object} model
+     * @param {boolean} isOTC
      * @returns {void}
      */
-    _validateUsageCount(model) {
-        if (model.get('used_count') >= this.maxUsageCount) {
-            throw new ValidationError({
-                message: tpl(messages.TOKEN_EXPIRED),
-                code: 'TOKEN_EXPIRED'
-            });
+    _validateUsageCount(model, isOTC) {
+        if (isOTC) {
+            const otcUsedCount = model.get('otc_used_count') || 0;
+            if (otcUsedCount >= 1) {
+                throw new ValidationError({
+                    message: tpl(messages.OTC_EXPIRED),
+                    code: 'OTC_EXPIRED'
+                });
+            }
+        } else {
+            // Magic links are invalid if OTC has been used
+            const otcUsedCount = model.get('otc_used_count') || 0;
+            if (otcUsedCount > 0) {
+                throw new ValidationError({
+                    message: tpl(messages.TOKEN_EXPIRED),
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+
+            if (model.get('used_count') >= this.maxUsageCount) {
+                throw new ValidationError({
+                    message: tpl(messages.TOKEN_EXPIRED),
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
         }
     }
 
@@ -338,11 +359,11 @@ class SingleUseTokenProvider {
      * @param {Object} model
      * @returns {void}
      */
-    _validateTokenLifetime(model) {
+    _validateTokenLifetime(model, isOTC) {
         const createdAtEpoch = model.get('created_at').getTime();
 
-        // Check token lifetime after first usage
-        if (model.get('used_count') > 0) {
+        // For magic links check token lifetime after first usage
+        if (!isOTC && model.get('used_count') > 0) {
             const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
             const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
 
@@ -354,7 +375,7 @@ class SingleUseTokenProvider {
             }
         }
 
-        // Check total token lifetime
+        // Check total token lifetime (applies to both magic links and OTCs)
         const tokenLifetimeMilliseconds = Date.now() - createdAtEpoch;
         if (tokenLifetimeMilliseconds > this.validityPeriod) {
             throw new ValidationError({
@@ -373,11 +394,16 @@ class SingleUseTokenProvider {
      * @param {Object} transacting
      * @returns {Promise<void>}
      */
-    async _incrementUsageCount(model, transacting) {
+    async _incrementUsageCount(model, isOTC, transacting) {
         const updateData = {
-            used_count: model.get('used_count') + 1,
             updated_at: new Date()
         };
+
+        if (isOTC) {
+            updateData.otc_used_count = model.get('otc_used_count') + 1;
+        } else {
+            updateData.used_count = model.get('used_count') + 1;
+        }
 
         if (!model.get('first_used_at')) {
             updateData.first_used_at = new Date();
