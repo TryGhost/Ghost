@@ -42,10 +42,12 @@ export const WithTitleAndActionsAndMenu: Story = {
                 <Header.Title>Content Management</Header.Title>
                 <Header.Meta>Manage your content</Header.Meta>
                 <Header.Actions>
-                    <Button variant="outline">Import</Button>
-                    <Button variant="outline">Export</Button>
-                    <Button variant="destructive">Delete</Button>
-                    <Button>Create New</Button>
+                    <Header.ActionGroup>
+                        <Button variant="outline">Import</Button>
+                        <Button variant="outline">Export</Button>
+                        <Button variant="destructive">Delete</Button>
+                        <Button>Create New</Button>
+                    </Header.ActionGroup>
                 </Header.Actions>
                 <Header.Nav>
                     <PageMenu defaultValue="content">
@@ -66,8 +68,10 @@ export const WithTitleAndActions: Story = {
             <>
                 <Header.Title>Page Title with Actions</Header.Title>
                 <Header.Actions>
-                    <Button variant="outline">Cancel</Button>
-                    <Button>Save</Button>
+                    <Header.ActionGroup>
+                        <Button variant="outline">Cancel</Button>
+                        <Button>Save</Button>
+                    </Header.ActionGroup>
                 </Header.Actions>
             </>
         )
@@ -99,10 +103,12 @@ export const WithBreadcrumb: Story = {
                 </Header.Above>
 
                 <Header.Title>General Settings</Header.Title>
-                
+
                 <Header.Actions>
-                    <Button variant="outline">Reset</Button>
-                    <Button>Save Changes</Button>
+                    <Header.ActionGroup>
+                        <Button variant="outline">Reset</Button>
+                        <Button>Save Changes</Button>
+                    </Header.ActionGroup>
                 </Header.Actions>
             </>
         )
@@ -118,32 +124,9 @@ export const LongTitle: Story = {
                     lines depending on the viewport size
                 </Header.Title>
                 <Header.Actions>
-                    <Button>Action</Button>
-                </Header.Actions>
-            </>
-        )
-    }
-};
-
-export const WithInlineMenuAndActions: Story = {
-    args: {
-        variant: 'inline-nav',
-        children: (
-            <>
-                <Header.Title>Content Management</Header.Title>
-                <Header.Nav>
-                    <PageMenu defaultValue="content">
-                        <PageMenuItem value="content">Content</PageMenuItem>
-                        <PageMenuItem value="design">Design</PageMenuItem>
-                        <PageMenuItem value="settings">Settings</PageMenuItem>
-                        <PageMenuItem value="analytics">Analytics</PageMenuItem>
-                    </PageMenu>
-                </Header.Nav>
-                <Header.Actions>
-                    <Button variant="outline">Import</Button>
-                    <Button variant="outline">Export</Button>
-                    <Button variant="destructive">Delete</Button>
-                    <Button>Create New</Button>
+                    <Header.ActionGroup>
+                        <Button>Action</Button>
+                    </Header.ActionGroup>
                 </Header.Actions>
             </>
         )
@@ -153,5 +136,27 @@ export const WithInlineMenuAndActions: Story = {
 export const TitleOnly: Story = {
     args: {
         children: <Header.Title>Simple Page Title</Header.Title>
+    }
+};
+
+export const MultipleActionGroups: Story = {
+    args: {
+        children: (
+            <>
+                <Header.Title>Project Dashboard</Header.Title>
+                <Header.Actions>
+                    <Header.ActionGroup>
+                        <Button variant="outline">Refresh</Button>
+                        <Button variant="outline">Filter</Button>
+                        <Button variant="outline">Import</Button>
+                        <Button variant="outline">Export</Button>
+                    </Header.ActionGroup>
+                    <Header.ActionGroup>
+                        <Button variant="destructive">Archive</Button>
+                        <Button>Create</Button>
+                    </Header.ActionGroup>
+                </Header.Actions>
+            </>
+        )
     }
 };
