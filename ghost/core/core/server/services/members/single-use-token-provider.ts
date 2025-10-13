@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import type {Knex} from 'knex';
 
-import {ValidationError} from '@tryghost/errors';
-import tpl from '@tryghost/tpl';
-import crypto from 'node:crypto';
-import {hotp} from 'otplib';
+const {ValidationError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+const crypto = require('node:crypto');
+const {hotp} = require('otplib');
 
 const messages = {
     OTC_SECRET_NOT_CONFIGURED: 'OTC secret not configured',
