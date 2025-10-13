@@ -100,7 +100,7 @@ services:
     entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
     working_dir: /home/ghost
     command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
     restart: always
     environment:
