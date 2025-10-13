@@ -76,7 +76,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.confirmDelete();
 
         await expect(tagEditor.deleteModal).not.toBeVisible();
-        await expect(page).toHaveURL('/ghost/#/tags');
+        await expect(page).toHaveURL(tagsPage.pageUrl);
         await expect(tagsPage.tagListRow).toHaveCount(1);
     });
 
@@ -94,7 +94,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await tagEditor.confirmDelete();
 
         await expect(tagEditor.deleteModal).not.toBeVisible();
-        await expect(page).toHaveURL('/ghost/#/tags');
+        await expect(page).toHaveURL(tagsPage.pageUrl);
         await expect(tagsPage.getRowByTitle('News')).not.toBeVisible();
     });
 
