@@ -1,4 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -9,6 +10,14 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Tags', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    beforeEach(async function () {
+        mockAnalyticsApps();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
