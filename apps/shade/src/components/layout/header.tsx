@@ -40,14 +40,24 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
     );
 }
 
-interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
-function HeaderActions({className, children}: HeaderActionsProps) {
+interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
+function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:actions] sm:justify-self-end self-start', className)}>
+        <div className={cn('flex items-center gap-2', className)}>
             {children}
         </div>
     );
 }
+
+interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
+function HeaderActions({className, children}: HeaderActionsProps) {
+    return (
+        <div className={cn('flex items-center gap-4 [grid-area:actions] sm:justify-self-end self-start', className)}>
+            {children}
+        </div>
+    );
+}
+
 interface HeaderNavProps extends PropsWithChildrenAndClassName {}
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
@@ -80,6 +90,7 @@ function Header({className, children, variant}: HeaderProps) {
 Header.Above = HeaderAbove;
 Header.Title = HeaderTitle;
 Header.Actions = HeaderActions;
+Header.ActionGroup = HeaderActionGroup;
 Header.Nav = HeaderNav;
 Header.Meta = HeaderMeta;
 

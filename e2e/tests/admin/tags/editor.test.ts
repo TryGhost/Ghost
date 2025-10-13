@@ -3,8 +3,6 @@ import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
 import {NewTagsPage} from '../../../helpers/pages/admin/tags/NewTagsPage';
 
 test.describe('Ghost Admin - Tags Editor', () => {
-    test.use({labs: {tagsX: true}});
-
     test('can add tags', async ({page}) => {
         const newTagsPage = new NewTagsPage(page);
         await newTagsPage.goto();
