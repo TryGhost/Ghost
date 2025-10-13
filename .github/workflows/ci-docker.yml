@@ -411,12 +411,11 @@ jobs:
           retention-days: 7
 
       - name: View Test Report command
-        if: failure()
         run: |
           echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR/playwright-report\""
 
       - name: Comment on PR with test report command
-        if: failure() && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
