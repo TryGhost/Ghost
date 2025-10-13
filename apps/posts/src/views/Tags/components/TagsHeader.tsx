@@ -12,7 +12,7 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
         <Header variant="inline-nav">
             <Header.Title>Tags</Header.Title>
 
-            <Header.Nav>
+            <Header.Actions>
                 <ToggleGroup data-testid="tags-header-tabs" size='button' type="single" value={currentTab}>
                     <ToggleGroupItem aria-label="Public tags" value="public" asChild>
                         <Link to="/tags">
@@ -25,9 +25,6 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
                         </Link>
                     </ToggleGroupItem>
                 </ToggleGroup>
-            </Header.Nav>
-
-            <Header.Actions>
                 <Button asChild>
                     <a className="font-bold" href="#/tags/new">
                         New tag
