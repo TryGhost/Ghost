@@ -109,15 +109,15 @@ class SingleUseTokenProvider {
         const isOTC = !!options.otcVerification;
 
         if (isOTC) {
-            await this._validateOTCVerificationHash(options.otcVerification!, token);
+            await this.#validateOTCVerificationHash(options.otcVerification!, token);
         }
 
-        const model = await this._findAndLockTokenModel(token, options.transacting);
+        const model = await this.#findAndLockTokenModel(token, options.transacting);
 
-        this._validateUsageCount(model, isOTC);
-        this._validateTokenLifetime(model, isOTC);
+        this.#validateUsageCount(model, isOTC);
+        this.#validateTokenLifetime(model, isOTC);
 
-        await this._incrementUsageCount(model, isOTC, options.transacting);
+        await this.#incrementUsageCount(model, isOTC, options.transacting);
 
         try {
             return JSON.parse(model.get('data'));
@@ -247,7 +247,7 @@ class SingleUseTokenProvider {
      * @param transacting - Database transaction object
      * @returns The token model
      */
-    private async _findAndLockTokenModel(token: string, transacting: Knex.Transaction): Promise<TokenModel> {
+    async #findAndLockTokenModel(token: string, transacting: Knex.Transaction): Promise<TokenModel> {
         const model = await this.model.findOne({token}, {transacting, forUpdate: true});
 
         if (!model) {
@@ -266,8 +266,8 @@ class SingleUseTokenProvider {
      * @param otcVerificationHash - The hash to validate (timestamp:hash format)
      * @param token - The token value
      */
-    private async _validateOTCVerificationHash(otcVerificationHash: string, token: string): Promise<void> {
-        const isValid = await this._isValidOTCVerificationHash(otcVerificationHash, token);
+    async #validateOTCVerificationHash(otcVerificationHash: string, token: string): Promise<void> {
+        const isValid = await this.#isValidOTCVerificationHash(otcVerificationHash, token);
 
         if (!isValid) {
             throw new ValidationError({
@@ -285,7 +285,7 @@ class SingleUseTokenProvider {
      * @param token - The token value
      * @returns True if the hash is valid, false otherwise
      */
-    private async _isValidOTCVerificationHash(otcVerificationHash: string, token: string): Promise<boolean> {
+    async #isValidOTCVerificationHash(otcVerificationHash: string, token: string): Promise<boolean> {
         try {
             if (!this.secret || !otcVerificationHash || !token) {
                 return false;
@@ -333,7 +333,7 @@ class SingleUseTokenProvider {
      * @param model - The token model
      * @param isOTC - Whether this is an OTC validation
      */
-    private _validateUsageCount(model: TokenModel, isOTC: boolean): void {
+    #validateUsageCount(model: TokenModel, isOTC: boolean): void {
         if (isOTC) {
             const otcUsedCount = model.get('otc_used_count') || 0;
             if (otcUsedCount >= 1) {
@@ -367,7 +367,7 @@ class SingleUseTokenProvider {
      * @param model - The token model
      * @param isOTC - Whether this is an OTC validation
      */
-    private _validateTokenLifetime(model: TokenModel, isOTC: boolean): void {
+    #validateTokenLifetime(model: TokenModel, isOTC: boolean): void {
         const createdAtEpoch = model.get('created_at').getTime();
 
         // For magic links check token lifetime after first usage
@@ -400,7 +400,7 @@ class SingleUseTokenProvider {
      * @param isOTC - Whether this is an OTC validation
      * @param transacting - Database transaction object
      */
-    private async _incrementUsageCount(model: TokenModel, isOTC: boolean, transacting: Knex.Transaction): Promise<void> {
+    async #incrementUsageCount(model: TokenModel, isOTC: boolean, transacting: Knex.Transaction): Promise<void> {
         const updateData: Record<string, unknown> = {
             updated_at: new Date()
         };
