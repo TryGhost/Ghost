@@ -97,6 +97,7 @@ function InputField({
     tabIndex,
     maxLength,
     autoFocus,
+    autoComplete = '',
     errorMessage
 }) {
     const fieldNode = useRef(null);
@@ -113,7 +114,6 @@ function InputField({
         disabled = true;
     }
 
-    let autoComplete = '';
     let autoCorrect = '';
     let autoCapitalize = '';
     let inputMode;
