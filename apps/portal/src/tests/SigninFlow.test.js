@@ -7,22 +7,22 @@ const OTC_LABEL_REGEX = /Code/i;
 
 const setup = async ({site, member = null, labs = {}}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve('testtoken');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -63,22 +63,22 @@ const setup = async ({site, member = null, labs = {}}) => {
 
 const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve(`testtoken`);
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -169,7 +169,7 @@ describe('Signin', () => {
             });
 
             // Mock sendMagicLink to return otc_ref for OTC flow
-            ghostApi.member.sendMagicLink = jest.fn(() => {
+            ghostApi.member.sendMagicLink = vi.fn(() => {
                 return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
             });
 
@@ -403,7 +403,7 @@ describe('Signin', () => {
 });
 
 describe('OTC Integration Flow', () => {
-    const locationAssignMock = jest.fn();
+    const locationAssignMock = vi.fn();
 
     beforeEach(() => {
         const mockLocation = new URL('https://portal.localhost/#/portal/signin');
@@ -416,13 +416,13 @@ describe('OTC Integration Flow', () => {
 
     afterEach(() => {
         window.location = realLocation;
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
         locationAssignMock.mockReset();
     });
 
     const setupOTCFlow = async ({site, otcRef = 'test-otc-ref-123', returnOtcRef = true}) => {
         const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        ghostApi.init = jest.fn(() => {
+        ghostApi.init = vi.fn(() => {
             return Promise.resolve({
                 site,
                 member: null
@@ -430,17 +430,17 @@ describe('OTC Integration Flow', () => {
         });
 
         // Mock sendMagicLink to return otcRef for OTC flow or fallback
-        ghostApi.member.sendMagicLink = jest.fn(() => {
+        ghostApi.member.sendMagicLink = vi.fn(() => {
             return returnOtcRef
                 ? Promise.resolve({success: true, otc_ref: otcRef})
                 : Promise.resolve({success: true});
         });
 
-        ghostApi.member.getIntegrityToken = jest.fn(() => {
+        ghostApi.member.getIntegrityToken = vi.fn(() => {
             return Promise.resolve('testtoken');
         });
 
-        ghostApi.member.verifyOTC = jest.fn(() => {
+        ghostApi.member.verifyOTC = vi.fn(() => {
             return Promise.resolve({
                 redirectUrl: 'https://example.com/welcome'
             });
