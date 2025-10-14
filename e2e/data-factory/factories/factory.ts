@@ -1,13 +1,17 @@
 import type {PersistenceAdapter} from '../persistence/adapter';
 
 export abstract class Factory<TOptions extends Record<string, unknown> = Record<string, unknown>, TResult = TOptions> {
-    abstract name: string;
     abstract entityType: string;
 
     protected adapter?: PersistenceAdapter;
 
     constructor(adapter?: PersistenceAdapter) {
         this.adapter = adapter;
+    }
+
+    // name allows you to identify Factory by it's class name
+    get name(): string {
+        return this.constructor.name;
     }
 
     abstract build(options?: Partial<TOptions>): TResult;

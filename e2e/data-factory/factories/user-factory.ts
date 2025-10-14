@@ -8,7 +8,6 @@ export interface User {
 }
 
 export class UserFactory extends Factory<Partial<User>, User> {
-    name = 'user';
     entityType = 'users';
 
     public build(overrides: Partial<User> = {}): User {
