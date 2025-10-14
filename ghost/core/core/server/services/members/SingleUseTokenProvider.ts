@@ -40,7 +40,7 @@ interface SingleUseTokenProviderDependencies {
     validityPeriod: number;
     validityPeriodAfterUsage: number;
     maxUsageCount: number;
-    secret?: string;
+    secret: string;
 }
 
 interface ValidateOptions {
@@ -53,7 +53,7 @@ class SingleUseTokenProvider {
     private validityPeriod: number;
     private validityPeriodAfterUsage: number;
     private maxUsageCount: number;
-    private secret?: string;
+    private secret: string;
 
     /**
      * @param dependencies - Configuration and dependencies for the token provider
