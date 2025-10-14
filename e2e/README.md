@@ -15,7 +15,7 @@ From the repository root:
 # Install dependencies
 yarn
 
-# Build Docker images
+# Build Docker images (to make sure latest changes in Ghost project are tested locally) 
 yarn docker:build
 
 # Run the e2e tests
