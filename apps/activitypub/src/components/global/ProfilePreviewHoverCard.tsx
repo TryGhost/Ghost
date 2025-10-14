@@ -41,6 +41,9 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
         enabled: shouldFetch && Boolean(targetHandle)
     });
 
+    const isLoading = accountQuery.isFetching || accountQuery.isLoading;
+    const hasLoadingError = accountQuery.error;
+
     const hasCompleteAccountData = accountQuery.data ? (
         typeof accountQuery.data.followerCount === 'number' &&
         typeof accountQuery.data.followingCount === 'number' &&
@@ -52,10 +55,17 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
             return;
         }
 
-        if (!hasCompleteAccountData && !accountQuery.isFetching && !accountQuery.isLoading) {
+        if (!hasCompleteAccountData && !isLoading && !hasLoadingError) {
             accountQuery.refetch({cancelRefetch: false});
         }
-    }, [accountQuery, accountQuery.isFetching, accountQuery.isLoading, accountQuery.refetch, hasCompleteAccountData, shouldFetch, targetHandle]);
+    }, [
+        accountQuery,
+        isLoading,
+        hasLoadingError,
+        hasCompleteAccountData,
+        shouldFetch,
+        targetHandle
+    ]);
 
     if (bypassHover) {
         return <>{children}</>;
@@ -121,9 +131,9 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                         </div>
                     </div>
                     <div className='flex gap-3 dark:text-gray-300'>
-                        {(accountQuery.isLoading || accountQuery.isFetching) ? (
+                        {isLoading ? (
                             <Skeleton className='h-4 w-32' />
-                        ) : (
+                        ) : !hasLoadingError && (
                             <>
                                 <span>
                                     <span className='font-bold text-black dark:text-white'>{abbreviateNumber(followingCount)}</span>
@@ -136,9 +146,9 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                             </>
                         )}
                     </div>
-                    {(accountQuery.isLoading || accountQuery.isFetching) ? (
+                    {isLoading ? (
                         <Skeleton className='h-4 w-48' />
-                    ) : bio ? (
+                    ) : !hasLoadingError && bio ? (
                         <div dangerouslySetInnerHTML={{__html: bio}} className='leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a:hover]:underline [&_a]:text-[#00a4eb]' />
                     ) : null}
                 </div>
