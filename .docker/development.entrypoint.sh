@@ -39,6 +39,17 @@ else
     echo "WARNING: Tinybird not enabled: .env file not found"
 fi
 
+# Configure Stripe webhook secret
+if [ -f /mnt/shared-config/.env.stripe ]; then
+    source /mnt/shared-config/.env.stripe
+    if [ -n "${STRIPE_WEBHOOK_SECRET:-}" ]; then
+        export WEBHOOK_SECRET="$STRIPE_WEBHOOK_SECRET"
+        echo "Stripe webhook secret configured successfully"
+    else
+        echo "WARNING: Stripe webhook secret not found in shared config"
+    fi
+fi
+
 yarn nx reset
 
 # Execute the CMD
