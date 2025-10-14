@@ -91,7 +91,7 @@ export class SingleUseTokenProvider {
 
         try {
             return JSON.parse(model.get('data'));
-        } catch (err) {
+        } catch {
             return {};
         }
     }
@@ -149,7 +149,7 @@ export class SingleUseTokenProvider {
             const tokenValue = model.get('token');
             const counter = this.deriveCounter(otcRef, tokenValue);
             return hotp.verify({token: otc, secret: this.secret, counter});
-        } catch (err) {
+        } catch {
             return false;
         }
     }
@@ -158,7 +158,7 @@ export class SingleUseTokenProvider {
         try {
             const model = await this.model.findOne({token});
             return model ? model.get('uuid') : null;
-        } catch (err) {
+        } catch {
             return null;
         }
     }
@@ -167,7 +167,7 @@ export class SingleUseTokenProvider {
         try {
             const model = await this.model.findOne({uuid: ref});
             return model ? model.get('token') : null;
-        } catch (err) {
+        } catch {
             return null;
         }
     }
@@ -247,7 +247,7 @@ export class SingleUseTokenProvider {
                 Buffer.from(providedHash, 'hex'),
                 Buffer.from(expectedHash, 'hex')
             );
-        } catch (err) {
+        } catch {
             return false;
         }
     }
