@@ -14,10 +14,9 @@ import {EmailMessageBody} from '../../../../helpers/services/email/EmailMessageB
 import {createPostFactory} from '../../../../data-factory';
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
-    let emailClient: EmailClient;
-    test.beforeEach(async ({page}) => {
-        emailClient = new MailhogClient();
+    const emailClient: EmailClient = new MailhogClient();
 
+    test.beforeEach(async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
         await analyticsOverviewPage.latestPost.analyticsButton.click();
@@ -55,7 +54,6 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         test('attributes free members to UTM Campaigns', async ({page, browser}) => {
             const utmCampaign = 'spring-sale';
 
-            // Create a post
             const postFactory = createPostFactory(page.request);
             const post = await postFactory.create({
                 title: 'UTM Campaign Test Post',

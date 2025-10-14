@@ -7,11 +7,10 @@ import {EmailClient, MailhogClient} from '../../../helpers/services/email/Mailho
 import {EmailMessageBody} from '../../../helpers/services/email/EmailMessageBody';
 
 test.describe('Ghost Admin - Growth', () => {
-    let emailClient: EmailClient;
+    const emailClient: EmailClient = new MailhogClient();
     let growthPage: AnalyticsGrowthPage;
 
     test.beforeEach(async ({page}) => {
-        emailClient = new MailhogClient();
         growthPage = new AnalyticsGrowthPage(page);
         await growthPage.goto();
     });
@@ -48,6 +47,7 @@ test.describe('Ghost Admin - Growth', () => {
         test('empty top content card - campaigns', async () => {
             await growthPage.topContent.openCampaignsDropdown();
             await growthPage.topContent.selectCampaignType('UTM campaigns');
+
             await expect(growthPage.topContent.contentCard).toContainText('Which campaigns drove the most growth in the last 30 days');
             await expect(growthPage.topContent.contentCard).toContainText('No conversions');
         });
