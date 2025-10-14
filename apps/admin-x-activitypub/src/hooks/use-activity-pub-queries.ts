@@ -22,6 +22,7 @@ import {
 } from '@tanstack/react-query';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
+import {notesStoreAppendUnique, notesStoreUpsert} from '../stores/notesStore';
 import {toast} from 'sonner';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
@@ -1659,6 +1660,7 @@ export function useAccountFollowsForUser(profileHandle: string, type: AccountFol
 export function useFeedForUser(options: {enabled: boolean}) {
     const queryKey = QUERY_KEYS.feed;
     const queryClient = useQueryClient();
+    // Store integration
 
     const feedQuery = useInfiniteQuery({
         queryKey,
@@ -1667,15 +1669,23 @@ export function useFeedForUser(options: {enabled: boolean}) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getFeed(pageParam).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity),
-                    next: response.next
-                };
-            });
+            return api.getFeed(pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        },
+        onSuccess(data) {
+            const pages = data.pages;
+            const pageParams = (data as unknown as {pageParams: Array<string | undefined>}).pageParams || [];
+            if (pageParams.length <= 1) {
+                const activities = pages.flatMap(p => p.posts);
+                notesStoreUpsert('feed', activities, {append: false});
+            } else {
+                const last = pages[pages.length - 1];
+                if (last?.posts?.length) {
+                    notesStoreAppendUnique('feed', last.posts);
+                }
+            }
         }
     });
 
@@ -1731,6 +1741,7 @@ export function useInboxForUser(options: {enabled: boolean}) {
 export function usePostsByAccount(profileHandle: string, options: {enabled: boolean}) {
     const queryKey = QUERY_KEYS.profilePosts(profileHandle === 'me' ? 'index' : profileHandle);
     const queryClient = useQueryClient();
+    const listKey = `profile:${profileHandle === 'me' ? 'index' : profileHandle}`;
 
     const postsByAccountQuery = useInfiniteQuery({
         queryKey,
@@ -1739,10 +1750,7 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
             return api.getPostsByAccount(profileHandle, pageParam).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity),
-                    next: response.next
-                };
+                return response;
             }).catch(() => {
                 return {
                     posts: [],
@@ -1752,6 +1760,19 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        },
+        onSuccess(data) {
+            const pages = data.pages;
+            const pageParams = (data as unknown as {pageParams: Array<string | undefined>}).pageParams || [];
+            if (pageParams.length <= 1) {
+                const activities = pages.flatMap(p => p.posts);
+                notesStoreUpsert(listKey, activities, {append: false});
+            } else {
+                const last = pages[pages.length - 1];
+                if (last?.posts?.length) {
+                    notesStoreAppendUnique(listKey, last.posts);
+                }
+            }
         }
     });
 
@@ -1771,6 +1792,7 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
 export function usePostsLikedByAccount(options: {enabled: boolean}) {
     const queryKey = QUERY_KEYS.postsLikedByAccount;
     const queryClient = useQueryClient();
+    const listKey = 'likes:index';
 
     const postsLikedByAccountQuery = useInfiniteQuery({
         queryKey,
@@ -1778,15 +1800,23 @@ export function usePostsLikedByAccount(options: {enabled: boolean}) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getPostsLikedByAccount(pageParam).then((response) => {
-                return {
-                    posts: response.posts.map(mapPostToActivity),
-                    next: response.next
-                };
-            });
+            return api.getPostsLikedByAccount(pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        },
+        onSuccess(data) {
+            const pages = data.pages;
+            const pageParams = (data as unknown as {pageParams: Array<string | undefined>}).pageParams || [];
+            if (pageParams.length <= 1) {
+                const activities = pages.flatMap(p => p.posts);
+                notesStoreUpsert(listKey, activities, {append: false});
+            } else {
+                const last = pages[pages.length - 1];
+                if (last?.posts?.length) {
+                    notesStoreAppendUnique(listKey, last.posts);
+                }
+            }
         }
     });
 

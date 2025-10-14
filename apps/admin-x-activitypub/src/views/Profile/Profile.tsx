@@ -1,11 +1,13 @@
 import ActorList from './components/ActorList';
 import Error from '@components/layout/Error';
 import Likes from './components/Likes';
+import NotesStoreDebug from '@src/components/dev/NotesStoreDebug';
 import Posts from './components/Posts';
 import ProfilePage from './components/ProfilePage';
 import React, {useEffect} from 'react';
-import {Activity, isApiError} from '@src/api/activitypub';
+import {isApiError} from '@src/api/activitypub';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
+import {useActivitiesForList} from '@src/stores/notesStore';
 import {useParams} from '@tryghost/admin-x-framework';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
@@ -16,14 +18,17 @@ const PostsTab:React.FC<{handle: string}> = ({handle}) => {
     const {postsByAccountQuery} = usePostsByAccount(handle ? handle : 'me', {enabled: true});
 
     const {
-        data,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
         isLoading
     } = postsByAccountQuery;
 
-    const posts = data?.pages.flatMap((page: {posts: Activity[]}) => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+    const listKey = `profile:${handle ? (handle === 'me' ? 'index' : handle) : 'index'}`;
+    const storePosts = useActivitiesForList(listKey);
+    const posts = (storePosts.length > 0
+        ? storePosts
+        : (isLoading ? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})) : []));
 
     return <Posts
         fetchNextPage={fetchNextPage}
@@ -37,9 +42,12 @@ const PostsTab:React.FC<{handle: string}> = ({handle}) => {
 
 const LikesTab: React.FC = () => {
     const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
+    const {fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
-    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+    const storePosts = useActivitiesForList('likes:index');
+    const posts = (storePosts.length > 0
+        ? storePosts
+        : (isLoading ? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})) : []));
 
     return <Likes
         fetchNextPage={fetchNextPage}
@@ -161,15 +169,18 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const followingTab = <FollowingTab handle={params.handle || ''} />;
     const followersTab = <FollowersTab handle={params.handle || ''} />;
 
-    return <ProfilePage
-        account={account!}
-        customFields={customFields}
-        followersTab={followersTab}
-        followingTab={followingTab}
-        isLoadingAccount={isLoadingAccount}
-        likesTab={likesTab}
-        postsTab={postsTab}
-    />;
+    return <>
+        <ProfilePage
+            account={account!}
+            customFields={customFields}
+            followersTab={followersTab}
+            followingTab={followingTab}
+            isLoadingAccount={isLoadingAccount}
+            likesTab={likesTab}
+            postsTab={postsTab}
+        />
+        <NotesStoreDebug onlyInDev={false} />
+    </>;
 };
 
 export default Profile;
