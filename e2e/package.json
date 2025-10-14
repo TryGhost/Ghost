@@ -10,6 +10,7 @@
     "build:ts": "tsc --noEmit",
     "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f .docker/Dockerfile .",
     "prepare": "tsc --noEmit",
+    "pretest": "echo '⚠️ To make sure Ghost project is built with latest changes, run before tests: yarn docker:build (from repository root)'",
     "test": "playwright test --project=main",
     "test:factory": "playwright test --project=factories",
     "test:single": "playwright test --project=main -g",
