@@ -190,6 +190,9 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
 
     const topSources = extendedData.slice(0, TOP_SOURCES_PREVIEW_LIMIT);
 
+    // Check if original source data has content (for tab visibility)
+    const hasAnySourceData = data && data.length > 0;
+
     // Generate title and description based on mode, tab, and campaign
     const cardTitle = selectedTab === 'campaigns' && selectedCampaign ? selectedCampaign : title;
     const cardDescription = description || (
@@ -205,7 +208,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className={cn('group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]', className)} data-testid='top-sources-card'>
-            {topSources.length <= 0 &&
+            {hasAnySourceData &&
                 <CardHeader>
                     <CardTitle>{cardTitle}</CardTitle>
                     <CardDescription>{cardDescription}</CardDescription>
@@ -225,7 +228,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     >
                         <LucideIcon.Activity />
                     </EmptyIndicator>
-                ) : topSources.length > 0 ? (
+                ) : hasAnySourceData ? (
                     <>
                         {utmTrackingEnabled && mode === 'growth' && (
                             <>
@@ -240,19 +243,25 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                                 <Separator />
                             </>
                         )}
-                        <SourcesTable
-                            data={topSources}
-                            defaultSourceIconUrl={defaultSourceIconUrl}
-                            getPeriodText={getPeriodText}
-                            headerStyle='card'
-                            mode={mode}
-                            range={range}
-                        >
-                            <CardHeader>
-                                <CardTitle>{cardTitle}</CardTitle>
-                                <CardDescription>{cardDescription}</CardDescription>
-                            </CardHeader>
-                        </SourcesTable>
+                        {topSources.length > 0 ? (
+                            <SourcesTable
+                                data={topSources}
+                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                getPeriodText={getPeriodText}
+                                mode={mode}
+                                range={range}
+                            />
+                        ) : (
+                            <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
+                                <EmptyIndicator
+                                    className='h-full'
+                                    description={mode === 'growth' && `No data available for this view`}
+                                    title={`No ${selectedTab === 'campaigns' && selectedCampaign ? selectedCampaign.toLowerCase() : 'sources'} data available`}
+                                >
+                                    <LucideIcon.UserPlus strokeWidth={1.5} />
+                                </EmptyIndicator>
+                            </div>
+                        )}
                     </>
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
