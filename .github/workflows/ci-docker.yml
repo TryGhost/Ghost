@@ -344,17 +344,85 @@ jobs:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Upload Playwright artifacts
+      - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shardIndex }}
-          path: |
-            e2e/playwright-report/
-            e2e/test-results/
+          name: blob-report-${{ matrix.shardIndex }}
+          path: e2e/blob-report
+          retention-days: 1
+
+      - name: Upload test results artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.shardIndex }}
+          path: e2e/test-results
           retention-days: 7
 
-      - name: Output command to view report
-        if: failure()
+  merge_reports:
+    name: Merge Playwright Reports
+    if: always() && needs.test_e2e.result == 'failure'
+    needs: [test_e2e, setup]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.setup.outputs.dependency_cache_key }}
+
+      - name: Download blob reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: e2e/all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Download test results from GitHub Actions Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: e2e/all-test-results
+          pattern: test-results-*
+          merge-multiple: true
+
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+        working-directory: e2e
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14
+
+      - name: Upload merged test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: e2e/all-test-results
+          retention-days: 7
+
+      - name: View Test Report command
         run: |
-          echo "::notice::To view the Playwright report locally, run: gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shardIndex }} -D /tmp/playwright-\$\$ && npx playwright show-report /tmp/playwright-\$\$/playwright-report"
+          echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
+
+      - name: Comment on PR with test report command
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## E2E Tests Failed
+
+          To view the Playwright test report locally, run:
+
+          \`\`\`bash
+          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
+          \`\`\`"
