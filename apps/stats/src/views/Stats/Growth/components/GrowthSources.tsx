@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
 import SourceIcon from '../../components/SourceIcon';
-import {Button, EmptyIndicator, GrowthCampaignType, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber, getUtmType} from '@tryghost/shade';
+import {Button, EmptyIndicator, GrowthCampaignType, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber, getUtmType} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -107,7 +107,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
 
     // Use the new endpoint with server-side sorting and limiting for regular sources
-    const {data: referrersData} = useTopSourcesGrowth(range, backendOrderBy, limit);
+    const {data: referrersData, isLoading: isSourcesLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
 
     // Get UTM campaign data when a campaign is selected
     const utmType = getUtmType(selectedCampaign);
@@ -216,6 +216,23 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                         >
                             <LucideIcon.Activity />
                         </EmptyIndicator>
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        );
+    }
+
+    // Show loading state when:
+    // 1. Loading regular sources data and not showing campaigns
+    // 2. Fetching UTM data and showing a campaign
+    const isLoading = (!selectedCampaign && isSourcesLoading && !referrersData) || (!!selectedCampaign && isUtmFetching);
+
+    if (isLoading) {
+        return (
+            <TableBody>
+                <TableRow className='last:border-none'>
+                    <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                        <SkeletonTable lines={5} />
                     </TableCell>
                 </TableRow>
             </TableBody>
