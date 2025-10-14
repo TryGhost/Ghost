@@ -1,5 +1,15 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Copy, Link, Search, X} from 'lucide-react';
+import {
+    CheckIcon,
+    CreditCardIcon,
+    InfoIcon,
+    MailIcon,
+    SearchIcon,
+    StarIcon,
+    LoaderIcon,
+    X,
+    Copy
+} from 'lucide-react';
 import {
     InputGroup,
     InputGroupAddon,
@@ -25,156 +35,207 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Icon: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupAddon>
-                <Search />
-            </InputGroupAddon>
-            <InputGroupInput placeholder="Search..." />
-        </InputGroup>
+        <div className="grid w-full max-w-sm gap-6">
+            <InputGroup>
+                <InputGroupInput placeholder="Search..." />
+                <InputGroupAddon>
+                    <SearchIcon />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput placeholder="Enter your email" type="email" />
+                <InputGroupAddon>
+                    <MailIcon />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput placeholder="Card number" />
+                <InputGroupAddon>
+                    <CreditCardIcon />
+                </InputGroupAddon>
+                <InputGroupAddon align="inline-end">
+                    <CheckIcon />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput placeholder="Card number" />
+                <InputGroupAddon align="inline-end">
+                    <StarIcon />
+                    <InfoIcon />
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
             description: {
-                story: 'Basic input group with an icon addon at the start. Use for search inputs or fields that benefit from visual context.'
+                story: 'Display icons alongside inputs.'
             }
         }
     }
 };
 
-export const WithTextPrefix: Story = {
+export const Text: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupAddon>
-                <InputGroupText>https://</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupInput placeholder="example.com" />
-        </InputGroup>
+        <div className="grid w-full max-w-sm gap-6">
+            <InputGroup>
+                <InputGroupAddon>
+                    <InputGroupText>$</InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput placeholder="0.00" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText>USD</InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupAddon>
+                    <InputGroupText>https://</InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput className="!pl-0.5" placeholder="example.com" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText>.com</InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput placeholder="Enter your username" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText>@company.com</InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupTextarea placeholder="Enter your message" />
+                <InputGroupAddon align="block-end">
+                    <InputGroupText className="text-xs text-muted-foreground">
+                        120 characters left
+                    </InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
             description: {
-                story: 'Text prefix addon for URL or formatted inputs. Useful when the input has a predictable format or protocol.'
+                story: 'Display additional text information alongside inputs.'
             }
         }
     }
 };
 
-export const WithEndAddon: Story = {
+export const Button: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupInput placeholder="Enter your email" type="email" />
-            <InputGroupAddon align="inline-end">
-                <InputGroupText>@example.com</InputGroupText>
-            </InputGroupAddon>
-        </InputGroup>
+        <div className="grid w-full max-w-sm gap-6">
+            <InputGroup>
+                <InputGroupInput placeholder="https://x.com/shadcn" readOnly />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                        aria-label="Copy"
+                        size="icon-xs"
+                        title="Copy"
+                    >
+                        <Copy />
+                    </InputGroupButton>
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput defaultValue="sk_live_abc123..." placeholder="API key" type="text" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupButton size="icon-xs">
+                        <Copy />
+                    </InputGroupButton>
+                    <InputGroupButton size="icon-xs">
+                        <X />
+                    </InputGroupButton>
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
             description: {
-                story: 'Addon positioned at the end for suffixes or trailing context. Commonly used for domain inputs or unit indicators.'
+                story: 'Add interactive buttons for actions like copy, clear, or submit.'
             }
         }
     }
 };
 
-export const WithButtons: Story = {
+export const Textarea: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupInput defaultValue="sk_live_abc123..." placeholder="API key" type="text" />
-            <InputGroupAddon align="inline-end">
-                <InputGroupButton size="icon-xs">
-                    <Copy />
-                </InputGroupButton>
-                <InputGroupButton size="icon-xs">
-                    <X />
-                </InputGroupButton>
-            </InputGroupAddon>
-        </InputGroup>
+        <div className="grid w-full max-w-md gap-4">
+            <InputGroup>
+                <InputGroupTextarea
+                    className="min-h-[200px]"
+                    placeholder="console.log('Hello, world!');"
+                />
+                <InputGroupAddon align="block-end" className="border-t">
+                    <InputGroupText>Line 1, Column 1</InputGroupText>
+                    <InputGroupButton className="ml-auto" size="sm" variant="default">
+                        Run
+                    </InputGroupButton>
+                </InputGroupAddon>
+                <InputGroupAddon align="block-start" className="border-b">
+                    <InputGroupText className="font-mono font-medium">
+                        script.js
+                    </InputGroupText>
+                    <InputGroupButton className="ml-auto" size="icon-xs">
+                        <LoaderIcon />
+                    </InputGroupButton>
+                    <InputGroupButton size="icon-xs" variant="ghost">
+                        <Copy />
+                    </InputGroupButton>
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
             description: {
-                story: 'Interactive buttons for actions like copy, clear, or submit. Buttons inherit appropriate styling and sizing.'
+                story: 'Textarea with block-aligned addons for multi-line inputs.'
             }
         }
     }
 };
 
-export const WithKeyboardShortcut: Story = {
+export const Spinner: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupAddon>
-                <Search />
-            </InputGroupAddon>
-            <InputGroupInput placeholder="Search..." />
-            <InputGroupAddon align="inline-end">
-                <InputGroupText>⌘K</InputGroupText>
-            </InputGroupAddon>
-        </InputGroup>
+        <div className="grid w-full max-w-sm gap-4">
+            <InputGroup data-disabled="true">
+                <InputGroupInput placeholder="Searching..." disabled />
+                <InputGroupAddon align="inline-end">
+                    <LoaderIcon className="animate-spin" />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup data-disabled="true">
+                <InputGroupInput placeholder="Processing..." disabled />
+                <InputGroupAddon>
+                    <LoaderIcon className="animate-spin" />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup data-disabled="true">
+                <InputGroupInput placeholder="Saving changes..." disabled />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText>Saving...</InputGroupText>
+                    <LoaderIcon className="animate-spin" />
+                </InputGroupAddon>
+            </InputGroup>
+            <InputGroup data-disabled="true">
+                <InputGroupInput placeholder="Refreshing data..." disabled />
+                <InputGroupAddon>
+                    <LoaderIcon className="animate-spin" />
+                </InputGroupAddon>
+                <InputGroupAddon align="inline-end">
+                    <InputGroupText className="text-muted-foreground">
+                        Please wait...
+                    </InputGroupText>
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
             description: {
-                story: 'Display keyboard shortcuts for accessibility and user guidance. Helps users discover quick navigation patterns.'
-            }
-        }
-    }
-};
-
-export const WithBlockStartAddon: Story = {
-    render: () => (
-        <InputGroup>
-            <InputGroupAddon align="block-start">
-                <InputGroupText>Website URL</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupInput placeholder="https://example.com" />
-        </InputGroup>
-    ),
-    parameters: {
-        docs: {
-            description: {
-                story: 'Block-start alignment places the addon above the input. Use for labels or descriptive text that needs more space.'
-            }
-        }
-    }
-};
-
-export const WithBlockEndAddon: Story = {
-    render: () => (
-        <InputGroup>
-            <InputGroupInput defaultValue="Building the future of..." placeholder="Write your bio..." />
-            <InputGroupAddon align="block-end">
-                <InputGroupText>27 / 160</InputGroupText>
-            </InputGroupAddon>
-        </InputGroup>
-    ),
-    parameters: {
-        docs: {
-            description: {
-                story: 'Block-end alignment for character counts, validation messages, or helper text below the input.'
-            }
-        }
-    }
-};
-
-export const WithTextarea: Story = {
-    render: () => (
-        <InputGroup>
-            <InputGroupAddon align="block-start">
-                <InputGroupText>Description</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupTextarea placeholder="Enter a detailed description..." rows={4} />
-            <InputGroupAddon align="block-end">
-                <InputGroupText>0 / 500</InputGroupText>
-            </InputGroupAddon>
-        </InputGroup>
-    ),
-    parameters: {
-        docs: {
-            description: {
-                story: 'Textarea variant with block-aligned addons for multi-line inputs. Ideal for comments, descriptions, or long-form content.'
+                story: 'Display loading spinners alongside inputs during async operations.'
             }
         }
     }
@@ -182,16 +243,28 @@ export const WithTextarea: Story = {
 
 export const ErrorState: Story = {
     render: () => (
-        <InputGroup>
-            <InputGroupAddon>
-                <Link />
-            </InputGroupAddon>
-            <InputGroupInput
-                aria-invalid="true"
-                defaultValue="invalid url"
-                placeholder="https://example.com"
-            />
-        </InputGroup>
+        <div className="grid w-full max-w-sm gap-4">
+            <InputGroup>
+                <InputGroupAddon>
+                    <MailIcon />
+                </InputGroupAddon>
+                <InputGroupInput
+                    aria-invalid="true"
+                    defaultValue="invalid-email"
+                    placeholder="email@example.com"
+                />
+            </InputGroup>
+            <InputGroup>
+                <InputGroupInput
+                    aria-invalid="true"
+                    defaultValue="invalid url"
+                    placeholder="https://example.com"
+                />
+                <InputGroupAddon align="inline-end">
+                    <InfoIcon />
+                </InputGroupAddon>
+            </InputGroup>
+        </div>
     ),
     parameters: {
         docs: {
@@ -207,7 +280,7 @@ export const Disabled: Story = {
         <div className="flex flex-col gap-4">
             <InputGroup data-disabled="true">
                 <InputGroupAddon>
-                    <Search />
+                    <SearchIcon />
                 </InputGroupAddon>
                 <InputGroupInput placeholder="Disabled input" disabled />
             </InputGroup>
@@ -226,33 +299,6 @@ export const Disabled: Story = {
         docs: {
             description: {
                 story: 'Disabled state reduces opacity across all group elements. Add data-disabled="true" to the InputGroup for consistent styling.'
-            }
-        }
-    }
-};
-
-export const Complex: Story = {
-    render: () => (
-        <InputGroup>
-            <InputGroupAddon align="block-start">
-                <InputGroupText>Repository URL</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupAddon>
-                <InputGroupText>https://github.com/</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupInput defaultValue="TryGhost/Ghost" placeholder="username/repo" />
-            <InputGroupAddon align="inline-end">
-                <InputGroupButton size="xs">
-                    Copy
-                    <Copy />
-                </InputGroupButton>
-            </InputGroupAddon>
-        </InputGroup>
-    ),
-    parameters: {
-        docs: {
-            description: {
-                story: 'Combine multiple addons with different alignments for complex inputs. Mix text, buttons, and labels as needed.'
             }
         }
     }
