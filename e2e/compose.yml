@@ -18,6 +18,7 @@ services:
       start_period: 10s
 
   ghost-migrations:
+    # if not specified this will default to tag of Ghost project
     image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
     pull_policy: never
     working_dir: /home/ghost
