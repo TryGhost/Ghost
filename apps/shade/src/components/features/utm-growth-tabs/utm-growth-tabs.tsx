@@ -1,5 +1,5 @@
 import React from 'react';
-import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-filter-tabs/table-filter-tabs';
+import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '@/components/features/table-filter-tabs/table-filter-tabs';
 
 export type GrowthCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
 export type GrowthTabType = 'sources' | 'campaigns';
