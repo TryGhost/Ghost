@@ -47,7 +47,6 @@ const Growth: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 
-    // Check if UTM tracking is enabled
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
 
     // Get the initial tab from URL search parameters
