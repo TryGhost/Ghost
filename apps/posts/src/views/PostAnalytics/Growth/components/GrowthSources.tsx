@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, TabType, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmCampaignTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
@@ -114,8 +114,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     const navigate = useNavigate();
     const {data: globalData} = useGlobalData();
     const {postId} = useParams();
-    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
-    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
+    const [selectedTab, setSelectedTab] = useState<GrowthTabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<GrowthCampaignType>('');
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
@@ -230,7 +230,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                         {utmTrackingEnabled && mode === 'growth' && (
                             <>
                                 <div className='mb-4'>
-                                    <UtmCampaignTabs
+                                    <UtmGrowthTabs
                                         selectedCampaign={selectedCampaign}
                                         selectedTab={selectedTab}
                                         onCampaignChange={setSelectedCampaign}

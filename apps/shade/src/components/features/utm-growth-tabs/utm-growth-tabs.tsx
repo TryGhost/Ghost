@@ -1,31 +1,43 @@
 import React from 'react';
 import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-filter-tabs/table-filter-tabs';
 
-export type CampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
-export type TabType = 'sources' | 'campaigns';
+export type GrowthCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
+export type GrowthTabType = 'sources' | 'campaigns';
 
-export const CAMPAIGN_TYPES: readonly CampaignType[] = [
+export const GROWTH_CAMPAIGN_TYPES = [
     'UTM sources',
     'UTM mediums',
     'UTM campaigns',
     'UTM contents',
     'UTM terms'
-] as const;
+] as const satisfies readonly Exclude<GrowthCampaignType, ''>[];
 
-const CAMPAIGN_OPTIONS = CAMPAIGN_TYPES.map(type => ({
+export const UTM_TYPE_MAP: Record<Exclude<GrowthCampaignType, ''>, string> = {
+    'UTM sources': 'utm_source',
+    'UTM mediums': 'utm_medium',
+    'UTM campaigns': 'utm_campaign',
+    'UTM contents': 'utm_content',
+    'UTM terms': 'utm_term'
+};
+
+export const getUtmType = (campaign: GrowthCampaignType): string => {
+    return campaign ? UTM_TYPE_MAP[campaign as Exclude<GrowthCampaignType, ''>] || '' : '';
+};
+
+export const GROWTH_CAMPAIGN_OPTIONS = GROWTH_CAMPAIGN_TYPES.map(type => ({
     value: type,
     label: type
 }));
 
-interface UtmCampaignTabsProps {
+interface UtmGrowthTabsProps {
     className?: string;
-    selectedTab: TabType;
-    onTabChange: (tab: TabType) => void;
-    selectedCampaign: CampaignType;
-    onCampaignChange: (campaign: CampaignType) => void;
+    selectedTab: GrowthTabType;
+    onTabChange: (tab: GrowthTabType) => void;
+    selectedCampaign: GrowthCampaignType;
+    onCampaignChange: (campaign: GrowthCampaignType) => void;
 }
 
-export const UtmCampaignTabs: React.FC<UtmCampaignTabsProps> = ({
+export const UtmGrowthTabs: React.FC<UtmGrowthTabsProps> = ({
     className,
     selectedTab,
     onTabChange,
@@ -37,7 +49,7 @@ export const UtmCampaignTabs: React.FC<UtmCampaignTabsProps> = ({
         if (tab === 'campaigns' && !selectedCampaign) {
             return;
         }
-        onTabChange(tab as TabType);
+        onTabChange(tab as GrowthTabType);
 
         // Clear campaign when switching away
         if (tab !== 'campaigns') {
@@ -46,7 +58,7 @@ export const UtmCampaignTabs: React.FC<UtmCampaignTabsProps> = ({
     };
 
     const handleCampaignChange = (campaign: string) => {
-        onCampaignChange(campaign as CampaignType);
+        onCampaignChange(campaign as GrowthCampaignType);
         onTabChange('campaigns');
     };
 
@@ -58,7 +70,7 @@ export const UtmCampaignTabs: React.FC<UtmCampaignTabsProps> = ({
         >
             <TableFilterTab value='sources'>Sources</TableFilterTab>
             <TableFilterDropdownTab
-                options={CAMPAIGN_OPTIONS}
+                options={GROWTH_CAMPAIGN_OPTIONS}
                 placeholder='Campaigns'
                 selectedOption={selectedCampaign}
                 value='campaigns'
