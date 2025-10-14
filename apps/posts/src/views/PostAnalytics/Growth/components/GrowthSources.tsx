@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
@@ -126,7 +126,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         && !!postId;
 
     const utmType = getUtmType(selectedCampaign);
-    const {data: utmData} = useUtmGrowthStats({
+    const {data: utmData, isFetching: isUtmFetching} = useUtmGrowthStats({
         searchParams: {
             utm_type: utmType,
             post_id: postId || ''
@@ -228,7 +228,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     >
                         <LucideIcon.Activity />
                     </EmptyIndicator>
-                ) : hasAnySourceData ? (
+                ) : (
                     <>
                         {utmTrackingEnabled && mode === 'growth' && (
                             <>
@@ -243,36 +243,42 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                                 <Separator />
                             </>
                         )}
-                        {topSources.length > 0 ? (
-                            <SourcesTable
-                                data={topSources}
-                                defaultSourceIconUrl={defaultSourceIconUrl}
-                                getPeriodText={getPeriodText}
-                                mode={mode}
-                                range={range}
-                            />
+                        {(selectedTab === 'campaigns' && selectedCampaign && isUtmFetching) ? (
+                            <SkeletonTable className='mt-3' />
+                        ) : (hasAnySourceData || (selectedTab === 'campaigns' && selectedCampaign)) ? (
+                            <>
+                                {topSources.length > 0 ? (
+                                    <SourcesTable
+                                        data={topSources}
+                                        defaultSourceIconUrl={defaultSourceIconUrl}
+                                        getPeriodText={getPeriodText}
+                                        mode={mode}
+                                        range={range}
+                                    />
+                                ) : (
+                                    <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
+                                        <EmptyIndicator
+                                            className='h-full'
+                                            description={mode === 'growth' && `No data available for this view`}
+                                            title={`No ${selectedTab === 'campaigns' && selectedCampaign ? selectedCampaign.toLowerCase() : 'sources'} data available`}
+                                        >
+                                            <LucideIcon.UserPlus strokeWidth={1.5} />
+                                        </EmptyIndicator>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
                                 <EmptyIndicator
                                     className='h-full'
-                                    description={mode === 'growth' && `No data available for this view`}
-                                    title={`No ${selectedTab === 'campaigns' && selectedCampaign ? selectedCampaign.toLowerCase() : 'sources'} data available`}
+                                    description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
+                                    title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
                                 >
                                     <LucideIcon.UserPlus strokeWidth={1.5} />
                                 </EmptyIndicator>
                             </div>
                         )}
                     </>
-                ) : (
-                    <div className='py-20 text-center text-sm text-gray-700' data-testid='empty-sources-indicator'>
-                        <EmptyIndicator
-                            className='h-full'
-                            description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
-                            title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
-                        >
-                            <LucideIcon.UserPlus strokeWidth={1.5} />
-                        </EmptyIndicator>
-                    </div>
                 )}
             </CardContent>
             {extendedData.length > TOP_SOURCES_PREVIEW_LIMIT &&
