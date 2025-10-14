@@ -1,5 +1,5 @@
 const NewslettersService = require('./NewslettersService.js');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const {SingleUseTokenProvider} = require('../members/SingleUseTokenProvider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');

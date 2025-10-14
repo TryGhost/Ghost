@@ -12,7 +12,7 @@ const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./SettingsBREADService');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const {SingleUseTokenProvider} = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;

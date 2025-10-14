@@ -48,7 +48,7 @@ interface ValidateOptions {
     otcVerification?: string;
 }
 
-class SingleUseTokenProvider {
+export class SingleUseTokenProvider {
     private model: TokenModelStatic;
     private validityPeriod: number;
     private validityPeriodAfterUsage: number;
@@ -418,5 +418,3 @@ class SingleUseTokenProvider {
         await model.save(updateData, {autoRefresh: false, patch: true, transacting});
     }
 }
-
-export = SingleUseTokenProvider;
