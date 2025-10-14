@@ -40,9 +40,11 @@ const EmptyIndicator = React.forwardRef<HTMLDivElement, EmptyIndicatorProps>(({c
                 <h3 className='text-pretty text-md font-medium tracking-normal text-foreground'>
                     {title}
                 </h3>
-                <p className='text-pretty text-sm leading-tight text-muted-foreground'>
-                    {description}
-                </p>
+                {description &&
+                    <p className='text-pretty text-sm leading-tight text-muted-foreground'>
+                        {description}
+                    </p>
+                }
             </div>
             {actions && (
                 <div className='mt-4 flex items-center gap-2'>
