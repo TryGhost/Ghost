@@ -153,7 +153,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     className={cn(
-                                        'h-[30px] flex-shrink-0 px-3 py-2',
+                                        'h-[30px] shrink-0 px-3 py-2',
                                         selectedHiddenItem && 'bg-accent text-accent-foreground'
                                     )}
                                     variant="ghost"
