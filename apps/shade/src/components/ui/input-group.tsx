@@ -10,7 +10,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
     return (
         <div
             className={cn(
-                'group/input-group border-input dark:bg-input/30 shadow-xs relative flex w-full items-center rounded-md border outline-none transition-[color,box-shadow]',
+                'group/input-group dark:bg-input/30 border-transparent bg-gray-150 dark:bg-gray-900 relative flex w-full items-center rounded-md border outline-none transition-[color,box-shadow]',
                 'h-9 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -20,7 +20,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
                 // Focus state.
-                'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]:focus-visible]:ring-1',
+                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:border-green has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_0_0_2px_rgba(48,207,67,.25)]',
 
                 // Error state.
                 'has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40',
@@ -127,7 +127,7 @@ function InputGroupInput({
     return (
         <Input
             className={cn(
-                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
+                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:outline-none focus-visible:shadow-none dark:bg-transparent',
                 className
             )}
             data-slot="input-group-control"
@@ -143,7 +143,7 @@ function InputGroupTextarea({
     return (
         <Textarea
             className={cn(
-                'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 dark:bg-transparent',
+                'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 focus-visible:outline-none focus-visible:shadow-none dark:bg-transparent',
                 className
             )}
             data-slot="input-group-control"
