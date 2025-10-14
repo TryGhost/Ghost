@@ -6,6 +6,7 @@ export class TagDetailsPage extends AdminPage {
     readonly slugInput: Locator;
     readonly descriptionInput: Locator;
     readonly saveButton: Locator;
+    readonly saveButtonSuccess: Locator;
     readonly deleteButton: Locator;
     readonly backLink: Locator;
     readonly navMenuItem: Locator;
@@ -13,13 +14,14 @@ export class TagDetailsPage extends AdminPage {
     constructor(page: Page) {
         super(page);
 
-        this.nameInput = page.locator('[data-test-input="tag-name"]');
-        this.slugInput = page.locator('[data-test-input="tag-slug"]');
-        this.descriptionInput = page.locator('[data-test-input="tag-description"]');
-        this.saveButton = page.locator('[data-test-button="save"]');
-        this.deleteButton = page.locator('[data-test-button="delete-tag"]');
+        this.nameInput = page.getByRole('textbox', {name: 'Name'});
+        this.slugInput = page.getByRole('textbox', {name: 'Slug'});
+        this.descriptionInput = page.getByRole('textbox', {name: 'Description'});
+        this.saveButton = page.getByRole('button', {name: 'Save'});
+        this.saveButtonSuccess = page.getByRole('button', {name: 'Saved'});
+        this.deleteButton = page.getByRole('button', {name: 'Delete tag'});
+        
         this.backLink = page.locator('[data-test-link="tags-back"]');
-
         this.navMenuItem = page.locator('[data-test-nav="tags"]');
     }
 
@@ -37,6 +39,7 @@ export class TagDetailsPage extends AdminPage {
 
     async save() {
         await this.saveButton.click();
+        await this.saveButtonSuccess.waitFor({state: 'visible'});
     }
 
     async goBackToTagsList() {
