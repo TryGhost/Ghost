@@ -3,6 +3,7 @@ const {SingleUseTokenProvider} = require('../members/SingleUseTokenProvider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 const limitService = require('../limits');
 const labs = require('../../../shared/labs');
 const emailAddressService = require('../email-address');
@@ -19,7 +20,8 @@ module.exports = new NewslettersService({
         SingleUseTokenModel: models.SingleUseToken,
         validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
         validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-        maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+        maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+        secret: settingsCache.get('members_otc_secret')
     }),
     urlUtils,
     limitService,

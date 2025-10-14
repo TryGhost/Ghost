@@ -37,7 +37,8 @@ const getSettingsBREADServiceInstance = () => {
             SingleUseTokenModel: models.SingleUseToken,
             validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+            secret: SettingsCache.get('members_otc_secret')
         }),
         urlUtils,
         emailAddressService: emailAddressService
