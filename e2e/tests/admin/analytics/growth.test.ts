@@ -1,7 +1,7 @@
 import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
 import {AnalyticsGrowthPage} from '../../../helpers/pages/admin';
 import {signupViaPortal} from '../../../helpers/playwright/flows/signup';
-import {HomePage, PublicPage} from '../../../helpers/pages/public';
+import {HomePage} from '../../../helpers/pages/public';
 import {extractMagicLink} from '../../../helpers/services/email/utils';
 import {EmailClient, MailhogClient} from '../../../helpers/services/email/MailhogClient';
 import {EmailMessageBody} from '../../../helpers/services/email/EmailMessageBody';
