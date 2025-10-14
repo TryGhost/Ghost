@@ -106,13 +106,13 @@ class SingleUseTokenProvider {
             });
         }
 
-        const isOTC = !!options.otcVerification;
-
-        if (isOTC) {
-            await this.#validateOTCVerificationHash(options.otcVerification!, token);
+        if (options.otcVerification) {
+            await this.#validateOTCVerificationHash(options.otcVerification, token);
         }
 
         const model = await this.#findAndLockTokenModel(token, options.transacting);
+
+        const isOTC = !!options.otcVerification;
 
         this.#validateUsageCount(model, isOTC);
         this.#validateTokenLifetime(model, isOTC);
