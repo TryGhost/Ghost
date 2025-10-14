@@ -3,7 +3,7 @@ import TagsContent from './components/TagsContent';
 import TagsHeader from './components/TagsHeader';
 import TagsLayout from './components/TagsLayout';
 import TagsList from './components/TagsList';
-import {Button, LoadingIndicator, LucideIcon} from '@tryghost/shade';
+import {Button, EmptyIndicator, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useLocation} from '@tryghost/admin-x-framework';
 
@@ -46,14 +46,17 @@ const Tags: React.FC = () => {
                         </Button>
                     </div>
                 ) : !data?.tags.length ? (
-                    <div className="mb-16 flex h-full flex-col items-center justify-center gap-8">
-                        <LucideIcon.Tags className="-mb-4 size-16 text-muted-foreground" strokeWidth={1} />
-                        <h2 className="text-xl font-medium">
-                            Start organizing your content
-                        </h2>
-                        <Button asChild>
-                            <a href="#/tags/new">Create a new tag</a>
-                        </Button>
+                    <div className="flex h-full items-center justify-center">
+                        <EmptyIndicator
+                            actions={
+                                <Button asChild>
+                                    <a href="#/tags/new">Create a new tag</a>
+                                </Button>
+                            }
+                            title="Start organizing your content"
+                        >
+                            <LucideIcon.Tags />
+                        </EmptyIndicator>
                     </div>
                 ) : (
                     <TagsList

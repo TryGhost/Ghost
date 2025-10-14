@@ -83,3 +83,46 @@ export const CompactCopy: Story = {
     }
 };
 
+export const TitleOnly: Story = {
+    args: {
+        title: 'No results found'
+    },
+    render: args => (
+        <EmptyIndicator {...args}>
+            <Inbox />
+        </EmptyIndicator>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use title-only when the context is self-explanatory and no additional description is needed.'
+            }
+        }
+    }
+};
+
+export const TitleWithAction: Story = {
+    args: {
+        title: 'No members yet',
+        actions: (
+            <>
+                <Button>
+                    <Plus /> Add member
+                </Button>
+            </>
+        )
+    },
+    render: args => (
+        <EmptyIndicator {...args}>
+            <Inbox />
+        </EmptyIndicator>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Combine a title with actions when the next step is clear without needing additional explanation.'
+            }
+        }
+    }
+};
+
