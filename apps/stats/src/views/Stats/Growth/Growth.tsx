@@ -183,6 +183,7 @@ const Growth: React.FC = () => {
                                                             selectedOption={selectedCampaign}
                                                             value='campaigns'
                                                             onOptionChange={(campaign) => {
+                                                                setSelectedContentType(CONTENT_TYPES.CAMPAIGNS);
                                                                 setSelectedCampaign(campaign as GrowthCampaignType);
                                                             }}
                                                         />
