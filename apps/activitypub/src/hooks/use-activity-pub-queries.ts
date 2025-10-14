@@ -93,18 +93,13 @@ const QUERY_KEYS = {
     blockedDomains: (handle: string) => ['blocked_domains', handle]
 };
 
-function updateLikeCache(queryClient: QueryClient, handle: string, id: string, liked: boolean) {
+function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
         QUERY_KEYS.postsLikedByAccount,
-        QUERY_KEYS.profilePosts('index')
+        QUERY_KEYS.profilePosts(null)
     ];
-
-    // Add handle-specific profile posts if different from index
-    if (handle !== 'index') {
-        queryKeys.push(QUERY_KEYS.profilePosts(handle));
-    }
 
     for (const queryKey of queryKeys) {
         // Handle paginated caches (feed, inbox, etc.)
@@ -607,12 +602,12 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: (id) => {
-            updateLikeCache(queryClient, handle, id, true);
+            updateLikeCache(queryClient, id, true);
             updateLikeCacheOnce(queryClient, id, true);
             updateNotificationsLikedCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
-            updateLikeCache(queryClient, handle, id, false);
+            updateLikeCache(queryClient, id, false);
             updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
 
@@ -638,7 +633,7 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: (id) => {
-            updateLikeCache(queryClient, handle, id, false);
+            updateLikeCache(queryClient, id, false);
             updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
         },
@@ -790,17 +785,12 @@ export function useUnblockMutationForUser(handle: string) {
     });
 }
 
-function updateRepostCache(queryClient: QueryClient, handle: string, id: string, reposted: boolean) {
+function updateRepostCache(queryClient: QueryClient, id: string, reposted: boolean) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.profilePosts('index')
+        QUERY_KEYS.profilePosts(null)
     ];
-
-    // Add handle-specific profile posts if different from index
-    if (handle !== 'index') {
-        queryKeys.push(QUERY_KEYS.profilePosts(handle));
-    }
 
     for (const queryKey of queryKeys) {
         // Handle paginated caches (feed, inbox, etc.)
@@ -882,12 +872,12 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, handle, id, true);
+            updateRepostCache(queryClient, id, true);
             updateRepostCacheOnce(queryClient, id, true);
             updateNotificationsRepostCache(queryClient, handle, id, true);
         },
         onError(error: {message: string, statusCode: number}, id) {
-            updateRepostCache(queryClient, handle, id, false);
+            updateRepostCache(queryClient, id, false);
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
@@ -911,7 +901,7 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, handle, id, false);
+            updateRepostCache(queryClient, id, false);
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
         },
