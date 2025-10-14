@@ -16,7 +16,7 @@ const setupProvider = (context) => {
 };
 
 const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
-    const mockDoActionFn = jest.fn().mockResolvedValue(undefined);
+    const mockDoActionFn = vi.fn().mockResolvedValue(undefined);
 
     // Hardcode the locale to 'en' for testing
     const {t} = require('@tryghost/i18n')('en');
@@ -40,7 +40,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
 };
 
 export const appRender = (ui, {options = {}} = {}) => {
-    const mockDoActionFn = jest.fn();
+    const mockDoActionFn = vi.fn();
 
     const utils = render(ui, options);
     return {

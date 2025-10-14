@@ -17,7 +17,7 @@ describe('App', function () {
         document.body.appendChild(link);
 
         const ghostApi = setupGhostApi({siteUrl: 'http://example.com'});
-        ghostApi.init = jest.fn(() => {
+        ghostApi.init = vi.fn(() => {
             return Promise.resolve({
                 site: FixtureSite.singleTier.basic,
                 member: FixtureMember.free

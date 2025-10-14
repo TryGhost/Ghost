@@ -55,7 +55,7 @@ const setup = () => {
 
 describe('NewsletterSelectionPage', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     test('renders', () => {

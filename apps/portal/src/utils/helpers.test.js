@@ -431,16 +431,16 @@ describe('Helpers - ', () => {
 
     describe('getUrlHistory', () => {
         beforeEach(() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {
+            vi.spyOn(console, 'warn').mockImplementation(() => {
                 // don't log for these tests
             });
         });
         afterEach(() => {
-            jest.restoreAllMocks();
+            vi.restoreAllMocks();
         });
 
         test('returns valid history ', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([
+            vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([
                 {
                     path: '/',
                     time: 0
@@ -452,14 +452,14 @@ describe('Helpers - ', () => {
         });
 
         test('ignores invalid history ', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
+            vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
             const urlHistory = getUrlHistory();
             expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
         });
 
         test('doesn\'t throw if sessionStorage is disabled', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
                 throw new Error('SessionStorage disabled');
             });
             const urlHistory = getUrlHistory();

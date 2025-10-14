@@ -5,24 +5,24 @@ import setupGhostApi from '../utils/api.js';
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.site.offer = jest.fn(() => {
+    ghostApi.site.offer = vi.fn(() => {
         return Promise.resolve({
             offers: [offer]
         });
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -72,18 +72,18 @@ const offerSetup = async ({site, member = null, offer}) => {
 
 const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -127,18 +127,18 @@ const setup = async ({site, member = null}) => {
 
 const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 

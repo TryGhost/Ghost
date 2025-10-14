@@ -2,7 +2,7 @@ import {render, fireEvent} from '@testing-library/react';
 import InputField from './InputField';
 
 const setup = () => {
-    const mockOnChangeFn = jest.fn();
+    const mockOnChangeFn = vi.fn();
     const props = {
         name: 'test-input',
         label: 'Test Input',

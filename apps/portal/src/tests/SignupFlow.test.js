@@ -8,28 +8,28 @@ const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site: deepClone(site),
             member: member ? deepClone(member) : null
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve(`testtoken`);
     });
 
-    ghostApi.site.offer = jest.fn(() => {
+    ghostApi.site.offer = vi.fn(() => {
         return Promise.resolve({
             offers: [offer]
         });
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -82,22 +82,22 @@ const offerSetup = async ({site, member = null, offer}) => {
 
 const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site: deepClone(site),
             member: member ? deepClone(member) : null
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve(`testtoken`);
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -141,22 +141,22 @@ const setup = async ({site, member = null}) => {
 
 const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site: deepClone(site),
             member: member ? deepClone(member) : null
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve(`testtoken`);
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 

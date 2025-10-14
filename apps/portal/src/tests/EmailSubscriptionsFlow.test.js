@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 
 const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member: loggedOut ? null : member,
@@ -14,20 +14,20 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
         });
     });
 
-    ghostApi.member.update = jest.fn(({newsletters: newNewsletters}) => {
+    ghostApi.member.update = vi.fn(({newsletters: newNewsletters}) => {
         return Promise.resolve({
             newsletters: newNewsletters,
             enable_comment_notifications: false
         });
     });
 
-    ghostApi.member.newsletters = jest.fn(() => {
+    ghostApi.member.newsletters = vi.fn(() => {
         return Promise.resolve({
             newsletters
         });
     });
 
-    ghostApi.member.updateNewsletters = jest.fn(({uuid: memberUuid, newsletters: newNewsletters, enableCommentNotifications}) => {
+    ghostApi.member.updateNewsletters = vi.fn(({uuid: memberUuid, newsletters: newNewsletters, enableCommentNotifications}) => {
         return Promise.resolve({
             uuid: memberUuid,
             newsletters: newNewsletters,

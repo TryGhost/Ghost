@@ -29,12 +29,12 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
     const clickHandler = () => {};
 
     const form = {
-        removeEventListener: jest.fn(),
-        classList: {remove: jest.fn(), add: jest.fn()},
+        removeEventListener: vi.fn(),
+        classList: {remove: vi.fn(), add: vi.fn()},
         dataset: {membersForm: 'signup'},
-        addEventListener: jest.fn()
+        addEventListener: vi.fn()
     };
-    jest.spyOn(form.classList, 'add');
+    vi.spyOn(form.classList, 'add');
 
     const element = {
         removeEventListener: () => {},
@@ -88,7 +88,7 @@ describe('Member Data attributes:', () => {
         vi.clearAllMocks();
 
         // Mock global fetch
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
                 return Promise.resolve({
                     ok: true,
@@ -127,7 +127,7 @@ describe('Member Data attributes:', () => {
 
         // Mock global Stripe
         window.Stripe = () => {};
-        jest.spyOn(window, 'Stripe').mockImplementation(() => {
+        vi.spyOn(window, 'Stripe').mockImplementation(() => {
             return {
                 redirectToCheckout: () => {
                     return Promise.resolve({});
@@ -136,7 +136,7 @@ describe('Member Data attributes:', () => {
         });
 
         // Mock url history method
-        jest.spyOn(helpers, 'getUrlHistory').mockImplementation(() => {
+        vi.spyOn(helpers, 'getUrlHistory').mockImplementation(() => {
             return [{
                 path: '/blog/',
                 refMedium: null,
@@ -147,13 +147,13 @@ describe('Member Data attributes:', () => {
         });
 
         // Mock window.location
-        let locationMock = jest.fn();
+        let locationMock = vi.fn();
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
     describe('data-members-form', () => {
         test('allows free signup', async () => {
@@ -186,7 +186,7 @@ describe('Member Data attributes:', () => {
             form.dataset.membersOtc = 'true';
 
             const originalQuerySelector = event.target.querySelector;
-            event.target.querySelector = jest.fn((selector) => {
+            event.target.querySelector = vi.fn((selector) => {
                 if (selector === 'input[data-members-email]') {
                     return {value: ' jamie@example.com '};
                 }
@@ -194,7 +194,7 @@ describe('Member Data attributes:', () => {
             });
 
             const labs = {membersSigninOTC: true};
-            const doAction = jest.fn(() => Promise.resolve());
+            const doAction = vi.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
             window.fetch.mockImplementation((url) => {
@@ -234,7 +234,7 @@ describe('Member Data attributes:', () => {
             form.dataset.membersOtc = 'true';
 
             const originalQuerySelector = event.target.querySelector;
-            event.target.querySelector = jest.fn((selector) => {
+            event.target.querySelector = vi.fn((selector) => {
                 if (selector === 'input[data-members-email]') {
                     return {value: ' jamie@example.com '};
                 }
@@ -243,11 +243,11 @@ describe('Member Data attributes:', () => {
 
             const labs = {membersSigninOTC: true};
             const actionError = new Error('failed to start OTC sign-in');
-            const doAction = jest.fn(() => {
+            const doAction = vi.fn(() => {
                 throw actionError;
             });
-            const captureException = jest.fn();
-            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            const captureException = vi.fn();
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
             window.fetch.mockImplementation((url) => {
@@ -429,18 +429,18 @@ describe('Member Data attributes:', () => {
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -463,7 +463,7 @@ describe('Portal Data attributes:', () => {
         vi.clearAllMocks();
 
         // Mock global fetch
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
                 return Promise.resolve({
                     ok: true,
@@ -495,7 +495,7 @@ describe('Portal Data attributes:', () => {
 
         // Mock global Stripe
         window.Stripe = () => {};
-        jest.spyOn(window, 'Stripe').mockImplementation(() => {
+        vi.spyOn(window, 'Stripe').mockImplementation(() => {
             return {
                 redirectToCheckout: () => {
                     return Promise.resolve({});
@@ -504,14 +504,14 @@ describe('Portal Data attributes:', () => {
         });
 
         // Mock window.location
-        let locationMock = jest.fn();
+        let locationMock = vi.fn();
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
         window.location.hash = '';
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
     describe('data-portal', () => {
         test('opens default portal page', async () => {
