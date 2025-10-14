@@ -230,7 +230,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     </EmptyIndicator>
                 ) : (
                     <>
-                        {utmTrackingEnabled && mode === 'growth' && (
+                        {utmTrackingEnabled && mode === 'growth' && hasAnySourceData && (
                             <>
                                 <div className='mb-4'>
                                     <UtmGrowthTabs

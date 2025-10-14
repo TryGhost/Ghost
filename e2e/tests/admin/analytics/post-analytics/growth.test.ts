@@ -45,11 +45,21 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
     test('empty top sources card', async ({page}) => {
         const postAnalyticsPageGrowthPage = new PostAnalyticsGrowthPage(page);
 
+        await expect(postAnalyticsPageGrowthPage.topContent.sourcesButton).not.toBeVisible();
+        await expect(postAnalyticsPageGrowthPage.topContent.campaignsDropdown).not.toBeVisible();
         await expect(postAnalyticsPageGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
 
     test.describe('Campaigns', function () {
         test.use({labs: {utmTracking: true}});
+
+        test('empty state top sources card - with UTM tracking enabled', async ({page}) => {
+            const postAnalyticsPageGrowthPage = new PostAnalyticsGrowthPage(page);
+
+            await expect(postAnalyticsPageGrowthPage.topContent.sourcesButton).not.toBeVisible();
+            await expect(postAnalyticsPageGrowthPage.topContent.campaignsDropdown).not.toBeVisible();
+            await expect(postAnalyticsPageGrowthPage.topSourcesCard).toContainText('No sources data available');
+        });
 
         test('attributes free members to UTM Campaigns', async ({page, browser}) => {
             const utmCampaign = 'spring-sale';
