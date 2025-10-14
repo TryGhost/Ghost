@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.3.0",
+  "version": "6.3.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -234,7 +234,7 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/jsonwebtoken": "9.0.10",
-    "@types/node": "22.18.8",
+    "@types/node": "22.18.9",
     "@types/node-jose": "1.1.13",
     "@types/nodemailer": "6.4.20",
     "@types/sinon": "17.0.4",

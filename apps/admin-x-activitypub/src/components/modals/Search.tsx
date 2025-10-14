@@ -1,7 +1,9 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
+import ProfilePreviewHoverCard from '../global/ProfilePreviewHoverCard';
 import React, {useEffect, useRef} from 'react';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useAccountForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
@@ -48,38 +50,42 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     const navigate = useNavigate();
 
     return (
-        <ActivityItem
-            key={account.id}
-            onClick={() => {
-                onOpenChange?.(false);
-                navigate(`/profile/${account.handle}`);
-            }}
-        >
-            <APAvatar author={{
-                icon: {
-                    url: account.avatarUrl
-                },
-                name: account.name,
-                handle: account.handle
-            }}/>
-            <div className='flex flex-col break-anywhere'>
-                <span className='line-clamp-1 font-semibold text-black dark:text-white'>{account.name}</span>
-                <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
+        <ProfilePreviewHoverCard actor={account as unknown as ActorProperties} isCurrentUser={isCurrentUser}>
+            <div>
+                <ActivityItem
+                    key={account.id}
+                    onClick={() => {
+                        onOpenChange?.(false);
+                        navigate(`/profile/${account.handle}`);
+                    }}
+                >
+                    <APAvatar author={{
+                        icon: {
+                            url: account.avatarUrl
+                        },
+                        name: account.name,
+                        handle: account.handle
+                    }}/>
+                    <div className='flex flex-col break-anywhere'>
+                        <span className='line-clamp-1 font-semibold text-black dark:text-white'>{account.name}</span>
+                        <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
+                    </div>
+                    {account.blockedByMe || account.domainBlockedByMe ?
+                        <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
+                        !isCurrentUser ? (
+                            <FollowButton
+                                className='ml-auto'
+                                following={account.followedByMe}
+                                handle={account.handle}
+                                type='secondary'
+                                onFollow={onFollow}
+                                onUnfollow={onUnfollow}
+                            />
+                        ) : null
+                    }
+                </ActivityItem>
             </div>
-            {account.blockedByMe || account.domainBlockedByMe ?
-                <Button className='pointer-events-none ml-auto min-w-[90px]' variant='destructive'>Blocked</Button> :
-                !isCurrentUser ? (
-                    <FollowButton
-                        className='ml-auto'
-                        following={account.followedByMe}
-                        handle={account.handle}
-                        type='secondary'
-                        onFollow={onFollow}
-                        onUnfollow={onUnfollow}
-                    />
-                ) : null
-            }
-        </ActivityItem>
+        </ProfilePreviewHoverCard>
     );
 };
 

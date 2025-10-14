@@ -94,6 +94,20 @@ services:
     profiles: [ split, all ]
     tty: true
 
+  admin-apps:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost
+    command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
+    profiles: [ split ]
+    tty: true
+    restart: always
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - FORCE_COLOR=1
+
   caddy:
     image: caddy:latest
     container_name: ghost-caddy
