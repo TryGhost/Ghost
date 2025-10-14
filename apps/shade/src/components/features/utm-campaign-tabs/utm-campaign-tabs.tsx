@@ -4,15 +4,27 @@ import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-
 export type CampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
 export type TabType = 'sources' | 'campaigns';
 
-export const CAMPAIGN_TYPES: readonly CampaignType[] = [
+export const CAMPAIGN_TYPES = [
     'UTM sources',
     'UTM mediums',
     'UTM campaigns',
     'UTM contents',
     'UTM terms'
-] as const;
+] as const satisfies readonly Exclude<CampaignType, ''>[];
 
-const CAMPAIGN_OPTIONS = CAMPAIGN_TYPES.map(type => ({
+export const UTM_TYPE_MAP: Record<Exclude<CampaignType, ''>, string> = {
+    'UTM sources': 'utm_source',
+    'UTM mediums': 'utm_medium',
+    'UTM campaigns': 'utm_campaign',
+    'UTM contents': 'utm_content',
+    'UTM terms': 'utm_term'
+};
+
+export const getUtmType = (campaign: CampaignType): string => {
+    return campaign ? UTM_TYPE_MAP[campaign as Exclude<CampaignType, ''>] || '' : '';
+};
+
+export const CAMPAIGN_OPTIONS = CAMPAIGN_TYPES.map(type => ({
     value: type,
     label: type
 }));
