@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, GROWTH_CAMPAIGN_OPTIONS, GrowthCampaignType, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableFilterDropdownTab, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, CAMPAIGN_OPTIONS, CampaignType, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableFilterDropdownTab, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -43,7 +43,7 @@ const Growth: React.FC = () => {
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
-    const [selectedCampaign, setSelectedCampaign] = useState<GrowthCampaignType>('');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 
@@ -178,13 +178,13 @@ const Growth: React.FC = () => {
                                                     <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
                                                     {utmTrackingEnabled && (
                                                         <TableFilterDropdownTab
-                                                            options={GROWTH_CAMPAIGN_OPTIONS}
+                                                            options={CAMPAIGN_OPTIONS}
                                                             placeholder='Campaigns'
                                                             selectedOption={selectedCampaign}
                                                             value='campaigns'
                                                             onOptionChange={(campaign) => {
                                                                 setSelectedContentType(CONTENT_TYPES.CAMPAIGNS);
-                                                                setSelectedCampaign(campaign as GrowthCampaignType);
+                                                                setSelectedCampaign(campaign as CampaignType);
                                                             }}
                                                         />
                                                     )}
