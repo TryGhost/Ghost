@@ -13,7 +13,7 @@ const SettingsBREADService = require('./settings-bread-service');
 const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/single-use-token-provider');
+const {SingleUseTokenProvider} = require('../members/single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
