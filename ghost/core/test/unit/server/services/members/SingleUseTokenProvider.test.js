@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 
-const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
+const {SingleUseTokenProvider} = require('../../../../../core/server/services/members/SingleUseTokenProvider');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -91,7 +91,8 @@ describe('SingleUseTokenProvider', function () {
                 SingleUseTokenModel: mockModel,
                 validityPeriod: DAY_MS,
                 validityPeriodAfterUsage: HOUR_MS,
-                maxUsageCount: 3
+                maxUsageCount: 3,
+                secret: ''
             });
             assert.throws(() => {
                 providerNoSecret.deriveOTC('id', 'value');
@@ -230,7 +231,8 @@ describe('SingleUseTokenProvider', function () {
                 SingleUseTokenModel: mockModel,
                 validityPeriod: DAY_MS,
                 validityPeriodAfterUsage: HOUR_MS,
-                maxUsageCount: 3
+                maxUsageCount: 3,
+                secret: ''
             });
 
             const result = await providerNoSecret.verifyOTC(testToken.id, '123456');
@@ -644,7 +646,8 @@ describe('SingleUseTokenProvider', function () {
                 SingleUseTokenModel: mockModel,
                 validityPeriod: DAY_MS,
                 validityPeriodAfterUsage: HOUR_MS,
-                maxUsageCount: 3
+                maxUsageCount: 3,
+                secret: ''
             });
             assert.throws(() => providerNoSecret.createOTCVerificationHash(OTC, TOKEN), {code: 'OTC_SECRET_NOT_CONFIGURED'});
         });

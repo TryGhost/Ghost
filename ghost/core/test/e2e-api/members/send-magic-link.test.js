@@ -879,8 +879,8 @@ describe('sendMagicLink', function () {
             });
 
             it('Should not call OTC generation methods when flag is disabled', async function () {
-                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-                const deriveOTCSpy = sinon.spy(tokenProvider.prototype, 'deriveOTC');
+                const {SingleUseTokenProvider} = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCSpy = sinon.spy(SingleUseTokenProvider.prototype, 'deriveOTC');
 
                 try {
                     await sendMagicLinkRequest('member1@test.com', 'signin', true);
@@ -927,8 +927,8 @@ describe('sendMagicLink', function () {
             });
 
             it('Should gracefully handle OTC generation failures', async function () {
-                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-                const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
+                const {SingleUseTokenProvider} = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCStub = sinon.stub(SingleUseTokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
 
                 try {
                     const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)

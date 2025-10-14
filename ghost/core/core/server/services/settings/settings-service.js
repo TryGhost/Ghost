@@ -12,7 +12,7 @@ const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./SettingsBREADService');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const {SingleUseTokenProvider} = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
@@ -37,7 +37,8 @@ const getSettingsBREADServiceInstance = () => {
             SingleUseTokenModel: models.SingleUseToken,
             validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+            secret: SettingsCache.get('members_otc_secret')
         }),
         urlUtils,
         emailAddressService: emailAddressService
