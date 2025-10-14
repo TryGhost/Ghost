@@ -1,7 +1,7 @@
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
  * New/Updated column maxlengths should meet these guidlines
- * 
+ *
  * Small strings = length 50
  * Medium strings = length 191
  * Large strings = length 2000 (use soft limits via validation for 191-2000)
@@ -925,7 +925,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         first_used_at: {type: 'dateTime', nullable: true},
-        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        otc_used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     snippets: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

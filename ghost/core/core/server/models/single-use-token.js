@@ -7,6 +7,7 @@ const SingleUseToken = ghostBookshelf.Model.extend({
     defaults() {
         return {
             used_count: 0,
+            otc_used_count: 0,
             uuid: crypto.randomUUID(),
             token: crypto
                 .randomBytes(192 / 8)
