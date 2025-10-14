@@ -21042,10 +21042,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.6.tgz#999ed55b343a74c24dd5ccbd580749b0aced481b"
-  integrity sha512-ZqC6hloPr6qI+HP14ls2ia/iLDH9UBOYLKYlS1d3F7qz+cwNAX8t0SdQq1GF4CHpS+hU2ElVxPUh89swOymPPQ==
+human-number@2.0.7:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.7.tgz#140454fdd71a4367c71ef302c082e12b98b1e7ae"
+  integrity sha512-oRlIx8WSLqpGutVzCq72WipnfH1+OaSoxiPc5l2eMxjqgGow3K4jzCxAHkS93nPxFDa0vXUKaDrmdIAKLwBlHQ==
   dependencies:
     round-to "~5.0.0"
 
