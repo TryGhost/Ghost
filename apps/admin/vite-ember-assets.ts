@@ -1,16 +1,23 @@
-import type {PluginOption, HtmlTagDescriptor} from 'vite';
+import type {PluginOption, HtmlTagDescriptor, ResolvedConfig} from 'vite';
 import path from 'path';
 import fs from 'fs';
 
+const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
+
 // Vite plugin to extract styles and scripts from Ghost admin index.html
 export function emberAssetsPlugin() {
+    let config: ResolvedConfig;
+
     return {
         name: 'ember-assets',
+        configResolved(resolvedConfig) {
+            config = resolvedConfig;
+        },
         transformIndexHtml: {
             order: 'post',
             handler() {
                 // Path to the Ghost admin index.html file
-                const indexPath = path.resolve(__dirname, '../../ghost/admin/dist/index.html');
+                const indexPath = path.resolve(GHOST_ADMIN_PATH, 'index.html');
                 try {
                     const indexContent = fs.readFileSync(indexPath, 'utf-8');
                     // Extract stylesheets
@@ -59,6 +66,21 @@ export function emberAssetsPlugin() {
                 } catch (error) {
                     console.warn('Failed to read Ghost admin index.html:', error);
                     return;
+                }
+            }
+        },
+        closeBundle() {
+            // Only copy assets during production builds
+            if (config.command === 'build') {
+                const sourcePath = path.resolve(GHOST_ADMIN_PATH, 'assets');
+                const destPath = path.resolve(config.build.outDir, 'assets');
+
+                try {
+                    // Copy all ember assets to the build output directory
+                    fs.cpSync(sourcePath, destPath, { recursive: true });
+                    console.log('Copied ember assets to build output');
+                } catch (error) {
+                    throw new Error(`Failed to copy ember assets: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         }
