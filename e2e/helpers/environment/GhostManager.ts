@@ -165,4 +165,31 @@ export class GhostManager {
             debug('Failed to remove container:', error);
         }
     }
+
+    /** Remove all Ghost containers (used for cleanup of leftover containers from interrupted tests). */
+    async removeAll(): Promise<void> {
+        try {
+            debug('Finding all Ghost containers...');
+            const containers = await this.docker.listContainers({
+                all: true,
+                filters: {
+                    label: ['tryghost/e2e=ghost']
+                }
+            });
+
+            if (containers.length === 0) {
+                debug('No Ghost containers found');
+                return;
+            }
+
+            debug(`Found ${containers.length} Ghost container(s) to remove`);
+            for (const containerInfo of containers) {
+                await this.remove(containerInfo.Id);
+            }
+            debug('All Ghost containers removed');
+        } catch (error) {
+            logging.error('Failed to remove all Ghost containers:', error);
+            // Don't throw - we want to continue with setup even if cleanup fails
+        }
+    }
 }

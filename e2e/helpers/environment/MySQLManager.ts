@@ -108,6 +108,49 @@ export class MySQLManager {
     }
 
     /**
+     * Drop all test databases (used for cleanup of leftover databases from interrupted tests).
+     * This removes all databases matching the pattern 'ghost_%' except 'ghost_testing' (the base database).
+     */
+    async dropAllTestDatabases(): Promise<void> {
+        try {
+            debug('Finding all test databases to clean up...');
+            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
+
+            // Query to list all databases matching 'ghost_%' pattern except 'ghost_testing'
+            const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name != \'ghost_testing\'';
+            const output = await this.execInContainer(
+                mysqlContainer,
+                `mysql -uroot -proot -N -e "${query}"`
+            );
+
+            if (!output.trim()) {
+                debug('No test databases found to clean up');
+                return;
+            }
+
+            // Parse database names (one per line)
+            const databases = output.trim().split('\n').filter(db => db.trim());
+
+            if (databases.length === 0) {
+                debug('No test databases found to clean up');
+                return;
+            }
+
+            debug(`Found ${databases.length} test database(s) to clean up:`, databases);
+
+            // Drop each database
+            for (const database of databases) {
+                await this.dropDatabase(database);
+            }
+
+            debug('All test databases cleaned up');
+        } catch (error) {
+            debug('Failed to clean up test databases (MySQL may not be running):', error);
+            // Don't throw - we want to continue with setup even if MySQL cleanup fails
+        }
+    }
+
+    /**
      * Execute a command in a container and wait for completion
      *
      * This is primarily needed to run CLI commands like mysqldump inside the container
