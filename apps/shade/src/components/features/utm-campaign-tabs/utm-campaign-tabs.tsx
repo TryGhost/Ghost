@@ -1,32 +1,29 @@
 import React from 'react';
 import {TableFilterDropdownTab, TableFilterTab, TableFilterTabs} from '../table-filter-tabs/table-filter-tabs';
 
-// Types
-export type UtmCampaignType = '' | 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms';
-export type UtmTabType = 'sources' | 'campaigns';
-
-// Constants
 export const UTM_CAMPAIGN_TYPES = [
     'UTM sources',
     'UTM mediums',
     'UTM campaigns',
     'UTM contents',
     'UTM terms'
-] as const satisfies readonly Exclude<UtmCampaignType, ''>[];
+] as const;
+
+export type UtmCampaignType = '' | typeof UTM_CAMPAIGN_TYPES[number];
+export type UtmTabType = 'sources' | 'campaigns';
 
 export const UTM_CAMPAIGN_OPTIONS = UTM_CAMPAIGN_TYPES.map(type => ({
     value: type,
     label: type
 }));
 
-// Utilities
-export const UTM_TYPE_MAP: Record<Exclude<UtmCampaignType, ''>, string> = {
+export const UTM_TYPE_MAP = {
     'UTM sources': 'utm_source',
     'UTM mediums': 'utm_medium',
     'UTM campaigns': 'utm_campaign',
     'UTM contents': 'utm_content',
     'UTM terms': 'utm_term'
-};
+} as const satisfies Record<typeof UTM_CAMPAIGN_TYPES[number], string>;
 
 export const getUtmType = (campaign: UtmCampaignType): string => {
     return campaign ? UTM_TYPE_MAP[campaign as Exclude<UtmCampaignType, ''>] || '' : '';
