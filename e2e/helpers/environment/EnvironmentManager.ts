@@ -74,31 +74,32 @@ export class EnvironmentManager {
      * This should be called at the start of globalSetup to ensure a clean slate,
      * especially after interrupted test runs (e.g. via ctrl+c)
      *
-     * 1. Clean up leftover test databases (if MySQL is running)
-     * 2. Stop and remove docker-compose services (mysql, tinybird, portal, etc.)
-     * 3. Remove all leftover Ghost containers
-     * 4. Clean up state files
+     * 1. Remove all leftover Ghost containers
+     * 2. Clean up leftover test databases (if MySQL is running)
+     * 3. Delete the MySQL snapshot (if MySQL is running)
+     * 4. Recreate the ghost_testing database (if MySQL is running)
+     * 5. Truncate Tinybird analytics_events datasource (if Tinybird is running)
+     *
+     * Note: Docker compose services are left running for reuse across test runs
      */
     private async cleanupLeftoverResources(): Promise<void> {
         try {
             logging.info('Cleaning up leftover resources from previous test runs...');
 
-            // Clean up leftover test databases if MySQL is running
-            await this.mysql.dropAllTestDatabases();
-
-            // Clean up docker compose services (mysql, tinybird, portal, etc.)
-            try {
-                this.dockerCompose.down();
-                debug('Docker compose services cleaned up');
-            } catch (error) {
-                debug('No docker compose services to clean up or cleanup failed:', error);
-            }
-
             // Clean up leftover Ghost containers
             await this.ghost.removeAll();
 
-            // Clean up state files
-            this.cleanupStateFiles();
+            // Clean up leftover test databases if MySQL is running
+            await this.mysql.dropAllTestDatabases();
+
+            // Delete the MySQL snapshot to ensure fresh migrations
+            await this.mysql.deleteSnapshot();
+
+            // Recreate the base database to ensure clean migrations
+            await this.mysql.recreateBaseDatabase();
+
+            // Truncate Tinybird analytics data to start fresh
+            this.tinybird.truncateAnalyticsEvents();
 
             logging.info('Leftover resources cleaned up successfully');
         } catch (error) {
@@ -133,9 +134,15 @@ export class EnvironmentManager {
     /**
      * Teardown global environment
      * This should be called once after all tests have finished.
-     * 1. Stop and remove all docker-compose services and volumes
-     * 2. Clean up any state files created during the tests
-     3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
+     *
+     * Note: Docker compose services are left running for reuse across test runs.
+     * To fully stop all services, manually run: docker compose down
+     *
+     * 1. Remove all Ghost containers
+     * 2. Clean up test databases
+     * 3. Recreate the ghost_testing database for the next run
+     * 4. Truncate Tinybird analytics_events datasource
+     * 5. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
     public async globalTeardown(): Promise<void> {
         if (this.shouldPreserveEnvironment()) {
@@ -143,9 +150,20 @@ export class EnvironmentManager {
             return;
         }
         logging.info('Starting global environment teardown...');
-        this.dockerCompose.down();
-        this.cleanupStateFiles();
-        logging.info('Global environment teardown complete');
+
+        // Clean up Ghost containers
+        await this.ghost.removeAll();
+
+        // Clean up test databases
+        await this.mysql.dropAllTestDatabases();
+
+        // Recreate the base database for the next run
+        await this.mysql.recreateBaseDatabase();
+
+        // Truncate Tinybird analytics data for the next run
+        this.tinybird.truncateAnalyticsEvents();
+
+        logging.info('Global environment teardown complete (docker compose services left running)');
     }
 
     /**

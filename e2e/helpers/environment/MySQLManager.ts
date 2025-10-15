@@ -151,6 +151,41 @@ export class MySQLManager {
     }
 
     /**
+     * Delete the MySQL snapshot file.
+     * This ensures we create a fresh snapshot on the next setup.
+     */
+    async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+        try {
+            debug('Deleting MySQL snapshot:', snapshotPath);
+            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
+            await this.execInContainer(
+                mysqlContainer,
+                `rm -f ${snapshotPath}`
+            );
+            debug('MySQL snapshot deleted');
+        } catch (error) {
+            debug('Failed to delete MySQL snapshot (MySQL may not be running):', error);
+            // Don't throw - we want to continue with setup even if snapshot deletion fails
+        }
+    }
+
+    /**
+     * Recreate the base database (ghost_testing) to ensure fresh migrations.
+     * This drops and recreates the database so migrations run cleanly.
+     */
+    async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
+        try {
+            debug('Recreating base database:', database);
+            await this.dropDatabase(database);
+            await this.createDatabase(database);
+            debug('Base database recreated:', database);
+        } catch (error) {
+            debug('Failed to recreate base database (MySQL may not be running):', error);
+            // Don't throw - we want to continue with setup even if database recreation fails
+        }
+    }
+
+    /**
      * Execute a command in a container and wait for completion
      *
      * This is primarily needed to run CLI commands like mysqldump inside the container
