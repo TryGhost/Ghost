@@ -1,5 +1,4 @@
 import {Factory} from '../factory';
-import type {PersistenceAdapter} from '../../persistence/adapter';
 import {faker} from '@faker-js/faker';
 import {generateId, generateSlug} from '../../utils';
 
@@ -32,10 +31,6 @@ export interface Tag {
 }
 export class TagFactory extends Factory<Partial<Tag>, Tag> {
     entityType = 'tags';
-
-    constructor(adapter?: PersistenceAdapter) {
-        super(adapter);
-    }
 
     build(options: Partial<Tag> = {}): Tag {
         return {

@@ -2,6 +2,7 @@ import {PostFactory} from '../factories/posts/post-factory';
 import {TagFactory} from '../factories/tags/tag-factory';
 import {GhostAdminApiAdapter} from '../persistence/adapters/ghost-api';
 import {HttpClient} from '../persistence/adapters/http-client';
+import {withPersistence} from '../factories/factory';
 
 /**
  * Create a new PostFactory with API persistence
@@ -11,20 +12,21 @@ import {HttpClient} from '../persistence/adapters/http-client';
  * @param httpClient - client for requests with pre-defined authorization and base url
  * @returns PostFactory ready to use with the specified Ghost backend
  */
-export function createPostFactory(httpClient: HttpClient): PostFactory {
+export function createPostFactory(httpClient: HttpClient) {
     const adapter = new GhostAdminApiAdapter(
         httpClient,
         'posts',
         {formats: 'mobiledoc,lexical,html'}
     );
-    return new PostFactory(adapter);
+
+    return withPersistence(new PostFactory(), adapter);
 }
 
-export function createTagFactory(httpClient: HttpClient): TagFactory {
+export function createTagFactory(httpClient: HttpClient) {
     const adapter = new GhostAdminApiAdapter(
         httpClient,
         'tags'
     );
-    return new TagFactory(adapter);
+    return withPersistence(new TagFactory(), adapter);
 }
 
