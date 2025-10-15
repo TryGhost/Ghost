@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, GROWTH_CAMPAIGN_OPTIONS, GrowthCampaignType, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableFilterDropdownTab, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, UtmCampaignDropdown, UtmCampaignType, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -43,7 +43,7 @@ const Growth: React.FC = () => {
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
-    const [selectedCampaign, setSelectedCampaign] = useState<GrowthCampaignType>('');
+    const [selectedCampaign, setSelectedCampaign] = useState<UtmCampaignType>('');
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 
@@ -181,14 +181,9 @@ const Growth: React.FC = () => {
                                                     <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
                                                     {utmTrackingEnabled && (
-                                                        <TableFilterDropdownTab
-                                                            options={GROWTH_CAMPAIGN_OPTIONS}
-                                                            placeholder='Campaigns'
-                                                            selectedOption={selectedCampaign}
-                                                            value='campaigns'
-                                                            onOptionChange={(campaign) => {
-                                                                setSelectedCampaign(campaign as GrowthCampaignType);
-                                                            }}
+                                                        <UtmCampaignDropdown
+                                                            selectedCampaign={selectedCampaign}
+                                                            onCampaignChange={setSelectedCampaign}
                                                         />
                                                     )}
                                                 </TabsList>

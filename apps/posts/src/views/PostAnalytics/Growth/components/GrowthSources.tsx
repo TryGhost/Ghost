@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, GrowthCampaignType, GrowthTabType, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmGrowthTabs, cn, formatNumber, getUtmType} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, UtmCampaignTabs, UtmCampaignType, UtmTabType, cn, formatNumber, getUtmType} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useUtmGrowthStats} from '@tryghost/admin-x-framework/api/stats';
@@ -114,8 +114,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     const navigate = useNavigate();
     const {data: globalData} = useGlobalData();
     const {postId} = useParams();
-    const [selectedTab, setSelectedTab] = useState<GrowthTabType>('sources');
-    const [selectedCampaign, setSelectedCampaign] = useState<GrowthCampaignType>('');
+    const [selectedTab, setSelectedTab] = useState<UtmTabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<UtmCampaignType>('');
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
@@ -233,7 +233,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                         {utmTrackingEnabled && mode === 'growth' && hasAnySourceData && (
                             <>
                                 <div className='mb-4'>
-                                    <UtmGrowthTabs
+                                    <UtmCampaignTabs
                                         selectedCampaign={selectedCampaign}
                                         selectedTab={selectedTab}
                                         onCampaignChange={setSelectedCampaign}
