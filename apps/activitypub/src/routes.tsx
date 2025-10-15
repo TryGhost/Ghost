@@ -76,7 +76,32 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Profile'
             },
             {
+                path: 'profile/likes',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/following',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/followers',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
                 path: 'profile/:handle',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/:handle/following',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/:handle/followers',
                 element: <Profile />,
                 pageTitle: 'Profile'
             },
