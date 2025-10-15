@@ -1203,3 +1203,37 @@ jobs:
           token: ${{ secrets.TINYBIRD_TOKEN }}
           workspace: 'Production'
           slack-webhook: ${{ secrets.ANALYTICS_SLACK_WEBHOOK_URL }}
+
+  deploy_admin:
+    needs: [
+      job_setup,
+      job_required_tests
+    ]
+    name: Deploy Admin
+    runs-on: ubuntu-latest
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_setup.outputs.is_main == 'true'
+      && needs.job_required_tests.result == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Admin
+        run: yarn nx run admin:build
+      - name: Upload build artifact
+        id: upload_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build
+          path: apps/admin/dist
+      - name: Deploy Admin
+        uses: aurelien-baudet/workflow-dispatch@v4
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          workflow: .github/workflows/deploy-admin.yml
+          ref: 'refs/heads/main' # this is the ref of Ghost-Moya
+          repo: TryGhost/Ghost-Moya
+          inputs: '{"admin_build_artifact_id":"${{ steps.upload_artifacts.outputs.artifact_id }}"}'
+          wait-for-completion-timeout: 25m
+          wait-for-completion-interval: 30s
