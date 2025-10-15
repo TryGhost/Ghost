@@ -70,19 +70,59 @@ export class EnvironmentManager {
     }
 
     /**
+     * Clean up leftover resources from previous test runs
+     * This should be called at the start of globalSetup to ensure a clean slate,
+     * especially after interrupted test runs (e.g. via ctrl+c)
+     *
+     * 1. Clean up leftover test databases (if MySQL is running)
+     * 2. Stop and remove docker-compose services (mysql, tinybird, portal, etc.)
+     * 3. Remove all leftover Ghost containers
+     * 4. Clean up state files
+     */
+    private async cleanupLeftoverResources(): Promise<void> {
+        try {
+            logging.info('Cleaning up leftover resources from previous test runs...');
+
+            // Clean up leftover test databases if MySQL is running
+            await this.mysql.dropAllTestDatabases();
+
+            // Clean up docker compose services (mysql, tinybird, portal, etc.)
+            try {
+                this.dockerCompose.down();
+                debug('Docker compose services cleaned up');
+            } catch (error) {
+                debug('No docker compose services to clean up or cleanup failed:', error);
+            }
+
+            // Clean up leftover Ghost containers
+            await this.ghost.removeAll();
+
+            // Clean up state files
+            this.cleanupStateFiles();
+
+            logging.info('Leftover resources cleaned up successfully');
+        } catch (error) {
+            logging.warn('Failed to clean up some leftover resources:', error);
+            // Don't throw - we want to continue with setup even if cleanup fails
+        }
+    }
+
+    /**
      * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
      * This should be called once before all tests run.
      *
-     * 1. Start docker-compose services (including running Ghost migrations on the default database)
-     * 2. Wait for all services to be ready (healthy or exited with code 0)
-     * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
-     * 3. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
+     * 1. Clean up any leftover resources from previous test runs
+     * 2. Start docker-compose services (including running Ghost migrations on the default database)
+     * 3. Wait for all services to be ready (healthy or exited with code 0)
+     * 4. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
+     * 5. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
      *
      * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
      * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
+        await this.cleanupLeftoverResources();
         this.dockerCompose.up();
         await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
