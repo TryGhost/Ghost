@@ -106,15 +106,19 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     // Convert our sort format to backend format
     const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
 
+    // When showViewAll is true, fetch more data to detect if there are more results than the preview limit
+    // This allows us to show the "View all" footer when processedData.length > limit
+    const fetchLimit = showViewAll ? 100 : limit;
+
     // Use the new endpoint with server-side sorting and limiting for regular sources
-    const {data: referrersData, isLoading: isSourcesLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
+    const {data: referrersData, isLoading: isSourcesLoading} = useTopSourcesGrowth(range, backendOrderBy, fetchLimit);
 
     // Get UTM campaign data when a campaign is selected
     const utmType = getUtmType(selectedCampaign);
     const {data: utmData, isFetching: isUtmFetching} = useUtmGrowthStats({
         searchParams: {
             utm_type: utmType,
-            limit: String(limit),
+            limit: String(fetchLimit),
             order: backendOrderBy
         },
         enabled: !!selectedCampaign
