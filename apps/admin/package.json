@@ -24,6 +24,32 @@
     "globals": "16.4.0",
     "typescript": "5.8.3",
     "typescript-eslint": "8.46.1",
-    "vite": "7.1.10"
+     "vite": "7.1.10"
+  },
+  "nx": {
+    "targets": {
+      "build:dev": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build:dev"
+          }
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build"
+          }
+        ]
+      }
+    }
   }
 }
