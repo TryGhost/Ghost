@@ -58,181 +58,100 @@ describe('verifyOTC action', () => {
         window.location = originalLocation;
     });
 
-    describe('with membersSigninOTCAlpha flag enabled', () => {
-        const alphaState = {
-            labs: {membersSigninOTCAlpha: true}
+    test('redirects on successful verification', async () => {
+        const mockApi = {
+            member: {
+                getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+                verifyOTC: vi.fn(() => Promise.resolve({
+                    redirectUrl: 'https://example.com/success'
+                }))
+            }
         };
 
-        test('redirects on successful verification', async () => {
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.resolve({
-                        redirectUrl: 'https://example.com/success'
-                    }))
-                }
-            };
-
-            await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '123456', otcRef: 'ref-123'},
-                state: alphaState,
-                api: mockApi
-            });
-
-            expect(mockLocationAssign).toHaveBeenCalledWith('https://example.com/success');
-            expect(mockApi.member.verifyOTC).toHaveBeenCalledWith({
-                otc: '123456',
-                otcRef: 'ref-123',
-                integrityToken: 'token-123'
-            });
+        await ActionHandler({
+            action: 'verifyOTC',
+            data: {otc: '123456', otcRef: 'ref-123'},
+            api: mockApi
         });
 
-        test('returns actionErrorMessage when verification fails without redirectUrl', async () => {
-            // Simulate API returning parsed JSON without redirectUrl (error case)
-            const mockResponse = {
-                errors: [{
-                    message: 'Invalid verification code'
-                }]
-            };
-
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.resolve(mockResponse))
-                }
-            };
-
-            const result = await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '000000', otcRef: 'ref-123'},
-                state: alphaState,
-                api: mockApi
-            });
-
-            expect(result.action).toBe('verifyOTC:failed');
-            expect(result.actionErrorMessage).toBe('Invalid verification code');
-            expect(result.popupNotification).toBeUndefined();
-        });
-
-        test('returns actionErrorMessage on API exception', async () => {
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.reject(new Error('Network error')))
-                }
-            };
-
-            const result = await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '123456', otcRef: 'ref-123'},
-                state: alphaState,
-                api: mockApi
-            });
-
-            expect(result.action).toBe('verifyOTC:failed');
-            expect(result.actionErrorMessage).toBe('Failed to verify code, please try again');
-            expect(result.popupNotification).toBeUndefined();
-        });
-
-        test('passes redirect parameter to verifyOTC API call, includes integrity token', async () => {
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('integrity-123')),
-                    verifyOTC: vi.fn(() => Promise.resolve({
-                        redirectUrl: 'https://example.com/custom'
-                    }))
-                }
-            };
-
-            await ActionHandler({
-                action: 'verifyOTC',
-                data: {
-                    otc: '123456',
-                    otcRef: 'ref-123',
-                    redirect: 'https://custom-redirect.com'
-                },
-                state: alphaState,
-                api: mockApi
-            });
-
-            expect(mockApi.member.verifyOTC).toHaveBeenCalledWith({
-                otc: '123456',
-                otcRef: 'ref-123',
-                redirect: 'https://custom-redirect.com',
-                integrityToken: 'integrity-123'
-            });
+        expect(mockLocationAssign).toHaveBeenCalledWith('https://example.com/success');
+        expect(mockApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '123456',
+            otcRef: 'ref-123',
+            integrityToken: 'token-123'
         });
     });
 
-    describe('without membersSigninOTCAlpha flag (legacy behavior)', () => {
-        const legacyState = {
-            labs: {membersSigninOTC: true, membersSigninOTCAlpha: false}
+    test('returns actionErrorMessage when verification fails without redirectUrl', async () => {
+        // Simulate API returning parsed JSON without redirectUrl (error case)
+        const mockResponse = {
+            errors: [{
+                message: 'Invalid verification code'
+            }]
         };
 
-        test('returns popupNotification instead of actionErrorMessage on failure', async () => {
-            const mockResponse = {
-                message: 'Invalid verification code'
-            };
+        const mockApi = {
+            member: {
+                getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+                verifyOTC: vi.fn(() => Promise.resolve(mockResponse))
+            }
+        };
 
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.resolve(mockResponse))
-                }
-            };
-
-            const result = await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '000000', otcRef: 'ref-123'},
-                state: legacyState,
-                api: mockApi
-            });
-
-            expect(result.action).toBe('verifyOTC:failed');
-            expect(result.popupNotification).toBeDefined();
-            expect(result.popupNotification.status).toBe('error');
-            expect(result.actionErrorMessage).toBeUndefined();
+        const result = await ActionHandler({
+            action: 'verifyOTC',
+            data: {otc: '000000', otcRef: 'ref-123'},
+            api: mockApi
         });
 
-        test('returns popupNotification on API exception', async () => {
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.reject(new Error('Network error')))
-                }
-            };
+        expect(result.action).toBe('verifyOTC:failed');
+        expect(result.actionErrorMessage).toBe('Invalid verification code');
+        expect(result.popupNotification).toBeUndefined();
+    });
 
-            const result = await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '123456', otcRef: 'ref-123'},
-                state: legacyState,
-                api: mockApi
-            });
+    test('returns actionErrorMessage on API exception', async () => {
+        const mockApi = {
+            member: {
+                getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+                verifyOTC: vi.fn(() => Promise.reject(new Error('Network error')))
+            }
+        };
 
-            expect(result.action).toBe('verifyOTC:failed');
-            expect(result.popupNotification).toBeDefined();
-            expect(result.actionErrorMessage).toBeUndefined();
+        const result = await ActionHandler({
+            action: 'verifyOTC',
+            data: {otc: '123456', otcRef: 'ref-123'},
+            api: mockApi
         });
 
-        test('still redirects on success', async () => {
-            const mockApi = {
-                member: {
-                    getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
-                    verifyOTC: vi.fn(() => Promise.resolve({
-                        redirectUrl: 'https://example.com/success'
-                    }))
-                }
-            };
+        expect(result.action).toBe('verifyOTC:failed');
+        expect(result.actionErrorMessage).toBe('Failed to verify code, please try again');
+        expect(result.popupNotification).toBeUndefined();
+    });
 
-            await ActionHandler({
-                action: 'verifyOTC',
-                data: {otc: '123456', otcRef: 'ref-123'},
-                state: legacyState,
-                api: mockApi
-            });
+    test('passes redirect parameter to verifyOTC API call, includes integrity token', async () => {
+        const mockApi = {
+            member: {
+                getIntegrityToken: vi.fn(() => Promise.resolve('integrity-123')),
+                verifyOTC: vi.fn(() => Promise.resolve({
+                    redirectUrl: 'https://example.com/custom'
+                }))
+            }
+        };
 
-            expect(mockLocationAssign).toHaveBeenCalledWith('https://example.com/success');
+        await ActionHandler({
+            action: 'verifyOTC',
+            data: {
+                otc: '123456',
+                otcRef: 'ref-123',
+                redirect: 'https://custom-redirect.com'
+            },
+            api: mockApi
+        });
+
+        expect(mockApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '123456',
+            otcRef: 'ref-123',
+            redirect: 'https://custom-redirect.com',
+            integrityToken: 'integrity-123'
         });
     });
 
@@ -248,7 +167,6 @@ describe('verifyOTC action', () => {
             const result = await ActionHandler({
                 action: 'verifyOTC',
                 data: {otc: '123456', otcRef: 'ref-123'},
-                state: {labs: {membersSigninOTCAlpha: true}},
                 api: mockApi
             });
 
