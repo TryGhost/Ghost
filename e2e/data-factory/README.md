@@ -77,36 +77,14 @@ const publishedPost = await persistentFactory.create({
 });
 ```
 
-### Running Tests
-
-```bash
-# From e2e directory
-yarn test:factory
-
-# This will:
-# 1. Build the TypeScript files
-# 2. Run Playwright tests in the data-factory directory
-
-# Or manually:
-yarn build
-yarn playwright test data-factory
-```
-
 ## Development
-
-### Build Process
-
-- **TypeScript source files** (`*.ts`) are in `e2e/data-factory/`
-- **Compiled JavaScript** (`*.js`) goes to `e2e/build/data-factory/`
-- The `e2e/build/` directory is gitignored
-- Always rebuild after making changes: `cd e2e && yarn build`
 
 ### Adding New Factories
 
 1. Create a new factory class extending `Factory<TOptions, TResult>`
 2. Implement the `build()` method (returns in-memory object)
 3. Set `entityType` property (used for persistence)
-4. Optionally create a setup helper in `setup/index.ts`
+4. Optionally create a setup helper in `setup/index.ts` with chosen persistence
 
 Example:
 ```typescript
@@ -134,9 +112,3 @@ export function createMemberFactory(httpClient: HttpClient) {
     return withPersistence(new MemberFactory(), adapter);
 }
 ```
-
-## Notes
-
-- The test file (`test/post-factory.test.js`) is JavaScript because it's a standalone script
-- All factory code is TypeScript and must be compiled before use
-- The compiled files in `e2e/build/` should never be committed to git
