@@ -27,6 +27,69 @@ interface GrowthSourcesTableProps {
     defaultSourceIconUrl: string;
 }
 
+// Component: Disabled State
+interface DisabledStateProps {
+    colSpan: number;
+    onOpenSettings: () => void;
+}
+
+const GrowthSourcesDisabled: React.FC<DisabledStateProps> = ({colSpan, onOpenSettings}) => (
+    <TableBody>
+        <TableRow className='last:border-none'>
+            <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={colSpan}>
+                <EmptyIndicator
+                    actions={
+                        <Button variant='outline' onClick={onOpenSettings}>
+                            Open settings
+                        </Button>
+                    }
+                    description='Enable member source tracking in settings to see which content drives member growth.'
+                    title='Member sources have been disabled'
+                >
+                    <LucideIcon.Activity />
+                </EmptyIndicator>
+            </TableCell>
+        </TableRow>
+    </TableBody>
+);
+
+// Component: Loading State
+interface LoadingStateProps {
+    colSpan: number;
+}
+
+const GrowthSourcesLoading: React.FC<LoadingStateProps> = ({colSpan}) => (
+    <TableBody>
+        <TableRow className='last:border-none'>
+            <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={colSpan}>
+                <SkeletonTable lines={5} />
+            </TableCell>
+        </TableRow>
+    </TableBody>
+);
+
+// Component: Empty State
+interface EmptyStateProps {
+    colSpan: number;
+    range: number;
+}
+
+const GrowthSourcesEmpty: React.FC<EmptyStateProps> = ({colSpan, range}) => (
+    <TableBody>
+        <TableRow className='last:border-none'>
+            <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={colSpan}>
+                <EmptyIndicator
+                    description='Try adjusting your date range to see more data.'
+                    title={`No conversions ${getPeriodText(range)}`}
+                >
+                    <LucideIcon.FileText strokeWidth={1.5} />
+                </EmptyIndicator>
+            </TableCell>
+        </TableRow>
+    </TableBody>
+);
+
+// Component: Table Body with Data
 const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl}) => {
     // Data is already sorted by the backend, so we just need to apply limit if specified
     const displayData = limit ? data.slice(0, limit) : data;
@@ -76,6 +139,77 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
     );
 };
 
+// Component: View All Sheet Modal
+interface ViewAllSheetProps {
+    processedData: ProcessedReferrerData[];
+    currencySymbol: string;
+    sortBy: SourcesOrder;
+    setSortBy: (sortBy: SourcesOrder) => void;
+    title: string;
+    description: string;
+    defaultSourceIconUrl: string;
+    paidMembersEnabled: boolean;
+}
+
+const GrowthSourcesViewAllSheet: React.FC<ViewAllSheetProps> = ({
+    processedData,
+    currencySymbol,
+    sortBy,
+    setSortBy,
+    title,
+    description,
+    defaultSourceIconUrl,
+    paidMembersEnabled
+}) => (
+    <Sheet>
+        <SheetTrigger asChild>
+            <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
+        </SheetTrigger>
+        <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
+            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                <SheetTitle>{title}</SheetTitle>
+                <SheetDescription>{description}</SheetDescription>
+            </SheetHeader>
+            <div className='group/datalist'>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>
+                                Source
+                            </TableHead>
+                            <TableHead className='w-[110px] text-right'>
+                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                                Free members
+                                </SortButton>
+                            </TableHead>
+                            {paidMembersEnabled &&
+                            <>
+                                <TableHead className='w-[110px] text-right'>
+                                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                    Paid members
+                                    </SortButton>
+                                </TableHead>
+                                <TableHead className='w-[110px] text-right'>
+                                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                    MRR impact
+                                    </SortButton>
+                                </TableHead>
+                            </>
+                            }
+                        </TableRow>
+                    </TableHeader>
+                    <GrowthSourcesTableBody
+                        currencySymbol={currencySymbol}
+                        data={processedData}
+                        defaultSourceIconUrl={defaultSourceIconUrl}
+                    />
+                </Table>
+            </div>
+        </SheetContent>
+    </Sheet>
+);
+
+// Main Component Props
 interface GrowthSourcesProps {
     range: number;
     limit?: number;
@@ -85,6 +219,7 @@ interface GrowthSourcesProps {
     selectedCampaign?: UtmCampaignType;
 }
 
+// Main Component
 export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     range,
     limit = 20,
@@ -200,126 +335,64 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
         });
     }, [referrersData, utmData, selectedCampaign, siteUrl, defaultSourceIconUrl, isUtmFetching]);
 
+    // Calculate display strings
     const title = 'Top sources';
     const description = `Where did your growth come from ${getPeriodText(range)}`;
 
-    // Return disabled state immediately if member source tracking is disabled
-    if (!appSettings?.analytics.membersTrackSources) {
+    // Calculate state flags
+    const colSpan = appSettings?.paidMembersEnabled ? 4 : 2;
+    const isDisabled = !appSettings?.analytics.membersTrackSources;
+    const isLoading = (!selectedCampaign && isSourcesLoading && !referrersData)
+                   || (!!selectedCampaign && isUtmFetching);
+    const isEmpty = processedData.length === 0;
+    const shouldShowViewAll = showViewAll && processedData.length > limit;
+
+    // Render states in priority order
+    if (isDisabled) {
         return (
-            <TableBody>
-                <TableRow className='last:border-none'>
-                    <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                        <EmptyIndicator
-                            actions={
-                                <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
-                                    Open settings
-                                </Button>
-                            }
-                            description='Enable member source tracking in settings to see which content drives member growth.'
-                            title='Member sources have been disabled'
-                        >
-                            <LucideIcon.Activity />
-                        </EmptyIndicator>
-                    </TableCell>
-                </TableRow>
-            </TableBody>
+            <GrowthSourcesDisabled
+                colSpan={colSpan}
+                onOpenSettings={() => navigate('/settings/analytics', {crossApp: true})}
+            />
         );
     }
-
-    // Show loading state when:
-    // 1. Loading regular sources data and not showing campaigns
-    // 2. Fetching UTM data and showing a campaign
-    const isLoading = (!selectedCampaign && isSourcesLoading && !referrersData) || (!!selectedCampaign && isUtmFetching);
 
     if (isLoading) {
-        return (
-            <TableBody>
-                <TableRow className='last:border-none'>
-                    <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                        <SkeletonTable lines={5} />
-                    </TableCell>
-                </TableRow>
-            </TableBody>
-        );
+        return <GrowthSourcesLoading colSpan={colSpan} />;
     }
 
+    if (isEmpty) {
+        return <GrowthSourcesEmpty colSpan={colSpan} range={range} />;
+    }
+
+    // Main content state - has data
     return (
         <>
-            {processedData.length > 0 ? (
-                <GrowthSourcesTableBody
-                    currencySymbol={currencySymbol}
-                    data={processedData}
-                    defaultSourceIconUrl={defaultSourceIconUrl}
-                    limit={limit}
-                />
-            ) : (
-                <TableBody>
-                    <TableRow className='last:border-none'>
-                        <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                            <EmptyIndicator
-                                description='Try adjusting your date range to see more data.'
-                                title={`No conversions ${getPeriodText(range)}`}
-                            >
-                                <LucideIcon.FileText strokeWidth={1.5} />
-                            </EmptyIndicator>
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            )}
-            {showViewAll && processedData.length > limit &&
+            <GrowthSourcesTableBody
+                currencySymbol={currencySymbol}
+                data={processedData}
+                defaultSourceIconUrl={defaultSourceIconUrl}
+                limit={limit}
+            />
+
+            {shouldShowViewAll && (
                 <TableFooter className='border-none bg-transparent hover:!bg-transparent'>
                     <TableRow>
                         <TableCell className='border-none bg-transparent px-0 pb-0 hover:!bg-transparent' colSpan={4}>
-                            <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
-                                </SheetTrigger>
-                                <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
-                                        <SheetTitle>{title}</SheetTitle>
-                                        <SheetDescription>{description}</SheetDescription>
-                                    </SheetHeader>
-                                    <div className='group/datalist'>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        Source
-                                                    </TableHead>
-                                                    <TableHead className='w-[110px] text-right'>
-                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
-                                                        Free members
-                                                        </SortButton>
-                                                    </TableHead>
-                                                    {appSettings?.paidMembersEnabled &&
-                                                    <>
-                                                        <TableHead className='w-[110px] text-right'>
-                                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
-                                                            Paid members
-                                                            </SortButton>
-                                                        </TableHead>
-                                                        <TableHead className='w-[110px] text-right'>
-                                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                                                            MRR impact
-                                                            </SortButton>
-                                                        </TableHead>
-                                                    </>
-                                                    }
-                                                </TableRow>
-                                            </TableHeader>
-                                            <GrowthSourcesTableBody
-                                                currencySymbol={currencySymbol}
-                                                data={processedData}
-                                                defaultSourceIconUrl={defaultSourceIconUrl}
-                                            />
-                                        </Table>
-                                    </div>
-                                </SheetContent>
-                            </Sheet>
+                            <GrowthSourcesViewAllSheet
+                                currencySymbol={currencySymbol}
+                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                description={description}
+                                paidMembersEnabled={appSettings?.paidMembersEnabled || false}
+                                processedData={processedData}
+                                setSortBy={setSortBy}
+                                sortBy={sortBy}
+                                title={title}
+                            />
                         </TableCell>
                     </TableRow>
                 </TableFooter>
-            }
+            )}
         </>
     );
 };
