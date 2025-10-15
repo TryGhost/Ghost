@@ -145,9 +145,7 @@ function startSigninOTCFromCustomForm({data, state}) {
     };
 }
 
-async function verifyOTC({data, api, state}) {
-    const {labs} = state;
-
+async function verifyOTC({data, api}) {
     const genericErrorMessage = t('Failed to verify code, please try again');
 
     try {
@@ -157,36 +155,16 @@ async function verifyOTC({data, api, state}) {
         if (response.redirectUrl) {
             return window.location.assign(response.redirectUrl);
         } else {
-            if (labs?.membersSigninOTCAlpha) {
-                return {
-                    action: 'verifyOTC:failed',
-                    actionErrorMessage: chooseBestErrorMessage(response.errors?.[0], genericErrorMessage)
-                };
-            } else {
-                return {
-                    action: 'verifyOTC:failed',
-                    popupNotification: createPopupNotification({
-                        type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                        message: response.message || t('Invalid verification code')
-                    })
-                };
-            }
+            return {
+                action: 'verifyOTC:failed',
+                actionErrorMessage: chooseBestErrorMessage(response.errors?.[0], genericErrorMessage)
+            };
         }
     } catch (e) {
-        if (labs?.membersSigninOTCAlpha) {
-            return {
-                action: 'verifyOTC:failed',
-                actionErrorMessage: chooseBestErrorMessage(e, genericErrorMessage)
-            };
-        } else {
-            return {
-                action: 'verifyOTC:failed',
-                popupNotification: createPopupNotification({
-                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                    message: chooseBestErrorMessage(e, genericErrorMessage)
-                })
-            };
-        }
+        return {
+            action: 'verifyOTC:failed',
+            actionErrorMessage: chooseBestErrorMessage(e, genericErrorMessage)
+        };
     }
 }
 
