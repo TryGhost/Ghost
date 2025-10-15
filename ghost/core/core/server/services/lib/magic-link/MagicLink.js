@@ -243,4 +243,3 @@ function defaultGetSubject(type, otc) {
 }
 
 module.exports = MagicLink;
-module.exports.JWTTokenProvider = require('./JWTTokenProvider');
