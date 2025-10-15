@@ -49,6 +49,11 @@ const Growth: React.FC = () => {
 
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
 
+    // Derive display content type - use 'campaigns' when a campaign is selected, otherwise use selectedContentType
+    const displayContentType = useMemo<ContentType>(() => {
+        return selectedCampaign ? CONTENT_TYPES.CAMPAIGNS : selectedContentType;
+    }, [selectedCampaign, selectedContentType]);
+
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
 
@@ -145,8 +150,8 @@ const Growth: React.FC = () => {
                 {isPageLoading ?
                     <Card className='min-h-[460px]'>
                         <CardHeader>
-                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
+                            <CardTitle>{getContentTitle(displayContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(displayContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <SkeletonTable lines={5} />
@@ -155,8 +160,8 @@ const Growth: React.FC = () => {
                     :
                     <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-content-card'>
                         <CardHeader>
-                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
+                            <CardTitle>{getContentTitle(displayContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(displayContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -182,7 +187,6 @@ const Growth: React.FC = () => {
                                                             selectedOption={selectedCampaign}
                                                             value='campaigns'
                                                             onOptionChange={(campaign) => {
-                                                                setSelectedContentType(CONTENT_TYPES.CAMPAIGNS);
                                                                 setSelectedCampaign(campaign as GrowthCampaignType);
                                                             }}
                                                         />
