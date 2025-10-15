@@ -34,7 +34,7 @@
 ## Adding New Components
 - Prefer ShadCN first: search for an equivalent and add via `npx shadcn@latest add <component>`. Follow the guardrails above to avoid accidental overwrites.
 - Location & exports: place new UI components under `src/components/ui` and export them from `src/index.ts`.
-- Storybook: add a sibling `*.stories.tsx` file with an overview (what/why) and stories showing different use cases/variants (sizes, states, important props).
+- Storybook: add a sibling `*.stories.tsx` file with an overview (what/why) and stories showing different use cases/variants (sizes, states, important props). If you've added a ShadCN component then copy the examples from the ShadCN component documentation at https://ui.shadcn.com/docs/components/[component name].
 - Implementation: forward `className` and merge with `cn(...)`; use CVA for variants where appropriate.
 - Verification: `yarn lint`, `yarn test`, plus `yarn storybook` to visually validate stories before opening a PR.
 - **Important**: Always run `yarn lint` after making changes to fix any ESLint errors and warnings before committing.
