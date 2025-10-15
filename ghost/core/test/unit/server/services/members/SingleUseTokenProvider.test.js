@@ -275,10 +275,13 @@ describe('SingleUseTokenProvider', function () {
     describe('validate', function () {
         let clock;
         const testToken = COMMON_TEST_TOKEN.token;
+        const testTokenUuid = COMMON_TEST_TOKEN.uuid;
         const testData = {user: 'test-user', email: 'test@example.com'};
 
         beforeEach(function () {
             clock = sinon.useFakeTimers();
+
+            sinon.stub(tokenProvider, 'getRefByToken').resolves(testTokenUuid);
         });
 
         afterEach(function () {
@@ -291,6 +294,7 @@ describe('SingleUseTokenProvider', function () {
             token = testToken,
             data = JSON.stringify(testData),
             usedCount = 0,
+            otcUsedCount = 0,
             firstUsedAt = null,
             createdAt = new Date()
         } = {}) {
@@ -302,6 +306,7 @@ describe('SingleUseTokenProvider', function () {
                     case 'token': return token;
                     case 'data': return data;
                     case 'used_count': return usedCount;
+                    case 'otc_used_count': return otcUsedCount;
                     case 'first_used_at': return firstUsedAt;
                     case 'created_at': return createdAt;
                     default: return null;
@@ -322,6 +327,13 @@ describe('SingleUseTokenProvider', function () {
         function buildModel(options = {}) {
             const model = createMockModel(options);
             return setupMockModelForValidation(model);
+        }
+
+        function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
+            const otc = tokenProvider.deriveOTC(tokenId, token);
+            const timestamp = timestampOverride || Math.floor(Date.now() / 1000);
+            const hash = tokenProvider.createOTCVerificationHash(otc, token, timestamp);
+            return `${timestamp}:${hash}`;
         }
 
         it('should validate a fresh token and return parsed data', async function () {
@@ -428,26 +440,16 @@ describe('SingleUseTokenProvider', function () {
         });
 
         describe('OTC verification integration', function () {
-            function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
-                const otc = tokenProvider.deriveOTC(tokenId, token);
-                const timestamp = timestampOverride || Math.floor(Date.now() / 1000);
-                const hash = tokenProvider.createOTCVerificationHash(otc, token, timestamp);
-                return `${timestamp}:${hash}`;
-            }
-
             it('should validate token with realistic OTC verification hash', async function () {
-                const testTokenUuid = COMMON_TEST_TOKEN.uuid;
                 const otcMockModel = createMockModel({uuid: testTokenUuid});
                 setupMockModelForValidation(otcMockModel);
 
                 // Need to mock getRefByToken since _validateOTCVerificationHash calls it
-                sinon.stub(tokenProvider, 'getRefByToken').resolves(testTokenUuid);
                 const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
 
                 const result = await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
 
                 assert.deepEqual(result, testData);
-                tokenProvider.getRefByToken.restore();
             });
 
             it('should throw ValidationError with malformed OTC verification hash', async function () {
@@ -459,10 +461,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError with expired OTC verification hash', async function () {
-                const testTokenUuid = COMMON_TEST_TOKEN.uuid;
                 buildModel({uuid: testTokenUuid});
-
-                sinon.stub(tokenProvider, 'getRefByToken').resolves(testTokenUuid);
 
                 const expiredTimestamp = Math.floor(Date.now() / 1000) - (6 * 60); // 6 minutes ago
                 const expiredOtcVerification = createOtcVerificationHash(testTokenUuid, testToken, expiredTimestamp);
@@ -471,8 +470,6 @@ describe('SingleUseTokenProvider', function () {
                     tokenProvider.validate(testToken, {otcVerification: expiredOtcVerification}),
                     {code: 'INVALID_OTC_VERIFICATION_HASH'}
                 );
-
-                tokenProvider.getRefByToken.restore();
             });
 
             it('should skip OTC verification when not provided', async function () {
@@ -482,6 +479,117 @@ describe('SingleUseTokenProvider', function () {
                 const result = await tokenProvider.validate(testToken);
 
                 assert.deepEqual(result, testData);
+            });
+        });
+
+        describe('OTC-specific use count tracking', function () {
+            it('should increment otc_used_count and not used_count for OTC validation', async function () {
+                const otcMockModel = createMockModel({uuid: testTokenUuid, usedCount: 0, otcUsedCount: 0});
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                sinon.assert.calledWith(otcMockModel.save, sinon.match({
+                    otc_used_count: 1,
+                    updated_at: sinon.match.date
+                }), sinon.match({autoRefresh: false, patch: true, transacting: 'test-transaction'}));
+
+                // Verify used_count was NOT incremented
+                const saveCall = otcMockModel.save.getCall(0);
+                assert.equal(saveCall.args[0].used_count, undefined);
+            });
+
+            it('should set first_used_at for OTC if not already set', async function () {
+                const otcMockModel = createMockModel({uuid: testTokenUuid, firstUsedAt: null});
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                sinon.assert.calledWith(otcMockModel.save, sinon.match({
+                    first_used_at: sinon.match.date,
+                    otc_used_count: 1,
+                    updated_at: sinon.match.date
+                }), sinon.match.any);
+            });
+
+            it('should not update first_used_at for OTC if already set', async function () {
+                const existingFirstUsedAt = new Date(Date.now() - HALF_HOUR_MS);
+                const otcMockModel = createMockModel({
+                    uuid: testTokenUuid,
+                    firstUsedAt: existingFirstUsedAt,
+                    otcUsedCount: 0
+                });
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                const saveCall = otcMockModel.save.getCall(0);
+                assert.equal(saveCall.args[0].first_used_at, undefined);
+                assert.equal(saveCall.args[0].otc_used_count, 1);
+            });
+
+            it('should throw OTC_EXPIRED when OTC has been used before', async function () {
+                const otcMockModel = createMockModel({uuid: testTokenUuid, otcUsedCount: 1});
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: validOtcVerification}),
+                    {code: 'OTC_EXPIRED'}
+                );
+            });
+
+            it('should throw TOKEN_EXPIRED when max token lifetime exceeded for OTC', async function () {
+                const oldDate = new Date(Date.now() - (DAY_MS + 1));
+                const otcMockModel = createMockModel({uuid: testTokenUuid, createdAt: oldDate});
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: validOtcVerification}),
+                    {code: 'TOKEN_EXPIRED'}
+                );
+            });
+
+            it('should not check validityPeriodAfterUsage for OTC', async function () {
+                // Set up a token that would fail the validityPeriodAfterUsage check for magic links
+                const oldFirstUsedAt = new Date(Date.now() - (HOUR_MS + 1));
+                const otcMockModel = createMockModel({
+                    uuid: testTokenUuid,
+                    usedCount: 5, // Previously used as magic link
+                    otcUsedCount: 0, // But never used as OTC
+                    firstUsedAt: oldFirstUsedAt
+                });
+                setupMockModelForValidation(otcMockModel);
+
+                const validOtcVerification = createOtcVerificationHash(testTokenUuid, testToken);
+
+                // Should succeed because OTC doesn't check validityPeriodAfterUsage
+                const result = await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                assert.deepEqual(result, testData);
+            });
+
+            it('should throw TOKEN_EXPIRED for magic link validation after OTC is used', async function () {
+                const usedMockModel = createMockModel({
+                    usedCount: 0,
+                    otcUsedCount: 1 // OTC already used once
+                });
+                setupMockModelForValidation(usedMockModel);
+
+                // Validate as magic link (no otcVerification)
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    {code: 'TOKEN_EXPIRED'}
+                );
             });
         });
     });
