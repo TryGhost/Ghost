@@ -3,7 +3,8 @@ export const CONTENT_TYPES = {
     POSTS: 'posts',
     PAGES: 'pages',
     POSTS_AND_PAGES: 'posts_and_pages',
-    SOURCES: 'sources'
+    SOURCES: 'sources',
+    CAMPAIGNS: 'campaigns'
 } as const;
 
 export type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
@@ -17,6 +18,8 @@ export const getContentTitle = (selectedContentType: ContentType) => {
         return 'Top pages';
     case CONTENT_TYPES.SOURCES:
         return 'Top sources';
+    case CONTENT_TYPES.CAMPAIGNS:
+        return 'Top campaigns';
     default:
         return 'Top content';
     }
@@ -47,7 +50,9 @@ export const getGrowthContentDescription = (selectedContentType: ContentType, ra
         return `Which posts or pages drove the most growth ${getPeriodText(rangeValue)}`;
     case CONTENT_TYPES.SOURCES:
         return `How readers found your site ${getPeriodText(rangeValue)}`;
+    case CONTENT_TYPES.CAMPAIGNS:
+        return `Which campaigns drove the most growth ${getPeriodText(rangeValue)}`;
     default:
         return `Which posts drove the most growth ${getPeriodText(rangeValue)}`;
     }
-}; 
+};
