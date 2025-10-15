@@ -7,12 +7,16 @@ A minimal test data factory for Ghost e2e tests, written in TypeScript.
 ```
 e2e/data-factory/          # Source files (TypeScript) - committed to git
 ├── factory.ts             # Base factory class
-├── factories/             # factory implementations 
+├── factories/             # Factory implementations
+│   ├── post-factory.ts
+│   ├── tag-factory.ts
+│   └── user-factory.ts
 ├── persistence/
 │   ├── adapter.ts         # Persistence interface
-│   └── adapters/          # Knex SQL adapter, API adapter etc
+│   └── adapters/          # Adapter implementations (API, Knex, etc)
+├── setup.ts               # Setup helper functions
 ├── index.ts               # Main exports
-├── utils.ts               # Utility functions
+└── utils.ts               # Utility functions
 ```
 
 ## Setup
@@ -41,37 +45,34 @@ This is part of the Ghost e2e test suite. All dependencies are managed by the ma
 
 **Option 1: Use setup helpers (recommended)**
 ```typescript
-import {createPostFactory} from '../data-factory';
+import {createPostFactory, PostFactory} from '../data-factory';
 
-const postFactory = createPostFactory(page.request);
+// Create factory with API persistence
+const postFactory: PostFactory = createPostFactory(page.request);
+
+// Build in-memory only (not persisted)
+const draftPost = postFactory.build({
+    title: 'My Draft',
+    status: 'draft'
+});
 
 // Create and persist to database
-await postFactory.create({
+const publishedPost = await postFactory.create({
     title: 'My Published Post',
     status: 'published'
 });
 ```
 
-**Option 2: Manual setup with decorator pattern**
+**Option 2: Manual setup**
 ```typescript
 import {PostFactory} from '../data-factory/factories/post-factory';
-import {withPersistence} from '../data-factory/factory';
 import {GhostAdminApiAdapter} from '../data-factory/persistence/adapters/ghost-api';
 
-const factory = new PostFactory();
-
-// Build in-memory only (not persisted)
-const draftPost = factory.build({
-    title: 'My Draft',
-    status: 'draft'
-});
-
-// Wrap with persistence to enable database operations
 const adapter = new GhostAdminApiAdapter(page.request, 'posts');
-const persistentFactory = withPersistence(factory, adapter);
+const postFactory = new PostFactory(adapter);
 
-// Create and persist to database
-const publishedPost = await persistentFactory.create({
+// Now you can build or create
+const post = await postFactory.create({
     title: 'My Published Post',
     status: 'published'
 });
@@ -84,7 +85,7 @@ const publishedPost = await persistentFactory.create({
 1. Create a new factory class extending `Factory<TOptions, TResult>`
 2. Implement the `build()` method (returns in-memory object)
 3. Set `entityType` property (used for persistence)
-4. Optionally create a setup helper in `setup/index.ts` with chosen persistence
+4. Create a setup helper in `setup.ts` for convenient usage in tests
 
 Example:
 ```typescript
@@ -106,9 +107,9 @@ export class MemberFactory extends Factory<Partial<Member>, Member> {
 
 Then create a setup helper:
 ```typescript
-// In setup/index.ts
-export function createMemberFactory(httpClient: HttpClient) {
+// In setup.ts
+export function createMemberFactory(httpClient: HttpClient): MemberFactory {
     const adapter = new GhostAdminApiAdapter(httpClient, 'members');
-    return withPersistence(new MemberFactory(), adapter);
+    return new MemberFactory(adapter);
 }
 ```

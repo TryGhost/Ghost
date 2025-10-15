@@ -1,11 +1,10 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
-import {createPostFactory, createTagFactory, Tag} from '../../../data-factory';
+import {createPostFactory, createTagFactory,TagFactory} from '../../../data-factory';
 import {Page} from '@playwright/test';
-import {PersistentFactory} from '../../../data-factory/factory';
 
 test.describe('Ghost Admin - Tags', () => {
-    let tagFactory: PersistentFactory<Partial<Tag>>;
+    let tagFactory: TagFactory;
     test.beforeEach(async ({page}) => {
         tagFactory = createTagFactory(page.request);
     });

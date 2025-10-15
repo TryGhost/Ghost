@@ -1,5 +1,5 @@
 import {test, expect} from '../../../helpers/playwright';
-import {SettingsPage} from '../../../helpers/pages/admin/settings/SettingsPage';
+import {SettingsPage} from '../../../helpers/pages/admin';
 
 test.describe('Settings Search - Labs Auto-open', () => {
     test('display only Labs component and auto-open when searching for "lab"', async ({page}) => {

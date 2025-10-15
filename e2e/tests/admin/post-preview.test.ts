@@ -1,10 +1,9 @@
 import {test, expect} from '../../helpers/playwright';
 import {PostEditorPage} from '../../helpers/pages/admin';
-import {createPostFactory, Post} from '../../data-factory';
-import {PersistentFactory} from '../../data-factory/factories/factory';
+import {createPostFactory, PostFactory} from '../../data-factory';
 
 test.describe('Post Preview Modal', () => {
-    let postFactory: PersistentFactory<Partial<Post>>;
+    let postFactory: PostFactory;
 
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
