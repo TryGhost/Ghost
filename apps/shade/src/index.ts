@@ -48,10 +48,15 @@ export * from './components/layout/view-header';
 // Feature components — Complete functional components (share modal, etc.)
 export {default as PostShareModal} from './components/features/post_share_modal';
 export * from './components/features/table-filter-tabs/table-filter-tabs';
-export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-export * from './components/features/utm-growth-tabs/utm-growth-tabs';
-export type {CampaignType, TabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-export type {GrowthCampaignType, GrowthTabType} from './components/features/utm-growth-tabs/utm-growth-tabs';
+export {
+    UtmCampaignDropdown,
+    UtmCampaignTabs,
+    UTM_CAMPAIGN_TYPES,
+    UTM_CAMPAIGN_OPTIONS,
+    UTM_TYPE_MAP,
+    getUtmType
+} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
+export type {UtmCampaignType, UtmTabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
 
 // Third party components
 export * as Recharts from 'recharts';
