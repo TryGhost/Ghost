@@ -9,6 +9,7 @@ const messages = {
     INVALID_OTC_VERIFICATION_HASH: 'Invalid OTC verification hash',
     INVALID_TOKEN: 'Invalid token provided',
     TOKEN_EXPIRED: 'Token expired',
+    OTC_EXPIRED: 'One-time code expired',
     DERIVE_OTC_MISSING_INPUT: 'tokenId and tokenValue are required'
 };
 
@@ -56,7 +57,7 @@ class SingleUseTokenProvider {
      * @param {Object} [options.transacting] - Database transaction object
      * @param {string} [options.otcVerification] - OTC verification hash for additional validation
      *
-     * @returns {Promise<Object<string, any>>}
+     * @returns {Promise<Object<string, unknown>>}
      */
     async validate(token, options = {}) {
         if (!options.transacting) {
@@ -68,24 +69,54 @@ class SingleUseTokenProvider {
             });
         }
 
-        const isOTC = !!options.otcVerification;
-
-        if (isOTC) {
-            await this._validateOTCVerificationHash(options.otcVerification, token);
-        }
-
         const model = await this._findAndLockTokenModel(token, options.transacting);
 
-        this._validateUsageCount(model);
-        this._validateTokenLifetime(model);
-
-        await this._incrementUsageCount(model, options.transacting);
+        if (options.otcVerification) {
+            await this._validateOTCVerificationHash(options.otcVerification, model.get('token'));
+            await this._validateOTCUsageLimit(model, options.transacting);
+        } else {
+            await this._validateUsageLimit(model, options.transacting);
+        }
 
         try {
             return JSON.parse(model.get('data'));
         } catch (err) {
             return {};
         }
+    }
+
+    /**
+     * @private
+     * @method _validateOTCUsageLimit
+     * Validates a token model is within it's usage limits after additional OTC verification..
+     * OTC bypasses the non-OTC usage count and time-since-first-usage validation but is true single-use.
+     *
+     * @param {Object} model - Token model instance
+     * @param {Object} transaction - Database transaction object
+     *
+     * @returns {Promise<void>}
+     */
+    async _validateOTCUsageLimit(model, transaction) {
+        this._validateOTCUsageCount(model);
+        this._validateTotalTokenLifetime(model);
+        await this._incrementOTCUsageCount(model, transaction);
+    }
+
+    /**
+     * @private
+     * @method _validateUsageLimit
+     * Validates a token model is within it's usage limits
+     *
+     * @param {Object} model - Token model instance
+     * @param {Object} transaction - Database transaction object
+     *
+     * @returns {Promise<void>}
+     */
+    async _validateUsageLimit(model, transaction) {
+        this._validateUsageCount(model);
+        this._validateTimeSinceFirstUsage(model);
+        this._validateTotalTokenLifetime(model);
+        await this._incrementUsageCount(model, transaction);
     }
 
     /**
@@ -318,10 +349,19 @@ class SingleUseTokenProvider {
      * @method _validateUsageCount
      * Validates that token has not exceeded usage limits, throws on over-used token
      *
-     * @param {Object} model
+     * @param {Object} model - The token model
      * @returns {void}
      */
     _validateUsageCount(model) {
+        // Magic links are invalid if OTC has been used
+        const otcUsedCount = model.get('otc_used_count') || 0;
+        if (otcUsedCount > 0) {
+            throw new ValidationError({
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
+            });
+        }
+
         if (model.get('used_count') >= this.maxUsageCount) {
             throw new ValidationError({
                 message: tpl(messages.TOKEN_EXPIRED),
@@ -332,29 +372,53 @@ class SingleUseTokenProvider {
 
     /**
      * @private
-     * @method _validateTokenLifetime
-     * Validates token has not exceeded its lifetime limits, throws on expired token
+     * @method _validateOTCUsageCount
+     * Validates that OTC has not exceeded usage limits, throws on over-used token
      *
-     * @param {Object} model
+     * @param {Object} model - The token model
      * @returns {void}
      */
-    _validateTokenLifetime(model) {
-        const createdAtEpoch = model.get('created_at').getTime();
-
-        // Check token lifetime after first usage
-        if (model.get('used_count') > 0) {
-            const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
-            const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
-
-            if (timeSinceFirstUsage > this.validityPeriodAfterUsage) {
-                throw new ValidationError({
-                    message: tpl(messages.TOKEN_EXPIRED),
-                    code: 'TOKEN_EXPIRED'
-                });
-            }
+    _validateOTCUsageCount(model) {
+        const otcUsedCount = model.get('otc_used_count') || 0;
+        if (otcUsedCount >= 1) {
+            throw new ValidationError({
+                message: tpl(messages.OTC_EXPIRED),
+                code: 'OTC_EXPIRED'
+            });
         }
+    }
 
-        // Check total token lifetime
+    /**
+     * @private
+     * @method _validateTimeSinceFirstUsage
+     * Validates token has not exceeded its time since first usage, throws on expired token
+     *
+     * @param {Object} model - The token model
+     * @returns {void}
+     */
+    _validateTimeSinceFirstUsage(model) {
+        const createdAtEpoch = model.get('created_at').getTime();
+        const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
+        const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
+
+        if (timeSinceFirstUsage > this.validityPeriodAfterUsage) {
+            throw new ValidationError({
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
+            });
+        }
+    }
+
+    /**
+     * @private
+     * @method _validateTotalTokenLifetime
+     * Validates token has not exceeded its total lifetime, throws on expired token
+     *
+     * @param {Object} model - The token model
+     * @returns {void}
+     */
+    _validateTotalTokenLifetime(model) {
+        const createdAtEpoch = model.get('created_at').getTime();
         const tokenLifetimeMilliseconds = Date.now() - createdAtEpoch;
         if (tokenLifetimeMilliseconds > this.validityPeriod) {
             throw new ValidationError({
@@ -369,15 +433,41 @@ class SingleUseTokenProvider {
      * @method _incrementUsageCount
      * Increments the usage count for a token
      *
-     * @param {Object} model
-     * @param {Object} transacting
+     * @param {Object} model - The token model
+     * @param {Object} transacting - Database transaction object
      * @returns {Promise<void>}
      */
     async _incrementUsageCount(model, transacting) {
-        const updateData = {
-            used_count: model.get('used_count') + 1,
-            updated_at: new Date()
-        };
+        const updateData = {used_count: model.get('used_count') + 1};
+        await this._saveUsageData(updateData, model, transacting);
+    }
+
+    /**
+     * @private
+     * @method _incrementOTCUsageCount
+     * Increments the OTC usage count for a token
+     *
+     * @param {Object} model - The token model
+     * @param transacting - Database transaction object
+     * @returns {Promise<void>}
+     */
+    async _incrementOTCUsageCount(model, transacting) {
+        const updateData = {otc_used_count: model.get('otc_used_count') + 1};
+        await this._saveUsageData(updateData, model, transacting);
+    }
+
+    /**
+     * @private
+     * @method _saveUsageData
+     * Saves the usage data for a token
+     *
+     * @param {Object} updateData - The data to save
+     * @param {Object} model - The token model
+     * @param {Object} transacting - Database transaction object
+     * @returns {Promise<void>}
+     */
+    async _saveUsageData(updateData, model, transacting) {
+        updateData.updated_at = new Date();
 
         if (!model.get('first_used_at')) {
             updateData.first_used_at = new Date();
