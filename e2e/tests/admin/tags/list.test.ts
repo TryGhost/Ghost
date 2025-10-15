@@ -2,7 +2,7 @@ import {test, expect} from '../../../helpers/playwright';
 import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
 import {createPostFactory, createTagFactory, Tag} from '../../../data-factory';
 import {Page} from '@playwright/test';
-import {PersistentFactory} from '../../../data-factory/factories/factory';
+import {PersistentFactory} from '../../../data-factory/factory';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: PersistentFactory<Partial<Tag>>;

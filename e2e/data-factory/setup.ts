@@ -1,8 +1,8 @@
-import {PostFactory} from '../factories/posts/post-factory';
-import {TagFactory} from '../factories/tags/tag-factory';
-import {GhostAdminApiAdapter} from '../persistence/adapters/ghost-api';
-import {HttpClient} from '../persistence/adapters/http-client';
-import {withPersistence} from '../factories/factory';
+import {PostFactory} from './factories/post-factory';
+import {TagFactory} from './factories/tag-factory';
+import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
+import {HttpClient} from './persistence/adapters/http-client';
+import {withPersistence} from './factory';
 
 /**
  * Create a new PostFactory with API persistence

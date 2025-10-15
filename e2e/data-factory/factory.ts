@@ -1,4 +1,4 @@
-import type {PersistenceAdapter} from '../persistence/adapter';
+import type {PersistenceAdapter} from './persistence/adapter';
 
 export function withPersistence<TOptions extends Record<string, unknown> = Record<string, unknown>, TResult = TOptions>(
     factory: Factory<TOptions, TResult>,
