@@ -10,8 +10,9 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
-import {useEffect, useRef, useState} from 'react';
-import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import type {ProfileTab} from '../Profile';
 
 const noop = () => {};
 
@@ -38,7 +39,24 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followersTab
 }) => {
     const params = useParams();
+    const location = useLocation();
+    const navigate = useNavigate();
     const {canGoBack} = useNavigationStack();
+
+    const basePath = params.handle ? `/profile/${params.handle}` : '/profile';
+    const likesEnabled = !params.handle;
+
+    const normalizedPath = location.pathname.replace(/\/+$/, '');
+    const profileIndex = normalizedPath.indexOf('/profile');
+    const suffix = profileIndex >= 0 ? normalizedPath.slice(profileIndex + '/profile'.length) : '';
+    const segments = suffix.split('/').filter(Boolean);
+    const lastSegment = segments[segments.length - 1] || '';
+    const tabSlug = (params.handle && lastSegment === params.handle) ? '' : lastSegment;
+
+    const allowedTabs = useMemo<ProfileTab[]>(() => (
+        likesEnabled ? ['likes', 'following', 'followers'] : ['following', 'followers']
+    ), [likesEnabled]);
+    const activeTab: ProfileTab = allowedTabs.includes(tabSlug as ProfileTab) ? tabSlug as ProfileTab : 'posts';
 
     const blockMutation = useBlockMutationForUser('index');
     const unblockMutation = useUnblockMutationForUser('index');
@@ -115,6 +133,32 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
     }, [isExpanded, account?.bio, customFields, isLoadingAccount]);
+
+    useEffect(() => {
+        if (!tabSlug) {
+            return;
+        }
+
+        if (!allowedTabs.includes(tabSlug as ProfileTab)) {
+            navigate(basePath, {replace: true});
+        }
+    }, [allowedTabs, basePath, navigate, tabSlug]);
+
+    const createTabPath = (tab: ProfileTab) => {
+        if (tab === 'posts') {
+            return basePath;
+        }
+
+        return `${basePath}/${tab}`;
+    };
+
+    const handleTabChange = (tab: ProfileTab) => {
+        if (tab === activeTab) {
+            return;
+        }
+
+        navigate(createTabPath(tab), {replace: true});
+    };
 
     if (!isLoadingAccount && !account) {
         return (
@@ -248,10 +292,16 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     onClick={toggleExpand}
                                 >{isExpanded ? 'Show less' : 'Show all'}</Button>}
                             </div>)}
-                            <Tabs key={params.handle || account?.handle || 'current-user'} className='mt-5' defaultValue='posts' variant='underline'>
+                            <Tabs
+                                key={params.handle || account?.handle || 'current-user'}
+                                className='mt-5'
+                                value={activeTab}
+                                variant='underline'
+                                onValueChange={value => handleTabChange(value as ProfileTab)}
+                            >
                                 <TabsList>
                                     <TabsTrigger value="posts">Posts</TabsTrigger>
-                                    {!params.handle && <TabsTrigger value="likes">
+                                    {likesEnabled && <TabsTrigger value="likes">
                                         Likes
                                         <TabsTriggerCount>{abbreviateNumber(account?.likedCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>}
@@ -277,7 +327,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                         postsTab
                                     }
                                 </TabsContent>
-                                {!params.handle && <TabsContent value='likes'>
+                                {likesEnabled && <TabsContent value='likes'>
                                     {likesTab}
                                 </TabsContent>}
                                 <TabsContent value='following'>
