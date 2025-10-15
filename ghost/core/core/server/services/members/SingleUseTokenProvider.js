@@ -57,7 +57,7 @@ class SingleUseTokenProvider {
      * @param {Object} [options.transacting] - Database transaction object
      * @param {string} [options.otcVerification] - OTC verification hash for additional validation
      *
-     * @returns {Promise<Object<string, any>>}
+     * @returns {Promise<Object<string, unknown>>}
      */
     async validate(token, options = {}) {
         if (!options.transacting) {
@@ -72,14 +72,10 @@ class SingleUseTokenProvider {
         const model = await this._findAndLockTokenModel(token, options.transacting);
 
         if (options.otcVerification) {
-            await this._validateOTCVerificationHash(options.otcVerification, token);
-            this._validateOTCUsageCount(model);
-            this._validateOTCLifetime(model);
-            await this._incrementOTCUsageCount(model, options.transacting);
+            await this._validateOTCVerificationHash(options.otcVerification, model.get('token'));
+            await this._validateOTCUsageLimit(model, options.transacting);
         } else {
-            this._validateUsageCount(model);
-            this._validateTokenLifetime(model);
-            await this._incrementUsageCount(model, options.transacting);
+            await this._validateUsageLimit(model, options.transacting);
         }
 
         try {
@@ -87,6 +83,40 @@ class SingleUseTokenProvider {
         } catch (err) {
             return {};
         }
+    }
+
+    /**
+     * @private
+     * @method _validateOTCUsageLimit
+     * Validates a token model is within it's usage limits after additional OTC verification..
+     * OTC bypasses the non-OTC usage count and time-since-first-usage validation but is true single-use.
+     *
+     * @param {Object} model - Token model instance
+     * @param {Object} transaction - Database transaction object
+     *
+     * @returns {Promise<void>}
+     */
+    async _validateOTCUsageLimit(model, transaction) {
+        this._validateOTCUsageCount(model);
+        this._validateTotalTokenLifetime(model);
+        await this._incrementOTCUsageCount(model, transaction);
+    }
+
+    /**
+     * @private
+     * @method _validateUsageLimit
+     * Validates a token model is within it's usage limits
+     *
+     * @param {Object} model - Token model instance
+     * @param {Object} transaction - Database transaction object
+     *
+     * @returns {Promise<void>}
+     */
+    async _validateUsageLimit(model, transaction) {
+        this._validateUsageCount(model);
+        this._validateTimeSinceFirstUsage(model);
+        this._validateTotalTokenLifetime(model);
+        await this._incrementUsageCount(model, transaction);
     }
 
     /**
@@ -356,33 +386,6 @@ class SingleUseTokenProvider {
                 code: 'OTC_EXPIRED'
             });
         }
-    }
-
-    /**
-     * @private
-     * @method _validateTokenLifetime
-     * Validates token has not exceeded its time since first usage or total lifetime, throws on expired token.
-     * Used for general token validation (magic links)
-     *
-     * @param {Object} model - The token model
-     * @returns {void}
-     */
-    _validateTokenLifetime(model) {
-        this._validateTimeSinceFirstUsage(model);
-        this._validateTotalTokenLifetime(model);
-    }
-
-    /**
-     * @private
-     * @method _validateOTCLifetime
-     * Validates OTC has not exceeded its total lifetime, throws on expired token.
-     * OTCs don't get invalidated by magic link usage so we only need to check total lifetime.
-     *
-     * @param {Object} model - The token model
-     * @returns {void}
-     */
-    _validateOTCLifetime(model) {
-        this._validateTotalTokenLifetime(model);
     }
 
     /**
