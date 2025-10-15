@@ -33,7 +33,7 @@ const setupTest = (options = {}) => {
 // Helper for OTC-enabled tests
 const setupOTCTest = (options = {}) => {
     return setupTest({
-        labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
+        labs: {membersSigninOTC: true},
         otcRef: 'test-otc-ref',
         ...options
     });
@@ -87,7 +87,7 @@ describe('MagicLinkPage', () => {
         test('does not render OTC form when conditions not met', () => {
             const scenarios = [
                 {labs: {membersSigninOTC: false}, otcRef: 'test-ref'},
-                {labs: {membersSigninOTC: true, membersSigninOTCAlpha: true}, otcRef: null},
+                {labs: {membersSigninOTC: true}, otcRef: null},
                 {labs: {membersSigninOTC: false}, otcRef: null}
             ];
 
@@ -315,7 +315,7 @@ describe('MagicLinkPage', () => {
     describe('OTC flow edge cases', () => {
         test('does not render form without otcRef even with lab flag', () => {
             const utils = setupTest({
-                labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
+                labs: {membersSigninOTC: true},
                 otcRef: null
             });
 
@@ -451,18 +451,6 @@ describe('MagicLinkPage', () => {
                 otc: '654321',
                 otcRef: 'test-otc-ref'
             });
-        });
-
-        test('shows actionErrorMessage in non-alpha OTC form variant', () => {
-            const utils = setupTest({
-                labs: {membersSigninOTC: true, membersSigninOTCAlpha: false},
-                otcRef: 'test-otc-ref',
-                action: 'verifyOTC:failed',
-                actionErrorMessage: 'Invalid verification code'
-            });
-
-            // In non-alpha variant, error appears in InputField error message
-            expect(utils.getByText('Invalid verification code')).toBeInTheDocument();
         });
     });
 });

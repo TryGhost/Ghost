@@ -180,7 +180,7 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
             const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
             expect(description).toBeInTheDocument();
-            
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
@@ -558,18 +558,14 @@ describe('OTC Integration Flow', () => {
         const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
         expect(description).toBeInTheDocument();
     });
-    
+
     test('OTC verification with invalid code shows error', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
         });
 
         // Mock verifyOTC to return validation error
-        ghostApi.member.verifyOTC.mockResolvedValueOnce({
-            valid: false,
-            success: false,
-            message: 'Invalid verification code'
-        });
+        ghostApi.member.verifyOTC.mockRejectedValueOnce(new Error('Invalid verification code'));
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
         submitOTCForm(popupIframeDocument, '000000');
@@ -606,7 +602,7 @@ describe('OTC Integration Flow', () => {
             });
         });
 
-        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code/i);
         expect(errorNotification).toBeInTheDocument();
     });
 
