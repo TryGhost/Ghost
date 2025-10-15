@@ -4,10 +4,13 @@
     ],
     // This reduces PR churn when managing lots of dependencies
     "rebaseWhen": "never",
+    // We have to disable platform based automerge (forcing renovate to do it manually)
+    // as otherwise renovate wont follow our schedule
+    "platformAutomerge": false,
+    "timezone": "Etc/UTC",
     "automergeSchedule": [
-        // Allow automerge From 5pm Friday til midday Monday
-        "* 17-23 * * 5",
-        "* * * * 0,6,",
+        // Allow automerge all weekend: Saturday, Sunday, and Monday morning
+        "* * * * 0,6",
         "* 0-12 * * 1"
     ],
     "ignoreDeps": [
