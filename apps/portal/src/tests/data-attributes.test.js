@@ -180,7 +180,7 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
 
-        test('requests OTC magic link and opens Portal when flagged', async () => {
+        test('requests OTC magic link and opens Portal when flagged with data-members-otc=true', async () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
             form.dataset.membersForm = 'signin';
             form.dataset.membersOtc = 'true';
@@ -193,7 +193,7 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {membersSigninOTC: true};
+            const labs = {};
             const doAction = vi.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
@@ -241,7 +241,7 @@ describe('Member Data attributes:', () => {
                 return originalQuerySelector(selector);
             });
 
-            const labs = {membersSigninOTC: true};
+            const labs = {};
             const actionErrorMessage = new Error('failed to start OTC sign-in');
             const doAction = vi.fn(() => {
                 throw actionErrorMessage;
