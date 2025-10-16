@@ -30,7 +30,7 @@ const setup = async ({site, member = null, showPopup = true}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = showPopup ? await utils.findByTitle(/portal-popup/i) : utils.queryByTitle(/portal-popup/i);
     return {
         ghostApi,
         popupFrame,

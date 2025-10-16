@@ -191,8 +191,8 @@ describe('Feedback Submission Flow', () => {
             const {popupFrame, popupIframeDocument} = await setup();
 
             expect(popupFrame).toBeInTheDocument();
-            expect(within(popupIframeDocument).getByText(/Your account/)).toBeInTheDocument();
-            expect(within(popupIframeDocument).getByText(/Sign out/)).toBeInTheDocument();
+            expect(await within(popupIframeDocument).findByText(/Your account/)).toBeInTheDocument();
+            expect(await within(popupIframeDocument).findByText(/Sign out/)).toBeInTheDocument();
         });
 
         test('Redirects logged out users to sign up', async () => {

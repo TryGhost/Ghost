@@ -428,7 +428,7 @@ const setup = async ({site, member = null, showPopup = true}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = showPopup ? await utils.findByTitle(/portal-popup/i) : utils.queryByTitle(/portal-popup/i);
     return {
         ghostApi,
         popupFrame,
@@ -552,7 +552,7 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            const loginTitle = await within(popupFrame.contentDocument).findByText(/already a member/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
@@ -598,7 +598,7 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountHomeTitle = within(popupFrame.contentDocument).queryByText(/your account/i);
+            const accountHomeTitle = await within(popupFrame.contentDocument).findByText(/your account/i);
             expect(accountHomeTitle).toBeInTheDocument();
         });
     });
@@ -621,7 +621,7 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountPlanTitle = within(popupFrame.contentDocument).queryByText(/choose a plan/i);
+            const accountPlanTitle = await within(popupFrame.contentDocument).findByText(/choose a plan/i);
             expect(accountPlanTitle).toBeInTheDocument();
         });
     });
@@ -644,7 +644,7 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountProfileTitle = within(popupFrame.contentDocument).queryByText(/account settings/i);
+            const accountProfileTitle = await within(popupFrame.contentDocument).findByText(/account settings/i);
             expect(accountProfileTitle).toBeInTheDocument();
         });
     });
