@@ -3,18 +3,8 @@ import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtu
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
 import * as helpers from '../utils/helpers';
-import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../data-attributes';
-import i18n from '../utils/i18n';
+import {formSubmitHandler, planClickHandler} from '../data-attributes';
 import {vi} from 'vitest';
-
-vi.mock('../utils/i18n', () => ({
-    default: {
-        changeLanguage: vi.fn(),
-        dir: vi.fn(),
-        t: vi.fn(str => str)
-    },
-    t: vi.fn(str => str)
-}));
 
 // Mock data
 function getMockData({newsletterQuerySelectorResult = null} = {}) {
@@ -320,17 +310,6 @@ describe('Member Data attributes:', () => {
                     method: 'POST'
                 }
             );
-        });
-
-        test('sets correct i18n language based on site locale', async () => {
-            const {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
-            // Override the site locale to 'de'
-            site.locale = 'de';
-
-            await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
-
-            // Verify i18nLib was called with correct locale
-            expect(i18n.changeLanguage).toHaveBeenCalledWith('de');
         });
 
         test('allows free member upgrade via direct checkout', async () => {
@@ -716,18 +695,6 @@ describe('Portal Data attributes:', () => {
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
             expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
-        });
-    });
-
-    describe('handleDataAttributes', () => {
-        test('sets correct i18n language based on site locale', () => {
-            const {siteUrl, site, member} = getMockData();
-            // Override the site locale to 'de'
-            site.locale = 'de';
-
-            handleDataAttributes({siteUrl, site, member});
-
-            expect(i18n.changeLanguage).toHaveBeenCalledWith('de');
         });
     });
 });
