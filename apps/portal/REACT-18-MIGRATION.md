@@ -247,11 +247,11 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 ### Strategy
 Following the migration plan's priority order for safe, incremental conversion:
 
-**Priority 1: Leaf Components (Simple, Low Risk)**
+**Priority 1: Leaf Components (Simple, Low Risk)** ✅ COMPLETE
 - [x] CloseButton.js - Simple presentational component ✅
 - [x] PoweredBy.js - Simple presentational component ✅
 - [x] LoadingPage.js - Simple presentational component ✅
-- [ ] SiteTitleBackButton.js - Simple presentational component
+- [x] SiteTitleBackButton.js - Simple presentational component ✅
 
 **Priority 2: Components with Simple State**
 - [ ] PopupNotification.js - Notification display logic
@@ -310,6 +310,19 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~3 minutes
+
+#### SiteTitleBackButton.js (2025-10-16)
+**Type:** Leaf component (simple with context)
+**Complexity:** Low
+**Changes:**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Extracted `doAction` directly from context
+- Extracted inline onClick handler to `handleClick` function
+- Maintains conditional logic for custom `onBack` prop or default close action
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~5 minutes
 
 ---
 
@@ -401,7 +414,7 @@ expect(element).toBeInTheDocument();
 - ✅ **Phase 1:** Environment Preparation (100%)
 - ✅ **Phase 2:** Root API Migration (100%)
 - ✅ **Phase 3:** Test Suite Updates (100%)
-- ⏳ **Phase 5:** Component Conversion to Hooks (0/18 components)
+- ⏳ **Phase 5:** Component Conversion to Hooks (4/18 components - 22%)
 
 ### Commits Made
 1. `bf60dbd` - Upgraded Portal to React 18 dependencies
