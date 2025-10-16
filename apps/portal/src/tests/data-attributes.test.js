@@ -529,7 +529,8 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            // Wait for signin page to render
+            const loginTitle = await within(popupFrame.contentDocument).findByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
