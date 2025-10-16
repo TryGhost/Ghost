@@ -56,9 +56,13 @@ describe('Feedback Submission Flow', () => {
                 });
 
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup();
-                
+
                 expect(popupFrame).toBeInTheDocument();
-                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);    
+
+                // Wait for async feedback submission
+                await waitFor(() => {
+                    expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
+                });
 
                 within(popupIframeDocument).getByText('Thanks for the feedback!');
                 within(popupIframeDocument).getByText('Your input helps shape what gets published.');
@@ -72,7 +76,12 @@ describe('Feedback Submission Flow', () => {
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup();
 
                 expect(popupFrame).toBeInTheDocument();
-                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);    
+
+                // Wait for async feedback submission
+                await waitFor(() => {
+                    expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
+                });
+
                 within(popupIframeDocument).getByText('Thanks for the feedback!');
                 within(popupIframeDocument).getByText('Your input helps shape what gets published.');
             });
@@ -87,15 +96,22 @@ describe('Feedback Submission Flow', () => {
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup(siteData, null, true);
 
                 expect(popupFrame).toBeInTheDocument();
-                expect(within(popupIframeDocument).getByText('Give feedback on this post')).toBeInTheDocument();
-                expect(within(popupIframeDocument).getByText('More like this')).toBeInTheDocument();
-                expect(within(popupIframeDocument).getByText('Less like this')).toBeInTheDocument();
+
+                // Wait for feedback form to render
+                await waitFor(() => {
+                    expect(within(popupIframeDocument).getByText('Give feedback on this post')).toBeInTheDocument();
+                    expect(within(popupIframeDocument).getByText('More like this')).toBeInTheDocument();
+                    expect(within(popupIframeDocument).getByText('Less like this')).toBeInTheDocument();
+                });
                 expect(ghostApi.feedback.add).toHaveBeenCalledTimes(0);
 
                 const submitBtn = within(popupIframeDocument).getByText('Submit feedback');
                 fireEvent.click(submitBtn);
 
-                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
+                // Wait for async feedback submission after click
+                await waitFor(() => {
+                    expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
+                });
                 
                 // the re-render loop is slow to get to the final state
                 await waitFor(() => {
@@ -113,8 +129,12 @@ describe('Feedback Submission Flow', () => {
 
                 expect(popupFrame).toBeInTheDocument();
                 expect(ghostApi.feedback.add).toHaveBeenCalledTimes(0);
-                expect(within(popupIframeDocument).getByText(/Sign in/)).toBeInTheDocument();
-                expect(within(popupIframeDocument).getByText(/Sign up/)).toBeInTheDocument();
+
+                // Wait for signin page to render
+                await waitFor(() => {
+                    expect(within(popupIframeDocument).getByText(/Sign in/)).toBeInTheDocument();
+                    expect(within(popupIframeDocument).getByText(/Sign up/)).toBeInTheDocument();
+                });
             });
 
             test('Requires login without uuid or key', async () => {
@@ -126,8 +146,12 @@ describe('Feedback Submission Flow', () => {
 
                 expect(popupFrame).toBeInTheDocument();
                 expect(ghostApi.feedback.add).toHaveBeenCalledTimes(0);
-                expect(within(popupIframeDocument).getByText(/Sign in/)).toBeInTheDocument();
-                expect(within(popupIframeDocument).getByText(/Sign up/)).toBeInTheDocument();
+
+                // Wait for signin page to render
+                await waitFor(() => {
+                    expect(within(popupIframeDocument).getByText(/Sign in/)).toBeInTheDocument();
+                    expect(within(popupIframeDocument).getByText(/Sign up/)).toBeInTheDocument();
+                });
             });
         });
 
@@ -144,9 +168,17 @@ describe('Feedback Submission Flow', () => {
             const {ghostApi, popupFrame, popupIframeDocument} = await setup(siteData, memberData, false, mockApi);
 
             expect(popupFrame).toBeInTheDocument();
-            expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
-            expect(within(popupIframeDocument).getByText(/Sorry/)).toBeInTheDocument();
-            expect(within(popupIframeDocument).getByText(/There was a problem submitting your feedback/)).toBeInTheDocument();
+
+            // Wait for async feedback submission attempt (which will fail)
+            await waitFor(() => {
+                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
+            });
+
+            // Wait for error message to render
+            await waitFor(() => {
+                expect(within(popupIframeDocument).getByText(/Sorry/)).toBeInTheDocument();
+                expect(within(popupIframeDocument).getByText(/There was a problem submitting your feedback/)).toBeInTheDocument();
+            });
         });
     });
 
