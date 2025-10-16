@@ -17,6 +17,19 @@ class TopContentCard extends BasePage {
         this.postsButton = this.contentCard.getByRole('tab', {name: 'Posts', exact: true});
         this.pagesButton = this.contentCard.getByRole('tab', {name: 'Pages', exact: true});
         this.sourcesButton = this.contentCard.getByRole('tab', {name: 'Sources', exact: true});
+        this.campaignsDropdown = this.contentCard.getByRole('tab', {name: 'Campaigns', exact: true});
+        this.topContentRows = this.contentCard.locator('tbody tr');
+    }
+
+    async openCampaignsDropdown() {
+        // force: true because Radix dropdowns add an overlay button on top of the main button
+        // eslint-disable-next-line playwright/no-force-option
+        await this.campaignsDropdown.click({force: true});
+    }
+
+    async selectCampaignType(type: 'UTM mediums' | 'UTM sources' | 'UTM campaigns' | 'UTM terms' | 'UTM contents') {
+        const option = this.page.getByRole('menuitem', {name: type});
+        await option.click();
     }
 }
 
