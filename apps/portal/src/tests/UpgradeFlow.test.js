@@ -34,12 +34,20 @@ const offerSetup = async ({site, member = null, offer}) => {
     const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
 
+    // Wait for site title to render before querying other elements
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Site might show different content, query without waiting
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
 
     const offerName = within(popupIframeDocument).queryByText(offer.display_title);
 
@@ -92,18 +100,39 @@ const setup = async ({site, member = null}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for content to render - try site title or account home title
+    let siteTitle, accountHomeTitle;
+    try {
+        // Try to find either the site title or account home title
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 500});
+    } catch (e) {
+        // Might be on account page instead
+        try {
+            accountHomeTitle = await within(popupIframeDocument).findByText('Your account', {}, {timeout: 500});
+        } catch (e2) {
+            // Query without waiting
+            siteTitle = within(popupIframeDocument).queryByText(site.title);
+            accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+        }
+    }
+    if (!accountHomeTitle) {
+        accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+    }
+    if (!siteTitle) {
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
-    const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
     const viewPlansButton = within(popupIframeDocument).queryByRole('button', {name: 'View plans'});
     return {
         ghostApi,
