@@ -1,23 +1,19 @@
-import React from 'react';
+import {useContext} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
 
-export default class CloseButton extends React.Component {
-    static contextType = AppContext;
+export default function CloseButton({onClick}) {
+    const {doAction} = useContext(AppContext);
 
-    closePopup = () => {
-        this.context.doAction('closePopup');
+    const closePopup = () => {
+        doAction('closePopup');
     };
 
-    render() {
-        const {onClick} = this.props;
-
-        return (
-            <div className='gh-portal-closeicon-container' data-test-button='close-popup'>
-                <CloseIcon
-                    className='gh-portal-closeicon' alt='Close' onClick = {onClick || this.closePopup} data-testid='close-popup'
-                />
-            </div>
-        );
-    }
+    return (
+        <div className='gh-portal-closeicon-container' data-test-button='close-popup'>
+            <CloseIcon
+                className='gh-portal-closeicon' alt='Close' onClick={onClick || closePopup} data-testid='close-popup'
+            />
+        </div>
+    );
 }

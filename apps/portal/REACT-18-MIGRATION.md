@@ -235,10 +235,58 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 6. ✅ ~~portal-links.test.js~~ (12/12 passing)
 7. ✅ ~~data-attributes.test.js~~ (17/17 passing - 100% stable)
 
-### 🎯 Remaining Work (Optional)
+### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. Address memory leak warnings in AccountPlanPage and FeedbackPage
-3. Optional: Begin gradual component conversion to hooks
+2. ⏳ **Convert 18 class components to functional components with hooks**
+3. Address memory leak warnings during conversion
+
+---
+
+## Phase 5: Component Conversion to Hooks (In Progress)
+
+### Strategy
+Following the migration plan's priority order for safe, incremental conversion:
+
+**Priority 1: Leaf Components (Simple, Low Risk)**
+- [x] CloseButton.js - Simple presentational component ✅
+- [ ] PoweredBy.js - Simple presentational component
+- [ ] LoadingPage.js - Simple presentational component
+- [ ] SiteTitleBackButton.js - Simple presentational component
+
+**Priority 2: Components with Simple State**
+- [ ] PopupNotification.js - Notification display logic
+- [ ] MagicLinkPage.js - Magic link handling
+
+**Priority 3: Components with Lifecycle Methods**
+- [ ] AccountPlanPage.js - Has memory leak to fix
+- [ ] AccountProfilePage.js - Profile management
+- [ ] AccountHomePage.js - Account dashboard
+- [ ] SigninPage.js - Authentication flow
+- [ ] SignupPage.js - Registration flow
+- [ ] OfferPage.js - Offer display
+
+**Priority 4: Complex Infrastructure (Highest Risk)**
+- [ ] InputForm.js - Form handling
+- [ ] TriggerButton.js - Portal trigger
+- [ ] Notification.js - Notification system
+- [ ] Frame.js - iframe wrapper
+- [ ] PopupModal.js - Modal system
+- [ ] App.js - Main application
+
+### Conversion Log
+
+#### CloseButton.js (2025-10-16)
+**Type:** Leaf component (simple presentational)
+**Complexity:** Low
+**Changes:**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Extracted `doAction` directly from context
+- Converted class method `closePopup` to function
+- Maintained exact same behavior and props interface
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~5 minutes
 
 ---
 
@@ -330,7 +378,7 @@ expect(element).toBeInTheDocument();
 - ✅ **Phase 1:** Environment Preparation (100%)
 - ✅ **Phase 2:** Root API Migration (100%)
 - ✅ **Phase 3:** Test Suite Updates (100%)
-- ⏳ **Phase 4:** Component Analysis (Optional)
+- ⏳ **Phase 5:** Component Conversion to Hooks (0/18 components)
 
 ### Commits Made
 1. `bf60dbd` - Upgraded Portal to React 18 dependencies
