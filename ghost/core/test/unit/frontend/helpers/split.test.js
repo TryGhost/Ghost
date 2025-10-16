@@ -13,7 +13,11 @@ describe('{{split}} helper in block mode', function () {
         const expected = '-hello--world-';
         shouldCompileToExpected(templateString, {}, expected);
     });
-
+    it('can split strings when the separator is an empty string', function () {
+        const templateString = '{{#split "hello" separator="" as |elements|}}{{#foreach elements}}{{this}} {{/foreach}}{{/split}}';
+        const expected = 'h e l l o ';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
     it('returns an empty array if the string is empty', function () {
         const templateString = '{{#split "" as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
         const expected = '';
@@ -54,6 +58,24 @@ describe('{{split}} helper in block mode', function () {
         const expected = 'my-slug-is-LONG-too-LONG';
         shouldCompileToExpected(templateString, {}, expected);
     });
+    it('handles undefined input gracefully', function () {
+        const templateString = '{{#split undefined}}{{this.length}}{{/split}}';
+        const expected = '0';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    
+    it('handles null input gracefully', function () {
+        const hash = {nullValue: null};
+        const templateString = '{{#split nullValue}}{{this.length}}{{/split}}';
+        const expected = '0';
+        shouldCompileToExpected(templateString, hash, expected);
+    });
+    
+    it('handles number input by converting to string', function () {
+        const templateString = '{{#split 12345 separator=""}}{{#foreach this}}{{this}}-{{/foreach}}{{/split}}';
+        const expected = '1-2-3-4-5-';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
 });
 
 describe('{{split}} helper in inline mode', function () {
@@ -76,5 +98,13 @@ describe('{{split}} helper in inline mode', function () {
         const templateString = '{{#foreach (split "my-slug-is-long-too-long" separator="-")}}{{#match this "long"}}LONG{{else}}{{this}}{{/match}}{{#unless @last}}-{{/unless}}{{/foreach}}';
         const expected = 'my-slug-is-LONG-too-LONG';
         shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('splits safe strings correctly', function () {
+        const hash = {
+            safestring_split_me: new SafeString('hello-world-lets-gooo')
+        };
+        const templateString = '{{#foreach (split safestring_split_me separator="-")}}{{this}}{{/foreach}}';
+        const expected = 'helloworldletsgooo';
+        shouldCompileToExpected(templateString, hash, expected);
     });
 });
