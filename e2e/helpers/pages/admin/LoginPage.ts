@@ -24,17 +24,7 @@ export class LoginPage extends AdminPage {
     }
 
     async waitForLoginPageAfterUserCreated(): Promise<void> {
-        let counter = 0;
-
-        while (counter < 5) {
-            await this.goto();
-            const pageUrl = this.page.url();
-
-            if (!pageUrl.includes('setup')) {
-                break;
-            }
-            await this.page.waitForTimeout(1000);
-            counter += 1;
-        }
+        await this.goto();
+        await this.emailAddressField.waitFor({state: 'visible', timeout: 10000});
     }
 }
