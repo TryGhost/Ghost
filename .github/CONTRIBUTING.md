@@ -31,7 +31,9 @@ On your local repository, you should always work on a branch to make keeping up-
 
 We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
 
-- **1st line:** Max 80 character summary written in past tense
+- **1st line:** Max 80 character summary
+   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
+   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
 - **2nd line:** [Always blank]
 - **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
 - **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
