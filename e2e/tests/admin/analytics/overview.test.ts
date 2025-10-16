@@ -10,7 +10,7 @@ test.describe('Ghost Admin - Analytics Overview', () => {
     test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {
         await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
             const homePage = new HomePage(publicPage);
-            await homePage.gotoAndWaitForPageHit();
+            await homePage.goto();
         });
 
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
