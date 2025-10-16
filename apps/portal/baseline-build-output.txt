@@ -1,0 +1,3 @@
+yarn run v1.22.22
+$ vite build
+Done in 2.63s.

@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import './index.css';
 import App from './App';
 
@@ -52,11 +52,14 @@ function init() {
     const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale, labs} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
-    ReactDOM.render(
+
+    const container = document.getElementById(ROOT_DIV_ID);
+    const root = createRoot(container);
+
+    root.render(
         <React.StrictMode>
             <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} locale={locale} labs={labs}/>
-        </React.StrictMode>,
-        document.getElementById(ROOT_DIV_ID)
+        </React.StrictMode>
     );
 }
 

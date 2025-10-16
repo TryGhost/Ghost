@@ -1,0 +1,110 @@
+yarn run v1.22.22
+$ vitest run
+
+ RUN  v3.2.4 /Users/kevin/code/Ghost2/apps/portal
+
+(node:81260) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81259) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81266) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81262) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81258) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81264) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81268) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81263) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81265) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81261) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81267) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/utils/helpers.test.js (64 tests) 76ms
+ ✓ src/components/pages/AccountEmailPage.test.js (10 tests) 188ms
+(node:81350) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/components/pages/SignupPage.test.js (12 tests) 304ms
+ ✓ src/components/pages/MagicLinkPage.test.js (31 tests) 420ms
+ ✓ src/tests/actions.test.js (7 tests) 10ms
+(node:81352) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81372) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81373) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/tests/FeedbackFlow.test.js (8 tests) 760ms
+ ✓ src/tests/data-attributes.test.js (17 tests) 765ms
+(node:81374) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/components/pages/NewsletterSelectionPage.test.js (6 tests) 235ms
+ ✓ src/tests/errors.test.js (6 tests) 6ms
+ ✓ src/tests/UpgradeFlow.test.js (6 tests) 1136ms
+   ✓ Logged-in free member > can upgrade on single tier site > with default settings on monthly plan  470ms
+stderr | src/components/pages/AccountPlanPage.test.js
+Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in the componentWillUnmount method.
+    at AccountPlanPage (/Users/kevin/code/Ghost2/apps/portal/src/components/pages/AccountPlanPage.js:485:5)
+    at Provider (/Users/kevin/code/Ghost2/apps/portal/src/utils/test-utils.js:14:23)
+
+ ✓ src/components/pages/AccountPlanPage.test.js (3 tests) 220ms
+ ✓ src/tests/portal-links.test.js (12 tests) 1289ms
+ ✓ src/components/pages/AccountHomePage/AccountHomePage.test.js (6 tests) 250ms
+ ✓ src/tests/EmailSubscriptionsFlow.test.js (6 tests) 1327ms
+   ✓ Newsletter Subscriptions > list newsletters to subscribe to  459ms
+(node:81397) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81396) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81408) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81412) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81414) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/components/pages/SigninPage.test.js (4 tests) 179ms
+ ✓ src/tests/unit/transform-portal-anchor-to-relative.test.js (4 tests) 5ms
+ ✓ src/components/TriggerButton.test.js (4 tests) 166ms
+(node:81416) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81417) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81436) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81439) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/tests/SigninFlow.test.js (18 tests) 2268ms
+   ✓ Signin > on single tier site > with default settings  394ms
+ ✓ src/components/pages/AccountProfilePage.test.js (2 tests) 126ms
+ ✓ src/components/pages/FeedbackPage.test.js (1 test) 78ms
+stderr | printWarning (/Users/kevin/code/Ghost2/apps/portal/node_modules/react-dom/cjs/react-dom.development.js:67:30)
+Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+    at FeedbackPage (/Users/kevin/code/Ghost2/apps/portal/src/components/pages/FeedbackPage.js:432:79)
+    at Provider (/Users/kevin/code/Ghost2/apps/portal/src/utils/test-utils.js:14:23)
+
+ ✓ src/tests/App.test.js (2 tests) 302ms
+ ✓ src/components/common/InputField.test.js (2 tests) 49ms
+ ✓ src/components/pages/EmailSuppressedPage.test.js (2 tests) 98ms
+ ↓ src/App.test.js (1 test | 1 skipped)
+(node:81442) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/tests/SignupFlow.test.js (18 tests) 2617ms
+   ✓ Signup > as free member on single tier site > with default settings  480ms
+(node:81443) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:81444) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/components/common/MemberGravatar.test.js (1 test) 23ms
+ ✓ src/components/common/Switch.test.js (2 tests) 29ms
+ ✓ src/components/common/ActionButton.test.js (2 tests) 44ms
+
+ Test Files  27 passed | 1 skipped (28)
+      Tests  256 passed | 1 skipped (257)
+   Start at  19:49:54
+   Duration  5.20s (transform 1.95s, setup 5.63s, collect 11.15s, tests 12.97s, environment 14.41s, prepare 3.79s)
+
+Done in 6.45s.
