@@ -58,6 +58,7 @@ export interface EmailMessageSearchResult {
 
 export interface EmailClient {
     getMessages(limit: number): Promise<EmailMessage[]>;
+    searchByContent(conetnt: string): Promise<EmailMessage[]>;
     searchByRecipient(recipient: string): Promise<EmailMessage[]>;
     getLatestMessageFor(recipient: string): Promise<EmailMessage | null>;
     waitForEmail(email: string): Promise<EmailMessage>;
@@ -81,8 +82,16 @@ export class MailhogClient implements EmailClient{
     }
 
     async searchByRecipient(email: string, limit: number = 50): Promise<EmailMessage[]> {
+        return this.searchByQuery(email, limit, 'to');
+    }
+
+    async searchByContent(content: string, limit: number = 50): Promise<EmailMessage[]> {
+        return this.searchByQuery(content, limit, 'containing');
+    }
+
+    private async searchByQuery(value: string, limit: number = 50, kind: 'to' | 'from' | 'containing'): Promise<EmailMessage[]> {
         const response = await this.executeApiCall(
-            `search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`,
+            `search?kind=${kind}&query=${encodeURIComponent(value)}&limit=${limit}`,
             'search messages'
         );
 
