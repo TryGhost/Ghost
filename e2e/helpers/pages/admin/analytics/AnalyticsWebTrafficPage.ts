@@ -43,7 +43,6 @@ export class AnalyticsWebTrafficPage extends AdminPage {
 
     async refreshData() {
         await this.page.reload();
-        await this.page.waitForLoadState('networkidle');
     }
 
     async totalViewsContent() {
