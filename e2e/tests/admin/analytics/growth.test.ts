@@ -1,4 +1,5 @@
-import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
+import {test, expect} from '../../../helpers/playwright/fixtures/authenticated-fixture';
+import {withIsolatedPage} from '../../../helpers/playwright';
 import {AnalyticsGrowthPage} from '../../../helpers/pages/admin';
 import {signupViaPortal} from '../../../helpers/playwright/flows/signup';
 import {HomePage} from '../../../helpers/pages/public';

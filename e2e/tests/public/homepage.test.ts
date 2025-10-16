@@ -1,4 +1,4 @@
-import {test, expect} from '../../helpers/playwright';
+import {test, expect} from '../../helpers/playwright/fixtures/base-fixture';
 import {HomePage} from '../../helpers/pages/public';
 
 test.describe('Ghost Public - Homepage', () => {
