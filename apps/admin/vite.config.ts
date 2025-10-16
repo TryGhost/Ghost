@@ -17,7 +17,7 @@ const adminApiProxy = {
 
 // https://vite.dev/config/
 export default defineConfig({
-    base: "/ghost",
+    base: process.env.GHOST_CDN_URL ?? '/ghost',
     plugins: [react(), emberAssetsPlugin()],
     server: {
         proxy: {
