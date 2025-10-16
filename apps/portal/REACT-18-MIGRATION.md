@@ -249,7 +249,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Priority 1: Leaf Components (Simple, Low Risk)**
 - [x] CloseButton.js - Simple presentational component ✅
-- [ ] PoweredBy.js - Simple presentational component
+- [x] PoweredBy.js - Simple presentational component ✅
 - [ ] LoadingPage.js - Simple presentational component
 - [ ] SiteTitleBackButton.js - Simple presentational component
 
@@ -287,6 +287,18 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~5 minutes
+
+#### PoweredBy.js (2025-10-16)
+**Type:** Leaf component (pure presentational)
+**Complexity:** Very Low
+**Changes:**
+- Converted class component to functional component
+- Removed unused `AppContext` import (component doesn't use context)
+- Removed React import (JSX transform handles it)
+- Component has no state, props, or lifecycle - purely presentational
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~3 minutes
 
 ---
 
