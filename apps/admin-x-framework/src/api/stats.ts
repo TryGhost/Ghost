@@ -80,19 +80,6 @@ export type PostGrowthStatsResponseType = {
     meta: Meta;
 };
 
-export type UtmGrowthStatItem = {
-    utm_value: string;
-    utm_type: string;
-    free_members: number;
-    paid_members: number;
-    mrr: number;
-};
-
-export type UtmGrowthStatsResponseType = {
-    stats: UtmGrowthStatItem[];
-    meta: Meta;
-};
-
 export type MrrHistoryItem = {
     date: string;
     mrr: number;
@@ -216,7 +203,6 @@ const newsletterStatsDataType = 'NewsletterStatsResponseType';
 const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType';
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
-const utmGrowthStatsDataType = 'UtmGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
 const topPostViewsDataType = 'TopPostViewsResponseType';
 const subscriptionStatsDataType = 'SubscriptionStatsResponseType';
@@ -245,12 +231,6 @@ export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>
     dataType: postGrowthStatsDataType,
     path: id => `/stats/posts/${id}/growth`
 });
-
-export const useUtmGrowthStats = createQuery<UtmGrowthStatsResponseType>({
-    dataType: utmGrowthStatsDataType,
-    path: '/stats/utm-growth/'
-});
-
 export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     dataType: mrrHistoryDataType,
     path: '/stats/mrr/'

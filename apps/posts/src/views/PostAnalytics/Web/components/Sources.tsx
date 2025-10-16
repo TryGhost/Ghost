@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, UtmCampaignTabs, UtmCampaignType, UtmTabType, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, UtmCampaignTabs, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
@@ -101,8 +101,8 @@ export const Sources: React.FC<SourcesCardProps> = ({
     topSourcesLimit = 10
 }) => {
     const {data: globalData, statsConfig, audience, post, isPostLoading} = useGlobalData();
-    const [selectedTab, setSelectedTab] = useState<UtmTabType>('sources');
-    const [selectedCampaign, setSelectedCampaign] = useState<UtmCampaignType>('');
+    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
@@ -132,7 +132,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
     }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience]);
 
     // Map campaign types to endpoints
-    const campaignEndpointMap: Record<UtmCampaignType, string> = {
+    const campaignEndpointMap: Record<CampaignType, string> = {
         '': '',
         'UTM sources': 'api_top_utm_sources',
         'UTM mediums': 'api_top_utm_mediums',
@@ -160,7 +160,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
             }
 
             // Map UTM field names to the generic key name
-            const utmKeyMap: Record<UtmCampaignType, string> = {
+            const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
                 'UTM sources': 'utm_source',
                 'UTM mediums': 'utm_medium',

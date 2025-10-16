@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, UtmCampaignDropdown, UtmCampaignType, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -39,20 +39,12 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const {range, site, data: globalData} = useGlobalData();
+    const {range, site} = useGlobalData();
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
-    const [selectedCampaign, setSelectedCampaign] = useState<UtmCampaignType>('');
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
-
-    const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
-
-    // Derive display content type - use 'campaigns' when a campaign is selected, otherwise use selectedContentType
-    const displayContentType = useMemo<ContentType>(() => {
-        return selectedCampaign ? CONTENT_TYPES.CAMPAIGNS : selectedContentType;
-    }, [selectedCampaign, selectedContentType]);
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
@@ -150,8 +142,8 @@ const Growth: React.FC = () => {
                 {isPageLoading ?
                     <Card className='min-h-[460px]'>
                         <CardHeader>
-                            <CardTitle>{getContentTitle(displayContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(displayContentType, range, getPeriodText)}</CardDescription>
+                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <SkeletonTable lines={5} />
@@ -160,32 +152,22 @@ const Growth: React.FC = () => {
                     :
                     <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-content-card'>
                         <CardHeader>
-                            <CardTitle>{getContentTitle(displayContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(displayContentType, range, getPeriodText)}</CardDescription>
+                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
                                         <TableHead className='min-w-[320px] pl-0'>
-                                            <Tabs value={selectedCampaign ? 'campaigns' : selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                                            <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                                                 setSelectedContentType(value as ContentType);
-                                                // Clear campaign selection when switching away from campaigns
-                                                if (value !== 'campaigns') {
-                                                    setSelectedCampaign('');
-                                                }
                                             }}>
                                                 <TabsList>
                                                     <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                                                     <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
-                                                    {utmTrackingEnabled && (
-                                                        <UtmCampaignDropdown
-                                                            selectedCampaign={selectedCampaign}
-                                                            onCampaignChange={setSelectedCampaign}
-                                                        />
-                                                    )}
                                                 </TabsList>
                                             </Tabs>
                                         </TableHead>
@@ -214,11 +196,10 @@ const Growth: React.FC = () => {
                                         }
                                     </TableRow>
                                 </TableHeader>
-                                {(selectedContentType === CONTENT_TYPES.SOURCES || selectedCampaign) ?
+                                {selectedContentType === CONTENT_TYPES.SOURCES ?
                                     <GrowthSources
                                         limit={20}
                                         range={range}
-                                        selectedCampaign={selectedCampaign}
                                         setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
                                         showViewAll={true}
                                         sortBy={sortBy as SourcesOrder}

@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, UtmCampaignTabs, UtmCampaignType, UtmTabType, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, UtmCampaignTabs, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -75,11 +75,11 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     isLoading: boolean;
-    selectedTab: UtmTabType;
-    selectedCampaign: UtmCampaignType;
+    selectedTab: TabType;
+    selectedCampaign: CampaignType;
     utmTrackingEnabled?: boolean;
-    onTabChange: (tab: UtmTabType) => void;
-    onCampaignChange: (campaign: UtmCampaignType) => void;
+    onTabChange: (tab: TabType) => void;
+    onCampaignChange: (campaign: CampaignType) => void;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
