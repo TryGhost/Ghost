@@ -393,10 +393,10 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
                                                     (group.type !== 'reply' && group.type !== 'mention' ?
-                                                        <div
-                                                            dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
-                                                            className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'
-                                                        /> :
+                                                        <div className='ap-note-content mt-0.5 line-clamp-1 text-pretty text-sm text-gray-700 dark:text-gray-600'>
+                                                            {group.post?.type === 'article' && group.post?.title && <>{group.post.title} &mdash; </>}
+                                                            <span dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}} />
+                                                        </div> :
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
                                                                 <ProfileLinkedContent
