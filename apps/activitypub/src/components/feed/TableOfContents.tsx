@@ -141,7 +141,7 @@ const HEADING_PADDINGS = {
 
 const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeHeading, onItemClick, onOpenChange}) => {
     const [open, setOpen] = useState(false);
-    const timeoutRef = React.useRef<NodeJS.Timeout>();
+    const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
 
     React.useEffect(() => {
         return () => {
