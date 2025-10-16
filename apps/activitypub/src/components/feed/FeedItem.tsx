@@ -711,8 +711,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                     <span className='line-clamp-1 hover:underline' onClick={(e) => {
                                                         handleProfileClick(actor, navigate, e);
                                                     }}>{actor.name}</span>
-                                                </ProfilePreviewHoverCard> reposted
-                                            </span>}
+                                                </ProfilePreviewHoverCard> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
                                     <Skeleton className='w-24' />
