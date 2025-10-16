@@ -41,23 +41,28 @@ const offerSetup = async ({site, member = null, offer}) => {
     const triggerButtonFrame = await utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
 
-    let emailInput, nameInput, continueButton, chooseBtns, signinButton, siteTitle, offerName, offerDescription, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle;
-
-    if (popupIframeDocument) {
-        emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-        nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-        continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-        chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
-        signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+    // Wait for iframe content to be ready
+    // Try to wait for site title, but don't fail if portal is disabled
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Portal might be disabled, query without waiting
         siteTitle = within(popupIframeDocument).queryByText(site.title);
-        offerName = within(popupIframeDocument).queryByText(offer.display_title);
-        offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
-
-        freePlanTitle = within(popupIframeDocument).queryByText('Free');
-        monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-        yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-        fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
     }
+
+    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+    const continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+    const offerName = within(popupIframeDocument).queryByText(offer.display_title);
+    const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
+
+    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
+    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
 
     return {
         ghostApi,
@@ -106,15 +111,24 @@ const setup = async ({site, member = null}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
-    const popupIframeDocument = popupFrame?.contentDocument;
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
+    const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for the site title to render before querying other elements
+    // Use a timeout and fallback for cases where the page redirects or shows different content
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Site might show different content (e.g., signin page), query without waiting
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
 
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
@@ -165,14 +179,24 @@ const multiTierSetup = async ({site, member = null}) => {
     );
     const freeTierDescription = site.products?.find(p => p.type === 'free')?.description;
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for the site title to render before querying other elements
+    // Use a timeout and fallback for cases where the page shows different content
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Site might show different content, query without waiting
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryAllByText(/free$/i);
     const freePlanDescription = within(popupIframeDocument).queryAllByText(freeTierDescription);
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
