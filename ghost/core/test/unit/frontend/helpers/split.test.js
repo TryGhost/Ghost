@@ -26,7 +26,7 @@ describe('{{split}} helper in block mode', function () {
         shouldCompileToExpected(templateString, {}, expected);
     });
     
-    it('splits strings with the default separator is specified', function () {
+    it('splits strings when the default separator is specified', function () {
         const templateString = '{{#split "hello,world" separator="," as |elements|}}{{#foreach elements}}{{this}}{{#unless @last}}|{{/unless}}{{/foreach}}{{/split}}';
         const expected = 'hello|world';
         shouldCompileToExpected(templateString, {}, expected);
@@ -35,7 +35,7 @@ describe('{{split}} helper in block mode', function () {
         const hash = {
             safestring_split_me: new SafeString('hello-world-lets-gooo')
         };
-        const templateString = '{{#split safestring_split_me separator="-"as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
+        const templateString = '{{#split safestring_split_me separator="-" as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
         const expected = 'helloworldletsgooo';
         shouldCompileToExpected(templateString, hash, expected);
     });
