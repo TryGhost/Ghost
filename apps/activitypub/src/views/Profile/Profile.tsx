@@ -156,7 +156,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         };
     }) || [];
 
-    const postsTab = isLoadingAccount ? <></> : <PostsTab handle={params.handle || ''} />;
+    const postsTab = <PostsTab handle={params.handle || ''} />;
     const likesTab = <LikesTab />;
     const followingTab = <FollowingTab handle={params.handle || ''} />;
     const followersTab = <FollowersTab handle={params.handle || ''} />;
