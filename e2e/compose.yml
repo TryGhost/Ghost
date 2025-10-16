@@ -35,7 +35,7 @@ services:
         condition: service_healthy
 
   caddy:
-    image: caddy:2
+    image: caddy:latest
     ports:
       - "8080:80"
     volumes:
