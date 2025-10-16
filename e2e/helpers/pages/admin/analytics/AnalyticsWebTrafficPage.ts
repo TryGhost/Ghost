@@ -35,10 +35,10 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     async selectCampaignType(campaignType: 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms') {
+        // force: true is needed because the element is covered by an overlay button
         await this.campaignsDropdown.waitFor({state: 'visible'});
         await this.campaignsDropdown.click({force: true});
         await this.page.getByRole('menuitem', {name: campaignType}).click();
-        await this.page.waitForLoadState('networkidle');
     }
 
     async refreshData() {
