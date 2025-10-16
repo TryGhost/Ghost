@@ -15,7 +15,7 @@ export class PortalPage extends BasePage {
         await closeButton.click();
 
         if (waitForClose) {
-            await this.page.waitForSelector(this.frameSelector, {
+            await this.page.locator(this.frameSelector).waitFor({
                 state: 'hidden',
                 timeout: 2000
             });

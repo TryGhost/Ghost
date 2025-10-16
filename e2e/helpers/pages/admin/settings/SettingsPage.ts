@@ -5,6 +5,8 @@ export class SettingsPage extends BasePage {
     readonly searchInput: Locator;
     readonly searchClearButton: Locator;
 
+    readonly sectionHeadings: Locator;
+
     readonly labsSection: Locator;
     readonly labsHeading: Locator;
     readonly labsDescription: Locator;
@@ -28,8 +30,10 @@ export class SettingsPage extends BasePage {
         this.searchInput = page.locator('input[placeholder="Search settings"]');
         this.searchClearButton = page.locator('button[aria-label="close"]').first();
 
+        this.sectionHeadings = page.locator('h5');
+
         this.labsSection = page.getByTestId('labs');
-        this.labsHeading = page.locator('h5').filter({hasText: 'Labs'});
+        this.labsHeading = this.sectionHeadings.filter({hasText: 'Labs'});
         this.labsDescription = page.getByText('This is a testing ground for new or experimental features');
         this.labsOpenButton = page.getByTestId('labs').getByRole('button', {name: 'Open'});
         this.labsCloseButton = page.getByTestId('labs').getByRole('button', {name: 'Close'});
@@ -38,7 +42,7 @@ export class SettingsPage extends BasePage {
         this.labsPrivateFeaturesTab = page.getByRole('tab', {name: 'Private features'});
 
         this.integrationsSection = page.getByTestId('integrations');
-        this.integrationsHeading = page.locator('h5').filter({hasText: 'Integrations'});
+        this.integrationsHeading = this.sectionHeadings.filter({hasText: 'Integrations'});
         this.integrationsDescription = page.getByText('Make Ghost work with apps and tools');
         this.integrationsAddButton = page.getByRole('button', {name: 'Add custom integration'});
 
@@ -48,7 +52,7 @@ export class SettingsPage extends BasePage {
 
     async goto() {
         await super.goto();
-        await this.page.waitForSelector('h5', {timeout: 10000});
+        await this.sectionHeadings.first().waitFor({state: 'visible'});
     }
 
     async isLabsOpen(): Promise<boolean> {
