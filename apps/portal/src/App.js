@@ -112,6 +112,8 @@ export default class App extends React.Component {
                 doAction: contextState.doAction,
                 captureException: Sentry.captureException
             });
+            // Mark portal as ready for E2E tests
+            document.getElementById('ghost-portal-root')?.setAttribute('data-portal-ready', 'true');
         }
     }
 

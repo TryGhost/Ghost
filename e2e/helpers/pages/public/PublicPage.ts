@@ -22,13 +22,11 @@ class PortalSection extends BasePage {
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
     }
 
-    async waitForScript(): Promise<void> {
-        await this.portalScript.waitFor({
+    async waitForScriptToInitialize(): Promise<void> {
+        await this.page.locator('[data-testid="portal-root"][data-portal-ready="true"]').waitFor({
             state: 'attached',
             timeout: 10000
         });
-
-        await this.page.waitForTimeout(500);
     }
 
     async waitForIFrame(): Promise<void> {
@@ -85,6 +83,11 @@ export class PublicPage extends BasePage {
 
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
+        await super.goto(url, options);
+        await this.portal.waitForScriptToInitialize();
+    }
+
+    async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
         const pageHitPromise = this.pageHitRequestPromise();
         await super.goto(url, options);
         await pageHitPromise;
@@ -101,13 +104,11 @@ export class PublicPage extends BasePage {
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
-        await this.portal.waitForScript();
         await this.subscribeLink.click();
         await this.portal.waitForPortalToOpen();
     }
 
     async openPortalViaSignInLink(): Promise<void> {
-        await this.portal.waitForScript();
         await this.signInLink.click();
         await this.portal.waitForPortalToOpen();
     }
