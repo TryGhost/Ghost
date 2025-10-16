@@ -1,4 +1,4 @@
-import {Factory} from './factory';
+import {Factory} from '../factory';
 
 export interface User {
     name: string;
@@ -8,7 +8,6 @@ export interface User {
 }
 
 export class UserFactory extends Factory<Partial<User>, User> {
-    name = 'user';
     entityType = 'users';
 
     public build(overrides: Partial<User> = {}): User {

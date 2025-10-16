@@ -1,9 +1,9 @@
 // Core Factory exports
-export {Factory} from './factories/factory';
-export {PostFactory} from './factories/posts/post-factory';
-export type {Post} from './factories/posts/post-factory';
-export {TagFactory} from './factories/tags/tag-factory';
-export type {Tag} from './factories/tags/tag-factory';
+export {Factory} from './factory';
+export {PostFactory} from './factories/post-factory';
+export type {Post} from './factories/post-factory';
+export {TagFactory} from './factories/tag-factory';
+export type {Tag} from './factories/tag-factory';
 export * from './factories/user-factory';
 
 // Persistence Adapters
