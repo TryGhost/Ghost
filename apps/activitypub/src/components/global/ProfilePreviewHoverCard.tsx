@@ -6,6 +6,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 type ProfilePreviewHoverCardProps = {
     actor?: ActorProperties | Account | null;
@@ -29,6 +30,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     isCurrentUser = false
 }) => {
     const [shouldFetch, setShouldFetch] = useState(false);
+    const navigate = useNavigate();
 
     let targetHandle = actor?.handle;
     if (!targetHandle && actor && isActorProperties(actor)) {
@@ -82,6 +84,24 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     const followerCount = typeof displayData?.followerCount === 'number' ? displayData.followerCount : (Number(displayData?.followerCount) || 0);
     const bio = displayData?.bio ? openLinksInNewTab(stripHtml(displayData.bio, ['a'])) : undefined;
 
+    const handleProfileClick = () => {
+        if (displayHandle) {
+            navigate(`/profile/${displayHandle}`);
+        }
+    };
+
+    const handleFollowingClick = () => {
+        if (displayHandle) {
+            navigate(`/profile/${displayHandle}/following`);
+        }
+    };
+
+    const handleFollowersClick = () => {
+        if (displayHandle) {
+            navigate(`/profile/${displayHandle}/followers`);
+        }
+    };
+
     return (
         <HoverCard onOpenChange={setShouldFetch}>
             <HoverCardTrigger asChild>
@@ -89,14 +109,15 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
             </HoverCardTrigger>
             <HoverCardContent
                 align={align}
-                className='w-[320px] rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] outline-none dark:bg-[#101114] dark:shadow-none'
+                className='w-[320px] cursor-default rounded-2xl border-0 p-5 text-left text-gray-900 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] outline-none dark:bg-[#101114] dark:shadow-none'
                 side={side}
                 sideOffset={12}
+                onClick={e => e.stopPropagation()}
             >
                 <div className='flex flex-col gap-2'>
                     <div className='flex flex-col gap-2'>
                         <div className='flex justify-between'>
-                            <Avatar className='size-14'>
+                            <Avatar className='size-14 cursor-pointer' onClick={handleProfileClick}>
                                 {avatarUrl && (
                                     <AvatarImage
                                         alt={displayName}
@@ -120,7 +141,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                                 />
                             )}
                         </div>
-                        <div className='flex flex-col items-start'>
+                        <div className='flex cursor-pointer flex-col items-start' onClick={handleProfileClick}>
                             <H3 className='w-full truncate'>{displayName}</H3>
                             <div className='flex w-full gap-2'>
                                 <span className='truncate text-gray-700 dark:text-gray-600'>{displayHandle}</span>
@@ -135,11 +156,11 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
                             <Skeleton className='h-4 w-32' />
                         ) : !hasLoadingError && (
                             <>
-                                <span>
+                                <span className='cursor-pointer hover:underline' onClick={handleFollowingClick}>
                                     <span className='font-bold text-black dark:text-white'>{abbreviateNumber(followingCount)}</span>
                                     {' '}Following
                                 </span>
-                                <span>
+                                <span className='cursor-pointer hover:underline' onClick={handleFollowersClick}>
                                     <span className='font-bold text-black dark:text-white'>{abbreviateNumber(followerCount)}</span>
                                     {' '}Followers
                                 </span>
