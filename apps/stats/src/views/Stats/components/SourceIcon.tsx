@@ -8,11 +8,6 @@ interface SourceIconProps {
 }
 
 const SourceIcon: React.FC<SourceIconProps> = ({defaultSourceIconUrl, displayName, iconSrc}) => {
-    // Don't render an icon if iconSrc is empty (e.g., for UTM campaign values)
-    if (!iconSrc) {
-        return null;
-    }
-
     return (
         <>
             {displayName.trim().toLowerCase().endsWith('newsletter') ? (
