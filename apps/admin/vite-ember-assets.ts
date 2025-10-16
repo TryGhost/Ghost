@@ -4,6 +4,18 @@ import fs from 'fs';
 
 const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
 
+function isAbsoluteUrl(url: string): boolean {
+    return url.startsWith('http://') ||
+           url.startsWith('https://') ||
+           url.startsWith('/');
+}
+
+function prefixUrl(url: string, base: string): string {
+    if (isAbsoluteUrl(url)) return url;
+    const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+    return `${normalizedBase}/${url}`;
+}
+
 // Vite plugin to extract styles and scripts from Ghost admin index.html
 export function emberAssetsPlugin() {
     let config: ResolvedConfig;
@@ -20,6 +32,8 @@ export function emberAssetsPlugin() {
                 const indexPath = path.resolve(GHOST_ADMIN_PATH, 'index.html');
                 try {
                     const indexContent = fs.readFileSync(indexPath, 'utf-8');
+                    const base = config.base || '/';
+                    
                     // Extract stylesheets
                     const styleRegex = /<link[^>]*rel="stylesheet"[^>]*href="([^"]*)"[^>]*>/g;
                     const styles: HtmlTagDescriptor[] = [];
@@ -29,7 +43,7 @@ export function emberAssetsPlugin() {
                             tag: 'link',
                             attrs: {
                                 rel: 'stylesheet',
-                                href: '/ghost/' + styleMatch[1]
+                                href: prefixUrl(styleMatch[1], base)
                             }
                         });
                     }
@@ -42,7 +56,7 @@ export function emberAssetsPlugin() {
                             tag: 'script',
                             injectTo: 'body',
                             attrs: {
-                                src: '/ghost/' + scriptMatch[1].replace(/^\/ghost\//, '')
+                                src: prefixUrl(scriptMatch[1], base)
                             }
                         });
                     }
