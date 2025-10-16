@@ -1,0 +1,80 @@
+const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
+const {SafeString} = require('handlebars');
+
+describe('{{split}} helper in block mode', function () {
+    before(function () {
+        registerHelper('split');
+        registerHelper('foreach');
+        registerHelper('match');
+    });
+
+    it('splits strings correctly with the default separator (not specified - a comma) ', function () {
+        const templateString = '{{#split "hello,world" as |elements|}}{{#foreach elements}}-{{this}}-{{/foreach}}{{/split}}';
+        const expected = '-hello--world-';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+
+    it('returns an empty array if the string is empty', function () {
+        const templateString = '{{#split "" as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
+        const expected = '';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+
+    it('splits strings with a custom separator correctly', function () {
+        const templateString = '{{#split "hello world" separator=" " as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
+        const expected = 'helloworld';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    
+    it('splits strings with the default separator is specified', function () {
+        const templateString = '{{#split "hello,world" separator="," as |elements|}}{{#foreach elements}}{{this}}{{#unless @last}}|{{/unless}}{{/foreach}}{{/split}}';
+        const expected = 'hello|world';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('splits safe strings correctly', function () {
+        const hash = {
+            safestring_split_me: new SafeString('hello-world-lets-gooo')
+        };
+        const templateString = '{{#split safestring_split_me separator="-"as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
+        const expected = 'helloworldletsgooo';
+        shouldCompileToExpected(templateString, hash, expected);
+    });
+    it('does not need a block definition', function () {
+        const templateString = '{{#split "hello,world" separator=","}}{{#foreach this}}{{this}}{{#unless @last}}|{{/unless}}{{/foreach}}{{/split}}';
+        const expected = 'hello|world';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('can be counted', function () {
+        const templateString = '{{#split "hello,world" separator=","}}{{this.length}}{{/split}}';
+        const expected = '2';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('can be used with match helper', function () {
+        const templateString = '{{#split "my-slug-is-long-too-long" separator="-"}}{{#foreach this}}{{#match this "long"}}LONG{{else}}{{this}}{{/match}}{{#unless @last}}-{{/unless}}{{/foreach}}{{/split}}';
+        const expected = 'my-slug-is-LONG-too-LONG';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+});
+
+describe('{{split}} helper in inline mode', function () {
+    before(function () {
+        registerHelper('split');
+        registerHelper('foreach');
+        registerHelper('match');
+    });
+    it('splits strings correctly with the default separator (not specified - a comma) ', function () {
+        const templateString = '{{#foreach (split "hello,world" separator="o")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hell<br>,w<br>rld';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('can be used to remove a suffix from a string', function () {
+        const templateString = '{{#foreach (split "my-slug-is-long-too-long" separator="-")}}{{#unless @first}}{{#unless @last}}-{{/unless}}{{/unless}}{{#unless @last}}{{this}}{{/unless}}{{/foreach}}';
+        const expected = 'my-slug-is-long-too';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('can be used with match helper', function () {
+        const templateString = '{{#foreach (split "my-slug-is-long-too-long" separator="-")}}{{#match this "long"}}LONG{{else}}{{this}}{{/match}}{{#unless @last}}-{{/unless}}{{/foreach}}';
+        const expected = 'my-slug-is-LONG-too-LONG';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+});
