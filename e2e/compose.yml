@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   analytics:
-    image: ghost/traffic-analytics:1
+    image: ghost/traffic-analytics:1.0.18
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
@@ -68,6 +68,7 @@ services:
       - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
+      - TINYBIRD_WAIT=true
     depends_on:
       tinybird-local:
         condition: service_healthy
