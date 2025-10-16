@@ -35,7 +35,21 @@ export class GhostUserSetup {
 
     private async createUser(user: User): Promise<void> {
         await this.makeRequest('POST', {setup: [user]});
-        debug('Ghost user created successfully.');
+        debug('Ghost user created, waiting for setup to be fully complete...');
+
+        // Poll until Ghost confirms setup is complete
+        // This ensures Ghost's internal state is fully updated before returning
+        // The network request itself provides natural spacing between polls
+        const maxAttempts = 50;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (await this.isSetupAlreadyCompleted()) {
+                debug('Setup fully completed and verified');
+                return;
+            }
+        }
+
+        throw new Error('Setup did not complete within expected time');
     }
 
     private async makeRequest(method: 'GET' | 'POST', body?: unknown): Promise<Response> {
