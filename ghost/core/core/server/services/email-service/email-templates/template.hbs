@@ -9,12 +9,10 @@
     </head>
     <body>
         <span class="preheader">{{preheader}}</span>
-        {{#hasFeature 'emailCustomization'}}
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
             {{{preheaderSpacing}}}
         </div>
-        {{/hasFeature}}
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
         {{#if hasHeaderContent}}
