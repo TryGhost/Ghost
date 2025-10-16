@@ -76,8 +76,8 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
                 await homePage.goto(`/${post.slug}?utm_campaign=${utmCampaign}`);
                 const {emailAddress} = await signupViaPortal(publicPage);
 
-                const message = await emailClient.waitForEmail(emailAddress);
-                const emailMessageBodyParts = new EmailMessageBody(message);
+                const messages = await emailClient.searchByRecipient(emailAddress);
+                const emailMessageBodyParts = new EmailMessageBody(messages[0]);
                 const emailTextBody = emailMessageBodyParts.getTextContent();
 
                 const magicLink = extractMagicLink(emailTextBody);
