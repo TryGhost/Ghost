@@ -38,7 +38,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followingTab,
     followersTab
 }) => {
-    const params = useParams();
+    const params = useParams<{handle?: string; tab?: string}>();
     const location = useLocation();
     const navigate = useNavigate();
     const {canGoBack} = useNavigationStack();
@@ -46,12 +46,9 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const basePath = params.handle ? `/profile/${params.handle}` : '/profile';
     const likesEnabled = !params.handle;
 
-    const normalizedPath = location.pathname.replace(/\/+$/, '');
-    const profileIndex = normalizedPath.indexOf('/profile');
-    const suffix = profileIndex >= 0 ? normalizedPath.slice(profileIndex + '/profile'.length) : '';
-    const segments = suffix.split('/').filter(Boolean);
-    const lastSegment = segments[segments.length - 1] || '';
-    const tabSlug = (params.handle && lastSegment === params.handle) ? '' : lastSegment;
+    const tabSlug = params.handle
+        ? (params.tab || '')
+        : (location.pathname.split('/').pop() || '');
 
     const allowedTabs = useMemo<ProfileTab[]>(() => (
         likesEnabled ? ['likes', 'following', 'followers'] : ['following', 'followers']

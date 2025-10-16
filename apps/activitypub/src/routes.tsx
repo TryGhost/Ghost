@@ -91,17 +91,7 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Profile'
             },
             {
-                path: 'profile/:handle',
-                element: <Profile />,
-                pageTitle: 'Profile'
-            },
-            {
-                path: 'profile/:handle/following',
-                element: <Profile />,
-                pageTitle: 'Profile'
-            },
-            {
-                path: 'profile/:handle/followers',
+                path: 'profile/:handle/:tab?',
                 element: <Profile />,
                 pageTitle: 'Profile'
             },
