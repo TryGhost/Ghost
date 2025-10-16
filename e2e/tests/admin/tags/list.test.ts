@@ -1,6 +1,6 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
-import {createPostFactory, createTagFactory, TagFactory} from '../../../data-factory';
+import {createPostFactory, createTagFactory,TagFactory} from '../../../data-factory';
 import {Page} from '@playwright/test';
 
 test.describe('Ghost Admin - Tags', () => {
@@ -12,7 +12,7 @@ test.describe('Ghost Admin - Tags', () => {
     test('shows empty list with call to action buttons', async ({page}) => {
         const tagsPage = new TagsPage(page);
         const tagEditorPage = new TagEditorPage(page);
-        
+
         // By default there will be one tag with slug 'news'
         await tagEditorPage.gotoTagBySlug('news');
         await tagEditorPage.deleteTag();
