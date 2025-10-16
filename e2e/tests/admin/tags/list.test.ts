@@ -1,4 +1,4 @@
-import {test, expect} from '../../../helpers/playwright';
+import {test, expect} from '../../../helpers/playwright/fixtures/authenticated-fixture';
 import {TagsPage, TagEditorPage} from '../../../helpers/pages/admin';
 import {createPostFactory, createTagFactory,TagFactory} from '../../../data-factory';
 import {Page} from '@playwright/test';

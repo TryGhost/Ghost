@@ -1,4 +1,4 @@
-import {test, expect} from '../../helpers/playwright';
+import {test, expect} from '../../helpers/playwright/fixtures/authenticated-fixture';
 import {EmailClient, MailhogClient} from '../../helpers/services/email/MailhogClient';
 import {EmailMessageBody} from '../../helpers/services/email/EmailMessageBody';
 import {HomePage, PublicPage} from '../../helpers/pages/public';

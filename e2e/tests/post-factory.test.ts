@@ -1,4 +1,4 @@
-import {test, expect} from '../helpers/playwright';
+import {test, expect} from '../helpers/playwright/fixtures/authenticated-fixture';
 import {createPostFactory} from '../data-factory';
 import type {PostFactory} from '../data-factory';
 

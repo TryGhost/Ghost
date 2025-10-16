@@ -1,4 +1,4 @@
-import {test, expect} from '../../helpers/playwright';
+import {test, expect} from '../../helpers/playwright/fixtures/base-fixture';
 import {HomePage} from '../../helpers/pages/public';
 import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
 import {SignInPage} from '../../helpers/pages/portal/SignInPage';
