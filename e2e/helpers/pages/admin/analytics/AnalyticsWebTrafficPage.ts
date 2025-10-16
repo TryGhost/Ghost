@@ -41,14 +41,6 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         await this.page.waitForLoadState('networkidle');
     }
 
-    /**
-     * Wait for Tinybird to process analytics data
-     * Tinybird's materialized views need time to process incoming events
-     */
-    async waitForTinybirdProcessing(): Promise<void> {
-        await this.page.waitForTimeout(5000);
-    }
-
     async refreshData() {
         await this.page.reload();
         await this.page.waitForLoadState('networkidle');
