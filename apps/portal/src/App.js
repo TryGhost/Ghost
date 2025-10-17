@@ -5,29 +5,18 @@ import {chooseBestErrorMessage} from './utils/errors';
 import TriggerButton from './components/TriggerButton';
 import Notification from './components/Notification';
 import PopupModal from './components/PopupModal';
-import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
-import NotificationParser from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
 import {hasMode} from './utils/check-mode';
 import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, removePortalLinkFromUrl} from './utils/helpers';
+import {allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
-import {parseOfferQueryString, parsePreviewQueryString, parsePortalLinkPath} from './utils/url-parsers';
-import {setupSentry, setupFirstPromoter} from './utils/setup-integrations';
+import {parsePortalLinkPath} from './utils/url-parsers';
 import {getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
-
-const DEV_MODE_DATA = {
-    showPopup: true,
-    site: Fixtures.site,
-    member: Fixtures.member.free,
-    page: 'accountEmail',
-    ...Fixtures.paidMemberOnTier(),
-    pageData: Fixtures.offer
-};
+import {fetchAllData, fetchLinkData, fetchPreviewData} from './utils/data-fetchers';
 
 function SentryErrorBoundary({site, children}) {
     const {portal_sentry: portalSentry} = site || {};
@@ -170,7 +159,19 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const {GhostApi, site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await fetchAllData({
+                apiConfig: {
+                    siteUrl: this.props.siteUrl,
+                    customSiteUrl: this.props.customSiteUrl,
+                    apiUrl: this.props.apiUrl,
+                    apiKey: this.props.apiKey,
+                    api: this.props.api
+                },
+                customSiteUrl: this.state.customSiteUrl,
+                showPopup: this.props.showPopup,
+                getColorOverride: () => this.getColorOverride()
+            });
+            this.GhostApi = GhostApi;
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
@@ -222,197 +223,6 @@ export default class App extends React.Component {
         }
     }
 
-    /** Fetch state data from all available sources */
-    async fetchData() {
-        const {site: apiSiteData, member} = await this.fetchApiData();
-        const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
-        const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
-        const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
-        let page = '';
-        return {
-            member,
-            page,
-            site: {
-                ...apiSiteData,
-                ...linkSiteData,
-                ...previewSiteData,
-                ...notificationSiteData,
-                ...devSiteData,
-                plans: {
-                    ...(devSiteData || {}).plans,
-                    ...(apiSiteData || {}).plans,
-                    ...(previewSiteData || {}).plans
-                }
-            },
-            ...restDevData,
-            ...restLinkData,
-            ...restNotificationData,
-            ...restPreviewData
-        };
-    }
-
-    /** Fetch state for Dev mode */
-    fetchDevData() {
-        // Setup custom dev mode data from fixtures
-        if (hasMode(['dev']) && !this.state.customSiteUrl) {
-            return DEV_MODE_DATA;
-        }
-
-        // Setup test mode data
-        if (hasMode(['test'])) {
-            return {
-                showPopup: this.props.showPopup !== undefined ? this.props.showPopup : true
-            };
-        }
-        return {};
-    }
-
-    /**Fetch state from Offer Preview mode query string*/
-    fetchOfferQueryStrData(qs = '') {
-        return parseOfferQueryString(qs);
-    }
-
-    /** Fetch state from Preview mode Query String */
-    fetchQueryStrData(qs = '') {
-        return parsePreviewQueryString(qs);
-    }
-
-    /**Fetch state data for billing notification */
-    fetchNotificationData() {
-        const {type, status, duration, autoHide, closeable} = NotificationParser({billingOnly: true}) || {};
-        if (['stripe:billing-update'].includes(type)) {
-            if (status === 'success') {
-                const popupNotification = createPopupNotification({
-                    type, status, duration, closeable, autoHide, state: this.state,
-                    message: status === 'success' ? 'Billing info updated successfully' : ''
-                });
-                return {
-                    showPopup: true,
-                    popupNotification
-                };
-            }
-            return {
-                showPopup: true
-            };
-        }
-        return {};
-    }
-
-    /** Fetch state from Portal Links */
-    fetchLinkData(site, member) {
-        const qParams = new URLSearchParams(window.location.search);
-        if (qParams.get('action') === 'unsubscribe') {
-            // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
-            if (qParams.get('key') && qParams.get('uuid')) {
-                return {
-                    showPopup: true,
-                    page: 'unsubscribe',
-                    pageData: {
-                        uuid: qParams.get('uuid'),
-                        key: qParams.get('key'),
-                        newsletterUuid: qParams.get('newsletter'),
-                        comments: qParams.get('comments')
-                    }
-                };
-            } else { // any malformed unsubscribe links should simply go to email prefs
-                return {
-                    showPopup: true,
-                    page: 'accountEmail',
-                    pageData: {
-                        newsletterUuid: qParams.get('newsletter'),
-                        action: 'unsubscribe',
-                        redirect: site.url + '#/portal/account/newsletters'
-                    }
-                };
-            }
-        }
-
-        if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
-            // After a successful signup, we show the recommendations if they are enabled
-            return {
-                showPopup: true,
-                page: 'recommendations',
-                pageData: {
-                    signup: true
-                }
-            };
-        }
-
-        const [path, hashQueryString] = window.location.hash.substr(1).split('?');
-        const hashQuery = new URLSearchParams(hashQueryString ?? '');
-        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
-        const offersRegex = /^offers\/(\w+?)\/?$/;
-        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
-        const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
-
-        if (path && feedbackRegex.test(path)) {
-            const [, postId, scoreString] = path.match(feedbackRegex);
-            const score = parseInt(scoreString);
-            if (score === 1 || score === 0) {
-                // if logged in, submit feedback
-                if (member || (hashQuery.get('uuid') && hashQuery.get('key'))) {
-                    return {
-                        showPopup: true,
-                        page: 'feedback',
-                        pageData: {
-                            uuid: member ? null : hashQuery.get('uuid'),
-                            key: member ? null : hashQuery.get('key'),
-                            postId,
-                            score
-                        }
-                    };
-                } else {
-                    return {
-                        showPopup: true,
-                        page: 'signin',
-                        pageData: {
-                            redirect: site.url + `#/feedback/${postId}/${score}/`
-                        }
-                    };
-                }
-            }
-        }
-        if (path && linkRegex.test(path)) {
-            const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
-            const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
-            const showPopup = (
-                ['monthly', 'yearly'].includes(pageQuery) ||
-                productMonthlyPriceQueryRegex.test(pageQuery) ||
-                productYearlyPriceQueryRegex.test(pageQuery) ||
-                offersRegex.test(pageQuery)
-            ) ? false : true;
-            return {
-                showPopup,
-                ...(page ? {page} : {}),
-                ...(pageQuery ? {pageQuery} : {}),
-                ...(pageData ? {pageData} : {}),
-                ...(lastPage ? {lastPage} : {})
-            };
-        }
-        return {};
-    }
-
-    /** Fetch state from Preview mode */
-    fetchPreviewData() {
-        const [, qs] = window.location.hash.substr(1).split('?');
-        if (hasMode(['preview'])) {
-            let data = {};
-            if (hasMode(['offerPreview'])) {
-                data = this.fetchOfferQueryStrData(qs);
-            } else {
-                data = this.fetchQueryStrData(qs);
-            }
-            return {
-                ...data,
-                showPopup: true
-            };
-        }
-        return {};
-    }
-
     /* Get the accent color from data attributes */
     getColorOverride() {
         const scriptTag = document.querySelector('script[data-ghost]');
@@ -420,30 +230,6 @@ export default class App extends React.Component {
             return scriptTag.dataset.accentColor;
         }
         return false;
-    }
-
-    /** Fetch site and member session data with Ghost Apis  */
-    async fetchApiData() {
-        const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
-        try {
-            this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
-            const {site, member} = await this.GhostApi.init();
-
-            const colorOverride = this.getColorOverride();
-            if (colorOverride) {
-                site.accent_color = colorOverride;
-            }
-
-            setupFirstPromoter({site, member});
-            setupSentry({site});
-            return {site, member};
-        } catch (e) {
-            if (hasMode(['dev', 'test'], {customSiteUrl})) {
-                return {};
-            }
-
-            throw e;
-        }
     }
 
 
@@ -491,8 +277,8 @@ export default class App extends React.Component {
 
     /**Handle state update for preview url and Portal Link changes */
     updateStateForPreviewLinks() {
-        const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
-        const {site: linkSite, ...restLinkData} = this.fetchLinkData();
+        const {site: previewSite, ...restPreviewData} = fetchPreviewData();
+        const {site: linkSite, ...restLinkData} = fetchLinkData(this.state.site, this.state.member);
 
         const updatedState = {
             site: {
