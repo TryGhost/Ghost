@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks** (17/18 completed - 94%)
+2. ⏳ **Convert 18 class components to functional components with hooks** (18/19 completed - 95%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -270,7 +270,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] TriggerButton.js - Portal trigger (2 components) ✅
 - [x] Notification.js - Notification system (2 components) ✅
 - [x] Frame.js - iframe wrapper ✅
-- [ ] PopupModal.js - Modal system
+- [x] PopupModal.js - Modal system (2 components) ✅
 - [ ] App.js - Main application
 
 ### Conversion Log
@@ -579,6 +579,37 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~10 minutes
 **Notes:** Frame is critical infrastructure - it's the iframe wrapper that isolates Portal's CSS and provides the rendering context for all Portal UI. The key challenge was replacing `forceUpdate()` with proper state management. The original code used `forceUpdate()` to trigger a re-render after the iframe loaded, which allowed createPortal to render children into the iframe's document. This was replaced with useState to store the iframe document references, triggering a natural re-render. Also added a check for already-loaded iframes to prevent race conditions in tests. The forwardRef wrapper maintains backward compatibility with components that access the iframe node directly.
+
+#### PopupModal.js (2025-10-17)
+**Type:** Infrastructure component (modal system with two nested components)
+**Complexity:** High
+**Changes:**
+**PopupContent (inner component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)` and destructured all needed values (page, pageQuery, site, customSiteUrl, popupNotification, otcRef, doAction)
+- Replaced `this.node` with `useRef(null)` for DOM ref
+- Replaced `this.keyUphandler` instance property with `useRef` for event handler reference
+- Replaced `this.lastContainerHeight` instance property with `useRef` for height tracking (doesn't trigger re-renders)
+- Split lifecycle logic into two `useEffect` hooks:
+  1. Mount effect with cleanup for keyboard event listener and initial height change (deps: [isMobile])
+  2. Update effect for height change tracking on every render (no deps - replicates componentDidUpdate)
+- Converted methods (`dismissPopup`, `sendContainerHeightChangeEvent`, `sendPortalPreviewReadyEvent`, `handlePopupClose`, `renderActivePage`, `renderPopupNotification`) to inner functions
+- Maintained all postMessage communication for preview mode height updates
+- Maintained Escape key handler with proper cleanup
+- Maintained complex page class name logic for different popup sizes (full-size, large-size, preview mode)
+
+**PopupModal (main component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)` and destructured values (showPopup, member, site, customSiteUrl, brandColor, dir, doAction)
+- Removed constructor - had single state property `height` that was never used (dead code)
+- Removed unused `renderCurrentPage` method
+- Removed unused `onHeightChange` method
+- Converted methods (`handlePopupClose`, `renderFrameStyles`, `renderFrameContainer`) to inner functions
+- Simplified conditional rendering by removing unused render method
+
+**Test Results:** ✅ All 256 tests passing (1 skipped)
+**Time:** ~25 minutes
+**Notes:** PopupModal is critical infrastructure - it's the main modal wrapper that contains all Portal pages and manages the popup lifecycle. This file had two nested class components with complex height tracking, keyboard event handling, and postMessage communication for preview mode. The key challenge was properly converting the componentDidUpdate logic that runs on every render to track height changes - used useEffect with no dependencies to replicate this behavior. The main PopupModal component had unused state (`height`) and methods (`onHeightChange`, `renderCurrentPage`) that were never called, which were safely removed. The conversion maintains all functionality including preview mode, mobile detection, cookie banner display, and dynamic popup sizing based on product count.
 
 ---
 
