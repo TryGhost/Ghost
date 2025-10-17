@@ -222,10 +222,10 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, labs, otcRef} = this.context;
+        const {action, actionErrorMessage, otcRef} = this.context;
         const errors = this.state.errors || {};
 
-        if (!labs?.membersSigninOTC || !otcRef) {
+        if (!otcRef) {
             return null;
         }
 
@@ -281,8 +281,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     render() {
-        const {labs, otcRef} = this.context;
-        const showOTCForm = labs?.membersSigninOTC && otcRef;
+        const {otcRef} = this.context;
+        const showOTCForm = !!otcRef;
 
         return (
             <div className='gh-portal-content'>

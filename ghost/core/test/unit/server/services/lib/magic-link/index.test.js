@@ -20,9 +20,6 @@ describe('MagicLink', function () {
             config: {
                 get: sandbox.stub().resolves()
             },
-            labsService: {
-                isSet: sandbox.stub().returns(false)
-            },
             ...overrides
         };
     }
@@ -104,13 +101,9 @@ describe('MagicLink', function () {
         });
     });
 
-    describe('#sendMagicLink with labsService', function () {
-        it('should not return otcRef when labsService is provided and flag is enabled but includeOTC is not set', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
+    describe('#sendMagicLink with OTC', function () {
+        it('should not return otcRef when includeOTC is not set', async function () {
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'test@example.com',
@@ -125,54 +118,11 @@ describe('MagicLink', function () {
             assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
         });
 
-        it('should not return otcRef when labsService flag is disabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            const result = await service.sendMagicLink(args);
-
-            assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-        });
-
-        it('should not return otcRef when labsService is not provided', async function () {
-            const service = new MagicLink(buildOptions({labsService: undefined}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            // Should not throw any errors
-            const result = await service.sendMagicLink(args);
-
-            assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-        });
-
         it('should work when tokenProvider does not have getRefByToken method', async function () {
             // No getRefByToken method
             delete mockSingleUseTokenProvider.getRefByToken;
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -192,11 +142,7 @@ describe('MagicLink', function () {
         it('should return otcRef as null when getRefByToken resolves to null', async function () {
             mockSingleUseTokenProvider.getRefByToken.resolves(null);
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'test@example.com',
@@ -214,12 +160,8 @@ describe('MagicLink', function () {
             assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
         });
 
-        it('should include OTC when includeOTC is true and labs flag is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+        it('should include OTC when includeOTC is true', async function () {
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -243,12 +185,8 @@ describe('MagicLink', function () {
             assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
         });
 
-        it('should not include OTC when includeOTC is false even if labs flag is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+        it('should not include OTC when includeOTC is false', async function () {
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -271,34 +209,8 @@ describe('MagicLink', function () {
             assert(options.getSubject.firstCall.calledWithExactly('signin', null));
         });
 
-        it('should not include OTC when includeOTC is true but labs flag is disabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            const result = await service.sendMagicLink(args);
-
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert.equal(result.otcRef, null);
-        });
-
         it('should pass OTC to email content functions when OTC is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -324,11 +236,7 @@ describe('MagicLink', function () {
         it('should not include OTC when tokenProvider lacks deriveOTC method', async function () {
             delete mockSingleUseTokenProvider.deriveOTC;
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {

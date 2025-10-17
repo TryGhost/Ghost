@@ -16,7 +16,7 @@ function handleError(error, form, errorEl) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException}
+    {event, form, errorEl, siteUrl, submitHandler, doAction, captureException}
 ) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
@@ -47,7 +47,7 @@ export async function formSubmitHandler(
         emailType = form.dataset.membersForm;
     }
 
-    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true' && labs?.membersSigninOTC;
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true';
 
     form.classList.add('loading');
     const urlHistory = getUrlHistory();

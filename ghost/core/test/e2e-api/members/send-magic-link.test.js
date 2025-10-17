@@ -333,15 +333,7 @@ describe('sendMagicLink', function () {
             should(scrubbedEmail).matchSnapshot();
         });
 
-        it('matches non-OTC snapshot (membersSigninOTC enabled)', async function () {
-            mockManager.mockLabsEnabled('membersSigninOTC');
-            const mail = await sendSigninRequest();
-            const scrubbedEmail = scrubEmailContent(mail);
-            should(scrubbedEmail).matchSnapshot();
-        });
-
-        it('matches OTC snapshot (membersSigninOTC enabled)', async function () {
-            mockManager.mockLabsEnabled('membersSigninOTC');
+        it('matches OTC snapshot', async function () {
             const mail = await sendSigninRequest({includeOTC: true});
             const scrubbedEmail = scrubEmailContent(mail);
             should(scrubbedEmail).matchSnapshot();
@@ -407,80 +399,38 @@ describe('sendMagicLink', function () {
         });
 
         describe('signin from blocked domains', function () {
-            describe('with membersSigninOTC feature flag enabled', function () {
-                beforeEach(function () {
-                    settingsCache.set('labs', {value: JSON.stringify({membersSigninOTC: true})});
-                });
+            it('allows signins from email domains blocked in config', async function () {
+                const email = 'hello-enabled@blocked-domain-config.com';
+                await membersService.api.members.create({email, name: 'Member Test'});
 
-                it('allows signins from email domains blocked in config', async function () {
-                    const email = 'hello-enabled@blocked-domain-config.com';
-                    await membersService.api.members.create({email, name: 'Member Test'});
-
-                    await membersAgent.post('/api/send-magic-link')
-                        .body({
-                            email,
-                            emailType: 'signin',
-                            includeOTC: true
-                        })
-                        .expectStatus(201)
-                        .expect(({body}) => {
-                            Object.keys(body).should.eql(['otc_ref']);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
-                        });
-                });
-
-                it('allows signins from email domains blocked in settings', async function () {
-                    settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
-
-                    const email = 'hello-enabled@blocked-domain-setting.com';
-                    await membersService.api.members.create({email, name: 'Member Test'});
-
-                    await membersAgent.post('/api/send-magic-link')
-                        .body({
-                            email,
-                            emailType: 'signin',
-                            includeOTC: true
-                        })
-                        .expectStatus(201)
-                        .expect(({body}) => {
-                            should.exist(body.otc_ref);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
-                        });
-                });
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email,
+                        emailType: 'signin',
+                        includeOTC: true
+                    })
+                    .expectStatus(201)
+                    .expect(({body}) => {
+                        body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
+                    });
             });
 
-            describe('with membersSigninOTC feature flag disabled', function () {
-                beforeEach(function () {
-                    settingsCache.set('labs', {value: JSON.stringify({membersSigninOTC: false})});
-                });
+            it('allows signins from email domains blocked in settings', async function () {
+                settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
 
-                it('allows signins from email domains blocked in config', async function () {
-                    const email = 'hello-disabled@blocked-domain-config.com';
-                    await membersService.api.members.create({email, name: 'Member Test'});
+                const email = 'hello-enabled@blocked-domain-setting.com';
+                await membersService.api.members.create({email, name: 'Member Test'});
 
-                    await membersAgent.post('/api/send-magic-link')
-                        .body({
-                            email,
-                            emailType: 'signin'
-                        })
-                        .expectEmptyBody()
-                        .expectStatus(201);
-                });
-
-                it('allows signins from email domains blocked in settings', async function () {
-                    settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
-
-                    const email = 'hello-disabled@blocked-domain-setting.com';
-                    await membersService.api.members.create({email, name: 'Member Test'});
-
-                    await membersAgent.post('/api/send-magic-link')
-                        .body({
-                            email,
-                            emailType: 'signin'
-                        })
-                        .expectEmptyBody()
-                        .expectStatus(201);
-                });
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email,
+                        emailType: 'signin',
+                        includeOTC: true
+                    })
+                    .expectStatus(201)
+                    .expect(({body}) => {
+                        body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
+                    });
             });
         });
 
@@ -826,9 +776,14 @@ describe('sendMagicLink', function () {
         function assertNoOTCInEmailContent(mail) {
             const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
 
-            assert(!otcRegex.test(mail.subject), 'Email subject should not contain OTC');
-            assert(!otcRegex.test(mail.html), 'Email HTML should not contain OTC');
-            assert(!otcRegex.test(mail.text), 'Email text should not contain OTC');
+            const subjectMatch = mail.subject.match(otcRegex);
+            assert(!subjectMatch, `Email subject should not contain OTC. Found: "${subjectMatch?.[0]}" in subject: "${mail.subject}"`);
+
+            const htmlMatch = mail.html.match(otcRegex);
+            assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${mail.html.substring(mail.html.search(otcRegex) - 50, mail.html.search(otcRegex) + 100)}"`);
+
+            const textMatch = mail.text.match(otcRegex);
+            assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${mail.text.substring(mail.text.search(otcRegex) - 50, mail.text.search(otcRegex) + 100)}"`);
         }
 
         beforeEach(async function () {
@@ -837,300 +792,293 @@ describe('sendMagicLink', function () {
             await resetRateLimits();
         });
 
-        describe('With membersSigninOTC flag disabled', function () {
-            beforeEach(function () {
-                mockManager.mockLabsDisabled('membersSigninOTC');
+        it('Should return empty body for signin magic link requests', async function () {
+            await sendMagicLinkRequest('member1@test.com')
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+
+        it('Should include otc_ref in response when requesting magic link with OTC', async function () {
+            const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                .expectStatus(201);
+
+            assert(response.body.otc_ref, 'Response should contain otc_ref');
+        });
+
+        it('Should not include otc_ref in response when requesting magic link without OTC', async function () {
+            const response = await sendMagicLinkRequest('member1@test.com', 'signin', false)
+                .expectStatus(201);
+
+            assert(!response.body.otc_ref, 'Response should not contain otc_ref');
+        });
+
+        it('Should include OTC in email content when requesting magic link with OTC', async function () {
+            await sendMagicLinkRequest('member1@test.com', 'signin', true);
+
+            const mail = mockManager.assert.sentEmail({
+                to: 'member1@test.com'
             });
 
-            it('Should return empty body for signin magic link requests', async function () {
-                await sendMagicLinkRequest('member1@test.com')
-                    .expectEmptyBody()
-                    .expectStatus(201);
-            });
+            assertOTCInEmailContent(mail);
+        });
 
-            it('Should not include otc_ref in response when requesting magic link', async function () {
-                const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
-                    .expectStatus(201);
+        ['signin', 'signup'].forEach((emailType) => {
+            it(`Should not include OTC in ${emailType} email content when requesting magic link without OTC`, async function () {
+                await sendMagicLinkRequest('member1@test.com', emailType, false);
 
-                assert(!response.body.otc_ref, 'Response should not contain otc_ref');
-            });
-
-            ['signin', 'signup'].forEach((emailType) => {
-                it(`Should generate ${emailType} emails without OTC codes in content`, async function () {
-                    await sendMagicLinkRequest('member1@test.com', emailType, true);
-
-                    const mail = mockManager.assert.sentEmail({
-                        to: 'member1@test.com'
-                    });
-
-                    assertNoOTCInEmailContent(mail);
+                const mail = mockManager.assert.sentEmail({
+                    to: 'member1@test.com'
                 });
-            });
 
-            it('Should allow normal magic link authentication flow', async function () {
-                const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signin');
-                const magicLinkUrl = new URL(magicLink);
-                const token = magicLinkUrl.searchParams.get('token');
-
-                await membersAgent.get(`/?token=${token}`)
-                    .expectStatus(302)
-                    .expectHeader('Location', /success=true/)
-                    .expectHeader('Set-Cookie', /members-ssr.*/);
-            });
-
-            it('Should not call OTC generation methods when flag is disabled', async function () {
-                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-                const deriveOTCSpy = sinon.spy(tokenProvider.prototype, 'deriveOTC');
-
-                try {
-                    await sendMagicLinkRequest('member1@test.com', 'signin', true);
-                    sinon.assert.notCalled(deriveOTCSpy);
-                } finally {
-                    deriveOTCSpy.restore();
-                }
+                assertNoOTCInEmailContent(mail);
             });
         });
 
-        describe('With membersSigninOTC flag enabled', function () {
-            beforeEach(function () {
-                mockManager.mockLabsEnabled('membersSigninOTC');
-            });
+        it('Should allow normal magic link authentication flow', async function () {
+            const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signin');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
 
-            [true, 'true'].forEach((otcValue) => {
-                it(`Should include OTC when requested with otc parameter value: ${otcValue}`, async function () {
-                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
-                        .expectStatus(201);
+            await membersAgent.get(`/?token=${token}`)
+                .expectStatus(302)
+                .expectHeader('Location', /success=true/)
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+        });
 
-                    assert(response.body.otc_ref, `Response should contain otc_ref for includeOTC=${otcValue}`);
-
-                    const mail = mockManager.assert.sentEmail({
-                        to: 'member1@test.com'
-                    });
-
-                    assertOTCInEmailContent(mail);
-                });
-            });
-
-            [false, 'false'].forEach((otcValue) => {
-                it(`Should not include OTC when requested with otc parameter value: ${otcValue}`, async function () {
-                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
-                        .expectStatus(201);
-
-                    assert(!response.body.otc_ref, `Response should not contain otc_ref for includeOTC=${otcValue}`);
-
-                    const mail = mockManager.assert.sentEmail({
-                        to: 'member1@test.com'
-                    });
-
-                    assertNoOTCInEmailContent(mail);
-                });
-            });
-
-            it('Should gracefully handle OTC generation failures', async function () {
-                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-                const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
-
-                try {
-                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
-                        .expectStatus(201);
-
-                    // Ensure we're actually hitting our stub
-                    sinon.assert.called(deriveOTCStub);
-
-                    // Should still succeed but without OTC
-                    assert(!response.body.otc_ref, 'Response should not contain otc_ref when OTC generation fails');
-
-                    const mail = mockManager.assert.sentEmail({
-                        to: 'member1@test.com'
-                    });
-
-                    assertNoOTCInEmailContent(mail);
-                } finally {
-                    deriveOTCStub.restore();
-                }
-            });
-
-            it('Should handle OTC parameter with non-existent member email', async function () {
-                const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
-                    .expectStatus(400);
-
-                // Should still process the request normally for non-existent members
-                assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
-            });
-
-            async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {
-                const response = await sendMagicLinkRequest(email, emailType, true)
+        [true, 'true'].forEach((otcValue) => {
+            it(`Should include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
                     .expectStatus(201);
 
+                assert(response.body.otc_ref, `Response should contain otc_ref for includeOTC=${otcValue}`);
+
                 const mail = mockManager.assert.sentEmail({
-                    to: email
+                    to: 'member1@test.com'
                 });
 
-                const otcRef = response.body.otc_ref;
-                const otc = mail.text.match(/\d{6}/)[0];
+                assertOTCInEmailContent(mail);
+            });
+        });
 
-                const verifyResponse = await membersAgent
-                    .post('/api/verify-otc')
-                    .header('Referer', options.referer)
-                    .body({
-                        otcRef,
-                        otc,
-                        redirect: options.redirect
-                    })
-                    .expectStatus(200);
+        [false, 'false'].forEach((otcValue) => {
+            it(`Should not include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
+                    .expectStatus(201);
 
-                return verifyResponse;
+                assert(!response.body.otc_ref, `Response should not contain otc_ref for includeOTC=${otcValue}`);
+
+                const mail = mockManager.assert.sentEmail({
+                    to: 'member1@test.com'
+                });
+
+                assertNoOTCInEmailContent(mail);
+            });
+        });
+
+        it('Should gracefully handle OTC generation failures', async function () {
+            const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+            const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
+
+            try {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                    .expectStatus(201);
+
+                // Ensure we're actually hitting our stub
+                sinon.assert.called(deriveOTCStub);
+
+                // Should still succeed but without OTC
+                assert(!response.body.otc_ref, 'Response should not contain otc_ref when OTC generation fails');
+
+                const mail = mockManager.assert.sentEmail({
+                    to: 'member1@test.com'
+                });
+
+                assertNoOTCInEmailContent(mail);
+            } finally {
+                deriveOTCStub.restore();
             }
+        });
 
-            it('Can verify provided OTC using /verify-otc endpoint', async function () {
-                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin');
+        it('Should handle OTC parameter with non-existent member email', async function () {
+            const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
+                .expectStatus(400);
 
-                assert(verifyResponse.body.redirectUrl, 'Response should contain redirectUrl');
+            // Should still process the request normally for non-existent members
+            assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
+        });
 
-                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
-                assert(redirectUrl.pathname.endsWith('members/'), 'Redirect URL should end with /members');
+        async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {
+            const response = await sendMagicLinkRequest(email, emailType, true)
+                .expectStatus(201);
 
-                const token = redirectUrl.searchParams.get('token');
-                const otcVerification = redirectUrl.searchParams.get('otc_verification');
-
-                assert(token, 'Redirect URL should contain token');
-                assert(otcVerification, 'Redirect URL should contain otc_verification');
+            const mail = mockManager.assert.sentEmail({
+                to: email
             });
 
-            it('/verify-otc endpoint returns correct redirectUrl using Referer header', async function () {
-                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com'});
+            const otcRef = response.body.otc_ref;
+            const otc = mail.text.match(/\d{6}/)[0];
 
-                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
-                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com');
+            const verifyResponse = await membersAgent
+                .post('/api/verify-otc')
+                .header('Referer', options.referer)
+                .body({
+                    otcRef,
+                    otc,
+                    redirect: options.redirect
+                })
+                .expectStatus(200);
+
+            return verifyResponse;
+        }
+
+        it('Can verify provided OTC using /verify-otc endpoint', async function () {
+            const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin');
+
+            assert(verifyResponse.body.redirectUrl, 'Response should contain redirectUrl');
+
+            const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+            assert(redirectUrl.pathname.endsWith('members/'), 'Redirect URL should end with /members');
+
+            const token = redirectUrl.searchParams.get('token');
+            const otcVerification = redirectUrl.searchParams.get('otc_verification');
+
+            assert(token, 'Redirect URL should contain token');
+            assert(otcVerification, 'Redirect URL should contain otc_verification');
+        });
+
+        it('/verify-otc endpoint returns correct redirectUrl using Referer header', async function () {
+            const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com'});
+
+            const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+            assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com');
+        });
+
+        it('/verify-otc endpoint returns correct redirectUrl using redirect body param', async function () {
+            const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com/signin', redirect: 'https://www.test.com/post'});
+
+            const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+            assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
+        });
+
+        describe('Rate limiting', function () {
+            before(async function () {
+                // Adjust rate limits for faster testing
+                // Note: enumeration limit must be higher than per-code limit for the "limits enforced per code" test
+                configUtils.set('spam:otc_verification:freeRetries', 2);
+                configUtils.set('spam:otc_verification_enumeration:freeRetries', 5);
+                await resetRateLimits();
             });
 
-            it('/verify-otc endpoint returns correct redirectUrl using redirect body param', async function () {
-                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com/signin', redirect: 'https://www.test.com/post'});
-
-                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
-                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
+            after(async function () {
+                await configUtils.restore();
+                await resetRateLimits();
             });
 
-            describe('Rate limiting', function () {
-                before(async function () {
-                    // Adjust rate limits for faster testing
-                    // Note: enumeration limit must be higher than per-code limit for the "limits enforced per code" test
-                    configUtils.set('spam:otc_verification:freeRetries', 2);
-                    configUtils.set('spam:otc_verification_enumeration:freeRetries', 5);
-                    await resetRateLimits();
-                });
+            beforeEach(async function () {
+                await dbUtils.truncate('brute');
+                await resetRateLimits();
+            });
 
-                after(async function () {
-                    await configUtils.restore();
-                    await resetRateLimits();
-                });
+            it('Will rate limit OTC verification enumeration (IP-based)', async function () {
+                const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
 
-                beforeEach(async function () {
-                    await dbUtils.truncate('brute');
-                    await resetRateLimits();
-                });
-
-                it('Will rate limit OTC verification enumeration (IP-based)', async function () {
-                    const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
-
-                    // Make multiple verification attempts with *different* otcRefs from same IP
-                    for (let i = 0; i < otcVerificationEnumerationLimit; i++) {
-                        await membersAgent
-                            .post('/api/verify-otc')
-                            .body({
-                                otcRef: `fake-otc-ref-${i}`,
-                                otc: '000000'
-                            })
-                            .expectStatus(400);
-                    }
-
-                    // Now we should be rate limited (enumeration)
+                // Make multiple verification attempts with *different* otcRefs from same IP
+                for (let i = 0; i < otcVerificationEnumerationLimit; i++) {
                     await membersAgent
                         .post('/api/verify-otc')
                         .body({
-                            otcRef: 'fake-otc-ref-final',
+                            otcRef: `fake-otc-ref-${i}`,
                             otc: '000000'
                         })
-                        .expectStatus(429)
-                        .matchBodySnapshot({
-                            errors: [{
-                                id: anyErrorId,
-                                type: 'TooManyRequestsError',
-                                message: anyString,
-                                code: anyString
-                            }]
-                        });
-                });
+                        .expectStatus(400);
+                }
 
-                it('Will rate limit OTC verification for specific otcRef', async function () {
-                    const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
-                    const otcRef = 'fake-otc-ref-single';
+                // Now we should be rate limited (enumeration)
+                await membersAgent
+                    .post('/api/verify-otc')
+                    .body({
+                        otcRef: 'fake-otc-ref-final',
+                        otc: '000000'
+                    })
+                    .expectStatus(429)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyErrorId,
+                            type: 'TooManyRequestsError',
+                            message: anyString,
+                            code: anyString
+                        }]
+                    });
+            });
 
-                    // Make multiple failed attempts with the *same* otcRef
-                    for (let i = 0; i < otcVerificationLimit; i++) {
-                        await membersAgent
-                            .post('/api/verify-otc')
-                            .body({
-                                otcRef,
-                                otc: `00000${i + 1}`
-                            })
-                            .expectStatus(400);
-                    }
+            it('Will rate limit OTC verification for specific otcRef', async function () {
+                const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
+                const otcRef = 'fake-otc-ref-single';
 
-                    // Now we should be rate limited for this specific otcRef
+                // Make multiple failed attempts with the *same* otcRef
+                for (let i = 0; i < otcVerificationLimit; i++) {
                     await membersAgent
                         .post('/api/verify-otc')
                         .body({
                             otcRef,
-                            otc: '000000'
+                            otc: `00000${i + 1}`
                         })
-                        .expectStatus(429)
-                        .matchBodySnapshot({
-                            errors: [{
-                                id: anyErrorId,
-                                type: 'TooManyRequestsError',
-                                message: anyString,
-                                code: anyString
-                            }]
-                        });
-                });
+                        .expectStatus(400);
+                }
 
-                it('Different otcRefs are tracked independently', async function () {
-                    const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
-                    const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
+                // Now we should be rate limited for this specific otcRef
+                await membersAgent
+                    .post('/api/verify-otc')
+                    .body({
+                        otcRef,
+                        otc: '000000'
+                    })
+                    .expectStatus(429)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyErrorId,
+                            type: 'TooManyRequestsError',
+                            message: anyString,
+                            code: anyString
+                        }]
+                    });
+            });
 
-                    // Ensure we can test specific limits without hitting enumeration limit
-                    assert(otcVerificationLimit < otcVerificationEnumerationLimit, 'Specific otcRef limit must be lower than enumeration limit for this test');
+            it('Different otcRefs are tracked independently', async function () {
+                const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
+                const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
 
-                    // Exhaust attempts for first otcRef
-                    for (let i = 0; i < otcVerificationLimit; i++) {
-                        await membersAgent
-                            .post('/api/verify-otc')
-                            .body({
-                                otcRef: 'fake-otc-ref-one',
-                                otc: '000000'
-                            })
-                            .expectStatus(400);
-                    }
+                // Ensure we can test specific limits without hitting enumeration limit
+                assert(otcVerificationLimit < otcVerificationEnumerationLimit, 'Specific otcRef limit must be lower than enumeration limit for this test');
 
-                    // First otcRef should be rate limited
+                // Exhaust attempts for first otcRef
+                for (let i = 0; i < otcVerificationLimit; i++) {
                     await membersAgent
                         .post('/api/verify-otc')
                         .body({
                             otcRef: 'fake-otc-ref-one',
                             otc: '000000'
                         })
-                        .expectStatus(429);
-
-                    // But second otcRef should still work (independent counter)
-                    await membersAgent
-                        .post('/api/verify-otc')
-                        .body({
-                            otcRef: 'fake-otc-ref-two',
-                            otc: '000000'
-                        })
                         .expectStatus(400);
-                });
+                }
+
+                // First otcRef should be rate limited
+                await membersAgent
+                    .post('/api/verify-otc')
+                    .body({
+                        otcRef: 'fake-otc-ref-one',
+                        otc: '000000'
+                    })
+                    .expectStatus(429);
+
+                // But second otcRef should still work (independent counter)
+                await membersAgent
+                    .post('/api/verify-otc')
+                    .body({
+                        otcRef: 'fake-otc-ref-two',
+                        otc: '000000'
+                    })
+                    .expectStatus(400);
             });
         });
     });

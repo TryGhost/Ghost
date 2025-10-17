@@ -665,7 +665,7 @@ module.exports = class RouterController {
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
 
-                if (this.labsService.isSet('membersSigninOTC') && signIn.otcRef) {
+                if (signIn.otcRef) {
                     res.writeHead(201, {'Content-Type': 'application/json'});
                     return res.end(JSON.stringify({otc_ref: signIn.otcRef}));
                 }
@@ -790,7 +790,7 @@ module.exports = class RouterController {
 
         let includeOTC = false;
 
-        if (this.labsService.isSet('membersSigninOTC') && (reqIncludeOTC === true || reqIncludeOTC === 'true')) {
+        if (reqIncludeOTC === true || reqIncludeOTC === 'true') {
             includeOTC = true;
         }
 
