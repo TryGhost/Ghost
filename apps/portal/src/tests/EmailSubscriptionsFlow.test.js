@@ -137,8 +137,10 @@ describe('Newsletter Subscriptions', () => {
 
         await userEvent.click(manageSubscriptionsButton);
 
-        const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
-        expect(newsletter1).toBeInTheDocument();
+        await waitFor(() => {
+            const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
+            expect(newsletter1).toBeInTheDocument();
+        });
 
         // unsubscribe from Newsletter 1
         const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
@@ -147,24 +149,33 @@ describe('Newsletter Subscriptions', () => {
         await userEvent.click(newsletter1Toggle);
 
         // verify that subscription to Newsletter 1 was removed
-        const expectedSubscriptions = Newsletters.filter(n => n.id !== Newsletters[0].id).map(n => ({id: n.id}));
-        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
-            {newsletters: expectedSubscriptions}
-        );
+        await waitFor(() => {
+            const expectedSubscriptions = Newsletters.filter(n => n.id !== Newsletters[0].id).map(n => ({id: n.id}));
+            expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+                {newsletters: expectedSubscriptions}
+            );
+        });
 
-        const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
-        const newsletter1Checkbox = checkboxes[0];
-        const newsletter2Checkbox = checkboxes[1];
+        await waitFor(() => {
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const newsletter1Checkbox = checkboxes[0];
+            const newsletter2Checkbox = checkboxes[1];
 
-        expect(newsletter1Checkbox).not.toBeChecked();
-        expect(newsletter2Checkbox).toBeChecked();
+            expect(newsletter1Checkbox).not.toBeChecked();
+            expect(newsletter2Checkbox).toBeChecked();
+        });
 
         // resubscribe to Newsletter 1
         await userEvent.click(newsletter1Toggle);
-        expect(newsletter1Checkbox).toBeChecked();
-        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
-            {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
-        );
+
+        await waitFor(() => {
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const newsletter1Checkbox = checkboxes[0];
+            expect(newsletter1Checkbox).toBeChecked();
+            expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+                {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
+            );
+        });
     });
 
     test('unsubscribe from all newsletters when logged in', async () => {
@@ -177,13 +188,20 @@ describe('Newsletter Subscriptions', () => {
         expect(triggerButtonFrame).toBeInTheDocument();
         expect(accountHomeTitle).toBeInTheDocument();
         expect(manageSubscriptionsButton).toBeInTheDocument();
+
         await userEvent.click(manageSubscriptionsButton);
+
+        await waitFor(() => {
+            const unsubscribeAllButton = within(popupIframeDocument).queryByRole('button', {name: 'Unsubscribe from all emails'});
+            expect(unsubscribeAllButton).toBeInTheDocument();
+        });
+
         const unsubscribeAllButton = within(popupIframeDocument).queryByRole('button', {name: 'Unsubscribe from all emails'});
-        expect(unsubscribeAllButton).toBeInTheDocument();
+        await userEvent.click(unsubscribeAllButton);
 
-        fireEvent.click(unsubscribeAllButton);
-
-        expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
+        await waitFor(() => {
+            expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
+        });
 
         // Wait for state update to reflect in checkboxes
         await waitFor(() => {

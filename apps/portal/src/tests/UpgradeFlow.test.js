@@ -1,7 +1,8 @@
 import App from '../App.js';
-import {fireEvent, appRender, within} from '../utils/test-utils';
+import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+import userEvent from '@testing-library/user-event';
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -229,25 +230,34 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
+            await waitFor(async () => {
+                const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+                expect(monthlyPlanContainer).toBeInTheDocument();
+            });
+
             const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
-            fireEvent.click(monthlyPlanContainer);
-            // added fake timeout for react state delay in setting plan
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            await userEvent.click(monthlyPlanContainer);
+
+            await waitFor(() => {
+                const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+                expect(submitButton).toBeInTheDocument();
             });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            await userEvent.click(submitButton);
 
-            fireEvent.click(submitButton);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'month'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.monthlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'month'
+                });
             });
         });
 
@@ -267,26 +277,30 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
             await within(popupIframeDocument).findByText('Monthly');
             const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
-            fireEvent.click(yearlyPlanContainer);
-            // added fake timeout for react state delay in setting plan
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            await userEvent.click(yearlyPlanContainer);
+
+            await waitFor(() => {
+                const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+                expect(submitButton).toBeInTheDocument();
             });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            await userEvent.click(submitButton);
 
-            fireEvent.click(submitButton);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'year'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.yearlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'year'
+                });
             });
         });
 
@@ -392,25 +406,29 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
             await within(popupIframeDocument).findByText('Monthly');
 
-            // allow default checkbox switch to yearly
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            // Wait for plan selection to load
+            await waitFor(async () => {
+                const chooseBtns = await within(popupIframeDocument).findAllByRole('button', {name: 'Choose'});
+                expect(chooseBtns.length).toBeGreaterThan(0);
             });
 
             const chooseBtns = await within(popupIframeDocument).findAllByRole('button', {name: 'Choose'});
+            await userEvent.click(chooseBtns[0]);
 
-            fireEvent.click(chooseBtns[0]);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'year'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.yearlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'year'
+                });
             });
         });
 

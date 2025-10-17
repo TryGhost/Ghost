@@ -2,6 +2,7 @@ import App from '../App.js';
 import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+import userEvent from '@testing-library/user-event';
 
 // Simple deep clone function
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
@@ -777,17 +778,14 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
 
-            fireEvent.click(tierContainer[0]);
-            const labelText = popupIframeDocument.querySelector('.gh-portal-discount-label');
+            await userEvent.click(tierContainer[0]);
+
             await waitFor(() => {
+                const labelText = popupIframeDocument.querySelector('.gh-portal-discount-label');
                 expect(labelText).toBeInTheDocument();
             });
 
-            // added fake timeout for react state delay in setting plan
-            await new Promise((r) => {
-                setTimeout(r, 10);
-            });
-            fireEvent.click(chooseBtns[1]);
+            await userEvent.click(chooseBtns[1]);
             await waitFor(() => expect(ghostApi.member.checkoutPlan).toHaveBeenCalledTimes(1));
         });
 
