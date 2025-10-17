@@ -18,6 +18,7 @@ import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, has
 import {handleDataAttributes} from './data-attributes';
 import {parseOfferQueryString, parsePreviewQueryString, parsePortalLinkPath} from './utils/url-parsers';
 import {setupSentry, setupFirstPromoter} from './utils/setup-integrations';
+import {getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -67,7 +68,7 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        const scrollbarWidth = this.getScrollbarWidth();
+        const scrollbarWidth = getScrollbarWidth();
         this.setState({scrollbarWidth});
 
         this.initSetup();
@@ -105,7 +106,7 @@ export default class App extends React.Component {
         if (this.state.initStatus === 'success' && prevState.initStatus !== this.state.initStatus) {
             const {siteUrl} = this.props;
             const contextState = this.getContextFromState();
-            this.sendPortalReadyEvent();
+            sendPortalReadyEvent();
             handleDataAttributes({
                 siteUrl,
                 site: contextState.site,
@@ -124,36 +125,6 @@ export default class App extends React.Component {
             customTriggerButton.removeEventListener('click', this.clickHandler);
         });
         window.removeEventListener('hashchange', this.hashHandler, false);
-    }
-
-    sendPortalReadyEvent() {
-        if (window.self !== window.parent) {
-            window.parent.postMessage({
-                type: 'portal-ready',
-                payload: {}
-            }, '*');
-        }
-    }
-
-    // User for adding trailing margin to prevent layout shift when popup appears
-    getScrollbarWidth() {
-        // Create a temporary div
-        const div = document.createElement('div');
-        div.style.visibility = 'hidden';
-        div.style.overflow = 'scroll'; // forcing scrollbar to appear
-        document.body.appendChild(div);
-
-        // Create an inner div
-        // const inner = document.createElement('div');
-        document.body.appendChild(div);
-
-        // Calculate the width difference
-        const scrollbarWidth = div.offsetWidth - div.clientWidth;
-
-        // Clean up
-        document.body.removeChild(div);
-
-        return scrollbarWidth;
     }
 
     /** Setup custom trigger buttons handling on page */
@@ -231,15 +202,12 @@ export default class App extends React.Component {
             // the signup card will ship hidden by default,
             // so we need to show it if the member is not logged in
             if (!member) {
-                const formElements = document.querySelectorAll('[data-lexical-signup-form]');
-                if (formElements.length > 0){
-                    formElements.forEach((element) => {
-                        element.style.display = '';
-                    });
-                }
+                showLexicalSignupForms();
             }
 
-            this.setupRecommendationButtons();
+            setupRecommendationButtons((recommendationId) => {
+                return this.dispatchAction('trackRecommendationClicked', {recommendationId});
+            });
 
             // avoid portal links switching to homepage (e.g. from absolute link copy/pasted from Admin)
             this.transformPortalLinksToRelative();
@@ -678,35 +646,6 @@ export default class App extends React.Component {
             otcRef,
             doAction: (_action, data) => this.dispatchAction(_action, data)
         };
-    }
-
-    getRecommendationButtons() {
-        const customTriggerSelector = '[data-recommendation]';
-        return document.querySelectorAll(customTriggerSelector) || [];
-    }
-
-    /** Setup click tracking for recommendation buttons */
-    setupRecommendationButtons() {
-        // Handler for custom buttons
-        const clickHandler = (event) => {
-            // Send beacons for recommendation clicks
-            const recommendationId = event.currentTarget.dataset.recommendation;
-
-            if (recommendationId) {
-                this.dispatchAction('trackRecommendationClicked', {
-                    recommendationId
-                // eslint-disable-next-line no-console
-                }).catch(console.error);
-            } else {
-                // eslint-disable-next-line no-console
-                console.warn('[Portal] Invalid usage of data-recommendation attribute');
-            }
-        };
-
-        const elements = this.getRecommendationButtons();
-        for (const element of elements) {
-            element.addEventListener('click', clickHandler, {passive: true});
-        }
     }
 
     /**
