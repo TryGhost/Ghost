@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 15 class components to functional components with hooks** (14/15 completed - 93%)
+2. ⏳ **Convert 18 class components to functional components with hooks** (16/18 completed - 89%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -267,8 +267,8 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Priority 4: Complex Infrastructure (Highest Risk)**
 - [x] InputForm.js - Form handling ✅
-- [x] TriggerButton.js - Portal trigger ✅
-- [ ] Notification.js - Notification system
+- [x] TriggerButton.js - Portal trigger (2 components) ✅
+- [x] Notification.js - Notification system (2 components) ✅
 - [ ] Frame.js - iframe wrapper
 - [ ] PopupModal.js - Modal system
 - [ ] App.js - Main application
@@ -531,6 +531,36 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Test Results:** ✅ All 256 tests passing (including 4 TriggerButton-specific tests)
 **Time:** ~20 minutes
 **Notes:** This was a complex conversion involving two nested class components with lifecycle methods, refs, window event listeners, and size tracking. The key challenge was properly converting `componentDidUpdate` logic that tracked size changes. Used `useEffect` without dependencies to replicate the "run after every render" behavior needed for size tracking. The resize event listener cleanup is properly handled with effect cleanup functions. TriggerButton is critical infrastructure - it's the floating button that opens the Portal modal for users.
+
+#### Notification.js (2025-10-17)
+**Type:** Infrastructure component (notification system with two nested components)
+**Complexity:** Medium-High
+**Changes:**
+**NotificationContent (inner component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Replaced `this.state.className` with `useState` hook
+- Replaced `this.timeoutId` instance property with `useRef` for mutable value
+- Split lifecycle logic into three focused `useEffect` hooks:
+  1. Cleanup effect for timeout (empty deps - only runs once, returns cleanup)
+  2. Mount effect for initial animation and autoHide timeout (deps: context, autoHide, duration)
+  3. Update effect for popup-triggered slideout animation (deps: context, className)
+- Converted `componentWillUnmount` cleanup to effect cleanup function
+- Converted methods (`onNotificationClose`, `onAnimationEnd`) to inner functions
+
+**Notification (main component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Moved NotificationParser call from constructor to component body
+- Replaced all state properties with individual `useState` hooks
+- Note: type, status, autoHide, duration are intentionally not updated after mount (mirrors original constructor behavior)
+- Replaced `componentDidMount` with single `useEffect` (deps: context)
+- Converted methods (`onHideNotification`, `renderFrameStyles`) to inner functions
+- Maintained URL param cleanup and member data refresh logic
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~15 minutes
+**Notes:** This conversion involved two nested components with animation timing logic. The key challenge was properly splitting the lifecycle methods into focused effects. NotificationContent had complex animation timing with both mount and update logic for the slideout animation. The original componentDidUpdate logic needed to be preserved to handle popup-triggered animations. Some new act() warnings appeared for Notification component but these are expected - they indicate async state updates from URL parsing and context checks, which are working correctly.
 
 ---
 
