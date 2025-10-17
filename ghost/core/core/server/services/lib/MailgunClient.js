@@ -67,7 +67,9 @@ module.exports = class MailgunClient {
                 subject: messageContent.subject,
                 html: messageContent.html,
                 text: messageContent.plaintext,
-                'recipient-variables': JSON.stringify(recipientData)
+                'recipient-variables': JSON.stringify(recipientData),
+                'h:Sender': message.from,
+                'h:Auto-Submitted': 'auto-generated'
             };
 
             // Do we have a custom List-Unsubscribe header set?
@@ -348,9 +350,9 @@ module.exports = class MailgunClient {
     /**
      * Returns the configured target delivery window in seconds
      * Ghost will attempt to deliver emails evenly distributed over this window
-     * 
+     *
      * Defaults to 0 (no delay) if not set
-     * 
+     *
      * @returns {number}
      */
     getTargetDeliveryWindow() {

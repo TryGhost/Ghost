@@ -28,22 +28,9 @@ export class PostPreviewModal {
         this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
     }
 
-    async waitForVisible(): Promise<void> {
-        await this.modal.waitFor({state: 'visible'});
-        await this.header.waitFor({state: 'visible'});
-    }
-
-    async waitForHidden(): Promise<void> {
-        await this.modal.waitFor({state: 'hidden'});
-    }
-
     async close(): Promise<void> {
         await this.closeButton.click();
-        await this.waitForHidden();
-    }
-
-    async isVisible(): Promise<boolean> {
-        return await this.modal.isVisible();
+        await this.modal.waitFor({state: 'hidden'});
     }
 
     async clickInIframe(): Promise<void> {

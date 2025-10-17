@@ -14,6 +14,7 @@ export interface GhostStartConfig {
     siteUuid: string;
     workingDir?: string;
     command?: string[];
+    portalUrl?: string;
 }
 
 export class GhostManager {
@@ -28,8 +29,8 @@ export class GhostManager {
     }
 
     /** High-level: create, wait, and return a GhostInstance description. */
-    async startInstance(instanceId: string, siteUuid: string): Promise<GhostInstance> {
-        const container = await this.createAndStart({instanceId, siteUuid});
+    async startInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
+        const container = await this.createAndStart({instanceId, siteUuid, portalUrl});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);
@@ -67,9 +68,16 @@ export class GhostManager {
                 TB_LOCAL_HOST: TB.LOCAL_HOST,
                 tinybird__stats__endpoint: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
-                tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
+                tinybird__tracker__endpoint: 'http://localhost:8080/.ghost/analytics/api/v1/page_hit',
+                tinybird__tracker__datasource: 'analytics_events',
                 tinybird__workspaceId: tinybirdState.workspaceId,
-                tinybird__adminToken: tinybirdState.adminToken
+                tinybird__adminToken: tinybirdState.adminToken,
+                // Email configuration to use Mailhog
+                mail__transport: 'SMTP',
+                mail__options__host: 'mailhog',
+                mail__options__port: '1025',
+                mail__options__secure: 'false',
+                portal__url: config.portalUrl || 'http://localhost:4175/portal.min.js'
             } as Record<string, string>;
             
             const containerConfig: ContainerCreateOptions = {

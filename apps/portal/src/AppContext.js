@@ -5,13 +5,13 @@ const AppContext = React.createContext({
     site: {},
     member: {},
     action: '',
+    actionErrorMessage: null,
     lastPage: '',
     brandColor: '',
     pageData: {},
-    onAction: (action, data) => {
+    doAction: (action, data) => {
         return {action, data};
     },
-    t: () => {},
     dir: 'ltr'
 
 });

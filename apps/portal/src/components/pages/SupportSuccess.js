@@ -3,6 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as ConfettiIcon} from '../../images/icons/confetti.svg';
 import CloseButton from '../common/CloseButton';
 import ActionButton from '../common/ActionButton';
+import {t} from '../../utils/i18n';
 
 export const TipsAndDonationsSuccessStyle = `
     .gh-portal-tips-and-donations .gh-portal-signup-header {
@@ -33,7 +34,7 @@ export const TipsAndDonationsSuccessStyle = `
 `;
 
 const SupportSuccess = () => {
-    const {onAction, brandColor, site, t} = useContext(AppContext);
+    const {doAction, brandColor, site} = useContext(AppContext);
     const successTitle = t('Thank you for your support');
     const successDescription = t('To continue to stay up to date, subscribe to {publication} below.', {publication: site?.title});
     const buttonLabel = t('Sign up');
@@ -51,12 +52,12 @@ const SupportSuccess = () => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
-                onClick = {() => onAction('switchPage', {page: 'signup'})}
+                onClick = {() => doAction('switchPage', {page: 'signup'})}
                 disabled={false}
                 brandColor={brandColor}
                 label={buttonLabel}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
 
@@ -67,7 +68,7 @@ const SupportSuccess = () => {
                     data-testid='signin-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => onAction('switchPage', {page: 'signin'})}
+                    onClick={() => doAction('switchPage', {page: 'signin'})}
                 >
                     <span>{t('Sign in')}</span>
                 </button>

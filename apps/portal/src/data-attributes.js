@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
-import i18nLib from '@tryghost/i18n';
+import {t} from './utils/i18n';
 
 function displayErrorIfElementExists(errorEl, message) {
     if (errorEl) {
@@ -9,15 +9,14 @@ function displayErrorIfElementExists(errorEl, message) {
     }
 }
 
-function handleError(error, form, errorEl, t) {
+function handleError(error, form, errorEl) {
     form.classList.add('error');
     const defaultMessage = t('There was an error sending the email, please try again');
-    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler},
-    t = str => str
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException}
 ) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
@@ -48,6 +47,8 @@ export async function formSubmitHandler(
         emailType = form.dataset.membersForm;
     }
 
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true' && labs?.membersSigninOTC;
+
     form.classList.add('loading');
     const urlHistory = getUrlHistory();
     const reqBody = {
@@ -57,6 +58,9 @@ export async function formSubmitHandler(
         name: name,
         autoRedirect: (autoRedirect === 'true')
     };
+    if (wantsOTC) {
+        reqBody.includeOTC = true;
+    }
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
     }
@@ -86,21 +90,41 @@ export async function formSubmitHandler(
         form.classList.remove('loading');
         if (magicLinkRes.ok) {
             form.classList.add('success');
+
+            let responseBody;
+            if (wantsOTC) {
+                try {
+                    responseBody = await magicLinkRes.clone().json();
+                } catch (e) {
+                    responseBody = undefined;
+                }
+            }
+
+            const otcRef = responseBody?.otc_ref;
+            if (otcRef && typeof doAction === 'function') {
+                try {
+                    doAction('startSigninOTCFromCustomForm', {
+                        email: (email || '').trim(),
+                        otcRef
+                    });
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error(e);
+                    captureException?.(e);
+                }
+            }
         } else {
             const e = await HumanReadableError.fromApiResponse(magicLinkRes);
-            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'));
             displayErrorIfElementExists(errorEl, errorMessage);
             form.classList.add('error'); // Ensure error state is set here
         }
     } catch (err) {
-        handleError(err, form, errorEl, t);
+        handleError(err, form, errorEl);
     }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale || 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -180,18 +204,16 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site, member}) {
-    const i18nLanguage = site.locale || 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
     if (!siteUrl) {
         return;
     }
+
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException});
         }
         form.addEventListener('submit', submitHandler);
     });

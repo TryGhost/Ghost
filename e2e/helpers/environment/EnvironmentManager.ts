@@ -55,16 +55,36 @@ export class EnvironmentManager {
     }
 
     /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird)
+     * Get the Portal URL with the dynamically assigned port
+     */
+    private async getPortalUrl(): Promise<string> {
+        try {
+            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
+            const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+            debug(`Portal is available at: ${portalUrl}`);
+            return portalUrl;
+        } catch (error) {
+            logging.error('Failed to get Portal URL:', error);
+            throw new Error(`Failed to get portal URL: ${error}. Ensure portal service is running.`);
+        }
+    }
+
+    /**
+     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
      * This should be called once before all tests run.
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
+     * 2. Wait for all services to be ready (healthy or exited with code 0)
      * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
      * 3. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
+     *
+     * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
+     * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
+        this.dockerCompose.up();
+        await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
         this.tinybird.fetchTokens();
         logging.info('Global environment setup complete');
@@ -73,7 +93,7 @@ export class EnvironmentManager {
     /**
      * Teardown global environment
      * This should be called once after all tests have finished.
-     * 1. Stop and remove all docker-compose services
+     * 1. Stop and remove all docker-compose services and volumes
      * 2. Clean up any state files created during the tests
      3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
@@ -96,7 +116,8 @@ export class EnvironmentManager {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            return await this.ghost.startInstance(instanceId, siteUuid);
+            const portalUrl = await this.getPortalUrl();
+            return await this.ghost.startInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);

@@ -1,8 +1,9 @@
 import path from 'path';
 
-export const COMPOSE_FILE_PATH = path.resolve(__dirname, '../../compose.e2e.yml');
+export const COMPOSE_FILE_PATH = path.resolve(__dirname, '../../compose.yml');
 export const COMPOSE_PROJECT = 'ghost-e2e';
 
+// if not specified this would be the tag of the Ghost project, built at root of the repository
 export const DEFAULT_GHOST_IMAGE = process.env.GHOST_IMAGE_TAG || 'ghost-monorepo';
 export const DEFAULT_WORKDIR = '/home/ghost/ghost/core';
 

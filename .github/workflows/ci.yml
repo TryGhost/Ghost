@@ -121,11 +121,11 @@ jobs:
               - 'apps/admin-x-design-system/**'
               - 'apps/admin-x-framework/**'
               - 'apps/shade/**'
-            admin-x-activitypub:
+            activitypub:
               - *shared
               - 'apps/shade/**'
               - 'apps/admin-x-framework/**'
-              - 'apps/admin-x-activitypub/**'
+              - 'apps/activitypub/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -201,7 +201,7 @@ jobs:
       changed_admin: ${{ steps.changed.outputs.admin }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
-      changed_admin_x_activitypub: ${{ steps.changed.outputs.admin-x-activitypub }}
+      changed_activitypub: ${{ steps.changed.outputs.activitypub }}
       changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
       changed_portal: ${{ steps.changed.outputs.portal }}
@@ -686,10 +686,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_admin_x_activitypub:
+  job_activitypub:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_admin_x_activitypub == 'true'
+    if: needs.job_setup.outputs.changed_activitypub == 'true'
     name: ActivityPub tests
     env:
       CI: true
@@ -709,14 +709,14 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: yarn nx run @tryghost/admin-x-activitypub:test:acceptance
+      - run: yarn nx run @tryghost/activitypub:test:acceptance
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: admin-x-activitypub-playwright-report
-          path: apps/admin-x-activitypub/playwright-report
+          name: activitypub-playwright-report
+          path: apps/activitypub/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -983,7 +983,7 @@ jobs:
         job_legacy-tests,
         job_browser-tests,
         job_admin_x_settings,
-        job_admin_x_activitypub,
+        job_activitypub,
         job_comments_ui,
         job_signup_form,
         job_tinybird-tests
@@ -1066,9 +1066,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - package_name: '@tryghost/admin-x-activitypub'
-            package_path: 'apps/admin-x-activitypub'
-            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@CURRENT_MAJOR/dist/admin-x-activitypub.js'
+          - package_name: '@tryghost/activitypub'
+            package_path: 'apps/activitypub'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/activitypub@CURRENT_MAJOR/dist/activitypub.js'
           - package_name: '@tryghost/portal'
             package_path: 'apps/portal'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
@@ -1154,7 +1154,7 @@ jobs:
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Wait before purging jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/admin-x-activitypub'
+        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
         run: |
           echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
           sleep 60
@@ -1172,7 +1172,7 @@ jobs:
       job_setup,
       job_tinybird-tests
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1192,7 +1192,7 @@ jobs:
       job_tinybird-tests,
       deploy_tinybird_staging
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

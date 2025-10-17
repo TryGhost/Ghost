@@ -35,7 +35,7 @@ RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.l
 
 # Copy all package.json files
 COPY apps/stats/package.json apps/stats/package.json
-COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
+COPY apps/activitypub/package.json apps/activitypub/package.json
 COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/package.json
 COPY apps/admin-x-framework/package.json apps/admin-x-framework/package.json
 COPY apps/admin-x-settings/package.json apps/admin-x-settings/package.json
@@ -115,6 +115,15 @@ COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types a
 RUN cd apps/posts && yarn build
 
 # --------------------
+# Portal Builder
+# --------------------
+FROM development-base AS portal-builder
+WORKDIR /home/ghost
+COPY ghost/i18n ghost/i18n
+COPY apps/portal apps/portal
+RUN cd apps/portal && yarn build
+
+# --------------------
 # Admin-x-settings Builder
 # --------------------
 FROM development-base AS admin-x-settings-builder
@@ -127,18 +136,18 @@ COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types a
 RUN cd apps/admin-x-settings && yarn build
 
 # --------------------
-# Admin-x-activitypub Builder
+# Activitypub Builder
 # --------------------
-FROM development-base AS admin-x-activitypub-builder
+FROM development-base AS activitypub-builder
 WORKDIR /home/ghost
-COPY apps/admin-x-activitypub apps/admin-x-activitypub
+COPY apps/activitypub apps/activitypub
 COPY ghost/core/core/frontend/src/cards ghost/core/core/frontend/src/cards
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
-RUN cd apps/admin-x-activitypub && yarn build
+RUN cd apps/activitypub && yarn build
 
 # --------------------
 # Admin Ember Builder
@@ -152,7 +161,7 @@ COPY ghost/core/index.js ghost/core/index.js
 COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
 COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
-COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
+COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
 RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 
 # --------------------
@@ -177,8 +186,9 @@ COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist ap
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
 COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
 COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
+COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
-COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
+COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
 
