@@ -57,6 +57,9 @@ export default class GhPostSettingsMenu extends Component {
     @alias('post.twitterDescriptionScratch')
         twitterDescriptionScratch;
 
+    @alias('post.twitterTitleScratch')
+        twitterTitleScratch;
+
     @alias('post.podcastUrlScratch')
         podcastUrlScratch;
 

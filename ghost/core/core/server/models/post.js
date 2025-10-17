@@ -163,7 +163,7 @@ Post = ghostBookshelf.Model.extend({
             'feature_image',
             'og_image',
             'twitter_image',
-            'canonical_url',
+            'canonical_url'
         ].forEach((attr) => {
             if (attrs[attr]) {
                 attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);

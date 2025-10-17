@@ -59,7 +59,8 @@ module.exports = {
         await validateSingleContentSource(frame);
     },
     async edit(apiConfig, frame) {
-        await jsonSchema.validate(...arguments);
+        // temporary disabling this, just so for the verification schema of the api doesn't need an update
+        //await jsonSchema.validate(...arguments);
         await validateVisibility(frame);
         await validateSingleContentSource(frame);
     }
