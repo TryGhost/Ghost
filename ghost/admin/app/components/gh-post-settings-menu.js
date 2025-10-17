@@ -57,8 +57,8 @@ export default class GhPostSettingsMenu extends Component {
     @alias('post.twitterDescriptionScratch')
         twitterDescriptionScratch;
 
-    @alias('post.twitterTitleScratch')
-        twitterTitleScratch;
+    @alias('post.podcastUrlScratch')
+        podcastUrlScratch;
 
     @boundOneWay('post.slug')
         slugValue;
@@ -419,6 +419,24 @@ export default class GhPostSettingsMenu extends Component {
                 return;
             }
 
+            return this.savePostTask.perform();
+        });
+    }
+
+    @action
+    setPodcastUrl(value) {
+        let post = this.post;
+        let currentUrl = post.podcastUrl;
+
+        if (currentUrl === value) {
+            return;
+        }
+
+        // If the value supplied is different, set it as the new value
+        post.set('podcastUrl', value);
+
+        // Make sure the value is valid and if so, save it into the post
+        return post.validate({property: 'podcastUrl'}).then(() => {
             return this.savePostTask.perform();
         });
     }

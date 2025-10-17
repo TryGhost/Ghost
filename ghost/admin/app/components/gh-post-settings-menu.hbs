@@ -44,6 +44,21 @@
                             {{/if}}
                         </div>
 
+                        {{!-- Podcast URL --}}
+                        <div class="form-group">
+                            <label for="podcast-url">Podcast URL</label>
+                            <GhTextInput
+                                @class="post-setting-podcastUrl gh-input-x"
+                                @name="post-setting-podcastUrl"
+                                @placeholder={{this.post.podcastUrl}}
+                                @value={{this.podcastUrlScratch}}
+                                @input={{action (mut this.podcastUrlScratch) value="target.value"}}
+                                @focus-out={{action "setPodcastUrl" this.podcastUrlScratch}}
+                                @stopEnterKeyDownPropagation="true"
+                                data-test-field="podcastUrl" />
+                        </div>
+
+
                         <div class="form-group">
                             {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
                                 <label>Publish date</label>

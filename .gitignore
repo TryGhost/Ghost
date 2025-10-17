@@ -199,4 +199,3 @@ yalc.lock
 /e2e/playwright
 /e2e/data
 .env.tinybird
-PLAN.md

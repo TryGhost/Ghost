@@ -9,6 +9,7 @@ export default BaseValidator.create({
         'authors',
         'customExcerpt',
         'canonicalUrl',
+        'podcastUrl',
         'codeinjectionHead',
         'codeinjectionFoot',
         'metaTitle',
@@ -56,6 +57,23 @@ export default BaseValidator.create({
             this.invalidate();
         } else if (!validator.isLength(model.canonicalUrl, {max: 2000})) {
             model.errors.add('canonicalUrl', 'Canonical URL is too long, max 2000 chars');
+            this.invalidate();
+        }
+    },
+
+    podcastUrl(model) {
+        let validatorOptions = {require_protocol: true};
+        let url = model.podcastUrl;
+        
+        if (isBlank(url)) {
+            return;
+        }
+
+        if (url.match(/\s/) || !validator.isURL(url, validatorOptions)) {
+            model.errors.add('podcastUrl', 'Please enter a valid Podcast URL');
+            this.invalidate();
+        } else if (!validator.isLength(model.podcastUrl, {max: 2000})) {
+            model.errors.add('podcastUrl', 'Podcast URL is too long, max 2000 chars');
             this.invalidate();
         }
     },
