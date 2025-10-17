@@ -334,15 +334,16 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Tests:** ✅ All 256 tests passing
    - **Commit:** 0fbbf2d5e5
 
-7. **Removed Wrapper Methods** (4 lines removed)
+7. **Removed Wrapper Methods** (13 lines removed)
    - Removed `getPageFromLinkPath()` - Unnecessary wrapper around `parsePortalLinkPath()`
-   - **Benefits:** Clearer data flow, one less method to convert to hooks, reduced indirection
-   - **Before:** `this.getPageFromLinkPath(pagePath)`
-   - **After:** `parsePortalLinkPath(pagePath)` called directly
+   - Removed `transformPortalLinksToRelative()` - Unnecessary wrapper with inline comment
+   - **Benefits:** Clearer data flow, two less methods to convert to hooks, reduced indirection
+   - **Before:** `this.getPageFromLinkPath(pagePath)` and `this.transformPortalLinksToRelative()`
+   - **After:** Call utilities directly: `parsePortalLinkPath(pagePath)` and `document.querySelectorAll(...).forEach(transformPortalAnchorToRelative)`
    - **Tests:** ✅ All 256 tests passing
+   - **Commits:** ebd1958453, [current]
 
 **Remaining Work:**
-- Remove transformPortalLinksToRelative wrapper
 - Extract getColorOverride to dom-utils
 - Extract custom trigger button logic
 - Convert App.js to functional component with hooks

@@ -196,7 +196,7 @@ export default class App extends React.Component {
             });
 
             // avoid portal links switching to homepage (e.g. from absolute link copy/pasted from Admin)
-            this.transformPortalLinksToRelative();
+            document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -412,16 +412,6 @@ export default class App extends React.Component {
             otcRef,
             doAction: (_action, data) => this.dispatchAction(_action, data)
         };
-    }
-
-    /**
-     * Transform any portal links to use relative paths
-     *
-     * Prevents unwanted/unnecessary switches to the home page when opening the
-     * portal. Especially useful for copy/pasted links from Admin screens.
-     */
-    transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {
