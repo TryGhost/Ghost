@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 15 class components to functional components with hooks** (13/15 completed - 87%)
+2. ⏳ **Convert 15 class components to functional components with hooks** (14/15 completed - 93%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -267,7 +267,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Priority 4: Complex Infrastructure (Highest Risk)**
 - [x] InputForm.js - Form handling ✅
-- [ ] TriggerButton.js - Portal trigger
+- [x] TriggerButton.js - Portal trigger ✅
 - [ ] Notification.js - Notification system
 - [ ] Frame.js - iframe wrapper
 - [ ] PopupModal.js - Modal system
@@ -500,6 +500,37 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~5 minutes
 **Notes:** This was one of the simplest conversions. The class component had an empty state object and no lifecycle methods - it was essentially already functional in nature, just using class syntax. The conversion was straightforward: removed constructor, removed render() method, converted to function component. This component is used throughout the app for rendering form fields in signup, signin, profile, and other forms.
+
+#### TriggerButton.js (2025-10-17)
+**Type:** Infrastructure component (portal trigger button with two nested components)
+**Complexity:** High
+**Changes:**
+**TriggerButtonContent (inner component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Converted refs: `this.container` → `useRef(null)`
+- Replaced instance properties (`this.height`, `this.width`) with `useRef` for mutable values that don't trigger re-renders
+- Combined `componentDidMount` and `componentDidUpdate` into a single `useEffect` without dependencies (runs after every render) to track size changes
+- Converted methods (`hasText`, `renderTriggerIcon`, `renderText`, `onToggle`) to inner functions
+- Removed event parameter from onClick handler (not used)
+
+**TriggerButton (main component):**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)`
+- Replaced `this.state` with two `useState` hooks: `width` and `isMobile`
+- Converted `this.buttonRef` → `useRef(null)`
+- Replaced `this.buttonMargin` instance property with `buttonMarginRef` for mutable value
+- Replaced `componentDidMount` with two `useEffect` hooks:
+  1. Window resize listener with cleanup (empty dependency array - only runs once)
+  2. setTimeout for button margin calculation with cleanup (empty dependency array - only runs once)
+- Replaced `componentWillUnmount` cleanup with effect cleanup functions
+- Removed `handleResize` method binding - now defined inside effect
+- Converted `onWidthChange` method to direct `setWidth` call
+- Converted `hasText` and `renderFrameStyles` to inner functions
+
+**Test Results:** ✅ All 256 tests passing (including 4 TriggerButton-specific tests)
+**Time:** ~20 minutes
+**Notes:** This was a complex conversion involving two nested class components with lifecycle methods, refs, window event listeners, and size tracking. The key challenge was properly converting `componentDidUpdate` logic that tracked size changes. Used `useEffect` without dependencies to replicate the "run after every render" behavior needed for size tracking. The resize event listener cleanup is properly handled with effect cleanup functions. TriggerButton is critical infrastructure - it's the floating button that opens the Portal modal for users.
 
 ---
 
