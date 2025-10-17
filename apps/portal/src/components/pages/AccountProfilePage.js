@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
@@ -8,56 +8,89 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {t} from '../../utils/i18n';
 
-export default class AccountProfilePage extends React.Component {
-    static contextType = AppContext;
-
-    constructor(props, context) {
-        super(props, context);
-        const {name = '', email = ''} = context.member || {};
-        this.state = {
-            name,
-            email
-        };
+function getInputFields({name, email, errors = {}, fieldNames}) {
+    const fields = [
+        {
+            type: 'text',
+            value: name,
+            placeholder: t('Jamie Larson'),
+            label: t('Name'),
+            name: 'name',
+            required: false,
+            errorMessage: errors.name || ''
+        },
+        {
+            type: 'email',
+            value: email,
+            placeholder: t('jamie@example.com'),
+            label: t('Email'),
+            name: 'email',
+            required: true,
+            errorMessage: errors.email || ''
+        }
+    ];
+    if (fieldNames && fieldNames.length > 0) {
+        return fields.filter((f) => {
+            return fieldNames.includes(f.name);
+        });
     }
+    return fields;
+}
 
-    componentDidMount() {
-        const {member} = this.context;
+function AccountProfilePage() {
+    const {member, doAction, action, brandColor, lastPage} = useContext(AppContext);
+
+    const [name, setName] = useState(member?.name || '');
+    const [email, setEmail] = useState(member?.email || '');
+    const [errors, setErrors] = useState({});
+
+    // Redirect to signin if no member
+    useEffect(() => {
         if (!member) {
-            this.context.doAction('switchPage', {
+            doAction('switchPage', {
                 page: 'signin'
             });
         }
-    }
+    }, [member, doAction]);
 
-    handleSignout(e) {
+    const onBack = () => {
+        doAction('back');
+    };
+
+    const handleInputChange = (e, field) => {
+        const fieldName = field.name;
+        if (fieldName === 'name') {
+            setName(e.target.value);
+        } else if (fieldName === 'email') {
+            setEmail(e.target.value);
+        }
+    };
+
+    const onProfileSave = (e) => {
         e.preventDefault();
-        this.context.doAction('signout');
-    }
 
-    onBack() {
-        this.context.doAction('back');
-    }
+        const fields = getInputFields({name, email, errors});
+        const validationErrors = ValidateInputForm({fields});
+        setErrors(validationErrors);
 
-    onProfileSave(e) {
-        e.preventDefault();
-        this.setState((state) => {
-            return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
-            };
-        }, () => {
-            const {email, name, errors} = this.state;
-            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            if (!hasFormErrors) {
-                this.context.doAction('clearPopupNotification');
-                this.context.doAction('updateProfile', {email, name});
-            }
-        });
-    }
+        const hasFormErrors = (validationErrors && Object.values(validationErrors).filter(d => !!d).length > 0);
+        if (!hasFormErrors) {
+            doAction('clearPopupNotification');
+            doAction('updateProfile', {email, name});
+        }
+    };
 
-    renderSaveButton() {
-        const isRunning = (this.context.action === 'updateProfile:running');
+    const onKeyDown = (e) => {
+        // Handles submit on Enter press
+        if (e.keyCode === 13) {
+            onProfileSave(e);
+        }
+    };
+
+    const renderSaveButton = () => {
+        const isRunning = (action === 'updateProfile:running');
         let label = t('Save');
-        if (this.context.action === 'updateProfile:failed') {
+        if (action === 'updateProfile:failed') {
             label = t('Retry');
         }
         const disabled = isRunning ? true : false;
@@ -65,134 +98,60 @@ export default class AccountProfilePage extends React.Component {
             <ActionButton
                 dataTestId={'save-button'}
                 isRunning={isRunning}
-                onClick={e => this.onProfileSave(e)}
+                onClick={e => onProfileSave(e)}
                 disabled={disabled}
-                brandColor={this.context.brandColor}
+                brandColor={brandColor}
                 label={label}
                 style={{width: '100%'}}
             />
         );
-    }
+    };
 
-    renderDeleteAccountButton() {
-        return (
-            <div style={{cursor: 'pointer', color: 'red'}} role='button'>{t('Delete account')}</div>
-        );
-    }
-
-    renderAccountFooter() {
+    const renderAccountFooter = () => {
         return (
             <footer className='gh-portal-action-footer'>
-                {this.renderSaveButton()}
+                {renderSaveButton()}
             </footer>
         );
-    }
+    };
 
-    renderHeader() {
+    const renderHeader = () => {
         return (
             <header className='gh-portal-detail-header'>
-                <BackButton brandColor={this.context.brandColor} hidden={!this.context.lastPage} onClick={e => this.onBack(e)} />
+                <BackButton brandColor={brandColor} hidden={!lastPage} onClick={e => onBack(e)} />
                 <h3 className='gh-portal-main-title'>{t('Account settings')}</h3>
             </header>
         );
-    }
+    };
 
-    renderUserAvatar() {
-        const avatarImg = (this.context.member && this.context.member.avatar_image);
-
-        const avatarContainerStyle = {
-            position: 'relative',
-            display: 'flex',
-            width: '64px',
-            height: '64px',
-            marginBottom: '6px',
-            borderRadius: '100%',
-            boxShadow: '0 0 0 3px #fff',
-            border: '1px solid gray',
-            overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center'
-        };
-
-        return (
-            <div style={avatarContainerStyle}>
-                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '56px', height: '56px'}}} />
-            </div>
-        );
-    }
-
-    handleInputChange(e, field) {
-        const fieldName = field.name;
-        this.setState({
-            [fieldName]: e.target.value
-        });
-    }
-
-    getInputFields({state, fieldNames}) {
-        const errors = state.errors || {};
-        const fields = [
-            {
-                type: 'text',
-                value: state.name,
-                placeholder: t('Jamie Larson'),
-                label: t('Name'),
-                name: 'name',
-                required: false,
-                errorMessage: errors.name || ''
-            },
-            {
-                type: 'email',
-                value: state.email,
-                placeholder: t('jamie@example.com'),
-                label: t('Email'),
-                name: 'email',
-                required: true,
-                errorMessage: errors.email || ''
-            }
-        ];
-        if (fieldNames && fieldNames.length > 0) {
-            return fields.filter((f) => {
-                return fieldNames.includes(f.name);
-            });
-        }
-        return fields;
-    }
-
-    onKeyDown(e) {
-        // Handles submit on Enter press
-        if (e.keyCode === 13){
-            this.onProfileSave(e);
-        }
-    }
-
-    renderProfileData() {
+    const renderProfileData = () => {
         return (
             <div className='gh-portal-section'>
                 <InputForm
-                    fields={this.getInputFields({state: this.state})}
-                    onChange={(e, field) => this.handleInputChange(e, field)}
-                    onKeyDown={(e, field) => this.onKeyDown(e, field)}
+                    fields={getInputFields({name, email, errors})}
+                    onChange={(e, field) => handleInputChange(e, field)}
+                    onKeyDown={(e, field) => onKeyDown(e, field)}
                 />
             </div>
         );
+    };
+
+    if (!member) {
+        return null;
     }
 
-    render() {
-        const {member} = this.context;
-        if (!member) {
-            return null;
-        }
-        return (
-            <>
-                <div className='gh-portal-content with-footer'>
-                    <CloseButton />
-                    {this.renderHeader()}
-                    <div className='gh-portal-section'>
-                        {this.renderProfileData()}
-                    </div>
+    return (
+        <>
+            <div className='gh-portal-content with-footer'>
+                <CloseButton />
+                {renderHeader()}
+                <div className='gh-portal-section'>
+                    {renderProfileData()}
                 </div>
-                {this.renderAccountFooter()}
-            </>
-        );
-    }
+            </div>
+            {renderAccountFooter()}
+        </>
+    );
 }
+
+export default AccountProfilePage;
