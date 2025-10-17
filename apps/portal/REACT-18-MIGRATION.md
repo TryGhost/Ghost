@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks** (8/18 completed - 44%)
+2. ⏳ **Convert 18 class components to functional components with hooks** (9/18 completed - 50%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -260,7 +260,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Priority 3: Components with Lifecycle Methods**
 - [x] AccountPlanPage.js - Has memory leak to fix ✅
 - [x] AccountProfilePage.js - Profile management ✅
-- [ ] AccountHomePage.js - Account dashboard
+- [x] AccountHomePage.js - Account dashboard ✅
 - [ ] SigninPage.js - Authentication flow
 - [ ] SignupPage.js - Registration flow
 - [ ] OfferPage.js - Offer display
@@ -393,6 +393,20 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~15 minutes
+
+#### AccountHomePage.js (2025-10-17)
+**Type:** Component with lifecycle methods and authentication logic
+**Complexity:** Low-Medium
+**Changes:**
+- Converted class component to functional component
+- Replaced `static contextType` with `useContext(AppContext)` and destructured values
+- Converted `componentDidMount` → `useEffect` with [member, site, doAction] dependencies
+- Converted `handleSignout` class method to function
+- Consolidated duplicate `isSigninAllowed` import
+- Maintained authentication flow and redirect logic
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~10 minutes
 
 ---
 
