@@ -390,29 +390,104 @@ The context value is recreated on **every render**, causing unnecessary re-rende
 **Must Fix During Hooks Conversion:**
 1. **Wrap context value in `useMemo`** with proper dependencies
 2. **Wrap `doAction` in `useCallback`** to stabilize function reference
-3. **Consider splitting contexts** if performance issues arise (SiteContext, MemberContext, ActionContext)
+3. **Simplify state/context separation** (see below)
 
-Example fix:
+### 💡 Simplification Opportunity: Collapse State into Context
+
+**Current Pattern:**
+- State and context are artificially separated
+- `getContextFromState()` transforms state into context (lines 356-379)
+- `getContextPage()` computes derived page value (lines 321-332)
+- `getContextMember()` computes derived member for dev/preview mode (lines 336-353)
+- `getAccentColor()` extracts brandColor from site
+- Most context values are just copies of state
+- Computed values run every render (not memoized)
+
+**Why This Exists:**
+1. Computed values (contextPage, contextMember, brandColor)
+2. Additional values not in state (api, doAction)
+3. Selective exposure (initStatus in state but not context)
+
+**Problems:**
+- Duplication between state and context
+- Unnecessary computation every render
+- Object recreation every render
+- No clear architectural benefit
+
+**Recommended Approach for Hooks:**
+**Collapse state into context, compute derived values with useMemo**
+
 ```javascript
-const doAction = useCallback((action, data) => {
-    dispatchAction(action, data);
-}, []);
+function App() {
+    const [state, setState] = useState({...});
+    const GhostApiRef = useRef(null);
 
-const contextValue = useMemo(() => ({
-    api: GhostApi,
-    site,
-    action,
-    member,
-    // ... other values
-    doAction
-}), [site, action, member, /* all state dependencies */]);
+    // Memoize derived values
+    const contextPage = useMemo(() => {
+        const {site, page, member} = state;
+        if (!page || page === 'default') {
+            const loggedOutPage = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
+            return member ? 'accountHome' : loggedOutPage;
+        }
+        if (page === 'accountPlan' && isComplimentaryMember({member}) && !allowCompMemberUpgrade({member})) {
+            return 'accountHome';
+        }
+        return getActivePage({page});
+    }, [state.site, state.page, state.member]);
 
-return (
-    <AppContext.Provider value={contextValue}>
+    const contextMember = useMemo(() => {
+        const {member, customSiteUrl} = state;
+        if (hasMode(['dev', 'preview'], {customSiteUrl})) {
+            if (isAccountPage({page: contextPage}) || isOfferPage({page: contextPage})) {
+                if (hasMode(['dev'], {customSiteUrl})) {
+                    return member || Fixtures.member.free;
+                } else if (hasMode(['preview'])) {
+                    return Fixtures.member.preview;
+                }
+                return Fixtures.member.paid;
+            }
+            return null;
+        }
+        return member;
+    }, [contextPage, state.member, state.customSiteUrl]);
+
+    const doAction = useCallback((action, data) => {
+        // dispatch logic
+    }, []);
+
+    // Single source of truth: mostly state + derived values
+    const contextValue = useMemo(() => ({
+        ...state,                              // Most values pass through
+        page: contextPage,                      // Derived from state
+        member: contextMember,                  // Derived from state
+        brandColor: state.site?.accent_color,   // Derived from state
+        api: GhostApiRef.current,              // Instance property
+        doAction                               // Memoized method
+    }), [state, contextPage, contextMember, doAction]);
+
+    return (
+        <AppContext.Provider value={contextValue}>
+            {/* children */}
+        </AppContext.Provider>
+    );
+}
 ```
 
+**Benefits:**
+- ✅ Single source of truth (no duplication)
+- ✅ Derived values properly memoized
+- ✅ Clear dependencies
+- ✅ Less code (eliminates 3 methods: getContextFromState, getContextPage, getContextMember)
+- ✅ React 18 best practices
+- ✅ Context value only recreates when dependencies actually change
+
+**Alternative Considered:**
+Split into multiple contexts (SiteContext, MemberContext, ActionContext) for maximum granularity. However, given the current usage patterns, the complexity isn't justified. Can revisit if performance issues arise.
+
 **Remaining Work:**
-- Convert App.js to functional component with hooks (and fix context pattern)
+- Convert App.js to functional component with hooks
+- Implement context optimization (useMemo + useCallback)
+- Collapse state into context with derived value memoization
 
 ### Conversion Log
 
