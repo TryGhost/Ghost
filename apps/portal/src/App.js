@@ -108,7 +108,7 @@ export default class App extends React.Component {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
+            const {page, pageQuery, pageData} = parsePortalLinkPath(pagePath) || {};
             if (this.state.initStatus === 'success') {
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
@@ -344,11 +344,6 @@ export default class App extends React.Component {
             const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: plan});
             this.dispatchAction('signup', {plan, tierId, cadence});
         }
-    }
-
-    /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path) {
-        return parsePortalLinkPath(path);
     }
 
     /**Get Accent color from site data*/
