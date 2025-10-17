@@ -179,6 +179,12 @@ await waitFor(() => {
    - Missing cleanup in useEffect return
    - Add cancellation flag and cleanup function
 
+### Recent Updates
+- **2025-10-20 – App.js hooks conversion**
+  - Converted the last class component (`src/App.js`) to a functional component with hooks. Preserved legacy `setState` merging semantics via a helper so existing action handlers continue to spread incremental state updates.
+  - Recreated lifecycle behaviour with `useEffect` hooks for custom trigger registration, body scroll locking, hashchange listeners, and the portal-ready/data-attribute bridge. State now lives alongside refs (`stateRef`, `ghostApiRef`) to keep async handlers stable during React 18 batching.
+  - Verified `src/tests/data-attributes.test.js` passes under Vitest after the refactor. Full suite currently fails on `src/tests/portal-links.test.js` (missing signup title element) and still emits multiple `act(...)` warnings; follow-up test stabilisation remains required in Phase 3 priorities.
+
 ---
 
 ## Phase 4: Component Analysis & Optimization (Future)

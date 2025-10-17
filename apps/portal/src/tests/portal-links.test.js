@@ -104,7 +104,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            const signupTitle = await within(popupFrame.contentDocument).findByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
         });
     });
@@ -121,7 +121,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            const loginTitle = await within(popupFrame.contentDocument).findByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
@@ -138,7 +138,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            const signupTitle = await within(popupFrame.contentDocument).findByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
         });
 
@@ -155,7 +155,7 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const inviteOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site is invite-only/i);
+                    const inviteOnlyMessage = await within(popupFrame.contentDocument).findByText(/This site is invite-only/i);
                     expect(inviteOnlyMessage).toBeInTheDocument();
                 });
             });
@@ -175,9 +175,9 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const emailInput = within(popupFrame.contentDocument).getByLabelText(/email/i);
-                    const nameInput = within(popupFrame.contentDocument).getByLabelText(/name/i);
-                    const chooseBtns = within(popupFrame.contentDocument).queryAllByRole('button', {name: 'Choose'});
+                    const emailInput = await within(popupFrame.contentDocument).findByLabelText(/email/i);
+                    const nameInput = await within(popupFrame.contentDocument).findByLabelText(/name/i);
+                    const chooseBtns = await within(popupFrame.contentDocument).findAllByRole('button', {name: 'Choose'});
 
                     expect(emailInput).toBeInTheDocument();
                     expect(nameInput).toBeInTheDocument();
