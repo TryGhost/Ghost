@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 15 class components to functional components with hooks** (11/15 completed - 73%)
+2. ⏳ **Convert 15 class components to functional components with hooks** (12/15 completed - 80%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -263,7 +263,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] AccountHomePage.js - Account dashboard ✅
 - [x] SigninPage.js - Authentication flow ✅
 - [x] SignupPage.js - Registration flow ✅
-- [ ] OfferPage.js - Offer display
+- [x] OfferPage.js - Offer display ✅
 
 **Priority 4: Complex Infrastructure (Highest Risk)**
 - [ ] InputForm.js - Form handling
@@ -447,6 +447,26 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~60 minutes
 **Notes:** This was the largest and most complex conversion so far. The component has extensive conditional rendering logic for different signup scenarios (free/paid, invite-only, members-disabled, etc.). The key challenge was replacing the setState callback pattern in `handleChooseSignup` - the solution was to use the `planToSelect` parameter directly rather than waiting for state to update.
+
+#### OfferPage.js (2025-10-17)
+**Type:** Component with complex state, form handling, and multiple render helpers
+**Complexity:** High (685 lines)
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with individual `useState` hooks (name, email, plan, showNewsletterSelection, termsCheckboxChecked, pageData, errors)
+- Removed constructor - initialized state directly in useState hooks
+- Replaced `static contextType` with `useContext(AppContext)` and destructured all needed values (member, site, pageData as offer, action, brandColor, doAction)
+- Converted `getFormErrors` and `getInputFields` to arrow functions - modified to accept state parameter
+- Converted all render helper methods to arrow functions (renderSignupTerms, renderFormHeader, renderForm, renderSubmitButton, renderLoginMessage, renderOfferTag, renderBenefits, renderOfferMessage, renderProductLabel, renderUpdatedTierPrice, renderOldTierPrice, renderProductCard, renderSiteLogo)
+- Converted pricing helper methods to arrow functions (renderRoundedPrice, getOriginalPrice, getUpdatedPrice, getOffAmount)
+- Converted event handlers to arrow functions (onKeyDown, handleSignup, handleInputChange)
+- Simplified validation flow by removing setState callback pattern - validation now happens inline with immediate error state updates
+- Updated `handleInputChange` to use conditional state setters (setName/setEmail) instead of dynamic setState
+- Maintained all offer pricing logic, newsletter selection integration, terms checkbox, and form validation
+
+**Test Results:** ✅ All 256 tests passing (1 pre-existing timeout failure in SigninFlow unrelated to this change)
+**Time:** ~45 minutes
+**Notes:** Similar structure to SignupPage.js but with offer-specific pricing calculations. The component handles trial offers, fixed/percent discounts, and integrates with the newsletter selection flow. No lifecycle methods were present (only constructor), making the conversion more straightforward than SignupPage.
 
 ---
 
