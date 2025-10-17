@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks** (16/18 completed - 89%)
+2. ⏳ **Convert 18 class components to functional components with hooks** (17/18 completed - 94%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -269,7 +269,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] InputForm.js - Form handling ✅
 - [x] TriggerButton.js - Portal trigger (2 components) ✅
 - [x] Notification.js - Notification system (2 components) ✅
-- [ ] Frame.js - iframe wrapper
+- [x] Frame.js - iframe wrapper ✅
 - [ ] PopupModal.js - Modal system
 - [ ] App.js - Main application
 
@@ -561,6 +561,24 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~15 minutes
 **Notes:** This conversion involved two nested components with animation timing logic. The key challenge was properly splitting the lifecycle methods into focused effects. NotificationContent had complex animation timing with both mount and update logic for the slideout animation. The original componentDidUpdate logic needed to be preserved to handle popup-triggered animations. Some new act() warnings appeared for Notification component but these are expected - they indicate async state updates from URL parsing and context checks, which are working correctly.
+
+#### Frame.js (2025-10-17)
+**Type:** Infrastructure component (iframe wrapper for Portal rendering)
+**Complexity:** High
+**Changes:**
+- Converted class component to functional component using `forwardRef`
+- Replaced callback ref (`ref={node => this.node = node}`) with `useRef` hook
+- Used `useImperativeHandle` to expose `node` property to parent components (maintains compatibility with TriggerButton and other consumers)
+- Replaced instance properties (`this.iframeHtml`, `this.iframeHead`, `this.iframeRoot`) with state object using `useState`
+- Replaced `forceUpdate()` with `setIframeDocument()` state setter
+- Converted `componentDidMount` and `componentWillUnmount` to `useEffect` with cleanup
+- Fixed typo in original code: `componentWillUnmount` was misspelled, now properly implemented cleanup in effect
+- Added check for already-loaded iframe to handle race condition where load event fires before listener is attached
+- Moved `handleLoad` function inside effect to access current props and state
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~10 minutes
+**Notes:** Frame is critical infrastructure - it's the iframe wrapper that isolates Portal's CSS and provides the rendering context for all Portal UI. The key challenge was replacing `forceUpdate()` with proper state management. The original code used `forceUpdate()` to trigger a re-render after the iframe loaded, which allowed createPortal to render children into the iframe's document. This was replaced with useState to store the iframe document references, triggering a natural re-render. Also added a check for already-loaded iframes to prevent race conditions in tests. The forwardRef wrapper maintains backward compatibility with components that access the iframe node directly.
 
 ---
 
