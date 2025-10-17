@@ -18,4 +18,10 @@ export class HomePage extends PublicPage {
     async waitUntilLoaded(): Promise<void> {
         return this.accountButton.waitFor({state: 'visible'});
     }
+
+    async gotoWithQueryParams(params: Record<string, string>): Promise<void> {
+        const queryString = new URLSearchParams(params).toString();
+        const url = `/?${queryString}`;
+        await this.goto(url);
+    }
 }

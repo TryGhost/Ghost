@@ -20,10 +20,36 @@
     "@vitejs/plugin-react-swc": "4.1.0",
     "eslint": "9.37.0",
     "eslint-plugin-react-hooks": "5.2.0",
-    "eslint-plugin-react-refresh": "0.4.23",
+    "eslint-plugin-react-refresh": "0.4.24",
     "globals": "16.4.0",
     "typescript": "5.8.3",
-    "typescript-eslint": "8.46.0",
-    "vite": "7.1.9"
+    "typescript-eslint": "8.46.1",
+     "vite": "7.1.10"
+  },
+  "nx": {
+    "targets": {
+      "build:dev": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build:dev"
+          }
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build"
+          }
+        ]
+      }
+    }
   }
 }

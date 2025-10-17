@@ -11,13 +11,13 @@ const postId = posts[0].id;
 
 const setup = async (site = siteData, member = memberData, loggedOut = false, api = {}) => {
     const ghostApi = setupGhostApi({siteUrl: site.url});
-    ghostApi.init = api?.init || jest.fn(() => {
+    ghostApi.init = api?.init || vi.fn(() => {
         return Promise.resolve({
             site,
             member: loggedOut ? null : member
         });
     });
-    ghostApi.feedback.add = api?.add || jest.fn(() => {
+    ghostApi.feedback.add = api?.add || vi.fn(() => {
         return Promise.resolve({
             feedback: [
                 {
@@ -137,7 +137,7 @@ describe('Feedback Submission Flow', () => {
                 writable: true
             });
             const mockApi = {
-                add: jest.fn(() => {
+                add: vi.fn(() => {
                     return Promise.reject(new Error('Failed to submit feedback'));
                 })
             };
