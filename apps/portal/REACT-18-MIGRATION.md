@@ -237,8 +237,8 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks**
-3. Address memory leak warnings during conversion
+2. ⏳ **Convert 18 class components to functional components with hooks** (7/18 completed - 39%)
+3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
 
@@ -258,7 +258,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] MagicLinkPage.js - Magic link handling ✅
 
 **Priority 3: Components with Lifecycle Methods**
-- [ ] AccountPlanPage.js - Has memory leak to fix
+- [x] AccountPlanPage.js - Has memory leak to fix ✅
 - [ ] AccountProfilePage.js - Profile management
 - [ ] AccountHomePage.js - Account dashboard
 - [ ] SigninPage.js - Authentication flow
@@ -355,6 +355,27 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~20 minutes
+
+#### AccountPlanPage.js (2025-10-17)
+**Type:** Component with lifecycle methods and complex state
+**Complexity:** High
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with multiple `useState` calls (selectedPlan, showConfirmation, confirmationPlan, confirmationType)
+- Replaced `this.timeoutId` with `useRef(null)` for timeout reference
+- Replaced `this.prices` instance variable with `useRef(null)` for prices cache
+- Converted `componentDidMount` → `useEffect` with [member, doAction] dependencies
+- Converted `componentWillUnmount` → `useEffect` cleanup function
+- Replaced `static contextType` with `useContext(AppContext)`
+- Converted all class methods to functions (onBack, onPlanSelect, onPlanCheckout, onCancelSubscription, etc.)
+- Extracted `getInitialSelectedPlan` as initialization function for useState
+- Used functional state updates with `setSelectedPlan` to avoid stale closure issues
+- Maintained complex plan selection, checkout, and cancellation logic
+- Fixed memory leak by ensuring timeout cleanup in useEffect return
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~25 minutes
+**Notes:** This component had a pre-existing memory leak warning (line 485) that was fixed by properly implementing the cleanup function in useEffect. Act() warnings still appear but are pre-existing across multiple components and not specific to this conversion.
 
 ---
 
