@@ -76,3 +76,16 @@ export function showLexicalSignupForms() {
         });
     }
 }
+
+/**
+ * Get accent color override from data attributes
+ * Checks for accent color specified in the portal script tag
+ * @returns {string|false} Accent color hex value or false if not set
+ */
+export function getAccentColorOverride() {
+    const scriptTag = document.querySelector('script[data-ghost]');
+    if (scriptTag && scriptTag.dataset.accentColor) {
+        return scriptTag.dataset.accentColor;
+    }
+    return false;
+}

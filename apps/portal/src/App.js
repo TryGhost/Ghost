@@ -15,7 +15,7 @@ import './App.css';
 import {allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 import {parsePortalLinkPath} from './utils/url-parsers';
-import {getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
+import {getAccentColorOverride, getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
 import {fetchAllData, fetchLinkData, fetchPreviewData} from './utils/data-fetchers';
 import {lockBodyScroll, unlockBodyScroll} from './utils/body-scroll-lock';
 
@@ -154,7 +154,7 @@ export default class App extends React.Component {
                 },
                 customSiteUrl: this.state.customSiteUrl,
                 showPopup: this.props.showPopup,
-                getColorOverride: () => this.getColorOverride()
+                getColorOverride: getAccentColorOverride
             });
             this.GhostApi = GhostApi;
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
@@ -207,16 +207,6 @@ export default class App extends React.Component {
             });
         }
     }
-
-    /* Get the accent color from data attributes */
-    getColorOverride() {
-        const scriptTag = document.querySelector('script[data-ghost]');
-        if (scriptTag && scriptTag.dataset.accentColor) {
-            return scriptTag.dataset.accentColor;
-        }
-        return false;
-    }
-
 
     /** Handle actions from across App and update App state */
     async dispatchAction(action, data) {

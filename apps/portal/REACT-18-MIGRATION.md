@@ -341,10 +341,16 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Before:** `this.getPageFromLinkPath(pagePath)` and `this.transformPortalLinksToRelative()`
    - **After:** Call utilities directly: `parsePortalLinkPath(pagePath)` and `document.querySelectorAll(...).forEach(transformPortalAnchorToRelative)`
    - **Tests:** ✅ All 256 tests passing
-   - **Commits:** ebd1958453, [current]
+   - **Commits:** ebd1958453, 2eeec0d1e2
+
+8. **Extracted getColorOverride → `utils/dom-utils.js`** (9 lines extracted)
+   - Renamed to `getAccentColorOverride()` - More descriptive name
+   - **Benefits:** Groups DOM query with other DOM utilities, one less method to convert
+   - **Before:** `this.getColorOverride()` method, passed as `() => this.getColorOverride()`
+   - **After:** `getAccentColorOverride` imported and passed directly (no wrapper function needed)
+   - **Tests:** ✅ All 256 tests passing
 
 **Remaining Work:**
-- Extract getColorOverride to dom-utils
 - Extract custom trigger button logic
 - Convert App.js to functional component with hooks
 
