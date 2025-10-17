@@ -1,4 +1,3 @@
-import {Component} from 'react';
 import InputField from './InputField';
 
 const FormInput = ({field, onChange, onBlur = () => { }, onKeyDown = () => {}}) => {
@@ -27,23 +26,16 @@ const FormInput = ({field, onChange, onBlur = () => { }, onKeyDown = () => {}}) 
     );
 };
 
-class InputForm extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { };
-    }
+function InputForm({fields, onChange, onBlur, onKeyDown}) {
+    const inputFields = fields.map((field) => {
+        return <FormInput field={field} key={field.name} onChange={onChange} onBlur={onBlur} onKeyDown={onKeyDown} />;
+    });
 
-    render() {
-        const {fields, onChange, onBlur, onKeyDown} = this.props;
-        const inputFields = fields.map((field) => {
-            return <FormInput field={field} key={field.name} onChange={onChange} onBlur={onBlur} onKeyDown={onKeyDown} />;
-        });
-        return (
-            <>
-                {inputFields}
-            </>
-        );
-    }
+    return (
+        <>
+            {inputFields}
+        </>
+    );
 }
 
 export default InputForm;
