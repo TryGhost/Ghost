@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState, useRef} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
@@ -315,21 +315,43 @@ export default function FeedbackPage() {
     const [confirmed, setConfirmed] = useState(isLoggedIn);
     const [loading, setLoading] = useState(isLoggedIn);
     const [error, setError] = useState(null);
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const doSendFeedback = async (selectedScore) => {
+        if (!isMountedRef.current) {
+            return;
+        }
         setLoading(true);
         try {
             await sendFeedback({siteUrl: site.url, uuid, key, postId, score: selectedScore}, api);
+            if (!isMountedRef.current) {
+                return;
+            }
             setScore(selectedScore);
         } catch (e) {
+            if (!isMountedRef.current) {
+                return;
+            }
             const text = chooseBestErrorMessage(e, t('There was a problem submitting your feedback. Please try again a little later.'));
             setError(text);
+        }
+        if (!isMountedRef.current) {
+            return;
         }
         setLoading(false);
     };
 
     const onConfirm = async (selectedScore) => {
         await doSendFeedback(selectedScore);
+        if (!isMountedRef.current) {
+            return;
+        }
         setConfirmed(true);
     };
 
