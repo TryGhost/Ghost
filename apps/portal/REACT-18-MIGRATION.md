@@ -271,7 +271,43 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] Notification.js - Notification system (2 components) ✅
 - [x] Frame.js - iframe wrapper ✅
 - [x] PopupModal.js - Modal system (2 components) ✅
-- [ ] App.js - Main application
+- [ ] App.js - Main application (refactoring in progress)
+
+### App.js Refactoring Progress (2025-10-17)
+
+**Objective:** Reduce App.js complexity before converting to functional component
+
+**Original Size:** 1046 lines
+**Current Size:** 675 lines
+**Lines Removed:** 371 (35% reduction)
+
+**Extraction Log:**
+
+1. **URL/Query Parsing Utilities → `utils/url-parsers.js`** (244 lines extracted)
+   - `parseOfferQueryString()` - Parse offer preview query parameters
+   - `parsePreviewQueryString()` - Parse preview mode query parameters
+   - `parsePortalLinkPath()` - Parse portal link paths to page/query
+   - **Benefits:** Pure functions with no dependencies, fully testable, reusable
+   - **Commit:** 56817c4d6f
+
+2. **Setup Functions → `utils/setup-integrations.js`** (74 lines extracted)
+   - `setupSentry()` - Initialize Sentry error tracking
+   - `setupFirstPromoter()` - Load and initialize FirstPromoter tracking script
+   - **Benefits:** Isolated third-party integration logic, easier to test/mock
+   - **Commit:** aa218d86d6
+
+3. **DOM Utilities → `utils/dom-utils.js`** (68 lines extracted)
+   - `getScrollbarWidth()` - Calculate scrollbar width for layout
+   - `sendPortalReadyEvent()` - Send ready event to parent window
+   - `setupRecommendationButtons()` - Setup recommendation click tracking
+   - `showLexicalSignupForms()` - Show signup forms when not logged in
+   - **Benefits:** Separated DOM manipulation from component logic
+   - **Commit:** 53ef90f21e
+
+**Remaining Work:**
+- Large data fetching methods (fetchData, fetchLinkData, etc.) - ~200 lines
+- Custom trigger button setup logic - ~50 lines
+- Then convert to functional component with hooks
 
 ### Conversion Log
 
