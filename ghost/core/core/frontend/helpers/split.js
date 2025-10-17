@@ -1,3 +1,5 @@
+const { SafeString } = require("handlebars");
+
 module.exports = function split(...args) {
     const options = args.pop();
     const data = options.data || {};
@@ -35,7 +37,8 @@ module.exports = function split(...args) {
         }
     }
 
-    const result = string.split(separator);
+    const result = string.split(separator).map(item => new SafeString(item));
+
     if (options.fn) {
         // we're in block mode
         return options.fn(result, {
