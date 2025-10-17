@@ -18,6 +18,7 @@ import {parsePortalLinkPath} from './utils/url-parsers';
 import {getAccentColorOverride, getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
 import {fetchAllData, fetchLinkData, fetchPreviewData} from './utils/data-fetchers';
 import {lockBodyScroll, unlockBodyScroll} from './utils/body-scroll-lock';
+import {setupCustomTriggerButtons, updateCustomTriggerClasses} from './utils/custom-trigger-buttons';
 
 function SentryErrorBoundary({site, children}) {
     const {portal_sentry: portalSentry} = site || {};
@@ -39,7 +40,22 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.setupCustomTriggerButton(props);
+        // Setup custom trigger buttons and store references
+        const {buttons, clickHandler, cleanup} = setupCustomTriggerButtons((event) => {
+            const target = event.currentTarget;
+            const pagePath = (target && target.dataset.portal);
+            const {page, pageQuery, pageData} = parsePortalLinkPath(pagePath) || {};
+            if (this.state.initStatus === 'success') {
+                if (pageQuery && pageQuery !== 'free') {
+                    this.handleSignupQuery({site: this.state.site, pageQuery});
+                } else {
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
+                }
+            }
+        });
+        this.customTriggerButtons = buttons;
+        this.clickHandler = clickHandler;
+        this.cleanupCustomTriggers = cleanup;
 
         this.state = {
             site: null,
@@ -67,7 +83,7 @@ export default class App extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         /**Handle custom trigger class change on popup open state change */
         if (prevState.showPopup !== this.state.showPopup) {
-            this.handleCustomTriggerClassUpdate();
+            updateCustomTriggerClasses(this.customTriggerButtons, this.state.showPopup);
 
             /** Manage body scroll lock when popup opens/closes */
             if (this.state.showPopup) {
@@ -95,49 +111,8 @@ export default class App extends React.Component {
     componentWillUnmount() {
         /**Clear timeouts and event listeners on unmount */
         clearTimeout(this.timeoutId);
-        this.customTriggerButtons && this.customTriggerButtons.forEach((customTriggerButton) => {
-            customTriggerButton.removeEventListener('click', this.clickHandler);
-        });
+        this.cleanupCustomTriggers?.();
         window.removeEventListener('hashchange', this.hashHandler, false);
-    }
-
-    /** Setup custom trigger buttons handling on page */
-    setupCustomTriggerButton() {
-        // Handler for custom buttons
-        this.clickHandler = (event) => {
-            event.preventDefault();
-            const target = event.currentTarget;
-            const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery, pageData} = parsePortalLinkPath(pagePath) || {};
-            if (this.state.initStatus === 'success') {
-                if (pageQuery && pageQuery !== 'free') {
-                    this.handleSignupQuery({site: this.state.site, pageQuery});
-                } else {
-                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
-                }
-            }
-        };
-        const customTriggerSelector = '[data-portal]';
-        const popupCloseClass = 'gh-portal-close';
-        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
-        this.customTriggerButtons.forEach((customTriggerButton) => {
-            customTriggerButton.classList.add(popupCloseClass);
-            // Remove any existing event listener
-            customTriggerButton.removeEventListener('click', this.clickHandler);
-            customTriggerButton.addEventListener('click', this.clickHandler);
-        });
-    }
-
-    /** Handle portal class set on custom trigger buttons */
-    handleCustomTriggerClassUpdate() {
-        const popupOpenClass = 'gh-portal-open';
-        const popupCloseClass = 'gh-portal-close';
-        this.customTriggerButtons?.forEach((customButton) => {
-            const elAddClass = this.state.showPopup ? popupOpenClass : popupCloseClass;
-            const elRemoveClass = this.state.showPopup ? popupCloseClass : popupOpenClass;
-            customButton.classList.add(elAddClass);
-            customButton.classList.remove(elRemoveClass);
-        });
     }
 
     /** Initialize portal setup on load, fetch data and setup state*/

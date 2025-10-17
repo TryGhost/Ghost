@@ -349,9 +349,22 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Before:** `this.getColorOverride()` method, passed as `() => this.getColorOverride()`
    - **After:** `getAccentColorOverride` imported and passed directly (no wrapper function needed)
    - **Tests:** ✅ All 256 tests passing
+   - **Commit:** f70f6527e2
+
+9. **Extracted Custom Trigger Button Logic → `utils/custom-trigger-buttons.js`** (37 lines extracted, 38 lines removed from App.js)
+   - Created `setupCustomTriggerButtons()` - Returns buttons, clickHandler, and cleanup function
+   - Created `updateCustomTriggerClasses()` - Updates CSS classes based on popup state
+   - **Benefits:** Biggest refactor - separated complex DOM/event management from component
+   - **Original complexity:** Two methods + constructor setup + componentDidUpdate logic + componentWillUnmount cleanup
+   - **After:** Clean utility functions with explicit return values for event cleanup
+   - **Hook-ready:** Will convert to two simple useEffects with cleanup functions
+   - **Tests:** ✅ All 256 tests passing
+
+**App.js is now fully prepared for hooks conversion!**
+
+**Total extraction:** ~690 lines extracted/removed (66% reduction from 1046 lines)
 
 **Remaining Work:**
-- Extract custom trigger button logic
 - Convert App.js to functional component with hooks
 
 ### Conversion Log
