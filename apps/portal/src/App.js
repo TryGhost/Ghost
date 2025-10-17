@@ -14,9 +14,10 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 import {parseOfferQueryString, parsePreviewQueryString, parsePortalLinkPath} from './utils/url-parsers';
+import {setupSentry, setupFirstPromoter} from './utils/setup-integrations';
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -465,8 +466,8 @@ export default class App extends React.Component {
                 site.accent_color = colorOverride;
             }
 
-            this.setupFirstPromoter({site, member});
-            this.setupSentry({site});
+            setupFirstPromoter({site, member});
+            setupSentry({site});
             return {site, member};
         } catch (e) {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
@@ -477,77 +478,6 @@ export default class App extends React.Component {
         }
     }
 
-    /** Setup Sentry */
-    setupSentry({site}) {
-        if (hasMode(['test'])) {
-            return null;
-        }
-        const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
-        // eslint-disable-next-line no-undef
-        const appVersion = REACT_APP_VERSION || portalVersion;
-        const releaseTag = `portal@${appVersion}|ghost@${ghostVersion}`;
-        if (portalSentry && portalSentry.dsn) {
-            Sentry.init({
-                dsn: portalSentry.dsn,
-                environment: portalSentry.env || 'development',
-                release: releaseTag,
-                beforeSend: (event) => {
-                    if (isSentryEventAllowed({event})) {
-                        return event;
-                    }
-                    return null;
-                },
-                allowUrls: [
-                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/portal/
-                ]
-            });
-        }
-    }
-
-    /** Setup Firstpromoter script */
-    setupFirstPromoter({site, member}) {
-        if (hasMode(['test'])) {
-            return null;
-        }
-        const firstPromoterId = getFirstpromoterId({site});
-        let siteDomain = getSiteDomain({site});
-        // Replace any leading subdomain and prefix the siteDomain with
-        // a `.` to allow the FPROM cookie to be accessible across all subdomains
-        // or the root.
-        siteDomain = siteDomain?.replace(/^(\S*\.)?(\S*\.\S*)$/i, '.$2');
-
-        if (firstPromoterId && siteDomain) {
-            const fpScript = document.createElement('script');
-            fpScript.type = 'text/javascript';
-            fpScript.async = !0;
-            fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
-            fpScript.onload = fpScript.onreadystatechange = function () {
-                let _t = this.readyState;
-                if (!_t || 'complete' === _t || 'loaded' === _t) {
-                    try {
-                        window.$FPROM.init(firstPromoterId, siteDomain);
-                        if (isRecentMember({member})) {
-                            const email = member.email;
-                            const uid = member.uuid;
-                            if (window.$FPROM) {
-                                window.$FPROM.trackSignup({email: email, uid: uid});
-                            } else {
-                                const _fprom = window._fprom || [];
-                                window._fprom = _fprom;
-                                _fprom.push(['event', 'signup']);
-                                _fprom.push(['email', email]);
-                                _fprom.push(['uid', uid]);
-                            }
-                        }
-                    } catch (err) {
-                        // Log FP tracking failure
-                    }
-                }
-            };
-            const firstScript = document.getElementsByTagName('script')[0];
-            firstScript.parentNode.insertBefore(fpScript, firstScript);
-        }
-    }
 
     /** Handle actions from across App and update App state */
     async dispatchAction(action, data) {
