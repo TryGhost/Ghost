@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks** (10/18 completed - 56%)
+2. ⏳ **Convert 15 class components to functional components with hooks** (11/15 completed - 73%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -257,12 +257,12 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] PopupNotification.js - Notification display logic ✅
 - [x] MagicLinkPage.js - Magic link handling ✅
 
-**Priority 3: Components with Lifecycle Methods**
+**Priority 3: Components with Lifecycle Methods** ✅ COMPLETE
 - [x] AccountPlanPage.js - Has memory leak to fix ✅
 - [x] AccountProfilePage.js - Profile management ✅
 - [x] AccountHomePage.js - Account dashboard ✅
 - [x] SigninPage.js - Authentication flow ✅
-- [ ] SignupPage.js - Registration flow
+- [x] SignupPage.js - Registration flow ✅
 - [ ] OfferPage.js - Offer display
 
 **Priority 4: Complex Infrastructure (Highest Risk)**
@@ -425,6 +425,28 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~15 minutes
+
+#### SignupPage.js (2025-10-17)
+**Type:** Large component with lifecycle methods, complex form state, and multiple render helpers
+**Complexity:** Very High (900 lines)
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with individual `useState` hooks (name, email, phonenumber, token, plan, showNewsletterSelection, pageData, termsCheckboxChecked, errors)
+- Replaced `this.termsRef` with `useRef(null)` for terms checkbox scrolling
+- Replaced `this.timeoutId` with `useRef(null)` for timeout management
+- Converted `componentDidMount` → `useEffect` with [member, doAction] dependencies
+- Converted `componentDidUpdate` → `useEffect` with [site, pageQuery, plan] dependencies for plan selection
+- Converted `componentWillUnmount` → `useEffect` cleanup function
+- Replaced `static contextType` with `useContext(AppContext)` and destructured all needed values
+- Converted all 13 render helper methods to arrow functions (renderSignupTerms, renderSubmitButton, renderProducts, renderFreeTrialMessage, renderLoginMessage, renderForm, renderPaidMembersOnlyMessage, renderInviteOnlyMessage, renderMembersDisabledMessage, renderSiteIcon, renderFormHeader)
+- Converted `getInputFields` and `getClassNames` helper methods to arrow functions
+- Fixed `handleChooseSignup` to use planToSelect parameter directly instead of relying on setState callback
+- Simplified validation flow by removing setState callback pattern - validation now happens inline
+- Maintained all complex signup logic including newsletter selection, terms checkbox, error handling, and multiple site configuration paths
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~60 minutes
+**Notes:** This was the largest and most complex conversion so far. The component has extensive conditional rendering logic for different signup scenarios (free/paid, invite-only, members-disabled, etc.). The key challenge was replacing the setState callback pattern in `handleChooseSignup` - the solution was to use the `planToSelect` parameter directly rather than waiting for state to update.
 
 ---
 
