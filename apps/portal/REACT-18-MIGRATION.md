@@ -254,7 +254,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] SiteTitleBackButton.js - Simple presentational component ✅
 
 **Priority 2: Components with Simple State**
-- [ ] PopupNotification.js - Notification display logic
+- [x] PopupNotification.js - Notification display logic ✅
 - [ ] MagicLinkPage.js - Magic link handling
 
 **Priority 3: Components with Lifecycle Methods**
@@ -323,6 +323,22 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~5 minutes
+
+#### PopupNotification.js (2025-10-16)
+**Type:** Component with state and lifecycle methods
+**Complexity:** Medium
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with `useState` for `className` and `notificationCount`
+- Replaced `this.timeoutId` with `useRef(null)` for timeout reference
+- Converted `componentDidMount` + `componentDidUpdate` → `useEffect` with dependencies
+- Added separate `useEffect` for cleanup on unmount (clears timeout)
+- Replaced `static contextType` with `useContext(AppContext)`
+- Converted class methods to functions (`onAnimationEnd`, `closeNotification`, `handlePopupNotification`)
+- Used functional state updates in `setClassName` to avoid stale closure issues
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~15 minutes
 
 ---
 
@@ -414,7 +430,7 @@ expect(element).toBeInTheDocument();
 - ✅ **Phase 1:** Environment Preparation (100%)
 - ✅ **Phase 2:** Root API Migration (100%)
 - ✅ **Phase 3:** Test Suite Updates (100%)
-- ⏳ **Phase 5:** Component Conversion to Hooks (4/18 components - 22%)
+- ⏳ **Phase 5:** Component Conversion to Hooks (5/18 components - 28%)
 
 ### Commits Made
 1. `bf60dbd` - Upgraded Portal to React 18 dependencies
