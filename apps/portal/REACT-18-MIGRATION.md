@@ -253,9 +253,9 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] LoadingPage.js - Simple presentational component ✅
 - [x] SiteTitleBackButton.js - Simple presentational component ✅
 
-**Priority 2: Components with Simple State**
+**Priority 2: Components with Simple State** ✅ COMPLETE
 - [x] PopupNotification.js - Notification display logic ✅
-- [ ] MagicLinkPage.js - Magic link handling
+- [x] MagicLinkPage.js - Magic link handling ✅
 
 **Priority 3: Components with Lifecycle Methods**
 - [ ] AccountPlanPage.js - Has memory leak to fix
@@ -339,6 +339,22 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~15 minutes
+
+#### MagicLinkPage.js (2025-10-16)
+**Type:** Component with form state and validation
+**Complexity:** Medium-High
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with multiple `useState` calls (otc, errors, isFocused)
+- Extracted helper functions to module level (getDescriptionConfig, getTranslatedDescription)
+- Extracted FormHeader as separate functional component for better composition
+- Converted all class methods to functions (handleClose, handleSubmit, doVerifyOTC, handleInputChange)
+- Simplified state updates by removing setState callback pattern
+- Replaced `this.context` with `useContext(AppContext)` and destructured context values
+- Maintained all form validation and OTC verification logic
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~20 minutes
 
 ---
 
@@ -430,7 +446,7 @@ expect(element).toBeInTheDocument();
 - ✅ **Phase 1:** Environment Preparation (100%)
 - ✅ **Phase 2:** Root API Migration (100%)
 - ✅ **Phase 3:** Test Suite Updates (100%)
-- ⏳ **Phase 5:** Component Conversion to Hooks (5/18 components - 28%)
+- ⏳ **Phase 5:** Component Conversion to Hooks (6/18 components - 33%)
 
 ### Commits Made
 1. `bf60dbd` - Upgraded Portal to React 18 dependencies

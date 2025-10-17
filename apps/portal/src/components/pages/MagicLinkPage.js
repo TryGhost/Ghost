@@ -1,4 +1,4 @@
-import React from 'react';
+import {useContext, useState} from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
@@ -75,156 +75,123 @@ export const MagicLinkStyles = `
 
 const OTC_FIELD_NAME = 'otc';
 
-export default class MagicLinkPage extends React.Component {
-    static contextType = AppContext;
+/**
+ * Generates configuration object containing translated description messages for magic link scenarios
+ * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
+ * @returns {Object} Configuration object with message templates for signin/signup scenarios
+ */
+function getDescriptionConfig(submittedEmailOrInbox) {
+    return {
+        signin: {
+            withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
+            withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+        },
+        signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
+    };
+}
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            [OTC_FIELD_NAME]: '',
-            errors: {},
-            isFocused: false
-        };
+/**
+ * Gets the appropriate translated description based on page context
+ * @param {Object} params - Configuration object
+ * @param {string} params.lastPage - The previous page ('signin' or 'signup')
+ * @param {boolean} params.otcRef - Whether one-time code is being used
+ * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
+ * @returns {string} The translated description
+ */
+function getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
+    const descriptionConfig = getDescriptionConfig(submittedEmailOrInbox);
+    const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+
+    if (normalizedPage === 'signup') {
+        return descriptionConfig.signup;
     }
 
-    /**
-     * Generates configuration object containing translated description messages for magic link scenarios
-     * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
-     * @returns {Object} Configuration object with message templates for signin/signup scenarios
-     */
-    getDescriptionConfig(submittedEmailOrInbox) {
-        return {
-            signin: {
-                withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
-            },
-            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
-        };
-    }
+    return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+}
 
-    /**
-     * Gets the appropriate translated description based on page context
-     * @param {Object} params - Configuration object
-     * @param {string} params.lastPage - The previous page ('signin' or 'signup')
-     * @param {boolean} params.otcRef - Whether one-time code is being used
-     * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
-     * @returns {string} The translated description
-     */
-    getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
-        const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
-        const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+function FormHeader({otcRef, pageData, lastPage}) {
+    const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
 
-        if (normalizedPage === 'signup') {
-            return descriptionConfig.signup;
-        }
+    const popupTitle = t(`Now check your email!`);
+    const popupDescription = getTranslatedDescription({
+        lastPage,
+        otcRef,
+        submittedEmailOrInbox
+    });
 
-        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
-    }
+    return (
+        <section className='gh-portal-inbox-notification'>
+            <header className='gh-portal-header'>
+                <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
+                <h2 className='gh-portal-main-title'>{popupTitle}</h2>
+            </header>
+            <p>{popupDescription}</p>
+        </section>
+    );
+}
 
-    renderFormHeader() {
-        const {otcRef, pageData, lastPage} = this.context;
-        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
+export default function MagicLinkPage() {
+    const context = useContext(AppContext);
+    const {otcRef, pageData, lastPage, action, actionErrorMessage, labs, brandColor, doAction} = context;
 
-        const popupTitle = t(`Now check your email!`);
-        const popupDescription = this.getTranslatedDescription({
-            lastPage,
-            otcRef,
-            submittedEmailOrInbox
-        });
+    const [otc, setOtc] = useState('');
+    const [errors, setErrors] = useState({});
+    const [isFocused, setIsFocused] = useState(false);
 
-        return (
-            <section className='gh-portal-inbox-notification'>
-                <header className='gh-portal-header'>
-                    <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
-                    <h2 className='gh-portal-main-title'>{popupTitle}</h2>
-                </header>
-                <p>{popupDescription}</p>
-            </section>
-        );
-    }
+    const handleClose = () => {
+        doAction('closePopup');
+    };
 
-    renderLoginMessage() {
-        return (
-            <>
-                <div
-                    style={{color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer'}}
-                    onClick={() => this.context.doAction('switchPage', {page: 'signin'})}
-                >
-                    {t('Back to Log in')}
-                </div>
-            </>
-        );
-    }
-
-    handleClose() {
-        this.context.doAction('closePopup');
-    }
-
-    renderCloseButton() {
-        const label = t('Close');
-        return (
-            <ActionButton
-                style={{width: '100%'}}
-                onClick={e => this.handleClose(e)}
-                brandColor={this.context.brandColor}
-                label={label}
-            />
-        );
-    }
-
-    handleSubmit(e) {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        const {action} = this.context;
         const isRunning = (action === 'verifyOTC:running');
 
         if (!isRunning) {
-            this.doVerifyOTC();
+            doVerifyOTC();
         }
-    }
+    };
 
-    doVerifyOTC() {
+    const doVerifyOTC = () => {
         const missingCodeError = t('Enter code above');
+        const code = (otc || '').trim();
+        const newErrors = {
+            [OTC_FIELD_NAME]: code ? '' : missingCodeError
+        };
 
-        this.setState((state) => {
-            const code = (state.otc || '').trim();
-            return {
-                errors: {
-                    [OTC_FIELD_NAME]: code ? '' : missingCodeError
-                }
-            };
-        }, () => {
-            const {otc, errors} = this.state;
-            const {otcRef} = this.context;
-            const {redirect} = this.context.pageData ?? {};
-            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            if (!hasFormErrors && otcRef) {
-                this.context.doAction('verifyOTC', {otc, otcRef, redirect});
-            }
+        setErrors(newErrors);
+
+        const hasFormErrors = Object.values(newErrors).filter(d => !!d).length > 0;
+        const {redirect} = pageData ?? {};
+
+        if (!hasFormErrors && otcRef) {
+            doAction('verifyOTC', {otc, otcRef, redirect});
         }
-        );
-    }
+    };
 
-    handleInputChange(e, field) {
+    const handleInputChange = (e, field) => {
         const fieldName = field.name;
         const value = e.target.value;
 
         // For OTC field, only allow numeric input
         if (fieldName === OTC_FIELD_NAME) {
             const numericValue = value.replace(/[^0-9]/g, '');
-            this.setState({
-                [fieldName]: numericValue
-            });
-        } else {
-            this.setState({
-                [fieldName]: value
-            });
+            setOtc(numericValue);
         }
-    }
+    };
 
-    renderOTCForm() {
-        const {action, actionErrorMessage, labs, otcRef} = this.context;
-        const errors = this.state.errors || {};
+    const renderCloseButton = () => {
+        const label = t('Close');
+        return (
+            <ActionButton
+                style={{width: '100%'}}
+                onClick={handleClose}
+                brandColor={brandColor}
+                label={label}
+            />
+        );
+    };
 
+    const renderOTCForm = () => {
         if (!labs?.membersSigninOTC || !otcRef) {
             return null;
         }
@@ -235,16 +202,16 @@ export default class MagicLinkPage extends React.Component {
         const error = (isError && actionErrorMessage) ? actionErrorMessage : errors.otc;
 
         return (
-            <form onSubmit={e => this.handleSubmit(e)}>
+            <form onSubmit={handleSubmit}>
                 <section className='gh-portal-section gh-portal-otp'>
-                    <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}>
+                    <div className={`gh-portal-otp-container ${isFocused && 'focused'} ${error && 'error'}`}>
                         <input
                             id={`input-${OTC_FIELD_NAME}`}
-                            className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
+                            className={`gh-portal-input ${otc && 'entry'} ${error && 'error'}`}
                             placeholder='––––––'
                             name={OTC_FIELD_NAME}
                             type="text"
-                            value={this.state.otc}
+                            value={otc}
                             inputMode="numeric"
                             maxLength={6}
                             pattern="[0-9]*"
@@ -253,9 +220,9 @@ export default class MagicLinkPage extends React.Component {
                             autoCapitalize="off"
                             autoFocus={true}
                             aria-label={t('Code')}
-                            onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                            onFocus={() => this.setState({isFocused: true})}
-                            onBlur={() => this.setState({isFocused: false})}
+                            onChange={e => handleInputChange(e, {name: OTC_FIELD_NAME})}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                         />
                     </div>
                     {error &&
@@ -268,8 +235,8 @@ export default class MagicLinkPage extends React.Component {
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
                         style={{width: '100%'}}
-                        onClick={e => this.handleSubmit(e)}
-                        brandColor={this.context.brandColor}
+                        onClick={handleSubmit}
+                        brandColor={brandColor}
                         label={isRunning ? t('Verifying...') : t('Continue')}
                         isRunning={isRunning}
                         retry={isError}
@@ -278,18 +245,15 @@ export default class MagicLinkPage extends React.Component {
                 </footer>
             </form>
         );
-    }
+    };
 
-    render() {
-        const {labs, otcRef} = this.context;
-        const showOTCForm = labs?.membersSigninOTC && otcRef;
+    const showOTCForm = labs?.membersSigninOTC && otcRef;
 
-        return (
-            <div className='gh-portal-content'>
-                <CloseButton />
-                {this.renderFormHeader()}
-                {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
-            </div>
-        );
-    }
+    return (
+        <div className='gh-portal-content'>
+            <CloseButton />
+            <FormHeader otcRef={otcRef} pageData={pageData} lastPage={lastPage} />
+            {showOTCForm ? renderOTCForm() : renderCloseButton()}
+        </div>
+    );
 }
