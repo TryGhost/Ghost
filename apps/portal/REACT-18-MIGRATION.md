@@ -278,8 +278,8 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Objective:** Reduce App.js complexity before converting to functional component
 
 **Original Size:** 1046 lines
-**Current Size:** 675 lines
-**Lines Removed:** 371 (35% reduction)
+**Current Size:** 461 lines
+**Lines Removed:** 585 (56% reduction)
 
 **Extraction Log:**
 
@@ -304,9 +304,20 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Benefits:** Separated DOM manipulation from component logic
    - **Commit:** 53ef90f21e
 
+4. **Data Fetching Methods → `utils/data-fetchers.js`** (214 lines extracted)
+   - `fetchApiData()` - API calls with Ghost
+   - `fetchDevData()` - Dev/test mode data
+   - `fetchOfferQueryStrData()` - Offer preview parsing
+   - `fetchQueryStrData()` - Preview query string parsing
+   - `fetchNotificationData()` - Billing notification data
+   - `fetchLinkData()` - Portal link parsing
+   - `fetchPreviewData()` - Preview mode data
+   - `fetchAllData()` - Orchestrates all data sources
+   - **Benefits:** Separated data fetching concerns from component logic, pure functions easier to test
+   - **Commit:** 1c1bbabba
+
 **Remaining Work:**
-- Large data fetching methods (fetchData, fetchLinkData, etc.) - ~200 lines
-- Custom trigger button setup logic - ~50 lines
+- Query/link handling methods (handleOfferQuery, handleSignupQuery) - ~60 lines
 - Then convert to functional component with hooks
 
 ### Conversion Log
