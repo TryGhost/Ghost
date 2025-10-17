@@ -84,7 +84,6 @@ export class PublicPage extends BasePage {
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
         await super.goto(url, options);
-        await this.portal.waitForScriptToInitialize();
     }
 
     async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
@@ -104,11 +103,13 @@ export class PublicPage extends BasePage {
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
+        await this.portal.waitForScriptToInitialize();
         await this.subscribeLink.click();
         await this.portal.waitForPortalToOpen();
     }
 
     async openPortalViaSignInLink(): Promise<void> {
+        await this.portal.waitForScriptToInitialize();
         await this.signInLink.click();
         await this.portal.waitForPortalToOpen();
     }
