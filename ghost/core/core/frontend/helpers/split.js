@@ -1,4 +1,4 @@
-const { SafeString } = require("handlebars");
+const {SafeString} = require('handlebars');
 
 module.exports = function split(...args) {
     const options = args.pop();
