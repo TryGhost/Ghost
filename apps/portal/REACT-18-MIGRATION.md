@@ -237,7 +237,7 @@ Portal uses a mix of class and functional components. Since React 18 fully suppo
 
 ### 🎯 Remaining Work
 1. ✅ ~~Address flaky tests in data-attributes.test.js~~ (COMPLETED)
-2. ⏳ **Convert 18 class components to functional components with hooks** (9/18 completed - 50%)
+2. ⏳ **Convert 18 class components to functional components with hooks** (10/18 completed - 56%)
 3. ✅ ~~Address memory leak warning in AccountPlanPage~~ (COMPLETED)
 
 ---
@@ -261,7 +261,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 - [x] AccountPlanPage.js - Has memory leak to fix ✅
 - [x] AccountProfilePage.js - Profile management ✅
 - [x] AccountHomePage.js - Account dashboard ✅
-- [ ] SigninPage.js - Authentication flow
+- [x] SigninPage.js - Authentication flow ✅
 - [ ] SignupPage.js - Registration flow
 - [ ] OfferPage.js - Offer display
 
@@ -407,6 +407,24 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Test Results:** ✅ All 256 tests passing
 **Time:** ~10 minutes
+
+#### SigninPage.js (2025-10-17)
+**Type:** Component with lifecycle methods and form state
+**Complexity:** Medium
+**Changes:**
+- Converted class component to functional component
+- Replaced `this.state` with individual `useState` hooks (email, phonenumber, token, errors)
+- Converted `componentDidMount` → `useEffect` with [member, doAction] dependencies
+- Replaced `static contextType` with `useContext(AppContext)` and destructured all needed values
+- Extracted `getInputFields` as a standalone helper function outside component
+- Converted all class methods to functions (handleInputChange, doSignin, handleSignin, onKeyDown)
+- Simplified validation flow by removing setState callback - validation now happens inline
+- Removed commented import
+- Fixed state initialization: `phonenumber` starts as `undefined` instead of empty string to match original behavior
+- Maintained all form fields including anti-spam honeypot field
+
+**Test Results:** ✅ All 256 tests passing
+**Time:** ~15 minutes
 
 ---
 
