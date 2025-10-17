@@ -284,7 +284,7 @@ export default class App extends React.Component {
     }
 
     /** Handle Portal offer urls */
-    async handleOfferQuery({site, offerId, member = this.state.member}) {
+    async handleOfferQuery({site, offerId, member}) {
         const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
         if (!isPaidMember({member})) {
@@ -352,8 +352,8 @@ export default class App extends React.Component {
     }
 
     /**Get Accent color from site data*/
-    getAccentColor() {
-        const {accent_color: accentColor} = this.state.site || {};
+    getAccentColor(site) {
+        const {accent_color: accentColor} = site || {};
         return accentColor;
     }
 
@@ -402,7 +402,7 @@ export default class App extends React.Component {
             site,
             action,
             actionErrorMessage,
-            brandColor: this.getAccentColor(),
+            brandColor: this.getAccentColor(site),
             page: contextPage,
             pageQuery,
             pageData,

@@ -323,10 +323,18 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Original complexity:** Mixed state checks, try/catch blocks, margin calculations in componentDidUpdate
    - **After:** Clean two-function API that returns/accepts state object
    - **Tests:** ✅ All 256 tests passing
+   - **Commit:** 2f90f164cd
+
+6. **Parameter Refactoring** (No lines extracted, but improved for hooks conversion)
+   - `handleOfferQuery()` - Removed default parameter `member = this.state.member`, now requires explicit member argument
+   - `getAccentColor()` - Changed from reading `this.state.site` to accepting `site` parameter
+   - **Benefits:** Methods no longer read from this.state, making them pure functions that won't have stale closure issues in hooks
+   - **Original pattern:** Methods accessed `this.state.member` and `this.state.site` internally
+   - **After:** All dependencies passed as parameters - easier to convert to functions inside useEffect
+   - **Tests:** ✅ All 256 tests passing
 
 **Remaining Work:**
-- Refactor methods to accept parameters instead of reading this.state (~3-4 methods)
-- Then convert to functional component with hooks
+- Convert App.js to functional component with hooks
 
 ### Conversion Log
 
