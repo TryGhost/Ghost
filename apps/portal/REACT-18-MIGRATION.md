@@ -364,8 +364,55 @@ Following the migration plan's priority order for safe, incremental conversion:
 
 **Total extraction:** ~690 lines extracted/removed (66% reduction from 1046 lines)
 
+### ⚠️ React 18 Context Pattern Issue (To Address During Conversion)
+
+**Current Problem (lines 386, 356-379):**
+```javascript
+render() {
+    return (
+        <AppContext.Provider value={this.getContextFromState()}>
+```
+
+The context value is recreated on **every render**, causing unnecessary re-renders of all consumers.
+
+**Issues:**
+1. **New object identity every render** - Even when state hasn't changed
+2. **New `doAction` function every render** - Arrow function recreated (line 378)
+3. **React 18 concurrent rendering concerns** - Can cause tearing and performance issues
+4. **All context consumers re-render unnecessarily** - Even for unrelated state changes
+
+**Why Not Fix in Class Component:**
+- Class components lack `useMemo` for complex object memoization
+- Only partial fixes possible (binding `doAction` once)
+- Would add complexity for short-term benefit
+- Clean slate approach better for hooks conversion
+
+**Must Fix During Hooks Conversion:**
+1. **Wrap context value in `useMemo`** with proper dependencies
+2. **Wrap `doAction` in `useCallback`** to stabilize function reference
+3. **Consider splitting contexts** if performance issues arise (SiteContext, MemberContext, ActionContext)
+
+Example fix:
+```javascript
+const doAction = useCallback((action, data) => {
+    dispatchAction(action, data);
+}, []);
+
+const contextValue = useMemo(() => ({
+    api: GhostApi,
+    site,
+    action,
+    member,
+    // ... other values
+    doAction
+}), [site, action, member, /* all state dependencies */]);
+
+return (
+    <AppContext.Provider value={contextValue}>
+```
+
 **Remaining Work:**
-- Convert App.js to functional component with hooks
+- Convert App.js to functional component with hooks (and fix context pattern)
 
 ### Conversion Log
 
