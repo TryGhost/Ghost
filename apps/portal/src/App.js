@@ -17,6 +17,7 @@ import {handleDataAttributes} from './data-attributes';
 import {parsePortalLinkPath} from './utils/url-parsers';
 import {getScrollbarWidth, sendPortalReadyEvent, setupRecommendationButtons, showLexicalSignupForms} from './utils/dom-utils';
 import {fetchAllData, fetchLinkData, fetchPreviewData} from './utils/data-fetchers';
+import {lockBodyScroll, unlockBodyScroll} from './utils/body-scroll-lock';
 
 function SentryErrorBoundary({site, children}) {
     const {portal_sentry: portalSentry} = site || {};
@@ -68,27 +69,11 @@ export default class App extends React.Component {
         if (prevState.showPopup !== this.state.showPopup) {
             this.handleCustomTriggerClassUpdate();
 
-            /** Remove background scroll when popup is opened */
-            try {
-                if (this.state.showPopup) {
-                    /** When modal is opened, store current overflow and set as hidden */
-                    this.bodyScroll = window.document?.body?.style?.overflow;
-                    this.bodyMargin = window.getComputedStyle(document.body).getPropertyValue('margin-right');
-                    window.document.body.style.overflow = 'hidden';
-                    if (this.state.scrollbarWidth) {
-                        window.document.body.style.marginRight = `calc(${this.bodyMargin} + ${this.state.scrollbarWidth}px)`;
-                    }
-                } else {
-                    /** When the modal is hidden, reset overflow property for body */
-                    window.document.body.style.overflow = this.bodyScroll || '';
-                    if (!this.bodyMargin || this.bodyMargin === '0px') {
-                        window.document.body.style.marginRight = '';
-                    } else {
-                        window.document.body.style.marginRight = this.bodyMargin;
-                    }
-                }
-            } catch (e) {
-                /** Ignore any errors for scroll handling */
+            /** Manage body scroll lock when popup opens/closes */
+            if (this.state.showPopup) {
+                this.bodyScrollState = lockBodyScroll(this.state.scrollbarWidth);
+            } else {
+                unlockBodyScroll(this.bodyScrollState || {previousOverflow: '', previousMargin: '0px'});
             }
         }
 

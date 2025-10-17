@@ -281,7 +281,7 @@ Following the migration plan's priority order for safe, incremental conversion:
 **Current Size:** 461 lines
 **Lines Removed:** 585 (56% reduction)
 
-**Extraction Log:**
+**Refactoring Log:**
 
 1. **URL/Query Parsing Utilities → `utils/url-parsers.js`** (244 lines extracted)
    - `parseOfferQueryString()` - Parse offer preview query parameters
@@ -316,8 +316,16 @@ Following the migration plan's priority order for safe, incremental conversion:
    - **Benefits:** Separated data fetching concerns from component logic, pure functions easier to test
    - **Commit:** 1c1bbabba
 
+5. **Body Scroll Lock → `utils/body-scroll-lock.js`** (30 lines extracted)
+   - `lockBodyScroll()` - Lock body scroll and adjust for scrollbar width
+   - `unlockBodyScroll()` - Restore previous scroll state
+   - **Benefits:** Simplified componentDidUpdate from 25 lines to 6 lines, separated DOM manipulation from lifecycle logic, easier to convert to useEffect
+   - **Original complexity:** Mixed state checks, try/catch blocks, margin calculations in componentDidUpdate
+   - **After:** Clean two-function API that returns/accepts state object
+   - **Tests:** ✅ All 256 tests passing
+
 **Remaining Work:**
-- Query/link handling methods (handleOfferQuery, handleSignupQuery) - ~60 lines
+- Refactor methods to accept parameters instead of reading this.state (~3-4 methods)
 - Then convert to functional component with hooks
 
 ### Conversion Log
