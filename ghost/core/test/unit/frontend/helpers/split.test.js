@@ -85,8 +85,13 @@ describe('{{split}} helper in inline mode', function () {
         registerHelper('match');
     });
     it('splits strings correctly with the default separator (not specified - a comma) ', function () {
-        const templateString = '{{#foreach (split "hello,world" separator="o")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
-        const expected = 'hell<br>,w<br>rld';
+        const templateString = '{{#foreach (split "hello,world" separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hello<br>world';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('splits strings correctly with a custom separator', function () {
+        const templateString = '{{#foreach (split "hello beautiful world" separator=" ")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hello<br>beautiful<br>world';
         shouldCompileToExpected(templateString, {}, expected);
     });
     it('can be used to remove a suffix from a string', function () {
