@@ -39,7 +39,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
                 {children}
                 <div className='flex flex-col gap-0.5 leading-tight'>
                     <span className='text-base font-semibold'>{title}</span>
-                    <span className="text-sm font-normal transition-colors duration-150 ease-in-out dark:text-grey-300">{description}</span>
+                    <span className="text-sm font-normal text-gray-700 transition-colors duration-150 ease-in-out dark:text-gray-300">{description}</span>
                 </div>
             </div>
         </a>
