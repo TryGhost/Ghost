@@ -10,6 +10,7 @@ import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
+import {ReactComponent as GhostOrbIcon} from '@tryghost/admin-x-design-system/src/assets/images/ghost-orb.svg';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -25,6 +26,8 @@ interface IntegrationItemProps {
     disabled?: boolean;
     testId?: string;
     custom?: boolean;
+    buttonLabel?: string;
+    onButtonClick?: () => void;
 }
 
 const IntegrationItem: React.FC<IntegrationItemProps> = ({
@@ -36,7 +39,9 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     active,
     disabled,
     testId,
-    custom = false
+    custom = false,
+    buttonLabel,
+    onButtonClick
 }) => {
     const {updateRoute} = useRouting();
 
@@ -61,7 +66,10 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
-            <Button color='green' label='Configure' link onClick={handleClick} />
+            (buttonLabel && onButtonClick ?
+                <Button color='green' label={buttonLabel} link onClick={(e) => { e?.stopPropagation(); onButtonClick(); }} /> :
+                <Button color='green' label='Configure' link onClick={handleClick} />
+            )
         );
 
     return <ListItem
@@ -96,8 +104,28 @@ const BuiltInIntegrations: React.FC = () => {
         'slack_username'
     ]);
 
+    const {data: {integrations: allIntegrations} = {integrations: []}} = useBrowseIntegrations();
+    const ghostCoreContent = allIntegrations.find(i => i.slug === 'ghost-core-content');
+    const contentApiKey = ghostCoreContent?.api_keys?.find(k => k.type === 'content')?.secret || 'Placeholder';
+
     return (
         <List titleSeparator={false}>
+            <IntegrationItem
+                action={() => {}}
+                detail={contentApiKey}
+                icon={<GhostOrbIcon className='size-8' />}
+                testId='content-api-key-integration'
+                title='Content API Key'
+                buttonLabel='Copy key'
+                onButtonClick={async () => {
+                    try {
+                        await navigator.clipboard.writeText(contentApiKey);
+                        showToast({title: 'Copied to clipboard', type: 'success', options: {position: 'bottom-left'}});
+                    } catch (e) {
+                        showToast({title: 'Copy failed', type: 'warning', options: {position: 'bottom-left'}});
+                    }
+                }}
+            />
             <IntegrationItem
                 action={() => {
                     openModal('integrations/zapier');
