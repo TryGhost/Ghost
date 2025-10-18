@@ -288,7 +288,8 @@ const controller = {
         },
         options: [
             'id',
-            'cancel'
+            'cancel',
+            'deleteComments'
         ],
         validation: {
             options: {
@@ -302,7 +303,7 @@ const controller = {
             return membersService.api.members.destroy({
                 id: frame.options.id
             }, {
-                ...frame.options, require: true, cancelStripeSubscriptions: frame.options.cancel
+                ...frame.options, require: true, cancelStripeSubscriptions: frame.options.cancel, deleteComments: frame.options.deleteComments
             });
         }
     },

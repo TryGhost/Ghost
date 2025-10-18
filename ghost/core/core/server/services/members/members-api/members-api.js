@@ -106,6 +106,7 @@ module.exports = function MembersAPI({
         OfferRedemption,
         StripeCustomer,
         StripeCustomerSubscription,
+        Comment,
         offerRepository: offersAPI.repository
     });
 
