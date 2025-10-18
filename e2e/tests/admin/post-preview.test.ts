@@ -1,7 +1,6 @@
 import {test, expect} from '../../helpers/playwright';
 import {PostEditorPage} from '../../helpers/pages/admin';
-import {createPostFactory} from '../../data-factory';
-import type {PostFactory} from '../../data-factory';
+import {createPostFactory, PostFactory} from '../../data-factory';
 
 test.describe('Post Preview Modal', () => {
     let postFactory: PostFactory;

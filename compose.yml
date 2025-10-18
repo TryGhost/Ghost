@@ -14,7 +14,7 @@ x-service-template: &service-template
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
     - node_modules_e2e:/home/ghost/e2e/node_modules:delegated
-    - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
+    - node_modules_apps_activitypub:/home/ghost/apps/activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
     - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
@@ -66,6 +66,9 @@ services:
       tb-cli:
         condition: service_completed_successfully
         required: false
+      stripe:
+        condition: service_healthy
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -100,7 +103,7 @@ services:
     entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
     working_dir: /home/ghost
     command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
     restart: always
     environment:
@@ -188,7 +191,7 @@ services:
 
   analytics:
     profiles: [ analytics, all ]
-    image: ghost/traffic-analytics:1
+    image: ghost/traffic-analytics:1.0.18
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
@@ -284,6 +287,23 @@ services:
       - "8025:8025" # Web interface
     restart: always
 
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: ghost-stripe
+    profiles: [ stripe, all ]
+    entrypoint: [ "/entrypoint.sh" ]
+    volumes:
+      - ./.docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      interval: 1s
+      retries: 120
+
 volumes:
   mysql-data: {}
   redis-data: {}
@@ -295,7 +315,7 @@ volumes:
   node_modules_ghost_core: {}
   node_modules_ghost_i18n: {}
   node_modules_e2e: {}
-  node_modules_apps_admin-x-activitypub: {}
+  node_modules_apps_activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
   node_modules_apps_admin-x-settings: {}
