@@ -100,7 +100,7 @@ const NewsletterTableRows: React.FC<{
                             {emailTrackClicksEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             {isClicksLoading ? (
-                                <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                                <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-300 transition-colors duration-150 ease-in-out dark:bg-gray-600"></span>
                             ) : (
                                 <>
                                     <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>

@@ -66,7 +66,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const showClickTracking = appSettings?.analytics.emailTrackClicks;
     const showOpenTracking = appSettings?.analytics.emailTrackOpens;
 
-    const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
+    const metricClass = `flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-sm font-semibold transition-colors duration-150 ease-in-out dark:text-white hover:bg-muted-foreground/10 group-hover:text-foreground`;
 
     return (
         <Card className='group/card w-full lg:col-span-2' data-testid='top-posts-card'>
