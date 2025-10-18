@@ -292,5 +292,8 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false
+    "disableJSBackups": false,
+    "pagination": {
+        "pageParameter": "page"
+    }
 }

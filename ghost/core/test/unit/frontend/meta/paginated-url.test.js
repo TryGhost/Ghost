@@ -1,6 +1,8 @@
 const should = require('should');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/configUtils');
+const sinon = require('sinon');
+const config = require('../../../../core/shared/config');
 
 describe('getPaginatedUrl', function () {
     let data;
@@ -162,6 +164,52 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page1', '/blog/featured/');
             urls.should.have.property('page5', '/blog/featured/page/5/');
             urls.should.have.property('page10', '/blog/featured/page/10/');
+        });
+    });
+
+    describe('custom paging page parameter', function () {
+        let configStub;
+
+        before(function () {
+            configStub = sinon.stub(config, 'get');
+            configStub.callThrough();
+            configStub.withArgs('pagination:pageParameter').returns('seite');
+        });
+
+        after(async function () {
+            configStub.restore();
+        });
+
+        it('should calculate correct urls of an index collection', function () {
+            // Setup tests
+            data.relativeUrl = '/';
+            data.pagination = {prev: null, next: 2};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results
+            urls.should.have.property('next', 'http://127.0.0.1:2369/seite/2/');
+            urls.should.have.property('prev', null);
+            urls.should.have.property('page1', '/');
+            urls.should.have.property('page5', '/seite/5/');
+            urls.should.have.property('page10', '/seite/10/');
+        });
+
+        it('should calculate correct urls for the last page of another collection', function () {
+            // Setup tests
+            data.relativeUrl = '/featured/seite/10/';
+            data.pagination = {prev: 9, next: null};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results
+            urls.should.have.property('next', null);
+            urls.should.have.property('prev', 'http://127.0.0.1:2369/featured/seite/9/');
+            urls.should.have.property('page1', '/featured/');
+            urls.should.have.property('page5', '/featured/seite/5/');
+            urls.should.have.property('page10', '/featured/seite/10/');
         });
     });
 });
