@@ -11,8 +11,8 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
-    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
+    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address', 'signup portal'],
+    tips: ['growth', 'tips', 'donations', 'one time', 'payment', 'tips & donations', 'tips and donations']
 };
 
 const MembershipSettings: React.FC = () => {
