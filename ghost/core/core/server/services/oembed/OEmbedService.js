@@ -257,6 +257,72 @@ class OEmbedService {
     }
 
     /**
+     * Fixes URLs that have been incorrectly processed by normalize-url v6
+     * where encoded backslashes (%5C) are converted to forward slashes.
+     * This is a workaround for the issue described in:
+     * https://github.com/TryGhost/Ghost/issues/20484
+     * 
+     * @param {string} processedUrl - The URL that may have been incorrectly processed
+     * @param {string} originalHtml - The original HTML to extract the correct URL from
+     * @param {string} metaProperty - The meta property to look for (e.g., 'og:image')
+     * @returns {string|null} - The correct URL or null if not found
+     */
+    fixIncorrectlyProcessedUrl(processedUrl, originalHtml, metaProperty) {
+        if (!processedUrl || !originalHtml) {
+            return processedUrl;
+        }
+
+        try {
+            const cheerio = require('cheerio');
+            const $ = cheerio.load(originalHtml);
+            
+            // Look for the original URL in meta tags
+            let originalUrl = null;
+            
+            // Check Open Graph meta tags
+            $(`meta[property="${metaProperty}"]`).each((i, elem) => {
+                const content = $(elem).attr('content');
+                if (content) {
+                    originalUrl = content;
+                    return false; // break the loop
+                }
+            });
+            
+            // Also check name-based meta tags as fallback
+            if (!originalUrl && metaProperty.includes('image')) {
+                $('meta[name="twitter:image"]').each((i, elem) => {
+                    const content = $(elem).attr('content');
+                    if (content) {
+                        originalUrl = content;
+                        return false;
+                    }
+                });
+            }
+            
+            // If we found the original URL and it contains %5C, return it
+            if (originalUrl && (originalUrl.includes('%5C') || originalUrl.includes('%5c'))) {
+                // Check if the processed URL looks like it lost the backslash
+                // by comparing the structure
+                const processedPath = new URL(processedUrl).pathname;
+                const shouldUseOriginal = !processedPath.includes('%5C') && !processedPath.includes('%5c');
+                
+                if (shouldUseOriginal) {
+                    logging.info('Fixed incorrectly processed URL with encoded backslash', {
+                        original: originalUrl,
+                        processed: processedUrl
+                    });
+                    return originalUrl;
+                }
+            }
+            
+            return processedUrl;
+        } catch (err) {
+            logging.warn('Failed to fix processed URL', {error: err.message});
+            return processedUrl;
+        }
+    }
+
+    /**
      * @param {string} url
      * @param {string} html
      *
@@ -307,6 +373,21 @@ class OEmbedService {
             // Log to avoid being blind to errors happening in metascraper
             logging.error(err);
             return this.unknownProvider(url);
+        }
+
+        // Fix URLs that may have been incorrectly processed due to encoded backslashes
+        // This is specifically for the issue where %5C gets converted to /
+        if (scraperResponse.image) {
+            scraperResponse.image = this.fixIncorrectlyProcessedUrl(scraperResponse.image, html, 'og:image');
+        }
+        if (scraperResponse.logo) {
+            // Try to fix the logo URL - check multiple possible meta tag sources
+            let fixedLogo = this.fixIncorrectlyProcessedUrl(scraperResponse.logo, html, 'og:icon');
+            if (fixedLogo === scraperResponse.logo) {
+                // If no fix was applied from og:icon, try other sources
+                fixedLogo = this.fixIncorrectlyProcessedUrl(scraperResponse.logo, html, 'og:logo');
+            }
+            scraperResponse.logo = fixedLogo;
         }
 
         const metadata = Object.assign({}, scraperResponse, {
