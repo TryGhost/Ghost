@@ -6,6 +6,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "composite": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -23,5 +24,13 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../posts/tsconfig.declaration.json" },
+    { "path": "../stats/tsconfig.declaration.json" },
+    { "path": "../shade/tsconfig.declaration.json" },
+    { "path": "../activitypub/tsconfig.declaration.json" },
+    { "path": "../admin-x-framework/tsconfig.declaration.json" },
+    { "path": "../admin-x-design-system/tsconfig.declaration.json" }
+  ]
 }
