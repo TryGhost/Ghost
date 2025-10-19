@@ -20,6 +20,11 @@ export const AccountPlanPageStyles = `
         margin-bottom: 0;
     }
 
+    .gh-portal-accountplans-unavailable {
+        text-align: center;
+        color: var(--grey2);
+    }
+
     .gh-portal-expire-container {
         margin: 32px 0 0;
     }
@@ -274,7 +279,24 @@ const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
     onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription
 }) => {
-    const {member} = useContext(AppContext);
+    const {member, t} = useContext(AppContext);
+
+    // Plans not available
+    if (!plans.length && !showConfirmation) {
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-accountplans-unavailable'
+                        data-testid="accountplans-unavailable-text"
+                    >
+                        {t('Sorry, no paid plans are available.')}
+                    </p>
+                </div>
+            </section>
+        );
+    }
+
     // Plan upgrade flow for free member
     const allowUpgrade = allowCompMemberUpgrade({member}) && isComplimentaryMember({member});
     if (!isPaidMember({member}) || allowUpgrade) {
