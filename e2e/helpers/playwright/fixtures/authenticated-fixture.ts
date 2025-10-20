@@ -68,8 +68,11 @@ export const test = base.extend<AuthenticatedFixture>({
             await setupLabSettings(page, labs);
         }
 
-        await use(page);
-        await context.close();
+        try {
+            await use(page);
+        } finally {
+            await context.close();
+        }
     }
 });
 
