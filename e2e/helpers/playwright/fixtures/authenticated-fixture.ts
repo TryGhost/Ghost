@@ -46,7 +46,7 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string) {
 
 /**
  * Playwright fixture that provides authenticated access to Ghost
- * Extends base fixture with automatic with login
+ * Extends base fixture with automatic login
  *
  * Usage:
  * - Import from this file instead of base-fixture.ts

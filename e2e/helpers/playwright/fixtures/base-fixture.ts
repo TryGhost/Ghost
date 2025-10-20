@@ -7,7 +7,7 @@ const debug = baseDebug('e2e:ghost-fixture');
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
-    createUser: Promise<void>
+    createUser: void
 }
 
 /**
@@ -15,7 +15,7 @@ export interface GhostInstanceFixture {
  * Each instance gets its own database and runs on a unique port
  *
  * This fixture provides unauthenticated access - it only creates ghost instance, with ghost account and user
- * For authenticated tests, use `authenticated-base-fixture.ts` instead
+ * For authenticated tests, use `authenticated-fixture.ts` instead
  */
 export const test = base.extend<GhostInstanceFixture>({
     ghostInstance: async ({ }, use, testInfo: TestInfo) => {
@@ -31,12 +31,14 @@ export const test = base.extend<GhostInstanceFixture>({
         debug('Teardown completed for test:', testInfo.title);
     },
     createUser: async ({ghostInstance}, use) => {
-        const user = setupUser(ghostInstance.baseUrl, {email: appConfig.auth.email, password: appConfig.auth.password});
-        await use(user);
+        await setupUser(ghostInstance.baseUrl, {email: appConfig.auth.email, password: appConfig.auth.password});
+        await use();
     },
     baseURL: async ({ghostInstance, createUser}, use) => {
+        // when baseURL is called, all it's dependencies are created
+        // in this case that would mean, Ghost insance, and user are created between each test
         await use(ghostInstance.baseUrl);
-        await createUser;
+        void createUser;
     }
 
 });
