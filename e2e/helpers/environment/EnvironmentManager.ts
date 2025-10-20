@@ -86,19 +86,10 @@ export class EnvironmentManager {
         try {
             logging.info('Cleaning up leftover resources from previous test runs...');
 
-            // Clean up leftover Ghost containers
             await this.ghost.removeAll();
-
-            // Clean up leftover test databases if MySQL is running
             await this.mysql.dropAllTestDatabases();
-
-            // Delete the MySQL snapshot to ensure fresh migrations
             await this.mysql.deleteSnapshot();
-
-            // Recreate the base database to ensure clean migrations
             await this.mysql.recreateBaseDatabase();
-
-            // Truncate Tinybird analytics data to start fresh
             this.tinybird.truncateAnalyticsEvents();
 
             logging.info('Leftover resources cleaned up successfully');
