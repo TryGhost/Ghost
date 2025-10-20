@@ -75,4 +75,19 @@ export class TinybirdManager {
         this.saveState(state);
         logging.info('Tinybird tokens fetched');
     }
+
+    /**
+     * Truncate the analytics_events datasource and cascade to materialized views.
+     * This ensures a clean slate for each test run.
+     */
+    truncateAnalyticsEvents(): void {
+        try {
+            debug('Truncating analytics_events datasource...');
+            this.dockerCompose.execInService('tb-cli', ['tb', 'datasource', 'truncate', 'analytics_events', '--yes', '--cascade']);
+            debug('analytics_events datasource truncated');
+        } catch (error) {
+            debug('Failed to truncate analytics_events (Tinybird may not be running):', error);
+            // Don't throw - we want to continue with setup even if truncate fails
+        }
+    }
 }
