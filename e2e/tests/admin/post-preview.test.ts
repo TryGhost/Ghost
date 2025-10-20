@@ -1,4 +1,4 @@
-import {test, expect} from '../../helpers/playwright';
+import {test, expect} from '../../helpers/playwright/fixtures/authenticated-fixture';
 import {PostEditorPage} from '../../helpers/pages/admin';
 import {createPostFactory, PostFactory} from '../../data-factory';
 

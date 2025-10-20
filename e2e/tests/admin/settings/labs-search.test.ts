@@ -1,4 +1,4 @@
-import {test, expect} from '../../../helpers/playwright';
+import {test, expect} from '../../../helpers/playwright/fixtures/authenticated-fixture';
 import {SettingsPage} from '../../../helpers/pages/admin';
 
 test.describe('Settings Search - Labs Auto-open', () => {
