@@ -450,6 +450,11 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts('.ghost/activitypub/v1/feed/reader', next);
     }
 
+    async getGlobalFeed(next?: string): Promise<PaginatedPostsResponse> {
+        // @TODO: Update this to the global feed endpoint when it has been implemented
+        return this.getPaginatedPosts('.ghost/activitypub/v1/feed/reader', next);
+    }
+
     async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}`, next);
     }

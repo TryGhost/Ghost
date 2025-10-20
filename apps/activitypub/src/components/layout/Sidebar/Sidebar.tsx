@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
-    const {allFlags, flags} = useFeatureFlags();
+    const {allFlags, flags, isEnabled} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const {data: currentUser} = useCurrentUser();
@@ -55,6 +55,14 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
+                        {isEnabled('global-feed') && (
+                            <>
+                                <SidebarMenuLink to='/global'>
+                                    <LucideIcon.Globe size={18} strokeWidth={1.5} />
+                                    Global Feed
+                                </SidebarMenuLink>
+                            </>
+                        )}
                         <SidebarMenuLink to='/reader'>
                             <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
                             Reader
