@@ -167,10 +167,6 @@ export class DockerCompose {
         return output;
     }
 
-    /**
-     * Execute a command in a service container using `docker compose run`.
-     * This runs the command with the service's default entrypoint and environment.
-     */
     execInService(service: string, command: string[]): string {
         const cmdArgs = command.map(arg => `"${arg}"`).join(' ');
         const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T ${service} ${cmdArgs}`;
