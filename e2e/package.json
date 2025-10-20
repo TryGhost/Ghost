@@ -11,7 +11,7 @@
     "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f .docker/Dockerfile .",
     "docker:update": "docker compose pull && docker compose up -d --force-recreate",
     "prepare": "tsc --noEmit",
-    "pretest": "echo '⚠️ To make sure Ghost project is built with latest changes, run before tests: yarn docker:build (from repository root)'",
+    "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build (GHOST_E2E_SKIP_BUILD or CI is set)' || docker compose -f ../compose.yml build ghost tb-cli",
     "test": "playwright test --project=main",
     "test:single": "playwright test --project=main -g",
     "test:debug": "playwright test --project=main --headed --timeout=60000 -g",
