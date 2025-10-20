@@ -8216,10 +8216,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.6.1.tgz#13e09a32d7a8b7060fe38304788ebf4197cd2149"
   integrity sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw==
 
-"@tinybirdco/charts@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.4.tgz#4dbfefd5acdc11a8f016e89b94ea377da0172dc8"
-  integrity sha512-0N8fYPY8uxO5KcBkW5Dgmapj4AqcWgyCmWnZBYsugXnnbx4/yg//f3/9oMWnM3RZ6ltt9moltYIzF/95NO2zNg==
+"@tinybirdco/charts@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.3.0.tgz#9f196683b94105c2024e62c52c315348829ae1e5"
+  integrity sha512-nL/SswRPO8VBOjRBxpJ9o4O6dWCgvs2xcsYiucA7AR4dTTewydTy+2bPFBxkubuX/LFce9FLOGWwFy8yOIi37g==
   dependencies:
     echarts "^5.5.0"
     swr "^2.2.5"

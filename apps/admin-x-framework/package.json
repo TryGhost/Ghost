@@ -92,7 +92,7 @@
     "dependencies": {
         "@sentry/react": "7.120.4",
         "@tanstack/react-query": "4.36.1",
-        "@tinybirdco/charts": "0.2.4",
+        "@tinybirdco/charts": "0.3.0",
         "@tryghost/admin-x-design-system": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "react": "18.3.1",
