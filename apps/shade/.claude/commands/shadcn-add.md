@@ -32,7 +32,7 @@ First, check if the component already exists in Shade:
 
 ## Step 2: Fetch ShadCN Documentation
 
-Use Puppeteer or WebFetch to retrieve the component documentation:
+Use Puppeteer to retrieve the component documentation (if Puppeteer is not available use Webfetch):
 
 1. Fetch
 `https://ui.shadcn.com/docs/components/{{component-name}}`
@@ -121,7 +121,7 @@ For **each example** from the ShadCN documentation page:
 3. Add a `parameters.docs.description.story` explaining when to use this variant
 4. Keep stories minimal and focused on demonstrating the component's capabilities
 
-Example story:
+Example story with args:
 ```typescript
 export const Default: Story = {
     name: 'Default',
@@ -137,6 +137,33 @@ export const Default: Story = {
     }
 };
 ```
+
+Example story with render function (use when composition is needed):
+```typescript
+export const WithLabel: Story = {
+    render: () => (
+        <div className="flex items-center gap-3">
+            <ComponentName id="example" />
+            <Label htmlFor="example">Label text</Label>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Component with a label for better accessibility.'
+            },
+            source: {
+                code: `<div className="flex items-center gap-3">
+  <ComponentName id="example" />
+  <Label htmlFor="example">Label text</Label>
+</div>`
+            }
+        }
+    }
+};
+```
+
+**IMPORTANT**: When using `render` functions, ALWAYS include `parameters.docs.source.code` to show clean, copyable JSX instead of the entire story object. The source code should match the JSX in the render function but with proper 2-space indentation.
 
 ### Story Categories to Include
 
@@ -263,3 +290,4 @@ If any step fails:
 - Keep story descriptions concise and practical
 - Focus on "when to use" rather than "what it is"
 - Always run linting after making changes
+- **For stories with `render` functions**: Always add `parameters.docs.source.code` with the clean JSX to make code examples copyable in Storybook
