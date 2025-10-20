@@ -32,7 +32,7 @@ First, check if the component already exists in Shade:
 
 ## Step 2: Fetch ShadCN Documentation
 
-Use WebFetch to retrieve the component documentation:
+Use Puppeteer or WebFetch to retrieve the component documentation:
 
 1. Fetch
 `https://ui.shadcn.com/docs/components/{{component-name}}`
@@ -199,6 +199,7 @@ Skip the test suite and proceed to visual verification. Note: Make sure to run t
 Use Puppeteer to verify the component renders correctly in Storybook:
 
 1. **Start Storybook in background:**
+    Check if Storybook is running already on port 6006 and if not run:
    ```bash
    yarn storybook
    ```
