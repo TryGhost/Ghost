@@ -15,10 +15,6 @@ let configStub = Service.extend({
     blogUrl: 'http://localhost:2368'
 });
 
-let mediaQueriesStub = Service.extend({
-    maxWidth600: false
-});
-
 describe.skip('Integration: Component: tags/tag-form', function () {
     setupRenderingTest();
 
@@ -44,7 +40,6 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         });
 
         this.owner.register('service:config', configStub);
-        this.owner.register('service:media-queries', mediaQueriesStub);
     });
 
     it('has the correct title', async function () {
@@ -257,16 +252,5 @@ describe.skip('Integration: Component: tags/tag-form', function () {
         await click('.settings-menu-delete-button');
 
         expect(openModalFired).to.be.true;
-    });
-
-    it('shows tags arrow link on mobile', async function () {
-        let mediaQueries = this.owner.lookup('service:media-queries');
-        mediaQueries.set('maxWidth600', true);
-
-        await render(hbs`
-            <Tags::TagForm @tag={{this.tag}} @setProperty={{this.setProperty}} />
-        `);
-
-        expect(findAll('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'tags link is shown').to.equal(1);
     });
 });
