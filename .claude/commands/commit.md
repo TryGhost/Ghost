@@ -1,22 +1,23 @@
 ---
+allowed-tools: Bash(git add *), Bash(git status), Bash(git diff *), Bash(git commit *)
 description: Generate a Ghost-style commit message and optionally commit changes
 ---
 
+## Context
+- Current git status: !`git status`
+- Current git diff (staged and unstaged changes): !`git diff HEAD`
+- Stage modified files: !`git add`
+
 Create a commit message following Ghost's commit conventions:
 
-1. Run `git status` and `git diff` to see all staged and unstaged changes
-2. Analyze the changes and draft a commit message with:
-   - First line: Past tense summary (max 80 chars)
-   - Second line: [blank]
-   - Following lines: Bullet points with context (what changed and why)
-   - Use emoji ONLY if the change is user-facing (✨ Feature, 🎨 Improvement, 🐛 Bug fix, 🌐 i18n)
-3. Show the commit message to the user
-4. Ask: "Would you like me to commit these changes? (yes/no)"
-5. If user says yes:
-   - Stage all modified files with `git add`
+1. Based on the above changes, draft a commit message with a style that matches what is described in @.github/CONTRIBUTING.md
+2. Show the commit message to the user
+3. Ask: "Would you like me to commit these changes? (yes/no)"
+4. If the user says yes:
+   - Stage all modified files 
    - Commit using the generated message
-   - Run `git status` to confirm
-6. If user says no, just stop
+   - Run current git status to confirm
+5. If a user says no, just stop
 
 Important:
 - DO NOT push to remote unless explicitly asked
