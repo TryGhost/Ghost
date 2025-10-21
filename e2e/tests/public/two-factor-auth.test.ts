@@ -1,14 +1,14 @@
 import {test, expect} from '../../helpers/playwright';
 import {AnalyticsOverviewPage, LoginPage, LoginVerifyPage} from '../../helpers/pages/admin';
 import {appConfig} from '../../helpers/utils';
-import {EmailClient, EmailMessage, MailhogClient} from '../../helpers/services/email/MailhogClient';
+import {EmailClient, EmailMessage, MailPit} from '../../helpers/services/email/MailPit';
 
 test.describe('Two-Factor authentication', () => {
-    const emailClient: EmailClient = new MailhogClient();
+    const emailClient: EmailClient = new MailPit();
 
     function parseCodeFromMessageSubject(messages: EmailMessage[]) {
         const latestMessage = messages[0];
-        const subject = latestMessage.Content.Headers.Subject[0];
+        const subject = latestMessage.Subject;
         return subject.match(/\d+/)[0];
     }
 

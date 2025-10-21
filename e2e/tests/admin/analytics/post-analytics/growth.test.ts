@@ -9,12 +9,11 @@ import {withIsolatedPage} from '../../../../helpers/playwright';
 import {extractMagicLink} from '../../../../helpers/services/email/utils';
 import {signupViaPortal} from '../../../../helpers/playwright/flows/signup';
 import {HomePage} from '../../../../helpers/pages/public';
-import {EmailClient, MailhogClient} from '../../../../helpers/services/email/MailhogClient';
-import {EmailMessageBody} from '../../../../helpers/services/email/EmailMessageBody';
+import {EmailClient, MailPit} from '../../../../helpers/services/email/MailPit';
 import {createPostFactory} from '../../../../data-factory';
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
-    const emailClient: EmailClient = new MailhogClient();
+    const emailClient: EmailClient = new MailPit();
 
     test.beforeEach(async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
@@ -77,8 +76,8 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
                 const {emailAddress} = await signupViaPortal(publicPage);
 
                 const messages = await emailClient.searchByRecipient(emailAddress);
-                const emailMessageBodyParts = new EmailMessageBody(messages[0]);
-                const emailTextBody = emailMessageBodyParts.getTextContent();
+                const message = await emailClient.getMessageDetailed(messages[0]);
+                const emailTextBody = message.Text;
 
                 const magicLink = extractMagicLink(emailTextBody);
                 await publicPage.goto(magicLink);

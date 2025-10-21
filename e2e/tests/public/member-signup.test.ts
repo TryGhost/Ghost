@@ -1,6 +1,5 @@
 import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailhogClient} from '../../helpers/services/email/MailhogClient';
-import {EmailMessageBody} from '../../helpers/services/email/EmailMessageBody';
+import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {extractMagicLink} from '../../helpers/services/email/utils';
@@ -9,7 +8,7 @@ test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
 
     test.beforeEach(async () => {
-        emailClient = new MailhogClient();
+        emailClient = new MailPit();
     });
 
     test('signed up with magic link in email', async ({page}) => {
@@ -18,8 +17,8 @@ test.describe('Ghost Public - Member Signup', () => {
         const {emailAddress} = await signupViaPortal(page);
 
         const messages = await emailClient.searchByRecipient(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(messages[0]);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
+        const message = await emailClient.getMessageDetailed(messages[0]);
+        const emailTextBody = message.Text;
 
         const magicLink = extractMagicLink(emailTextBody);
         const publicPage = new PublicPage(page);
@@ -33,12 +32,12 @@ test.describe('Ghost Public - Member Signup', () => {
         await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
 
-        const message = await emailClient.searchByRecipient(emailAddress);
-        const latestMessage = message[0];
-        expect(latestMessage.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
+        const messages = await emailClient.searchByRecipient(emailAddress);
+        const latestMessage = messages[0];
+        expect(latestMessage.Subject.toLowerCase()).toContain('complete');
 
-        const emailMessageBodyParts = new EmailMessageBody(latestMessage);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
+        const message = await emailClient.getMessageDetailed(latestMessage);
+        const emailTextBody = message.Text;
         expect(emailTextBody).toContain('complete the signup process');
     });
 });
