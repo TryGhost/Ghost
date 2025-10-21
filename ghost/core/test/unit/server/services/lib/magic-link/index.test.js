@@ -1,10 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const MagicLink = require('../../../../../../core/server/services/lib/magic-link/MagicLink');
-const crypto = require('crypto');
 
 const sandbox = sinon.createSandbox();
-const secret = crypto.randomBytes(64);
 
 describe('MagicLink', function () {
     let mockSingleUseTokenProvider;
@@ -32,6 +30,7 @@ describe('MagicLink', function () {
     beforeEach(function () {
         mockSingleUseTokenProvider = {
             create: sandbox.stub().resolves('mock-token'),
+            validate: sandbox.stub().resolves({test: 'test-token-data'}),
             getRefByToken: sandbox.stub().resolves('test-token-ref-123'),
             deriveOTC: sandbox.stub().returns('654321')
         };
@@ -47,7 +46,7 @@ describe('MagicLink', function () {
 
     describe('#sendMagicLink', function () {
         it('Throws when passed comma separated emails', async function () {
-            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'one@email.com,two@email.com',
@@ -62,7 +61,7 @@ describe('MagicLink', function () {
         });
 
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
-            const options = buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -96,20 +95,12 @@ describe('MagicLink', function () {
     });
 
     describe('#getDataFromToken', function () {
-        it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
-            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
+        it('Returns the user data from tokenProvider.validate', async function () {
+            const service = new MagicLink(buildOptions());
 
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                }
-            };
+            const data = await service.getDataFromToken({});
 
-            const {token} = await service.sendMagicLink(args);
-            const data = await service.getDataFromToken(token);
-
-            assert.deepEqual(data.id, args.tokenData.id);
+            assert.deepEqual(data, {test: 'test-token-data'});
         });
     });
 

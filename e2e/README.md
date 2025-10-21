@@ -15,9 +15,6 @@ From the repository root:
 # Install dependencies
 yarn
 
-# Build Docker images
-yarn docker:build
-
 # Run the e2e tests
 yarn test:e2e
 ```

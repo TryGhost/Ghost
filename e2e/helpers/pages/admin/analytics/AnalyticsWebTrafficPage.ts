@@ -12,6 +12,8 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     readonly pagesButton: Locator;
 
     public readonly topSourcesCard: Locator;
+    public readonly sourcesTab: Locator;
+    public readonly campaignsDropdown: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -28,6 +30,19 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.pagesButton = this.topContentCard.getByRole('tab', {name: 'Pages', exact: true});
 
         this.topSourcesCard = page.getByTestId('top-sources-card');
+        this.sourcesTab = this.topSourcesCard.getByRole('tab', {name: 'Sources'});
+        this.campaignsDropdown = this.topSourcesCard.getByRole('tab', {name: /Campaigns|UTM/});
+    }
+
+    async selectCampaignType(campaignType: 'UTM sources' | 'UTM mediums' | 'UTM campaigns' | 'UTM contents' | 'UTM terms') {
+        // force: true is needed because the element is covered by an overlay button
+        await this.campaignsDropdown.waitFor({state: 'visible'});
+        await this.campaignsDropdown.click({force: true});
+        await this.page.getByRole('menuitem', {name: campaignType}).click();
+    }
+
+    async refreshData() {
+        await this.page.reload();
     }
 
     async totalViewsContent() {
