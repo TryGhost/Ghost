@@ -7,9 +7,19 @@ test.describe('Two-Factor authentication', () => {
     const emailClient: EmailClient = new MailhogClient();
 
     function parseCodeFromMessageSubject(messages: EmailMessage[]) {
+        if (!messages || messages.length === 0) {
+            throw new Error('No messages provided to parse code from');
+        }
+
         const latestMessage = messages[0];
         const subject = latestMessage.Content.Headers.Subject[0];
-        return subject.match(/\d+/)[0];
+        const match = subject.match(/\d+/)[0];
+
+        if (!match) {
+            throw new Error(`No verification code found in subject: ${subject}`);
+        }
+
+        return match;
     }
 
     test.beforeEach(async ({page}) => {
