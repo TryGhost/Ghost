@@ -22,8 +22,8 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
-const STATIC_MEDIA_URL_PREFIX = `/${config.getStaticUrlPrefix('media')}`;
-const STATIC_FILES_URL_PREFIX = `/${config.getStaticUrlPrefix('files')}`;
+const STATIC_MEDIA_URL_PREFIX = `/${urlUtils.STATIC_MEDIA_URL_PREFIX}`;
+const STATIC_FILES_URL_PREFIX = `/${urlUtils.STATIC_FILES_URL_PREFIX}`;
 
 let router;
 

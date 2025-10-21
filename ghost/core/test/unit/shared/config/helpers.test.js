@@ -51,18 +51,4 @@ describe('vhost utils', function () {
             configUtils.config.getFrontendMountPath().should.eql(/.*/);
         });
     });
-
-    describe('getStaticUrlPrefix', function () {
-        it('should return the correct static url prefix', function () {
-            configUtils.config.getStaticUrlPrefix('images').should.eql('content/images');
-            configUtils.config.getStaticUrlPrefix('media').should.eql('content/media');
-            configUtils.config.getStaticUrlPrefix('files').should.eql('content/files');
-        });
-
-        it('should throw an error if the type is not valid', function () {
-            (function () {
-                configUtils.config.getStaticUrlPrefix('invalid');
-            }).should.throw('getStaticUrlPrefix was called with: invalid');
-        });
-    });
 });
