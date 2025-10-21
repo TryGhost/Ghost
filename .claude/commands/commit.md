@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git add *), Bash(git status), Bash(git diff *), Bash(git commit *)
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git commit:*)
 description: Generate a Ghost-style commit message and optionally commit changes
 ---
 
@@ -8,9 +8,11 @@ description: Generate a Ghost-style commit message and optionally commit changes
 - Current git diff (staged and unstaged changes): !`git diff HEAD`
 - Stage modified files: !`git add`
 
+## Your task
+
 Create a commit message following Ghost's commit conventions:
 
-1. Based on the above changes, draft a commit message with a style that matches what is described in @.github/CONTRIBUTING.md
+1. Based on the uncommitted changes shown above, draft a commit message following the format and style described in @.github/CONTRIBUTING.md
 2. Show the commit message to the user
 3. Ask: "Would you like me to commit these changes? (yes/no)"
 4. If the user says yes:
