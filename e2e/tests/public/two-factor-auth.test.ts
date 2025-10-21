@@ -1,6 +1,5 @@
 import {test, expect} from '../../helpers/playwright';
 import {AnalyticsOverviewPage, LoginPage, LoginVerifyPage} from '../../helpers/pages/admin';
-import {appConfig} from '../../helpers/utils';
 import {EmailClient, EmailMessage, MailhogClient} from '../../helpers/services/email/MailhogClient';
 
 test.describe('Two-Factor authentication', () => {
@@ -28,12 +27,12 @@ test.describe('Two-Factor authentication', () => {
         await loginPage.goto();
     });
 
-    test('authenticates with 2FA token', async ({page}) => {
-        const {email, password} = appConfig.auth;
+    test('authenticates with 2FA token', async ({page, ghostAccountOwner}) => {
+        const {email, password} = ghostAccountOwner;
         const adminLoginPage = new LoginPage(page);
         await adminLoginPage.goto();
         await adminLoginPage.signIn(email, password);
-
+    
         const messages = await emailClient.searchByContent('verification code');
         const code = parseCodeFromMessageSubject(messages);
 
@@ -45,8 +44,8 @@ test.describe('Two-Factor authentication', () => {
         await expect(adminAnalyticsPage.header).toBeVisible();
     });
 
-    test('authenticates with 2FA token that was resent', async ({page}) => {
-        const {email, password} = appConfig.auth;
+    test('authenticates with 2FA token that was resent', async ({page, ghostAccountOwner}) => {
+        const {email, password} = ghostAccountOwner;
         const adminLoginPage = new LoginPage(page);
         await adminLoginPage.goto();
         await adminLoginPage.signIn(email, password);
