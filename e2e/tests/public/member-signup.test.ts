@@ -17,8 +17,8 @@ test.describe('Ghost Public - Member Signup', () => {
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
 
-        const message = await emailClient.waitForEmail(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(message);
+        const messages = await emailClient.searchByRecipient(emailAddress);
+        const emailMessageBodyParts = new EmailMessageBody(messages[0]);
         const emailTextBody = emailMessageBodyParts.getTextContent();
 
         const magicLink = extractMagicLink(emailTextBody);
@@ -33,10 +33,11 @@ test.describe('Ghost Public - Member Signup', () => {
         await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
 
-        const message = await emailClient.waitForEmail(emailAddress);
-        expect(message.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
+        const message = await emailClient.searchByRecipient(emailAddress);
+        const latestMessage = message[0];
+        expect(latestMessage.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
 
-        const emailMessageBodyParts = new EmailMessageBody(message);
+        const emailMessageBodyParts = new EmailMessageBody(latestMessage);
         const emailTextBody = emailMessageBodyParts.getTextContent();
         expect(emailTextBody).toContain('complete the signup process');
     });

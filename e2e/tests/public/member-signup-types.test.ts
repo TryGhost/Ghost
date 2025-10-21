@@ -16,8 +16,8 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     async function finishSignupByMagicLinkInEmail(page: Page, emailAddress: string) {
-        const message = await emailClient.waitForEmail(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(message);
+        const messages = await emailClient.searchByRecipient(emailAddress);
+        const emailMessageBodyParts = new EmailMessageBody(messages[0]);
         const emailTextBody = emailMessageBodyParts.getTextContent();
 
         const magicLink = extractMagicLink(emailTextBody);

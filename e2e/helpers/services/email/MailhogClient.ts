@@ -1,5 +1,4 @@
 import baseDebug from '@tryghost/debug';
-
 const debug = baseDebug('e2e:MailhogClient');
 
 // Email address structure used in From and To fields
@@ -56,13 +55,15 @@ export interface EmailMessageSearchResult {
     items: EmailMessage[];
 }
 
+type emailSearchOptions = {
+    limit?: number, timeoutMs?: number, numberOfMessages?: number
+}
+
 export interface EmailClient {
     getMessages(limit: number): Promise<EmailMessage[]>;
-    searchByContent(conetnt: string): Promise<EmailMessage[]>;
+    searchByContent(content: string, options?: emailSearchOptions): Promise<EmailMessage[]>;
     searchByRecipient(recipient: string): Promise<EmailMessage[]>;
     getLatestMessageFor(recipient: string): Promise<EmailMessage | null>;
-    waitForEmail(email: string): Promise<EmailMessage>;
-    deleteAllMessages(): Promise<void>;
 }
 
 export class MailhogClient implements EmailClient{
@@ -81,12 +82,28 @@ export class MailhogClient implements EmailClient{
         return this.parseMessagesFromResponse(response);
     }
 
-    async searchByRecipient(email: string, limit: number = 50): Promise<EmailMessage[]> {
-        return this.searchByQuery(email, limit, 'to');
+    async searchByRecipient(email: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
+        const defaultOptions = {limit: 50, timeoutMs: 10000, numberOfMessages: null};
+        const searchOptions = {...defaultOptions, ...options};
+
+        if (searchOptions.timeoutMs) {
+            return this.searchWithWait(() => this.searchByQuery(
+                email, searchOptions.limit, 'to'), searchOptions.timeoutMs, searchOptions.numberOfMessages
+            );
+        }
+        return this.searchByQuery(email, searchOptions.limit, 'to');
     }
 
-    async searchByContent(content: string, limit: number = 50): Promise<EmailMessage[]> {
-        return this.searchByQuery(content, limit, 'containing');
+    async searchByContent(content: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
+        const defaultOptions = {limit: 50, timeoutMs: 10000, numberOfMessages: null};
+        const searchOptions = {...defaultOptions, ...options};
+
+        if (searchOptions.timeoutMs) {
+            return this.searchWithWait(() => this.searchByQuery(
+                content, searchOptions.limit, 'containing'), searchOptions.timeoutMs, searchOptions.numberOfMessages
+            );
+        }
+        return this.searchByQuery(content, searchOptions.limit, 'containing');
     }
 
     private async searchByQuery(value: string, limit: number = 50, kind: 'to' | 'from' | 'containing'): Promise<EmailMessage[]> {
@@ -99,33 +116,36 @@ export class MailhogClient implements EmailClient{
     }
 
     async getLatestMessageFor(email: string): Promise<EmailMessage | null> {
-        const messages = await this.searchByRecipient(email, 1);
+        const messages = await this.searchByRecipient(email, {numberOfMessages: 1});
         return messages.length > 0 ? messages[0] : null;
     }
 
-    async deleteAllMessages(): Promise<void> {
-        await this.executeApiCall(
-            `messages`,
-            'delete all messages',
-            'DELETE');
-    }
-
-    async waitForEmail(email: string, timeoutMs: number = 10000): Promise<EmailMessage> {
-        debug(`Waiting for email to ${email}`);
+    private async searchWithWait(
+        searchFn: () => Promise<EmailMessage[]>,
+        timeoutMs: number = 10000,
+        numberOfMessages: number | null = null
+    ): Promise<EmailMessage[]> {
         const startTime = Date.now();
 
         while (Date.now() - startTime < timeoutMs) {
-            const message = await this.getLatestMessageFor(email);
+            const messages = await searchFn();
 
-            if (message) {
-                debug(`Email received for ${email}`);
-                return message;
+            if (numberOfMessages === null) {
+                if (messages.length > 0) {
+                    debug(`Found ${messages.length} messages`);
+                    return messages;
+                }
+            } else {
+                if (messages.length === numberOfMessages) {
+                    debug(`Found ${messages.length} messages`);
+                    return messages;
+                }
             }
 
             await this.delay(500);
         }
 
-        throw new Error(`Timeout waiting for email to ${email}`);
+        throw new Error(`Timeout after ${timeoutMs}ms waiting for search results`);
     }
 
     private async executeApiCall(endpoint: string, callType: string, method: string = 'GET'): Promise<Response> {
