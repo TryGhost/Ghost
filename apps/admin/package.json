@@ -56,6 +56,18 @@
             "target": "build"
           }
         ]
+      },
+      "lint": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework",
+              "@tryghost/admin-x-design-system",
+              "@tryghost/shade"
+            ],
+            "target": "build"
+          }
+        ]
       }
     }
   }
