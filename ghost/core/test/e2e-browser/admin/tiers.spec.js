@@ -102,6 +102,7 @@ test.describe('Admin', () => {
             });
 
             await test.step('Check yearly price and description', async () => {
+                await portalFrame.locator('[data-test-button="switch-yearly"]').click();
                 await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedYearlyPrice);
                 await expect(portalTierCard.locator('.gh-portal-product-description').first()).toHaveText(updatedDescription);
             });
