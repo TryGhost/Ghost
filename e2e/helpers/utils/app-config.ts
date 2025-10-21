@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import {faker} from '@faker-js/faker';
 // load environment variables from .env file
 dotenv.config();
 
@@ -7,7 +8,7 @@ export const appConfig = {
     baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
 
     auth: {
-        email: process.env.E2E_ACCOUNT_EMAIL || 'test@ghost.org',
+        email: `test+${faker.string.uuid()}@ghost.org`,
         password: process.env.E2E_ACCOUNT_PASSWORD || 'test@123@test',
         storageFile: 'playwright/.auth/user.json'
     },
