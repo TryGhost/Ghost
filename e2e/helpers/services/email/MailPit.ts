@@ -69,8 +69,8 @@ export class MailPit implements EmailClient{
         return await response.json() as EmailMessageDetailed;
     }
 
-    async searchByRecipient(content: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
-        return this.search({to: content}, options);
+    async searchByRecipient(recipient: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
+        return this.search({to: recipient}, options);
     }
 
     async searchByContent(content: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
