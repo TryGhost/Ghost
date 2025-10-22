@@ -26,11 +26,11 @@ export interface EmailMessageSearchResult {
     messages: EmailMessage[];
 }
 
-type emailSearchOptions = {
+export type EmailSearchOptions = {
     limit?: number, timeoutMs?: number, numberOfMessages?: number
 }
 
-interface EmailSearchQuery {
+export interface EmailSearchQuery {
     subject: string;
     from: string;
     to: string;
@@ -39,9 +39,9 @@ interface EmailSearchQuery {
 export interface EmailClient {
     getMessages(limit: number): Promise<EmailMessage[]>;
     getMessageDetailed(message: EmailMessage): Promise<EmailMessageDetailed>;
-    searchByContent(content: string, options?: emailSearchOptions): Promise<EmailMessage[]>;
+    searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]>;
     searchByRecipient(recipient: string): Promise<EmailMessage[]>;
-    search(queryOptions: Partial<EmailSearchQuery>, options?: emailSearchOptions): Promise<EmailMessage[]>;
+    search(queryOptions: Partial<EmailSearchQuery>, options?: EmailSearchOptions): Promise<EmailMessage[]>;
 }
 
 export class MailPit implements EmailClient{
@@ -69,19 +69,19 @@ export class MailPit implements EmailClient{
         return await response.json() as EmailMessageDetailed;
     }
 
-    async searchByRecipient(recipient: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
+    async searchByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessage[]> {
         return this.search({to: recipient}, options);
     }
 
-    async searchByContent(content: string, options?: emailSearchOptions): Promise<EmailMessage[]> {
+    async searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]> {
         return this.search({subject: content}, options);
     }
 
-    async search(queryOptions:Partial<EmailSearchQuery>, options?: emailSearchOptions): Promise<EmailMessage[]> {
+    async search(queryOptions:Partial<EmailSearchQuery>, options?: EmailSearchOptions): Promise<EmailMessage[]> {
         const defaultOptions = {limit: 50, timeoutMs: 10000, numberOfMessages: null};
         const searchOptions = {...defaultOptions, ...options};
 
-        if (searchOptions.timeoutMs) {
+        if (searchOptions.timeoutMs !== null) {
             return await this.searchWithWait(
                 () => this.searchByQuery(queryOptions, searchOptions.limit),
                 searchOptions.timeoutMs,

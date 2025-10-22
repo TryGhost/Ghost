@@ -7,13 +7,13 @@ test.describe('Two-Factor authentication', () => {
 
     function parseCodeFromMessageSubject(message: EmailMessage) {
         const subject = message.Subject;
-        const match = subject.match(/\d+/)[0];
+        const match = subject.match(/\d+/);
 
         if (!match) {
             throw new Error(`No verification code found in subject: ${subject}`);
         }
 
-        return match;
+        return match[0];
     }
 
     test.beforeEach(async ({page}) => {
