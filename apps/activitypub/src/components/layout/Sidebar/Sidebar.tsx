@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>
                         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                            <DialogTrigger className='w-full'>
+                            <DialogTrigger className='mt-0.5 w-full'>
                                 <SearchInput />
                             </DialogTrigger>
                             <DialogContent>
