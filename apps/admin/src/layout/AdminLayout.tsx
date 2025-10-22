@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
     Badge,
     LucideIcon,
     Sidebar,
@@ -64,7 +67,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <Button
                             variant='ghost'
                             size='icon'
-                            className="size-9 text-gray-700 rounded-full hover:bg-gray-200 -mr-1"
+                            className="size-9 text-gray-800 rounded-full hover:bg-gray-200 -mr-1"
                             title="Search site (Ctrl/⌘ + K)"
                         >
                             <LucideIcon.Search size={20} />
@@ -138,9 +141,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     <Button
                                         variant='ghost'
                                         size='icon'
-                                        className="absolute hover:bg-gray-200 text-gray-700 transition-all rounded-full right-0 top-0 p-0 size-9"
+                                        className="absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9"
                                     >
-                                        <LucideIcon.Plus size={24} strokeWidth={0.7} />
+                                        <LucideIcon.Plus size={24} className="!stroke-[1.2px]" />
                                     </Button>
                                 </SidebarMenuItem>
 
@@ -219,35 +222,35 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </SidebarContent>
 
                 <SidebarFooter className="border-t-0 mt-auto">
-                    <div className="px-8 py-8 flex items-center justify-between">
+                    <div className="px-2 py-5 flex items-center justify-between">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="flex items-center gap-2 p-1 pr-2 h-auto justify-start hover:bg-gray-100 rounded-full -m-1 mr-0"
+                                    className="flex text-gray-600 items-center gap-2 h-auto justify-start hover:bg-gray-200 rounded-full p-2"
                                 >
-                                    <div className="w-[34px] h-[34px] bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span className="text-sm font-medium text-white">
-                                            U
-                                        </span>
-                                    </div>
-                                    <ChevronDown
-                                        className="h-4 w-4 text-gray-400"
+                                    <Avatar>
+                                        <AvatarImage src="https://avatars.githubusercontent.com/u/2178663?s=200&v=4" />
+                                        <AvatarFallback>
+                                            US
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <LucideIcon.ChevronDown
                                         strokeWidth={2}
                                     />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="start"
-                                className="w-[290px] ml-8"
                             >
                                 <div className="p-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-[34px] h-[34px] bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                                            <span className="text-sm font-medium text-white">
-                                                U
-                                            </span>
-                                        </div>
+                                        <Avatar>
+                                            <AvatarImage src="https://avatars.githubusercontent.com/u/2178663?s=200&v=4" />
+                                            <AvatarFallback>
+                                                US
+                                            </AvatarFallback>
+                                        </Avatar>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium text-gray-900">
                                                 User Name
@@ -280,27 +283,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 hover:bg-gray-100 rounded-full p-0"
+                                className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800"
                                 title="Settings (CTRL/⌘ + ,)"
                                 asChild
                             >
                                 <a href="#/settings" >
-                                    <Settings
-                                        className="h-5 w-5 text-gray-600"
-                                        strokeWidth={2}
-                                    />
+                                    <LucideIcon.Settings size={20} />
                                 </a>
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 hover:bg-gray-100 rounded-full p-0"
+                                className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800"
                                 title="Toggle theme"
                             >
-                                <Sun
-                                    className="h-5 w-5 text-gray-600"
-                                    strokeWidth={2}
-                                />
+                                <LucideIcon.Moon size={20} />
                             </Button>
                         </div>
                     </div>
