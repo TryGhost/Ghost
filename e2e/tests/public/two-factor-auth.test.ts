@@ -1,17 +1,12 @@
 import {test, expect} from '../../helpers/playwright';
 import {AnalyticsOverviewPage, LoginPage, LoginVerifyPage} from '../../helpers/pages/admin';
-import {EmailClient, EmailMessage, MailhogClient} from '../../helpers/services/email/MailhogClient';
+import {EmailClient, EmailMessage,MailPit} from '../../helpers/services/email/MailPit';
 
 test.describe('Two-Factor authentication', () => {
-    const emailClient: EmailClient = new MailhogClient();
+    const emailClient: EmailClient = new MailPit();
 
-    function parseCodeFromMessageSubject(messages: EmailMessage[]) {
-        if (!messages || messages.length === 0) {
-            throw new Error('No messages provided to parse code from');
-        }
-
-        const latestMessage = messages[0];
-        const subject = latestMessage.Content.Headers.Subject[0];
+    function parseCodeFromMessageSubject(message: EmailMessage) {
+        const subject = message.Subject;
         const match = subject.match(/\d+/)[0];
 
         if (!match) {
@@ -32,9 +27,12 @@ test.describe('Two-Factor authentication', () => {
         const adminLoginPage = new LoginPage(page);
         await adminLoginPage.goto();
         await adminLoginPage.signIn(email, password);
-    
-        const messages = await emailClient.searchByContent('verification code');
-        const code = parseCodeFromMessageSubject(messages);
+
+        const messages = await emailClient.search({
+            subject: 'verification code',
+            to: ghostAccountOwner.email
+        });
+        const code = parseCodeFromMessageSubject(messages[0]);
 
         const verifyPage = new LoginVerifyPage(page);
         await verifyPage.twoFactorTokenField.fill(code);
@@ -50,16 +48,23 @@ test.describe('Two-Factor authentication', () => {
         await adminLoginPage.goto();
         await adminLoginPage.signIn(email, password);
 
-        let messages = await emailClient.searchByContent('verification code');
+        let messages = await emailClient.search({
+            subject: 'verification code',
+            to: ghostAccountOwner.email
+        });
         expect(messages.length).toBe(1);
 
         const verifyPage = new LoginVerifyPage(page);
         await verifyPage.resendTwoFactorCodeButton.click();
 
-        messages = await emailClient.searchByContent('verification code', {numberOfMessages: 2});
-        const code = parseCodeFromMessageSubject(messages);
+        messages = await emailClient.search({
+            subject: 'verification code',
+            to: ghostAccountOwner.email
+        }, {numberOfMessages: 2});
+
         expect(messages.length).toBe(2);
 
+        const code = parseCodeFromMessageSubject(messages[0]);
         await verifyPage.twoFactorTokenField.fill(code);
         await verifyPage.twoFactorVerifyButton.click();
 

@@ -1,6 +1,5 @@
 import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailhogClient} from '../../helpers/services/email/MailhogClient';
-import {EmailMessageBody} from '../../helpers/services/email/EmailMessageBody';
+import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
@@ -12,13 +11,13 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;
 
     test.beforeEach(async () => {
-        emailClient = new MailhogClient();
+        emailClient = new MailPit();
     });
 
     async function finishSignupByMagicLinkInEmail(page: Page, emailAddress: string) {
         const messages = await emailClient.searchByRecipient(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBody(messages[0]);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
+        const latestMessage = await emailClient.getMessageDetailed(messages[0]);
+        const emailTextBody = latestMessage.Text;
 
         const magicLink = extractMagicLink(emailTextBody);
         const publicPage = new PublicPage(page);
