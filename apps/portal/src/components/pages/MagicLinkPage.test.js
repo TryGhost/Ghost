@@ -6,7 +6,7 @@ const OTC_ERROR_REGEX = /Enter code/i;
 
 const setupTest = (options = {}) => {
     const {
-        labs = {membersSigninOTC: false},
+        labs = {},
         otcRef = null,
         action = 'init:success',
         ...contextOverrides
@@ -33,7 +33,7 @@ const setupTest = (options = {}) => {
 // Helper for OTC-enabled tests
 const setupOTCTest = (options = {}) => {
     return setupTest({
-        labs: {membersSigninOTC: true},
+        labs: {},
         otcRef: 'test-otc-ref',
         ...options
     });
@@ -77,7 +77,7 @@ describe('MagicLinkPage', () => {
     });
 
     describe('OTC form conditional rendering', () => {
-        test('renders OTC form when lab flag enabled and otcRef exists', () => {
+        test('renders OTC form when otcRef exists', () => {
             const utils = setupOTCTest();
 
             expect(utils.getByLabelText(OTC_LABEL_REGEX)).toBeInTheDocument();
@@ -86,9 +86,7 @@ describe('MagicLinkPage', () => {
 
         test('does not render OTC form when conditions not met', () => {
             const scenarios = [
-                {labs: {membersSigninOTC: false}, otcRef: 'test-ref'},
-                {labs: {membersSigninOTC: true}, otcRef: null},
-                {labs: {membersSigninOTC: false}, otcRef: null}
+                {labs: {}, otcRef: null}
             ];
 
             scenarios.forEach(({labs, otcRef}) => {
@@ -313,9 +311,9 @@ describe('MagicLinkPage', () => {
     });
 
     describe('OTC flow edge cases', () => {
-        test('does not render form without otcRef even with lab flag', () => {
+        test('does not render form without otcRef', () => {
             const utils = setupTest({
-                labs: {membersSigninOTC: true},
+                labs: {},
                 otcRef: null
             });
 
