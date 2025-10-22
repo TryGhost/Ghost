@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+    LucideIcon,
     Sidebar,
     SidebarContent,
     SidebarFooter,
@@ -21,10 +22,6 @@ import {
 } from "@tryghost/shade";
 import { Button } from "@tryghost/shade";
 import {
-    BarChart3,
-    Network,
-    Eye,
-    ExternalLink,
     FileText,
     File,
     Tag,
@@ -32,12 +29,12 @@ import {
     CreditCard,
     Settings,
     Sun,
-    Search,
     Plus,
     ChevronRight,
     ChevronDown,
 } from "lucide-react";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -50,12 +47,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const title = site.data?.site.title ?? "Loading...";
     const logo = site.data?.site.logo ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
 
+    const { data: currentUser } = useCurrentUser();
+
     return (
-        <SidebarProvider defaultOpen={true} open={true}>
-            <Sidebar className="border-none">
+        <SidebarProvider open={!!currentUser}>
+            <Sidebar>
+
                 <SidebarHeader>
-                    <div className="flex items-center justify-between px-4 pt-6">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="px-4 pt-6 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
                                 <img
                                     src={logo}
@@ -63,57 +63,57 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     className="w-full h-full rounded-md object-cover"
                                 />
                             </div>
-                            <div className="font-semibold text-[15px] text-gray-900 overflow-hidden text-ellipsis whitespace-nowrap">
+                            <div className="font-semibold text-[15px] text-black overflow-hidden text-ellipsis whitespace-nowrap">
                                 {title}
                             </div>
                         </div>
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hover:bg-gray-200 rounded-full -mr-2"
+                            variant='ghost'
+                            size='icon'
+                            className="text-gray-700 rounded-full hover:bg-gray-200 -mr-1"
                             title="Search site (Ctrl/⌘ + K)"
                         >
-                            <Search className="text-gray-500" />
+                            <LucideIcon.Search size={20} />
                         </Button>
                     </div>
                 </SidebarHeader>
 
-                <SidebarContent className="p-3">
+
+                <SidebarContent className="p-3 gap-4">
+
                     {/* Main navigation section */}
                     <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/analytics"
-                                            className="flex items-center w-full"
-                                        >
-                                            <BarChart3
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Analytics
+                                        <a href="#/analytics">
+                                            <LucideIcon.TrendingUp />
+                                            <span>Analytics</span>
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/network"
-                                            className="flex items-center w-full"
-                                        >
-                                            <Network
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Network
+                                        <a href="#/network">
+                                            <LucideIcon.Globe />
+                                            <span>Network</span>
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
+                                <SidebarMenuItem className="relative group/viewsite">
+                                    <SidebarMenuButton asChild>
+                                        <a href="#/site">
+                                            <LucideIcon.AppWindow />
+                                            <span>View site</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                    <a href="https://example.com" className="absolute opacity-0 group-hover/viewsite:opacity-100 right-0 top-0 size-9 hover:bg-gray-200 flex items-center justify-center rounded-full text-gray-700 hover:text-black transition-all">
+                                        <LucideIcon.ExternalLink size={16} />
+                                    </a>
+                                </SidebarMenuItem>
 
-                                <SidebarMenuItem className="relative group">
+                                {/* <SidebarMenuItem className="relative group">
                                     <SidebarMenuButton asChild>
                                         <a
                                             href="#/site"
@@ -137,7 +137,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                             strokeWidth={2}
                                         />
                                     </Button>
-                                </SidebarMenuItem>
+                                </SidebarMenuItem> */}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -182,7 +182,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="absolute right-[-6px] top-0 h-9 w-10 hover:bg-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute right-[-6px] top-0 h-9 w-10 hover:bg-transparent p-2.5"
                                         title="New post"
                                     >
                                         <Plus
