@@ -2,11 +2,13 @@ import Error from '@components/layout/Error';
 import InboxList from './components/InboxList';
 import React from 'react';
 import {isApiError} from '@src/api/activitypub';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useFeedMode} from '@src/hooks/use-feed-mode';
 import {useGlobalFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
 
 const Inbox: React.FC = () => {
-    const {feedMode} = useFeedMode();
+    const {isEnabled} = useFeatureFlags();
+    const {feedMode} = useFeedMode(isEnabled('global-feed'));
 
     const {inboxQuery: followingQuery} = useInboxForUser({enabled: feedMode === 'following'});
     const {globalFeedQuery: discoverQuery} = useGlobalFeedForUser({enabled: feedMode === 'discover'});
