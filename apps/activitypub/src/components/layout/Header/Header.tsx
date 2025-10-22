@@ -1,15 +1,12 @@
 import BackButton from '@src/components/global/BackButton';
-import FeedModeDropdown from './FeedModeDropdown';
 import React from 'react';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
 import {useBaseRoute, useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface HeaderTitleProps {
     title: string;
     backIcon: boolean;
-    showFeedModeDropdown?: boolean;
 }
 
 interface MobileMenuButtonProps {
@@ -20,20 +17,10 @@ interface HeaderProps {
     onToggleMobileSidebar: () => void;
 }
 
-const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon, showFeedModeDropdown}) => {
+const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
     if (backIcon) {
         return <BackButton className='-ml-2' />;
     }
-
-    if (showFeedModeDropdown) {
-        return (
-            <div className='flex grow items-center justify-between'>
-                <H1 className='max-md:text-[2.4rem]'>{title}</H1>
-                <FeedModeDropdown />
-            </div>
-        );
-    }
-
     return (
         <H1 className='max-md:text-[2.4rem]'>{title}</H1>
     );
@@ -56,7 +43,6 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
     const baseRoute = useBaseRoute();
     const routeHasParams = useRouteHasParams();
     const activeRoute = useActiveRoute();
-    const {isEnabled} = useFeatureFlags();
 
     // Logic for special pages
     let onlyBackButton = false;
@@ -71,9 +57,6 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
     // Avoid back button on main routes
     const backActive = (canGoBack && routeHasParams) || activeRoute?.showBackButton === true;
 
-    // Show feed mode dropdown on reader route with global-feed flag enabled
-    const showFeedModeDropdown = baseRoute === 'reader' && isEnabled('global-feed');
-
     return (
         <>
             {onlyBackButton ?
@@ -86,7 +69,6 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
                     <div className='relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] max-md:h-[68px] before:dark:border-gray-950'>
                         <HeaderTitle
                             backIcon={backActive}
-                            showFeedModeDropdown={showFeedModeDropdown}
                             title={activeRoute?.pageTitle || ''}
                         />
                         <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />
