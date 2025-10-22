@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+    Badge,
     LucideIcon,
     Sidebar,
     SidebarContent,
@@ -22,16 +23,9 @@ import {
 } from "@tryghost/shade";
 import { Button } from "@tryghost/shade";
 import {
-    FileText,
-    File,
-    Tag,
-    Users,
-    CreditCard,
     Settings,
     Sun,
-    Plus,
-    ChevronRight,
-    ChevronDown,
+    ChevronDown
 } from "lucide-react";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
@@ -70,7 +64,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <Button
                             variant='ghost'
                             size='icon'
-                            className="text-gray-700 rounded-full hover:bg-gray-200 -mr-1"
+                            className="size-9 text-gray-700 rounded-full hover:bg-gray-200 -mr-1"
                             title="Search site (Ctrl/⌘ + K)"
                         >
                             <LucideIcon.Search size={20} />
@@ -112,32 +106,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                         <LucideIcon.ExternalLink size={16} />
                                     </a>
                                 </SidebarMenuItem>
-
-                                {/* <SidebarMenuItem className="relative group">
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/site"
-                                            className="flex items-center w-full"
-                                        >
-                                            <Eye
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            View site
-                                        </a>
-                                    </SidebarMenuButton>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-[-6px] top-0 h-9 w-10 hover:bg-transparent p-2.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        title="Open site in new tab"
-                                    >
-                                        <ExternalLink
-                                            className="h-4 w-4 text-gray-500"
-                                            strokeWidth={2}
-                                        />
-                                    </Button>
-                                </SidebarMenuItem> */}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -146,96 +114,90 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                <SidebarMenuItem className="group">
+                                <SidebarMenuItem>
                                     <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute left-2 top-2.5 h-4 w-4 hover:bg-transparent p-0 pl-[9px] z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        variant='ghost'
+                                        size='icon'
+                                        className={`absolute opacity-0 group-hover:opacity-100 transition-all left-3 top-0 p-0 h-9`}
                                         onClick={() =>
                                             setPostsExpanded(!postsExpanded)
                                         }
-                                        title="Collapse custom post types"
                                     >
-                                        <ChevronRight
-                                            className={`h-[9px] w-[9px] text-gray-500 transition-transform ${
-                                                postsExpanded ? "rotate-90" : ""
-                                            }`}
-                                            strokeWidth={2}
-                                        />
+                                        {postsExpanded ?
+                                            <LucideIcon.ChevronDown size={16} />
+                                        :
+                                            <LucideIcon.ChevronRight size={16} />
+                                        }
                                     </Button>
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/posts"
-                                            className="flex items-center w-full"
-                                        >
-                                            <FileText
-                                                className={`h-4 w-4 flex-shrink-0 mr-[11px] transition-opacity ${
-                                                    postsExpanded
-                                                        ? "opacity-0"
-                                                        : "opacity-100 group-hover:opacity-0"
-                                                }`}
-                                                strokeWidth={1.8}
-                                            />
-                                            Posts
+                                    <SidebarMenuButton asChild className="">
+                                        <a href="#/posts">
+                                            <LucideIcon.PenLine size={16} className="transition-all group-hover:opacity-0 pointer-events-none" />
+                                            <span>Posts</span>
                                         </a>
                                     </SidebarMenuButton>
                                     <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-[-6px] top-0 h-9 w-10 hover:bg-transparent p-2.5"
-                                        title="New post"
+                                        variant='ghost'
+                                        size='icon'
+                                        className="absolute hover:bg-gray-200 text-gray-700 transition-all rounded-full right-0 top-0 p-0 size-9"
                                     >
-                                        <Plus
-                                            className="h-4 w-4 text-gray-500"
-                                            strokeWidth={2}
-                                        />
+                                        <LucideIcon.Plus size={24} strokeWidth={0.7} />
                                     </Button>
                                 </SidebarMenuItem>
 
                                 {/* Posts submenu */}
                                 {postsExpanded && (
-                                    <>
+                                    <div className="mb-5">
                                         <SidebarMenuItem>
-                                            <SidebarMenuButton
-                                                asChild
-                                                className="pl-12"
-                                            >
-                                                <a
-                                                    href="#/posts?type=draft"
-                                                    className="flex items-center w-full"
-                                                >
+                                            <SidebarMenuButton asChild>
+                                                <a href="#/posts?type=draft" className="pl-9">
                                                     Drafts
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
                                         <SidebarMenuItem>
-                                            <SidebarMenuButton
-                                                asChild
-                                                className="pl-12"
-                                            >
-                                                <a
-                                                    href="#/posts?type=scheduled"
-                                                    className="flex items-center w-full"
-                                                >
+                                            <SidebarMenuButton asChild>
+                                                <a href="#/posts?type=scheduled" className="pl-9">
                                                     Scheduled
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
                                         <SidebarMenuItem>
-                                            <SidebarMenuButton
-                                                asChild
-                                                className="pl-12"
-                                            >
-                                                <a
-                                                    href="#/posts?type=published"
-                                                    className="flex items-center w-full"
-                                                >
+                                            <SidebarMenuButton asChild>
+                                                <a href="#/posts?type=published" className="pl-9">
                                                     Published
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
-                                    </>
+                                    </div>
                                 )}
+
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <a href="#/pages">
+                                            <LucideIcon.File />
+                                            <span>Pages</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <a href="#/tags">
+                                            <LucideIcon.Tag />
+                                            <span>Tags</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild>
+                                        <a href="#/members">
+                                            <LucideIcon.Users />
+                                            <span>Members</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                    <Badge className="absolute right-2 top-2 pointer-events-none" variant='secondary'>1,000</Badge>
+                                </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -245,68 +207,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/pages"
-                                            className="flex items-center w-full"
-                                        >
-                                            <File
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Pages
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/tags"
-                                            className="flex items-center w-full"
-                                        >
-                                            <Tag
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Tags
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/members"
-                                            className="flex items-center w-full"
-                                        >
-                                            <Users
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Members
-                                            <span className="ml-auto text-xs text-[rgb(98,109,121)] font-normal">
-                                                1,000
-                                            </span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                    <SidebarGroup>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a
-                                            href="#/billing"
-                                            className="flex items-center w-full"
-                                        >
-                                            <CreditCard
-                                                className="h-4 w-4 flex-shrink-0 mr-[11px]"
-                                                strokeWidth={1.8}
-                                            />
-                                            Ghost(Pro)
+                                        <a href="#/billing">
+                                            <LucideIcon.CreditCard />
+                                            <span>Ghost(Pro)</span>
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
