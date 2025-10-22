@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
-    const {allFlags, flags, isEnabled} = useFeatureFlags();
+    const {allFlags, flags} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const {data: currentUser} = useCurrentUser();
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>
                         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                            <DialogTrigger className='w-full'>
+                            <DialogTrigger className='mt-0.5 w-full'>
                                 <SearchInput />
                             </DialogTrigger>
                             <DialogContent>
@@ -55,14 +55,6 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        {isEnabled('global-feed') && (
-                            <>
-                                <SidebarMenuLink to='/global'>
-                                    <LucideIcon.Globe size={18} strokeWidth={1.5} />
-                                    Global Feed
-                                </SidebarMenuLink>
-                            </>
-                        )}
                         <SidebarMenuLink to='/reader'>
                             <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
                             Reader

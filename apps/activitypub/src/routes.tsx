@@ -2,7 +2,6 @@ import BlueskySharing from '@views/Preferences/components/BlueskySharing';
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Feed from './views/Feed/Feed';
-import GlobalFeed from '@views/Global';
 import Inbox from '@views/Inbox';
 import Moderation from '@views/Preferences/components/Moderation';
 import Note from './views/Feed/Note';
@@ -50,16 +49,6 @@ export const routes: CustomRouteObject[] = [
                 path: 'reader/:postId',
                 element: <Inbox />,
                 pageTitle: 'Reader'
-            },
-            {
-                path: 'global',
-                element: <GlobalFeed />,
-                pageTitle: 'Global Feed'
-            },
-            {
-                path: 'global/:postId',
-                element: <GlobalFeed />,
-                pageTitle: 'Global Feed'
             },
             {
                 path: 'notes',
