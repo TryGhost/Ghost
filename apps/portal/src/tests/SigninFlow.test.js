@@ -120,6 +120,16 @@ const multiTierSetup = async ({site, member = null}) => {
 
 const realLocation = window.location;
 
+// Helper function to verify OTC-enabled API calls
+const expectOTCEnabledSendMagicLinkAPICall = (ghostApi, email) => {
+    expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith({
+        email,
+        emailType: 'signin',
+        integrityToken: 'testtoken',
+        includeOTC: true
+    });
+};
+
 describe('Signin', () => {
     describe('on single tier site', () => {
         beforeEach(() => {
@@ -140,6 +150,11 @@ describe('Signin', () => {
                 site: FixtureSite.singleTier.basic
             });
 
+            // Mock sendMagicLink to return otc_ref for OTC flow
+            ghostApi.member.sendMagicLink = vi.fn(() => {
+                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
+            });
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
@@ -154,39 +169,10 @@ describe('Signin', () => {
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
-
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
-        });
-
-        test('with OTC enabled', async () => {
-            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
-                site: FixtureSite.singleTier.basic,
-                labs: {membersSigninOTC: true}
-            });
-
-            // Mock sendMagicLink to return otc_ref for OTC flow
-            ghostApi.member.sendMagicLink = vi.fn(() => {
-                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
-            });
-
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.click(submitButton);
-
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
-            expect(magicLink).toBeInTheDocument();
             const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
             expect(description).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken',
-                includeOTC: true
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('without name field', async () => {
@@ -210,11 +196,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('with only free plan', async () => {
@@ -238,11 +220,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
     });
 });
@@ -282,11 +260,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('without name field', async () => {
@@ -310,11 +284,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('with only free plan available', async () => {
@@ -338,11 +308,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
     });
 
@@ -447,7 +413,7 @@ describe('OTC Integration Flow', () => {
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{membersSigninOTC: true}} />
+            <App api={ghostApi} labs={{}} />
         );
 
         await utils.findByTitle(/portal-trigger/i);
@@ -481,15 +447,6 @@ describe('OTC Integration Flow', () => {
         fireEvent.click(verifyButton);
     };
 
-    const expectOTCEnabledApiCall = (ghostApi, email) => {
-        expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith({
-            email,
-            emailType: 'signin',
-            integrityToken: 'testtoken',
-            includeOTC: true
-        });
-    };
-
     test('complete OTC flow from signin to verification', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
@@ -497,7 +454,7 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         submitOTCForm(popupIframeDocument, '123456');
@@ -524,7 +481,7 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         const otcInput = within(popupIframeDocument).queryByLabelText(OTC_LABEL_REGEX);
@@ -541,7 +498,7 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
 
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
 
