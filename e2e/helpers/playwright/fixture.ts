@@ -2,7 +2,7 @@ import {Page, test as base, TestInfo, Browser, BrowserContext} from '@playwright
 import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
 import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
 import {SettingsService} from '../services/settings/SettingsService';
-import {appConfig, setupUser} from '../utils';
+import {setupUser} from '../utils';
 import baseDebug from '@tryghost/debug';
 import {faker} from '@faker-js/faker';
 
@@ -90,7 +90,7 @@ export const test = base.extend<GhostInstanceFixture>({
         }
 
         // Create user in this Ghost instance
-        const ghostAccountOwner = {email: `test${faker.string.uuid()}@ghost.org`, password: appConfig.auth.password};
+        const ghostAccountOwner = {email: `test${faker.string.uuid()}@ghost.org`, password: 'test@123@test'};
         await setupUser(baseURL, ghostAccountOwner);
 
         const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
