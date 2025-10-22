@@ -85,6 +85,7 @@ const QUERY_KEYS = {
     },
     feed: ['feed'],
     inbox: ['inbox'],
+    globalFeed: ['global_feed'],
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
@@ -97,6 +98,7 @@ function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
+        QUERY_KEYS.globalFeed,
         QUERY_KEYS.postsLikedByAccount,
         QUERY_KEYS.profilePosts(null)
     ];
@@ -166,6 +168,7 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
+        QUERY_KEYS.globalFeed,
         QUERY_KEYS.profilePosts('index')
     ];
 
@@ -493,6 +496,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
+        QUERY_KEYS.globalFeed,
         QUERY_KEYS.profilePosts('index'),
         QUERY_KEYS.postsLikedByAccount
     ];
@@ -744,6 +748,7 @@ export function useBlockMutationForUser(handle: string) {
             );
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.globalFeed});
         },
         onError(error: {message: string, statusCode: number}) {
             if (error.statusCode === 429) {
@@ -789,6 +794,7 @@ function updateRepostCache(queryClient: QueryClient, id: string, reposted: boole
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
+        QUERY_KEYS.globalFeed,
         QUERY_KEYS.profilePosts(null)
     ];
 
@@ -1716,6 +1722,42 @@ export function useInboxForUser(options: {enabled: boolean}) {
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function useGlobalFeedForUser(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.globalFeed;
+    const queryClient = useQueryClient();
+
+    const globalFeedQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        staleTime: 20 * 1000, // 20s
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getGlobalFeed(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateGlobalFeedActivity = (id: string, updated: Partial<Activity>) => {
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
+    };
+
+    return {globalFeedQuery, updateGlobalFeedActivity};
 }
 
 export function usePostsByAccount(profileHandle: string, options: {enabled: boolean}) {
