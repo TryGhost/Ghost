@@ -15,11 +15,6 @@ test.describe('Inbox', async () => {
                 method: 'GET',
                 path: '/v1/feed/reader',
                 response: inboxFixture
-            },
-            getGlobalFeed: {
-                method: 'GET',
-                path: '/v1/feed/global',
-                response: inboxFixture
             }
         }, options: {useActivityPub: true}});
 
@@ -51,11 +46,6 @@ test.describe('Inbox', async () => {
             getInbox: {
                 method: 'GET',
                 path: '/v1/feed/reader',
-                response: inboxFixture
-            },
-            getGlobalFeed: {
-                method: 'GET',
-                path: '/v1/feed/global',
                 response: inboxFixture
             },
             getPost: {
@@ -123,11 +113,6 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
-                method: 'GET',
-                path: '/v1/feed/global',
-                response: inboxFixture
-            },
             likePost: {
                 method: 'POST',
                 path: `/v1/actions/like/${encodeURIComponent(secondPostFixture.id)}`,
@@ -172,11 +157,6 @@ test.describe('Inbox', async () => {
             getInbox: {
                 method: 'GET',
                 path: '/v1/feed/reader',
-                response: inboxFixture
-            },
-            getGlobalFeed: {
-                method: 'GET',
-                path: '/v1/feed/global',
                 response: inboxFixture
             },
             getPost: {
@@ -266,11 +246,6 @@ test.describe('Inbox', async () => {
             getInbox: {
                 method: 'GET',
                 path: '/v1/feed/reader',
-                response: inboxFixture
-            },
-            getGlobalFeed: {
-                method: 'GET',
-                path: '/v1/feed/global',
                 response: inboxFixture
             },
             repostPost: {
