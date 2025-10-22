@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect, useRef} from 'react';
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
@@ -303,77 +303,84 @@ const PlansContainer = ({
     );
 };
 
-export default class AccountPlanPage extends React.Component {
-    static contextType = AppContext;
+function AccountPlanPage() {
+    const {member, site, doAction, lastPage} = useContext(AppContext);
+    const timeoutIdRef = useRef(null);
 
-    constructor(props, context) {
-        super(props, context);
-        this.state = this.getInitialState();
-    }
-
-    componentDidMount() {
-        const {member} = this.context;
-        if (!member) {
-            this.context.doAction('switchPage', {
-                page: 'signin'
-            });
-        }
-    }
-
-    componentWillUnmount() {
-        clearTimeout(this.timeoutId);
-    }
-
-    getInitialState() {
-        const {member, site} = this.context;
-
-        this.prices = getAvailablePrices({site});
+    // Calculate prices
+    const pricesRef = useRef(null);
+    if (!pricesRef.current) {
+        let prices = getAvailablePrices({site});
         let activePrice = getMemberActivePrice({member});
 
         if (activePrice) {
-            this.prices = getFilteredPrices({prices: this.prices, currency: activePrice.currency});
+            prices = getFilteredPrices({prices, currency: activePrice.currency});
         }
+        pricesRef.current = prices;
+    }
+    const prices = pricesRef.current;
 
-        let selectedPrice = activePrice ? this.prices.find((d) => {
+    // Calculate initial selected plan
+    const getInitialSelectedPlan = () => {
+        const activePrice = getMemberActivePrice({member});
+        let selectedPrice = activePrice ? prices.find((d) => {
             return (d.id === activePrice.id);
         }) : null;
 
         // Select first plan as default for free member
-        if (!isPaidMember({member}) && this.prices.length > 0) {
-            selectedPrice = this.prices[0];
+        if (!isPaidMember({member}) && prices.length > 0) {
+            selectedPrice = prices[0];
         }
-        const selectedPriceId = selectedPrice ? selectedPrice.id : null;
-        return {
-            selectedPlan: selectedPriceId
+        return selectedPrice ? selectedPrice.id : null;
+    };
+
+    const [selectedPlan, setSelectedPlan] = useState(getInitialSelectedPlan);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [confirmationPlan, setConfirmationPlan] = useState(null);
+    const [confirmationType, setConfirmationType] = useState(null);
+
+    // Redirect to signin if no member
+    useEffect(() => {
+        if (!member) {
+            doAction('switchPage', {
+                page: 'signin'
+            });
+        }
+    }, [member, doAction]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            clearTimeout(timeoutIdRef.current);
         };
-    }
+    }, []);
 
-    handleSignout(e) {
-        e.preventDefault();
-        this.context.doAction('signout');
-    }
+    const cancelConfirmPage = () => {
+        setShowConfirmation(false);
+        setConfirmationPlan(null);
+        setConfirmationType(null);
+    };
 
-    onBack() {
-        if (this.state.showConfirmation) {
-            this.cancelConfirmPage();
+    const onBack = () => {
+        if (showConfirmation) {
+            cancelConfirmPage();
         } else {
-            this.context.doAction('back');
+            doAction('back');
         }
-    }
+    };
 
-    cancelConfirmPage() {
-        this.setState({
-            showConfirmation: false,
-            confirmationPlan: null,
-            confirmationType: null
-        });
-    }
+    const getActivePriceId = ({member}) => {
+        const activePrice = getMemberActivePrice({member});
+        if (activePrice) {
+            return activePrice.id;
+        }
+        return null;
+    };
 
-    onPlanCheckout(e, priceId) {
-        const {doAction, member} = this.context;
-        let {confirmationPlan, selectedPlan} = this.state;
+    const onPlanCheckout = (e, priceId) => {
+        let planToCheckout = selectedPlan;
         if (priceId) {
-            selectedPlan = priceId;
+            planToCheckout = priceId;
         }
 
         const restrictCheckout = allowCompMemberUpgrade({member}) ? !isComplimentaryMember({member}) : true;
@@ -384,104 +391,80 @@ export default class AccountPlanPage extends React.Component {
                 doAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
             }
         } else {
-            doAction('checkoutPlan', {plan: selectedPlan});
+            doAction('checkoutPlan', {plan: planToCheckout});
         }
-    }
+    };
 
-    onPlanSelect = (e, priceId) => {
+    const onPlanSelect = (e, priceId) => {
         e?.preventDefault();
-
-        const {member} = this.context;
 
         const allowCompMember = allowCompMemberUpgrade({member}) ? isComplimentaryMember({member}) : false;
         // Work as checkboxes for free member plan selection and button for paid members
         if (!isPaidMember({member}) || allowCompMember) {
             // Hack: React checkbox gets out of sync with dom state with instant update
-            this.timeoutId = setTimeout(() => {
-                this.setState(() => {
-                    return {
-                        selectedPlan: priceId
-                    };
-                });
+            timeoutIdRef.current = setTimeout(() => {
+                setSelectedPlan(priceId);
             }, 5);
         } else {
-            const confirmationPrice = this.prices.find(d => d.id === priceId);
-            const activePlan = this.getActivePriceId({member});
-            const confirmationType = activePlan ? 'changePlan' : 'subscribe';
-            if (priceId !== this.state.selectedPlan) {
-                this.setState({
-                    confirmationPlan: confirmationPrice,
-                    confirmationType,
-                    showConfirmation: true
-                });
+            const confirmationPrice = prices.find(d => d.id === priceId);
+            const activePlan = getActivePriceId({member});
+            const confirmationTypeValue = activePlan ? 'changePlan' : 'subscribe';
+            if (priceId !== selectedPlan) {
+                setConfirmationPlan(confirmationPrice);
+                setConfirmationType(confirmationTypeValue);
+                setShowConfirmation(true);
             }
         }
     };
 
-    onCancelSubscription({subscriptionId}) {
-        const {member} = this.context;
+    const onCancelSubscription = ({subscriptionId}) => {
         const subscription = getSubscriptionFromId({subscriptionId, member});
         const subscriptionPlan = getPriceFromSubscription({subscription});
-        this.setState({
-            showConfirmation: true,
-            confirmationPlan: subscriptionPlan,
-            confirmationType: 'cancel'
-        });
-    }
+        setShowConfirmation(true);
+        setConfirmationPlan(subscriptionPlan);
+        setConfirmationType('cancel');
+    };
 
-    onCancelSubscriptionConfirmation(reason) {
-        const {member} = this.context;
+    const onCancelSubscriptionConfirmation = (reason) => {
         const subscription = getMemberSubscription({member});
         if (!subscription) {
             return null;
         }
-        this.context.doAction('cancelSubscription', {
+        doAction('cancelSubscription', {
             subscriptionId: subscription.id,
             cancelAtPeriodEnd: true,
             cancellationReason: reason
         });
-    }
+    };
 
-    getActivePriceId({member}) {
-        const activePrice = getMemberActivePrice({member});
-        if (activePrice) {
-            return activePrice.id;
-        }
-        return null;
-    }
-
-    onConfirm(e, data) {
-        const {confirmationType} = this.state;
+    const onConfirm = (e, data) => {
         if (confirmationType === 'cancel') {
-            return this.onCancelSubscriptionConfirmation(data);
+            return onCancelSubscriptionConfirmation(data);
         } else if (['changePlan', 'subscribe'].includes(confirmationType)) {
-            return this.onPlanCheckout();
+            return onPlanCheckout();
         }
-    }
+    };
 
-    render() {
-        const plans = this.prices;
-        const {selectedPlan, showConfirmation, confirmationPlan, confirmationType} = this.state;
-        const {lastPage} = this.context;
-        return (
-            <>
-                <div className='gh-portal-content'>
-                    <BackButton onClick={e => this.onBack(e)} hidden={!lastPage && !showConfirmation} />
-                    <CloseButton />
-                    <Header
-                        onBack={e => this.onBack(e)}
-                        confirmationType={confirmationType}
-                        showConfirmation={showConfirmation}
-                    />
-                    <PlansContainer
-                        {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType}}
-                        onConfirm={(...args) => this.onConfirm(...args)}
-                        onCancelSubscription = {data => this.onCancelSubscription(data)}
-                        onPlanSelect = {this.onPlanSelect}
-                        onPlanCheckout = {(e, name) => this.onPlanCheckout(e, name)}
-                    />
-                </div>
-            </>
-        );
-    }
+    return (
+        <>
+            <div className='gh-portal-content'>
+                <BackButton onClick={e => onBack(e)} hidden={!lastPage && !showConfirmation} />
+                <CloseButton />
+                <Header
+                    onBack={e => onBack(e)}
+                    confirmationType={confirmationType}
+                    showConfirmation={showConfirmation}
+                />
+                <PlansContainer
+                    {...{plans: prices, selectedPlan, showConfirmation, confirmationPlan, confirmationType}}
+                    onConfirm={(...args) => onConfirm(...args)}
+                    onCancelSubscription = {data => onCancelSubscription(data)}
+                    onPlanSelect = {onPlanSelect}
+                    onPlanCheckout = {(e, name) => onPlanCheckout(e, name)}
+                />
+            </div>
+        </>
+    );
 }
+
+export default AccountPlanPage;

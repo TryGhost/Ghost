@@ -1,7 +1,6 @@
-import React from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
-// import SiteTitleBackButton from '../common/SiteTitleBackButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
@@ -9,91 +8,85 @@ import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {t} from '../../utils/i18n';
 
-export default class SigninPage extends React.Component {
-    static contextType = AppContext;
+function getInputFields({email, phonenumber, errors = {}}) {
+    const fields = [
+        {
+            type: 'email',
+            value: email,
+            placeholder: 'jamie@example.com',
+            label: t('Email'),
+            name: 'email',
+            required: true,
+            errorMessage: errors.email || '',
+            autoFocus: true
+        },
+        {
+            type: 'text',
+            value: phonenumber,
+            placeholder: '+1 (123) 456-7890',
+            // Doesn't need translation, hidden field
+            label: 'Phone number',
+            name: 'phonenumber',
+            required: false,
+            tabIndex: -1,
+            autoComplete: 'off',
+            hidden: true
+        }
+    ];
+    return fields;
+}
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            email: '',
-            token: undefined
-        };
-    }
+function SigninPage() {
+    const {member, site, action, brandColor, pageData, doAction} = useContext(AppContext);
 
-    componentDidMount() {
-        const {member} = this.context;
+    const [email, setEmail] = useState('');
+    const [phonenumber, setPhonenumber] = useState(undefined);
+    const [token, setToken] = useState(undefined);
+    const [errors, setErrors] = useState({});
+
+    // Redirect to account home if already logged in
+    useEffect(() => {
         if (member) {
-            this.context.doAction('switchPage', {
+            doAction('switchPage', {
                 page: 'accountHome'
             });
         }
-    }
+    }, [member, doAction]);
 
-    handleSignin(e) {
-        e.preventDefault();
-        this.doSignin();
-    }
-
-    doSignin() {
-        this.setState((state) => {
-            return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
-            };
-        }, async () => {
-            const {email, phonenumber, errors, token} = this.state;
-            const {redirect} = this.context.pageData ?? {};
-            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            if (!hasFormErrors) {
-                this.context.doAction('signin', {email, phonenumber, redirect, token});
-            }
-        });
-    }
-
-    handleInputChange(e, field) {
+    const handleInputChange = (e, field) => {
         const fieldName = field.name;
-        this.setState({
-            [fieldName]: e.target.value
-        });
-    }
-
-    onKeyDown(e) {
-        // Handles submit on Enter press
-        if (e.keyCode === 13){
-            this.handleSignin(e);
+        if (fieldName === 'email') {
+            setEmail(e.target.value);
+        } else if (fieldName === 'phonenumber') {
+            setPhonenumber(e.target.value);
         }
-    }
+    };
 
-    getInputFields({state}) {
-        const errors = state.errors || {};
-        const fields = [
-            {
-                type: 'email',
-                value: state.email,
-                placeholder: 'jamie@example.com',
-                label: t('Email'),
-                name: 'email',
-                required: true,
-                errorMessage: errors.email || '',
-                autoFocus: true
-            },
-            {
-                type: 'text',
-                value: state.phonenumber,
-                placeholder: '+1 (123) 456-7890',
-                // Doesn't need translation, hidden field
-                label: 'Phone number',
-                name: 'phonenumber',
-                required: false,
-                tabIndex: -1,
-                autoComplete: 'off',
-                hidden: true
-            }
-        ];
-        return fields;
-    }
+    const doSignin = () => {
+        const fields = getInputFields({email, phonenumber, errors});
+        const validationErrors = ValidateInputForm({fields});
+        setErrors(validationErrors);
 
-    renderSubmitButton() {
-        const {action} = this.context;
+        const {redirect} = pageData ?? {};
+        const hasFormErrors = (validationErrors && Object.values(validationErrors).filter(d => !!d).length > 0);
+        if (!hasFormErrors) {
+            doAction('signin', {email, phonenumber, redirect, token});
+        }
+    };
+
+    const handleSignin = (e) => {
+        e.preventDefault();
+        doSignin();
+    };
+
+    const onKeyDown = (e) => {
+        // Handles submit on Enter press
+        if (e.keyCode === 13) {
+            handleSignin(e);
+        }
+    };
+
+    const renderSubmitButton = () => {
         let retry = false;
         const isRunning = (action === 'signin:running');
         let label = isRunning ? t('Sending login link...') : t('Continue');
@@ -107,17 +100,16 @@ export default class SigninPage extends React.Component {
                 dataTestId='signin'
                 retry={retry}
                 style={{width: '100%'}}
-                onClick={e => this.handleSignin(e)}
+                onClick={e => handleSignin(e)}
                 disabled={disabled}
-                brandColor={this.context.brandColor}
+                brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
             />
         );
-    }
+    };
 
-    renderSignupMessage() {
-        const {brandColor} = this.context;
+    const renderSignupMessage = () => {
         return (
             <div className='gh-portal-signup-message'>
                 <div>{t('Don\'t have an account?')}</div>
@@ -125,16 +117,15 @@ export default class SigninPage extends React.Component {
                     data-test-button='signup-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => this.context.doAction('switchPage', {page: 'signup'})}
+                    onClick={() => doAction('switchPage', {page: 'signup'})}
                 >
                     <span>{t('Sign up')}</span>
                 </button>
             </div>
         );
-    }
+    };
 
-    renderForm() {
-        const {site} = this.context;
+    const renderForm = () => {
         const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
@@ -156,28 +147,25 @@ export default class SigninPage extends React.Component {
             <section>
                 <div className='gh-portal-section'>
                     <InputForm
-                        fields={this.getInputFields({state: this.state})}
-                        onChange={(e, field) => this.handleInputChange(e, field)}
-                        onKeyDown={(e, field) => this.onKeyDown(e, field)}
+                        fields={getInputFields({email, phonenumber, errors})}
+                        onChange={(e, field) => handleInputChange(e, field)}
+                        onKeyDown={(e, field) => onKeyDown(e, field)}
                     />
                 </div>
                 <footer className='gh-portal-signin-footer'>
-                    {this.renderSubmitButton()}
-                    {isSignupAvailable && this.renderSignupMessage()}
+                    {renderSubmitButton()}
+                    {isSignupAvailable && renderSignupMessage()}
                 </footer>
             </section>
         );
-    }
+    };
 
-    renderSiteIcon() {
-        const iconStyle = {};
-        const {site} = this.context;
+    const renderSiteIcon = () => {
         const siteIcon = site.icon;
 
         if (siteIcon) {
-            iconStyle.backgroundImage = `url(${siteIcon})`;
             return (
-                <img className='gh-portal-signup-logo' src={siteIcon} alt={this.context.site.title} />
+                <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
         } else if (!isSigninAllowed({site})) {
             return (
@@ -185,10 +173,9 @@ export default class SigninPage extends React.Component {
             );
         }
         return null;
-    }
+    };
 
-    renderSiteTitle() {
-        const {site} = this.context;
+    const renderSiteTitle = () => {
         const siteTitle = site.title;
 
         if (!isSigninAllowed({site})) {
@@ -200,28 +187,28 @@ export default class SigninPage extends React.Component {
                 <h1 className='gh-portal-main-title'>{t('Sign in')}</h1>
             );
         }
-    }
+    };
 
-    renderFormHeader() {
+    const renderFormHeader = () => {
         return (
             <header className='gh-portal-signin-header'>
-                {this.renderSiteIcon()}
-                {this.renderSiteTitle()}
+                {renderSiteIcon()}
+                {renderSiteTitle()}
             </header>
         );
-    }
+    };
 
-    render() {
-        return (
-            <>
-                <CloseButton />
-                <div className='gh-portal-logged-out-form-container'>
-                    <div className='gh-portal-content signin'>
-                        {this.renderFormHeader()}
-                        {this.renderForm()}
-                    </div>
+    return (
+        <>
+            <CloseButton />
+            <div className='gh-portal-logged-out-form-container'>
+                <div className='gh-portal-content signin'>
+                    {renderFormHeader()}
+                    {renderForm()}
                 </div>
-            </>
-        );
-    }
+            </div>
+        </>
+    );
 }
+
+export default SigninPage;

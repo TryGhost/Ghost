@@ -40,19 +40,39 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const triggerButton = within(triggerButtonFrame.contentDocument).getByTestId('portal-trigger-button');
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    // Wait for trigger button to render
+    const triggerButton = await within(triggerButtonFrame.contentDocument).findByTestId('portal-trigger-button');
+
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for content to render - try site title or account home title
+    let siteTitle, accountHomeTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 500});
+    } catch (e) {
+        try {
+            accountHomeTitle = await within(popupIframeDocument).findByText('Your account', {}, {timeout: 500});
+        } catch (e2) {
+            siteTitle = within(popupIframeDocument).queryByText(site.title);
+            accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+        }
+    }
+    if (!accountHomeTitle) {
+        accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+    }
+    if (!siteTitle) {
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
-    const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
     const viewPlansButton = within(popupIframeDocument).queryByRole('button', {name: 'View plans'});
     const manageSubscriptionsButton = within(popupIframeDocument).queryByRole('button', {name: 'Manage'});
     return {
@@ -117,8 +137,10 @@ describe('Newsletter Subscriptions', () => {
 
         await userEvent.click(manageSubscriptionsButton);
 
-        const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
-        expect(newsletter1).toBeInTheDocument();
+        await waitFor(() => {
+            const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
+            expect(newsletter1).toBeInTheDocument();
+        });
 
         // unsubscribe from Newsletter 1
         const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
@@ -127,24 +149,33 @@ describe('Newsletter Subscriptions', () => {
         await userEvent.click(newsletter1Toggle);
 
         // verify that subscription to Newsletter 1 was removed
-        const expectedSubscriptions = Newsletters.filter(n => n.id !== Newsletters[0].id).map(n => ({id: n.id}));
-        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
-            {newsletters: expectedSubscriptions}
-        );
+        await waitFor(() => {
+            const expectedSubscriptions = Newsletters.filter(n => n.id !== Newsletters[0].id).map(n => ({id: n.id}));
+            expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+                {newsletters: expectedSubscriptions}
+            );
+        });
 
-        const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
-        const newsletter1Checkbox = checkboxes[0];
-        const newsletter2Checkbox = checkboxes[1];
+        await waitFor(() => {
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const newsletter1Checkbox = checkboxes[0];
+            const newsletter2Checkbox = checkboxes[1];
 
-        expect(newsletter1Checkbox).not.toBeChecked();
-        expect(newsletter2Checkbox).toBeChecked();
+            expect(newsletter1Checkbox).not.toBeChecked();
+            expect(newsletter2Checkbox).toBeChecked();
+        });
 
         // resubscribe to Newsletter 1
         await userEvent.click(newsletter1Toggle);
-        expect(newsletter1Checkbox).toBeChecked();
-        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
-            {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
-        );
+
+        await waitFor(() => {
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const newsletter1Checkbox = checkboxes[0];
+            expect(newsletter1Checkbox).toBeChecked();
+            expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+                {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
+            );
+        });
     });
 
     test('unsubscribe from all newsletters when logged in', async () => {
@@ -157,20 +188,30 @@ describe('Newsletter Subscriptions', () => {
         expect(triggerButtonFrame).toBeInTheDocument();
         expect(accountHomeTitle).toBeInTheDocument();
         expect(manageSubscriptionsButton).toBeInTheDocument();
+
         await userEvent.click(manageSubscriptionsButton);
+
+        await waitFor(() => {
+            const unsubscribeAllButton = within(popupIframeDocument).queryByRole('button', {name: 'Unsubscribe from all emails'});
+            expect(unsubscribeAllButton).toBeInTheDocument();
+        });
+
         const unsubscribeAllButton = within(popupIframeDocument).queryByRole('button', {name: 'Unsubscribe from all emails'});
-        expect(unsubscribeAllButton).toBeInTheDocument();
+        await userEvent.click(unsubscribeAllButton);
 
-        fireEvent.click(unsubscribeAllButton);
+        await waitFor(() => {
+            expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
+        });
 
-        expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
-        // Verify the local state shows the newsletter as unsubscribed
-        const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
-        const newsletter1Checkbox = checkboxes[0];
-        const newsletter2Checkbox = checkboxes[1];
+        // Wait for state update to reflect in checkboxes
+        await waitFor(() => {
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const newsletter1Checkbox = checkboxes[0];
+            const newsletter2Checkbox = checkboxes[1];
 
-        expect(newsletter1Checkbox).not.toBeChecked();
-        expect(newsletter2Checkbox).not.toBeChecked();
+            expect(newsletter1Checkbox).not.toBeChecked();
+            expect(newsletter2Checkbox).not.toBeChecked();
+        });
     });
 
     describe('from the unsubscribe link > UnsubscribePage', () => {
@@ -226,12 +267,18 @@ describe('Newsletter Subscriptions', () => {
                     key: 'hashedMemberUuid'
                 }
             );
-            // Verify the local state shows the newsletter as unsubscribed
-            let checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
-            let newsletter1Checkbox = checkboxes[0];
-            let newsletter2Checkbox = checkboxes[1];
 
-            expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
+            // Wait for the unsubscribe message and checkboxes to render
+            let checkboxes, newsletter1Checkbox, newsletter2Checkbox;
+            await waitFor(() => {
+                expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
+                checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+                expect(checkboxes.length).toBeGreaterThanOrEqual(2);
+            });
+
+            // Verify the local state shows the newsletter as unsubscribed
+            newsletter1Checkbox = checkboxes[0];
+            newsletter2Checkbox = checkboxes[1];
 
             expect(newsletter1Checkbox).not.toBeChecked();
             expect(newsletter2Checkbox).toBeChecked();
@@ -244,16 +291,24 @@ describe('Newsletter Subscriptions', () => {
             // Reopen Portal and go to the unsubscribe page
             await userEvent.click(triggerButton);
             // We have a new popup frame - can't use the old locator from setup
-            const newPopupFrame = queryByTitle(/portal-popup/i);
-            expect(newPopupFrame).toBeInTheDocument();
+            const newPopupFrame = await waitFor(() => {
+                const frame = queryByTitle(/portal-popup/i);
+                expect(frame).toBeInTheDocument();
+                return frame;
+            });
             const newPopupIframeDocument = newPopupFrame.contentDocument;
 
-            // Open the NewsletterManagement page
-            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByRole('button', {name: 'Manage'});
+            // Wait for account page and manage button to render
+            const manageSubscriptionsButton = await within(newPopupIframeDocument).findByRole('button', {name: 'Manage'});
             await userEvent.click(manageSubscriptionsButton);
 
+            // Wait for checkboxes to render after clicking manage
+            await waitFor(() => {
+                checkboxes = within(newPopupIframeDocument).getAllByRole('checkbox');
+                expect(checkboxes.length).toBeGreaterThanOrEqual(2);
+            });
+
             // Verify that the unsubscribed newsletter is shown as unsubscribed in the new popup
-            checkboxes = within(newPopupIframeDocument).getAllByRole('checkbox');
             newsletter1Checkbox = checkboxes[0];
             newsletter2Checkbox = checkboxes[1];
             expect(newsletter1Checkbox).not.toBeChecked();

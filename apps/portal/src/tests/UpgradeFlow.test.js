@@ -1,7 +1,8 @@
 import App from '../App.js';
-import {fireEvent, appRender, within} from '../utils/test-utils';
+import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+import userEvent from '@testing-library/user-event';
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -34,12 +35,20 @@ const offerSetup = async ({site, member = null, offer}) => {
     const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
 
+    // Wait for site title to render before querying other elements
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Site might show different content, query without waiting
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
 
     const offerName = within(popupIframeDocument).queryByText(offer.display_title);
 
@@ -92,18 +101,39 @@ const setup = async ({site, member = null}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for content to render - try site title or account home title
+    let siteTitle, accountHomeTitle;
+    try {
+        // Try to find either the site title or account home title
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 500});
+    } catch (e) {
+        // Might be on account page instead
+        try {
+            accountHomeTitle = await within(popupIframeDocument).findByText('Your account', {}, {timeout: 500});
+        } catch (e2) {
+            // Query without waiting
+            siteTitle = within(popupIframeDocument).queryByText(site.title);
+            accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+        }
+    }
+    if (!accountHomeTitle) {
+        accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
+    }
+    if (!siteTitle) {
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
-    const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
     const viewPlansButton = within(popupIframeDocument).queryByRole('button', {name: 'View plans'});
     return {
         ghostApi,
@@ -147,7 +177,7 @@ const multiTierSetup = async ({site, member = null}) => {
     );
     const freeTierDescription = site.products?.find(p => p.type === 'free')?.description;
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
@@ -200,25 +230,34 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
+            await waitFor(async () => {
+                const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+                expect(monthlyPlanContainer).toBeInTheDocument();
+            });
+
             const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
-            fireEvent.click(monthlyPlanContainer);
-            // added fake timeout for react state delay in setting plan
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            await userEvent.click(monthlyPlanContainer);
+
+            await waitFor(() => {
+                const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+                expect(submitButton).toBeInTheDocument();
             });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            await userEvent.click(submitButton);
 
-            fireEvent.click(submitButton);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'month'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.monthlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'month'
+                });
             });
         });
 
@@ -238,26 +277,30 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
             await within(popupIframeDocument).findByText('Monthly');
             const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
-            fireEvent.click(yearlyPlanContainer);
-            // added fake timeout for react state delay in setting plan
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            await userEvent.click(yearlyPlanContainer);
+
+            await waitFor(() => {
+                const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+                expect(submitButton).toBeInTheDocument();
             });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            await userEvent.click(submitButton);
 
-            fireEvent.click(submitButton);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'year'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.yearlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'year'
+                });
             });
         });
 
@@ -363,25 +406,29 @@ describe('Logged-in free member', () => {
 
             const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
 
-            fireEvent.click(viewPlansButton);
+            await userEvent.click(viewPlansButton);
+
             await within(popupIframeDocument).findByText('Monthly');
 
-            // allow default checkbox switch to yearly
-            await new Promise((r) => {
-                setTimeout(r, 10);
+            // Wait for plan selection to load
+            await waitFor(async () => {
+                const chooseBtns = await within(popupIframeDocument).findAllByRole('button', {name: 'Choose'});
+                expect(chooseBtns.length).toBeGreaterThan(0);
             });
 
-            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+            const chooseBtns = await within(popupIframeDocument).findAllByRole('button', {name: 'Choose'});
+            await userEvent.click(chooseBtns[0]);
 
-            fireEvent.click(chooseBtns[0]);
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id,
-                tierId: singleTierProduct.id,
-                cadence: 'year'
+            await waitFor(() => {
+                expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                    metadata: {
+                        checkoutType: 'upgrade'
+                    },
+                    offerId: undefined,
+                    plan: singleTierProduct.yearlyPrice.id,
+                    tierId: singleTierProduct.id,
+                    cadence: 'year'
+                });
             });
         });
 

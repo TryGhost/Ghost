@@ -30,7 +30,7 @@ const setup = async ({site, member = null, showPopup = true}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = showPopup ? await utils.findByTitle(/portal-popup/i) : utils.queryByTitle(/portal-popup/i);
     return {
         ghostApi,
         popupFrame,
@@ -104,7 +104,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            const signupTitle = await within(popupFrame.contentDocument).findByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
         });
     });
@@ -121,7 +121,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            const loginTitle = await within(popupFrame.contentDocument).findByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
@@ -138,7 +138,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            const signupTitle = await within(popupFrame.contentDocument).findByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
         });
 
@@ -155,7 +155,7 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const inviteOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site is invite-only/i);
+                    const inviteOnlyMessage = await within(popupFrame.contentDocument).findByText(/This site is invite-only/i);
                     expect(inviteOnlyMessage).toBeInTheDocument();
                 });
             });
@@ -175,9 +175,9 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const emailInput = within(popupFrame.contentDocument).getByLabelText(/email/i);
-                    const nameInput = within(popupFrame.contentDocument).getByLabelText(/name/i);
-                    const chooseBtns = within(popupFrame.contentDocument).queryAllByRole('button', {name: 'Choose'});
+                    const emailInput = await within(popupFrame.contentDocument).findByLabelText(/email/i);
+                    const nameInput = await within(popupFrame.contentDocument).findByLabelText(/name/i);
+                    const chooseBtns = await within(popupFrame.contentDocument).findAllByRole('button', {name: 'Choose'});
 
                     expect(emailInput).toBeInTheDocument();
                     expect(nameInput).toBeInTheDocument();
@@ -248,7 +248,7 @@ describe('Portal Data links:', () => {
 
                 expect(popupFrame).toBeInTheDocument();
 
-                const paidMembersOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site only accepts paid members/i);
+                const paidMembersOnlyMessage = await within(popupFrame.contentDocument).findByText(/This site only accepts paid members/i);
                 expect(paidMembersOnlyMessage).toBeInTheDocument();
             });
         });
@@ -267,7 +267,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountHomeTitle = within(popupFrame.contentDocument).queryByText(/your account/i);
+            const accountHomeTitle = await within(popupFrame.contentDocument).findByText(/your account/i);
             expect(accountHomeTitle).toBeInTheDocument();
         });
     });
@@ -285,7 +285,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountPlanTitle = within(popupFrame.contentDocument).queryByText(/choose a plan/i);
+            const accountPlanTitle = await within(popupFrame.contentDocument).findByText(/choose a plan/i);
             expect(accountPlanTitle).toBeInTheDocument();
         });
     });
@@ -303,7 +303,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const accountProfileTitle = within(popupFrame.contentDocument).queryByText(/account settings/i);
+            const accountProfileTitle = await within(popupFrame.contentDocument).findByText(/account settings/i);
             expect(accountProfileTitle).toBeInTheDocument();
         });
     });
@@ -321,7 +321,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const helpPageTitle = within(popupFrame.contentDocument).queryByText(/help! i'm not receiving emails/i);
+            const helpPageTitle = await within(popupFrame.contentDocument).findByText(/help! i'm not receiving emails/i);
             expect(helpPageTitle).toBeInTheDocument();
         });
     });
@@ -339,7 +339,7 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const helpPageTitle = within(popupFrame.contentDocument).queryByText(/why has my email been disabled/i);
+            const helpPageTitle = await within(popupFrame.contentDocument).findByText(/why has my email been disabled/i);
             expect(helpPageTitle).toBeInTheDocument();
         });
     });

@@ -1,4 +1,4 @@
-import React from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import Frame from './Frame';
 import MemberGravatar from './common/MemberGravatar';
 import AppContext from '../AppContext';
@@ -57,56 +57,54 @@ const Styles = ({hasText}) => {
     };
 };
 
-class TriggerButtonContent extends React.Component {
-    static contextType = AppContext;
+function TriggerButtonContent({updateHeight, updateWidth}) {
+    const context = useContext(AppContext);
+    const container = useRef(null);
+    const heightRef = useRef(null);
+    const widthRef = useRef(null);
 
-    constructor(props) {
-        super(props);
-        this.state = { };
-        this.container = React.createRef();
-        this.height = null;
-        this.width = null;
-    }
-
-    updateHeight(height) {
-        this.props.updateHeight && this.props.updateHeight(height);
-    }
-
-    updateWidth(width) {
-        this.props.updateWidth && this.props.updateWidth(width);
-    }
-
-    componentDidMount() {
-        if (this.container) {
-            this.height = this.container.current && this.container.current.offsetHeight;
-            this.width = this.container.current && this.container.current.offsetWidth;
-            this.updateHeight(this.height);
-            this.updateWidth(this.width);
+    useEffect(() => {
+        if (container.current) {
+            const height = container.current.offsetHeight;
+            const width = container.current.offsetWidth;
+            heightRef.current = height;
+            widthRef.current = width;
+            updateHeight?.(height);
+            updateWidth?.(width);
         }
-    }
+    });
 
-    componentDidUpdate() {
-        if (this.container) {
-            const height = this.container.current && this.container.current.offsetHeight;
-            let width = this.container.current && this.container.current.offsetWidth;
-            if (height !== this.height) {
-                this.height = height;
-                this.updateHeight(this.height);
+    useEffect(() => {
+        if (container.current) {
+            const height = container.current.offsetHeight;
+            const width = container.current.offsetWidth;
+
+            if (height !== heightRef.current) {
+                heightRef.current = height;
+                updateHeight?.(height);
             }
 
-            if (width !== this.width) {
-                this.width = width;
-                this.updateWidth(this.width);
+            if (width !== widthRef.current) {
+                widthRef.current = width;
+                updateWidth?.(width);
             }
         }
-    }
+    });
 
-    renderTriggerIcon() {
-        const {portal_button_icon: buttonIcon = '', portal_button_style: buttonStyle = ''} = this.context.site || {};
-        const Style = Styles({brandColor: this.context.brandColor});
-        const memberGravatar = this.context.member && this.context.member.avatar_image;
+    const hasText = () => {
+        const {
+            portal_button_signup_text: buttonText,
+            portal_button_style: buttonStyle
+        } = context.site;
+        return ['icon-and-text', 'text-only'].includes(buttonStyle) && !context.member && buttonText;
+    };
 
-        if (!buttonStyle.includes('icon') && !this.context.member) {
+    const renderTriggerIcon = () => {
+        const {portal_button_icon: buttonIcon = '', portal_button_style: buttonStyle = ''} = context.site || {};
+        const Style = Styles({brandColor: context.brandColor});
+        const memberGravatar = context.member && context.member.avatar_image;
+
+        if (!buttonStyle.includes('icon') && !context.member) {
             return null;
         }
 
@@ -116,7 +114,7 @@ class TriggerButtonContent extends React.Component {
             );
         }
 
-        if (this.context.member) {
+        if (context.member) {
             return (
                 <UserIcon style={Style.userIcon} />
             );
@@ -131,7 +129,7 @@ class TriggerButtonContent extends React.Component {
                     <img style={{width: '26px', height: '26px'}} src={buttonIcon} alt="" />
                 );
             } else {
-                if (this.hasText()) {
+                if (hasText()) {
                     Style.userIcon.width = '26px';
                     Style.userIcon.height = '26px';
                 }
@@ -140,173 +138,153 @@ class TriggerButtonContent extends React.Component {
                 );
             }
         }
-    }
+    };
 
-    hasText() {
-        const {
-            portal_button_signup_text: buttonText,
-            portal_button_style: buttonStyle
-        } = this.context.site;
-        return ['icon-and-text', 'text-only'].includes(buttonStyle) && !this.context.member && buttonText;
-    }
-
-    renderText() {
+    const renderText = () => {
         const {
             portal_button_signup_text: buttonText
-        } = this.context.site;
-        if (this.hasText()) {
+        } = context.site;
+        if (hasText()) {
             return (
                 <span className='gh-portal-triggerbtn-label'> {buttonText} </span>
             );
         }
         return null;
-    }
+    };
 
-    onToggle() {
-        const {showPopup, member, site} = this.context;
+    const onToggle = () => {
+        const {showPopup, member, site} = context;
 
         if (showPopup) {
-            this.context.doAction('closePopup');
+            context.doAction('closePopup');
             return;
         }
 
         if (member) {
-            this.context.doAction('openPopup', {page: 'accountHome'});
+            context.doAction('openPopup', {page: 'accountHome'});
             return;
         }
 
         if (isSigninAllowed({site})) {
             const page = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
-            this.context.doAction('openPopup', {page});
+            context.doAction('openPopup', {page});
             return;
         }
-    }
+    };
 
-    render() {
-        const hasText = this.hasText();
-        const {member} = this.context;
-        const triggerBtnClass = member ? 'halo' : '';
+    const hasTextValue = hasText();
+    const {member} = context;
+    const triggerBtnClass = member ? 'halo' : '';
 
-        if (hasText) {
-            return (
-                <div className='gh-portal-triggerbtn-wrapper' ref={this.container}>
-                    <div
-                        className='gh-portal-triggerbtn-container with-label'
-                        onClick={e => this.onToggle(e)}
-                        data-testid='portal-trigger-button'
-                    >
-                        {this.renderTriggerIcon()}
-                        {(hasText ? this.renderText() : '')}
-                    </div>
-                </div>
-            );
-        }
+    if (hasTextValue) {
         return (
-            <div className='gh-portal-triggerbtn-wrapper'>
+            <div className='gh-portal-triggerbtn-wrapper' ref={container}>
                 <div
-                    className={'gh-portal-triggerbtn-container ' + triggerBtnClass}
-                    onClick={e => this.onToggle(e)}
+                    className='gh-portal-triggerbtn-container with-label'
+                    onClick={onToggle}
                     data-testid='portal-trigger-button'
                 >
-                    {this.renderTriggerIcon()}
+                    {renderTriggerIcon()}
+                    {(hasTextValue ? renderText() : '')}
                 </div>
             </div>
         );
     }
+    return (
+        <div className='gh-portal-triggerbtn-wrapper'>
+            <div
+                className={'gh-portal-triggerbtn-container ' + triggerBtnClass}
+                onClick={onToggle}
+                data-testid='portal-trigger-button'
+            >
+                {renderTriggerIcon()}
+            </div>
+        </div>
+    );
 }
 
-export default class TriggerButton extends React.Component {
-    static contextType = AppContext;
+export default function TriggerButton() {
+    const context = useContext(AppContext);
+    const [width, setWidth] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const buttonRef = useRef(null);
+    const buttonMarginRef = useRef(null);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            width: null,
-            isMobile: window.innerWidth < 640
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 640);
         };
-        this.buttonRef = React.createRef();
-        this.handleResize = this.handleResize.bind(this);
-    }
 
-    componentDidMount() {
-        window.addEventListener('resize', this.handleResize);
-        this.handleResize();
+        window.addEventListener('resize', handleResize);
+        handleResize();
 
-        setTimeout(() => {
-            if (this.buttonRef.current) {
-                const iframeElement = this.buttonRef.current.node;
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (buttonRef.current) {
+                const iframeElement = buttonRef.current.node;
                 if (iframeElement) {
-                    this.buttonMargin = window.getComputedStyle(iframeElement).getPropertyValue('margin-right');
+                    buttonMarginRef.current = window.getComputedStyle(iframeElement).getPropertyValue('margin-right');
                 }
             }
         }, 0);
-    }
 
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.handleResize);
-    }
+        return () => clearTimeout(timer);
+    }, []);
 
-    handleResize() {
-        this.setState({
-            isMobile: window.innerWidth < 640
-        });
-    }
-
-    onWidthChange(width) {
-        this.setState({width});
-    }
-
-    hasText() {
+    const hasText = () => {
         const {
             portal_button_signup_text: buttonText,
             portal_button_style: buttonStyle
-        } = this.context.site;
-        return ['icon-and-text', 'text-only'].includes(buttonStyle) && !this.context.member && buttonText;
-    }
+        } = context.site;
+        return ['icon-and-text', 'text-only'].includes(buttonStyle) && !context.member && buttonText;
+    };
 
-    renderFrameStyles() {
+    const renderFrameStyles = () => {
         const styles = `
             :root {
-                --brandcolor: ${this.context.brandColor}
+                --brandcolor: ${context.brandColor}
             }
         ` + TriggerButtonStyle;
         return (
             <style dangerouslySetInnerHTML={{__html: styles}} />
         );
+    };
+
+    const site = context.site;
+    const {portal_button: portalButton} = site;
+    const {showPopup, scrollbarWidth} = context;
+
+    if (isMobile) {
+        return null;
     }
 
-    render() {
-        const site = this.context.site;
-        const {portal_button: portalButton} = site;
-        const {showPopup, scrollbarWidth} = this.context;
-
-        if (this.state.isMobile) {
-            return null;
-        }
-
-        if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
-            return null;
-        }
-
-        const hasText = this.hasText();
-        const Style = Styles({brandColor: this.context.brandColor, hasText});
-
-        const frameStyle = {
-            ...Style.frame
-        };
-        if (this.state.width) {
-            const updatedWidth = this.state.width + 2;
-            frameStyle.width = `${updatedWidth}px`;
-        }
-
-        if (scrollbarWidth && showPopup) {
-            frameStyle.marginRight = `calc(${scrollbarWidth}px + ${this.buttonMargin})`;
-        }
-
-        return (
-            <Frame ref={this.buttonRef} dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
-                <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
-            </Frame>
-        );
+    if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
+        return null;
     }
+
+    const hasTextValue = hasText();
+    const Style = Styles({brandColor: context.brandColor, hasText: hasTextValue});
+
+    const frameStyle = {
+        ...Style.frame
+    };
+    if (width) {
+        const updatedWidth = width + 2;
+        frameStyle.width = `${updatedWidth}px`;
+    }
+
+    if (scrollbarWidth && showPopup) {
+        frameStyle.marginRight = `calc(${scrollbarWidth}px + ${buttonMarginRef.current})`;
+    }
+
+    return (
+        <Frame ref={buttonRef} dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={renderFrameStyles()}>
+            <TriggerButtonContent isPopupOpen={showPopup} updateWidth={setWidth} />
+        </Frame>
+    );
 }

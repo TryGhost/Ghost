@@ -1,4 +1,4 @@
-import React from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
@@ -56,80 +56,65 @@ const NotificationText = ({message, site}) => {
     );
 };
 
-export default class PopupNotification extends React.Component {
-    static contextType = AppContext;
-    constructor() {
-        super();
-        this.state = {
-            className: ''
-        };
-    }
+export default function PopupNotification() {
+    const {popupNotification, site, doAction} = useContext(AppContext);
+    const [className, setClassName] = useState('');
+    const [notificationCount, setNotificationCount] = useState(null);
+    const timeoutIdRef = useRef(null);
 
-    onAnimationEnd(e) {
-        const {popupNotification} = this.context;
+    const onAnimationEnd = (e) => {
         const {type} = popupNotification || {};
         if (e.animationName === 'notification-slideout' || e.animationName === 'notification-slideout-mobile') {
             if (type === 'stripe:billing-update') {
                 clearURLParams(['stripe']);
             }
-            this.context.doAction('clearPopupNotification');
+            doAction('clearPopupNotification');
         }
-    }
+    };
 
-    closeNotification() {
-        this.context.doAction('clearPopupNotification');
-    }
+    const closeNotification = () => {
+        doAction('clearPopupNotification');
+    };
 
-    componentDidUpdate() {
-        const {popupNotification} = this.context;
-        if (popupNotification.count !== this.state.notificationCount) {
-            clearTimeout(this.timeoutId);
-            this.handlePopupNotification({popupNotification});
-        }
-    }
-
-    handlePopupNotification({popupNotification}) {
-        this.setState({
-            notificationCount: popupNotification.count
-        });
-        if (popupNotification.autoHide) {
-            const {duration = 2600} = popupNotification;
-            this.timeoutId = setTimeout(() => {
-                this.setState((state) => {
-                    if (state.className !== 'slideout') {
-                        return {
-                            className: 'slideout',
-                            notificationCount: popupNotification.count
-                        };
+    const handlePopupNotification = (notification) => {
+        setNotificationCount(notification.count);
+        if (notification.autoHide) {
+            const {duration = 2600} = notification;
+            timeoutIdRef.current = setTimeout(() => {
+                setClassName((prevClassName) => {
+                    if (prevClassName !== 'slideout') {
+                        return 'slideout';
                     }
-                    return {};
+                    return prevClassName;
                 });
             }, duration);
         }
-    }
+    };
 
-    componentDidMount() {
-        const {popupNotification} = this.context;
-        this.handlePopupNotification({popupNotification});
-    }
+    // Handle initial mount and notification updates
+    useEffect(() => {
+        if (popupNotification.count !== notificationCount) {
+            clearTimeout(timeoutIdRef.current);
+            handlePopupNotification(popupNotification);
+        }
+    }, [popupNotification.count, notificationCount, popupNotification]);
 
-    componentWillUnmount() {
-        clearTimeout(this.timeoutId);
-    }
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            clearTimeout(timeoutIdRef.current);
+        };
+    }, []);
 
-    render() {
-        const {popupNotification, site} = this.context;
-        const {className} = this.state;
-        const {type, status, closeable, message} = popupNotification;
-        const statusClass = status ? ` ${status}` : '';
-        const slideClass = className ? ` ${className}` : '';
+    const {type, status, closeable, message} = popupNotification;
+    const statusClass = status ? ` ${status}` : '';
+    const slideClass = className ? ` ${className}` : '';
 
-        return (
-            <div className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
-                {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
-                <NotificationText type={type} status={status} message={message} site={site} />
-                <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
-            </div>
-        );
-    }
+    return (
+        <div className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`} onAnimationEnd={onAnimationEnd}>
+            {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
+            <NotificationText type={type} status={status} message={message} site={site} />
+            <CloseButton hide={!closeable} onClose={closeNotification}/>
+        </div>
+    );
 }

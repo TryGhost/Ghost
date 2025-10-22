@@ -1,4 +1,4 @@
-import React from 'react';
+import {useContext, useEffect, useState, useRef} from 'react';
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import NotificationStyle from './Notification.styles';
@@ -120,100 +120,77 @@ const NotificationText = ({type, status, context}) => {
     );
 };
 
-class NotificationContent extends React.Component {
-    static contextType = AppContext;
+function NotificationContent({type, status, autoHide, duration = 2400, onHideNotification}) {
+    const context = useContext(AppContext);
+    const [className, setClassName] = useState('');
+    const timeoutIdRef = useRef(null);
 
-    constructor() {
-        super();
-        this.state = {
-            className: ''
+    useEffect(() => {
+        return () => {
+            clearTimeout(timeoutIdRef.current);
         };
-    }
+    }, []);
 
-    componentWillUnmount() {
-        clearTimeout(this.timeoutId);
-    }
-
-    onNotificationClose() {
-        this.props.onHideNotification();
-    }
-
-    componentDidUpdate() {
-        const {showPopup} = this.context;
-        if (!this.state.className && showPopup) {
-            this.setState({
-                className: 'slideout'
-            });
-        }
-    }
-
-    componentDidMount() {
-        const {autoHide, duration = 2400} = this.props;
-        const {showPopup} = this.context;
+    useEffect(() => {
+        const {showPopup} = context;
         if (showPopup) {
-            this.setState({
-                className: 'slideout'
-            });
+            setClassName('slideout');
         } else if (autoHide) {
-            this.timeoutId = setTimeout(() => {
-                this.setState({
-                    className: 'slideout'
-                });
+            timeoutIdRef.current = setTimeout(() => {
+                setClassName('slideout');
             }, duration);
         }
-    }
+    }, [context, autoHide, duration]);
 
-    onAnimationEnd(e) {
-        if (e.animationName === 'notification-slideout' || e.animationName === 'notification-slideout-mobile') {
-            this.props.onHideNotification(e);
+    useEffect(() => {
+        const {showPopup} = context;
+        if (!className && showPopup) {
+            setClassName('slideout');
         }
-    }
+    }, [context, className]);
 
-    render() {
-        const {type, status} = this.props;
-        const {className = ''} = this.state;
-        const statusClass = status ? `  ${status}` : ' neutral';
-        const slideClass = className ? ` ${className}` : '';
-        return (
-            <div className='gh-portal-notification-wrapper'>
-                <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
-                    {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
-                    <NotificationText type={type} status={status} context={this.context} />
-                    <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
-                </div>
+    const onNotificationClose = () => {
+        onHideNotification();
+    };
+
+    const onAnimationEnd = (e) => {
+        if (e.animationName === 'notification-slideout' || e.animationName === 'notification-slideout-mobile') {
+            onHideNotification(e);
+        }
+    };
+
+    const statusClass = status ? `  ${status}` : ' neutral';
+    const slideClass = className ? ` ${className}` : '';
+
+    return (
+        <div className='gh-portal-notification-wrapper'>
+            <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={onAnimationEnd}>
+                {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
+                <NotificationText type={type} status={status} context={context} />
+                <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={onNotificationClose} />
             </div>
-        );
-    }
+        </div>
+    );
 }
 
-export default class Notification extends React.Component {
-    static contextType = AppContext;
+export default function Notification() {
+    const context = useContext(AppContext);
+    const notificationData = NotificationParser() || {};
+    const [active, setActive] = useState(true);
+    const [type] = useState(notificationData.type);
+    const [status] = useState(notificationData.status);
+    const [autoHide] = useState(notificationData.autoHide);
+    const [duration] = useState(notificationData.duration);
 
-    constructor() {
-        super();
-        const {type, status, autoHide, duration} = NotificationParser() || {};
-        this.state = {
-            active: true,
-            type,
-            status,
-            autoHide,
-            duration,
-            className: ''
-        };
-    }
-
-    componentDidMount() {
-        const {showPopup} = this.context;
+    useEffect(() => {
+        const {showPopup} = context;
         if (showPopup) {
             // Don't show a notification if there is a popup visible on page load
-            this.setState({
-                active: false
-            });
+            setActive(false);
         }
-    }
+    }, [context]);
 
-    onHideNotification() {
-        const type = this.state.type;
+    const onHideNotification = () => {
         const deleteParams = [];
         if (['signin', 'signup'].includes(type)) {
             deleteParams.push('action', 'success');
@@ -221,39 +198,37 @@ export default class Notification extends React.Component {
             deleteParams.push('stripe');
         }
         clearURLParams(deleteParams);
-        this.context.doAction('refreshMemberData');
-        this.setState({
-            active: false
-        });
-    }
+        context.doAction('refreshMemberData');
+        setActive(false);
+    };
 
-    renderFrameStyles() {
+    const renderFrameStyles = () => {
         const styles = `
             :root {
-                --brandcolor: ${this.context.brandColor}
+                --brandcolor: ${context.brandColor}
             }
         ` + NotificationStyle;
         return (
             <style dangerouslySetInnerHTML={{__html: styles}} />
         );
-    }
+    };
 
-    render() {
-        const Style = Styles({brandColor: this.context.brandColor});
-        const frameStyle = {
-            ...Style.frame
-        };
-        if (!this.state.active) {
-            return null;
-        }
-        const {type, status, autoHide, duration} = this.state;
-        if (type && status) {
-            return (
-                <Frame style={frameStyle} title="portal-notification" head={this.renderFrameStyles()} className='gh-portal-notification-iframe' data-testid="portal-notification-frame" >
-                    <NotificationContent {...{type, status, autoHide, duration}} onHideNotification={e => this.onHideNotification(e)} />
-                </Frame>
-            );
-        }
+    const Style = Styles({brandColor: context.brandColor});
+    const frameStyle = {
+        ...Style.frame
+    };
+
+    if (!active) {
         return null;
     }
+
+    if (type && status) {
+        return (
+            <Frame style={frameStyle} title="portal-notification" head={renderFrameStyles()} className='gh-portal-notification-iframe' data-testid="portal-notification-frame" >
+                <NotificationContent {...{type, status, autoHide, duration}} onHideNotification={onHideNotification} />
+            </Frame>
+        );
+    }
+
+    return null;
 }

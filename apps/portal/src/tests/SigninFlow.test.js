@@ -31,13 +31,23 @@ const setup = async ({site, member = null, labs = {}}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // Wait for the site title to render before querying other elements
+    // Use a timeout and fallback for cases where the page shows different content
+    let siteTitle;
+    try {
+        siteTitle = await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+    } catch (e) {
+        // Site might show different content, query without waiting
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+    }
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
@@ -87,7 +97,7 @@ const multiTierSetup = async ({site, member = null}) => {
     );
     const freeTierDescription = site.products?.find(p => p.type === 'free')?.description;
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
@@ -451,8 +461,15 @@ describe('OTC Integration Flow', () => {
         );
 
         await utils.findByTitle(/portal-trigger/i);
-        const popupFrame = utils.queryByTitle(/portal-popup/i);
+        const popupFrame = await utils.findByTitle(/portal-popup/i);
         const popupIframeDocument = popupFrame.contentDocument;
+
+        // Wait for signin page to render
+        try {
+            await within(popupIframeDocument).findByText(site.title, {}, {timeout: 1000});
+        } catch (e) {
+            // Content might not show site title, continue anyway
+        }
 
         return {
             ghostApi,
@@ -463,8 +480,9 @@ describe('OTC Integration Flow', () => {
     };
 
     const submitSigninForm = async (popupIframeDocument, email = 'jamie@example.com') => {
-        const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
-        const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+        // Wait for form elements to be available
+        const emailInput = await within(popupIframeDocument).findByLabelText(/email/i);
+        const submitButton = await within(popupIframeDocument).findByRole('button', {name: 'Continue'});
 
         fireEvent.change(emailInput, {target: {value: email}});
         fireEvent.click(submitButton);
