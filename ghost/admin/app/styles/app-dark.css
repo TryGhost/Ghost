@@ -449,10 +449,6 @@ input:focus,
     color: var(--midgrey);
 }
 
-.gh-main > section.gh-editor-fullscreen {
-    background: color-mod(#191b1f l(+2%));
-}
-
 .dropdown-menu {
     background: var(--whitegrey-l1);
 }
