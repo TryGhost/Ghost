@@ -16,3 +16,4 @@ export * from './tags/TagsPage';
 export * from './tags/TagEditorPage';
 export * from './tags/TagDetailsPage';
 export * from './tags/NewTagsPage';
+export * from './LoginVerifyPage';
