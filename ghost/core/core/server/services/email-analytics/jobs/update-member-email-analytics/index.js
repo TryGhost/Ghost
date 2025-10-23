@@ -8,6 +8,6 @@ const queries = require('../../lib/queries');
  * @returns {Promise<Object>} The result of the aggregation query (1/0)
  */
 module.exports = async function updateMemberEmailAnalytics({memberId}) {
-    const result = await queries.aggregateMemberStats(memberId);
+    const result = await queries.aggregateMemberStatsBatch([memberId]);
     return result;
 };
