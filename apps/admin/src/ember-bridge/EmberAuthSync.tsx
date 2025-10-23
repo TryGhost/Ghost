@@ -1,16 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { useLocation } from '@tryghost/admin-x-framework';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from "react";
+import { useLocation } from "@tryghost/admin-x-framework";
+import { useQueryClient } from "@tanstack/react-query";
 
-/**
- * Helper function to check if a path is an authentication-related route
- */
-const isAuthRoute = (path: string): boolean => {
-    return path.startsWith('/setup') ||
-           path.startsWith('/signin') ||
-           path.startsWith('/signout') ||
-           path.startsWith('/signup') ||
-           path.startsWith('/reset');
+const AUTH_ROUTES = new Set(["setup", "signin", "signout", "signup", "reset"]);
+
+const isAuthRoute = (path: string) => {
+    if (!path) {
+        return false;
+    }
+    
+    // Remove leading slash and extract the first path segment
+    // Also strip any query params or hash fragments
+    const cleanPath = path.replace(/^\//, '').split(/[/?#]/)[0];
+    
+    return AUTH_ROUTES.has(cleanPath);
 };
 
 /**
@@ -37,4 +40,3 @@ export function EmberAuthSync() {
 
     return null;
 }
-
