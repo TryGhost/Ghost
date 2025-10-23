@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { useEmberContext } from "./EmberContext";
 
-function EmberRoot() {
+export const EmberRoot = React.memo(function EmberRoot() {
     const ref = useRef<HTMLDivElement>(null);
     const { isFallbackPresent } = useEmberContext();
 
@@ -25,6 +25,4 @@ function EmberRoot() {
     }, []);
 
     return <div ref={ref} hidden={!isFallbackPresent}></div>;
-}
-
-export default React.memo(EmberRoot);
+});
