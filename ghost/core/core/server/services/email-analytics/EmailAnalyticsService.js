@@ -510,25 +510,51 @@ module.exports = class EmailAnalyticsService {
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
         let startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
 
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
-        let endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
+        const emailDuration = Date.now() - startTime;
+
+        if (emailIds.length > 0) {
+            const msPerEmail = (emailDuration / emailIds.length).toFixed(2);
+            logging.info(`[EmailAnalytics] Aggregated ${emailIds.length} emails in ${emailDuration}ms (${msPerEmail}ms/email)`);
+        }
 
         startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
-
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
-        for (const memberId of memberIds) {
-            await this.aggregateMemberStats(memberId);
-            memberMetric?.inc();
+        const allTimings = [];
+        const BATCH_SIZE = 100;
+
+        for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
+            const batch = memberIds.slice(i, i + BATCH_SIZE);
+            const timings = await this.aggregateMemberStatsBatch(batch);
+            if (timings) {
+                allTimings.push(timings);
+            }
+            memberMetric?.inc(batch.length);
         }
-        endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
+        const memberDuration = Date.now() - startTime;
+
+        if (memberIds.length > 0) {
+            const msPerMember = (memberDuration / memberIds.length).toFixed(2);
+            const membersPerSec = (memberIds.length / (memberDuration / 1000)).toFixed(0);
+
+            // Calculate average timings
+            if (allTimings.length > 0) {
+                const avgEmailsQuery = (allTimings.reduce((sum, t) => sum + (t.emailsQuery || 0), 0) / allTimings.length).toFixed(2);
+                const avgSelect = (allTimings.reduce((sum, t) => sum + (t.select || 0), 0) / allTimings.length).toFixed(2);
+                const avgUpdate = (allTimings.reduce((sum, t) => sum + (t.update || 0), 0) / allTimings.length).toFixed(2);
+                const avgOverhead = (allTimings.reduce((sum, t) => sum + (t.overhead || 0), 0) / allTimings.length).toFixed(2);
+                const avgBatchSize = (allTimings.reduce((sum, t) => sum + (t.memberCount || 0), 0) / allTimings.length).toFixed(0);
+
+                logging.info(`[EmailAnalytics] Aggregated ${memberIds.length} members in ${memberDuration}ms (${msPerMember}ms/member, ${membersPerSec} members/sec) [batches: ${allTimings.length}, avg size: ${avgBatchSize}]`);
+                logging.info(`[EmailAnalytics] Timing breakdown: EMAILS=${avgEmailsQuery}ms, SELECT=${avgSelect}ms, UPDATE=${avgUpdate}ms, overhead=${avgOverhead}ms`);
+            } else {
+                logging.info(`[EmailAnalytics] Aggregated ${memberIds.length} members in ${memberDuration}ms (${msPerMember}ms/member, ${membersPerSec} members/sec)`);
+            }
+        }
     }
 
     /**
@@ -542,11 +568,11 @@ module.exports = class EmailAnalyticsService {
     }
 
     /**
-     * Aggregate member stats for a given member ID.
-     * @param {string} memberId - The ID of the member to aggregate stats for.
+     * Aggregate member stats for multiple member IDs in a batch.
+     * @param {string[]} memberIds - Array of member IDs to aggregate stats for.
      * @returns {Promise<void>}
      */
-    async aggregateMemberStats(memberId) {
-        return this.queries.aggregateMemberStats(memberId);
+    async aggregateMemberStatsBatch(memberIds) {
+        return this.queries.aggregateMemberStatsBatch(memberIds);
     }
 };
