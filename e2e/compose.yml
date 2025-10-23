@@ -102,8 +102,8 @@ services:
       tinybird-local:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
     ports:
       - "1026:1025" # SMTP server

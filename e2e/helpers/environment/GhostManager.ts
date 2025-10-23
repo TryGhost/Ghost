@@ -49,10 +49,10 @@ export class GhostManager {
         try {
             const network = await this.dockerCompose.getNetwork();
             const tinybirdState = this.tinybird.loadState();
-            
+
             // Use deterministic port based on worker index (or 0 if not in parallel)
             const hostPort = 30000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
-            
+
             const environment = {
                 server__host: '0.0.0.0',
                 server__port: String(GHOST_PORT),
@@ -72,14 +72,14 @@ export class GhostManager {
                 tinybird__tracker__datasource: 'analytics_events',
                 tinybird__workspaceId: tinybirdState.workspaceId,
                 tinybird__adminToken: tinybirdState.adminToken,
-                // Email configuration to use Mailhog
+                // Email configuration to use MailPit
                 mail__transport: 'SMTP',
-                mail__options__host: 'mailhog',
+                mail__options__host: 'mailpit',
                 mail__options__port: '1025',
                 mail__options__secure: 'false',
                 portal__url: config.portalUrl || 'http://localhost:4175/portal.min.js'
             } as Record<string, string>;
-            
+
             const containerConfig: ContainerCreateOptions = {
                 Image: DEFAULT_GHOST_IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),

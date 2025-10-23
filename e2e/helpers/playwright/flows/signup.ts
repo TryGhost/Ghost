@@ -8,7 +8,7 @@ export async function signupViaPortal(page: Page): Promise<{emailAddress: string
     await publicPage.openPortalViaSubscribeButton();
 
     const signUpPage = new SignUpPage(page);
-    const emailAddress = faker.internet.email();
+    const emailAddress = `test${faker.string.uuid()}@ghost.org`;
     const name = faker.person.fullName();
     await signUpPage.fillAndSubmit(emailAddress, name);
 
