@@ -6,23 +6,13 @@ const {commands} = require('../../../schema');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        logging.info('Adding index on members_created_events.batch_id');
         await commands.addIndex('members_created_events', ['batch_id'], knex);
-
-        logging.info('Adding index on members_created_events.source');
         await commands.addIndex('members_created_events', ['source'], knex);
-
-        logging.info('Adding index on members_subscription_created_events.batch_id');
         await commands.addIndex('members_subscription_created_events', ['batch_id'], knex);
     },
     async function down(knex) {
-        logging.info('Dropping index on members_subscription_created_events.batch_id');
         await commands.dropIndex('members_subscription_created_events', ['batch_id'], knex);
-
-        logging.info('Dropping index on members_created_events.source');
         await commands.dropIndex('members_created_events', ['source'], knex);
-
-        logging.info('Dropping index on members_created_events.batch_id');
         await commands.dropIndex('members_created_events', ['batch_id'], knex);
     }
 );
