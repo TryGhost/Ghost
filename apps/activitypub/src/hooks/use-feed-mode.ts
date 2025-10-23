@@ -4,13 +4,17 @@ export type FeedMode = 'discover' | 'following';
 
 export const FEED_MODE_STORAGE_KEY = 'ghost-ap-reader-feed';
 
-export const useFeedMode = () => {
+export const useFeedMode = (enabled: boolean) => {
     const [feedMode, setFeedModeState] = useState<FeedMode>(() => {
+        if (!enabled) {
+            return 'following';
+        }
+
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem(FEED_MODE_STORAGE_KEY);
-            return (stored === 'following' ? 'following' : 'discover') as FeedMode;
+            return (stored === 'discover' ? 'discover' : 'following') as FeedMode;
         }
-        return 'discover';
+        return 'following';
     });
 
     const setFeedMode = (mode: FeedMode) => {
