@@ -8,6 +8,7 @@ interface AppProps {
     activityPubEnabled?: boolean;
 }
 
+// This is a comment in apps/activitypub
 const App: React.FC<AppProps> = ({framework, activityPubEnabled}) => {
     if (activityPubEnabled === false) {
         return null;
