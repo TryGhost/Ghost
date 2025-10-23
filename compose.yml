@@ -277,10 +277,10 @@ services:
     ports:
       - 9091:9091
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
-    container_name: ghost-mailhog
+    container_name: ghost-mailpit
     profiles: [ ghost, split, all ]
     ports:
       - "1025:1025" # SMTP server
