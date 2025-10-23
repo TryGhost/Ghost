@@ -135,7 +135,7 @@ module.exports = class GhostMailer {
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
-            if (settingsCache.get('emailTrackOpens')) {
+            if (settingsCache.get('email_track_opens')) {
                 messageToSend['o:tracking-opens'] = true;
             }
         }
