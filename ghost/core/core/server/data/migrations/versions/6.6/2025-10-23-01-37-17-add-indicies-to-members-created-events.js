@@ -1,6 +1,3 @@
-// For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
-
-const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 const {commands} = require('../../../schema');
 
