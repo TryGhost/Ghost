@@ -34,7 +34,7 @@ createRoot(document.getElementById("root")!).render(
                 <RouterProvider prefix={"/"} routes={routes}>
                     <ShadeApp
                         className="shade-admin"
-                        darkMode={true}
+                        darkMode={false}
                         fetchKoenigLexical={null}
                     >
                         <App />
