@@ -5,10 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 const AUTH_ROUTES = new Set(["setup", "signin", "signout", "signup", "reset"]);
 
 const isAuthRoute = (path: string) => {
-    if (!path) {
-        return false;
-    }
-    
     // Remove leading slash and extract the first path segment
     // Also strip any query params or hash fragments
     const cleanPath = path.replace(/^\//, '').split(/[/?#]/)[0];
