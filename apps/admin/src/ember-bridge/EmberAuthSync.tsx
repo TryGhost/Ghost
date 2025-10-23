@@ -16,11 +16,8 @@ const isAuthRoute = (path: string) => {
     return AUTH_ROUTES.has(cleanPath);
 };
 
-/**
- * Component that monitors route changes and invalidates React Query caches
- * when navigating away from authentication routes in Ember
- */
-export function EmberAuthSync() {
+
+export function useEmberAuthSync() {
     const location = useLocation();
     const queryClient = useQueryClient();
     const previousPathRef = useRef<string | null>(null);
@@ -37,6 +34,4 @@ export function EmberAuthSync() {
         // Update the previous path reference
         previousPathRef.current = currentPath;
     }, [location, queryClient]);
-
-    return null;
 }
