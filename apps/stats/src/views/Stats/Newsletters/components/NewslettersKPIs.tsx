@@ -120,7 +120,7 @@ const NewsletterKPIs: React.FC<{
             };
         }
 
-        const prev = subscribersData[subscribersData.length - 2]?.value ?? 0;
+        const prev = subscribersData[0]?.value ?? 0;
         const curr = subscribersData[subscribersData.length - 1]?.value ?? 0;
 
         // Calculate direction
