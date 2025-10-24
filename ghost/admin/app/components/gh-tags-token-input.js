@@ -29,7 +29,8 @@ export default class GhTagsTokenInput extends Component {
 
     get availableTags() {
         const selectedTags = this.args.selected || [];
-        return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedTags.includes(tag)));
+        const selectedSet = new Set(selectedTags);
+        return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedSet.has(tag)));
     }
 
     // if we only have one page of tags available or we've already loaded all tags
