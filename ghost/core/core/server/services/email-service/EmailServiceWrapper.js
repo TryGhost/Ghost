@@ -141,6 +141,12 @@ class EmailServiceWrapper {
     }
 
     #createEmailProvider(config, settings, sentry) {
+        const provider = config.get('bulkEmail:provider') || 'mailgun';
+
+        if (provider !== 'mailgun') {
+            throw new Error(`Unknown bulk email provider: ${provider}. Only 'mailgun' is currently supported.`);
+        }
+
         const MailgunClient = require('../lib/MailgunClient');
         const MailgunEmailProvider = require('./MailgunEmailProvider');
 
