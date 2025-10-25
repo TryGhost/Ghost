@@ -26,10 +26,8 @@ function resolveSuppressionProvider(config) {
 
     const suppressionProvider = suppressionProviderMap[provider];
 
-    if (!suppressionProvider && provider !== null && provider !== false && provider !== 0) {
+    if (!suppressionProvider) {
         logging.warn(`No suppression list provider available for email provider: ${provider}`);
-    } else if (!suppressionProvider) {
-        logging.warn(`No suppression list provider available for email provider: ${emailProvider}`);
     }
 
     return suppressionProvider || null;
