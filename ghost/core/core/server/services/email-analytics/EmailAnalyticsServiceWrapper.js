@@ -9,7 +9,7 @@ class EmailAnalyticsServiceWrapper {
         const EmailAnalyticsService = require('./EmailAnalyticsService');
         const EmailEventStorage = require('../email-service/EmailEventStorage');
         const EmailEventProcessor = require('../email-service/EmailEventProcessor');
-        const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
+        const adapterManager = require('../adapter-manager');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
@@ -43,12 +43,19 @@ class EmailAnalyticsServiceWrapper {
             prometheusClient
         });
 
+        // Get email analytics adapter from AdapterManager
+        // Runtime config (config, settings) is injected here
+        const mailgunAnalyticsProvider = adapterManager.getAdapter('email-analytics', {
+            config,
+            settings
+        });
+
         this.service = new EmailAnalyticsService({
             config,
             settings,
             eventProcessor,
             providers: [
-                new MailgunProvider({config, settings})
+                mailgunAnalyticsProvider
             ],
             queries,
             domainEvents,

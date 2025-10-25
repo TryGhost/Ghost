@@ -16,19 +16,34 @@ adapterManager.registerAdapter('storage', require('ghost-storage-base'));
 adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/scheduling-base'));
 adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
+adapterManager.registerAdapter('email', require('../../adapters/email/EmailProviderBase'));
+adapterManager.registerAdapter('email-analytics', require('../../adapters/email-analytics/EmailAnalyticsBase'));
+adapterManager.registerAdapter('email-suppression', require('../../adapters/email-suppression/EmailSuppressionBase'));
 
 module.exports = {
     /**
      *
-     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache', 'email', 'email-analytics', 'email-suppression' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {Object} [runtimeConfig] - Optional runtime configuration to merge with file-based config (e.g., for dependency injection)
      * @returns {Object} instance of an adapter
      */
-    getAdapter(name) {
+    getAdapter(name, runtimeConfig) {
         const adapterServiceConfig = getAdapterServiceConfig(config);
 
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        return adapterManager.getAdapter(name, adapterClassName, adapterConfig);
+        // Merge runtime config with file-based config
+        // Runtime config takes precedence for dependency injection (e.g., mailgunClient instance)
+        const finalConfig = runtimeConfig ? Object.assign({}, adapterConfig, runtimeConfig) : adapterConfig;
+
+        // When runtime config is provided, clear cache to ensure fresh instance with new dependencies
+        // This prevents cached instances from being returned with stale runtime dependencies
+        if (runtimeConfig) {
+            const adapterType = name.includes(':') ? name.split(':')[0] : name;
+            adapterManager.resetCacheFor(adapterType);
+        }
+
+        return adapterManager.getAdapter(name, adapterClassName, finalConfig);
     },
 
     /**
@@ -36,5 +51,14 @@ module.exports = {
      */
     clearCache() {
         adapterManager.clearInstanceCache();
+    },
+
+    /**
+     * Clear cached instances for a specific adapter type
+     *
+     * @param {String} adapterType - The adapter type to clear cache for (e.g., 'email', 'email-analytics')
+     */
+    resetCacheFor(adapterType) {
+        adapterManager.resetCacheFor(adapterType);
     }
 };

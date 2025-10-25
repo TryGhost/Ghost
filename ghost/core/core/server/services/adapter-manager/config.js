@@ -25,5 +25,32 @@ module.exports = function getAdapterServiceConfig(config) {
         };
     }
 
+    // Email adapter config defaults to mailgun
+    // Runtime config (like mailgunClient instance) will be injected by EmailServiceWrapper
+    if (!adapterServiceConfig.email) {
+        adapterServiceConfig.email = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
+    // Email analytics adapter config defaults to mailgun
+    // Runtime config (config and settings) will be injected by EmailAnalyticsServiceWrapper
+    if (!adapterServiceConfig['email-analytics']) {
+        adapterServiceConfig['email-analytics'] = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
+    // Email suppression adapter config defaults to mailgun
+    // Runtime config (apiClient) will be injected by EmailSuppressionServiceWrapper
+    if (!adapterServiceConfig['email-suppression']) {
+        adapterServiceConfig['email-suppression'] = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
     return adapterServiceConfig;
 };

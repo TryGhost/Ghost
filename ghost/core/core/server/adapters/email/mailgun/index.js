@@ -1,47 +1,43 @@
+/* eslint-disable max-lines */
+// Disable max-lines: Email adapter contains cohesive send logic that shouldn't be split
+const EmailProviderBase = require('../EmailProviderBase');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
+const debug = require('@tryghost/debug')('email-service:mailgun-adapter');
 
 /**
- * @typedef {object} Recipient
- * @prop {string} email
- * @prop {Replacement[]} replacements
+ * Mailgun Email Provider Adapter
+ *
+ * Sends emails through Mailgun's bulk email API.
+ * Extends EmailProviderBase to work with Ghost's AdapterManager.
  */
-
-/**
- * @typedef {object} Replacement
- * @prop {string} token
- * @prop {string} value
- * @prop {string} id
- */
-
-/**
- * @typedef {object} EmailSendingOptions
- * @prop {boolean} clickTrackingEnabled
- * @prop {boolean} openTrackingEnabled
- * @prop {Date} deliveryTime
- */
-
-/**
- * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
- */
-
-class MailgunEmailProvider {
+class MailgunEmailProvider extends EmailProviderBase {
     #mailgunClient;
     #errorHandler;
 
     /**
-     * @param {object} dependencies
-     * @param {import('@tryghost/mailgun-client/lib/MailgunClient')} dependencies.mailgunClient - mailgun client to send emails
-     * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
+     * @param {Object} config - Adapter configuration
+     * @param {Object} config.mailgunClient - Configured Mailgun client instance
+     * @param {Function} [config.errorHandler] - Error handler for logging exceptions
      */
-    constructor({
-        mailgunClient,
-        errorHandler
-    }) {
-        this.#mailgunClient = mailgunClient;
-        this.#errorHandler = errorHandler;
+    constructor(config) {
+        super(config);
+
+        if (!config.mailgunClient) {
+            throw new errors.IncorrectUsageError({
+                message: 'Mailgun adapter requires mailgunClient in config'
+            });
+        }
+
+        // Validate mailgunClient interface
+        if (typeof config.mailgunClient.send !== 'function') {
+            throw new errors.IncorrectUsageError({
+                message: 'mailgunClient must have a send() method'
+            });
+        }
+
+        this.#mailgunClient = config.mailgunClient;
+        this.#errorHandler = config.errorHandler;
     }
 
     #createRecipientData(replacements) {
@@ -57,11 +53,16 @@ class MailgunEmailProvider {
     }
 
     #updateRecipientVariables(data, replacementDefinitions) {
+        if (!replacementDefinitions || replacementDefinitions.length === 0) {
+            return data;
+        }
         for (const def of replacementDefinitions) {
-            data = data.replace(
-                def.token,
-                `%recipient.${def.id}%`
-            );
+            if (def.token && def.id) {
+                data = data.replaceAll(
+                    def.token,
+                    `%recipient.${def.id}%`
+                );
+            }
         }
         return data;
     }
@@ -80,11 +81,22 @@ class MailgunEmailProvider {
 
     /**
      * Send an email using the Mailgun API
-     * @param {import('./SendingService').EmailData} data
-     * @param {EmailSendingOptions} options
-     * @returns {Promise<EmailProviderSuccessResponse>}
+     * @param {Object} data - Email data
+     * @param {string} data.subject - Email subject
+     * @param {string} data.html - Email HTML content
+     * @param {string} data.plaintext - Email plain text content
+     * @param {string} data.from - From address
+     * @param {string} data.replyTo - Reply-to address
+     * @param {string} data.emailId - Email ID
+     * @param {Array} data.recipients - Array of recipients
+     * @param {Array} data.replacementDefinitions - Replacement definitions
+     * @param {Object} options - Send options
+     * @param {boolean} options.openTrackingEnabled - Enable open tracking
+     * @param {boolean} options.clickTrackingEnabled - Enable click tracking
+     * @param {Date} [options.deliveryTime] - Scheduled delivery time
+     * @returns {Promise<{id: string}>} Provider message ID
     */
-    async send(data, options) {
+    async send(data, options = {}) {
         const {
             subject,
             html,
@@ -92,11 +104,10 @@ class MailgunEmailProvider {
             from,
             replyTo,
             emailId,
-            recipients,
-            replacementDefinitions
+            recipients = [],
+            replacementDefinitions = []
         } = data;
 
-        logging.info(`Sending email to ${recipients.length} recipients`);
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients`);
 
@@ -118,7 +129,7 @@ class MailgunEmailProvider {
 
             // create recipient data for Mailgun using replacement definitions
             const recipientData = recipients.reduce((acc, recipient) => {
-                acc[recipient.email] = this.#createRecipientData(recipient.replacements);
+                acc[recipient.email] = this.#createRecipientData(recipient.replacements || []);
                 return acc;
             }, {});
 
@@ -138,22 +149,33 @@ class MailgunEmailProvider {
             );
 
             debug(`sent message (${Date.now() - startTime}ms)`);
-            logging.info(`Sent message (${Date.now() - startTime}ms)`);
 
             // Return mailgun provider id, trim <> from response
+            const messageId = response?.id ? String(response.id).trim().replace(/^<|>$/g, '') : 'unknown';
             return {
-                id: response.id.trim().replace(/^<|>$/g, '')
+                id: messageId
             };
         } catch (e) {
             let ghostError;
             if (e.error && e.messageData) {
                 const {error, messageData} = e;
 
+                // Redact PII from error details (email addresses, content)
+                const redactedError = {
+                    status: error.status,
+                    message: error.message,
+                    details: error.details
+                };
+                const errorDetails = JSON.stringify({
+                    error: redactedError,
+                    recipientCount: messageData.to?.length || 0
+                }).slice(0, 2000);
+
                 // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
                 ghostError = new errors.EmailError({
                     statusCode: error.status,
                     message: this.#createMailgunErrorMessage(error),
-                    errorDetails: JSON.stringify({error, messageData}),
+                    errorDetails,
                     context: `Mailgun Error ${error.status}: ${error.details}`,
                     help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                     code: 'BULK_EMAIL_SEND_FAILED'
@@ -170,17 +192,31 @@ class MailgunEmailProvider {
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
 
+            // Call error handler if provided (wrap in try-catch for safety)
+            if (this.#errorHandler) {
+                try {
+                    Promise.resolve(this.#errorHandler(ghostError)).catch(() => {
+                        // Ignore handler errors to avoid masking the original error
+                    });
+                } catch (handlerError) {
+                    // Ignore synchronous handler errors
+                }
+            }
+
             throw ghostError;
         }
     }
 
+    /**
+     * Get maximum number of recipients per batch
+     * @returns {number}
+     */
     getMaximumRecipients() {
         return this.#mailgunClient.getBatchSize();
     }
 
     /**
      * Returns the configured delay between batches in milliseconds
-     * 
      * @returns {number}
      */
     getTargetDeliveryWindow() {
