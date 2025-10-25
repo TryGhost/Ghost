@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const {createAnalyticsProviders} = require('./analytics-provider-factory');
 
 class EmailAnalyticsServiceWrapper {
     init() {
@@ -9,7 +10,6 @@ class EmailAnalyticsServiceWrapper {
         const EmailAnalyticsService = require('./EmailAnalyticsService');
         const EmailEventStorage = require('../email-service/EmailEventStorage');
         const EmailEventProcessor = require('../email-service/EmailEventProcessor');
-        const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
@@ -47,9 +47,7 @@ class EmailAnalyticsServiceWrapper {
             config,
             settings,
             eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings})
-            ],
+            providers: createAnalyticsProviders(config, settings),
             queries,
             domainEvents,
             prometheusClient
