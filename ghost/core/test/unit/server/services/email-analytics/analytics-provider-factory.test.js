@@ -242,7 +242,7 @@ describe('Analytics Provider Factory', function () {
 
             // EmailAnalyticsService expects an array in the 'providers' field
             result.should.be.an.Array();
-            result.forEach(provider => {
+            result.forEach((provider) => {
                 provider.should.be.an.Object();
             });
         });

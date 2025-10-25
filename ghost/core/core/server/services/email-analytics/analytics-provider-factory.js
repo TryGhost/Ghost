@@ -18,7 +18,7 @@ function resolveAnalyticsProvider(config) {
 
     // Map email providers to their analytics implementations
     const analyticsProviderMap = {
-        'mailgun': 'mailgun'
+        mailgun: 'mailgun'
         // Future providers can be added here:
         // 'ses': 'ses',
         // 'sendgrid': 'sendgrid'
