@@ -34,5 +34,14 @@ module.exports = function getAdapterServiceConfig(config) {
         };
     }
 
+    // Email analytics adapter config defaults to mailgun
+    // Runtime config (config and settings) will be injected by EmailAnalyticsServiceWrapper
+    if (!adapterServiceConfig['email-analytics']) {
+        adapterServiceConfig['email-analytics'] = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
     return adapterServiceConfig;
 };
