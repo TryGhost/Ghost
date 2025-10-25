@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * Validates and resolves the email provider configuration
@@ -11,13 +12,15 @@ const logging = require('@tryghost/logging');
  *
  * @param {Object} config - Configuration service
  * @returns {string} The provider name
- * @throws {Error} If provider is not 'mailgun'
+ * @throws {IncorrectUsageError} If provider is not 'mailgun'
  */
 function resolveEmailProvider(config) {
     const provider = config.get('bulkEmail:provider') || 'mailgun';
 
     if (provider !== 'mailgun') {
-        throw new Error(`Unknown bulk email provider: ${provider}. Only 'mailgun' is currently supported.`);
+        throw new errors.IncorrectUsageError({
+            message: `Unknown bulk email provider: ${provider}. Only 'mailgun' is currently supported.`
+        });
     }
 
     return provider;
@@ -29,8 +32,8 @@ function resolveEmailProvider(config) {
  * @param {Object} config - Configuration service
  * @param {Object} settings - Settings cache
  * @param {Object} sentry - Sentry error tracking service
- * @returns {MailgunEmailProvider} Email provider instance
- * @throws {Error} If provider is not 'mailgun'
+ * @returns {Object} Email provider instance
+ * @throws {IncorrectUsageError|InternalServerError} If provider is invalid or not implemented
  */
 function createEmailProvider(config, settings, sentry) {
     const provider = resolveEmailProvider(config);
@@ -54,7 +57,9 @@ function createEmailProvider(config, settings, sentry) {
     }
 
     // This should never be reached due to validation, but keeping for safety
-    throw new Error(`Provider '${provider}' is not implemented`);
+    throw new errors.InternalServerError({
+        message: `Provider '${provider}' is not implemented`
+    });
 }
 
 module.exports = {

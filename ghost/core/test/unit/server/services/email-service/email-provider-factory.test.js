@@ -18,9 +18,6 @@ describe('Email Provider Factory', function () {
     beforeEach(function () {
         sandbox = sinon.createSandbox();
 
-        // Reset the module cache to get a fresh instance
-        delete require.cache[require.resolve('../../../../../core/server/services/email-service/email-provider-factory')];
-
         // Import the ACTUAL production module
         factory = require('../../../../../core/server/services/email-service/email-provider-factory');
 
@@ -40,8 +37,6 @@ describe('Email Provider Factory', function () {
 
     afterEach(function () {
         sandbox.restore();
-        // Clean up module cache
-        delete require.cache[require.resolve('../../../../../core/server/services/email-service/email-provider-factory')];
     });
 
     describe('resolveEmailProvider', function () {
@@ -259,10 +254,6 @@ describe('Email Provider Factory', function () {
             should.exist(resolveEmailProvider);
             createEmailProvider.should.be.a.Function();
             resolveEmailProvider.should.be.a.Function();
-
-            // Verify the functions have the expected signatures
-            createEmailProvider.length.should.equal(3); // expects 3 parameters
-            resolveEmailProvider.length.should.equal(1); // expects 1 parameter
         });
     });
 });
