@@ -21,7 +21,7 @@ adapterManager.registerAdapter('email', require('../../adapters/email/EmailProvi
 module.exports = {
     /**
      *
-     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache', 'email' etc. Or can contain a "resource" extension like "storage:image"
      * @returns {Object} instance of an adapter
      */
     getAdapter(name) {
