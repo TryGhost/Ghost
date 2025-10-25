@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('i18n');
-const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
+const {createEmailProvider} = require('./email-provider-factory');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
@@ -66,7 +66,7 @@ class EmailServiceWrapper {
             }
         });
 
-        const emailProvider = this.#createEmailProvider(configService, settingsCache, sentry);
+        const emailProvider = createEmailProvider(configService, settingsCache, sentry);
 
         const emailRenderer = new EmailRenderer({
             settingsCache,
@@ -137,46 +137,6 @@ class EmailServiceWrapper {
                 Newsletter,
                 Email
             }
-        });
-    }
-
-    /**
-     * Creates the email provider instance
-     *
-     * WARNING: Currently only 'mailgun' is supported. Setting any other value
-     * in bulkEmail:provider will cause Ghost to fail at startup.
-     *
-     * Future providers (ses, sendgrid, postmark) will be added in upcoming releases.
-     * DO NOT change this setting unless you're developing/testing new providers.
-     *
-     * @param {Object} config - Configuration service
-     * @param {Object} settings - Settings cache
-     * @param {Object} sentry - Sentry error tracking service
-     * @returns {MailgunEmailProvider} Email provider instance
-     * @throws {Error} If provider is not 'mailgun'
-     * @private
-     */
-    #createEmailProvider(config, settings, sentry) {
-        const provider = config.get('bulkEmail:provider') || 'mailgun';
-
-        if (provider !== 'mailgun') {
-            throw new Error(`Unknown bulk email provider: ${provider}. Only 'mailgun' is currently supported.`);
-        }
-
-        const MailgunClient = require('../lib/MailgunClient');
-        const MailgunEmailProvider = require('./MailgunEmailProvider');
-
-        // capture errors from mailgun client and log them in sentry
-        const errorHandler = (error) => {
-            logging.info(`Capturing error for mailgun email provider service`);
-            sentry.captureException(error);
-        };
-
-        const mailgunClient = new MailgunClient({config, settings});
-
-        return new MailgunEmailProvider({
-            mailgunClient,
-            errorHandler
         });
     }
 }
