@@ -16,6 +16,7 @@ adapterManager.registerAdapter('storage', require('ghost-storage-base'));
 adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/scheduling-base'));
 adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
+adapterManager.registerAdapter('email', require('../../adapters/email/EmailProviderBase'));
 
 module.exports = {
     /**
