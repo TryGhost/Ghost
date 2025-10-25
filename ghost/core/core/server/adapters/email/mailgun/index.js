@@ -29,6 +29,13 @@ class MailgunEmailProvider extends EmailProviderBase {
             });
         }
 
+        // Validate mailgunClient interface
+        if (typeof config.mailgunClient.send !== 'function') {
+            throw new errors.IncorrectUsageError({
+                message: 'mailgunClient must have a send() method'
+            });
+        }
+
         this.#mailgunClient = config.mailgunClient;
         this.#errorHandler = config.errorHandler;
     }
@@ -46,11 +53,16 @@ class MailgunEmailProvider extends EmailProviderBase {
     }
 
     #updateRecipientVariables(data, replacementDefinitions) {
+        if (!replacementDefinitions || replacementDefinitions.length === 0) {
+            return data;
+        }
         for (const def of replacementDefinitions) {
-            data = data.replace(
-                def.token,
-                `%recipient.${def.id}%`
-            );
+            if (def.token && def.id) {
+                data = data.replaceAll(
+                    def.token,
+                    `%recipient.${def.id}%`
+                );
+            }
         }
         return data;
     }
@@ -84,7 +96,7 @@ class MailgunEmailProvider extends EmailProviderBase {
      * @param {Date} [options.deliveryTime] - Scheduled delivery time
      * @returns {Promise<{id: string}>} Provider message ID
     */
-    async send(data, options) {
+    async send(data, options = {}) {
         const {
             subject,
             html,
@@ -92,11 +104,10 @@ class MailgunEmailProvider extends EmailProviderBase {
             from,
             replyTo,
             emailId,
-            recipients,
-            replacementDefinitions
+            recipients = [],
+            replacementDefinitions = []
         } = data;
 
-        logging.info(`Sending email to ${recipients.length} recipients`);
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients`);
 
@@ -118,7 +129,7 @@ class MailgunEmailProvider extends EmailProviderBase {
 
             // create recipient data for Mailgun using replacement definitions
             const recipientData = recipients.reduce((acc, recipient) => {
-                acc[recipient.email] = this.#createRecipientData(recipient.replacements);
+                acc[recipient.email] = this.#createRecipientData(recipient.replacements || []);
                 return acc;
             }, {});
 
@@ -138,22 +149,33 @@ class MailgunEmailProvider extends EmailProviderBase {
             );
 
             debug(`sent message (${Date.now() - startTime}ms)`);
-            logging.info(`Sent message (${Date.now() - startTime}ms)`);
 
             // Return mailgun provider id, trim <> from response
+            const messageId = response?.id ? String(response.id).trim().replace(/^<|>$/g, '') : 'unknown';
             return {
-                id: response.id.trim().replace(/^<|>$/g, '')
+                id: messageId
             };
         } catch (e) {
             let ghostError;
             if (e.error && e.messageData) {
                 const {error, messageData} = e;
 
+                // Redact PII from error details (email addresses, content)
+                const redactedError = {
+                    status: error.status,
+                    message: error.message,
+                    details: error.details
+                };
+                const errorDetails = JSON.stringify({
+                    error: redactedError,
+                    recipientCount: messageData.to?.length || 0
+                }).slice(0, 2000);
+
                 // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
                 ghostError = new errors.EmailError({
                     statusCode: error.status,
                     message: this.#createMailgunErrorMessage(error),
-                    errorDetails: JSON.stringify({error, messageData}),
+                    errorDetails,
                     context: `Mailgun Error ${error.status}: ${error.details}`,
                     help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                     code: 'BULK_EMAIL_SEND_FAILED'
@@ -170,9 +192,15 @@ class MailgunEmailProvider extends EmailProviderBase {
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
 
-            // Call error handler if provided
+            // Call error handler if provided (wrap in try-catch for safety)
             if (this.#errorHandler) {
-                this.#errorHandler(ghostError);
+                try {
+                    Promise.resolve(this.#errorHandler(ghostError)).catch(() => {
+                        // Ignore handler errors to avoid masking the original error
+                    });
+                } catch (handlerError) {
+                    // Ignore synchronous handler errors
+                }
             }
 
             throw ghostError;
