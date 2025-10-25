@@ -140,6 +140,22 @@ class EmailServiceWrapper {
         });
     }
 
+    /**
+     * Creates the email provider instance
+     *
+     * WARNING: Currently only 'mailgun' is supported. Setting any other value
+     * in bulkEmail:provider will cause Ghost to fail at startup.
+     *
+     * Future providers (ses, sendgrid, postmark) will be added in upcoming releases.
+     * DO NOT change this setting unless you're developing/testing new providers.
+     *
+     * @param {Object} config - Configuration service
+     * @param {Object} settings - Settings cache
+     * @param {Object} sentry - Sentry error tracking service
+     * @returns {MailgunEmailProvider} Email provider instance
+     * @throws {Error} If provider is not 'mailgun'
+     * @private
+     */
     #createEmailProvider(config, settings, sentry) {
         const provider = config.get('bulkEmail:provider') || 'mailgun';
 
