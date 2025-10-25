@@ -58,9 +58,8 @@ describe('EmailProviderBase', function () {
         });
     });
 
-    describe('integration with AdapterManager', function () {
-        it('can be required by AdapterManager', function () {
-            // This test verifies the module exports correctly
+    describe('module exports', function () {
+        it('can be required', function () {
             const BaseClass = require('../../../../../core/server/adapters/email/EmailProviderBase');
 
             should.exist(BaseClass);

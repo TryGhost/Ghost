@@ -1,3 +1,5 @@
+const errors = require('@tryghost/errors');
+
 /**
  * Base class for email provider adapters
  *
@@ -36,11 +38,9 @@ class EmailProviderBase {
      * @param {Object} [options] - Send options
      * @param {boolean} [options.clickTrackingEnabled] - Enable click tracking
      * @param {boolean} [options.openTrackingEnabled] - Enable open tracking
-     * @returns {Promise<Object>} Send result with provider message ID
      * @returns {Promise<{id: string}>} Object containing the provider's message ID
      */
     async send() {
-        const errors = require('@tryghost/errors');
         throw new errors.IncorrectUsageError({
             message: 'send() must be implemented by email provider adapter'
         });
