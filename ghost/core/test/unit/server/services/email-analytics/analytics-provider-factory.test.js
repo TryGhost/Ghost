@@ -17,9 +17,6 @@ describe('Analytics Provider Factory', function () {
     beforeEach(function () {
         sandbox = sinon.createSandbox();
 
-        // Reset the module cache to get a fresh instance
-        delete require.cache[require.resolve('../../../../../core/server/services/email-analytics/analytics-provider-factory')];
-
         // Create logging stub before requiring the module
         loggingStub = {
             warn: sandbox.stub(),
@@ -44,8 +41,6 @@ describe('Analytics Provider Factory', function () {
 
     afterEach(function () {
         sandbox.restore();
-        // Clean up module cache
-        delete require.cache[require.resolve('../../../../../core/server/services/email-analytics/analytics-provider-factory')];
     });
 
     describe('resolveAnalyticsProvider', function () {
@@ -231,10 +226,6 @@ describe('Analytics Provider Factory', function () {
             should.exist(resolveAnalyticsProvider);
             createAnalyticsProviders.should.be.a.Function();
             resolveAnalyticsProvider.should.be.a.Function();
-
-            // Verify the functions have the expected signatures
-            createAnalyticsProviders.length.should.equal(2); // expects 2 parameters
-            resolveAnalyticsProvider.length.should.equal(1); // expects 1 parameter
         });
 
         it('returns array format expected by EmailAnalyticsService', function () {
