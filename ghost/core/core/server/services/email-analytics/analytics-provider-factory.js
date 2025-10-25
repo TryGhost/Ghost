@@ -26,10 +26,8 @@ function resolveAnalyticsProvider(config) {
 
     const analyticsProvider = analyticsProviderMap[provider];
 
-    if (!analyticsProvider && provider !== null && provider !== false && provider !== 0) {
+    if (!analyticsProvider) {
         logging.warn(`No analytics provider available for email provider: ${provider}`);
-    } else if (!analyticsProvider) {
-        logging.warn(`No analytics provider available for email provider: ${emailProvider}`);
     }
 
     return analyticsProvider || null;
