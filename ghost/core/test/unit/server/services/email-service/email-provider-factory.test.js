@@ -72,28 +72,31 @@ describe('Email Provider Factory', function () {
             should.equal(result, 'mailgun');
         });
 
-        it('returns mailgun for null value', function () {
+        it('throws error for null value', function () {
             mockConfig.get.withArgs('bulkEmail:provider').returns(null);
 
-            const result = factory.resolveEmailProvider(mockConfig);
-
-            should.equal(result, 'mailgun');
+            should.throws(
+                () => factory.resolveEmailProvider(mockConfig),
+                /Unknown bulk email provider: null\. Only 'mailgun' is currently supported/
+            );
         });
 
-        it('returns mailgun for false value', function () {
+        it('throws error for false value', function () {
             mockConfig.get.withArgs('bulkEmail:provider').returns(false);
 
-            const result = factory.resolveEmailProvider(mockConfig);
-
-            should.equal(result, 'mailgun');
+            should.throws(
+                () => factory.resolveEmailProvider(mockConfig),
+                /Unknown bulk email provider: false\. Only 'mailgun' is currently supported/
+            );
         });
 
-        it('returns mailgun for zero value', function () {
+        it('throws error for zero value', function () {
             mockConfig.get.withArgs('bulkEmail:provider').returns(0);
 
-            const result = factory.resolveEmailProvider(mockConfig);
-
-            should.equal(result, 'mailgun');
+            should.throws(
+                () => factory.resolveEmailProvider(mockConfig),
+                /Unknown bulk email provider: 0\. Only 'mailgun' is currently supported/
+            );
         });
 
         it('throws error for unsupported providers', function () {

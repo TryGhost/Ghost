@@ -15,7 +15,10 @@ const errors = require('@tryghost/errors');
  * @throws {IncorrectUsageError} If provider is not 'mailgun'
  */
 function resolveEmailProvider(config) {
-    const provider = config.get('bulkEmail:provider') || 'mailgun';
+    const emailProvider = config.get('bulkEmail:provider');
+
+    // Only use default for undefined or empty string
+    const provider = (emailProvider === undefined || emailProvider === '') ? 'mailgun' : emailProvider;
 
     if (provider !== 'mailgun') {
         throw new errors.IncorrectUsageError({
