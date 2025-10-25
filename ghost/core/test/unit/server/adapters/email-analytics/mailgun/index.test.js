@@ -222,6 +222,19 @@ describe('Mailgun Email Analytics Provider Adapter', function () {
             should.not.exist(mailgunOptions.begin);
             should.not.exist(mailgunOptions.end);
         });
+
+        it('should handle undefined options parameter', async function () {
+            await adapter.fetchLatest(batchHandler, undefined);
+
+            const mailgunOptions = mailgunClient.fetchEvents.firstCall.args[0];
+
+            mailgunOptions.event.should.equal('delivered OR opened OR failed OR unsubscribed OR complained');
+            should.not.exist(mailgunOptions.begin);
+            should.not.exist(mailgunOptions.end);
+
+            const options = mailgunClient.fetchEvents.firstCall.args[2];
+            should.not.exist(options.maxEvents);
+        });
     });
 
     describe('Adapter Contract', function () {

@@ -2,6 +2,7 @@
 // Filename must be index.js for adapter module resolution (email-analytics/mailgun → email-analytics/mailgun/index.js)
 const EmailAnalyticsBase = require('../EmailAnalyticsBase');
 const MailgunClient = require('../../../services/lib/MailgunClient');
+const errors = require('@tryghost/errors');
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
@@ -26,7 +27,6 @@ class MailgunEmailAnalyticsProvider extends EmailAnalyticsBase {
         super(config);
 
         if (!config.config || !config.settings) {
-            const errors = require('@tryghost/errors');
             throw new errors.IncorrectUsageError({
                 message: 'Mailgun analytics adapter requires config and settings'
             });
@@ -62,13 +62,13 @@ class MailgunEmailAnalyticsProvider extends EmailAnalyticsBase {
             limit: PAGE_LIMIT,
             event: options?.events ? options.events.join(' OR ') : DEFAULT_EVENT_FILTER,
             tags: this.#tags.join(' AND '),
-            begin: options.begin ? options.begin.getTime() / 1000 : undefined,
-            end: options.end ? options.end.getTime() / 1000 : undefined,
+            begin: options?.begin ? options.begin.getTime() / 1000 : undefined,
+            end: options?.end ? options.end.getTime() / 1000 : undefined,
             ascending: 'yes'
         };
 
         return this.#fetchAnalytics(mailgunOptions, batchHandler, {
-            maxEvents: options.maxEvents
+            maxEvents: options?.maxEvents
         });
     }
 
