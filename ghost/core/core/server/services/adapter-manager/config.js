@@ -25,5 +25,14 @@ module.exports = function getAdapterServiceConfig(config) {
         };
     }
 
+    // Email adapter config defaults to mailgun
+    // Runtime config (like mailgunClient instance) will be injected by EmailServiceWrapper
+    if (!adapterServiceConfig.email) {
+        adapterServiceConfig.email = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
     return adapterServiceConfig;
 };

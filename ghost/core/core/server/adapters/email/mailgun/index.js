@@ -1,47 +1,36 @@
+/* eslint-disable max-lines */
+// Disable max-lines: Email adapter contains cohesive send logic that shouldn't be split
+const EmailProviderBase = require('../EmailProviderBase');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
+const debug = require('@tryghost/debug')('email-service:mailgun-adapter');
 
 /**
- * @typedef {object} Recipient
- * @prop {string} email
- * @prop {Replacement[]} replacements
+ * Mailgun Email Provider Adapter
+ *
+ * Sends emails through Mailgun's bulk email API.
+ * Extends EmailProviderBase to work with Ghost's AdapterManager.
  */
-
-/**
- * @typedef {object} Replacement
- * @prop {string} token
- * @prop {string} value
- * @prop {string} id
- */
-
-/**
- * @typedef {object} EmailSendingOptions
- * @prop {boolean} clickTrackingEnabled
- * @prop {boolean} openTrackingEnabled
- * @prop {Date} deliveryTime
- */
-
-/**
- * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
- */
-
-class MailgunEmailProvider {
+class MailgunEmailProvider extends EmailProviderBase {
     #mailgunClient;
     #errorHandler;
 
     /**
-     * @param {object} dependencies
-     * @param {import('@tryghost/mailgun-client/lib/MailgunClient')} dependencies.mailgunClient - mailgun client to send emails
-     * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
+     * @param {Object} config - Adapter configuration
+     * @param {Object} config.mailgunClient - Configured Mailgun client instance
+     * @param {Function} [config.errorHandler] - Error handler for logging exceptions
      */
-    constructor({
-        mailgunClient,
-        errorHandler
-    }) {
-        this.#mailgunClient = mailgunClient;
-        this.#errorHandler = errorHandler;
+    constructor(config) {
+        super(config);
+
+        if (!config.mailgunClient) {
+            throw new errors.IncorrectUsageError({
+                message: 'Mailgun adapter requires mailgunClient in config'
+            });
+        }
+
+        this.#mailgunClient = config.mailgunClient;
+        this.#errorHandler = config.errorHandler;
     }
 
     #createRecipientData(replacements) {
@@ -80,9 +69,20 @@ class MailgunEmailProvider {
 
     /**
      * Send an email using the Mailgun API
-     * @param {import('./SendingService').EmailData} data
-     * @param {EmailSendingOptions} options
-     * @returns {Promise<EmailProviderSuccessResponse>}
+     * @param {Object} data - Email data
+     * @param {string} data.subject - Email subject
+     * @param {string} data.html - Email HTML content
+     * @param {string} data.plaintext - Email plain text content
+     * @param {string} data.from - From address
+     * @param {string} data.replyTo - Reply-to address
+     * @param {string} data.emailId - Email ID
+     * @param {Array} data.recipients - Array of recipients
+     * @param {Array} data.replacementDefinitions - Replacement definitions
+     * @param {Object} options - Send options
+     * @param {boolean} options.openTrackingEnabled - Enable open tracking
+     * @param {boolean} options.clickTrackingEnabled - Enable click tracking
+     * @param {Date} [options.deliveryTime] - Scheduled delivery time
+     * @returns {Promise<{id: string}>} Provider message ID
     */
     async send(data, options) {
         const {
@@ -170,17 +170,25 @@ class MailgunEmailProvider {
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
 
+            // Call error handler if provided
+            if (this.#errorHandler) {
+                this.#errorHandler(ghostError);
+            }
+
             throw ghostError;
         }
     }
 
+    /**
+     * Get maximum number of recipients per batch
+     * @returns {number}
+     */
     getMaximumRecipients() {
         return this.#mailgunClient.getBatchSize();
     }
 
     /**
      * Returns the configured delay between batches in milliseconds
-     * 
      * @returns {number}
      */
     getTargetDeliveryWindow() {
