@@ -6,6 +6,7 @@ const SpamComplaintEvent = require('../../../services/email-service/events/SpamC
 const EmailBouncedEvent = require('../../../services/email-service/events/EmailBouncedEvent');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const models = require('../../../models');
 
 /**
@@ -27,7 +28,6 @@ class MailgunEmailSuppressionAdapter extends EmailSuppressionBase {
         super(config);
 
         if (!config.apiClient) {
-            const errors = require('@tryghost/errors');
             throw new errors.IncorrectUsageError({
                 message: 'Mailgun suppression adapter requires apiClient'
             });
