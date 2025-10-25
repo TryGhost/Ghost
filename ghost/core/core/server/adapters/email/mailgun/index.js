@@ -1,7 +1,6 @@
 /* eslint-disable max-lines */
 // Disable max-lines: Email adapter contains cohesive send logic that shouldn't be split
 const EmailProviderBase = require('../EmailProviderBase');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-adapter');
 
