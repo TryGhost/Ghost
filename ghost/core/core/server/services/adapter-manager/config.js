@@ -43,5 +43,14 @@ module.exports = function getAdapterServiceConfig(config) {
         };
     }
 
+    // Email suppression adapter config defaults to mailgun
+    // Runtime config (apiClient) will be injected by EmailSuppressionServiceWrapper
+    if (!adapterServiceConfig['email-suppression']) {
+        adapterServiceConfig['email-suppression'] = {
+            active: 'mailgun',
+            mailgun: {}
+        };
+    }
+
     return adapterServiceConfig;
 };

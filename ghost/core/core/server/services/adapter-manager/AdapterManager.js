@@ -69,6 +69,7 @@ module.exports = class AdapterManager {
      */
     resetCacheFor(adapterType) {
         if (!this.instanceCache[adapterType]) {
+            const errors = require('@tryghost/errors');
             throw new errors.NotFoundError({
                 message: `Unknown adapter type ${adapterType}. Please register adapter.`
             });

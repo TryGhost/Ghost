@@ -18,11 +18,12 @@ adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
 adapterManager.registerAdapter('email', require('../../adapters/email/EmailProviderBase'));
 adapterManager.registerAdapter('email-analytics', require('../../adapters/email-analytics/EmailAnalyticsBase'));
+adapterManager.registerAdapter('email-suppression', require('../../adapters/email-suppression/EmailSuppressionBase'));
 
 module.exports = {
     /**
      *
-     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache', 'email', 'email-analytics' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache', 'email', 'email-analytics', 'email-suppression' etc. Or can contain a "resource" extension like "storage:image"
      * @param {Object} [runtimeConfig] - Optional runtime configuration to merge with file-based config (e.g., for dependency injection)
      * @returns {Object} instance of an adapter
      */
@@ -50,5 +51,14 @@ module.exports = {
      */
     clearCache() {
         adapterManager.clearInstanceCache();
+    },
+
+    /**
+     * Clear cached instances for a specific adapter type
+     *
+     * @param {String} adapterType - The adapter type to clear cache for (e.g., 'email', 'email-analytics')
+     */
+    resetCacheFor(adapterType) {
+        adapterManager.resetCacheFor(adapterType);
     }
 };
