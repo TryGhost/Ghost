@@ -18,7 +18,7 @@ function resolveSuppressionProvider(config) {
 
     // Map email providers to their suppression implementations
     const suppressionProviderMap = {
-        'mailgun': 'mailgun'
+        mailgun: 'mailgun'
         // Future providers can be added here:
         // 'ses': 'ses',
         // 'sendgrid': 'sendgrid'
