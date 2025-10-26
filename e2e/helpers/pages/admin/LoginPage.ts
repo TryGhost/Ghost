@@ -23,6 +23,12 @@ export class LoginPage extends AdminPage {
         await this.signInButton.click();
     }
 
+    async logoutByCookieClear() {
+        const context = await this.page.context();
+        await context.clearCookies();
+        await this.page.reload();
+    }
+
     async waitForLoginPageAfterUserCreated(): Promise<void> {
         let counter = 0;
 

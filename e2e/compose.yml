@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   analytics:
-    image: ghost/traffic-analytics:1.0.18
+    image: ghost/traffic-analytics:1.0.19
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
@@ -102,8 +102,8 @@ services:
       tinybird-local:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
     ports:
       - "1026:1025" # SMTP server
