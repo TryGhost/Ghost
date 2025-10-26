@@ -80,9 +80,9 @@ services:
     platform: linux/amd64
     stop_grace_period: 2s
     ports:
-      - "7181:7181"
+      - "7182:7181" # Use 7182 on host to avoid conflicts with root compose.yml
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:7182/v0/health" ]
       interval: 1s
       timeout: 5s
       retries: 120

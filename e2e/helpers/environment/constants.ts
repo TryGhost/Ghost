@@ -19,6 +19,7 @@ export const MYSQL = {
 export const TB = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
+    HOST_PORT: 7182,
     CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird'
 };
 
