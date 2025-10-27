@@ -1,8 +1,8 @@
 import type {Container} from 'dockerode';
-import logging from '@tryghost/logging';
-import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
 import {PassThrough} from 'stream';
+import logging from '@tryghost/logging';
+import baseDebug from '@tryghost/debug';
 
 const debug = baseDebug('e2e:MySQLManager');
 
@@ -19,76 +19,19 @@ interface ContainerWithModem extends Container {
  */
 export class MySQLManager {
     private readonly dockerCompose: DockerCompose;
-    constructor(dockerCompose: DockerCompose) {
+    private readonly containerName: string;
+
+    constructor(dockerCompose: DockerCompose, containerName: string = 'mysql') {
         this.dockerCompose = dockerCompose;
+        this.containerName = containerName;
     }
 
-    /**
-     * Create a snapshot of a source database inside the MySQL container.
-     * Default path is written within the container filesystem.
-     */
-    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
-        logging.info('Creating database snapshot...');
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            `mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`
-        );
-        logging.info('Database snapshot created');
-    }
-
-    /** Create a database if it does not already exist. */
-    async createDatabase(database: string): Promise<void> {
-        debug('Creating database:', database);
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + database + '\\`;"'
-        );
-        debug('Database created:', database);
-    }
-
-    /** Restore a database from an existing snapshot file in the container. */
-    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
-        debug('Restoring database from snapshot:', database);
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysql -uroot -proot ' + database + ' < ' + snapshotPath
-        );
-        debug('Database restored from snapshot:', database);
-    }
-
-    /** Update site_uuid within the settings table for a given database. */
-    async updateSiteUuid(database: string, siteUuid: string): Promise<void> {
-        debug('Updating site_uuid in database settings:', database, siteUuid);
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysql -uroot -proot -e "UPDATE \\`' + database + '\\`.settings SET value=\'' + siteUuid + '\' WHERE \\`key\\`=\'site_uuid\';"'
-        );
-        debug('site_uuid updated in database settings:', siteUuid);
-    }
-
-    /** Drop a database if it exists. */
-    async dropDatabase(database: string): Promise<void> {
-        debug('Dropping database if exists:', database);
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"'
-        );
-        debug('Database dropped (if existed):', database);
-    }
-
-    /**
-     * High-level helper used by tests: create DB, restore snapshot, apply settings.
-     */
     async setupTestDatabase(database: string, siteUuid: string): Promise<void> {
         try {
             await this.createDatabase(database);
             await this.restoreDatabaseFromSnapshot(database);
             await this.updateSiteUuid(database, siteUuid);
+
             debug('Test database setup completed:', database, 'with site_uuid:', siteUuid);
         } catch (error) {
             logging.error('Failed to setup test database:', error);
@@ -96,93 +39,139 @@ export class MySQLManager {
         }
     }
 
-    /** High-level helper used by tests: drop the DB. */
+    async createDatabase(database: string): Promise<void> {
+        debug('Creating database:', database);
+
+        await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + database + '\\`;"');
+
+        debug('Database created:', database);
+    }
+
+    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
+        logging.info('Creating database snapshot...');
+
+        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
+
+        logging.info('Database snapshot created');
+    }
+
+    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+        debug('Restoring database from snapshot:', database);
+
+        await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
+
+        debug('Database restored from snapshot:', database);
+    }
+
+    async dropDatabase(database: string): Promise<void> {
+        debug('Dropping database if exists:', database);
+
+        await this.exec('mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"');
+
+        debug('Database dropped (if existed):', database);
+    }
+
+    async dropDatabases(databaseNames: string[]): Promise<void> {
+        for (const database of databaseNames) {
+            await this.dropDatabase(database);
+        }
+
+        debug('All test databases cleaned up');
+    }
+
     async cleanupTestDatabase(database: string): Promise<void> {
         try {
             await this.dropDatabase(database);
             debug('Test database cleanup completed:', database);
         } catch (error) {
-            logging.warn('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
+            logging.warn('Failed to cleanup test database:', error);
         }
     }
 
     /**
-     * Drop all test databases (used for cleanup of leftover databases from interrupted tests).
+     * Used for cleanup of leftover databases from interrupted tests.
      * This removes all databases matching the pattern 'ghost_%' except 'ghost_testing' (the base database).
      */
     async dropAllTestDatabases(): Promise<void> {
         try {
             debug('Finding all test databases to clean up...');
-            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
 
-            // Query to list all databases matching 'ghost_%' pattern except 'ghost_testing'
             const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name != \'ghost_testing\'';
-            const output = await this.execInContainer(
-                mysqlContainer,
-                `mysql -uroot -proot -N -e "${query}"`
-            );
+            const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
-            if (!output.trim()) {
-                debug('No test databases found to clean up');
+            const databaseNames = this.parseDatabaseNames(output);
+            if (databaseNames === null) {
                 return;
             }
 
-            // Parse database names (one per line)
-            const databases = output.trim().split('\n').filter(db => db.trim());
-
-            if (databases.length === 0) {
-                debug('No test databases found to clean up');
-                return;
-            }
-
-            debug(`Found ${databases.length} test database(s) to clean up:`, databases);
-
-            // Drop each database
-            for (const database of databases) {
-                await this.dropDatabase(database);
-            }
-
-            debug('All test databases cleaned up');
+            await this.dropDatabases(databaseNames);
         } catch (error) {
             debug('Failed to clean up test databases (MySQL may not be running):', error);
             // Don't throw - we want to continue with setup even if MySQL cleanup fails
         }
     }
 
-    /**
-     * Delete the MySQL snapshot file.
-     * This ensures we create a fresh snapshot on the next setup.
-     */
+    private parseDatabaseNames(text:string) {
+        if (!text.trim()) {
+            debug('No test databases found to clean up');
+            return null;
+        }
+
+        const databaseNames = text.trim().split('\n').filter(db => db.trim());
+
+        if (databaseNames.length === 0) {
+            debug('No test databases found to clean up');
+            return null;
+        }
+
+        debug(`Found ${databaseNames.length} test database(s) to clean up:`, databaseNames);
+
+        return databaseNames;
+    }
+
     async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
         try {
             debug('Deleting MySQL snapshot:', snapshotPath);
-            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-            await this.execInContainer(
-                mysqlContainer,
-                `rm -f ${snapshotPath}`
-            );
+
+            await this.exec(`rm -f ${snapshotPath}`);
+
             debug('MySQL snapshot deleted');
         } catch (error) {
-            debug('Failed to delete MySQL snapshot (MySQL may not be running):', error);
             // Don't throw - we want to continue with setup even if snapshot deletion fails
+            debug('Failed to delete MySQL snapshot (MySQL may not be running):', error);
         }
     }
 
-    /**
-     * Recreate the base database (ghost_testing) to ensure fresh migrations.
-     * This drops and recreates the database so migrations run cleanly.
-     */
     async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
         try {
             debug('Recreating base database:', database);
+
             await this.dropDatabase(database);
             await this.createDatabase(database);
+
             debug('Base database recreated:', database);
         } catch (error) {
             debug('Failed to recreate base database (MySQL may not be running):', error);
             // Don't throw - we want to continue with setup even if database recreation fails
         }
+    }
+
+    async updateSiteUuid(database: string, siteUuid: string): Promise<void> {
+        debug('Updating site_uuid in database settings:', database, siteUuid);
+
+        const command = 'mysql -uroot -proot -e "UPDATE \\`' +
+            database + '\\`.settings SET value=\'' +
+            siteUuid + '\' WHERE \\`key\\`=\'site_uuid\';"';
+
+        await this.exec(command);
+
+        debug('site_uuid updated in database settings:', siteUuid);
+    }
+
+    private async exec(command: string) {
+        const container = await this.dockerCompose.getContainerForService(this.containerName);
+        return await this.execInContainer(container, command);
     }
 
     /**

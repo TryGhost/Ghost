@@ -28,12 +28,12 @@ export class GhostManager {
         this.tinybird = tinybird;
     }
 
-    /** High-level: create, wait, and return a GhostInstance description. */
     async startInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
         const container = await this.createAndStart({instanceId, siteUuid, portalUrl});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);
+
         return {
             containerId: container.id,
             instanceId,
@@ -44,11 +44,10 @@ export class GhostManager {
         };
     }
 
-    /** Create and start a Ghost container, returning the container handle. */
-    async createAndStart(config: GhostStartConfig): Promise<Container> {
+    private async createAndStart(config: GhostStartConfig): Promise<Container> {
         try {
             const network = await this.dockerCompose.getNetwork();
-            const tinybirdState = this.tinybird.loadState();
+            const tinyBirdConfig = this.tinybird.loadConfig();
 
             // Use deterministic port based on worker index (or 0 if not in parallel)
             const hostPort = 30000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
@@ -56,27 +55,30 @@ export class GhostManager {
             const environment = {
                 server__host: '0.0.0.0',
                 server__port: String(GHOST_PORT),
+                url: `http://localhost:${hostPort}`,
+                NODE_ENV: 'development',
+                // Db configuration
                 database__client: 'mysql2',
                 database__connection__host: MYSQL.HOST,
                 database__connection__port: String(MYSQL.PORT),
                 database__connection__user: MYSQL.USER,
                 database__connection__password: MYSQL.PASSWORD,
                 database__connection__database: config.instanceId,
-                url: `http://localhost:${hostPort}`,
-                NODE_ENV: 'development',
+                // Tinybird configuration
                 TB_HOST: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 TB_LOCAL_HOST: TB.LOCAL_HOST,
                 tinybird__stats__endpoint: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost:8080/.ghost/analytics/api/v1/page_hit',
                 tinybird__tracker__datasource: 'analytics_events',
-                tinybird__workspaceId: tinybirdState.workspaceId,
-                tinybird__adminToken: tinybirdState.adminToken,
-                // Email configuration to use MailPit
+                tinybird__workspaceId: tinyBirdConfig.workspaceId,
+                tinybird__adminToken: tinyBirdConfig.adminToken,
+                // Email configuration
                 mail__transport: 'SMTP',
                 mail__options__host: 'mailpit',
                 mail__options__port: '1025',
                 mail__options__secure: 'false',
+                // other services configuration
                 portal__url: config.portalUrl || 'http://localhost:4175/portal.min.js'
             } as Record<string, string>;
 
@@ -111,10 +113,11 @@ export class GhostManager {
 
             debug('Ghost environment variables:', JSON.stringify(environment, null, 2));
             debug('Full Docker container config:', JSON.stringify(containerConfig, null, 2));
-
             debug('Starting Ghost container...');
+
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
+
             debug('Ghost container started:', container.id);
             return container;
         } catch (error) {
@@ -123,8 +126,7 @@ export class GhostManager {
         }
     }
 
-    /** Wait for Ghost health endpoint to be responsive. */
-    async waitReady(port: number, timeoutMs: number = 60000): Promise<void> {
+    private async waitReady(port: number, timeoutMs: number = 60000): Promise<void> {
         const startTime = Date.now();
         const healthUrl = `http://localhost:${port}/ghost/api/admin/site/`;
 
@@ -150,7 +152,6 @@ export class GhostManager {
         throw new Error(`Timeout waiting for Ghost to start on port ${port}`);
     }
 
-    /** Stop and remove a container by ID. */
     async remove(containerId: string): Promise<void> {
         try {
             const container = this.docker.getContainer(containerId);
@@ -166,7 +167,6 @@ export class GhostManager {
         }
     }
 
-    /** Remove all Ghost containers (used for cleanup of leftover containers from interrupted tests). */
     async removeAll(): Promise<void> {
         try {
             debug('Finding all Ghost containers...');
@@ -188,8 +188,8 @@ export class GhostManager {
             }
             debug('All Ghost containers removed');
         } catch (error) {
-            logging.error('Failed to remove all Ghost containers:', error);
             // Don't throw - we want to continue with setup even if cleanup fails
+            logging.error('Failed to remove all Ghost containers:', error);
         }
     }
 }

@@ -21,8 +21,6 @@ export interface GhostInstance {
     siteUuid: string;
 }
 
-// Tinybird state type is managed by TinybirdManager
-
 /**
  * Manages the lifecycle of Docker containers and shared services for end-to-end tests
  *
@@ -36,10 +34,10 @@ export interface GhostInstance {
  * ````
  */
 export class EnvironmentManager {
-    private docker: Docker;
-    private dockerCompose: DockerCompose;
+    private readonly docker: Docker;
+    private readonly dockerCompose: DockerCompose;
     private mysql: MySQLManager;
-    private tinybird: TinybirdManager;
+    private readonly tinybird: TinybirdManager;
     private ghost: GhostManager;
 
     constructor() {
@@ -54,13 +52,11 @@ export class EnvironmentManager {
         this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
     }
 
-    /**
-     * Get the Portal URL with the dynamically assigned port
-     */
     private async getPortalUrl(): Promise<string> {
         try {
             const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
             const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+
             debug(`Portal is available at: ${portalUrl}`);
             return portalUrl;
         } catch (error) {
@@ -118,7 +114,7 @@ export class EnvironmentManager {
         this.dockerCompose.up();
         await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
-        this.tinybird.fetchTokens();
+        this.tinybird.fetchAndSaveConfig();
         logging.info('Global environment setup complete');
     }
 
@@ -151,7 +147,7 @@ export class EnvironmentManager {
         // Recreate the base database for the next run
         await this.mysql.recreateBaseDatabase();
 
-        // Truncate Tinybird analytics data for the next run
+        // This ensures a clean slate for each test run.
         this.tinybird.truncateAnalyticsEvents();
 
         logging.info('Global environment teardown complete (docker compose services left running)');
