@@ -11,7 +11,7 @@ const bannerVariants = cva(
             variant: {
                 default: 'border border-border bg-background shadow-sm hover:shadow-md',
                 gradient: [
-                    'cursor-pointer border border-grey-100 bg-white',
+                    'cursor-pointer border border-gray-100 bg-white',
                     'shadow-[rgb(75_225_226_/_28%)_-7px_-6px_42px_8px,rgb(202_103_255_/_32%)_7px_6px_42px_8px]',
                     'hover:shadow-[rgb(75_225_226_/_38%)_-7px_-4px_42px_10px,rgb(202_103_255_/_42%)_7px_8px_42px_10px]',
                     'hover:translate-y-[-2px] hover:scale-[1.01]'
@@ -23,7 +23,7 @@ const bannerVariants = cva(
             },
             size: {
                 sm: 'p-2 text-sm',
-                md: 'p-3 pb-4',
+                md: 'p-3',
                 lg: 'p-4'
             }
         },
@@ -85,7 +85,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
                 {dismissible && (
                     <Button
                         aria-label="Dismiss notification"
-                        className="absolute right-2 top-1 size-8"
+                        className="absolute right-1 top-1 size-8 text-gray-600"
                         size="icon"
                         variant="ghost"
                         onClick={handleDismiss}

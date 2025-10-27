@@ -71,10 +71,10 @@ export const Gradient: Story = {
         children: (
             <div className="flex flex-col">
                 <div className="mb-1.5 flex items-center gap-2">
-                    <Sparkles className="size-4" />
-                    <span className="text-[13px] text-grey-600">What&apos;s new?</span>
+                    <span className='text-yellow'><Sparkles className="size-4" /></span>
+                    <span className="text-[13px] font-medium text-gray-600">What&apos;s new?</span>
                 </div>
-                <div className="text-sm font-semibold">New feature released</div>
+                <div className="text-base font-semibold">New feature released</div>
                 <div className="mt-1 text-[13px]">Check out our latest updates</div>
             </div>
         )
@@ -88,7 +88,7 @@ export const Dismissible: Story = {
         if (!isVisible) {
             return (
                 <button
-                    className="rounded bg-grey-100 px-3 py-2 text-sm hover:bg-grey-200"
+                    className="rounded bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
                     type="button"
                     onClick={() => setIsVisible(true)}
                 >
@@ -206,7 +206,7 @@ export const WithClickableContent: Story = {
         if (!isVisible) {
             return (
                 <button
-                    className="rounded bg-grey-100 px-3 py-2 text-sm hover:bg-grey-200"
+                    className="rounded bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
                     type="button"
                     onClick={() => setIsVisible(true)}
                 >
@@ -231,10 +231,10 @@ export const WithClickableContent: Story = {
                     }}
                 >
                     <div className="mb-1.5 flex items-center gap-2">
-                        <Sparkles className="size-4" />
-                        <span className="text-[13px] text-grey-600">Announcement</span>
+                        <span className='text-yellow'><Sparkles className="size-4" /></span>
+                        <span className="text-[13px] font-medium text-gray-600">Announcement</span>
                     </div>
-                    <div className="text-sm font-semibold">Click me for more details</div>
+                    <div className="text-base font-semibold">Click me for more details</div>
                 </a>
             </Banner>
         );
@@ -270,7 +270,7 @@ export const AllVariants: Story = {
             </Banner>
             <Banner variant="gradient">
                 <div className="flex items-center gap-2 text-sm">
-                    <Sparkles className="size-4" />
+                    <span className='text-yellow'><Sparkles className="size-4" /></span>
                     <strong>Gradient</strong> - Cyan/purple gradient shadow with hover animation
                 </div>
             </Banner>
