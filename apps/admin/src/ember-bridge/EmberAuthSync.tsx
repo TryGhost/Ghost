@@ -8,7 +8,7 @@ const isAuthRoute = (path: string) => {
     // Remove leading slash and extract the first path segment
     // Also strip any query params or hash fragments
     const cleanPath = path.replace(/^\//, '').split(/[/?#]/)[0];
-    
+
     return AUTH_ROUTES.has(cleanPath);
 };
 
