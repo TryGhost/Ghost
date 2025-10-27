@@ -167,6 +167,14 @@ export class DockerCompose {
         return output;
     }
 
+    execInService(service: string, command: string[]): string {
+        const cmdArgs = command.map(arg => `"${arg}"`).join(' ');
+        const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T ${service} ${cmdArgs}`;
+        debug('execInService running:', cmd);
+        const output = execSync(cmd, {encoding: 'utf-8'}).toString();
+        return output;
+    }
+
     /**
      * Find the container for a compose service by label.
      */

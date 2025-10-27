@@ -4,6 +4,9 @@ args:
   component-name:
     description: The name of the ShadCN component to add (e.g., 'button', 'dialog', 'select')
     required: true
+  skip-tests:
+    description: Skip running the test suite (useful for faster iterations)
+    required: false
 ---
 
 # Add ShadCN Component to Shade
@@ -29,19 +32,20 @@ First, check if the component already exists in Shade:
 
 ## Step 2: Fetch ShadCN Documentation
 
-Use Puppeteer to visit the ShadCN documentation page:
+Use Puppeteer to retrieve the component documentation (if Puppeteer is not available use Webfetch):
 
-1. Launch Puppeteer browser
-2. Navigate to `https://ui.shadcn.com/docs/components/{{component-name}}`
-3. Wait for the page to load completely
-4. Extract the following information:
-   - Component description and use case
-   - Installation instructions (look for `npx shadcn@latest add` command)
-   - All code examples shown on the page
-   - Component variants and props
-   - Usage patterns
-5. Take a screenshot if needed for reference
-6. Close the browser
+1. Fetch
+`https://ui.shadcn.com/docs/components/{{component-name}}`
+2. Extract:
+    - Component description and use case
+    - Installation command (npx shadcn@latest add ...)
+    - All code examples with full code blocks
+    - Component variants (default, outline, ghost, etc.)
+    - Size options (sm, md, lg, icon, etc.)
+    - Props and TypeScript types
+    - Usage patterns and best practices
+3. Use this information to create comprehensive Storybook
+stories
 
 ## Step 3: Install the Component
 
@@ -117,7 +121,7 @@ For **each example** from the ShadCN documentation page:
 3. Add a `parameters.docs.description.story` explaining when to use this variant
 4. Keep stories minimal and focused on demonstrating the component's capabilities
 
-Example story:
+Example story with args:
 ```typescript
 export const Default: Story = {
     name: 'Default',
@@ -133,6 +137,33 @@ export const Default: Story = {
     }
 };
 ```
+
+Example story with render function (use when composition is needed):
+```typescript
+export const WithLabel: Story = {
+    render: () => (
+        <div className="flex items-center gap-3">
+            <ComponentName id="example" />
+            <Label htmlFor="example">Label text</Label>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Component with a label for better accessibility.'
+            },
+            source: {
+                code: `<div className="flex items-center gap-3">
+  <ComponentName id="example" />
+  <Label htmlFor="example">Label text</Label>
+</div>`
+            }
+        }
+    }
+};
+```
+
+**IMPORTANT**: When using `render` functions, ALWAYS include `parameters.docs.source.code` to show clean, copyable JSX instead of the entire story object. The source code should match the JSX in the render function but with proper 2-space indentation.
 
 ### Story Categories to Include
 
@@ -174,27 +205,74 @@ export * from './components/ui/{{component-name}}';
 
 Run `yarn lint --fix` again to ensure proper import sorting.
 
-## Step 8: Verify Everything Works
+## Step 8: Run Tests
 
-1. Run the full test suite:
-   ```bash
-   yarn test
-   ```
+**If `skip-tests` parameter is NOT set:**
 
-2. Start Storybook and verify stories render correctly:
+Run the full test suite to ensure no regressions:
+
+```bash
+yarn test
+```
+
+Fix any test failures before proceeding.
+
+**If `skip-tests` parameter IS set:**
+
+Skip the test suite and proceed to visual verification. Note: Make sure to run tests before creating a PR.
+
+## Step 9: Visual Verification with Puppeteer
+
+Use Puppeteer to verify the component renders correctly in Storybook:
+
+1. **Start Storybook in background:**
+    Check if Storybook is running already on port 6006 and if not run:
    ```bash
    yarn storybook
    ```
+   Wait for it to be ready (usually runs on http://localhost:6006)
 
-3. Check that all examples from ShadCN docs are represented
+2. **Launch Puppeteer and test each story:**
+   - Launch browser with `puppeteer_launch` (headless: false recommended for debugging)
+   - Create new page with `puppeteer_new_page`
+   - For each story created, navigate to:
+     `http://localhost:6006/iframe.html?id=components-{{component-name}}--{story-name}`
+   - Wait for the story to render using `puppeteer_wait_for_selector` (e.g., wait for main component)
+   - Capture console errors using `puppeteer_evaluate`:
+     ```javascript
+     window.__errors = window.__errors || [];
+     window.addEventListener('error', (e) => window.__errors.push(e.message));
+     ```
+   - Take screenshot with `puppeteer_screenshot` for visual reference
+   - Check for errors: `puppeteer_evaluate` with `return window.__errors || []`
 
-## Step 9: Summary Report
+3. **Report findings:**
+   - If console errors found: Report them with story names and suggest fixes
+   - If visual issues detected: Show screenshots
+   - If everything looks good: Confirm with "All stories render without errors" + screenshot evidence
+
+4. **Cleanup:**
+   - Close Puppeteer browser with `puppeteer_close_browser`
+   - Stop the Storybook process
+
+### What to verify:
+- ✅ Component renders without React errors
+- ✅ No console errors or warnings
+- ✅ All variants display correctly
+- ✅ Typography and spacing look correct
+- ✅ No layout issues or overlapping elements
+
+## Step 10: Summary Report
 
 Provide a summary to the user showing:
 - Success message
 - Files created/modified (component, stories, index.ts)
 - List of all story names created
-- Next steps: review in Storybook, run tests, commit changes on the branch, create PR
+- Visual verification results:
+  - Number of stories tested
+  - Screenshots of key variants
+  - Any errors or warnings found (or "No issues detected")
+- Next steps: review in Storybook manually, commit changes on branch, create PR
 
 ## Error Handling
 
@@ -212,3 +290,4 @@ If any step fails:
 - Keep story descriptions concise and practical
 - Focus on "when to use" rather than "what it is"
 - Always run linting after making changes
+- **For stories with `render` functions**: Always add `parameters.docs.source.code` with the clean JSX to make code examples copyable in Storybook
