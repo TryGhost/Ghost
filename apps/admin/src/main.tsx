@@ -10,10 +10,13 @@ import {
 import { ShadeApp } from "@tryghost/shade";
 
 import { routes } from "./routes.tsx";
+import { navigateTo } from "./utils/navigation";
 
 const framework = {
     ghostVersion: "",
-    externalNavigate: () => {},
+    externalNavigate: (link: {route: string, isExternal: boolean}) => {
+        navigateTo(link.route);
+    },
     unsplashConfig: {
         Authorization: "",
         "Accept-Version": "",
