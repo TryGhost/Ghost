@@ -8,7 +8,7 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
-import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, CONFIG_DIR} from './constants';
+import {DOCKER_COMPOSE_CONFIG, CONFIG_DIR} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -36,15 +36,15 @@ export interface GhostInstance {
 export class EnvironmentManager {
     private readonly docker: Docker;
     private readonly dockerCompose: DockerCompose;
-    private mysql: MySQLManager;
+    private readonly mysql: MySQLManager;
     private readonly tinybird: TinybirdManager;
-    private ghost: GhostManager;
+    private readonly ghost: GhostManager;
 
     constructor() {
         this.docker = new Docker();
         this.dockerCompose = new DockerCompose({
-            composeFilePath: COMPOSE_FILE_PATH,
-            projectName: COMPOSE_PROJECT,
+            composeFilePath: DOCKER_COMPOSE_CONFIG.FILE_PATH,
+            projectName: DOCKER_COMPOSE_CONFIG.PROJECT,
             docker: this.docker
         });
         this.mysql = new MySQLManager(this.dockerCompose);
@@ -163,9 +163,6 @@ export class EnvironmentManager {
         }
     }
 
-    /**
-     * Teardown a Ghost instance
-     */
     public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
         try {
             debug('Tearing down Ghost instance:', ghostInstance.containerId);

@@ -5,7 +5,7 @@ import logging from '@tryghost/logging';
 import {DockerCompose} from './DockerCompose';
 import {TinybirdManager} from './TinybirdManager';
 import type {GhostInstance} from './EnvironmentManager';
-import {COMPOSE_PROJECT, DEFAULT_GHOST_IMAGE, DEFAULT_WORKDIR, GHOST_PORT, MYSQL, TB} from './constants';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MYSQL, TB} from './constants';
 
 const debug = baseDebug('e2e:GhostManager');
 
@@ -54,7 +54,7 @@ export class GhostManager {
 
             const environment = {
                 server__host: '0.0.0.0',
-                server__port: String(GHOST_PORT),
+                server__port: String(GHOST_DEFAULTS.PORT),
                 url: `http://localhost:${hostPort}`,
                 NODE_ENV: 'development',
                 // Db configuration
@@ -83,7 +83,7 @@ export class GhostManager {
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
-                Image: DEFAULT_GHOST_IMAGE,
+                Image: GHOST_DEFAULTS.IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
                 NetworkingConfig: {
                     EndpointsConfig: {
@@ -93,19 +93,19 @@ export class GhostManager {
                     }
                 },
                 ExposedPorts: {
-                    [`${GHOST_PORT}/tcp`]: {}
+                    [`${GHOST_DEFAULTS.PORT}/tcp`]: {}
                 },
                 HostConfig: {
                     PortBindings: {
-                        [`${GHOST_PORT}/tcp`]: [{HostPort: String(hostPort)}]
+                        [`${GHOST_DEFAULTS.PORT}/tcp`]: [{HostPort: String(hostPort)}]
                     }
                 },
                 Labels: {
-                    'com.docker.compose.project': COMPOSE_PROJECT,
+                    'com.docker.compose.project': DOCKER_COMPOSE_CONFIG.PROJECT,
                     'com.docker.compose.service': `ghost-${config.siteUuid}`,
                     'tryghost/e2e': 'ghost'
                 },
-                WorkingDir: config.workingDir || DEFAULT_WORKDIR,
+                WorkingDir: config.workingDir || GHOST_DEFAULTS.WORKDIR,
                 Cmd: config.command || ['yarn', 'dev'],
                 AttachStdout: true,
                 AttachStderr: true

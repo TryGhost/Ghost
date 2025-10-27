@@ -1,13 +1,16 @@
 import path from 'path';
 
-export const COMPOSE_FILE_PATH = path.resolve(__dirname, '../../compose.yml');
-export const COMPOSE_PROJECT = 'ghost-e2e';
+export const DOCKER_COMPOSE_CONFIG = {
+    FILE_PATH: path.resolve(__dirname, '../../compose.yml'),
+    PROJECT: 'ghost-e2e'
+};
 
-// if not specified this would be the tag of the Ghost project, built at root of the repository
-export const DEFAULT_GHOST_IMAGE = process.env.GHOST_IMAGE_TAG || 'ghost-monorepo';
-export const DEFAULT_WORKDIR = '/home/ghost/ghost/core';
-
-export const GHOST_PORT = 2368;
+export const GHOST_DEFAULTS = {
+    // if not specified this would be the tag of the Ghost project, built at root of the repository
+    IMAGE: process.env.GHOST_IMAGE_TAG || 'ghost-monorepo',
+    PORT: 2368,
+    WORKDIR: '/home/ghost/ghost/core'
+};
 
 export const MYSQL = {
     HOST: 'mysql',
