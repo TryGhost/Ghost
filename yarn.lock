@@ -19724,10 +19724,19 @@ fs-extra@11.1.1:
     jsonfile "^6.0.1"
     universalify "^2.0.0"
 
-fs-extra@11.3.0, fs-extra@^11.0.0, fs-extra@^11.1.0, fs-extra@^11.1.1:
+fs-extra@11.3.0:
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.0.tgz#0daced136bbaf65a555a326719af931adc7a314d"
   integrity sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@11.3.2, fs-extra@^11.0.0, fs-extra@^11.1.0, fs-extra@^11.1.1:
+  version "11.3.2"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.2.tgz#c838aeddc6f4a8c74dd15f85e11fe5511bfe02a4"
+  integrity sha512-Xr9F6z6up6Ws+NjzMCZc6WXg2YFRlrLP9NQDO3VQrWrfiojdhS56TzueT88ze0uBdCTwEIhQ3ptnmKeWGFAe0A==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"

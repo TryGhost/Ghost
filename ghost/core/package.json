@@ -157,7 +157,7 @@
     "express-session": "1.18.2",
     "file-type": "16.5.4",
     "form-data": "4.0.4",
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.2",
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
