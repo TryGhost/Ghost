@@ -34,86 +34,23 @@ export class DockerCompose {
             logging.info('Docker compose services are up');
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
-
-            // Output all container logs for debugging
-            try {
-                logging.error('\n=== Docker compose logs ===');
-                const logs = execSync(
-                    `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs`,
-                    {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10} // 10MB buffer for logs
-                );
-                logging.error(logs);
-                logging.error('=== End docker compose logs ===\n');
-            } catch (logError) {
-                debug('Could not get docker compose logs:', logError);
-            }
-
+            this.logs();
             throw error;
         }
     }
 
-    async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
-        const output = execSync(command, {encoding: 'utf-8'}).trim();
-        if (!output) {
-            return null;
+    // Stop and remove all services for the project (including volumes).
+    down(): void {
+        try {
+            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`, {stdio: 'inherit'});
+        } catch (error) {
+            logging.error('Failed to stop docker compose services:', error);
+            throw error;
         }
-        const containers = output
-            .split('\n')
-            .filter(line => line.trim())
-            .map(line => JSON.parse(line));
-
-        if (containers.length === 0) {
-            return null;
-        }
-        return containers;
-    }
-
-    /**
-     * Check if a container is ready based on its status.
-     * A container is considered ready if:
-     * - It has a healthcheck and is healthy
-     * - It has exited with code 0 (no healthcheck)
-     *
-     * @param container Container status item
-     * @returns true if the container is ready, false otherwise
-     * @throws Error if the container has exited with a non-zero code
-     */
-    isContainerReady(container: ContainerStatusItem): boolean {
-        // If container has healthcheck, wait for healthy status
-        if (container.Health) {
-            return container.Health === 'healthy';
-        }
-
-        // If container exited, check exit code
-        if (container.State === 'exited') {
-            if (container.ExitCode !== 0) {
-                throw new Error(`${container.Name || container.Service} exited with code ${container.ExitCode}`);
-            }
-            return true;
-        }
-
-        // Running container without healthcheck is not considered ready
-        return false;
-    }
-
-    /**
-     * Check if all containers are ready.
-     * @param containers Array of container status items
-     * @returns true if all containers are ready, false otherwise
-     */
-    areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {
-        if (!containers || containers.length === 0) {
-            return false;
-        }
-        return containers.every(container => this.isContainerReady(container));
     }
 
     /**
      * Wait until all services from the compose file are ready.
-     * A service is considered ready if:
-     * - It has a healthcheck and is healthy (i.e. mysql)
-     * - It has exited with code 0 (no healthcheck) (i.e. migrations)
      *
      * This method will poll the status of all containers until they are all ready or the timeout is reached.
      *
@@ -141,18 +78,6 @@ export class DockerCompose {
         throw new Error('Timeout waiting for services to be ready');
     }
 
-    /**
-     * Stop and remove all services for the project (including volumes).
-     */
-    down(): void {
-        try {
-            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`, {stdio: 'inherit'});
-        } catch (error) {
-            logging.error('Failed to stop docker compose services:', error);
-            throw error;
-        }
-    }
-
     readFileFromService(service: string, filePath: string): string {
         const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
         debug('readFileFromService running:', command);
@@ -170,25 +95,22 @@ export class DockerCompose {
         return output;
     }
 
-    /**
-     * Find the container for a compose service by label.
-     */
-    async getContainerForService(service: string): Promise<Container> {
-        debug('getContainerForService called for service:', service);
+    async getContainerForService(serviceLabel: string): Promise<Container> {
+        debug('getContainerForService called for service:', serviceLabel);
         const containers = await this.docker.listContainers({
             all: true,
             filters: {
                 label: [
                     `com.docker.compose.project=${this.projectName}`,
-                    `com.docker.compose.service=${service}`
+                    `com.docker.compose.service=${serviceLabel}`
                 ]
             }
         });
         if (containers.length === 0) {
-            throw new Error(`No container found for service: ${service}`);
+            throw new Error(`No container found for service: ${serviceLabel}`);
         }
         if (containers.length > 1) {
-            throw new Error(`Multiple containers found for service: ${service}`);
+            throw new Error(`Multiple containers found for service: ${serviceLabel}`);
         }
         const container = this.docker.getContainer(containers[0].Id);
         debug('getContainerForService returning container:', container.id);
@@ -216,9 +138,6 @@ export class DockerCompose {
         return hostPort;
     }
 
-    /**
-     * Get the Docker network for the compose project.
-     */
     async getNetwork(): Promise<Docker.Network> {
         debug('getNetwork called');
         const networks = await this.docker.listNetworks({
@@ -236,5 +155,79 @@ export class DockerCompose {
         const network = this.docker.getNetwork(networkId);
         debug('getNetwork returning network:', network.id);
         return network;
+    }
+
+    // Output all container logs for debugging
+    private logs(): void {
+        try {
+            logging.error('\n=== Docker compose logs ===');
+            const logs = execSync(
+                `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs`,
+                {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10} // 10MB buffer for logs
+            );
+            logging.error(logs);
+            logging.error('=== End docker compose logs ===\n');
+        } catch (logError) {
+            debug('Could not get docker compose logs:', logError);
+        }
+    }
+
+    private async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
+        const output = execSync(command, {encoding: 'utf-8'}).trim();
+        if (!output) {
+            return null;
+        }
+        const containers = output
+            .split('\n')
+            .filter(line => line.trim())
+            .map(line => JSON.parse(line));
+
+        if (containers.length === 0) {
+            return null;
+        }
+        return containers;
+    }
+
+    /**
+     * Check if a container is ready based on its status.
+     *
+     * A container is considered ready if:
+     * - It has a healthcheck and is healthy
+     * - It has exited with code 0 (no healthcheck)
+     *
+     * @param container Container status item
+     * @returns true if the container is ready, false otherwise
+     * @throws Error if the container has exited with a non-zero code
+     */
+    private isContainerReady(container: ContainerStatusItem): boolean {
+        const {Health, State, ExitCode, Name, Service} = container;
+
+        if (Health) {
+            return Health === 'healthy';
+        }
+
+        if (State !== 'exited') {
+            return false;
+        }
+
+        if (ExitCode === 0) {
+            return true;
+        }
+
+        throw new Error(`${Name || Service} exited with code ${ExitCode}`);
+    }
+
+    /**
+     * Check if all containers are ready.
+     *
+     * @param containers Array of container status items
+     * @returns true if all containers are ready, false otherwise
+     */
+    private areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {
+        if (!containers || containers.length === 0) {
+            return false;
+        }
+        return containers.every(container => this.isContainerReady(container));
     }
 }
