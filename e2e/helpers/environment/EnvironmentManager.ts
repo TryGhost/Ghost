@@ -158,7 +158,7 @@ export class EnvironmentManager {
             const instanceId = `ghost_${siteUuid}`;
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
             const portalUrl = await this.getPortalUrl();
-            return await this.ghost.startInstance(instanceId, siteUuid, portalUrl);
+            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
@@ -168,7 +168,7 @@ export class EnvironmentManager {
     public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
         try {
             debug('Tearing down Ghost instance:', ghostInstance.containerId);
-            await this.ghost.remove(ghostInstance.containerId);
+            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
             await this.mysql.cleanupTestDatabase(ghostInstance.database);
             debug('Ghost instance teardown completed');
         } catch (error) {

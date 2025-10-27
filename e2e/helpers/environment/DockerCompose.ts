@@ -39,9 +39,9 @@ export class DockerCompose {
         }
     }
 
-    // Stop and remove all services for the project (including volumes).
     down(): void {
         try {
+            // Stop and remove all services for the project including volumes
             execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`, {stdio: 'inherit'});
         } catch (error) {
             logging.error('Failed to stop docker compose services:', error);
@@ -67,7 +67,7 @@ export class DockerCompose {
 
         const deadline = Date.now() + timeoutMs;
         while (Date.now() < deadline) {
-            const containers = await this.getContainersStatus();
+            const containers = await this.getContainers();
             const allContainersReady = this.areAllContainersReady(containers);
             if (allContainersReady) {
                 return;
@@ -121,50 +121,64 @@ export class DockerCompose {
      * Get the host port for a service's container port.
      * This is useful when services use dynamic port mapping.
      *
-     * @param service The compose service name
+     * @param serviceLabel The compose service name
      * @param containerPort The container port (e.g., '4175')
      * @returns The host port as a string
      */
-    async getHostPortForService(service: string, containerPort: string): Promise<string> {
-        const container = await this.getContainerForService(service);
+    async getHostPortForService(serviceLabel: string, containerPort: string): Promise<string> {
+        const container = await this.getContainerForService(serviceLabel);
         const containerInfo = await container.inspect();
         const portKey = `${containerPort}/tcp`;
         const portMapping = containerInfo.NetworkSettings.Ports[portKey];
+
         if (!portMapping || portMapping.length === 0) {
-            throw new Error(`Service ${service} does not have port ${containerPort} exposed`);
+            throw new Error(`Service ${serviceLabel} does not have port ${containerPort} exposed`);
         }
         const hostPort = portMapping[0].HostPort;
-        debug(`Service ${service} port ${containerPort} is mapped to host port ${hostPort}`);
+
+        debug(`Service ${serviceLabel} port ${containerPort} is mapped to host port ${hostPort}`);
         return hostPort;
     }
 
     async getNetwork(): Promise<Docker.Network> {
+        const networkId = await this.getNetworkId();
+        debug('getNetwork returning network ID:', networkId);
+
+        const network = this.docker.getNetwork(networkId);
+
+        debug('getNetwork returning network:', network.id);
+        return network;
+    }
+
+    private async getNetworkId() {
         debug('getNetwork called');
+
         const networks = await this.docker.listNetworks({
             filters: {label: [`com.docker.compose.project=${this.projectName}`]}
         });
+
         debug('getNetwork found networks:', networks.map(n => n.Id));
+
         if (networks.length === 0) {
             throw new Error('No Docker network found for the Compose project');
         }
         if (networks.length > 1) {
             throw new Error('Multiple Docker networks found for the Compose project');
         }
-        const networkId = networks[0].Id;
-        debug('getNetwork returning network ID:', networkId);
-        const network = this.docker.getNetwork(networkId);
-        debug('getNetwork returning network:', network.id);
-        return network;
+
+        return networks[0].Id;
     }
 
     // Output all container logs for debugging
     private logs(): void {
         try {
             logging.error('\n=== Docker compose logs ===');
+
             const logs = execSync(
                 `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs`,
                 {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10} // 10MB buffer for logs
             );
+
             logging.error(logs);
             logging.error('=== End docker compose logs ===\n');
         } catch (logError) {
@@ -172,12 +186,14 @@ export class DockerCompose {
         }
     }
 
-    private async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
+    private async getContainers(): Promise<ContainerStatusItem[] | null> {
         const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
         const output = execSync(command, {encoding: 'utf-8'}).trim();
+
         if (!output) {
             return null;
         }
+
         const containers = output
             .split('\n')
             .filter(line => line.trim())
@@ -186,7 +202,16 @@ export class DockerCompose {
         if (containers.length === 0) {
             return null;
         }
+
         return containers;
+    }
+
+    private areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {
+        if (!containers || containers.length === 0) {
+            return false;
+        }
+
+        return containers.every(container => this.isContainerReady(container));
     }
 
     /**
@@ -216,18 +241,5 @@ export class DockerCompose {
         }
 
         throw new Error(`${Name || Service} exited with code ${ExitCode}`);
-    }
-
-    /**
-     * Check if all containers are ready.
-     *
-     * @param containers Array of container status items
-     * @returns true if all containers are ready, false otherwise
-     */
-    private areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {
-        if (!containers || containers.length === 0) {
-            return false;
-        }
-        return containers.every(container => this.isContainerReady(container));
     }
 }

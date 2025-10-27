@@ -28,10 +28,10 @@ export class GhostManager {
         this.tinybird = tinybird;
     }
 
-    async startInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
+    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
         const container = await this.createAndStart({instanceId, siteUuid, portalUrl});
         const containerInfo = await container.inspect();
-        const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
+        const hostPort = parseInt(containerInfo.NetworkSettings.Ports[`${GHOST_DEFAULTS.PORT}/tcp`][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);
 
         return {
@@ -42,6 +42,47 @@ export class GhostManager {
             baseUrl: `http://localhost:${hostPort}`,
             siteUuid
         };
+    }
+
+    async stopAndRemoveInstance(containerId: string): Promise<void> {
+        try {
+            const container = this.docker.getContainer(containerId);
+            try {
+                await container.stop({t: 10});
+            } catch (error) {
+                debug('Container already stopped or stop failed, forcing removal:', containerId);
+            }
+            await container.remove({force: true});
+            debug('Container removed:', containerId);
+        } catch (error) {
+            debug('Failed to remove container:', error);
+        }
+    }
+
+    async removeAll(): Promise<void> {
+        try {
+            debug('Finding all Ghost containers...');
+            const containers = await this.docker.listContainers({
+                all: true,
+                filters: {
+                    label: ['tryghost/e2e=ghost']
+                }
+            });
+
+            if (containers.length === 0) {
+                debug('No Ghost containers found');
+                return;
+            }
+
+            debug(`Found ${containers.length} Ghost container(s) to remove`);
+            for (const containerInfo of containers) {
+                await this.stopAndRemoveInstance(containerInfo.Id);
+            }
+            debug('All Ghost containers removed');
+        } catch (error) {
+            // Don't throw - we want to continue with setup even if cleanup fails
+            logging.error('Failed to remove all Ghost containers:', error);
+        }
     }
 
     private async createAndStart(config: GhostStartConfig): Promise<Container> {
@@ -150,46 +191,5 @@ export class GhostManager {
         }
 
         throw new Error(`Timeout waiting for Ghost to start on port ${port}`);
-    }
-
-    async remove(containerId: string): Promise<void> {
-        try {
-            const container = this.docker.getContainer(containerId);
-            try {
-                await container.stop({t: 10});
-            } catch (error) {
-                debug('Container already stopped or stop failed, forcing removal:', containerId);
-            }
-            await container.remove({force: true});
-            debug('Container removed:', containerId);
-        } catch (error) {
-            debug('Failed to remove container:', error);
-        }
-    }
-
-    async removeAll(): Promise<void> {
-        try {
-            debug('Finding all Ghost containers...');
-            const containers = await this.docker.listContainers({
-                all: true,
-                filters: {
-                    label: ['tryghost/e2e=ghost']
-                }
-            });
-
-            if (containers.length === 0) {
-                debug('No Ghost containers found');
-                return;
-            }
-
-            debug(`Found ${containers.length} Ghost container(s) to remove`);
-            for (const containerInfo of containers) {
-                await this.remove(containerInfo.Id);
-            }
-            debug('All Ghost containers removed');
-        } catch (error) {
-            // Don't throw - we want to continue with setup even if cleanup fails
-            logging.error('Failed to remove all Ghost containers:', error);
-        }
     }
 }
