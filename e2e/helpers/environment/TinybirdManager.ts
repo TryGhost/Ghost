@@ -75,7 +75,7 @@ export class TinybirdManager {
     private fetchConfigFromCLI() {
         logging.info('Fetching Tinybird tokens...');
 
-        const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', TB.CLI_ENV_PATH);
+        const rawTinybirdEnv = this.dockerCompose.execShellInService('tb-cli', `cat ${TB.CLI_ENV_PATH}`);
         const envLines = rawTinybirdEnv.split('\n');
         const envVars: Record<string, string> = {};
 

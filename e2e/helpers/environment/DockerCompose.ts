@@ -78,12 +78,11 @@ export class DockerCompose {
         throw new Error('Timeout waiting for services to be ready');
     }
 
-    readFileFromService(service: string, filePath: string): string {
-        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
+    execShellInService(service: string, shellCommand: string): string {
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "${shellCommand}"`;
         debug('readFileFromService running:', command);
 
-        const output = execSync(command, {encoding: 'utf-8'}).toString();
-        return output;
+        return execSync(command, {encoding: 'utf-8'}).toString();
     }
 
     execInService(service: string, command: string[]): string {
@@ -91,8 +90,7 @@ export class DockerCompose {
         const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T ${service} ${cmdArgs}`;
 
         debug('execInService running:', cmd);
-        const output = execSync(cmd, {encoding: 'utf-8'}).toString();
-        return output;
+        return execSync(cmd, {encoding: 'utf-8'}).toString();
     }
 
     async getContainerForService(serviceLabel: string): Promise<Container> {
