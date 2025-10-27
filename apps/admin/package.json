@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@tryghost/activitypub": "*",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.37.0",
+    "@testing-library/react": "14.3.1",
     "@types/react": "18.3.26",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react-swc": "4.1.0",
@@ -28,10 +30,12 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.24",
     "globals": "16.4.0",
+    "jsdom": "24.1.0",
     "typescript": "5.8.3",
     "typescript-eslint": "8.46.1",
-    "vite": "7.1.10",
-    "vite-tsconfig-paths": "5.1.4"
+    "vite": "7.1.12",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "4.0.5"
   },
   "nx": {
     "targets": {
