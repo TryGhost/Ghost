@@ -70,14 +70,6 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 <LucideIcon.Settings size={20} />
                             </a>
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800"
-                            title="Toggle theme"
-                        >
-                            <LucideIcon.Moon size={20} />
-                        </Button>
                     </div>
                 </div>
             </SidebarFooter>
