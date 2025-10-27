@@ -21,7 +21,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         icon="PenLine"
                         label="Posts"
                         href="#/posts"
-                        className="group-hover:[&_a_svg]:opacity-0 [&_a_svg]:pointer-events-none [&_a_svg]:transition-all"
+                        className="group-hover:[&_[data-sidebar]_svg]:opacity-0 [&_[data-sidebar]_svg]:pointer-events-none [&_[data-sidebar]_svg]:transition-all"
                     >
                         <NavLink.Before>
                             <Button
@@ -40,13 +40,11 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </Button>
                         </NavLink.Before>
                         <NavLink.After>
-                            <Button
-                                variant='ghost'
-                                size='icon'
-                                className="absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9 [&_svg]:size-auto"
+                            <a href="#/editor/post"
+                                className="flex items-center justify-center absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9"
                             >
                                 <LucideIcon.Plus size={24} className="!stroke-[1.2px]" />
-                            </Button>
+                            </a>
                         </NavLink.After>
                     </NavLink>
 
