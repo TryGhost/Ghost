@@ -23,6 +23,7 @@ export default class SessionService extends ESASessionService {
     @service whatsNew;
     @service membersUtils;
     @service themeManagement;
+    @service stateBridge;
 
     @inject config;
 
@@ -38,6 +39,8 @@ export default class SessionService extends ESASessionService {
         const id = options.id || 'me';
         const user = await this.dataStore.queryRecord('user', {id});
         this.user = user;
+
+        this.stateBridge.observeSessionUser();
     }
 
     async postAuthPreparation() {

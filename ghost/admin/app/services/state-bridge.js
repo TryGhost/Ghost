@@ -1,3 +1,4 @@
+import Evented from '@ember/object/evented';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -16,7 +17,7 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
 };
 
-export default class StateBridgeService extends Service {
+export default class StateBridgeService extends Service.extend(Evented) {
     @service feature;
     @service membersUtils;
     @service session;
@@ -25,6 +26,36 @@ export default class StateBridgeService extends Service {
     @service themeManagement;
 
     @inject config;
+
+    nightShift = null;
+
+    setNightShift(value) {
+        // use feature.set to trigger admin style toggle logic
+        // saves user so will be picked up by the session.user.didUpdate observer
+        this.nightShift = value;
+        this.feature.set('nightShift', value);
+    }
+
+    /** Ember Admin internal methods -----------------------------------------*/
+
+    observeSessionUser() {
+        this._setAndTriggerNightShiftUpdate(this._readUserAccessibility('nightShift'));
+
+        this.session.user.on('didUpdate', () => {
+            this._setAndTriggerNightShiftUpdate(this._readUserAccessibility('nightShift'));
+        });
+    }
+
+    _setAndTriggerNightShiftUpdate(value) {
+        if (this.nightShift !== value) {
+            this.nightShift = value;
+            this.trigger('nightShiftUpdated', value);
+        }
+    }
+
+    _readUserAccessibility(key) {
+        return JSON.parse(this.session.user?.accessibility || '{}')[key];
+    }
 
     /* React -> Ember -------------------------------------------------------
 
