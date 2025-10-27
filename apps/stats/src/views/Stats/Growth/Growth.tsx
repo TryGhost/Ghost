@@ -53,7 +53,7 @@ const Growth: React.FC = () => {
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
     // Get growth data with post_type filtering - only call when not on Sources tab
-    const {data: topPostsData} = useTopPostsStatsWithRange(
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsStatsWithRange(
         range,
         sortBy as TopPostsOrder,
         selectedContentType as 'posts' | 'pages' | 'posts_and_pages'
@@ -120,6 +120,7 @@ const Growth: React.FC = () => {
     }, [topPostsData, sortBy]);
 
     const isPageLoading = isLoading;
+    const isTableLoading = isLoading || isTopPostsLoading;
 
     return (
         <StatsLayout>
@@ -139,7 +140,7 @@ const Growth: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                {isPageLoading ?
+                {isTableLoading ?
                     <Card className='min-h-[460px]'>
                         <CardHeader>
                             <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
