@@ -15,7 +15,8 @@ export interface TinyBirdConfig {
 }
 
 /**
- * Handles Tinybird token fetching and local config persistence
+ * Encapsulates TinyBird and Tinybird CLI operations within the docker-compose environment.
+ * Handles Tinybird token fetching and local config persistence.
  */
 export class TinybirdManager {
     private readonly tinyBirdConfigFile;

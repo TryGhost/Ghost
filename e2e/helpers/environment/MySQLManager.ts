@@ -14,7 +14,7 @@ interface ContainerWithModem extends Container {
 
 /**
  * Encapsulates MySQL operations within the docker-compose environment.
- * Responsible for creating snapshots, creating/restoring/dropping databases, and
+ * Handles creating snapshots, creating/restoring/dropping databases, and
  * updating database settings needed by tests.
  */
 export class MySQLManager {
@@ -36,6 +36,17 @@ export class MySQLManager {
         } catch (error) {
             logging.error('Failed to setup test database:', error);
             throw new Error(`Failed to setup test database: ${error}`);
+        }
+    }
+
+    async cleanupTestDatabase(database: string): Promise<void> {
+        try {
+            await this.dropDatabase(database);
+
+            debug('Test database cleanup completed:', database);
+        } catch (error) {
+            // Don't throw - cleanup failures shouldn't break tests
+            logging.warn('Failed to cleanup test database:', error);
         }
     }
 
@@ -79,16 +90,6 @@ export class MySQLManager {
         debug('All test databases cleaned up');
     }
 
-    async cleanupTestDatabase(database: string): Promise<void> {
-        try {
-            await this.dropDatabase(database);
-            debug('Test database cleanup completed:', database);
-        } catch (error) {
-            // Don't throw - cleanup failures shouldn't break tests
-            logging.warn('Failed to cleanup test database:', error);
-        }
-    }
-
     /**
      * Used for cleanup of leftover databases from interrupted tests.
      * This removes all databases matching the pattern 'ghost_%' except 'ghost_testing' (the base database).
@@ -107,27 +108,9 @@ export class MySQLManager {
 
             await this.dropDatabases(databaseNames);
         } catch (error) {
-            debug('Failed to clean up test databases (MySQL may not be running):', error);
             // Don't throw - we want to continue with setup even if MySQL cleanup fails
+            debug('Failed to clean up test databases (MySQL may not be running):', error);
         }
-    }
-
-    private parseDatabaseNames(text:string) {
-        if (!text.trim()) {
-            debug('No test databases found to clean up');
-            return null;
-        }
-
-        const databaseNames = text.trim().split('\n').filter(db => db.trim());
-
-        if (databaseNames.length === 0) {
-            debug('No test databases found to clean up');
-            return null;
-        }
-
-        debug(`Found ${databaseNames.length} test database(s) to clean up:`, databaseNames);
-
-        return databaseNames;
     }
 
     async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
@@ -155,6 +138,24 @@ export class MySQLManager {
             debug('Failed to recreate base database (MySQL may not be running):', error);
             // Don't throw - we want to continue with setup even if database recreation fails
         }
+    }
+
+    private parseDatabaseNames(text:string) {
+        if (!text.trim()) {
+            debug('No test databases found to clean up');
+            return null;
+        }
+
+        const databaseNames = text.trim().split('\n').filter(db => db.trim());
+
+        if (databaseNames.length === 0) {
+            debug('No test databases found to clean up');
+            return null;
+        }
+
+        debug(`Found ${databaseNames.length} test database(s) to clean up:`, databaseNames);
+
+        return databaseNames;
     }
 
     async updateSiteUuid(database: string, siteUuid: string): Promise<void> {

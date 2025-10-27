@@ -136,18 +136,12 @@ export class EnvironmentManager {
             logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
             return;
         }
+
         logging.info('Starting global environment teardown...');
 
-        // Clean up Ghost containers
         await this.ghost.removeAll();
-
-        // Clean up test databases
         await this.mysql.dropAllTestDatabases();
-
-        // Recreate the base database for the next run
         await this.mysql.recreateBaseDatabase();
-
-        // This ensures a clean slate for each test run.
         this.tinybird.truncateAnalyticsEvents();
 
         logging.info('Global environment teardown complete (docker compose services left running)');
