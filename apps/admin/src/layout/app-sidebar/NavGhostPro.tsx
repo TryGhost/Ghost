@@ -1,27 +1,22 @@
 import React from "react"
 
 import {
-    LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem
+    SidebarMenu
 } from "@tryghost/shade"
+import NavLink from "./NavLink"
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <a href="#/billing">
-                                <LucideIcon.CreditCard />
-                                <span>Ghost(Pro)</span>
-                            </a>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <NavLink
+                        icon="CreditCard"
+                        label="Ghost(Pro)"
+                        href="#/billing"
+                    />
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
