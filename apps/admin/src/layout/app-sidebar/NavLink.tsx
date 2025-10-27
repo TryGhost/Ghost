@@ -1,5 +1,6 @@
 import React from "react"
 import { LucideIcon, SidebarMenuButton, SidebarMenuItem } from "@tryghost/shade"
+import { useBaseRoute } from "@tryghost/admin-x-framework"
 
 type IconName = keyof typeof LucideIcon
 
@@ -21,7 +22,16 @@ const Before: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{chi
 const After: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
 
 const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, href, className, children }) => {
+    const currentBaseRoute = useBaseRoute()
     const Icon = icon ? (LucideIcon[icon] as React.ComponentType) : null
+
+    // Determine if this link is active by comparing the base route
+    // Strip hash prefix if present (e.g., "#/analytics" -> "/analytics")
+    const normalizedHref = href.startsWith('#') ? href.slice(1) : href
+    const linkBaseRoute = normalizedHref.split('/')[1]
+
+    // Check if current base route matches this link's base route
+    const isActive = currentBaseRoute === linkBaseRoute
 
     let before: React.ReactNode = null
     let after: React.ReactNode = null
@@ -39,8 +49,8 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
     return (
         <SidebarMenuItem className={className}>
             {before}
-            <SidebarMenuButton asChild>
-                <a href={href}>
+            <SidebarMenuButton asChild isActive={isActive}>
+                <a href={href} aria-current={isActive ? 'page' : undefined}>
                     {Icon && <Icon />}
                     <span>{label}</span>
                 </a>
