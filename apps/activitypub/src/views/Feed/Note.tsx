@@ -228,7 +228,7 @@ const Note = () => {
                                             repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
-                                                navigate(`/${item.object.type === 'Article' ? 'reader' : 'notes'}/${encodeURIComponent(item.object.id)}`);
+                                                navigate(`/network/${item.object.type === 'Article' ? 'reader' : 'notes'}/${encodeURIComponent(item.object.id)}`);
                                             }}
                                         />
                                     )
@@ -279,7 +279,7 @@ const Note = () => {
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/network/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -300,7 +300,7 @@ const Note = () => {
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/network/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -327,7 +327,7 @@ const Note = () => {
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/network/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

@@ -24,7 +24,7 @@ const BackButton: React.FC<BackButtonProps> = ({className, onClick}) => {
                 if (previousPath) {
                     navigate(-1);
                 } else {
-                    navigate('/');
+                    navigate('/network');
                 }
             }}
         >

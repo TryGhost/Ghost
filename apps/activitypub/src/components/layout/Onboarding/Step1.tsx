@@ -41,7 +41,7 @@ const Step1: React.FC = () => {
                             <p>{account ? <><strong>{account.name}</strong> is now part of the world’s largest open network.</> : <Skeleton className='w-full max-w-md' />}</p>
                         </div>
                     </div>
-                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white`} size='lg' onClick={() => navigate('/welcome/2')}>Next &rarr;</Button>
+                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white`} size='lg' onClick={() => navigate('/network/welcome/2')}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
                     <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apNodes} />

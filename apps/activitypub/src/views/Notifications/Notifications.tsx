@@ -233,17 +233,17 @@ const Notifications: React.FC = () => {
         switch (group.type) {
         case 'like':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/network/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'reply':
             if (group.post && group.inReplyTo) {
-                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
+                navigate(`/network/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'repost':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/network/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'follow':
@@ -255,7 +255,7 @@ const Notifications: React.FC = () => {
             break;
         case 'mention':
             if (group.post) {
-                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
+                navigate(`/network/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         }

@@ -79,7 +79,7 @@ const Step2: React.FC = () => {
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>Best of all, you get realtime feedback and visibility when something you published is spreading fast across the social web.</p>
                     </div>
                 </div>
-                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white' size='lg' onClick={() => navigate('/welcome/3')}>Next &rarr;</Button>
+                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white' size='lg' onClick={() => navigate('/network/welcome/3')}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[670px] flex-col items-stretch justify-end'>
                 <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14 pt-8'>

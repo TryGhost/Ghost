@@ -94,7 +94,7 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/reader/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/network/reader/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
@@ -123,7 +123,7 @@ const InboxList:React.FC<InboxListProps> = ({
                                     <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
                                     <div>Your inbox is the home for <span className='text-black dark:text-white'>long-form posts</span>. It&apos;s empty for now, but posts will show up as soon as the people you follow share something.</div>
                                     <Button className='text-white dark:text-black' onClick={() => {
-                                        navigate('/explore');
+                                        navigate('/network/explore');
                                     }}>
                                     Find accounts to follow &rarr;
                                     </Button>
@@ -140,7 +140,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/reader');
+                            navigate('/network/reader');
                         }
                     }
                     setIsReaderOpen(open);
@@ -155,7 +155,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/reader');
+                            navigate('/network/reader');
                         }
                     }} />}
                 </DialogContent>

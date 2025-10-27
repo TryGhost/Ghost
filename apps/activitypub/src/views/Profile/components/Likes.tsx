@@ -80,9 +80,9 @@ const Likes: React.FC<LikesProps> = ({
                             type={activity.type}
                             onClick={() => {
                                 if (activity.object.type === 'Note') {
-                                    navigate(`/notes/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/network/notes/${encodeURIComponent(activity.object.id)}`);
                                 } else if (activity.object.type === 'Article') {
-                                    navigate(`/reader/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/network/reader/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
                         />

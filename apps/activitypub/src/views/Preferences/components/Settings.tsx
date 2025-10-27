@@ -35,7 +35,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
+            <SettingItem withHover onClick={() => navigate('/network/preferences/moderation')}>
                 <SettingHeader>
                     <SettingTitle>Moderation</SettingTitle>
                     <SettingDescription>Manage blocked users and domains</SettingDescription>
@@ -44,7 +44,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing')}>
+            <SettingItem withHover onClick={() => navigate('/network/preferences/bluesky-sharing')}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>

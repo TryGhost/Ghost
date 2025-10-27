@@ -85,7 +85,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 onReply?.();
             } else {
                 await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined, altText: altText || undefined});
-                navigate('/notes');
+                navigate('/network/notes');
             }
 
             setIsOpen(false);

@@ -14,7 +14,7 @@ import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
-export const APP_ROUTE_PREFIX = '/activitypub';
+export const APP_ROUTE_PREFIX = '/';
 
 export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
@@ -25,7 +25,7 @@ export type CustomRouteObject = RouteObject & {
 export const routes: CustomRouteObject[] = [
     {
         // Root route configuration
-        path: '',
+        path: 'network',
         errorElement: <Error />, // This will catch all errors in child routes
         children: [
             {

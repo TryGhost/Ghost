@@ -918,7 +918,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 if (container && postId) {
                                                                     scrollPositionCache.set(postId, container.scrollTop);
                                                                 }
-                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/network/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -943,7 +943,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     if (container && postId) {
                                                                         scrollPositionCache.set(postId, container.scrollTop);
                                                                     }
-                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/network/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -974,7 +974,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                         if (container && postId) {
                                                                             scrollPositionCache.set(postId, container.scrollTop);
                                                                         }
-                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/network/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

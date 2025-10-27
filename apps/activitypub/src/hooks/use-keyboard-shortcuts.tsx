@@ -54,7 +54,9 @@ export const useKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}) => 
                 break;
             case 'r':
                 if (options.isReplyAvailable && options.onOpenReply) {
-                    const isReaderOrNote = location.pathname.includes('/notes/') || location.pathname.includes('/reader/');
+                    const notesPath = '/network/notes/';
+                    const readerPath = '/network/reader/';
+                    const isReaderOrNote = location.pathname.includes(notesPath) || location.pathname.includes(readerPath);
 
                     if (isReaderOrNote) {
                         e.preventDefault();

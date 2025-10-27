@@ -85,7 +85,7 @@ const Recommendations: React.FC = () => {
             </ul>
             <Button className='p-0 font-medium text-purple hover:text-black dark:hover:text-white' variant='link' onClick={() => {
                 resetStack();
-                navigate('/explore');
+                navigate('/network/explore');
             }}>Find more &rarr;</Button>
         </div>
     );

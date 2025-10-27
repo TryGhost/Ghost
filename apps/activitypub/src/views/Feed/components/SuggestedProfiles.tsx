@@ -81,7 +81,7 @@ const SuggestedProfiles: React.FC = () => {
             <div className='pb-7 pt-4'>
                 <div className='mb-3 flex items-center justify-between'>
                     <H4 className='text-lg font-semibold text-black dark:text-white'>More people to follow</H4>
-                    <Button className='px-0 font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' variant='link' onClick={() => navigate('/explore')}>
+                    <Button className='px-0 font-medium text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white' variant='link' onClick={() => navigate('/network/explore')}>
                     Find more &rarr;
                     </Button>
                 </div>
@@ -120,7 +120,7 @@ const SuggestedProfiles: React.FC = () => {
                             <div
                                 key={profile?.id || `loading-${index}`}
                                 className='relative w-40 shrink-0 snap-start rounded-lg bg-gray-75 p-4 dark:bg-gray-925/30'
-                                onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/profile/${profile.handle}`) : undefined}
+                                onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/network/profile/${profile.handle}`) : undefined}
                             >
                                 <Button
                                     className='absolute right-2 top-1 hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'

@@ -43,7 +43,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const navigate = useNavigate();
     const {canGoBack} = useNavigationStack();
 
-    const basePath = params.handle ? `/profile/${params.handle}` : '/profile';
+    const basePath = params.handle ? `/network/profile/${params.handle}` : '/network/profile';
     const likesEnabled = !params.handle;
 
     const tabSlug = params.handle

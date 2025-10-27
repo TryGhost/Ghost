@@ -43,7 +43,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
         <div
             className='flex w-full cursor-pointer items-start gap-3 pt-4 [&:last-of-type>:nth-child(2)]:border-none'
             onClick={() => {
-                navigate(`/profile/${profile.handle}`);
+                navigate(`/network/profile/${profile.handle}`);
             }}
         >
             <div className='flex w-full flex-col gap-1 border-b border-gray-200 pb-4 dark:border-gray-950'>
