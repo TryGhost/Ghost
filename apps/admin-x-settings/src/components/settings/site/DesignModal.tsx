@@ -202,7 +202,7 @@ const DesignModal: React.FC = () => {
     return <PreviewModalContent
         afterClose={() => {
             if (refParam === 'setup') {
-                window.location.hash = '/analytics/';
+                updateRoute({isExternal: true, route: 'analytics'});
             } else {
                 updateRoute('design');
             }
