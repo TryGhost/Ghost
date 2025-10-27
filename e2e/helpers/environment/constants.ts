@@ -22,5 +22,5 @@ export const TB = {
     CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird'
 };
 
-export const STATE_DIR = path.resolve(__dirname, '../../data/state');
+export const CONFIG_DIR = path.resolve(__dirname, '../../data/config');
 

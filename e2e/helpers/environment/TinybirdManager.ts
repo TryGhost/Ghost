@@ -3,7 +3,7 @@ import path from 'path';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
-import {STATE_DIR, TB} from './constants';
+import {CONFIG_DIR, TB} from './constants';
 import {ensureDir} from '../utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
@@ -18,18 +18,34 @@ export interface TinyBirdConfig {
  * Handles Tinybird token fetching and local config persistence
  */
 export class TinybirdManager {
-    private readonly tinybirdStateFile;
-    private dockerCompose: DockerCompose;
+    private readonly tinyBirdConfigFile;
+    private readonly dockerCompose: DockerCompose;
 
-    constructor(dockerCompose: DockerCompose, private readonly configDir: string = STATE_DIR) {
+    constructor(dockerCompose: DockerCompose, private readonly configDir: string = CONFIG_DIR) {
         this.dockerCompose = dockerCompose;
-        this.tinybirdStateFile = path.join(this.configDir, 'tinybird.json');
+        this.tinyBirdConfigFile = path.join(this.configDir, 'tinybird.json');
     }
 
-    saveConfig(config: TinyBirdConfig): void {
+    loadConfig(): TinyBirdConfig {
+        try {
+            if (!fs.existsSync(this.tinyBirdConfigFile)) {
+                throw new Error('Tinybird config file does not exist');
+            }
+            const data = fs.readFileSync(this.tinyBirdConfigFile, 'utf8');
+            const config = JSON.parse(data) as TinyBirdConfig;
+
+            debug('Tinybird config loaded:', config);
+            return config;
+        } catch (error) {
+            logging.error('Failed to load Tinybird config:', error);
+            throw new Error(`Failed to load Tinybird config: ${error}`);
+        }
+    }
+
+    private saveConfig(config: TinyBirdConfig): void {
         try {
             ensureDir(this.configDir);
-            fs.writeFileSync(this.tinybirdStateFile, JSON.stringify(config, null, 2));
+            fs.writeFileSync(this.tinyBirdConfigFile, JSON.stringify(config, null, 2));
 
             debug('Tinybird config saved to file:', config);
         } catch (error) {
@@ -38,27 +54,24 @@ export class TinybirdManager {
         }
     }
 
-    loadConfig(): TinyBirdConfig {
+    fetchAndSaveConfig(): void {
+        const config = this.fetchConfigFromCLI();
+        this.saveConfig(config);
+    }
+
+    truncateAnalyticsEvents(): void {
         try {
-            if (!fs.existsSync(this.tinybirdStateFile)) {
-                throw new Error('Tinybird config file does not exist');
-            }
-            const data = fs.readFileSync(this.tinybirdStateFile, 'utf8');
-            const state = JSON.parse(data) as TinyBirdConfig;
-            debug('Tinybird config loaded:', state);
-            return state;
+            debug('Truncating analytics_events datasource...');
+            this.dockerCompose.execInService('tb-cli', ['tb', 'datasource', 'truncate', 'analytics_events', '--yes', '--cascade']);
+
+            debug('analytics_events datasource truncated');
         } catch (error) {
-            logging.error('Failed to load Tinybird config:', error);
-            throw new Error(`Failed to load Tinybird config: ${error}`);
+            // Don't throw - we want to continue with setup even if truncate fails
+            debug('Failed to truncate analytics_events (Tinybird may not be running):', error);
         }
     }
 
-    fetchAndSaveConfig(): void {
-        const state = this.fetchConfig();
-        this.saveConfig(state);
-    }
-
-    fetchConfig() {
+    private fetchConfigFromCLI() {
         logging.info('Fetching Tinybird tokens...');
 
         const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', TB.CLI_ENV_PATH);
@@ -80,17 +93,5 @@ export class TinybirdManager {
 
         logging.info('Tinybird tokens fetched');
         return config;
-    }
-
-    truncateAnalyticsEvents(): void {
-        try {
-            debug('Truncating analytics_events datasource...');
-            this.dockerCompose.execInService('tb-cli', ['tb', 'datasource', 'truncate', 'analytics_events', '--yes', '--cascade']);
-
-            debug('analytics_events datasource truncated');
-        } catch (error) {
-            // Don't throw - we want to continue with setup even if truncate fails
-            debug('Failed to truncate analytics_events (Tinybird may not be running):', error);
-        }
     }
 }

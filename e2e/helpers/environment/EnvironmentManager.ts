@@ -8,7 +8,7 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
-import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, STATE_DIR} from './constants';
+import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, CONFIG_DIR} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -186,11 +186,11 @@ export class EnvironmentManager {
 
     private cleanupStateFiles(): void {
         try {
-            if (fs.existsSync(STATE_DIR)) {
+            if (fs.existsSync(CONFIG_DIR)) {
                 // Delete all files in the directory, but keep the directory itself
-                const files = fs.readdirSync(STATE_DIR);
+                const files = fs.readdirSync(CONFIG_DIR);
                 for (const file of files) {
-                    const filePath = path.join(STATE_DIR, file);
+                    const filePath = path.join(CONFIG_DIR, file);
                     const stat = fs.statSync(filePath);
                     if (stat.isDirectory()) {
                         fs.rmSync(filePath, {recursive: true, force: true});
