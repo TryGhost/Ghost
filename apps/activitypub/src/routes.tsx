@@ -12,7 +12,7 @@ import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
 import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
-import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
+import {Navigate, RouteObject, useLocation} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/';
 
@@ -20,6 +20,12 @@ export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
     children?: CustomRouteObject[];
     showBackButton?: boolean;
+};
+
+const ActivityPubToNetworkRedirect = () => {
+    const location = useLocation();
+    const newPath = location.pathname.replace(/^\/activitypub/, '/network');
+    return <Navigate to={`${newPath}${location.search}${location.hash}`} replace />;
 };
 
 export const routes: CustomRouteObject[] = [
@@ -143,5 +149,13 @@ export const routes: CustomRouteObject[] = [
                 element: <Error />
             }
         ]
+    },
+    {
+        path: 'activitypub',
+        element: <Navigate to="/network" replace />
+    },
+    {
+        path: 'activitypub/*',
+        element: <ActivityPubToNetworkRedirect />
     }
 ];

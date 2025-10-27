@@ -61,8 +61,12 @@ Router.map(function () {
         this.route('settings-x', {path: '/*sub'});
     });
 
-    this.route('activitypub-x',{path: '/activitypub'}, function () {
+    this.route('activitypub-x',{path: '/network'}, function () {
         this.route('activitypub-x', {path: '/*sub'});
+    });
+
+    this.route('activitypub-redirect', {path: '/activitypub'}, function () {
+        this.route('sub', {path: '/*sub'});
     });
 
     this.route('explore', function () {
