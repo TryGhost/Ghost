@@ -27,7 +27,6 @@ export class DockerCompose {
         this.docker = options.docker;
     }
 
-    /** Bring all services up (detached). */
     up(): void {
         try {
             logging.info('Starting docker compose services...');
@@ -53,17 +52,14 @@ export class DockerCompose {
         }
     }
 
-    /**
-     * Get the status of all containers in the compose project.
-     * Returns null if no containers are found.
-     */
     async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
         const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
         const output = execSync(command, {encoding: 'utf-8'}).trim();
         if (!output) {
             return null;
         }
-        const containers = output.split('\n')
+        const containers = output
+            .split('\n')
             .filter(line => line.trim())
             .map(line => JSON.parse(line));
 
@@ -157,13 +153,11 @@ export class DockerCompose {
         }
     }
 
-    /**
-     * Read a file from a service container using `docker compose run`.
-     */
     readFileFromService(service: string, filePath: string): string {
-        const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
-        debug('readFileFromService running:', cmd);
-        const output = execSync(cmd, {encoding: 'utf-8'}).toString();
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
+        debug('readFileFromService running:', command);
+
+        const output = execSync(command, {encoding: 'utf-8'}).toString();
         return output;
     }
 

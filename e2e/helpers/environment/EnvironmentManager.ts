@@ -1,14 +1,12 @@
-import * as fs from 'fs';
 import Docker from 'dockerode';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
-import path from 'path';
 import {randomUUID} from 'crypto';
 import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
-import {DOCKER_COMPOSE_CONFIG, CONFIG_DIR} from './constants';
+import {DOCKER_COMPOSE_CONFIG} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -40,13 +38,17 @@ export class EnvironmentManager {
     private readonly tinybird: TinybirdManager;
     private readonly ghost: GhostManager;
 
-    constructor() {
+    constructor(
+        composeFilePath: string = DOCKER_COMPOSE_CONFIG.FILE_PATH,
+        composeProjectName: string = DOCKER_COMPOSE_CONFIG.PROJECT
+    ) {
         this.docker = new Docker();
         this.dockerCompose = new DockerCompose({
-            composeFilePath: DOCKER_COMPOSE_CONFIG.FILE_PATH,
-            projectName: DOCKER_COMPOSE_CONFIG.PROJECT,
+            composeFilePath: composeFilePath,
+            projectName: composeProjectName,
             docker: this.docker
         });
+
         this.mysql = new MySQLManager(this.dockerCompose);
         this.tinybird = new TinybirdManager(this.dockerCompose);
         this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
@@ -172,28 +174,6 @@ export class EnvironmentManager {
         } catch (error) {
             logging.error('Failed to teardown Ghost instance:', error);
             // Don't throw - we want tests to continue even if cleanup fails
-        }
-    }
-
-    private cleanupStateFiles(): void {
-        try {
-            if (fs.existsSync(CONFIG_DIR)) {
-                // Delete all files in the directory, but keep the directory itself
-                const files = fs.readdirSync(CONFIG_DIR);
-                for (const file of files) {
-                    const filePath = path.join(CONFIG_DIR, file);
-                    const stat = fs.statSync(filePath);
-                    if (stat.isDirectory()) {
-                        fs.rmSync(filePath, {recursive: true, force: true});
-                    } else {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-                debug('State files cleaned up');
-            }
-        } catch (error) {
-            logging.error('Failed to cleanup state files:', error);
-            throw new Error(`Failed to cleanup state files: ${error}`);
         }
     }
 
