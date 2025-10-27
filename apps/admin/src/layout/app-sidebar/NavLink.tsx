@@ -16,6 +16,10 @@ interface NavLinkComposition {
     After: React.FC<{ children: React.ReactNode }>
 }
 
+// Define the slot components before the main component
+const Before: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+const After: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+
 const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, href, className, children }) => {
     const Icon = icon ? (LucideIcon[icon] as React.ComponentType) : null
 
@@ -24,9 +28,9 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
 
     React.Children.forEach(children, (child) => {
         if (React.isValidElement(child)) {
-            if (child.type === NavLink.Before) {
+            if (child.type === Before) {
                 before = (child.props as { children: React.ReactNode }).children
-            } else if (child.type === NavLink.After) {
+            } else if (child.type === After) {
                 after = (child.props as { children: React.ReactNode }).children
             }
         }
@@ -46,7 +50,7 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
     )
 }
 
-NavLink.Before = ({ children }) => <>{children}</>
-NavLink.After = ({ children }) => <>{children}</>
+NavLink.Before = Before
+NavLink.After = After
 
 export default NavLink
