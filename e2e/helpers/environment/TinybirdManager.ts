@@ -8,7 +8,7 @@ import {ensureDir} from '../utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
 
-export interface TinyBirdConfig {
+export interface TinybirdConfig {
     workspaceId: string;
     adminToken: string;
     trackerToken: string;
@@ -27,13 +27,13 @@ export class TinybirdManager {
         this.tinyBirdConfigFile = path.join(this.configDir, 'tinybird.json');
     }
 
-    loadConfig(): TinyBirdConfig {
+    loadConfig(): TinybirdConfig {
         try {
             if (!fs.existsSync(this.tinyBirdConfigFile)) {
                 throw new Error('Tinybird config file does not exist');
             }
             const data = fs.readFileSync(this.tinyBirdConfigFile, 'utf8');
-            const config = JSON.parse(data) as TinyBirdConfig;
+            const config = JSON.parse(data) as TinybirdConfig;
 
             debug('Tinybird config loaded:', config);
             return config;
@@ -43,7 +43,7 @@ export class TinybirdManager {
         }
     }
 
-    private saveConfig(config: TinyBirdConfig): void {
+    private saveConfig(config: TinybirdConfig): void {
         try {
             ensureDir(this.configDir);
             fs.writeFileSync(this.tinyBirdConfigFile, JSON.stringify(config, null, 2));
@@ -86,7 +86,7 @@ export class TinybirdManager {
             }
         }
 
-        const config: TinyBirdConfig = {
+        const config: TinybirdConfig = {
             workspaceId: envVars.TINYBIRD_WORKSPACE_ID,
             adminToken: envVars.TINYBIRD_ADMIN_TOKEN,
             trackerToken: envVars.TINYBIRD_TRACKER_TOKEN

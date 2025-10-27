@@ -140,7 +140,7 @@ export class MySQLManager {
         }
     }
 
-    private parseDatabaseNames(text:string) {
+    private parseDatabaseNames(text: string) {
         if (!text.trim()) {
             debug('No test databases found to clean up');
             return null;
