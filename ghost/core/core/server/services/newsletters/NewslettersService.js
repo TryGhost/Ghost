@@ -303,13 +303,6 @@ class NewslettersService {
             }
         }
 
-        if (cleanedAttrs.feedback_enabled) {
-            if (!this.labs.isSet('audienceFeedback')) {
-                // Not allowed to set to true
-                cleanedAttrs.feedback_enabled = false;
-            }
-        }
-
         // If one of the properties was changed, we need to reset sender_email in case it was not changed but is invalid in the database
         // which can happen after a config change (= auto correcting behaviour)
         const didChangeReplyTo = newsletter && attrs.sender_reply_to !== undefined && newsletter.get('sender_reply_to') !== attrs.sender_reply_to;
