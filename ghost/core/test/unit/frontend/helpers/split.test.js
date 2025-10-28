@@ -112,4 +112,25 @@ describe('{{split}} helper in inline mode', function () {
         const expected = 'helloworldletsgooo';
         shouldCompileToExpected(templateString, hash, expected);
     });
+    it('returns empty strings with a leading separator (standard JavaScript behavior)', function () {
+        const templateString = '{{#foreach (split ",hello,world" separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = '<br>hello<br>world';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split ",hello,world" separator=","}}{{this.length}}{{/split}}';
+        const secondExpected = '3'; // "", "hello", "world"
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
+    it('returns empty strings with a trailing separator (standard JavaScript behavior)', function () {
+        const templateString = '{{#foreach (split "hello,world," separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hello<br>world<br>';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split "hello,world," separator=","}}{{this.length}}{{/split}}';
+        const secondExpected = '3'; // "hello", "world", ""
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
+    it('can be used with match to cleanly remove a suffix from a string', function () {
+        const templateString = '{{#foreach (split "my-string-is-too-long" separator="-long")}}{{^match this ""}}|{{this}}|{{/match}}{{/foreach}}';
+        const expected = '|my-string-is-too|';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
 });
