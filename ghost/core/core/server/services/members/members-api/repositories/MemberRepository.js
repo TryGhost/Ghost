@@ -62,6 +62,7 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         OfferRedemption,
+        Outbox,
         stripeAPIService,
         labsService,
         productRepository,
@@ -78,6 +79,7 @@ module.exports = class MemberRepository {
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
         this._OfferRedemption = OfferRedemption;
+        this._Outbox = Outbox;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
@@ -261,6 +263,15 @@ module.exports = class MemberRepository {
             options = {};
         }
 
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.create(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         if (!options.batch_id) {
             // We'll use this to link related events
             options.batch_id = ObjectId().toHexString();
@@ -402,6 +413,27 @@ module.exports = class MemberRepository {
                 }
             }
         }
+
+        // Insert into outbox if welcome emails feature is enabled
+        if (this._labsService.isSet('welcomeEmails')) {
+            await this._Outbox.add({
+                id: ObjectId().toHexString(),
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: member.id,
+                    email: member.get('email'),
+                    name: member.get('name'),
+                    batchId: options.batch_id,
+                    attribution: data.attribution,
+                    source,
+                    timestamp: eventData.created_at
+                }),
+                created_at: new Date(),
+                retry_count: 0,
+                last_retry_at: null
+            }, options);
+        }
+                
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
