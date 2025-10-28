@@ -27,8 +27,8 @@ export interface GhostInstance {
  * ```
  * const environmentManager = new EnvironmentManager();
  * await environmentManager.globalSetup(); // Call once before all tests to start MySQL, Tinybird, etc.
- * const ghostInstance = await environmentManager.setupGhostInstance(workerId); // Call before each test to create an isolated Ghost instance
- * await environmentManager.teardownGhostInstance(ghostInstance); // Call after each test to clean up the Ghost instance
+ * const ghostInstance = await environmentManager.perTestSetup(); // Call before each test to create an isolated Ghost instance
+ * await environmentManager.perTestTeardown(ghostInstance); // Call after each test to clean up the Ghost instance
  * await environmentManager.globalTeardown(); // Call once after all tests to stop shared services
  * ````
  */
@@ -82,9 +82,9 @@ export class EnvironmentManager {
     }
 
     /**
-     * Setup an isolated Ghost instance for a test
+     * Setup that executes on each test start
      */
-    public async setupGhostInstance(): Promise<GhostInstance> {
+    public async perTestSetup(): Promise<GhostInstance> {
         try {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
@@ -94,18 +94,6 @@ export class EnvironmentManager {
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
-        }
-    }
-
-    public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
-        try {
-            debug('Tearing down Ghost instance:', ghostInstance.containerId);
-            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
-            await this.mysql.cleanupTestDatabase(ghostInstance.database);
-            debug('Ghost instance teardown completed');
-        } catch (error) {
-            logging.error('Failed to teardown Ghost instance:', error);
-            // Don't throw - we want tests to continue even if cleanup fails
         }
     }
 
@@ -129,6 +117,21 @@ export class EnvironmentManager {
         await this.cleanupResources();
 
         logging.info('Global environment teardown complete (docker compose services left running)');
+    }
+
+    /**
+     * Setup that executes on each test stop
+     */
+    public async perTestTeardown(ghostInstance: GhostInstance): Promise<void> {
+        try {
+            debug('Tearing down Ghost instance:', ghostInstance.containerId);
+            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
+            await this.mysql.cleanupTestDatabase(ghostInstance.database);
+            debug('Ghost instance teardown completed');
+        } catch (error) {
+            // Don't throw - we want tests to continue even if cleanup fails
+            logging.error('Failed to teardown Ghost instance:', error);
+        }
     }
 
     /**

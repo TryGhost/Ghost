@@ -55,6 +55,10 @@ export class TinybirdManager {
         }
     }
 
+    /**
+     * Fetch Tinybird tokens and other details from the tinybird-local service and store them in a local file like
+     * data/state/tinybird.json
+     */
     fetchAndSaveConfig(): void {
         const config = this.fetchConfigFromCLI();
         this.saveConfig(config);
