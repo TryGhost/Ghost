@@ -26,36 +26,36 @@ export class MySQLManager {
         this.containerName = containerName;
     }
 
-    async setupTestDatabase(database: string, siteUuid: string): Promise<void> {
+    async setupTestDatabase(databaseName: string, siteUuid: string): Promise<void> {
         try {
-            await this.createDatabase(database);
-            await this.restoreDatabaseFromSnapshot(database);
-            await this.updateSiteUuid(database, siteUuid);
+            await this.createDatabase(databaseName);
+            await this.restoreDatabaseFromSnapshot(databaseName);
+            await this.updateSiteUuid(databaseName, siteUuid);
 
-            debug('Test database setup completed:', database, 'with site_uuid:', siteUuid);
+            debug('Test database setup completed:', databaseName, 'with site_uuid:', siteUuid);
         } catch (error) {
             logging.error('Failed to setup test database:', error);
             throw new Error(`Failed to setup test database: ${error}`);
         }
     }
 
-    async cleanupTestDatabase(database: string): Promise<void> {
+    async cleanupTestDatabase(databaseName: string): Promise<void> {
         try {
-            await this.dropDatabase(database);
+            await this.dropDatabase(databaseName);
 
-            debug('Test database cleanup completed:', database);
+            debug('Test database cleanup completed:', databaseName);
         } catch (error) {
             // Don't throw - cleanup failures shouldn't break tests
             logging.warn('Failed to cleanup test database:', error);
         }
     }
 
-    async createDatabase(database: string): Promise<void> {
-        debug('Creating database:', database);
+    async createDatabase(databaseName: string): Promise<void> {
+        debug('Creating database:', databaseName);
 
-        await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + database + '\\`;"');
+        await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + databaseName + '\\`;"');
 
-        debug('Database created:', database);
+        debug('Database created:', databaseName);
     }
 
     async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {

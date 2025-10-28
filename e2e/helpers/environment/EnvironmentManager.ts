@@ -73,8 +73,10 @@ export class EnvironmentManager {
         logging.info('Starting global environment setup...');
 
         await this.cleanupResources();
+
         this.dockerCompose.up();
         await this.dockerCompose.waitForAll();
+
         await this.mysql.createSnapshot();
         this.tinybird.fetchAndSaveConfig();
 
@@ -86,10 +88,10 @@ export class EnvironmentManager {
      */
     public async perTestSetup(): Promise<GhostInstance> {
         try {
-            const siteUuid = randomUUID();
-            const instanceId = `ghost_${siteUuid}`;
+            const {siteUuid, instanceId} = this.uniqueTestDetails();
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
             const portalUrl = await this.portal.getUrl();
+
             return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
@@ -125,8 +127,10 @@ export class EnvironmentManager {
     public async perTestTeardown(ghostInstance: GhostInstance): Promise<void> {
         try {
             debug('Tearing down Ghost instance:', ghostInstance.containerId);
+
             await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
             await this.mysql.cleanupTestDatabase(ghostInstance.database);
+
             debug('Ghost instance teardown completed');
         } catch (error) {
             // Don't throw - we want tests to continue even if cleanup fails
@@ -166,5 +170,16 @@ export class EnvironmentManager {
 
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
+    }
+
+    // each test is going to have unique Ghost container, and site uuid for analytic events
+    private uniqueTestDetails() {
+        const siteUuid = randomUUID();
+        const instanceId = `ghost_${siteUuid}`;
+
+        return {
+            siteUuid,
+            instanceId
+        };
     }
 }
