@@ -72,7 +72,7 @@ export class EnvironmentManager {
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
 
-        await this.cleanupLeftoverResources();
+        await this.cleanupResources();
         this.dockerCompose.up();
         await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
@@ -126,10 +126,7 @@ export class EnvironmentManager {
 
         logging.info('Starting global environment teardown...');
 
-        await this.ghost.removeAll();
-        await this.mysql.dropAllTestDatabases();
-        await this.mysql.recreateBaseDatabase();
-        this.tinybird.truncateAnalyticsEvents();
+        await this.cleanupResources();
 
         logging.info('Global environment teardown complete (docker compose services left running)');
     }
@@ -147,7 +144,7 @@ export class EnvironmentManager {
      *
      * Note: Docker compose services are left running for reuse across test runs
      */
-    private async cleanupLeftoverResources(): Promise<void> {
+    private async cleanupResources(): Promise<void> {
         try {
             logging.info('Cleaning up leftover resources from previous test runs...');
 
