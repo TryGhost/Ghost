@@ -22,7 +22,7 @@ Router.map(function () {
 
     this.route('whatsnew');
     this.route('site');
-    this.route('dashboard');
+    this.route('dashboard'); // redirects to stats-x
     this.route('launch');
 
     this.route('stats-x', {path: '/analytics'}, function () {

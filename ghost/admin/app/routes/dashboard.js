@@ -1,10 +1,11 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
+import {inject as service} from '@ember/service';
 
-export default class DashboardRoute extends AuthenticatedRoute {
+// Redirect all users to analytics since dashboard has been retired
+export default class DashboardRoute extends AdminRoute {
+    @service router;
+
     async beforeModel() {
-        super.beforeModel(...arguments);
-
-        // Redirect all users to analytics since dashboard has been retired
-        return this.transitionTo('stats-x');
+        this.router.replaceWith('stats-x');
     }
 }
