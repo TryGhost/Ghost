@@ -7,6 +7,7 @@ class EmailEventStorage {
     #models;
     #emailSuppressionList;
     #prometheusClient;
+    #pendingUpdates;
 
     constructor({db, models, membersRepository, emailSuppressionList, prometheusClient}) {
         this.#db = db;
@@ -14,6 +15,13 @@ class EmailEventStorage {
         this.#membersRepository = membersRepository;
         this.#emailSuppressionList = emailSuppressionList;
         this.#prometheusClient = prometheusClient;
+
+        // Accumulate events for batch processing
+        this.#pendingUpdates = {
+            delivered: new Map(), // recipientId -> timestamp
+            opened: new Map(),
+            failed: new Map()
+        };
 
         if (this.#prometheusClient) {
             this.#prometheusClient.registerCounter({
@@ -25,38 +33,28 @@ class EmailEventStorage {
     }
 
     async handleDelivered(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if delivered_at is null
-        const rowCount = await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('delivered_at')
-            .update({
-                delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
-        this.recordEventStored('delivered', rowCount);
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.delivered.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.delivered.set(event.emailRecipientId, event.timestamp);
+        }
     }
 
     async handleOpened(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if opened_at is null
-        const rowCount = await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('opened_at')
-            .update({
-                opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
-        this.recordEventStored('opened', rowCount);
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.opened.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.opened.set(event.emailRecipientId, event.timestamp);
+        }
     }
 
     async handlePermanentFailed(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if failed_at is null
-        await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('failed_at')
-            .update({
-                failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.failed.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.failed.set(event.emailRecipientId, event.timestamp);
+        }
+        // Still need to save failure record immediately (separate table)
         await this.saveFailure('permanent', event);
     }
 
@@ -181,6 +179,125 @@ class EmailEventStorage {
         } catch (err) {
             logging.error('Error recording email analytics event stored', err);
         }
+    }
+
+    /**
+     * Flush all pending batched updates to the database
+     * Uses CASE statements to update multiple recipients in a single query
+     * @returns {Promise<{delivered: number, opened: number, failed: number}>} Count of rows updated
+     */
+    async flushBatchedUpdates() {
+        const delivered = this.#pendingUpdates.delivered;
+        const opened = this.#pendingUpdates.opened;
+        const failed = this.#pendingUpdates.failed;
+
+        // Collect all unique recipient IDs that need updating
+        const allRecipientIds = new Set([
+            ...delivered.keys(),
+            ...opened.keys(),
+            ...failed.keys()
+        ]);
+
+        if (allRecipientIds.size === 0) {
+            return {delivered: 0, opened: 0, failed: 0};
+        }
+
+        const recipientIds = Array.from(allRecipientIds);
+
+        // Build CASE statements for each field
+        const deliveredCases = [];
+        const openedCases = [];
+        const failedCases = [];
+
+        for (const recipientId of recipientIds) {
+            const deliveredTimestamp = delivered.get(recipientId);
+            const openedTimestamp = opened.get(recipientId);
+            const failedTimestamp = failed.get(recipientId);
+
+            if (deliveredTimestamp) {
+                const formattedTime = moment.utc(deliveredTimestamp).format('YYYY-MM-DD HH:mm:ss');
+                deliveredCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
+            }
+
+            if (openedTimestamp) {
+                const formattedTime = moment.utc(openedTimestamp).format('YYYY-MM-DD HH:mm:ss');
+                openedCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
+            }
+
+            if (failedTimestamp) {
+                const formattedTime = moment.utc(failedTimestamp).format('YYYY-MM-DD HH:mm:ss');
+                failedCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
+            }
+        }
+
+        // Build the UPDATE query with CASE statements
+        // Only update if current value is NULL (handles out-of-order events)
+        const setClauses = [];
+
+        if (deliveredCases.length > 0) {
+            setClauses.push(`delivered_at = CASE WHEN delivered_at IS NULL THEN CASE id ${deliveredCases.join(' ')} ELSE delivered_at END ELSE delivered_at END`);
+        }
+
+        if (openedCases.length > 0) {
+            setClauses.push(`opened_at = CASE WHEN opened_at IS NULL THEN CASE id ${openedCases.join(' ')} ELSE opened_at END ELSE opened_at END`);
+        }
+
+        if (failedCases.length > 0) {
+            setClauses.push(`failed_at = CASE WHEN failed_at IS NULL THEN CASE id ${failedCases.join(' ')} ELSE failed_at END ELSE failed_at END`);
+        }
+
+        if (setClauses.length === 0) {
+            return {delivered: 0, opened: 0, failed: 0};
+        }
+
+        // Execute the batch update
+        await this.#db.knex.raw(`
+            UPDATE email_recipients
+            SET ${setClauses.join(', ')}
+            WHERE id IN (${recipientIds.map(id => `'${id}'`).join(',')})
+        `);
+
+        // Record metrics
+        this.recordEventStored('delivered', delivered.size);
+        this.recordEventStored('opened', opened.size);
+        this.recordEventStored('failed', failed.size);
+
+        // Clear the pending updates
+        const counts = {
+            delivered: delivered.size,
+            opened: opened.size,
+            failed: failed.size
+        };
+
+        this.#pendingUpdates.delivered.clear();
+        this.#pendingUpdates.opened.clear();
+        this.#pendingUpdates.failed.clear();
+
+        return counts;
+    }
+
+    /**
+     * Get the count of pending updates waiting to be flushed
+     * @returns {{delivered: number, opened: number, failed: number, total: number}}
+     */
+    getPendingUpdateCount() {
+        const delivered = this.#pendingUpdates.delivered.size;
+        const opened = this.#pendingUpdates.opened.size;
+        const failed = this.#pendingUpdates.failed.size;
+
+        // Count unique recipients across all types
+        const allRecipientIds = new Set([
+            ...this.#pendingUpdates.delivered.keys(),
+            ...this.#pendingUpdates.opened.keys(),
+            ...this.#pendingUpdates.failed.keys()
+        ]);
+
+        return {
+            delivered,
+            opened,
+            failed,
+            total: allRecipientIds.size
+        };
     }
 }
 

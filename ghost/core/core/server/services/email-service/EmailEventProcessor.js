@@ -241,6 +241,14 @@ class EmailEventProcessor {
     }
 
     /**
+     * Flush batched updates to email_recipients table
+     * @returns {Promise<{delivered: number, opened: number, failed: number}>}
+     */
+    async flushBatchedUpdates() {
+        return await this.#eventStorage.flushBatchedUpdates();
+    }
+
+    /**
      * @private
      * @param {string} providerId
      * @returns {Promise<string|undefined>}
