@@ -9,7 +9,8 @@
   "workspaces": [
     "ghost/*",
     "e2e",
-    "apps/*"
+    "apps/*",
+    "visual-tests"
   ],
   "monorepo": {
     "public": false,

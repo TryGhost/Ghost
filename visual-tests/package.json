@@ -1,0 +1,13 @@
+{
+  "name": "visual-tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "1.55.1",
+    "@types/node": "^24.9.1"
+  },
+  "scripts": {
+    "test": "npx playwright test"
+  }
+}
