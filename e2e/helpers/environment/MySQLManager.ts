@@ -58,22 +58,6 @@ export class MySQLManager {
         debug('Database created:', databaseName);
     }
 
-    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
-        logging.info('Creating database snapshot...');
-
-        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
-
-        logging.info('Database snapshot created');
-    }
-
-    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
-        debug('Restoring database from snapshot:', database);
-
-        await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
-
-        debug('Database restored from snapshot:', database);
-    }
-
     async dropDatabase(database: string): Promise<void> {
         debug('Dropping database if exists:', database);
 
@@ -113,6 +97,14 @@ export class MySQLManager {
         }
     }
 
+    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
+        logging.info('Creating database snapshot...');
+
+        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
+
+        logging.info('Database snapshot created');
+    }
+
     async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
         try {
             debug('Deleting MySQL snapshot:', snapshotPath);
@@ -124,6 +116,14 @@ export class MySQLManager {
             // Don't throw - we want to continue with setup even if snapshot deletion fails
             debug('Failed to delete MySQL snapshot (MySQL may not be running):', error);
         }
+    }
+
+    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+        debug('Restoring database from snapshot:', database);
+
+        await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
+
+        debug('Database restored from snapshot:', database);
     }
 
     async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
