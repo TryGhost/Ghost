@@ -6,13 +6,13 @@ test.describe('Settings Search - Labs Auto-open', () => {
         const settingsPage = new SettingsPage(page);
         await settingsPage.goto();
 
-        await expect(settingsPage.labsSection).toBeVisible();
-        await expect(settingsPage.labsOpenButton).toBeVisible();
+        await expect(settingsPage.labsSection.section).toBeVisible();
+        await expect(settingsPage.labsSection.openButton).toBeVisible();
 
         await settingsPage.searchInput.fill('lab');
         await page.waitForTimeout(300);
 
-        await expect(settingsPage.labsSection).toBeVisible();
-        await expect(settingsPage.labsCloseButton).toBeVisible();
+        await expect(settingsPage.labsSection.section).toBeVisible();
+        await expect(settingsPage.labsSection.closeButton).toBeVisible();
     });
 });
