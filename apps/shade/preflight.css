@@ -211,7 +211,10 @@
         margin: 0; /* 2 */
         padding: 0; /* 3 */
         outline: none;
-        border: inherit;
+
+        /* Reset `border: none;` from global.css */
+        border-width: 0;
+        border-style: solid;
     }
 
     /*
