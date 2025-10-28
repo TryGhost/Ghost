@@ -33,7 +33,6 @@ export interface GhostInstance {
  * ````
  */
 export class EnvironmentManager {
-    private readonly docker: Docker;
     private readonly dockerCompose: DockerCompose;
     private readonly mysql: MySQLManager;
     private readonly tinybird: TinybirdManager;
@@ -44,16 +43,16 @@ export class EnvironmentManager {
         composeFilePath: string = DOCKER_COMPOSE_CONFIG.FILE_PATH,
         composeProjectName: string = DOCKER_COMPOSE_CONFIG.PROJECT
     ) {
-        this.docker = new Docker();
+        const docker = new Docker();
         this.dockerCompose = new DockerCompose({
             composeFilePath: composeFilePath,
             projectName: composeProjectName,
-            docker: this.docker
+            docker: docker
         });
 
         this.mysql = new MySQLManager(this.dockerCompose);
         this.tinybird = new TinybirdManager(this.dockerCompose, CONFIG_DIR);
-        this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
+        this.ghost = new GhostManager(docker, this.dockerCompose, this.tinybird);
         this.portal = new PortalManager(this.dockerCompose);
     }
 
@@ -160,8 +159,8 @@ export class EnvironmentManager {
 
             logging.info('Leftover resources cleaned up successfully');
         } catch (error) {
-            logging.warn('Failed to clean up some leftover resources:', error);
             // Don't throw - we want to continue with setup even if cleanup fails
+            logging.warn('Failed to clean up some leftover resources:', error);
         }
     }
 
