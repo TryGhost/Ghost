@@ -177,9 +177,6 @@ export class EnvironmentManager {
      * Teardown a Ghost instance
      */
     public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
-        if (this.shouldPreserveEnvironment()) {
-            return;
-        }
         try {
             debug('Tearing down Ghost instance:', ghostInstance.containerId);
             await this.ghost.remove(ghostInstance.containerId);
