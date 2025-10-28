@@ -68,6 +68,7 @@ describe('Exporter', function () {
                 'newsletters',
                 'offers',
                 'offer_redemptions',
+                'outbox',
                 'permissions',
                 'permissions_roles',
                 'permissions_users',
