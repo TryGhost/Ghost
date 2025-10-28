@@ -266,6 +266,15 @@ module.exports = class MemberRepository {
             options = {};
         }
 
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.create(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         if (!options.batch_id) {
             // We'll use this to link related events
             options.batch_id = ObjectId().toHexString();
@@ -440,6 +449,27 @@ module.exports = class MemberRepository {
                 }
             }
         }
+
+        // Insert into outbox if welcome emails feature is enabled
+        if (this._labsService.isSet('welcomeEmails')) {
+            await this._Outbox.add({
+                id: ObjectId().toHexString(),
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: member.id,
+                    email: member.get('email'),
+                    name: member.get('name'),
+                    batchId: options.batch_id,
+                    attribution: data.attribution,
+                    source,
+                    timestamp: eventData.created_at
+                }),
+                created_at: new Date(),
+                retry_count: 0,
+                last_retry_at: null
+            }, options);
+        }
+                
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
