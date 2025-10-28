@@ -58,6 +58,16 @@ describe('{{split}} helper in block mode', function () {
         const expected = 'my-slug-is-LONG-too-LONG';
         shouldCompileToExpected(templateString, {}, expected);
     });
+    it('returns empty strings with a leading separator (standard JavaScript behavior)', function () {
+        const templateString = '{{#split ",hello,world" separator=","}}{{this.length}}{{/split}}';
+        const expected = '3';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('returns empty strings with a trailing separator (standard JavaScript behavior)', function () {
+        const templateString = '{{#split "hello,world," separator=","}}{{this.length}}{{/split}}';
+        const expected = '3';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
     it('handles undefined input gracefully', function () {
         const templateString = '{{#split undefined}}{{this.length}}{{/split}}';
         const expected = '0';
