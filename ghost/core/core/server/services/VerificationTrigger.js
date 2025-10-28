@@ -43,7 +43,10 @@ class VerificationTrigger {
         this._eventRepository = eventRepository;
 
         this._handleMemberCreatedEvent = this._handleMemberCreatedEvent.bind(this);
-        DomainEvents.subscribe(MemberCreatedEvent, this._handleMemberCreatedEvent);
+
+        if (!this._isVerified()) {
+            DomainEvents.subscribe(MemberCreatedEvent, this._handleMemberCreatedEvent);
+        }
     }
 
     get _apiTriggerThreshold() {
