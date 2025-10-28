@@ -17,7 +17,7 @@ export class LabsSection extends BasePage {
         super(page, '/ghost/#/settings/labs');
 
         this.section = page.getByTestId('labs');
-        this.heading = page.locator('h5').filter({hasText: 'Labs'});
+        this.heading = page.getByRole('heading', {level: 5, name: 'Labs'});
         this.description = page.getByText('This is a testing ground for new or experimental features');
         this.content = this.section.locator('[role="tabpanel"]');
 

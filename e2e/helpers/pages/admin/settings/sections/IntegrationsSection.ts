@@ -11,7 +11,7 @@ export class IntegrationsSection extends BasePage {
         super(page, 'ghost/#/settings/integrations');
 
         this.integrationsSection = page.getByTestId('integrations');
-        this.integrationsHeading = page.locator('h5').filter({hasText: 'Integrations'});
+        this.integrationsHeading = page.getByRole('heading', {level: 5, name: 'Integrations'});
         this.integrationsDescription = page.getByText('Make Ghost work with apps and tools');
         this.integrationsAddButton = page.getByRole('button', {name: 'Add custom integration'});
     }
