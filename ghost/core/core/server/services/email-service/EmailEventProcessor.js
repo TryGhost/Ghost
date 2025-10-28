@@ -65,9 +65,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handleDelivered(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleDelivered(emailIdentification, timestamp, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailDeliveredEvent.create({
                 email: emailIdentification.email,
@@ -87,9 +88,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handleOpened(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleOpened(emailIdentification, timestamp, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailOpenedEvent.create({
                 email: emailIdentification.email,
@@ -108,9 +110,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handleTemporaryFailed(emailIdentification, {timestamp, error, id}) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleTemporaryFailed(emailIdentification, {timestamp, error, id}, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailTemporaryBouncedEvent.create({
                 id,
@@ -131,9 +134,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handlePermanentFailed(emailIdentification, {timestamp, error, id}) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handlePermanentFailed(emailIdentification, {timestamp, error, id}, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailBouncedEvent.create({
                 id,
@@ -155,9 +159,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handleUnsubscribed(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleUnsubscribed(emailIdentification, timestamp, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailUnsubscribedEvent.create({
                 email: emailIdentification.email,
@@ -175,9 +180,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      */
-    async handleComplained(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleComplained(emailIdentification, timestamp, recipientCache = null) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = SpamComplaintEvent.create({
                 email: emailIdentification.email,
@@ -194,11 +200,71 @@ class EmailEventProcessor {
     }
 
     /**
+     * Batch lookup recipients for multiple events at once
+     * @param {Array<{emailId?: string, providerId?: string, email: string}>} emailIdentifications
+     * @returns {Promise<Map<string, EmailRecipientInformation>>} Map keyed by "email:emailId"
+     */
+    async batchGetRecipients(emailIdentifications) {
+        const recipientMap = new Map();
+
+        if (!emailIdentifications || emailIdentifications.length === 0) {
+            return recipientMap;
+        }
+
+        // Build list of lookups with resolved emailIds
+        const lookups = [];
+        for (const identification of emailIdentifications) {
+            if (!identification.emailId && !identification.providerId) {
+                continue;
+            }
+
+            const emailId = identification.emailId ?? await this.getEmailId(identification.providerId);
+            if (!emailId) {
+                continue;
+            }
+
+            lookups.push({
+                email: identification.email,
+                emailId: emailId
+            });
+        }
+
+        if (lookups.length === 0) {
+            return recipientMap;
+        }
+
+        // Build a single query with OR conditions for all lookups
+        const recipients = await this.#db.knex('email_recipients')
+            .select('id', 'member_id', 'email_id', 'member_email')
+            .where((builder) => {
+                for (const lookup of lookups) {
+                    builder.orWhere({
+                        member_email: lookup.email,
+                        email_id: lookup.emailId
+                    });
+                }
+            });
+
+        // Build map: "email:emailId" -> recipient info
+        for (const recipient of recipients) {
+            const key = `${recipient.member_email}:${recipient.email_id}`;
+            recipientMap.set(key, {
+                emailRecipientId: recipient.id,
+                memberId: recipient.member_id,
+                emailId: recipient.email_id
+            });
+        }
+
+        return recipientMap;
+    }
+
+    /**
      * @private
      * @param {EmailIdentification} emailIdentification
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      * @returns {Promise<EmailRecipientInformation|undefined>}
      */
-    async getRecipient(emailIdentification) {
+    async getRecipient(emailIdentification, recipientCache = null) {
         if (!emailIdentification.emailId && !emailIdentification.providerId) {
             // Protection if both are null or undefined
             return;
@@ -211,6 +277,16 @@ class EmailEventProcessor {
             return;
         }
 
+        // Check cache first if provided
+        if (recipientCache) {
+            const key = `${emailIdentification.email}:${emailId}`;
+            const cached = recipientCache.get(key);
+            if (cached) {
+                return cached;
+            }
+        }
+
+        // Fall back to individual query (for backwards compatibility)
         const {id: emailRecipientId, member_id: memberId} = await this.#db.knex('email_recipients')
             .select('id', 'member_id')
             .where('member_email', emailIdentification.email)
