@@ -20441,10 +20441,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-5.1.0.tgz#607e2310dd973d08ac16968e80b1a90061c0957f"
-  integrity sha512-Q/j8Dgh1Ht7KQhZaxhl8IdH7flI6jJqglz9kGykCFAWVVCHddEZRhEfgmxyQ1XgzYCWSdiMlq/v1PliFfQVFyg==
+gscan@5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-5.2.0.tgz#62947df15b3467b2a12a7e96b0aaf41b96b0c702"
+  integrity sha512-C+xr32TKsaOEetqO0k3BX+DB+nYuyeWJx7UdA/oRtKmX7YQ+z8SjH5AtDAqWr2zVaG/o79migjRHrXV0LOfRIQ==
   dependencies:
     "@sentry/node" "^9.0.0"
     "@tryghost/config" "^0.2.18"
@@ -32417,6 +32417,11 @@ ts-node@10.9.2:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
+tsconfck@^3.0.3:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/tsconfck/-/tsconfck-3.1.6.tgz#da1f0b10d82237ac23422374b3fce1edb23c3ead"
+  integrity sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==
+
 tsconfig-paths@^4.1.2, tsconfig-paths@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-4.2.0.tgz#ef78e19039133446d244beac0fd6a1632e2d107c"
@@ -33368,6 +33373,15 @@ vite-plugin-svgr@4.5.0:
     "@rollup/pluginutils" "^5.2.0"
     "@svgr/core" "^8.1.0"
     "@svgr/plugin-jsx" "^8.1.0"
+
+vite-tsconfig-paths@5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/vite-tsconfig-paths/-/vite-tsconfig-paths-5.1.4.tgz#d9a71106a7ff2c1c840c6f1708042f76a9212ed4"
+  integrity sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==
+  dependencies:
+    debug "^4.1.1"
+    globrex "^0.1.2"
+    tsconfck "^3.0.3"
 
 vite@5.4.20, vite@^5.0.0:
   version "5.4.20"

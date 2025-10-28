@@ -3,6 +3,7 @@ export * from './components/ui/alert-dialog';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';
 export * from './components/ui/badge';
+export * from './components/ui/banner';
 export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
 export * from './components/ui/card';
@@ -50,15 +51,8 @@ export * from './components/layout/view-header';
 // Feature components — Complete functional components (share modal, etc.)
 export {default as PostShareModal} from './components/features/post_share_modal';
 export * from './components/features/table-filter-tabs/table-filter-tabs';
-export {
-    UtmCampaignDropdown,
-    UtmCampaignTabs,
-    UTM_CAMPAIGN_TYPES,
-    UTM_CAMPAIGN_OPTIONS,
-    UTM_TYPE_MAP,
-    getUtmType
-} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
-export type {UtmCampaignType, UtmTabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
+export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
+export type {CampaignType, TabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
 
 // Third party components
 export * as Recharts from 'recharts';
