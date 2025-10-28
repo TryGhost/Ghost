@@ -40,7 +40,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <Button
                         variant='ghost'
                         size='icon'
-                        className="size-9 text-gray-800 rounded-full hover:bg-gray-200 -mr-1"
+                        className="size-9 text-gray-800 rounded-full hover:bg-gray-200 -mr-1 [&_svg]:size-auto"
                         title="Search site (Ctrl/⌘ + K)"
                     >
                         <LucideIcon.Search size={20} />
@@ -62,7 +62,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800"
+                            className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800 [&_svg]:size-auto"
                             title="Settings (CTRL/⌘ + ,)"
                             asChild
                         >
@@ -73,7 +73,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800"
+                            className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800 [&_svg]:size-auto"
                             title="Toggle theme"
                         >
                             <LucideIcon.Moon size={20} />

@@ -27,7 +27,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <Button
                                 variant='ghost'
                                 size='icon'
-                                className={`absolute opacity-0 group-hover:opacity-100 transition-all left-3 top-0 p-0 h-9`}
+                                className='absolute opacity-0 group-hover:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto hover:bg-transparent'
                                 onClick={() =>
                                     setPostsExpanded(!postsExpanded)
                                 }
@@ -43,7 +43,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <Button
                                 variant='ghost'
                                 size='icon'
-                                className="absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9"
+                                className="absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9 [&_svg]:size-auto"
                             >
                                 <LucideIcon.Plus size={24} className="!stroke-[1.2px]" />
                             </Button>
