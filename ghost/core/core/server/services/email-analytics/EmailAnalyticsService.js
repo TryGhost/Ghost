@@ -416,8 +416,18 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
+        // Batch lookup all recipients for this batch of events
+        const emailIdentifications = events.map(event => ({
+            emailId: event.emailId,
+            providerId: event.providerId,
+            email: event.recipientEmail
+        }));
+
+        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications);
+
+        // Process each event with the pre-fetched recipient cache
         for (const event of events) {
-            const batchResult = await this.processEvent(event);
+            const batchResult = await this.processEvent(event, recipientCache);
 
             // Save last event timestamp
             if (!fetchData.lastEventTimestamp || (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)) {
@@ -431,11 +441,12 @@ module.exports = class EmailAnalyticsService {
     /**
      *
      * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, any>} [recipientCache] Optional pre-fetched recipient cache
      * @returns {Promise<EventProcessingResult>}
      */
-    async processEvent(event) {
+    async processEvent(event, recipientCache = null) {
         if (event.type === 'delivered') {
-            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -449,7 +460,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'opened') {
-            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -464,7 +475,7 @@ module.exports = class EmailAnalyticsService {
 
         if (event.type === 'failed') {
             if (event.severity === 'permanent') {
-                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error}, recipientCache);
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -476,7 +487,7 @@ module.exports = class EmailAnalyticsService {
 
                 return new EventProcessingResult({unprocessable: 1});
             } else {
-                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error}, recipientCache);
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -491,7 +502,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'unsubscribed') {
-            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -505,7 +516,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'complained') {
-            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
