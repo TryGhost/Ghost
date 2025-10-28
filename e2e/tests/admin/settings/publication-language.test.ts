@@ -22,16 +22,11 @@ test.describe('i18n - Newsletter', () => {
 
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
-
         await postEditorPage.previewButton.click();
         await postEditorPage.previewModal.emailTabButton.click();
 
         const emailPreviewContent = await postEditorPage.previewModal.content();
         expect(emailPreviewContent).toContain(`Par ${ghostAccountOwner.name}`);
         expect(emailPreviewContent).not.toContain(`By ${ghostAccountOwner.name}`);
-
-        await postEditorPage.previewModal.close();
-        await adminPublicationPage.goto();
-        await adminPublicationPage.resetToDefaultLanguage();
     });
 });
