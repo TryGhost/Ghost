@@ -125,9 +125,10 @@ module.exports = class EmailAnalyticsService {
      * Fetches the latest opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The total number of events fetched.
      */
-    async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestOpenedEvents({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -137,16 +138,17 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened'], timingStats});
     }
 
     /**
      * Fetches the latest non-opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The total number of events fetched.
      */
-    async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -156,15 +158,16 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained'], timingStats});
     }
 
     /**
      * Fetches events that are older than 30 minutes, because then the 'storage' of the Mailgun API is stable. And we are sure we don't miss any events.
      * @param {object} options
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      */
-    async fetchMissing({maxEvents = Infinity} = {}) {
+    async fetchMissing({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastMissingEventTimestamp();
 
         // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
@@ -181,7 +184,7 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents});
+        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents, timingStats});
     }
 
     /**
@@ -233,9 +236,10 @@ module.exports = class EmailAnalyticsService {
      * @method fetchScheduled
      * @param {Object} [options] - The options for fetching scheduled events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The number of events fetched.
      */
-    async fetchScheduled({maxEvents = Infinity} = {}) {
+    async fetchScheduled({maxEvents = Infinity, timingStats = null} = {}) {
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
             return 0;
@@ -265,7 +269,7 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
+        const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents, timingStats});
         if (count === 0 || this.#fetchScheduledData.canceled) {
             // Reset the scheduled fetch
             this.#fetchScheduledData = {
@@ -285,12 +289,10 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.end - End date for fetching events
      * @param {number} [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The number of events fetched
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        logging.info('[EmailAnalytics] Fetching from ' + begin.toISOString() + ' until ' + end.toISOString() + ' (maxEvents: ' + maxEvents + ')');
-
+    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null, timingStats = null}) {
         // Store that we started fetching
         fetchData.running = true;
         fetchData.lastStarted = new Date();
@@ -304,6 +306,12 @@ module.exports = class EmailAnalyticsService {
         // We keep the processing result here, so we also have a result in case of failures
         let processingResult = new EventProcessingResult();
         let error = null;
+
+        // Local timing stats to track aggregation time during this fetch
+        const localTimingStats = {
+            memberTime: 0,
+            emailTime: 0
+        };
 
         /**
          * Process a batch of events
@@ -323,7 +331,9 @@ module.exports = class EmailAnalyticsService {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
-                    await this.aggregateStats(processingResult, includeOpenedEvents);
+                    const timing = await this.aggregateStats(processingResult, includeOpenedEvents);
+                    localTimingStats.memberTime += timing.memberTime;
+                    localTimingStats.emailTime += timing.emailTime;
                     lastAggregation = Date.now();
                     processingResult = new EventProcessingResult();
                 } catch (err) {
@@ -341,10 +351,8 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes, timingStats});
             }
-
-            logging.info('[EmailAnalytics] Fetching finished');
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
@@ -357,7 +365,9 @@ module.exports = class EmailAnalyticsService {
 
         if (processingResult.memberIds.length > 0 || processingResult.emailIds.length > 0) {
             try {
-                await this.aggregateStats(processingResult, includeOpenedEvents);
+                const timing = await this.aggregateStats(processingResult, includeOpenedEvents);
+                localTimingStats.memberTime += timing.memberTime;
+                localTimingStats.emailTime += timing.emailTime;
             } catch (err) {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
@@ -372,18 +382,22 @@ module.exports = class EmailAnalyticsService {
         // fetching the same events because 'begin' won't change
         // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
         if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
-            logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             // set the data on the db so we can store it for fetching after reboot
             await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         } else {
-            logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
             await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
 
         fetchData.running = false;
+
+        // Accumulate local timing stats to external timing stats if provided
+        if (timingStats) {
+            timingStats.emailTime = (timingStats.emailTime || 0) + localTimingStats.emailTime;
+            timingStats.memberTime = (timingStats.memberTime || 0) + localTimingStats.memberTime;
+        }
 
         if (error) {
             throw error;
@@ -507,21 +521,17 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
      * @param {boolean} includeOpenedEvents
+     * @returns {Promise<{emailTime: number, memberTime: number}>}
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
-        let startTime = Date.now();
+        const emailStartTime = Date.now();
 
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
-        const emailDuration = Date.now() - startTime;
+        const emailTime = Date.now() - emailStartTime;
 
-        if (emailIds.length > 0) {
-            const msPerEmail = (emailDuration / emailIds.length).toFixed(2);
-            logging.info(`[EmailAnalytics] Aggregated ${emailIds.length} emails in ${emailDuration}ms (${msPerEmail}ms/email)`);
-        }
-
-        startTime = Date.now();
+        const memberStartTime = Date.now();
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
         const allTimings = [];
@@ -535,26 +545,9 @@ module.exports = class EmailAnalyticsService {
             }
             memberMetric?.inc(batch.length);
         }
-        const memberDuration = Date.now() - startTime;
+        const memberTime = Date.now() - memberStartTime;
 
-        if (memberIds.length > 0) {
-            const msPerMember = (memberDuration / memberIds.length).toFixed(2);
-            const membersPerSec = (memberIds.length / (memberDuration / 1000)).toFixed(0);
-
-            // Calculate average timings
-            if (allTimings.length > 0) {
-                const avgEmailsQuery = (allTimings.reduce((sum, t) => sum + (t.emailsQuery || 0), 0) / allTimings.length).toFixed(2);
-                const avgSelect = (allTimings.reduce((sum, t) => sum + (t.select || 0), 0) / allTimings.length).toFixed(2);
-                const avgUpdate = (allTimings.reduce((sum, t) => sum + (t.update || 0), 0) / allTimings.length).toFixed(2);
-                const avgOverhead = (allTimings.reduce((sum, t) => sum + (t.overhead || 0), 0) / allTimings.length).toFixed(2);
-                const avgBatchSize = (allTimings.reduce((sum, t) => sum + (t.memberCount || 0), 0) / allTimings.length).toFixed(0);
-
-                logging.info(`[EmailAnalytics] Aggregated ${memberIds.length} members in ${memberDuration}ms (${msPerMember}ms/member, ${membersPerSec} members/sec) [batches: ${allTimings.length}, avg size: ${avgBatchSize}]`);
-                logging.info(`[EmailAnalytics] Timing breakdown: EMAILS=${avgEmailsQuery}ms, SELECT=${avgSelect}ms, UPDATE=${avgUpdate}ms, overhead=${avgOverhead}ms`);
-            } else {
-                logging.info(`[EmailAnalytics] Aggregated ${memberIds.length} members in ${memberDuration}ms (${msPerMember}ms/member, ${membersPerSec} members/sec)`);
-            }
-        }
+        return {emailTime, memberTime};
     }
 
     /**

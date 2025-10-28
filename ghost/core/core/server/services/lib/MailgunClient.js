@@ -154,9 +154,10 @@ module.exports = class MailgunClient {
      * @param {Function} batchHandler
      * @param {Object} options
      * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {Object} [options.timingStats] Optional object to accumulate timing statistics
      * @returns {Promise<void>}
      */
-    async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
+    async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity, timingStats = null} = {}) {
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
@@ -181,6 +182,7 @@ module.exports = class MailgunClient {
 
             let eventCount = 0;
             const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
+            let totalApiTime = 0;
 
             while (events.length !== 0) {
                 const batchStartTime = Date.now();
@@ -199,21 +201,33 @@ module.exports = class MailgunClient {
 
                 const nextPageId = page.pages.next.page;
                 debug(`[MailgunClient fetchEvents]: starting fetching next page ${nextPageId}`);
+                const apiStartTime = Date.now();
                 page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
                     page: nextPageId,
                     ...mailgunOptions
                 });
+                totalApiTime += Date.now() - apiStartTime;
 
                 // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
                 debug(`[MailgunClient fetchEvents]: finished fetching next page with ${events.length} events`);
             }
 
-            const overallEndTime = Date.now();
-            const totalDuration = overallEndTime - overallStartTime;
-            const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
+            // Only log if we actually processed batches
+            if (batchCount > 0) {
+                const overallEndTime = Date.now();
+                const totalDuration = overallEndTime - overallStartTime;
+                const averageBatchTime = totalBatchTime / batchCount;
 
-            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+                // Accumulate timing stats for the caller if provided
+                if (timingStats) {
+                    timingStats.totalApiTime = (timingStats.totalApiTime || 0) + totalApiTime;
+                    timingStats.totalProcessingTime = (timingStats.totalProcessingTime || 0) + totalBatchTime;
+                }
+
+                // Log only our responsibility: API polling time
+                logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(1)}s (${(totalApiTime / 1000).toFixed(1)}s API, ${(totalBatchTime / 1000).toFixed(1)}s processing). Avg batch: ${(averageBatchTime / 1000).toFixed(1)}s`);
+            }
         } catch (error) {
             logging.error(error);
             throw error;
