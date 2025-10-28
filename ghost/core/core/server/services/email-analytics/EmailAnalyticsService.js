@@ -346,6 +346,9 @@ module.exports = class EmailAnalyticsService {
             processingTimeMs += (Date.now() - processingStart);
             eventCount += events.length;
 
+            // Flush batched email_recipients updates after each Mailgun batch
+            await this.eventProcessor.flushBatchedUpdates();
+
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
             if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
