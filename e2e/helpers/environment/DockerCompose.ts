@@ -27,16 +27,19 @@ export class DockerCompose {
         this.docker = options.docker;
     }
 
-    up(): void {
+    up(services?: string[]): void {
         try {
-            logging.info('Starting docker compose services...');
+            const servicesList = services ? services.join(' ') : '';
+            const servicesLog = services ? `services: ${services.join(', ')}` : 'all services';
+
+            logging.info(`Starting docker compose ${servicesLog}...`);
 
             execSync(
-                `docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`,
+                `docker compose -f ${this.composeFilePath} up -d ${servicesList}`,
                 {stdio: 'inherit'}
             );
 
-            logging.info('Docker compose services are up');
+            logging.info(`Docker compose ${servicesLog} are up`);
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
             this.logs();

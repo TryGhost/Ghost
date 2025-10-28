@@ -74,7 +74,18 @@ export class EnvironmentManager {
 
         await this.cleanupResources();
 
-        this.dockerCompose.up();
+        // Start required docker compose services
+        this.dockerCompose.up([
+            'mysql',
+            'ghost-migrations',
+            'caddy',
+            'analytics',
+            'tinybird-local',
+            'tb-cli',
+            'mailpit',
+            'portal'
+        ]);
+
         await this.dockerCompose.waitForAll();
 
         await this.mysql.createSnapshot();
