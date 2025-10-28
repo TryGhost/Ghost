@@ -138,7 +138,7 @@ export class DockerCompose {
      * @param containerPort The container port (e.g., '4175')
      * @returns The host port as a string
      */
-    async getHostPortForService(serviceLabel: string, containerPort: string): Promise<string> {
+    async getHostPortForService(serviceLabel: string, containerPort: number): Promise<string> {
         const container = await this.getContainerForService(serviceLabel);
         const containerInfo = await container.inspect();
         const portKey = `${containerPort}/tcp`;

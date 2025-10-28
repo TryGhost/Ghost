@@ -6,7 +6,7 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
-import {DOCKER_COMPOSE_CONFIG, TINYBIRD} from './constants';
+import {DOCKER_COMPOSE_CONFIG, PORTAL, TINYBIRD} from './constants';
 import {PortalManager} from './PortalManager';
 
 const debug = baseDebug('e2e:EnvironmentManager');
@@ -53,7 +53,7 @@ export class EnvironmentManager {
         this.mysql = new MySQLManager(this.dockerCompose);
         this.tinybird = new TinybirdManager(this.dockerCompose, TINYBIRD.CONFIG_DIR, TINYBIRD.CLI_ENV_PATH);
         this.ghost = new GhostManager(docker, this.dockerCompose, this.tinybird);
-        this.portal = new PortalManager(this.dockerCompose);
+        this.portal = new PortalManager(this.dockerCompose, PORTAL.PORT);
     }
 
     /**

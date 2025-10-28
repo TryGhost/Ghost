@@ -7,13 +7,13 @@ const debug = baseDebug('e2e:PortalManager');
 export class PortalManager {
     private readonly dockerCompose: DockerCompose;
 
-    constructor(dockerCompose: DockerCompose) {
+    constructor(dockerCompose: DockerCompose,private readonly port: number) {
         this.dockerCompose = dockerCompose;
     }
 
     async getUrl(): Promise<string> {
         try {
-            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
+            const hostPort = await this.dockerCompose.getHostPortForService('portal', this.port);
             const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
 
             debug(`Portal is available at: ${portalUrl}`);

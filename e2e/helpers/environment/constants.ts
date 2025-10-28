@@ -28,3 +28,11 @@ export const TINYBIRD = {
     CONFIG_DIR: CONFIG_DIR
 };
 
+export const PORTAL = {
+    PORT: 4175
+};
+
+export const MAILPIT = {
+    PORT: 1025
+};
+
