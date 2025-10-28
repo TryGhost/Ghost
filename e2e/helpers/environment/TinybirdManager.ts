@@ -3,7 +3,7 @@ import path from 'path';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
-import {CONFIG_DIR, TB} from './constants';
+import {TB} from './constants';
 import {ensureDir} from '../utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
@@ -22,7 +22,7 @@ export class TinybirdManager {
     private readonly tinyBirdConfigFile;
     private readonly dockerCompose: DockerCompose;
 
-    constructor(dockerCompose: DockerCompose, private readonly configDir: string = CONFIG_DIR) {
+    constructor(dockerCompose: DockerCompose, private readonly configDir: string) {
         this.dockerCompose = dockerCompose;
         this.tinyBirdConfigFile = path.join(this.configDir, 'tinybird.json');
     }

@@ -6,7 +6,8 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
-import {DOCKER_COMPOSE_CONFIG} from './constants';
+import {CONFIG_DIR, DOCKER_COMPOSE_CONFIG} from './constants';
+import {PortalManager} from './PortalManager';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -37,6 +38,7 @@ export class EnvironmentManager {
     private readonly mysql: MySQLManager;
     private readonly tinybird: TinybirdManager;
     private readonly ghost: GhostManager;
+    private readonly portal: PortalManager;
 
     constructor(
         composeFilePath: string = DOCKER_COMPOSE_CONFIG.FILE_PATH,
@@ -50,21 +52,87 @@ export class EnvironmentManager {
         });
 
         this.mysql = new MySQLManager(this.dockerCompose);
-        this.tinybird = new TinybirdManager(this.dockerCompose);
+        this.tinybird = new TinybirdManager(this.dockerCompose, CONFIG_DIR);
         this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
+        this.portal = new PortalManager(this.dockerCompose);
     }
 
-    private async getPortalUrl(): Promise<string> {
-        try {
-            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
-            const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
+    /**
+     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
+     * This should be called once before all tests run.
+     *
+     * 1. Clean up any leftover resources from previous test runs
+     * 2. Start docker-compose services (including running Ghost migrations on the default database)
+     * 3. Wait for all services to be ready (healthy or exited with code 0)
+     * 4. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
+     * 5. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
+     *
+     * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
+     * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
+     */
+    public async globalSetup(): Promise<void> {
+        logging.info('Starting global environment setup...');
 
-            debug(`Portal is available at: ${portalUrl}`);
-            return portalUrl;
+        await this.cleanupLeftoverResources();
+        this.dockerCompose.up();
+        await this.dockerCompose.waitForAll();
+        await this.mysql.createSnapshot();
+        this.tinybird.fetchAndSaveConfig();
+
+        logging.info('Global environment setup complete');
+    }
+
+    /**
+     * Setup an isolated Ghost instance for a test
+     */
+    public async setupGhostInstance(): Promise<GhostInstance> {
+        try {
+            const siteUuid = randomUUID();
+            const instanceId = `ghost_${siteUuid}`;
+            await this.mysql.setupTestDatabase(instanceId, siteUuid);
+            const portalUrl = await this.portal.getUrl();
+            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
         } catch (error) {
-            logging.error('Failed to get Portal URL:', error);
-            throw new Error(`Failed to get portal URL: ${error}. Ensure portal service is running.`);
+            logging.error('Failed to setup Ghost instance:', error);
+            throw new Error(`Failed to setup Ghost instance: ${error}`);
         }
+    }
+
+    public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
+        try {
+            debug('Tearing down Ghost instance:', ghostInstance.containerId);
+            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
+            await this.mysql.cleanupTestDatabase(ghostInstance.database);
+            debug('Ghost instance teardown completed');
+        } catch (error) {
+            logging.error('Failed to teardown Ghost instance:', error);
+            // Don't throw - we want tests to continue even if cleanup fails
+        }
+    }
+
+    /**
+     * This should be called once after all tests have finished.
+     *
+     * 1. Remove all Ghost containers
+     * 2. Clean up test databases
+     * 3. Recreate the ghost_testing database for the next run
+     * 4. Truncate Tinybird analytics_events datasource
+     * 5. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
+     */
+    public async globalTeardown(): Promise<void> {
+        if (this.shouldPreserveEnvironment()) {
+            logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
+            return;
+        }
+
+        logging.info('Starting global environment teardown...');
+
+        await this.ghost.removeAll();
+        await this.mysql.dropAllTestDatabases();
+        await this.mysql.recreateBaseDatabase();
+        this.tinybird.truncateAnalyticsEvents();
+
+        logging.info('Global environment teardown complete (docker compose services left running)');
     }
 
     /**
@@ -94,86 +162,6 @@ export class EnvironmentManager {
         } catch (error) {
             logging.warn('Failed to clean up some leftover resources:', error);
             // Don't throw - we want to continue with setup even if cleanup fails
-        }
-    }
-
-    /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
-     * This should be called once before all tests run.
-     *
-     * 1. Clean up any leftover resources from previous test runs
-     * 2. Start docker-compose services (including running Ghost migrations on the default database)
-     * 3. Wait for all services to be ready (healthy or exited with code 0)
-     * 4. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
-     * 5. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
-     *
-     * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
-     * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
-     */
-    public async globalSetup(): Promise<void> {
-        logging.info('Starting global environment setup...');
-        await this.cleanupLeftoverResources();
-        this.dockerCompose.up();
-        await this.dockerCompose.waitForAll();
-        await this.mysql.createSnapshot();
-        this.tinybird.fetchAndSaveConfig();
-        logging.info('Global environment setup complete');
-    }
-
-    /**
-     * Teardown global environment
-     * This should be called once after all tests have finished.
-     *
-     * Note: Docker compose services are left running for reuse across test runs.
-     * To fully stop all services, manually run: docker compose down
-     *
-     * 1. Remove all Ghost containers
-     * 2. Clean up test databases
-     * 3. Recreate the ghost_testing database for the next run
-     * 4. Truncate Tinybird analytics_events datasource
-     * 5. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
-     */
-    public async globalTeardown(): Promise<void> {
-        if (this.shouldPreserveEnvironment()) {
-            logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
-            return;
-        }
-
-        logging.info('Starting global environment teardown...');
-
-        await this.ghost.removeAll();
-        await this.mysql.dropAllTestDatabases();
-        await this.mysql.recreateBaseDatabase();
-        this.tinybird.truncateAnalyticsEvents();
-
-        logging.info('Global environment teardown complete (docker compose services left running)');
-    }
-
-    /**
-     * Setup an isolated Ghost instance for a test
-     */
-    public async setupGhostInstance(): Promise<GhostInstance> {
-        try {
-            const siteUuid = randomUUID();
-            const instanceId = `ghost_${siteUuid}`;
-            await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            const portalUrl = await this.getPortalUrl();
-            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
-        } catch (error) {
-            logging.error('Failed to setup Ghost instance:', error);
-            throw new Error(`Failed to setup Ghost instance: ${error}`);
-        }
-    }
-
-    public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
-        try {
-            debug('Tearing down Ghost instance:', ghostInstance.containerId);
-            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
-            await this.mysql.cleanupTestDatabase(ghostInstance.database);
-            debug('Ghost instance teardown completed');
-        } catch (error) {
-            logging.error('Failed to teardown Ghost instance:', error);
-            // Don't throw - we want tests to continue even if cleanup fails
         }
     }
 
