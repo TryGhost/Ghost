@@ -16,6 +16,7 @@ export class PostPreviewModal {
     readonly webTabButton: Locator;
     readonly emailTabButton: Locator;
     readonly previewFrame: FrameLocator;
+    readonly tableBody;
 
     constructor(page: Page) {
         this.page = page;
@@ -26,6 +27,12 @@ export class PostPreviewModal {
         this.previewFrame = page.frameLocator('iframe[title*="preview"]');
         this.webTabButton = this.modal.getByRole('button', {name: 'Web'});
         this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
+        this.tableBody = page.frameLocator('iframe.gh-pe-iframe').locator('tbody').first();
+    }
+
+    async content() {
+        await this.tableBody.waitFor({state: 'visible'});
+        return await this.tableBody.textContent();
     }
 
     async close(): Promise<void> {
