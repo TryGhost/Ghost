@@ -336,7 +336,7 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}
             });
-            sandbox.stub(settingsCache, 'get').withArgs('emailTrackOpens').returns(true);
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
 
             mailer = new mail.GhostMailer();
             // Mock the state to simulate Mailgun transport
@@ -360,7 +360,7 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}
             });
-            sandbox.stub(settingsCache, 'get').withArgs('emailTrackOpens').returns(false);
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
 
             mailer = new mail.GhostMailer();
             mailer.state.usingMailgun = true;
@@ -383,7 +383,7 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({
                 hostSettings: {} // No siteId
             });
-            sandbox.stub(settingsCache, 'get').withArgs('emailTrackOpens').returns(true);
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
 
             mailer = new mail.GhostMailer();
             mailer.state.usingMailgun = true;
