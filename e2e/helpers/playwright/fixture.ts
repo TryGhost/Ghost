@@ -70,14 +70,14 @@ export const test = base.extend<GhostInstanceFixture>({
     ghostInstance: async ({ }, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.setupGhostInstance();
+        const ghostInstance = await environmentManager.perTestSetup();
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
         });
         await use(ghostInstance);
         debug('Tearing down Ghost instance for test:', testInfo.title);
-        await environmentManager.teardownGhostInstance(ghostInstance);
+        await environmentManager.perTestTeardown(ghostInstance);
         debug('Teardown completed for test:', testInfo.title);
     },
     baseURL: async ({ghostInstance}, use) => {
