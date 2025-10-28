@@ -5,7 +5,7 @@ import logging from '@tryghost/logging';
 import {DockerCompose} from './DockerCompose';
 import {TinybirdManager} from './TinybirdManager';
 import type {GhostInstance} from './EnvironmentManager';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MYSQL, TB} from './constants';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MYSQL, TINYBIRD} from './constants';
 
 const debug = baseDebug('e2e:GhostManager');
 
@@ -49,9 +49,9 @@ export class GhostManager {
                 database__connection__password: MYSQL.PASSWORD,
                 database__connection__database: config.instanceId,
                 // Tinybird configuration
-                TB_HOST: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
-                TB_LOCAL_HOST: TB.LOCAL_HOST,
-                tinybird__stats__endpoint: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
+                TB_HOST: `http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
+                TB_LOCAL_HOST: TINYBIRD.LOCAL_HOST,
+                tinybird__stats__endpoint: `http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost:8080/.ghost/analytics/api/v1/page_hit',
                 tinybird__tracker__datasource: 'analytics_events',

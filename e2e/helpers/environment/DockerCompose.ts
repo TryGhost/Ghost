@@ -30,7 +30,12 @@ export class DockerCompose {
     up(): void {
         try {
             logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
+
+            execSync(
+                `docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`,
+                {stdio: 'inherit'}
+            );
+
             logging.info('Docker compose services are up');
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
@@ -39,10 +44,13 @@ export class DockerCompose {
         }
     }
 
+    // Stop and remove all services for the project including volumes
     down(): void {
         try {
-            // Stop and remove all services for the project including volumes
-            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`, {stdio: 'inherit'});
+            execSync(
+                `docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`,
+                {stdio: 'inherit'}
+            );
         } catch (error) {
             logging.error('Failed to stop docker compose services:', error);
             throw error;
@@ -69,9 +77,11 @@ export class DockerCompose {
         while (Date.now() < deadline) {
             const containers = await this.getContainers();
             const allContainersReady = this.areAllContainersReady(containers);
+
             if (allContainersReady) {
                 return;
             }
+
             await sleep(intervalMs);
         }
 
@@ -95,6 +105,7 @@ export class DockerCompose {
 
     async getContainerForService(serviceLabel: string): Promise<Container> {
         debug('getContainerForService called for service:', serviceLabel);
+
         const containers = await this.docker.listContainers({
             all: true,
             filters: {
@@ -104,13 +115,17 @@ export class DockerCompose {
                 ]
             }
         });
+
         if (containers.length === 0) {
             throw new Error(`No container found for service: ${serviceLabel}`);
         }
+
         if (containers.length > 1) {
             throw new Error(`Multiple containers found for service: ${serviceLabel}`);
         }
+
         const container = this.docker.getContainer(containers[0].Id);
+
         debug('getContainerForService returning container:', container.id);
         return container;
     }

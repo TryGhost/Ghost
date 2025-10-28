@@ -1,5 +1,7 @@
 import path from 'path';
 
+export const CONFIG_DIR = path.resolve(__dirname, '../../data/state');
+
 export const DOCKER_COMPOSE_CONFIG = {
     FILE_PATH: path.resolve(__dirname, '../../compose.yml'),
     PROJECT: 'ghost-e2e'
@@ -19,11 +21,10 @@ export const MYSQL = {
     PASSWORD: 'root'
 };
 
-export const TB = {
+export const TINYBIRD = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
-    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird'
+    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird',
+    CONFIG_DIR: CONFIG_DIR
 };
-
-export const CONFIG_DIR = path.resolve(__dirname, '../../data/config');
 
