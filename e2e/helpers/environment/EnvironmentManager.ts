@@ -61,21 +61,7 @@ export class EnvironmentManager {
         logging.info('Starting global environment setup...');
 
         await this.cleanupResources();
-
-        // Start required docker compose services
-        this.dockerCompose.up([
-            'mysql',
-            'ghost-migrations',
-            'caddy',
-            'analytics',
-            'tinybird-local',
-            'tb-cli',
-            'mailpit',
-            'portal'
-        ]);
-
-        await this.dockerCompose.waitForAll();
-
+        await this.dockerCompose.up();
         await this.mysql.createSnapshot();
         this.tinybird.fetchAndSaveConfig();
 
