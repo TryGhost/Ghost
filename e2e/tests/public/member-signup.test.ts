@@ -1,8 +1,8 @@
 import {test, expect} from '../../helpers/playwright';
 import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
-import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {extractMagicLink} from '../../helpers/services/email/utils';
+import {HomePage, PublicPage} from '@tryghost/e2e/helpers/pages/public';
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;

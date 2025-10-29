@@ -1,5 +1,5 @@
 import {Page, Locator} from '@playwright/test';
-import {AdminPage} from './AdminPage';
+import {AdminPage} from '../AdminPage';
 
 export class MembersPage extends AdminPage {
     private readonly membersTable: Locator;

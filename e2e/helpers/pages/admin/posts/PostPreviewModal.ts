@@ -40,32 +40,11 @@ export class PostPreviewModal {
         await this.modal.waitFor({state: 'hidden'});
     }
 
-    async clickInIframe(): Promise<void> {
-        await this.iframe.click();
-    }
-
-    async isIframeFocused(): Promise<boolean> {
-        await this.iframe.waitFor({state: 'visible'});
-
-        return await this.page.evaluate(() => {
-            const iframeElement = document.querySelector('iframe[title*="preview"]');
-            return document.activeElement === iframeElement;
-        });
-    }
-
-    async getPostContent(): Promise<PostContentLocators> {
+    async previewModalFrame(): Promise<PostContentLocators> {
         await this.waitForPreviewContentToLoad();
         await this.waitForEscapeHandlerScript();
 
         return this.getContentLocators();
-    }
-
-    async switchToWebView(): Promise<void> {
-        await this.webTabButton.click();
-    }
-
-    async switchToEmailView(): Promise<void> {
-        await this.emailTabButton.click();
     }
 
     private async waitForPreviewContentToLoad(): Promise<void> {

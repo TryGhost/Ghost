@@ -21,6 +21,11 @@ export class SettingsPage extends BasePage {
         this.integrationsSection = new IntegrationsSection(page);
     }
 
+    async searchByInput(text: string) {
+        await this.searchInput.fill(text);
+        await this.page.waitForTimeout(300);
+    }
+
     async goto() {
         await super.goto();
         await this.page.waitForSelector('h5', {timeout: 10000});

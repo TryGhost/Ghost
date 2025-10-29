@@ -9,8 +9,7 @@ test.describe('Ghost Admin - settings search - labs auto-open', () => {
         await expect(settingsPage.labsSection.section).toBeVisible();
         await expect(settingsPage.labsSection.openButton).toBeVisible();
 
-        await settingsPage.searchInput.fill('lab');
-        await page.waitForTimeout(300);
+        await settingsPage.searchByInput('lab');
 
         await expect(settingsPage.labsSection.section).toBeVisible();
         await expect(settingsPage.labsSection.closeButton).toBeVisible();
