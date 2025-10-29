@@ -14,7 +14,7 @@ import NavMain from "./NavMain";
 import NavContent from "./NavContent";
 import NavGhostPro from "./NavGhostPro";
 import UserMenu from "./UserMenu";
-import { useToggleDarkMode } from "../../ember-bridge/EmberBridge";
+import { useToggleDarkMode } from "./hooks/use-toggle-dark-mode";
 
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const site = useBrowseSite();
