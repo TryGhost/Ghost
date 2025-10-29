@@ -30,6 +30,7 @@ Object {
       "urlCache": true,
       "utmTracking": true,
       "webmentions": true,
+      "welcomeEmails": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,
