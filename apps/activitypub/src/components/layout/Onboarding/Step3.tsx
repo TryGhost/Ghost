@@ -17,7 +17,7 @@ import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
 import tangleCover from '@assets/images/onboarding/cover-tangle.png';
 import {Avatar, AvatarFallback, AvatarImage, Button, H1, LucideIcon, Separator} from '@tryghost/shade';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from './Onboarding';
 
 const MenuItem: React.FC<{
@@ -301,7 +301,7 @@ const Step3: React.FC = () => {
     const [activeTab, setActiveTab] = useState(1);
     const [isHovering, setIsHovering] = useState(false);
     const {setOnboarded} = useOnboardingStatus();
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     useEffect(() => {
         if (isHovering) {
