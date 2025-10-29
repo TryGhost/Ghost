@@ -72,36 +72,31 @@ class EmailAnalyticsServiceWrapper {
     _logJobCompletion(jobType, fetchResult, totalDuration) {
         const {eventCount, apiPollingTime, processingTime, aggregationTime, result} = fetchResult;
 
-        // Only log if we actually processed events
         if (eventCount === 0) {
             return;
         }
 
-        // Calculate throughput
-        const throughput = totalDuration > 0 ? (eventCount / (totalDuration / 1000)).toFixed(2) : 0;
-
-        // Calculate percentages
+        const throughput = totalDuration > 0 ? eventCount / (totalDuration / 1000) : 0;
         const apiPercent = totalDuration > 0 ? Math.round((apiPollingTime / totalDuration) * 100) : 0;
         const processingPercent = totalDuration > 0 ? Math.round((processingTime / totalDuration) * 100) : 0;
         const aggregationPercent = totalDuration > 0 ? Math.round((aggregationTime / totalDuration) * 100) : 0;
 
-        // Build comprehensive log message
         const logMessage = [
             `[EmailAnalytics] Job complete: ${jobType}`,
-            `${eventCount} events in ${(totalDuration / 1000).toFixed(1)}s (${throughput} events/s)`,
+            `${eventCount} events in ${(totalDuration / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
             `Timings: API ${(apiPollingTime / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTime / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTime / 1000).toFixed(1)}s (${aggregationPercent}%)`,
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');
 
         logging.info(logMessage);
-        
+
         // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
         if (jobType === 'latest-opened') {
             const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
             const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
             if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
                 metrics.metric('email-analytics-open-throughput', {
-                    value: eventCount / (totalDuration / 1000),
+                    value: throughput,
                     events: eventCount,
                     duration: totalDuration
                 });
@@ -110,11 +105,13 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        // Check lag before fetching
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
         const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
         const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
 
+        // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
+        //  - Ghost or Mailgun outages
+        //  - Lack of actual email activity
         if (lagThreshold && lagMinutes > lagThreshold) {
             logging.warn(`[EmailAnalytics] Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
         }
