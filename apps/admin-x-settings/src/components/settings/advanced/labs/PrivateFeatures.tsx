@@ -39,6 +39,10 @@ const features: Feature[] = [{
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
+}, {
+    title: 'Domain Warmup',
+    description: 'Enable custom sending domain warmup for gradual email volume increases',
+    flag: 'domainWarmup'
 }];
 
 const AlphaFeatures: React.FC = () => {
