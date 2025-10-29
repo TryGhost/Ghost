@@ -3,7 +3,6 @@ import {getOwner} from '@ember/application';
 import {inject as service} from '@ember/service';
 
 export default class Posts extends AdminXComponent {
-    @service settings;
     @service upgradeStatus;
 
     additionalProps = () => {
