@@ -9,6 +9,7 @@ export default RESTAdapter.extend(AjaxServiceSupport, {
     namespace: ghostPaths().apiRoot.slice(1),
 
     session: service(),
+    stateBridge: service('state-bridge'),
 
     shouldBackgroundReloadRecord() {
         return false;
@@ -23,6 +24,27 @@ export default RESTAdapter.extend(AjaxServiceSupport, {
         }
 
         return this.ajax(this.buildURL(type.modelName, id), 'GET', {data: query});
+    },
+
+    createRecord(store, type, snapshot) {
+        return this._super(...arguments).then((response) => {
+            this.stateBridge.triggerEmberDataChange('create', type.modelName, snapshot.id, response);
+            return response;
+        });
+    },
+
+    updateRecord(store, type, snapshot) {
+        return this._super(...arguments).then((response) => {
+            this.stateBridge.triggerEmberDataChange('update', type.modelName, snapshot.id, response);
+            return response;
+        });
+    },
+
+    deleteRecord(store, type, snapshot) {
+        return this._super(...arguments).then((response) => {
+            this.stateBridge.triggerEmberDataChange('delete', type.modelName, snapshot.id, null);
+            return response;
+        });
     },
 
     pathForType() {

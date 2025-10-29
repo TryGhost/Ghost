@@ -27,11 +27,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @inject config;
 
-    constructor() {
-        super(...arguments);
-        this._setupStoreListeners();
-    }
-
     /* React -> Ember -------------------------------------------------------
 
     The React admin shell app or a component that extends AdminXComponent will
@@ -161,11 +156,19 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     /* Ember -> React -------------------------------------------------------
 
-    TODO: How are we doing the reverse?
+    When Ember Data store records are updated, created, or deleted via the
+    adapter (after successful API calls), we notify React to invalidate/update
+    its TanStack Query cache.
 
     */
 
-    _setupStoreListeners() {
-
+    @action
+    triggerEmberDataChange(operation, modelName, id, response) {
+        this.trigger('emberDataChange', {
+            operation, // 'update' | 'create' | 'delete'
+            modelName, // e.g., 'post', 'user', 'setting'
+            id,
+            data: response // API response data for optimistic updates
+        });
     }
 }
