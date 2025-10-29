@@ -3,22 +3,10 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {DOCKER_COMPOSE_CONFIG, PORTAL, TINYBIRD} from './constants';
 import {DockerCompose} from './DockerCompose';
-import {GhostManager} from './GhostManager';
-import {MySQLManager} from './MySQLManager';
-import {PortalManager} from './PortalManager';
-import {TinybirdManager} from './TinybirdManager';
+import {GhostInstance, GhostManager, MySQLManager, PortalManager, TinybirdManager} from './service-managers';
 import {randomUUID} from 'crypto';
 
 const debug = baseDebug('e2e:EnvironmentManager');
-
-export interface GhostInstance {
-    containerId: string; // docker container ID
-    instanceId: string; // unique instance name (e.g. ghost_<siteUuid>)
-    database: string;
-    port: number;
-    baseUrl: string;
-    siteUuid: string;
-}
 
 /**
  * Manages the lifecycle of Docker containers and shared services for end-to-end tests
