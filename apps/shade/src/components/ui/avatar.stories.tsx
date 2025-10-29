@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Avatar, AvatarFallback, AvatarImage} from './avatar';
+import {User} from 'lucide-react';
 
 const meta = {
     title: 'Components / Avatar',
@@ -47,6 +48,17 @@ export const BrokenImage: Story = {
             <>
                 <AvatarImage src="https://broken-url.example.com/image.jpg" />
                 <AvatarFallback>BU</AvatarFallback>
+            </>
+        )
+    }
+};
+
+export const IconAsFallback: Story = {
+    args: {
+        children: (
+            <>
+                <AvatarImage src="https://broken-url.example.com/image.jpg" />
+                <AvatarFallback><User /></AvatarFallback>
             </>
         )
     }

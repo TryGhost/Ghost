@@ -34,7 +34,12 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         className="relative group/viewsite"
                     >
                         <NavLink.After>
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="absolute opacity-0 group-hover/viewsite:opacity-100 right-0 top-0 size-9 hover:bg-gray-200 flex items-center justify-center rounded-full text-gray-700 hover:text-black transition-all">
+                            <a
+                                href={url}
+                                target="_blank"
+                                aria-label="View site in new tab"
+                                rel="noopener noreferrer"
+                                className="absolute opacity-0 group-hover/viewsite:opacity-100 right-0 top-0 size-9 hover:bg-gray-200 flex items-center justify-center rounded-full text-gray-700 hover:text-black transition-all">
                                 <LucideIcon.ExternalLink size={16} />
                             </a>
                         </NavLink.After>

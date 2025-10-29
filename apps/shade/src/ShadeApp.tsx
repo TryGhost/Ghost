@@ -8,7 +8,7 @@ import ShadeProvider from './providers/ShadeProvider';
  * Some components in radixUI/ShadCN need to be wrapped in a div with the className
  * in order to work correctly.
  */
-export const SHADE_APP_NAMESPACES = 'shade shade-activitypub shade-stats shade-posts';
+export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub shade-stats shade-posts';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
     darkMode: boolean;
