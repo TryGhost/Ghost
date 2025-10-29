@@ -94,18 +94,18 @@ class EmailAnalyticsServiceWrapper {
         ].join(' | ');
 
         logging.info(logMessage);
-
-        // Emit open throughput metric if enabled and above threshold
-        const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
-        const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
-
-        if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
-            metrics.metric('email-analytics-open-throughput', {
-                value: eventCount / (totalDuration / 1000),
-                jobType,
-                events: eventCount,
-                duration: totalDuration
-            });
+        
+        // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
+        if (jobType === 'latest-opened') {
+            const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
+            const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
+            if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
+                metrics.metric('email-analytics-open-throughput', {
+                    value: eventCount / (totalDuration / 1000),
+                    events: eventCount,
+                    duration: totalDuration
+                });
+            }
         }
     }
 
