@@ -213,7 +213,10 @@ module.exports = class MailgunClient {
             const totalDuration = overallEndTime - overallStartTime;
             const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
 
-            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            // Only log if we actually processed batches
+            if (batchCount > 0) {
+                logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            }
         } catch (error) {
             logging.error(error);
             throw error;

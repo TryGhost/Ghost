@@ -216,7 +216,16 @@
     "stripeDirect": false,
     "enableStripePromoCodes": false,
     "enableTipsAndDonations": true,
-    "emailAnalytics": true,
+    "emailAnalytics": {
+        "enabled": true,
+        "metrics": {
+            "openThroughput": {
+                "enabled": false,
+                "threshold": 500
+            }
+        },
+        "openedJobLagWarningMinutes": 30
+    },
     "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {
         "emailAnalytics": true,
