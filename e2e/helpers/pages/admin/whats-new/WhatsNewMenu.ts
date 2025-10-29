@@ -1,5 +1,5 @@
 import {AdminPage} from '../AdminPage';
-import {Page, Locator} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 import {WhatsNewModal} from './WhatsNewModal';
 
 export class WhatsNewMenu extends AdminPage {

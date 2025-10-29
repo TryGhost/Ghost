@@ -1,25 +1,31 @@
-import {Page, test as base, TestInfo, Browser, BrowserContext} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
-import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
-import {SettingsService} from '../services/settings/SettingsService';
-import {setupUser} from '../utils';
 import baseDebug from '@tryghost/debug';
+import {AnalyticsOverviewPage, LoginPage} from '../pages/admin';
+import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
+import {SettingsService} from '../services/settings/SettingsService';
 import {faker} from '@faker-js/faker';
+import {setupUser} from '../utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+
+interface User {
+    name: string;
+    email: string;
+    password: string;
+}
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
-    ghostAccountOwner: {email: string; password: string};
+    ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
-        ghostAccountOwner: {email: string; password: string}
+        ghostAccountOwner: User
     };
 }
 
-async function loginToGetAuthenticatedSession(page: Page, user: {email: string; password: string}) {
+async function loginToGetAuthenticatedSession(page: Page, user: User) {
     const loginPage = new LoginPage(page);
     await loginPage.waitForLoginPageAfterUserCreated();
     await loginPage.signIn(user.email, user.password);
@@ -42,7 +48,7 @@ async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) 
     debug('Labs settings applied and page reloaded');
 }
 
-async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: {email: string; password: string}) {
+async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
     debug('Setting up authenticated page for Ghost instance:', baseURL);
 
     // Create browser context with correct baseURL and extra HTTP headers
@@ -90,7 +96,11 @@ export const test = base.extend<GhostInstanceFixture>({
         }
 
         // Create user in this Ghost instance
-        const ghostAccountOwner = {email: `test${faker.string.uuid()}@ghost.org`, password: 'test@123@test'};
+        const ghostAccountOwner: User = {
+            name: 'Test User',
+            email: `test${faker.string.uuid()}@ghost.org`,
+            password: 'test@123@test'
+        };
         await setupUser(baseURL, ghostAccountOwner);
 
         const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
