@@ -53,6 +53,7 @@ class EmailAnalyticsProviderMailgun {
      * @param {Function} batchHandler
      * @param {Object} [options]
      * @param {Number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {Object} [options.timingStats] Optional object to accumulate timing statistics
      */
     async #fetchAnalytics(mailgunOptions, batchHandler, options) {
         return await this.mailgunClient.fetchEvents(mailgunOptions, batchHandler, options);

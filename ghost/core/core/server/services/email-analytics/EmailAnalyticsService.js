@@ -125,9 +125,10 @@ module.exports = class EmailAnalyticsService {
      * Fetches the latest opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The total number of events fetched.
      */
-    async fetchLatestOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestOpenedEvents({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -137,16 +138,17 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened'], timingStats});
     }
 
     /**
      * Fetches the latest non-opened events.
      * @param {Object} options - The options for fetching events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The total number of events fetched.
      */
-    async fetchLatestNonOpenedEvents({maxEvents = Infinity} = {}) {
+    async fetchLatestNonOpenedEvents({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastNonOpenedEventTimestamp();
         const end = new Date(Date.now() - FETCH_LATEST_END_MARGIN_MS); // Always stop at x minutes ago to give Mailgun a bit more time to stabilize storage
 
@@ -156,15 +158,16 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained'], timingStats});
     }
 
     /**
      * Fetches events that are older than 30 minutes, because then the 'storage' of the Mailgun API is stable. And we are sure we don't miss any events.
      * @param {object} options
      * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      */
-    async fetchMissing({maxEvents = Infinity} = {}) {
+    async fetchMissing({maxEvents = Infinity, timingStats = null} = {}) {
         const begin = await this.getLastMissingEventTimestamp();
 
         // Always stop at the earlier of the time the fetchLatest started fetching on or 30 minutes ago
@@ -181,7 +184,7 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents});
+        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents, timingStats});
     }
 
     /**
@@ -233,9 +236,10 @@ module.exports = class EmailAnalyticsService {
      * @method fetchScheduled
      * @param {Object} [options] - The options for fetching scheduled events.
      * @param {number} [options.maxEvents=Infinity] - The maximum number of events to fetch.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The number of events fetched.
      */
-    async fetchScheduled({maxEvents = Infinity} = {}) {
+    async fetchScheduled({maxEvents = Infinity, timingStats = null} = {}) {
         if (!this.#fetchScheduledData || !this.#fetchScheduledData.schedule) {
             // Nothing scheduled
             return 0;
@@ -265,7 +269,7 @@ module.exports = class EmailAnalyticsService {
             return 0;
         }
 
-        const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents});
+        const count = await this.#fetchEvents(this.#fetchScheduledData, {begin, end, maxEvents, timingStats});
         if (count === 0 || this.#fetchScheduledData.canceled) {
             // Reset the scheduled fetch
             this.#fetchScheduledData = {
@@ -285,12 +289,10 @@ module.exports = class EmailAnalyticsService {
      * @param {Date} options.end - End date for fetching events
      * @param {number} [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      * @param {EmailAnalyticsEvent[]} [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
+     * @param {Object} [options.timingStats] - Optional object to accumulate timing statistics
      * @returns {Promise<number>} The number of events fetched
      */
-    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
-        // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        logging.info('[EmailAnalytics] Fetching from ' + begin.toISOString() + ' until ' + end.toISOString() + ' (maxEvents: ' + maxEvents + ')');
-
+    async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null, timingStats = null}) {
         // Store that we started fetching
         fetchData.running = true;
         fetchData.lastStarted = new Date();
@@ -305,6 +307,12 @@ module.exports = class EmailAnalyticsService {
         let processingResult = new EventProcessingResult();
         let error = null;
 
+        // Local timing stats to track aggregation time during this fetch
+        const localTimingStats = {
+            memberTime: 0,
+            emailTime: 0
+        };
+
         /**
          * Process a batch of events
          * @param {Array<Object>} events - Array of event objects to process
@@ -317,13 +325,18 @@ module.exports = class EmailAnalyticsService {
             await this.processEventBatch(events, processingResult, fetchData);
             eventCount += events.length;
 
+            // Flush batched email_recipients updates after each Mailgun batch
+            await this.eventProcessor.flushBatchedUpdates();
+
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
             if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
                 // Aggregate and clear the processingResult
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
-                    await this.aggregateStats(processingResult, includeOpenedEvents);
+                    const timing = await this.aggregateStats(processingResult, includeOpenedEvents);
+                    localTimingStats.memberTime += timing.memberTime;
+                    localTimingStats.emailTime += timing.emailTime;
                     lastAggregation = Date.now();
                     processingResult = new EventProcessingResult();
                 } catch (err) {
@@ -341,10 +354,8 @@ module.exports = class EmailAnalyticsService {
 
         try {
             for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
+                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes, timingStats});
             }
-
-            logging.info('[EmailAnalytics] Fetching finished');
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
@@ -357,7 +368,9 @@ module.exports = class EmailAnalyticsService {
 
         if (processingResult.memberIds.length > 0 || processingResult.emailIds.length > 0) {
             try {
-                await this.aggregateStats(processingResult, includeOpenedEvents);
+                const timing = await this.aggregateStats(processingResult, includeOpenedEvents);
+                localTimingStats.memberTime += timing.memberTime;
+                localTimingStats.emailTime += timing.emailTime;
             } catch (err) {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
@@ -372,18 +385,22 @@ module.exports = class EmailAnalyticsService {
         // fetching the same events because 'begin' won't change
         // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
         if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
-            logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             // set the data on the db so we can store it for fetching after reboot
             await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         } else {
-            logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
             await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
 
         fetchData.running = false;
+
+        // Accumulate local timing stats to external timing stats if provided
+        if (timingStats) {
+            timingStats.emailTime = (timingStats.emailTime || 0) + localTimingStats.emailTime;
+            timingStats.memberTime = (timingStats.memberTime || 0) + localTimingStats.memberTime;
+        }
 
         if (error) {
             throw error;
@@ -399,8 +416,18 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
+        // Batch lookup all recipients for this batch of events
+        const emailIdentifications = events.map(event => ({
+            emailId: event.emailId,
+            providerId: event.providerId,
+            email: event.recipientEmail
+        }));
+
+        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications);
+
+        // Process each event with the pre-fetched recipient cache
         for (const event of events) {
-            const batchResult = await this.processEvent(event);
+            const batchResult = await this.processEvent(event, recipientCache);
 
             // Save last event timestamp
             if (!fetchData.lastEventTimestamp || (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)) {
@@ -414,11 +441,12 @@ module.exports = class EmailAnalyticsService {
     /**
      *
      * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, any>} [recipientCache] Optional pre-fetched recipient cache
      * @returns {Promise<EventProcessingResult>}
      */
-    async processEvent(event) {
+    async processEvent(event, recipientCache = null) {
         if (event.type === 'delivered') {
-            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -432,7 +460,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'opened') {
-            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleOpened({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -447,7 +475,7 @@ module.exports = class EmailAnalyticsService {
 
         if (event.type === 'failed') {
             if (event.severity === 'permanent') {
-                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handlePermanentFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error}, recipientCache);
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -459,7 +487,7 @@ module.exports = class EmailAnalyticsService {
 
                 return new EventProcessingResult({unprocessable: 1});
             } else {
-                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error});
+                const recipient = await this.eventProcessor.handleTemporaryFailed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, {id: event.id, timestamp: event.timestamp, error: event.error}, recipientCache);
 
                 if (recipient) {
                     return new EventProcessingResult({
@@ -474,7 +502,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'unsubscribed') {
-            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleUnsubscribed({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -488,7 +516,7 @@ module.exports = class EmailAnalyticsService {
         }
 
         if (event.type === 'complained') {
-            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp);
+            const recipient = await this.eventProcessor.handleComplained({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 
             if (recipient) {
                 return new EventProcessingResult({
@@ -507,28 +535,33 @@ module.exports = class EmailAnalyticsService {
     /**
      * @param {{emailIds?: string[], memberIds?: string[]}} stats
      * @param {boolean} includeOpenedEvents
+     * @returns {Promise<{emailTime: number, memberTime: number}>}
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
-        let startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
+        const emailStartTime = Date.now();
 
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
-        let endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
+        const emailTime = Date.now() - emailStartTime;
 
-        startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
-
+        const memberStartTime = Date.now();
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
-        for (const memberId of memberIds) {
-            await this.aggregateMemberStats(memberId);
-            memberMetric?.inc();
+        const allTimings = [];
+        const BATCH_SIZE = 100;
+
+        for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
+            const batch = memberIds.slice(i, i + BATCH_SIZE);
+            const timings = await this.aggregateMemberStatsBatch(batch);
+            if (timings) {
+                allTimings.push(timings);
+            }
+            memberMetric?.inc(batch.length);
         }
-        endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
+        const memberTime = Date.now() - memberStartTime;
+
+        return {emailTime, memberTime};
     }
 
     /**
@@ -542,11 +575,11 @@ module.exports = class EmailAnalyticsService {
     }
 
     /**
-     * Aggregate member stats for a given member ID.
-     * @param {string} memberId - The ID of the member to aggregate stats for.
+     * Aggregate member stats for multiple member IDs in a batch.
+     * @param {string[]} memberIds - Array of member IDs to aggregate stats for.
      * @returns {Promise<void>}
      */
-    async aggregateMemberStats(memberId) {
-        return this.queries.aggregateMemberStats(memberId);
+    async aggregateMemberStatsBatch(memberIds) {
+        return this.queries.aggregateMemberStatsBatch(memberIds);
     }
 };
