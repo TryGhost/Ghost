@@ -9,7 +9,7 @@ module.exports = {
     async scheduleWelcomeEmailJob() {
         if (!hasScheduled.processOutbox && !process.env.NODE_ENV.startsWith('test')) {
             jobsService.addJob({
-                at: '*/10 * * * * *',
+                at: '0 */5 * * * *',
                 job: path.resolve(__dirname, 'process-outbox.js'),
                 name: 'welcome-emails-process-outbox'
             });
