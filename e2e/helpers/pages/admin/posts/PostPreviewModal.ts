@@ -51,11 +51,7 @@ export class PostPreviewModal {
     }
 
     private async waitForPreviewContentToLoad(): Promise<void> {
-        await this.previewFrame.locator('body').waitFor({state: 'visible', timeout: 10000});
-
-        const title = this.previewFrame.locator('h1').first();
-        await title.waitFor({state: 'visible', timeout: 10000});
-
+        await this.previewFrame.getByRole('heading', {level: 1}).waitFor({state: 'visible', timeout: 20000});
         await this.waitForImagesIfPresent();
     }
 
