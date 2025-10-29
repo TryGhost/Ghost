@@ -1,5 +1,5 @@
-import {Page, Locator} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
+import {Locator, Page} from '@playwright/test';
 
 export class AnalyticsNewslettersPage extends AdminPage {
     public readonly newslettersCard: Locator;

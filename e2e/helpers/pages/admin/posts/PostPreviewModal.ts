@@ -1,4 +1,4 @@
-import {Page, Locator, FrameLocator} from '@playwright/test';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 interface PostContentLocators {
     title: Locator;
@@ -12,20 +12,30 @@ export class PostPreviewModal {
     readonly modal: Locator;
     readonly header: Locator;
     readonly closeButton: Locator;
-    readonly iframe: Locator;
+    readonly emailPreviewFrame: FrameLocator;
+    readonly previewFrame: FrameLocator;
+
     readonly webTabButton: Locator;
     readonly emailTabButton: Locator;
-    readonly previewFrame: FrameLocator;
+    readonly emailPreviewBody: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.modal = page.getByRole('banner').filter({hasText: 'Preview'});
         this.header = this.modal.getByRole('heading', {name: 'Preview'});
         this.closeButton = this.modal.getByRole('button', {name: 'Close'});
-        this.iframe = page.locator('iframe[title*="preview"]');
+
         this.previewFrame = page.frameLocator('iframe[title*="preview"]');
+        this.emailPreviewFrame = page.frameLocator('iframe[title="Email preview"]');
+
         this.webTabButton = this.modal.getByRole('button', {name: 'Web'});
         this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
+        this.emailPreviewBody = this.emailPreviewFrame.getByTestId('email-preview-body');
+    }
+
+    async content(): Promise<string | null> {
+        await this.emailPreviewBody.waitFor({state: 'visible'});
+        return await this.emailPreviewBody.textContent();
     }
 
     async close(): Promise<void> {
@@ -33,40 +43,15 @@ export class PostPreviewModal {
         await this.modal.waitFor({state: 'hidden'});
     }
 
-    async clickInIframe(): Promise<void> {
-        await this.iframe.click();
-    }
-
-    async isIframeFocused(): Promise<boolean> {
-        await this.iframe.waitFor({state: 'visible'});
-
-        return await this.page.evaluate(() => {
-            const iframeElement = document.querySelector('iframe[title*="preview"]');
-            return document.activeElement === iframeElement;
-        });
-    }
-
-    async getPostContent(): Promise<PostContentLocators> {
+    async previewModalFrame(): Promise<PostContentLocators> {
         await this.waitForPreviewContentToLoad();
-        await this.waitForEscapeHandlerScript();
+        await this.waitForEscapeScriptToByReady();
 
         return this.getContentLocators();
     }
 
-    async switchToWebView(): Promise<void> {
-        await this.webTabButton.click();
-    }
-
-    async switchToEmailView(): Promise<void> {
-        await this.emailTabButton.click();
-    }
-
     private async waitForPreviewContentToLoad(): Promise<void> {
-        await this.previewFrame.locator('body').waitFor({state: 'visible', timeout: 10000});
-
-        const title = this.previewFrame.locator('h1').first();
-        await title.waitFor({state: 'visible', timeout: 10000});
-
+        await this.previewFrame.getByRole('heading', {level: 1}).waitFor({state: 'visible', timeout: 20000});
         await this.waitForImagesIfPresent();
     }
 
@@ -79,7 +64,7 @@ export class PostPreviewModal {
         }
     }
 
-    private async waitForEscapeHandlerScript(): Promise<void> {
+    private async waitForEscapeScriptToByReady(): Promise<void> {
         await this.page.waitForFunction(
             () => {
                 const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;

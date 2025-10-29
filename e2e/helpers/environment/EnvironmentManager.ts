@@ -1,13 +1,13 @@
 import Docker from 'dockerode';
-import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
-import {randomUUID} from 'crypto';
-import {DockerCompose} from './DockerCompose';
-import {MySQLManager} from './MySQLManager';
-import {TinybirdManager} from './TinybirdManager';
-import {GhostManager} from './GhostManager';
+import logging from '@tryghost/logging';
 import {DOCKER_COMPOSE_CONFIG, PORTAL, TINYBIRD} from './constants';
+import {DockerCompose} from './DockerCompose';
+import {GhostManager} from './GhostManager';
+import {MySQLManager} from './MySQLManager';
 import {PortalManager} from './PortalManager';
+import {TinybirdManager} from './TinybirdManager';
+import {randomUUID} from 'crypto';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 

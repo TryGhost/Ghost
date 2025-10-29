@@ -1,5 +1,5 @@
-import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
+import {Locator, Page} from '@playwright/test';
 
 export class TagsPage extends AdminPage {
     readonly pageContent: Locator;

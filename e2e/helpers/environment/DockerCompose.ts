@@ -1,8 +1,8 @@
 import Docker from 'dockerode';
-import type {Container} from 'dockerode';
-import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
+import logging from '@tryghost/logging';
 import {execSync} from 'child_process';
+import type {Container} from 'dockerode';
 
 const debug = baseDebug('e2e:DockerCompose');
 

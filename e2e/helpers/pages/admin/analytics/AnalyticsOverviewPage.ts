@@ -1,6 +1,6 @@
-import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 import {BasePage} from '../../BasePage';
+import {Locator, Page} from '@playwright/test';
 
 class UniqueVisitorsGraph extends BasePage {
     public readonly graph: Locator;

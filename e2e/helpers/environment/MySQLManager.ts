@@ -1,8 +1,8 @@
-import type {Container} from 'dockerode';
+import baseDebug from '@tryghost/debug';
+import logging from '@tryghost/logging';
 import {DockerCompose} from './DockerCompose';
 import {PassThrough} from 'stream';
-import logging from '@tryghost/logging';
-import baseDebug from '@tryghost/debug';
+import type {Container} from 'dockerode';
 
 const debug = baseDebug('e2e:MySQLManager');
 
