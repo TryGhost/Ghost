@@ -27,24 +27,18 @@ export class DockerCompose {
         this.docker = options.docker;
     }
 
-    up(services?: string[]): void {
+    async up(): Promise<void> {
         try {
-            const servicesList = services ? services.join(' ') : '';
-            const servicesLog = services ? `services: ${services.join(', ')}` : 'all services';
-
-            logging.info(`Starting docker compose ${servicesLog}...`);
-
-            execSync(
-                `docker compose -f ${this.composeFilePath} up -d ${servicesList}`,
-                {stdio: 'inherit'}
-            );
-
-            logging.info(`Docker compose ${servicesLog} are up`);
+            logging.info('Starting docker compose services...');
+            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
+            logging.info('Docker compose services are up');
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
             this.logs();
             throw error;
         }
+
+        await this.waitForAll();
     }
 
     // Stop and remove all services for the project including volumes
@@ -58,37 +52,6 @@ export class DockerCompose {
             logging.error('Failed to stop docker compose services:', error);
             throw error;
         }
-    }
-
-    /**
-     * Wait until all services from the compose file are ready.
-     *
-     * This method will poll the status of all containers until they are all ready or the timeout is reached.
-     *
-     * NOTE: `docker compose up -d --wait` does not work here because it will exit with code 1 if any container exited
-     *
-     * @param timeoutMs Maximum time to wait for all services to be ready (default: 60000ms)
-     * @param intervalMs Interval between status checks (default: 500ms)
-     *
-    */
-    async waitForAll(timeoutMs = 60000, intervalMs = 500): Promise<void> {
-        const sleep = (ms: number) => new Promise<void>((resolve) => {
-            setTimeout(resolve, ms);
-        });
-
-        const deadline = Date.now() + timeoutMs;
-        while (Date.now() < deadline) {
-            const containers = await this.getContainers();
-            const allContainersReady = this.areAllContainersReady(containers);
-
-            if (allContainersReady) {
-                return;
-            }
-
-            await sleep(intervalMs);
-        }
-
-        throw new Error('Timeout waiting for services to be ready');
     }
 
     execShellInService(service: string, shellCommand: string): string {
@@ -220,6 +183,34 @@ export class DockerCompose {
         }
 
         return containers;
+    }
+
+    /**
+     * Wait until all services from the compose file are ready.
+     * NOTE: `docker compose up -d --wait` does not work here because it will exit with code 1 if any container exited.
+     *
+     * @param timeoutMs Maximum time to wait for all services to be ready (default: 60000ms)
+     * @param intervalMs Interval between status checks (default: 500ms)
+     *
+     */
+    private async waitForAll(timeoutMs = 60000, intervalMs = 500): Promise<void> {
+        const sleep = (ms: number) => new Promise<void>((resolve) => {
+            setTimeout(resolve, ms);
+        });
+
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            const containers = await this.getContainers();
+            const allContainersReady = this.areAllContainersReady(containers);
+
+            if (allContainersReady) {
+                return;
+            }
+
+            await sleep(intervalMs);
+        }
+
+        throw new Error('Timeout waiting for services to be ready');
     }
 
     private areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {

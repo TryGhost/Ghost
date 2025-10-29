@@ -1,7 +1,7 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage, LoginPage} from '../pages/admin';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
+import {EnvironmentManager, GhostInstance} from '../environment';
 import {SettingsService} from '../services/settings/SettingsService';
 import {faker} from '@faker-js/faker';
 import {setupUser} from '../utils';

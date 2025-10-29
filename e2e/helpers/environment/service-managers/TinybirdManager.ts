@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import path from 'path';
-import {DockerCompose} from './DockerCompose';
-import {ensureDir} from '../utils';
+import {DockerCompose} from '../DockerCompose';
+import {ensureDir} from '../../utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
 
@@ -14,6 +14,7 @@ export interface TinybirdConfig {
 }
 
 /**
+ * Manages TinyBird and Tinybird CLI operations within these docker containers.
  * Encapsulates TinyBird and Tinybird CLI operations within the docker-compose environment.
  * Handles Tinybird token fetching and local config persistence.
  */

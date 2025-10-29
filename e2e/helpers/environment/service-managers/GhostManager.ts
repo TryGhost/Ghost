@@ -1,13 +1,21 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from './constants';
-import {DockerCompose} from './DockerCompose';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '../constants';
+import {DockerCompose} from '../DockerCompose';
 import {TinybirdManager} from './TinybirdManager';
 import type {Container, ContainerCreateOptions} from 'dockerode';
-import type {GhostInstance} from './EnvironmentManager';
 
 const debug = baseDebug('e2e:GhostManager');
+
+export interface GhostInstance {
+    containerId: string; // docker container ID
+    instanceId: string; // unique instance name (e.g. ghost_<siteUuid>)
+    database: string;
+    port: number;
+    baseUrl: string;
+    siteUuid: string;
+}
 
 export interface GhostStartConfig {
     instanceId: string;
