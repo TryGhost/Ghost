@@ -74,7 +74,7 @@ function groupNotifications(notifications: Notification[], useTimeGrouping: bool
             break;
         case 'follow':
             // Group follows by time window
-            groupKey = `follow_${notification.type}${timeBucket}`;
+            groupKey = `follow_${timeBucket}`;
             break;
         case 'mention':
             // Don't group mentions
