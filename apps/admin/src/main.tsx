@@ -22,9 +22,15 @@ const framework = {
         "X-Unsplash-Cache": true,
     },
     sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
+    onUpdate: (...args: unknown[]) => {
+        window.EmberBridge?.state.onUpdate(...args);
+    },
+    onInvalidate: (...args: unknown[]) => {
+        window.EmberBridge?.state.onInvalidate(...args);
+    },
+    onDelete: (...args: unknown[]) => {
+        window.EmberBridge?.state.onDelete(...args);
+    },
 };
 
 createRoot(document.getElementById("root")!).render(

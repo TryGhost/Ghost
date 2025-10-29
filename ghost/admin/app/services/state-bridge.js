@@ -27,34 +27,9 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @inject config;
 
-    nightShift = null;
-
-    setNightShift(value) {
-        // use feature.set to trigger admin style toggle logic
-        // saves user so will be picked up by the session.user.didUpdate observer
-        this.nightShift = value;
-        this.feature.set('nightShift', value);
-    }
-
-    /** Ember Admin internal methods -----------------------------------------*/
-
-    observeSessionUser() {
-        this._setAndTriggerNightShiftUpdate(this._readUserAccessibility('nightShift'));
-
-        this.session.user.on('didUpdate', () => {
-            this._setAndTriggerNightShiftUpdate(this._readUserAccessibility('nightShift'));
-        });
-    }
-
-    _setAndTriggerNightShiftUpdate(value) {
-        if (this.nightShift !== value) {
-            this.nightShift = value;
-            this.trigger('nightShiftUpdated', value);
-        }
-    }
-
-    _readUserAccessibility(key) {
-        return JSON.parse(this.session.user?.accessibility || '{}')[key];
+    constructor() {
+        super(...arguments);
+        this._setupStoreListeners();
     }
 
     /* React -> Ember -------------------------------------------------------
@@ -81,6 +56,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
         const {type, singleton} = emberDataTypeMapping[dataType];
 
+        // In order to detect data changes that trigger side effects, we need to store the
+        // previous value before we update the store.
+        const previousNightShift = this.feature.nightShift;
+
         if (singleton) {
             // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
             this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
@@ -92,6 +71,19 @@ export default class StateBridgeService extends Service.extend(Evented) {
             ));
         } else {
             this.store.pushPayload(type, response);
+        }
+
+        if (dataType === 'UsersResponseType') {
+            const isCurrentUser = response.users[0].id === this.session.user.id;
+
+            if (isCurrentUser) {
+                // Night shift changes require direct DOM manipulation,
+                // so we mimic what Ember does when it modifies feature.nightShift
+                const newNightShift = this.feature.nightShift;
+                if (newNightShift !== previousNightShift) {
+                    this.feature._setAdminTheme(newNightShift);
+                }
+            }
         }
 
         if (dataType === 'SettingsResponseType') {
@@ -165,5 +157,15 @@ export default class StateBridgeService extends Service.extend(Evented) {
         if (record) {
             record.unloadRecord();
         }
+    }
+
+    /* Ember -> React -------------------------------------------------------
+
+    TODO: How are we doing the reverse?
+
+    */
+
+    _setupStoreListeners() {
+
     }
 }

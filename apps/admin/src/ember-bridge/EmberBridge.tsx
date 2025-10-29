@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useEditUser, type User } from "@tryghost/admin-x-framework/api/users";
 
 export interface EmberBridge {
-    getService: (serviceName: string) => unknown;
+    state: StateBridge;
 }
 
 export interface StateBridge {
-    nightShift: null |boolean;
-    setNightShift: (value: boolean) => void;
     on: (event: string, callback: (value: boolean) => void) => void;
     off: (event: string, callback: (value: boolean) => void) => void;
+    onUpdate: (...args: unknown[]) => void;
+    onInvalidate: (...args: unknown[]) => void;
+    onDelete: (...args: unknown[]) => void;
 }
 
 declare global {
@@ -17,59 +20,43 @@ declare global {
     }
 }
 
-export function useEmberService(serviceName: string) {
-    const [service, setService] = useState<unknown>(null);
+export const useParsedCurrentUser = () => {
+    const result = useCurrentUser();
 
-    useEffect(() => {
-        const checkAndSetService = () => {
-            if (window.EmberBridge) {
-                setService(window.EmberBridge.getService(serviceName));
-                return true;
-            }
-            return false;
-        };
+    const data = useMemo<(Omit<User, 'accessibility'> & {accessibility: Record<string, unknown> | null} )| null>(() => {
+        const user = result.data ?? null;
+        return user ? {
+            ...user,
+            accessibility: user.accessibility ? JSON.parse(user.accessibility) as Record<string, unknown> : null
+        } : null;
+    }, [result.data]);
 
-        if (checkAndSetService()) {
-            return;
-        }
-
-        const pollForBridge = setInterval(() => {
-            if (checkAndSetService()) {
-                clearInterval(pollForBridge);
-            }
-        }, 100);
-
-        return () => clearInterval(pollForBridge);
-    }, [serviceName])
-
-    return service;
+    return {
+        ...result,
+        data
+    };
 }
 
-export function useEmberDarkMode(): [boolean, () => void] {
-    const stateBridge = useEmberService('state-bridge') as StateBridge;
-    const [darkMode, setDarkMode] = useState(stateBridge?.nightShift ?? false);
+export function useToggleDarkMode(): [boolean, () => Promise<void>] {
+    const { mutateAsync: updateUserAccessibilityState } = useEditUser()
+    const { data: currentUser } = useParsedCurrentUser();
 
-    useEffect(() => {
-        if (!stateBridge) {
+    const accessibility = currentUser?.accessibility ?? {};
+    const nightShift = typeof accessibility.nightShift === 'boolean' ? accessibility.nightShift : false;
+
+    const toggleDarkMode = async () => {
+        if (!currentUser) {
             return;
         }
 
-        const onNightShiftUpdated = (value: boolean) => {
-            setDarkMode(value);
-        };
-
-        setDarkMode(stateBridge.nightShift ?? false);
-        stateBridge.on('nightShiftUpdated', onNightShiftUpdated);
-
-        return () => {
-            stateBridge.off('nightShiftUpdated', onNightShiftUpdated);
-        }
-    }, [stateBridge]);
-
-    const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-        stateBridge.setNightShift(!darkMode);
+        await updateUserAccessibilityState({
+            ...currentUser,
+            accessibility: JSON.stringify({
+                ...currentUser.accessibility,
+                nightShift: !nightShift
+            })
+        });
     }
 
-    return [darkMode, toggleDarkMode];
+    return [nightShift, toggleDarkMode];
 }

@@ -1,8 +1,8 @@
 export function initialize(appInstance) {
+    const stateBridge = appInstance.lookup('service:state-bridge');
+
     window.EmberBridge = {
-        getService(name) {
-            return appInstance.lookup(`service:${name}`);
-        }
+        state: stateBridge
     };
 }
 

@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 export default class Stats extends AdminXComponent {
     @service upgradeStatus;
     @service onboarding;
+    @service settings;
 
     additionalProps = () => {
         return {

@@ -40,7 +40,7 @@ export default class SessionService extends ESASessionService {
         const user = await this.dataStore.queryRecord('user', {id});
         this.user = user;
 
-        this.stateBridge.observeSessionUser();
+        // this.stateBridge.observeSessionUser();
     }
 
     async postAuthPreparation() {

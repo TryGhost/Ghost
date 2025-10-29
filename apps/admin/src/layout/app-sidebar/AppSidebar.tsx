@@ -14,11 +14,11 @@ import NavMain from "./NavMain";
 import NavContent from "./NavContent";
 import NavGhostPro from "./NavGhostPro";
 import UserMenu from "./UserMenu";
-import { useEmberDarkMode } from "../../ember-bridge/EmberBridge";
+import { useToggleDarkMode } from "../../ember-bridge/EmberBridge";
 
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const site = useBrowseSite();
-    const [darkMode, toggleDarkMode] = useEmberDarkMode();
+    const [darkMode, toggleDarkMode] = useToggleDarkMode();
 
     const title = site.data?.site.title ?? "Loading...";
     const logo = site.data?.site.logo ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
@@ -78,7 +78,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             size="icon"
                             className="size-9 hover:bg-gray-200 rounded-full p-0 text-gray-800 [&_svg]:size-auto"
                             title="Toggle theme"
-                            onClick={toggleDarkMode}
+                            onClick={() => void toggleDarkMode()}
                         >
                             {darkMode ? <LucideIcon.Sun size={20} /> : <LucideIcon.Moon size={20} />}
                         </Button>
