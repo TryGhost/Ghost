@@ -18,21 +18,23 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavLink
-                        icon="TrendingUp"
                         label="Analytics"
                         href="#/analytics"
-                    />
+                    >
+                        <NavLink.Icon><LucideIcon.TrendingUp /></NavLink.Icon>
+                    </NavLink>
                     <NavLink
-                        icon="Globe"
                         label="Network"
                         href="#/network"
-                    />
+                    >
+                        <NavLink.Icon><LucideIcon.Globe /></NavLink.Icon>
+                    </NavLink>
                     <NavLink
-                        icon="AppWindow"
                         label="View site"
                         href="#/site"
                         className="relative group/viewsite"
                     >
+                        <NavLink.Icon><LucideIcon.AppWindow /></NavLink.Icon>
                         <NavLink.After>
                             <a
                                 href={url}

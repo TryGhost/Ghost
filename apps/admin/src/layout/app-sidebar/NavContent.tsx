@@ -18,17 +18,15 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavLink
-                        icon="PenLine"
                         label="Posts"
                         href="#/posts"
-                        className="group-hover:[&_[data-sidebar]_svg]:opacity-0 [&_[data-sidebar]_svg]:pointer-events-none [&_[data-sidebar]_svg]:transition-all"
                     >
                         <NavLink.Before>
                             <Button
                                 variant='ghost'
                                 aria-label="Toggle post views"
                                 size='icon'
-                                className={`absolute opacity-0 group-hover:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent`}
+                                className={`absolute opacity-0 group-hover/menu-item:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent`}
                                 onClick={() =>
                                     setPostsExpanded(!postsExpanded)
                                 }
@@ -40,6 +38,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 }
                             </Button>
                         </NavLink.Before>
+                        <NavLink.Icon><LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" /></NavLink.Icon>
                         <NavLink.After>
                             <a href="#/editor/post"
                                 aria-label="Create new post"
@@ -72,22 +71,24 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     )}
 
                     <NavLink
-                        icon="File"
                         label="Pages"
                         href="#/pages"
-                    />
+                    >
+                        <NavLink.Icon><LucideIcon.File /></NavLink.Icon>
+                    </NavLink>
 
                     <NavLink
-                        icon="Tag"
                         label="Tags"
                         href="#/tags"
-                    />
+                    >
+                        <NavLink.Icon><LucideIcon.Tag /></NavLink.Icon>
+                    </NavLink>
 
                     <NavLink
-                        icon="Users"
                         label="Members"
                         href="#/members"
                     >
+                        <NavLink.Icon><LucideIcon.Users /></NavLink.Icon>
                         <NavLink.After>
                             <Badge className="absolute right-2 top-2 pointer-events-none" variant='secondary'>1,000</Badge>
                         </NavLink.After>
