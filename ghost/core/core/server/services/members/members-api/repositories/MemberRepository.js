@@ -24,6 +24,14 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
+// Sources allowed to trigger welcome emails via outbox
+// 'member' = self-signups through public forms (Portal, Signup Form, etc.)
+// 'api' in development = allows testing with scripts like gm.js
+const WELCOME_EMAIL_SOURCES = ['member'];
+if (process.env.NODE_ENV !== 'production') {
+    WELCOME_EMAIL_SOURCES.push('api');
+}
+
 /**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
@@ -414,23 +422,20 @@ module.exports = class MemberRepository {
             }
         }
 
-        // Insert into outbox if welcome emails feature is enabled
-        if (this._labsService.isSet('welcomeEmails')) {
+        // Insert into outbox if welcome emails feature is enabled and source is allowed
+        // Only self-signup members get welcome emails; excludes imports, admin-created, and system-generated members
+        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
             await this._Outbox.add({
                 id: ObjectId().toHexString(),
-                event_type: 'MemberCreatedEvent',
+                event_type: MemberCreatedEvent.name,
                 payload: JSON.stringify({
                     memberId: member.id,
                     email: member.get('email'),
                     name: member.get('name'),
-                    batchId: options.batch_id,
-                    attribution: data.attribution,
                     source,
                     timestamp: eventData.created_at
                 }),
-                created_at: new Date(),
-                retry_count: 0,
-                last_retry_at: null
+                created_at: new Date()
             }, options);
         }
                 
