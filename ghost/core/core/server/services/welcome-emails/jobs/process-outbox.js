@@ -9,7 +9,7 @@ const MAX_RETRIES = 3;
 const SIMULATE_FAILURE_RATE = 0.3;
 
 const EXPONENTIAL_BACKOFF = {
-    enabled: true,
+    enabled: false,
     baseDelayMs: 30000
 };
 
