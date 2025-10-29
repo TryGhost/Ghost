@@ -67,24 +67,24 @@ class EmailAnalyticsServiceWrapper {
      * Log comprehensive job completion with timing metrics
      * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
      * @param {object} fetchResult - The fetch result from EmailAnalyticsService
-     * @param {number} totalDuration - Total duration in milliseconds
+     * @param {number} totalDurationMs - Total duration in milliseconds
      */
-    _logJobCompletion(jobType, fetchResult, totalDuration) {
-        const {eventCount, apiPollingTime, processingTime, aggregationTime, result} = fetchResult;
+    _logJobCompletion(jobType, fetchResult, totalDurationMs) {
+        const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, result} = fetchResult;
 
         if (eventCount === 0) {
             return;
         }
 
-        const throughput = totalDuration > 0 ? eventCount / (totalDuration / 1000) : 0;
-        const apiPercent = totalDuration > 0 ? Math.round((apiPollingTime / totalDuration) * 100) : 0;
-        const processingPercent = totalDuration > 0 ? Math.round((processingTime / totalDuration) * 100) : 0;
-        const aggregationPercent = totalDuration > 0 ? Math.round((aggregationTime / totalDuration) * 100) : 0;
+        const throughput = totalDurationMs > 0 ? eventCount / (totalDurationMs / 1000) : 0;
+        const apiPercent = totalDurationMs > 0 ? Math.round((apiPollingTimeMs / totalDurationMs) * 100) : 0;
+        const processingPercent = totalDurationMs > 0 ? Math.round((processingTimeMs / totalDurationMs) * 100) : 0;
+        const aggregationPercent = totalDurationMs > 0 ? Math.round((aggregationTimeMs / totalDurationMs) * 100) : 0;
 
         const logMessage = [
             `[EmailAnalytics] Job complete: ${jobType}`,
-            `${eventCount} events in ${(totalDuration / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
-            `Timings: API ${(apiPollingTime / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTime / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTime / 1000).toFixed(1)}s (${aggregationPercent}%)`,
+            `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
+            `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%)`,
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');
 
@@ -98,7 +98,7 @@ class EmailAnalyticsServiceWrapper {
                 metrics.metric('email-analytics-open-throughput', {
                     value: throughput,
                     events: eventCount,
-                    duration: totalDuration
+                    duration: totalDurationMs
                 });
             }
         }

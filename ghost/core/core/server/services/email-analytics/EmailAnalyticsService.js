@@ -27,9 +27,9 @@ const errors = require('@tryghost/errors');
 /**
  * @typedef {object} EmailAnalyticsFetchResult
  * @property {number} eventCount - The number of events fetched
- * @property {number} apiPollingTime - Time spent polling the API in milliseconds
- * @property {number} processingTime - Time spent processing events in milliseconds
- * @property {number} aggregationTime - Time spent aggregating stats in milliseconds
+ * @property {number} apiPollingTimeMs - Time spent polling the API in milliseconds
+ * @property {number} processingTimeMs - Time spent processing events in milliseconds
+ * @property {number} aggregationTimeMs - Time spent aggregating stats in milliseconds
  * @property {EventProcessingResult} result - The processing result with event breakdown
  */
 
@@ -43,9 +43,9 @@ const FETCH_LATEST_END_MARGIN_MS = 1 * 60 * 1000; // Do not fetch events newer t
 function createEmptyResult() {
     return {
         eventCount: 0,
-        apiPollingTime: 0,
-        processingTime: 0,
-        aggregationTime: 0,
+        apiPollingTimeMs: 0,
+        processingTimeMs: 0,
+        aggregationTimeMs: 0,
         result: new EventProcessingResult()
     };
 }
@@ -320,9 +320,9 @@ module.exports = class EmailAnalyticsService {
         this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
 
         // Timing metrics
-        let apiPollingTime = 0;
-        let processingTime = 0;
-        let aggregationTime = 0;
+        let apiPollingTimeMs = 0;
+        let processingTimeMs = 0;
+        let aggregationTimeMs = 0;
 
         let lastAggregation = Date.now();
         let eventCount = 0;
@@ -343,7 +343,7 @@ module.exports = class EmailAnalyticsService {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
             const processingStart = Date.now();
             await this.processEventBatch(events, processingResult, fetchData);
-            processingTime += (Date.now() - processingStart);
+            processingTimeMs += (Date.now() - processingStart);
             eventCount += events.length;
 
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
@@ -354,7 +354,7 @@ module.exports = class EmailAnalyticsService {
                 try {
                     const aggregationStart = Date.now();
                     await this.aggregateStats(processingResult, includeOpenedEvents);
-                    aggregationTime += (Date.now() - aggregationStart);
+                    aggregationTimeMs += (Date.now() - aggregationStart);
                     lastAggregation = Date.now();
                     processingResult = new EventProcessingResult();
                 } catch (err) {
@@ -374,7 +374,7 @@ module.exports = class EmailAnalyticsService {
             for (const provider of this.providers) {
                 const apiStart = Date.now();
                 await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
-                apiPollingTime += (Date.now() - apiStart);
+                apiPollingTimeMs += (Date.now() - apiStart);
             }
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
@@ -390,7 +390,7 @@ module.exports = class EmailAnalyticsService {
             try {
                 const aggregationStart = Date.now();
                 await this.aggregateStats(processingResult, includeOpenedEvents);
-                aggregationTime += (Date.now() - aggregationStart);
+                aggregationTimeMs += (Date.now() - aggregationStart);
             } catch (err) {
                 logging.error('[EmailAnalytics] Error while aggregating stats');
                 logging.error(err);
@@ -422,9 +422,9 @@ module.exports = class EmailAnalyticsService {
 
         return {
             eventCount,
-            apiPollingTime,
-            processingTime,
-            aggregationTime,
+            apiPollingTimeMs,
+            processingTimeMs,
+            aggregationTimeMs,
             result: processingResult
         };
     }
