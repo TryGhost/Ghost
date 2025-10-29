@@ -15,7 +15,7 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
 
     return (
         <SidebarHeader {...props}>
-            <div className="flex flex-col items-stretch px-3 py-4 gap-5">
+            <div className="flex flex-col items-stretch gap-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
@@ -30,7 +30,7 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
                         </div>
                     </div>
                 </div>
-                <Button variant='outline' className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background hover:border-gray-300 text-base [&_svg]:stroke-2">
+                <Button variant='outline' className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background hover:border-gray-300 text-base [&_svg]:stroke-2 pr-2">
                     <div className="flex items-center gap-2">
                         <LucideIcon.Search />
                         Search

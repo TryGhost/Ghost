@@ -1,12 +1,12 @@
 import React, { useState } from "react"
 
 import {
-    Badge,
     Button,
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarMenu
+    SidebarMenu,
+    SidebarMenuBadge
 } from "@tryghost/shade"
 import NavLink from "./NavLink"
 
@@ -42,9 +42,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         <NavLink.After>
                             <a href="#/editor/post"
                                 aria-label="Create new post"
-                                className="flex items-center justify-center absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9"
+                                className="flex items-center justify-center absolute hover:bg-gray-200 transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-black"
                             >
-                                <LucideIcon.Plus size={24} className="!stroke-[1.2px]" />
+                                <LucideIcon.Plus size={20} className="!stroke-[1.5px] mt-px" />
                             </a>
                         </NavLink.After>
                     </NavLink>
@@ -90,7 +90,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     >
                         <NavLink.Icon><LucideIcon.Users /></NavLink.Icon>
                         <NavLink.After>
-                            <Badge className="absolute right-2 top-2 pointer-events-none" variant='secondary'>1,000</Badge>
+                            <SidebarMenuBadge>24</SidebarMenuBadge>
                         </NavLink.After>
                     </NavLink>
                 </SidebarMenu>

@@ -4,13 +4,13 @@ import {
     Avatar,
     AvatarFallback,
     AvatarImage,
-    Button,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    LucideIcon
+    LucideIcon,
+    SidebarMenuButton
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 
@@ -20,23 +20,29 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
     return (
         <DropdownMenu {...props}>
             <DropdownMenuTrigger asChild className="focus-visible:ring-0">
-                <Button
-                    variant="ghost"
-                    className="flex text-gray-600 items-center gap-1 h-auto justify-start hover:bg-gray-200 rounded-full p-1 ml-1"
+                <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                    <Avatar>
-                        {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                        <AvatarFallback className="text-gray-800 hover:text-black">
-                            <LucideIcon.User />
-                        </AvatarFallback>
-                    </Avatar>
-                    <LucideIcon.ChevronDown
-                        strokeWidth={2}
-                    />
-                </Button>
+                <Avatar>
+                    {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
+                    <AvatarFallback className="text-gray-800 hover:text-black">
+                        <LucideIcon.User />
+                    </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-base leading-tight">
+                    <span className="truncate font-semibold">{currentUser.data?.name}</span>
+                    <span className="text-muted-foreground truncate text-xs -mt-px">
+                        {currentUser.data?.email}
+                    </span>
+                </div>
+                <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" />
+                </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                align="start"
+                align="end"
+                sideOffset={10}
+                className="min-w-[280px]"
             >
                 <div className="p-3">
                     <div className="flex items-center gap-3">
@@ -47,31 +53,37 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-base font-semibold text-gray-900">
                                 {currentUser.data?.name}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-700 -mt-px">
                                 {currentUser.data?.email}
                             </span>
                         </div>
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer text-base">
+                    <LucideIcon.Sparkles />
                     <span>What's new?</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer text-base">
+                    <LucideIcon.User />
                     <span>Your profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" asChild>
-                    <a href="https://ghost.org/help?utm_source=admin&utm_campaign=help" target="_blank" rel="noopener noreferrer">Help center</a>
+                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
+                        <LucideIcon.Book />
+                        Resources & guides
+                    </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" asChild>
-                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">Resources & guides</a>
+                <DropdownMenuItem className="cursor-pointer text-base">
+                    <LucideIcon.Moon />
+                    <span>Dark mode</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                <DropdownMenuItem className="cursor-pointer text-base" onClick={() => {
                     fetch("/ghost/api/admin/session", {
                         method: "DELETE",
                     }).then(() => {
@@ -80,6 +92,7 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                         console.error(error);
                     });
                 }}>
+                    <LucideIcon.LogOut />
                     <span>Sign out</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
