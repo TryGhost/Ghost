@@ -20,7 +20,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
             <NavHeader />
 
-            <SidebarContent className="p-3 gap-4">
+            <SidebarContent className="px-3">
                 <NavMain />
                 <NavContent />
                 <NavGhostPro />

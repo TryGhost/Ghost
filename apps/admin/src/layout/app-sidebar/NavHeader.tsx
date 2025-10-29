@@ -15,7 +15,7 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
 
     return (
         <SidebarHeader {...props}>
-            <div className="flex flex-col items-stretch px-5 py-6 gap-6">
+            <div className="flex flex-col items-stretch px-3 py-4 gap-5">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
