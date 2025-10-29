@@ -1,6 +1,6 @@
+import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {DockerCompose} from './DockerCompose';
-import baseDebug from '@tryghost/debug';
 
 const debug = baseDebug('e2e:PortalManager');
 

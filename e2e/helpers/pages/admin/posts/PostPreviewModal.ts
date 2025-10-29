@@ -1,4 +1,4 @@
-import {Page, Locator, FrameLocator} from '@playwright/test';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 interface PostContentLocators {
     title: Locator;
@@ -16,7 +16,7 @@ export class PostPreviewModal {
     readonly webTabButton: Locator;
     readonly emailTabButton: Locator;
     readonly previewFrame: FrameLocator;
-    readonly tableBody;
+    readonly tableBody: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -30,7 +30,7 @@ export class PostPreviewModal {
         this.tableBody = page.frameLocator('iframe.gh-pe-iframe').locator('tbody').first();
     }
 
-    async content() {
+    async content(): Promise<string | null> {
         await this.tableBody.waitFor({state: 'visible'});
         return await this.tableBody.textContent();
     }

@@ -1,10 +1,10 @@
-import {Page, test as base, TestInfo, Browser, BrowserContext} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
-import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
-import {SettingsService} from '../services/settings/SettingsService';
-import {setupUser} from '../utils';
 import baseDebug from '@tryghost/debug';
+import {AnalyticsOverviewPage, LoginPage} from '../pages/admin';
+import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
+import {SettingsService} from '../services/settings/SettingsService';
 import {faker} from '@faker-js/faker';
+import {setupUser} from '../utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
 

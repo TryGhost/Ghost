@@ -1,5 +1,5 @@
-import {test, expect} from '../../../helpers/playwright';
 import {SettingsPage} from '../../../helpers/pages/admin';
+import {expect, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - settings search - labs auto-open', () => {
     test('display only Labs component and auto-open when searching for "lab"', async ({page}) => {

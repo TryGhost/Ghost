@@ -1,5 +1,5 @@
-import {Page, Locator} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
+import {Locator, Page} from '@playwright/test';
 import {PostPreviewModal} from './PostPreviewModal';
 
 export class PostEditorPage extends AdminPage {

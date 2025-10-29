@@ -1,5 +1,5 @@
-import {Locator, Page} from '@playwright/test';
 import {AdminPage} from './AdminPage';
+import {Locator, Page} from '@playwright/test';
 
 export class LoginVerifyPage extends AdminPage{
     readonly twoFactorTokenField: Locator;

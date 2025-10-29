@@ -1,6 +1,6 @@
-import {Locator, Page} from '@playwright/test';
 import {BasePage} from '../../BasePage';
-import {PublicationSection, LabsSection, IntegrationsSection} from './sections';
+import {IntegrationsSection, LabsSection, PublicationSection} from './sections';
+import {Locator, Page} from '@playwright/test';
 
 export class SettingsPage extends BasePage {
     readonly searchInput: Locator;
