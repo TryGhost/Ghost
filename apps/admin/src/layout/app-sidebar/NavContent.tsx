@@ -26,6 +26,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         <NavLink.Before>
                             <Button
                                 variant='ghost'
+                                aria-label="Toggle post views"
                                 size='icon'
                                 className={`absolute opacity-0 group-hover:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent`}
                                 onClick={() =>
@@ -41,6 +42,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavLink.Before>
                         <NavLink.After>
                             <a href="#/editor/post"
+                                aria-label="Create new post"
                                 className="flex items-center justify-center absolute hover:bg-gray-200 text-gray-800 transition-all rounded-full right-0 top-0 p-0 size-9"
                             >
                                 <LucideIcon.Plus size={24} className="!stroke-[1.2px]" />
