@@ -1,6 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import tsconfigPaths from 'vite-tsconfig-paths'
+import { resolve } from "path";
+
 import { emberAssetsPlugin } from "./vite-ember-assets";
+
+const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/core/frontend/src/cards');
 
 const adminApiProxy = {
     // Proxy requests to the Ghost Admin API. We need to rewrite the
@@ -18,7 +23,12 @@ const adminApiProxy = {
 // https://vite.dev/config/
 export default defineConfig({
     base: process.env.GHOST_CDN_URL ?? '/ghost',
-    plugins: [react(), emberAssetsPlugin()],
+    plugins: [react(), emberAssetsPlugin(), tsconfigPaths()],
+    resolve: {
+        alias: {
+            '@ghost-cards': GHOST_CARDS_PATH
+        }
+    },
     server: {
         proxy: {
             ...adminApiProxy,

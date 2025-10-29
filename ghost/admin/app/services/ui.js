@@ -41,7 +41,6 @@ function updateBodyClasses(transition) {
 export default class UiService extends Service {
     @service dropdown;
     @service feature;
-    @service mediaQueries;
     @service router;
     @service settings;
 
@@ -50,18 +49,6 @@ export default class UiService extends Service {
     @tracked isFullScreen = false;
     @tracked mainClass = '';
     @tracked showMobileMenu = false;
-
-    get isMobile() {
-        return this.mediaQueries.isMobile;
-    }
-
-    get isSideNavHidden() {
-        return this.isFullScreen || this.isMobile;
-    }
-
-    get hasSideNav() {
-        return !this.isSideNavHidden;
-    }
 
     get backgroundColor() {
         // hardcoded background colors because

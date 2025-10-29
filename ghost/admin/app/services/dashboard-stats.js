@@ -80,7 +80,6 @@ import mergeStatsByDate from 'ghost-admin/utils/merge-stats-by-date';
  */
 
 export default class DashboardStatsService extends Service {
-    @service dashboardMocks;
     @service store;
     @service ajax;
     @service ghostPaths;
@@ -356,11 +355,6 @@ export default class DashboardStatsService extends Service {
     @task
     *_loadSiteStatus() {
         this.siteStatus = null;
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.loadSiteStatus();
-            this.siteStatus = {...this.dashboardMocks.siteStatus};
-            return;
-        }
 
         if (this.membersUtils.paidMembersEnabled) {
             yield this.loadPaidTiers();
@@ -398,19 +392,6 @@ export default class DashboardStatsService extends Service {
     @task
     *_loadSubscriptionCountStats() {
         this.subscriptionCountStats = null;
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-
-            if (this.dashboardMocks.subscriptionCountStats === null) {
-                // Note: that this shouldn't happen
-                return null;
-            }
-            this.subscriptionCountStats = this.dashboardMocks.subscriptionCountStats;
-            this.paidMembersByCadence = {...this.dashboardMocks.paidMembersByCadence};
-            this.paidMembersByTier = [...this.dashboardMocks.paidMembersByTier];
-            return;
-        }
-
         let statsUrl = this.ghostPaths.url.api('stats/subscriptions');
         let result = yield this.ajax.request(statsUrl);
 
@@ -486,17 +467,6 @@ export default class DashboardStatsService extends Service {
     @task
     *_loadMemberCountStats() {
         this.memberCountStats = null;
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-
-            if (this.dashboardMocks.memberCountStats === null) {
-                // Note: that this shouldn't happen
-                return null;
-            }
-            this.memberCountStats = this.dashboardMocks.memberCountStats;
-            return;
-        }
-
         const stats = yield this.membersStats.fetchMemberCount();
         this.memberCountStats = stats.stats.map((d) => {
             return {
@@ -522,11 +492,6 @@ export default class DashboardStatsService extends Service {
     *_loadMemberAttributionStats() {
         this.memberAttributionStats = [];
 
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            this.memberAttributionStats = this.dashboardMocks.memberAttributionStats;
-            return;
-        }
         let statsUrl = this.ghostPaths.url.api('stats/referrers');
         let stats = yield this.ajax.request(statsUrl);
 
@@ -552,14 +517,6 @@ export default class DashboardStatsService extends Service {
     @task
      *_loadMrrStats() {
          this.mrrStats = null;
-         if (this.dashboardMocks.enabled) {
-             yield this.dashboardMocks.waitRandom();
-             if (this.dashboardMocks.mrrStats === null) {
-                 return null;
-             }
-             this.mrrStats = this.dashboardMocks.mrrStats;
-             return;
-         }
 
          let statsUrl = this.ghostPaths.url.api('stats/mrr');
          let stats = yield this.ajax.request(statsUrl);
@@ -595,13 +552,6 @@ export default class DashboardStatsService extends Service {
     *_loadLastSeen() {
         this.membersLastSeen30d = null;
         this.membersLastSeen7d = null;
-
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            this.membersLastSeen30d = this.dashboardMocks.membersLastSeen30d;
-            this.membersLastSeen7d = this.dashboardMocks.membersLastSeen7d;
-            return;
-        }
 
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
         const start7d = new Date(Date.now() - 7 * 86400 * 1000);
@@ -658,12 +608,6 @@ export default class DashboardStatsService extends Service {
     *_loadNewsletterSubscribers() {
         this.newsletterSubscribers = null;
 
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            this.newsletterSubscribers = this.dashboardMocks.newsletterSubscribers;
-            return;
-        }
-
         const [paid, free] = yield Promise.all([
             this.membersCountCache.count('newsletters.status:active+status:-free+email_disabled:0'),
             this.membersCountCache.count('newsletters.status:active+status:free+email_disabled:0')
@@ -688,12 +632,6 @@ export default class DashboardStatsService extends Service {
     *_loadEmailsSent() {
         this.emailsSent30d = null;
 
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            this.emailsSent30d = this.dashboardMocks.emailsSent30d;
-            return;
-        }
-
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
         const result = yield this.store.query('email', {limit: 100, filter: `submitted_at:>'${start30d.toISOString()}'`});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
@@ -710,12 +648,6 @@ export default class DashboardStatsService extends Service {
     @task
     *_loadEmailOpenRateStats() {
         this.emailOpenRateStats = null;
-
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            this.emailOpenRateStats = this.dashboardMocks.emailOpenRateStats;
-            return;
-        }
 
         const limit = 8;
         let query = {
