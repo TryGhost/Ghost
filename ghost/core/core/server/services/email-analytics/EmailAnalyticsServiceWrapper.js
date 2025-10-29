@@ -15,7 +15,6 @@ class EmailAnalyticsServiceWrapper {
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
-        const config = require('../../../shared/config');
         const settings = require('../../../shared/settings-cache');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
@@ -73,6 +72,11 @@ class EmailAnalyticsServiceWrapper {
     _logJobCompletion(jobType, fetchResult, totalDuration) {
         const {eventCount, apiPollingTime, processingTime, aggregationTime, result} = fetchResult;
 
+        // Only log if we actually processed events
+        if (eventCount === 0) {
+            return;
+        }
+
         // Calculate throughput
         const throughput = totalDuration > 0 ? (eventCount / (totalDuration / 1000)).toFixed(2) : 0;
 
@@ -91,9 +95,12 @@ class EmailAnalyticsServiceWrapper {
 
         logging.info(logMessage);
 
-        // Emit throughput metric if enabled
-        if (config.get('emailAnalytics:metrics:enabled')) {
-            metrics.metric('email-analytics-throughput', {
+        // Emit open throughput metric if enabled and above threshold
+        const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
+        const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
+
+        if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
+            metrics.metric('email-analytics-open-throughput', {
                 value: eventCount / (totalDuration / 1000),
                 jobType,
                 events: eventCount,
@@ -188,6 +195,11 @@ class EmailAnalyticsServiceWrapper {
             if (c4 > 0) {
                 this._restartFetch('scheduled backfill');
                 return;
+            }
+
+            // Log summary if no events were found across all jobs
+            if (c1 + c2 + c3 + c4 === 0) {
+                logging.info('[EmailAnalytics] Job complete - No events');
             }
 
             this.fetching = false;

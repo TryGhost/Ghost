@@ -219,7 +219,10 @@
     "emailAnalytics": {
         "enabled": true,
         "metrics": {
-            "enabled": false
+            "openThroughput": {
+                "enabled": false,
+                "threshold": 500
+            }
         },
         "openedJobLagWarningMinutes": 30
     },

@@ -313,8 +313,6 @@ module.exports = class EmailAnalyticsService {
      */
     async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
-        logging.info('[EmailAnalytics] Fetching from ' + begin.toISOString() + ' until ' + end.toISOString() + ' (maxEvents: ' + maxEvents + ')');
-
         // Store that we started fetching
         fetchData.running = true;
         fetchData.lastStarted = new Date();
@@ -378,8 +376,6 @@ module.exports = class EmailAnalyticsService {
                 await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
                 apiPollingTime += (Date.now() - apiStart);
             }
-
-            logging.info('[EmailAnalytics] Fetching finished');
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
@@ -409,13 +405,11 @@ module.exports = class EmailAnalyticsService {
         // fetching the same events because 'begin' won't change
         // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
         if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
-            logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             // set the data on the db so we can store it for fetching after reboot
             await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         } else {
-            logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
             await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
@@ -553,17 +547,9 @@ module.exports = class EmailAnalyticsService {
      * @param {boolean} includeOpenedEvents
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
-        let startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
-
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
-        let endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails took ${endTime}ms`);
-
-        startTime = Date.now();
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
 
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
@@ -571,8 +557,6 @@ module.exports = class EmailAnalyticsService {
             await this.aggregateMemberStats(memberId);
             memberMetric?.inc();
         }
-        endTime = Date.now() - startTime;
-        logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);
     }
 
     /**
