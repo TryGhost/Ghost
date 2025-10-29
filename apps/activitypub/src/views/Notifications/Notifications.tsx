@@ -17,9 +17,9 @@ import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface NotificationGroup {
     id: string;
