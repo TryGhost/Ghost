@@ -51,7 +51,8 @@ const PRIVATE_FEATURES = [
     'utmTracking',
     'emailUniqueid',
     'welcomeEmails',
-    'adminForward'
+    'adminForward',
+    'domainWarmup'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
