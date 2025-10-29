@@ -5,7 +5,6 @@ export class LabsSection extends BasePage {
     readonly section: Locator;
     readonly heading: Locator;
 
-    readonly description: Locator;
     readonly openButton: Locator;
     readonly closeButton: Locator;
     readonly content: Locator;
@@ -18,7 +17,6 @@ export class LabsSection extends BasePage {
 
         this.section = page.getByTestId('labs');
         this.heading = page.getByRole('heading', {level: 5, name: 'Labs'});
-        this.description = page.getByText('This is a testing ground for new or experimental features');
         this.content = this.section.locator('[role="tabpanel"]');
 
         this.openButton = page.getByTestId('labs').getByRole('button', {name: 'Open'});
