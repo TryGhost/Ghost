@@ -11,7 +11,7 @@ const TOPICS: {value: Topic; label: string}[] = [
     {value: 'culture', label: 'Culture'},
     {value: 'politics', label: 'Politics'},
     {value: 'finance', label: 'Finance'},
-    {value: 'design', label: 'Design'},
+    {value: 'design', label: 'Design'}
 ];
 
 interface TopicFilterProps {
@@ -21,7 +21,7 @@ interface TopicFilterProps {
 
 const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange}) => {
     return (
-        <div className="flex gap-3 overflow-x-auto mt-4">
+        <div className="mt-4 flex gap-3 overflow-x-auto">
             {TOPICS.map(({value, label}) => (
                 <Button
                     key={value}
