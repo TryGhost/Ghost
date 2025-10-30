@@ -33,6 +33,7 @@ class EmailService {
     #membersRepository;
     #verificationTrigger;
     #emailAnalyticsJobs;
+    #domainWarmingService;
 
     /**
      *
@@ -48,6 +49,7 @@ class EmailService {
      * @param {object} dependencies.membersRepository
      * @param {VerificationTrigger} dependencies.verificationTrigger
      * @param {object} dependencies.emailAnalyticsJobs
+     * @param {object} dependencies.domainWarmingService
      */
     constructor({
         batchSendingService,
@@ -59,7 +61,8 @@ class EmailService {
         limitService,
         membersRepository,
         verificationTrigger,
-        emailAnalyticsJobs
+        emailAnalyticsJobs,
+        domainWarmingService
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -71,6 +74,7 @@ class EmailService {
         this.#sendingService = sendingService;
         this.#verificationTrigger = verificationTrigger;
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
+        this.#domainWarmingService = domainWarmingService;
     }
 
     /**
@@ -121,6 +125,9 @@ class EmailService {
         const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
         await this.checkLimits(emailCount);
 
+        // Get the domain warming limit at email creation time
+        const domainWarmupLimit = await this.#domainWarmingService.getWarmupLimit();
+
         const email = await this.#models.Email.add({
             post_id: post.id,
             newsletter_id: newsletter.id,
@@ -134,6 +141,7 @@ class EmailService {
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
             email_count: emailCount,
+            csd_email_count: Math.min(emailCount, domainWarmupLimit),
             source: post.get('lexical') || post.get('mobiledoc'),
             source_type: post.get('lexical') ? 'lexical' : 'mobiledoc'
         });

@@ -239,8 +239,7 @@ class BatchSendingService {
     async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
-        // TODO: Add domain-based segmentation here. Get domain segments from DomainWarmingService, then intersect(?) with other segments.
-
+        let domainWarmupLimit = email.get('csd_email_count') || 0;
         const segments = await this.#emailRenderer.getSegments(post);
         const batches = [];
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
@@ -269,15 +268,50 @@ class BatchSendingService {
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
                 if (members.length > 0) {
-                    totalCount += Math.min(members.length, BATCH_SIZE);
-                    const batch = await this.retryDb(
-                        async () => {
-                            // TODO: Use domain segmentation to work out whether this should be a fallback domain batch or not
-                            return await this.createBatch(email, segment, members.slice(0, BATCH_SIZE), {useFallbackDomain: false});
-                        },
-                        {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment}`}
-                    );
-                    batches.push(batch);
+                    // Determine how many members to include in this batch
+                    const remainingCustomDomainCapacity = domainWarmupLimit - totalCount;
+                    const membersToProcess = Math.min(members.length, BATCH_SIZE);
+
+                    if (remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < membersToProcess) {
+                        // We need to split this batch: some via custom domain, rest via fallback
+
+                        // First batch: remaining custom domain capacity
+                        const customDomainMembers = members.slice(0, remainingCustomDomainCapacity);
+                        const customBatch = await this.retryDb(
+                            async () => {
+                                return await this.createBatch(email, segment, customDomainMembers, {useFallbackDomain: false});
+                            },
+                            {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment} (custom domain)`}
+                        );
+                        batches.push(customBatch);
+                        totalCount += customDomainMembers.length;
+
+                        // Second batch: remaining members in this batch via fallback
+                        const fallbackMembers = members.slice(remainingCustomDomainCapacity, membersToProcess);
+                        if (fallbackMembers.length > 0) {
+                            const fallbackBatch = await this.retryDb(
+                                async () => {
+                                    return await this.createBatch(email, segment, fallbackMembers, {useFallbackDomain: true});
+                                },
+                                {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment} (fallback domain)`}
+                            );
+                            batches.push(fallbackBatch);
+                            totalCount += fallbackMembers.length;
+                        }
+                    } else {
+                        // Normal batch: all members go to same domain
+                        const batchMembers = members.slice(0, membersToProcess);
+                        const useFallbackDomain = totalCount >= domainWarmupLimit;
+
+                        const batch = await this.retryDb(
+                            async () => {
+                                return await this.createBatch(email, segment, batchMembers, {useFallbackDomain});
+                            },
+                            {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment}`}
+                        );
+                        batches.push(batch);
+                        totalCount += batchMembers.length;
+                    }
                 }
 
                 if (members.length > BATCH_SIZE) {
@@ -304,7 +338,8 @@ class BatchSendingService {
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
             // between creating the email and sending it
             await email.save({
-                email_count: totalCount
+                email_count: totalCount,
+                csd_email_count: Math.min(totalCount, domainWarmupLimit)
             }, {patch: true, require: false, autoRefresh: false});
         }
         return batches;

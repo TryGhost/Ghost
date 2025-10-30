@@ -90,6 +90,11 @@ describe('Email Service', function () {
             sendingService,
             emailAnalyticsJobs: {
                 scheduleRecurringJobs
+            },
+            domainWarmingService: {
+                getWarmupLimit: () => {
+                    return Promise.resolve(Infinity);
+                }
             }
         });
     });
