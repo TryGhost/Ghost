@@ -3,9 +3,9 @@ import InboxList from './components/InboxList';
 import React, {useState} from 'react';
 import {Topic} from '@src/components/TopicFilter';
 import {isApiError} from '@src/api/activitypub';
+import {useDiscoveryFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useFeedMode} from '@src/hooks/use-feed-mode';
-import {useDiscoveryFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
 
 const Inbox: React.FC = () => {
     const {isEnabled} = useFeatureFlags();
