@@ -187,39 +187,21 @@ module.exports = {
     async aggregateMemberStatsBatch(memberIds) {
         const timings = {total: Date.now(), memberCount: memberIds.length};
 
-        // Step 1: Get list of emails that track opens (avoid repeated JOIN)
-        timings.emailsQuery = Date.now();
-        const trackingEmails = await db.knex('emails')
-            .select('id')
-            .where('track_opens', true);
-        const trackingEmailIds = trackingEmails.map(e => e.id);
-        timings.emailsQuery = Date.now() - timings.emailsQuery;
-
-        // Step 2: Fetch all stats for all members in a single query
         timings.select = Date.now();
-        let trackedCountQuery;
-        if (trackingEmailIds.length > 0) {
-            trackedCountQuery = db.knex.raw(`SUM(CASE WHEN email_recipients.email_id IN (${trackingEmailIds.map(() => '?').join(',')}) THEN 1 ELSE 0 END) as tracked_count`, trackingEmailIds);
-        } else {
-            // No emails track opens, so tracked_count is 0 for everyone
-            trackedCountQuery = db.knex.raw('0 as tracked_count');
-        }
-
         const stats = await db.knex('email_recipients')
+            .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
             .select(
-                'member_id',
+                'email_recipients.member_id',
                 db.knex.raw('COUNT(email_recipients.id) as email_count'),
                 db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
-                trackedCountQuery
+                db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
             )
-            .whereIn('member_id', memberIds)
-            .groupBy('member_id');
+            .whereIn('email_recipients.member_id', memberIds)
+            .groupBy('email_recipients.member_id');
         timings.select = Date.now() - timings.select;
 
-        // Create lookup map
+        // Perform batch update
         const statsMap = new Map(stats.map(s => [s.member_id, s]));
-
-        // Step 3: Build CASE statements for batch UPDATE
         timings.update = Date.now();
 
         const emailCountCases = [];
@@ -237,7 +219,7 @@ module.exports = {
                 const openRate = Math.round((memberStats.email_opened_count / trackedCount) * 100);
                 emailOpenRateCases.push(`WHEN '${memberId}' THEN ${openRate}`);
             } else {
-                // Keep existing value
+                // Keep existing open rate
                 emailOpenRateCases.push(`WHEN '${memberId}' THEN email_open_rate`);
             }
         }
@@ -253,7 +235,7 @@ module.exports = {
 
         timings.update = Date.now() - timings.update;
         timings.total = Date.now() - timings.total;
-        timings.overhead = timings.total - (timings.emailsQuery + timings.select + timings.update);
+        timings.overhead = timings.total - (timings.select + timings.update);
 
         return timings;
     }
