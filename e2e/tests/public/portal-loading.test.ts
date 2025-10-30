@@ -1,7 +1,7 @@
-import {test, expect} from '../../helpers/playwright';
 import {HomePage} from '../../helpers/pages/public';
-import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
 import {SignInPage} from '../../helpers/pages/portal/SignInPage';
+import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
+import {expect, test} from '../../helpers/playwright';
 
 test.describe('Portal Loading', () => {
     test.describe('opened Portal', function () {
