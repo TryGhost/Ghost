@@ -1,5 +1,5 @@
-import {Page, Locator, Response} from '@playwright/test';
 import {BasePage, pageGotoOptions} from '../BasePage';
+import {Locator, Page, Response} from '@playwright/test';
 
 declare global {
     interface Window {

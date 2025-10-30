@@ -1,6 +1,6 @@
-import {Page, Locator} from '@playwright/test';
-import {BasePage} from '../../BasePage';
 import {AdminPage} from '../AdminPage';
+import {BasePage} from '../../BasePage';
+import {Locator, Page} from '@playwright/test';
 
 class TopContentCard extends BasePage {
     readonly contentCard: Locator;

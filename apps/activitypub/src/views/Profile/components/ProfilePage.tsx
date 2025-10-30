@@ -11,7 +11,8 @@ import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import type {ProfileTab} from '../Profile';
 
 const noop = () => {};
@@ -40,10 +41,10 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 }) => {
     const params = useParams<{handle?: string; tab?: string}>();
     const location = useLocation();
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {canGoBack} = useNavigationStack();
 
-    const basePath = params.handle ? `/profile/${params.handle}` : '/profile';
+    const profilePath = params.handle ? `/profile/${params.handle}` : '/profile';
     const likesEnabled = !params.handle;
 
     const tabSlug = params.handle
@@ -137,16 +138,16 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         }
 
         if (!allowedTabs.includes(tabSlug as ProfileTab)) {
-            navigate(basePath, {replace: true});
+            navigate(profilePath, {replace: true});
         }
-    }, [allowedTabs, basePath, navigate, tabSlug]);
+    }, [allowedTabs, profilePath, navigate, tabSlug]);
 
     const createTabPath = (tab: ProfileTab) => {
         if (tab === 'posts') {
-            return basePath;
+            return profilePath;
         }
 
-        return `${basePath}/${tab}`;
+        return `${profilePath}/${tab}`;
     };
 
     const handleTabChange = (tab: ProfileTab) => {

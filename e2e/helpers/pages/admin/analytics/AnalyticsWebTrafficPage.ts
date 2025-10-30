@@ -1,5 +1,5 @@
-import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
+import {Locator, Page} from '@playwright/test';
 
 export class AnalyticsWebTrafficPage extends AdminPage {
     readonly totalViewsTab: Locator;
