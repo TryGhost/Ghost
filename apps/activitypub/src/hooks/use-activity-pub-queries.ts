@@ -1724,8 +1724,8 @@ export function useInboxForUser(options: {enabled: boolean}) {
     return {inboxQuery, updateInboxActivity};
 }
 
-export function useGlobalFeedForUser(options: {enabled: boolean}) {
-    const queryKey = QUERY_KEYS.globalFeed;
+export function useGlobalFeedForUser(options: {enabled: boolean; topic?: string}) {
+    const queryKey = [...QUERY_KEYS.globalFeed, options.topic || 'all'];
     const queryClient = useQueryClient();
 
     const globalFeedQuery = useInfiniteQuery({
@@ -1735,7 +1735,7 @@ export function useGlobalFeedForUser(options: {enabled: boolean}) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getGlobalFeed(pageParam).then((response) => {
+            return api.getGlobalFeed(pageParam, options.topic).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next

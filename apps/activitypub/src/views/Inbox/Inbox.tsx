@@ -1,6 +1,7 @@
 import Error from '@components/layout/Error';
 import InboxList from './components/InboxList';
-import React from 'react';
+import React, {useState} from 'react';
+import {Topic} from '@src/components/TopicFilter';
 import {isApiError} from '@src/api/activitypub';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useFeedMode} from '@src/hooks/use-feed-mode';
@@ -9,9 +10,10 @@ import {useGlobalFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-que
 const Inbox: React.FC = () => {
     const {isEnabled} = useFeatureFlags();
     const {feedMode} = useFeedMode(isEnabled('global-feed'));
+    const [topic, setTopic] = useState<Topic>('all');
 
     const {inboxQuery: followingQuery} = useInboxForUser({enabled: feedMode === 'following'});
-    const {globalFeedQuery: discoverQuery} = useGlobalFeedForUser({enabled: feedMode === 'discover'});
+    const {globalFeedQuery: discoverQuery} = useGlobalFeedForUser({enabled: feedMode === 'discover', topic});
 
     const feedQueryData = feedMode === 'discover' ? discoverQuery : followingQuery;
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
@@ -24,10 +26,13 @@ const Inbox: React.FC = () => {
 
     return <InboxList
         activities={activities}
+        currentTopic={topic}
+        feedMode={feedMode}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage!}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
+        onTopicChange={setTopic}
     />;
 };
 
