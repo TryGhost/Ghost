@@ -6,7 +6,8 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTi
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
-import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 export type InboxListProps = {
     isLoading: boolean,
@@ -23,7 +24,7 @@ const InboxList:React.FC<InboxListProps> = ({
     hasNextPage,
     isFetchingNextPage
 }) => {
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
     const params = useParams();
