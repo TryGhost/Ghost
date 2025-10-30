@@ -5,7 +5,7 @@ import {Topic} from '@src/components/TopicFilter';
 import {isApiError} from '@src/api/activitypub';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useFeedMode} from '@src/hooks/use-feed-mode';
-import {useGlobalFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
+import {useDiscoveryFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-queries';
 
 const Inbox: React.FC = () => {
     const {isEnabled} = useFeatureFlags();
@@ -13,7 +13,7 @@ const Inbox: React.FC = () => {
     const [topic, setTopic] = useState<Topic>('all');
 
     const {inboxQuery: followingQuery} = useInboxForUser({enabled: feedMode === 'following'});
-    const {globalFeedQuery: discoverQuery} = useGlobalFeedForUser({enabled: feedMode === 'discover', topic});
+    const {discoveryFeedQuery: discoverQuery} = useDiscoveryFeedForUser({enabled: feedMode === 'discover', topic});
 
     const feedQueryData = feedMode === 'discover' ? discoverQuery : followingQuery;
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
