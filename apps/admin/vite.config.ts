@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolve } from "path";
@@ -28,6 +28,11 @@ export default defineConfig({
         alias: {
             '@ghost-cards': GHOST_CARDS_PATH
         }
+    },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        include: ['src/**/*.test.ts', 'src/**/*.test.tsx']
     },
     server: {
         proxy: {
