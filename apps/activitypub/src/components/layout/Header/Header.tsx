@@ -1,10 +1,13 @@
-import BackButton from '@src/components/global/BackButton';
-import FeedModeDropdown from './FeedModeDropdown';
 import React from 'react';
-import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
-import {useBaseRoute, useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
+import {useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
+
+import BackButton from '@src/components/global/BackButton';
+import useActiveRoute from '@src/hooks/use-active-route';
+import {useCurrentPage} from '@src/hooks/use-current-page';
 import {useFeatureFlags} from '@src/lib/feature-flags';
+
+import FeedModeDropdown from './FeedModeDropdown';
 
 interface HeaderTitleProps {
     title: string;
@@ -53,18 +56,18 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({onToggleMobileSideba
 
 const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
     const {canGoBack} = useNavigationStack();
-    const baseRoute = useBaseRoute();
+    const currentPage = useCurrentPage();
     const routeHasParams = useRouteHasParams();
     const activeRoute = useActiveRoute();
     const {isEnabled} = useFeatureFlags();
 
     // Logic for special pages
     let onlyBackButton = false;
-    if (baseRoute === 'profile') {
+    if (currentPage === 'profile') {
         onlyBackButton = true;
     }
 
-    if (baseRoute === 'notes' && canGoBack) {
+    if (currentPage === 'notes' && canGoBack) {
         onlyBackButton = true;
     }
 
@@ -72,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
     const backActive = (canGoBack && routeHasParams) || activeRoute?.showBackButton === true;
 
     // Show feed mode dropdown on reader route with global-feed flag enabled
-    const showFeedModeDropdown = baseRoute === 'reader' && isEnabled('global-feed');
+    const showFeedModeDropdown = currentPage === 'reader' && isEnabled('global-feed');
 
     return (
         <>
