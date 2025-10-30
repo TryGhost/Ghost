@@ -31,16 +31,24 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                     setPostsExpanded(!postsExpanded)
                                 }
                             >
-                                <LucideIcon.ChevronRight size={16} className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`} />
+                                <LucideIcon.ChevronRight
+                                    size={16}
+                                    className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
+                                />
                             </Button>
                         </NavLink.Before>
-                        <NavLink.Icon><LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" /></NavLink.Icon>
+                        <NavLink.Icon>
+                            <LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
+                        </NavLink.Icon>
                         <NavLink.After>
                             <a href="#/editor/post"
                                 aria-label="Create new post"
                                 className="flex items-center justify-center absolute hover:bg-gray-200 transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-black"
                             >
-                                <LucideIcon.Plus size={20} className="!stroke-[1.5px] mt-px" />
+                                <LucideIcon.Plus
+                                    size={20}
+                                    className="!stroke-[1.5px] mt-px"
+                                />
                             </a>
                         </NavLink.After>
                     </NavLink>
