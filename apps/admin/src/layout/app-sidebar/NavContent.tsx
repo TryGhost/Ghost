@@ -31,11 +31,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                     setPostsExpanded(!postsExpanded)
                                 }
                             >
-                                {postsExpanded ?
-                                    <LucideIcon.ChevronDown size={16} />
-                                :
-                                    <LucideIcon.ChevronRight size={16} />
-                                }
+                                <LucideIcon.ChevronRight size={16} className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`} />
                             </Button>
                         </NavLink.Before>
                         <NavLink.Icon><LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" /></NavLink.Icon>
