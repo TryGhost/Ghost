@@ -9,7 +9,6 @@ const TOPICS: {value: Topic; label: string}[] = [
     {value: 'technology', label: 'Technology'},
     {value: 'business', label: 'Business'},
     {value: 'culture', label: 'Culture'},
-    {value: 'politics', label: 'Politics'},
     {value: 'finance', label: 'Finance'},
     {value: 'design', label: 'Design'}
 ];
