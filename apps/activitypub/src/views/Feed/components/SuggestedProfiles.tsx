@@ -4,12 +4,12 @@ import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard'
 import {Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Separator, Skeleton} from '@tryghost/shade';
 import {useEffect, useRef, useState} from 'react';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
 const SuggestedProfiles: React.FC = () => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
 

@@ -9,7 +9,7 @@ import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 type ActorListProps = {
     noResultsMessage: string,
@@ -56,7 +56,7 @@ const ActorList: React.FC<ActorListProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <div className='pt-3' data-testid="actor-list">
