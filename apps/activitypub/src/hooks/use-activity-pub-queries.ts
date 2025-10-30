@@ -1724,8 +1724,8 @@ export function useInboxForUser(options: {enabled: boolean}) {
     return {inboxQuery, updateInboxActivity};
 }
 
-export function useDiscoveryFeedForUser(options: {enabled: boolean; topic?: string}) {
-    const queryKey = [...QUERY_KEYS.discoveryFeed, options.topic || 'all'];
+export function useDiscoveryFeedForUser(options: {enabled: boolean; topic: string}) {
+    const queryKey = [...QUERY_KEYS.discoveryFeed, options.topic];
     const queryClient = useQueryClient();
 
     const discoveryFeedQuery = useInfiniteQuery({

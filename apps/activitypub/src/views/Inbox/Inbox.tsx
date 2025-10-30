@@ -10,7 +10,7 @@ import {useDiscoveryFeedForUser, useInboxForUser} from '@hooks/use-activity-pub-
 const Inbox: React.FC = () => {
     const {isEnabled} = useFeatureFlags();
     const {feedMode} = useFeedMode(isEnabled('global-feed'));
-    const [topic, setTopic] = useState<Topic>('all');
+    const [topic, setTopic] = useState<Topic>('top');
 
     const {inboxQuery: followingQuery} = useInboxForUser({enabled: feedMode === 'following'});
     const {discoveryFeedQuery: discoverQuery} = useDiscoveryFeedForUser({enabled: feedMode === 'discover', topic});

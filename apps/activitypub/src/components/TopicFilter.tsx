@@ -1,10 +1,10 @@
 import React from 'react';
 import {Button} from '@tryghost/shade';
 
-export type Topic = 'all' | 'news' | 'technology' | 'business' | 'culture' | 'politics' | 'finance' | 'design';
+export type Topic = 'top' | 'news' | 'technology' | 'business' | 'culture' | 'politics' | 'finance' | 'design';
 
 const TOPICS: {value: Topic; label: string}[] = [
-    {value: 'all', label: 'Top'},
+    {value: 'top', label: 'Top'},
     {value: 'news', label: 'News'},
     {value: 'technology', label: 'Technology'},
     {value: 'business', label: 'Business'},
