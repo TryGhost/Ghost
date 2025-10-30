@@ -4,14 +4,16 @@ import {Locator, Page} from '@playwright/test';
 import {PostPreviewModal} from './PostPreviewModal';
 
 class SettingsMenu extends BasePage {
-    private readonly excerptTextField: Locator;
-    private readonly publishDateTextBox: Locator;
+    readonly postUrlInput: Locator;
+    readonly publishDateInput: Locator;
+    readonly publishTimeInput: Locator;
 
     constructor(page: Page) {
         super(page);
 
-        this.excerptTextField = page.getByRole('textbox', {name: 'Excerpt'});
-        this.publishDateTextBox = page.getByRole('textbox', {name: 'YYYY-MM-DD'});
+        this.postUrlInput = page.getByRole('textbox', {name: 'Post URL'});
+        this.publishDateInput = page.locator('[data-test-date-time-picker-date-input]');
+        this.publishTimeInput = page.locator('[data-test-date-time-picker-time-input]');
     }
 }
 
@@ -36,7 +38,7 @@ export class PostEditorPage extends AdminPage {
     }
 
     async gotoPost(postId: string): Promise<void> {
-        await this.page.goto(`${this.pageUrl}/${postId}`);
+        await this.page.goto(`/ghost/#/editor/post/${postId}`);
         await this.titleInput.waitFor({state: 'visible'});
     }
 }
