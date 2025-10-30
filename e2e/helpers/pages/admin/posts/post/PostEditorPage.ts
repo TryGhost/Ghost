@@ -12,6 +12,8 @@ class SettingsMenu extends BasePage {
         super(page);
 
         this.postUrlInput = page.getByRole('textbox', {name: 'Post URL'});
+
+        // TODO: change to data-testid='date-time-picker-date-input' ... when we switch from Ember
         this.publishDateInput = page.locator('[data-test-date-time-picker-date-input]');
         this.publishTimeInput = page.locator('[data-test-date-time-picker-time-input]');
     }
