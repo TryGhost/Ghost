@@ -8,6 +8,7 @@ import {
 } from "@tryghost/shade"
 import NavLink from "./NavLink"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import NetworkIcon from "./icons/NetworkIcon";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const site = useBrowseSite();
@@ -27,7 +28,9 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         label="Network"
                         href="#/network"
                     >
-                        <NavLink.Icon><LucideIcon.Globe /></NavLink.Icon>
+                        <NavLink.Icon>
+                            <NetworkIcon />
+                        </NavLink.Icon>
                     </NavLink>
                     <NavLink
                         label="View site"
