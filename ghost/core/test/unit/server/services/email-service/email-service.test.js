@@ -95,6 +95,11 @@ describe('Email Service', function () {
                 getWarmupLimit: () => {
                     return Promise.resolve(Infinity);
                 }
+            },
+            labs: {
+                isSet: () => {
+                    return false;
+                }
             }
         });
     });

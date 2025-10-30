@@ -107,7 +107,6 @@ class EmailServiceWrapper {
         });
 
         const domainWarmingService = new DomainWarmingService({
-            labs,
             models: {Email}
         });
 
@@ -151,7 +150,8 @@ class EmailServiceWrapper {
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
             emailAnalyticsJobs,
-            domainWarmingService
+            domainWarmingService,
+            labs
         });
 
         this.controller = new EmailController(this.service, {

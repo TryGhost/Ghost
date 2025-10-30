@@ -1,15 +1,12 @@
 class DomainWarmingService {
     #emailModel;
-    #labs;
 
     /**
      * @param {object} dependencies
-     * @param {object} dependencies.labs
      * @param {{Email: object}} dependencies.models
      */
     constructor(dependencies) {
         this.#emailModel = dependencies.models.Email;
-        this.#labs = dependencies.labs;
     }
 
     async getLastCount() {

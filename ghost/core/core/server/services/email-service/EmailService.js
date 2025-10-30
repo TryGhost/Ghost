@@ -34,6 +34,7 @@ class EmailService {
     #verificationTrigger;
     #emailAnalyticsJobs;
     #domainWarmingService;
+    #labs;
 
     /**
      *
@@ -50,6 +51,7 @@ class EmailService {
      * @param {VerificationTrigger} dependencies.verificationTrigger
      * @param {object} dependencies.emailAnalyticsJobs
      * @param {object} dependencies.domainWarmingService
+     * @param {object} dependencies.labs
      */
     constructor({
         batchSendingService,
@@ -62,7 +64,8 @@ class EmailService {
         membersRepository,
         verificationTrigger,
         emailAnalyticsJobs,
-        domainWarmingService
+        domainWarmingService,
+        labs
     }) {
         this.#batchSendingService = batchSendingService;
         this.#models = models;
@@ -75,6 +78,7 @@ class EmailService {
         this.#verificationTrigger = verificationTrigger;
         this.#emailAnalyticsJobs = emailAnalyticsJobs;
         this.#domainWarmingService = domainWarmingService;
+        this.#labs = labs;
     }
 
     /**
@@ -141,7 +145,7 @@ class EmailService {
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
             email_count: emailCount,
-            csd_email_count: Math.min(emailCount, domainWarmupLimit),
+            csd_email_count: this.#labs.isSet('domainWarmup') ? Math.min(emailCount, domainWarmupLimit) : undefined,
             source: post.get('lexical') || post.get('mobiledoc'),
             source_type: post.get('lexical') ? 'lexical' : 'mobiledoc'
         });
