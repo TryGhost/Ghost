@@ -14,6 +14,6 @@ test.describe('Ghost Admin - Post - Settings', () => {
         const editPage = new PostEditorPage(page);
         await editPage.settingsToggleButton.click();
 
-        await expect(editPage.settingsMenu.publishDateInput).toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+        await expect(editPage.settingsMenu.publishDateInput).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
     });
 });
