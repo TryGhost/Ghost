@@ -149,4 +149,9 @@ describe('{{concat}} helper', function () {
         const expected = 'hello|world';
         shouldCompileToExpected(templateString, {}, expected);
     });
+    it('does not handle objects, returning [object Object]', function () {
+        const templateString = '{{concat post post.slug separator=" | "}}';
+        const expected = '[object Object] | my-post';
+        shouldCompileToExpected(templateString, {post: {title: 'My Post', slug: 'my-post'}}, expected);
+    });
 });
