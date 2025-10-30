@@ -1,6 +1,6 @@
+import {type NavigateOptions, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppBasePath} from './use-app-base-path';
 import {useCallback} from 'react';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 /**
  * Hook that wraps useNavigate and automatically prepends the app base path
@@ -18,7 +18,7 @@ export function useNavigateWithBasePath() {
 
     return useCallback((
         to: string | number,
-        options?: Parameters<typeof navigate>[1]
+        options?: NavigateOptions
     ) => {
         if (typeof to === 'number') {
             // Handle navigate(-1) etc
