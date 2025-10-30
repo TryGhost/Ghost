@@ -4,6 +4,9 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* TailwindCSS v4 polyfill - temporary utilities for v4 classes not available in v3 */
+@import "./src/styles/tailwind-v4-polyfill.css";
+
 @import url(https://fonts.bunny.net/css?family=cardo:400,700);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
 @import url(https://fonts.bunny.net/css?family=merriweather:300,700);
