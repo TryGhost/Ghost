@@ -272,45 +272,46 @@ class BatchSendingService {
                     const remainingCustomDomainCapacity = domainWarmupLimit - totalCount;
                     const membersToProcess = Math.min(members.length, BATCH_SIZE);
 
+                    // Calculate batch splits
+                    const batchesToCreate = [];
+
                     if (remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < membersToProcess) {
-                        // We need to split this batch: some via custom domain, rest via fallback
-
-                        // First batch: remaining custom domain capacity
-                        const customDomainMembers = members.slice(0, remainingCustomDomainCapacity);
-                        const customBatch = await this.retryDb(
-                            async () => {
-                                return await this.createBatch(email, segment, customDomainMembers, {useFallbackDomain: false});
-                            },
-                            {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment} (custom domain)`}
-                        );
-                        batches.push(customBatch);
-                        totalCount += customDomainMembers.length;
-
-                        // Second batch: remaining members in this batch via fallback
-                        const fallbackMembers = members.slice(remainingCustomDomainCapacity, membersToProcess);
-                        if (fallbackMembers.length > 0) {
-                            const fallbackBatch = await this.retryDb(
-                                async () => {
-                                    return await this.createBatch(email, segment, fallbackMembers, {useFallbackDomain: true});
-                                },
-                                {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment} (fallback domain)`}
-                            );
-                            batches.push(fallbackBatch);
-                            totalCount += fallbackMembers.length;
-                        }
+                        // Split batch: some via custom domain, rest via fallback
+                        batchesToCreate.push({
+                            members: members.slice(0, remainingCustomDomainCapacity),
+                            useFallbackDomain: false
+                        });
+                        batchesToCreate.push({
+                            members: members.slice(remainingCustomDomainCapacity, membersToProcess),
+                            useFallbackDomain: true
+                        });
                     } else {
-                        // Normal batch: all members go to same domain
-                        const batchMembers = members.slice(0, membersToProcess);
-                        const useFallbackDomain = totalCount >= domainWarmupLimit;
+                        // Single batch: all members use same domain
+                        batchesToCreate.push({
+                            members: members.slice(0, membersToProcess),
+                            useFallbackDomain: totalCount >= domainWarmupLimit
+                        });
+                    }
+
+                    // Create all batches
+                    for (const batchConfig of batchesToCreate) {
+                        if (batchConfig.members.length === 0) {
+                            continue;
+                        }
 
                         const batch = await this.retryDb(
                             async () => {
-                                return await this.createBatch(email, segment, batchMembers, {useFallbackDomain});
+                                return await this.createBatch(email, segment, batchConfig.members, {
+                                    useFallbackDomain: batchConfig.useFallbackDomain
+                                });
                             },
-                            {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment}`}
+                            {
+                                ...this.#getBeforeRetryConfig(email),
+                                description: `createBatch email ${email.id} segment ${segment}${batchConfig.useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`
+                            }
                         );
                         batches.push(batch);
-                        totalCount += batchMembers.length;
+                        totalCount += batchConfig.members.length;
                     }
                 }
 
