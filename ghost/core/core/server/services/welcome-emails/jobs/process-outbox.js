@@ -136,7 +136,8 @@ async function updateFailedEntry(db, entryId, retryCount) {
  * @returns {boolean} True if failure should be simulated (non-production only)
  */
 function shouldSimulateFailure() {
-    return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
+    // return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
+    return Math.random() < SIMULATE_FAILURE_RATE;
 }
 
 /**
