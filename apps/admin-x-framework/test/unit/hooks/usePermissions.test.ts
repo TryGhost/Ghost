@@ -13,7 +13,10 @@ const mockUseCurrentUser = useCurrentUser as any;
 describe('usePermissions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseCurrentUser.mockReturnValue({data: null, isLoading: false});
+        mockUseCurrentUser.mockReturnValue({
+            data: undefined,
+            isLoading: false
+        });
     });
 
     afterEach(() => {
@@ -23,7 +26,7 @@ describe('usePermissions', () => {
 
     it('returns false when current user is not loaded', () => {
         mockUseCurrentUser.mockReturnValue({
-            data: null
+            data: undefined
         });
 
         const {result} = renderHook(() => usePermission(['admin']));
@@ -74,7 +77,8 @@ describe('usePermissions', () => {
             }
         });
 
-        const {result} = renderHook(() => usePermission(['admin', 'editor', 'owner']));
+        const {result} = renderHook(() => usePermission(['admin', 'editor', 'owner'])
+        );
 
         expect(result.current).toBe(true);
     });
@@ -91,7 +95,8 @@ describe('usePermissions', () => {
             }
         });
 
-        const {result} = renderHook(() => usePermission(['admin', 'editor', 'owner']));
+        const {result} = renderHook(() => usePermission(['admin', 'editor', 'owner'])
+        );
 
         expect(result.current).toBe(false);
     });
@@ -101,9 +106,7 @@ describe('usePermissions', () => {
             data: {
                 id: '1',
                 name: 'Test User',
-                roles: [
-                    {name: 'admin', id: '1'}
-                ]
+                roles: [{name: 'admin', id: '1'}]
             }
         });
 
@@ -117,9 +120,7 @@ describe('usePermissions', () => {
             data: {
                 id: '1',
                 name: 'Test User',
-                roles: [
-                    {name: 'Admin', id: '1'}
-                ]
+                roles: [{name: 'Admin', id: '1'}]
             }
         });
 
@@ -145,7 +146,11 @@ describe('usePermissions', () => {
                 name: 'Test User',
                 roles: [
                     {name: 'owner', id: '1', description: 'Site owner'},
-                    {name: 'administrator', id: '2', description: 'Site admin'}
+                    {
+                        name: 'administrator',
+                        id: '2',
+                        description: 'Site admin'
+                    }
                 ]
             }
         });
@@ -160,9 +165,7 @@ describe('usePermissions', () => {
             data: {
                 id: '1',
                 name: 'Test User',
-                roles: [
-                    {name: 'author', id: '3'}
-                ]
+                roles: [{name: 'author', id: '3'}]
             }
         });
 
