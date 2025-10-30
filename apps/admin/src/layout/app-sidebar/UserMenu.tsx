@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 
 import {
     Avatar,
@@ -10,12 +10,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     LucideIcon,
-    SidebarMenuButton
+    SidebarMenuButton,
+    Switch
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 
 function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
     const currentUser = useCurrentUser();
+    const [dummyDarkMode, setDummyDarkMode] = useState(false);
 
     return (
         <DropdownMenu {...props}>
@@ -78,9 +80,22 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                         Resources & guides
                     </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-base">
+                <DropdownMenuItem
+                    className="cursor-pointer text-base"
+                    onSelect={(e) => {
+                        e.preventDefault();
+                        setDummyDarkMode(!dummyDarkMode);
+                    }}
+                >
                     <LucideIcon.Moon />
-                    <span>Dark mode</span>
+                    <span className="flex-1">Dark mode</span>
+                    <Switch
+                        size='sm'
+                        checked={dummyDarkMode}
+                        onCheckedChange={setDummyDarkMode}
+                        onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+                        tabIndex={-1}
+                    />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" onClick={() => {
