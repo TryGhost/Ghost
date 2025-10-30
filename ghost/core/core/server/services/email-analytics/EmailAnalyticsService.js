@@ -7,6 +7,13 @@ const errors = require('@tryghost/errors');
  */
 
 /**
+ * @typedef {object} EmailRecipientInformation
+ * @property {string} emailRecipientId
+ * @property {string} memberId
+ * @property {string} emailId
+ */
+
+/**
  * @typedef {object} FetchData
  * @property {boolean} running
  * @property {('email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-latest-opened'|'email-analytics-scheduled')} jobName Name of the job that is running
@@ -465,7 +472,7 @@ module.exports = class EmailAnalyticsService {
     /**
      *
      * @param {{id: string, type: any; severity: any; recipientEmail: any; emailId?: string; providerId: string; timestamp: Date; error: {code: number; message: string; enhandedCode: string|number} | null}} event
-     * @param {Map<string, any>} [recipientCache] Optional pre-fetched recipient cache
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional pre-fetched recipient cache
      * @returns {Promise<EventProcessingResult>}
      */
     async processEvent(event, recipientCache = null) {
