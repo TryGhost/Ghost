@@ -1,5 +1,6 @@
 export * from './LoginPage';
 export * from './AdminPage';
+export * from './PasswordResetPage';
 export * from './members';
 export * from './LoginVerifyPage';
 export * from './settings';
