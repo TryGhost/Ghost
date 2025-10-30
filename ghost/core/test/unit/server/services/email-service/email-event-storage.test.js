@@ -48,17 +48,25 @@ describe('Email Event Storage', function () {
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
         await eventHandler.handleDelivered(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].delivered_at);
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('delivered_at'));
     });
 
-    it('Records the event stored metric when handling email delivered events', async function () {
-        const event = EmailDeliveredEvent.create({});
+    it('Records the event stored metric when flushing batched delivered events', async function () {
+        const event = EmailDeliveredEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            timestamp: new Date(0)
+        });
         const db = createDb();
         const prometheusClient = createPrometheusClient();
         const eventHandler = new EmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleDelivered(event);
+        await eventHandler.flushBatchedUpdates();
         assert(eventHandler.recordEventStored.calledOnce);
     });
 
@@ -74,17 +82,25 @@ describe('Email Event Storage', function () {
         const db = createDb();
         const eventHandler = new EmailEventStorage({db});
         await eventHandler.handleOpened(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].opened_at);
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('opened_at'));
     });
 
-    it('Records the event stored metric when handling email opened events', async function () {
-        const event = EmailOpenedEvent.create({});
+    it('Records the event stored metric when flushing batched opened events', async function () {
+        const event = EmailOpenedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            emailRecipientId: '789',
+            timestamp: new Date(0)
+        });
         const db = createDb();
         const prometheusClient = createPrometheusClient();
         const eventHandler = new EmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleOpened(event);
+        await eventHandler.flushBatchedUpdates();
         assert(eventHandler.recordEventStored.calledOnce);
     });
 
@@ -129,8 +145,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(existing.save.calledOnce);
     });
 
@@ -175,8 +193,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(existing.save.calledOnce);
     });
 
@@ -220,8 +240,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(existing.save.calledOnce);
     });
 
@@ -255,8 +277,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(EmailRecipientFailure.add.calledOnce);
     });
 
@@ -290,8 +314,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(EmailRecipientFailure.add.calledOnce);
     });
 
@@ -324,8 +350,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(EmailRecipientFailure.add.calledOnce);
     });
 
@@ -345,7 +373,9 @@ describe('Email Event Storage', function () {
             models: {}
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
     });
 
     it('Handles email permanent bounce events with skipped update', async function () {
@@ -389,8 +419,10 @@ describe('Email Event Storage', function () {
             }
         });
         await eventHandler.handlePermanentFailed(event);
-        sinon.assert.calledOnce(db.update);
-        assert(!!db.update.firstCall.args[0].failed_at);
+        await eventHandler.flushBatchedUpdates();
+        await eventHandler.flushBatchedUpdates();
+        sinon.assert.calledOnce(db.knex.raw);
+        assert(db.knex.raw.firstCall.args[0].includes('failed_at'));
         assert(EmailRecipientFailure.findOne.called);
         assert(!existing.save.called);
     });

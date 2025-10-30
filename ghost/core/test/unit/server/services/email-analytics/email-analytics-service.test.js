@@ -280,6 +280,7 @@ describe('EmailAnalyticsService', function () {
             let eventProcessor;
             beforeEach(function () {
                 eventProcessor = {};
+                eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
                 eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
                     return {
                         emailId,
@@ -564,6 +565,7 @@ describe('EmailAnalyticsService', function () {
             let eventProcessor;
             beforeEach(function () {
                 eventProcessor = {};
+                eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
                 eventProcessor.handleDelivered = sinon.stub().returns(null);
                 eventProcessor.handleOpened = sinon.stub().returns(null);
                 eventProcessor.handlePermanentFailed = sinon.stub().returns(null);
@@ -700,12 +702,12 @@ describe('EmailAnalyticsService', function () {
             service = new EmailAnalyticsService({
                 queries: {
                     aggregateEmailStats: sinon.spy(),
-                    aggregateMemberStats: sinon.spy()
+                    aggregateMemberStatsBatch: sinon.spy()
                 }
             });
         });
 
-        it('calls appropriate query for each email id and member id', async function () {
+        it('calls appropriate query for each email id and batched member ids', async function () {
             await service.aggregateStats({
                 emailIds: ['e-1', 'e-2'],
                 memberIds: ['m-1', 'm-2']
@@ -715,9 +717,8 @@ describe('EmailAnalyticsService', function () {
             service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
             service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
 
-            service.queries.aggregateMemberStats.calledTwice.should.be.true();
-            service.queries.aggregateMemberStats.calledWith('m-1').should.be.true();
-            service.queries.aggregateMemberStats.calledWith('m-2').should.be.true();
+            service.queries.aggregateMemberStatsBatch.calledOnce.should.be.true();
+            service.queries.aggregateMemberStatsBatch.calledWith(['m-1', 'm-2']).should.be.true();
         });
     });
 
@@ -736,18 +737,18 @@ describe('EmailAnalyticsService', function () {
         });
     });
 
-    describe('aggregateMemberStats', function () {
+    describe('aggregateMemberStatsBatch', function () {
         it('returns the query result', async function () {
             const service = new EmailAnalyticsService({
                 queries: {
-                    aggregateMemberStats: sinon.stub().resolves()
+                    aggregateMemberStatsBatch: sinon.stub().resolves()
                 }
             });
 
-            await service.aggregateMemberStats('memberId');
+            await service.aggregateMemberStatsBatch(['memberId']);
 
-            service.queries.aggregateMemberStats.calledOnce.should.be.true();
-            service.queries.aggregateMemberStats.calledWith('memberId').should.be.true;
+            service.queries.aggregateMemberStatsBatch.calledOnce.should.be.true();
+            service.queries.aggregateMemberStatsBatch.calledWith(['memberId']).should.be.true;
         });
     });
 });
