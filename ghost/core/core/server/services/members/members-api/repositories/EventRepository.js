@@ -91,10 +91,7 @@ module.exports = class EventRepository {
         }
 
         pageActions.push({type: 'email_complained_event', action: 'getEmailSpamComplaintEvents'});
-
-        if (this._labsService.isSet('audienceFeedback')) {
-            pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
-        }
+        pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
 
         //Filter events to query
         let filteredPages = pageActions;
@@ -499,7 +496,7 @@ module.exports = class EventRepository {
             postId = filter ? filter['data.post_id'] : '';
         }
 
-        //Remove type filter as we don't need it in the query 
+        //Remove type filter as we don't need it in the query
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); // eslint-disable-line
 
         filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
@@ -914,7 +911,7 @@ module.exports = class EventRepository {
         if (!filter) {
             return filter;
         }
-    
+
         try {
             return rejectStatements(filter, key => key === 'data.post_id');
         } catch (e) {
