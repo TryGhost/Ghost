@@ -16,9 +16,9 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
+            getDiscoveryFeed: {
                 method: 'GET',
-                path: '/v1/feed/global',
+                path: '/v1/feed/discover/top',
                 response: inboxFixture
             }
         }, options: {useActivityPub: true}});
@@ -53,9 +53,9 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
+            getDiscoveryFeed: {
                 method: 'GET',
-                path: '/v1/feed/global',
+                path: '/v1/feed/discover/top',
                 response: inboxFixture
             },
             getPost: {
@@ -123,9 +123,9 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
+            getDiscoveryFeed: {
                 method: 'GET',
-                path: '/v1/feed/global',
+                path: '/v1/feed/discover/top',
                 response: inboxFixture
             },
             likePost: {
@@ -174,9 +174,9 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
+            getDiscoveryFeed: {
                 method: 'GET',
-                path: '/v1/feed/global',
+                path: '/v1/feed/discover/top',
                 response: inboxFixture
             },
             getPost: {
@@ -268,9 +268,9 @@ test.describe('Inbox', async () => {
                 path: '/v1/feed/reader',
                 response: inboxFixture
             },
-            getGlobalFeed: {
+            getDiscoveryFeed: {
                 method: 'GET',
-                path: '/v1/feed/global',
+                path: '/v1/feed/discover/top',
                 response: inboxFixture
             },
             repostPost: {
