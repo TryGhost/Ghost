@@ -57,31 +57,31 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='../reader'>
+                        <SidebarMenuLink to='/reader'>
                             <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
                             Reader
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='../notes'>
+                        <SidebarMenuLink to='/notes'>
                             <LucideIcon.MessageCircle size={18} strokeWidth={1.5} />
                             Notes
                         </SidebarMenuLink>
                         <SidebarMenuLink
                             count={location.pathname !== `${basePath}/notifications` ? notificationsCount : undefined}
-                            to='../notifications'
+                            to='/notifications'
                             onClick={handleNotificationsClick}
                         >
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='../explore'>
+                        <SidebarMenuLink to='/explore'>
                             <LucideIcon.Globe size={18} strokeWidth={1.5} />
                             Explore
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='../profile'>
+                        <SidebarMenuLink to='/profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='../preferences'>
+                        <SidebarMenuLink to='/preferences'>
                             <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
                             Preferences
                         </SidebarMenuLink>
