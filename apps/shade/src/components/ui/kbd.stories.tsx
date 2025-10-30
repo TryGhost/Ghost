@@ -92,10 +92,10 @@ export const InsideButton: Story = {
     },
     render: () => (
         <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="pr-2">
+            <Button className="pr-2" size="sm" variant="outline">
                 Accept <Kbd>⏎</Kbd>
             </Button>
-            <Button variant="outline" size="sm" className="pr-2">
+            <Button className="pr-2" size="sm" variant="outline">
                 Cancel <Kbd>Esc</Kbd>
             </Button>
         </div>
@@ -111,9 +111,9 @@ export const WithTooltip: Story = {
         }
     },
     decorators: [
-        Story => (
+        StoryComponent => (
             <TooltipProvider>
-                <Story />
+                <StoryComponent />
             </TooltipProvider>
         )
     ],
