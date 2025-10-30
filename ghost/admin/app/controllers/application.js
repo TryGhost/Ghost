@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
+import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -16,6 +17,18 @@ export default class ApplicationController extends Controller {
     @service store;
 
     @inject config;
+
+    get modalDestinationElement() {
+        const owner = getOwner(this);
+        const app = owner.lookup('application:main');
+        let rootElement = app.rootElement || 'body';
+
+        if (typeof rootElement === 'string') {
+            rootElement = document.querySelector(rootElement);
+        }
+
+        return document.getElementById('ember-modal-wormhole') || rootElement;
+    }
 
     get showBilling() {
         return this.config.hostSettings?.billing?.enabled;

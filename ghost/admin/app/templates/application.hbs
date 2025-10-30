@@ -87,5 +87,8 @@
 
 <div id="unsplash-selector-wormhole"></div>
 
-<EpmModalContainer />
+{{#in-element this.modalDestinationElement insertBefore=null}}
+    <EpmModalContainer />
+{{/in-element}}
+
 <EmberLoadRemover />
