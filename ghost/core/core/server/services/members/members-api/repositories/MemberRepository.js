@@ -27,10 +27,10 @@ const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 // Sources allowed to trigger welcome emails via outbox
 // 'member' = self-signups through public forms (Portal, Signup Form, etc.)
 // 'api' in development = allows testing with scripts like gm.js
-const WELCOME_EMAIL_SOURCES = ['member'];
-if (process.env.NODE_ENV !== 'production') {
-    WELCOME_EMAIL_SOURCES.push('api');
-}
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
+// if (process.env.NODE_ENV !== 'production') {
+//     WELCOME_EMAIL_SOURCES.push('api');
+// }
 
 /**
  * @typedef {object} ITokenService
