@@ -207,22 +207,37 @@ module.exports = {
         const emailCountCases = [];
         const emailOpenedCountCases = [];
         const emailOpenRateCases = [];
+        const emailCountBindings = [];
+        const emailOpenedCountBindings = [];
+        const emailOpenRateBindings = [];
 
         for (const memberId of memberIds) {
             const memberStats = statsMap.get(memberId) || {email_count: 0, email_opened_count: 0, tracked_count: 0};
             const trackedCount = memberStats.tracked_count || 0;
 
-            emailCountCases.push(`WHEN '${memberId}' THEN ${memberStats.email_count}`);
-            emailOpenedCountCases.push(`WHEN '${memberId}' THEN ${memberStats.email_opened_count}`);
+            emailCountCases.push(`WHEN ? THEN ?`);
+            emailCountBindings.push(memberId, memberStats.email_count);
+
+            emailOpenedCountCases.push(`WHEN ? THEN ?`);
+            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
 
             if (trackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
                 const openRate = Math.round((memberStats.email_opened_count / trackedCount) * 100);
-                emailOpenRateCases.push(`WHEN '${memberId}' THEN ${openRate}`);
+                emailOpenRateCases.push(`WHEN ? THEN ?`);
+                emailOpenRateBindings.push(memberId, openRate);
             } else {
                 // Keep existing open rate
-                emailOpenRateCases.push(`WHEN '${memberId}' THEN email_open_rate`);
+                emailOpenRateCases.push(`WHEN ? THEN email_open_rate`);
+                emailOpenRateBindings.push(memberId);
             }
         }
+
+        const bindings = [
+            ...emailCountBindings,
+            ...emailOpenedCountBindings,
+            ...emailOpenRateBindings,
+            ...memberIds // for WHERE IN
+        ];
 
         await db.knex.raw(`
             UPDATE members
@@ -230,8 +245,8 @@ module.exports = {
                 email_count = CASE id ${emailCountCases.join(' ')} END,
                 email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
-            WHERE id IN (${memberIds.map(id => `'${id}'`).join(',')})
-        `);
+            WHERE id IN (${memberIds.map(() => '?').join(',')})
+        `, bindings);
 
         timings.update = Date.now() - timings.update;
         timings.total = Date.now() - timings.total;

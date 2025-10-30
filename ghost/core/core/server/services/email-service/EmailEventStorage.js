@@ -204,22 +204,27 @@ class EmailEventStorage {
 
         const recipientIds = Array.from(allRecipientIds);
 
-        // Build CASE statements for each event type
+        // Build CASE statements for each event type with parameterized queries
         const setClauses = [];
+        const bindings = [];
+
         for (const {map, column} of eventTypes) {
             const cases = [];
+            const caseBindings = [];
 
             for (const recipientId of recipientIds) {
                 const timestamp = map.get(recipientId);
                 if (timestamp) {
                     const formattedTime = moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss');
-                    cases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
+                    cases.push(`WHEN ? THEN ?`);
+                    caseBindings.push(recipientId, formattedTime);
                 }
             }
 
             if (cases.length > 0) {
                 // Only update if current value is NULL (handles out-of-order events)
                 setClauses.push(`${column} = CASE WHEN ${column} IS NULL THEN CASE id ${cases.join(' ')} ELSE ${column} END ELSE ${column} END`);
+                bindings.push(...caseBindings);
             }
         }
 
@@ -227,12 +232,15 @@ class EmailEventStorage {
             return {delivered: 0, opened: 0, failed: 0};
         }
 
+        // Add recipientIds for WHERE IN clause
+        recipientIds.forEach(id => bindings.push(id));
+
         // Execute the batch update
         await this.#db.knex.raw(`
             UPDATE email_recipients
             SET ${setClauses.join(', ')}
-            WHERE id IN (${recipientIds.map(id => `'${id}'`).join(',')})
-        `);
+            WHERE id IN (${recipientIds.map(() => '?').join(',')})
+        `, bindings);
 
         // Record metrics and collect counts
         const counts = {delivered: 0, opened: 0, failed: 0};
