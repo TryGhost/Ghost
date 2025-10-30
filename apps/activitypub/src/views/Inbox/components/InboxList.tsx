@@ -1,9 +1,11 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
 import Reader from './Reader';
+import TopicFilter, {Topic} from '@src/components/TopicFilter';
 import {Activity} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
+import {FeedMode} from '@src/hooks/use-feed-mode';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -12,17 +14,23 @@ import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 export type InboxListProps = {
     isLoading: boolean,
     activities: Activity[],
+    currentTopic: Topic,
+    feedMode: FeedMode,
     fetchNextPage: () => void,
     hasNextPage: boolean,
-    isFetchingNextPage: boolean
+    isFetchingNextPage: boolean,
+    onTopicChange: (topic: Topic) => void
 }
 
 const InboxList:React.FC<InboxListProps> = ({
     isLoading,
     activities,
+    currentTopic,
+    feedMode,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    onTopicChange
 }) => {
     const navigate = useNavigateWithBasePath();
     const {canGoBack, goBack} = useNavigationStack();
@@ -68,6 +76,7 @@ const InboxList:React.FC<InboxListProps> = ({
 
     return (
         <Layout>
+            {feedMode === 'discover' && <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />}
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
