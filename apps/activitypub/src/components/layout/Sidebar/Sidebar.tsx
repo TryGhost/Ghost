@@ -6,6 +6,7 @@ import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
 import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
+import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useLocation} from '@tryghost/admin-x-framework';
@@ -22,15 +23,16 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const [searchQuery, setSearchQuery] = React.useState('');
     const {data: currentUser} = useCurrentUser();
     const location = useLocation();
+    const basePath = useAppBasePath();
     const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
     const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
 
     // Reset count when on notifications page
     React.useEffect(() => {
-        if (location.pathname === '/notifications' && notificationsCount && notificationsCount > 0) {
+        if (location.pathname === `${basePath}/notifications` && notificationsCount && notificationsCount > 0) {
             resetNotificationsCount.mutate();
         }
-    }, [location.pathname, notificationsCount, resetNotificationsCount]);
+    }, [location.pathname, basePath, notificationsCount, resetNotificationsCount]);
 
     const handleNotificationsClick = React.useCallback(() => {
         if (notificationsCount && notificationsCount > 0) {
@@ -55,31 +57,31 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='/reader'>
+                        <SidebarMenuLink to='../reader'>
                             <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
                             Reader
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/notes'>
+                        <SidebarMenuLink to='../notes'>
                             <LucideIcon.MessageCircle size={18} strokeWidth={1.5} />
                             Notes
                         </SidebarMenuLink>
                         <SidebarMenuLink
-                            count={location.pathname !== '/notifications' ? notificationsCount : undefined}
-                            to='/notifications'
+                            count={location.pathname !== `${basePath}/notifications` ? notificationsCount : undefined}
+                            to='../notifications'
                             onClick={handleNotificationsClick}
                         >
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/explore'>
+                        <SidebarMenuLink to='../explore'>
                             <LucideIcon.Globe size={18} strokeWidth={1.5} />
                             Explore
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/profile'>
+                        <SidebarMenuLink to='../profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/preferences'>
+                        <SidebarMenuLink to='../preferences'>
                             <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
                             Preferences
                         </SidebarMenuLink>

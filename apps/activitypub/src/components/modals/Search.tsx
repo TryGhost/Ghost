@@ -8,7 +8,7 @@ import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLa
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useAccountForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
 import {useDebounce} from 'use-debounce';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface AccountSearchResult {
     id: string;
@@ -47,7 +47,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         });
     };
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <ProfilePreviewHoverCard actor={account as unknown as ActorProperties} isCurrentUser={isCurrentUser}>

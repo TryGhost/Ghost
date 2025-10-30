@@ -2,7 +2,7 @@ import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
 import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 export type LikesProps = {
     isLoading: boolean,
@@ -51,7 +51,7 @@ const Likes: React.FC<LikesProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <>

@@ -16,7 +16,7 @@ import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 export function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -282,7 +282,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const [isTruncated, setIsTruncated] = useState(false);
 
     const deleteMutation = useDeleteMutationForUser('index');
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const followMutation = useFollowMutationForUser(
         'index',

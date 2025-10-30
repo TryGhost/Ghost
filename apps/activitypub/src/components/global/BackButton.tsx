@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, LucideIcon, cn} from '@tryghost/shade';
-import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface BackButtonProps {
     className?: string;
@@ -8,7 +9,7 @@ interface BackButtonProps {
 }
 
 const BackButton: React.FC<BackButtonProps> = ({className, onClick}) => {
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {previousPath} = useNavigationStack();
 
     return (

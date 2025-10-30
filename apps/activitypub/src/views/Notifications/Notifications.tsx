@@ -5,12 +5,11 @@ import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import APAvatar from '@components/global/APAvatar';
 import Error from '@components/layout/Error';
 import FeedItemStats from '@components/feed/FeedItemStats';
-import NotificationItem from './components/NotificationItem';
-import Separator from '@components/global/Separator';
-
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
+import NotificationItem from './components/NotificationItem';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
+import Separator from '@components/global/Separator';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
@@ -18,7 +17,7 @@ import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
 interface NotificationGroup {
@@ -108,7 +107,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorClass = 'cursor-pointer font-semibold hover:underline text-black dark:text-white';
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const actorText = (
         <>
@@ -152,7 +151,7 @@ const ProfileLinkedContent: React.FC<{
     stripTags?: string[];
 }> = ({content, className, stripTags = []}) => {
     const contentRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     useEffect(() => {
         const element = contentRef.current;
@@ -193,7 +192,7 @@ const ProfileLinkedContent: React.FC<{
 
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {isEnabled} = useFeatureFlags();
 
     const toggleOpen = (groupId: string) => {

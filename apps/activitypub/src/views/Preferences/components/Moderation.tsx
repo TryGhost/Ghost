@@ -8,7 +8,7 @@ import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, 
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {toast} from 'sonner';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const Moderation: React.FC = () => {
     const {data: blockedAccountsData, isLoading: blockedAccountsLoading} = useBlockedAccountsForUser('index');
@@ -30,7 +30,7 @@ const Moderation: React.FC = () => {
     const [unblockedDomainIds, setUnblockedDomainIds] = useState<Set<string>>(new Set());
 
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const handleUnblock = (account: Account) => {
         setUnblockedAccountIds((prev) => {

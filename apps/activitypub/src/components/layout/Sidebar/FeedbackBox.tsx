@@ -1,9 +1,9 @@
 import React from 'react';
 import {Button, H4, LucideIcon} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const FeedbackBox: React.FC = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     function showFeedbackReply() {
         const targetPostId = 'https://activitypub.ghost.org/.ghost/activitypub/note/6d6d7f57-b656-4caa-ba9e-efa1d9a4b3fb';

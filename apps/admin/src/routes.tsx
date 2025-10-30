@@ -1,8 +1,8 @@
-import { Outlet, type RouteObject } from "@tryghost/admin-x-framework";
+import { Outlet, type RouteObject, redirect } from "@tryghost/admin-x-framework";
 import { routes as postRoutes } from "@tryghost/posts/src/routes";
 import GlobalDataProvider from "@tryghost/stats/src/providers/GlobalDataProvider";
 import {FeatureFlagsProvider} from "@tryghost/activitypub/src/lib/feature-flags";
-import { routes as activityPubRoutes, APP_ROUTE_PREFIX as activityPubAppRoutePrefix } from "@tryghost/activitypub/src/routes";
+import { routes as activityPubRoutes } from "@tryghost/activitypub/src/routes";
 import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 import { EmberFallback } from "./ember-bridge";
 
@@ -17,13 +17,13 @@ export const routes: RouteObject[] = [
         children: statsRoutes
     },
     {
+        path: `network`,
+        loader: () => redirect('/activitypub')
+    },
+    {
+        path: '',
         element: <FeatureFlagsProvider><Outlet /></FeatureFlagsProvider>,
-        children: [
-            ...activityPubRoutes.map(route => ({
-                ...route,
-                path: `${activityPubAppRoutePrefix}${route.path ?? ''}`
-            }))
-        ]
+        children: activityPubRoutes
     },
     {
         path: "*",
