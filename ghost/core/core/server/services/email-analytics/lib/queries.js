@@ -197,12 +197,20 @@ module.exports = {
 
         // Step 2: Fetch all stats for all members in a single query
         timings.select = Date.now();
+        let trackedCountQuery;
+        if (trackingEmailIds.length > 0) {
+            trackedCountQuery = db.knex.raw(`SUM(CASE WHEN email_recipients.email_id IN (${trackingEmailIds.map(() => '?').join(',')}) THEN 1 ELSE 0 END) as tracked_count`, trackingEmailIds);
+        } else {
+            // No emails track opens, so tracked_count is 0 for everyone
+            trackedCountQuery = db.knex.raw('0 as tracked_count');
+        }
+
         const stats = await db.knex('email_recipients')
             .select(
                 'member_id',
                 db.knex.raw('COUNT(email_recipients.id) as email_count'),
                 db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
-                db.knex.raw(`SUM(CASE WHEN email_recipients.email_id IN (${trackingEmailIds.map(() => '?').join(',')}) THEN 1 ELSE 0 END) as tracked_count`, trackingEmailIds)
+                trackedCountQuery
             )
             .whereIn('member_id', memberIds)
             .groupBy('member_id');
