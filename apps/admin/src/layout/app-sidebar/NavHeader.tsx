@@ -30,7 +30,7 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
                         </div>
                     </div>
                 </div>
-                <Button variant='outline' className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 h-[38px]">
+                <Button variant="outline" className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 h-[38px]">
                     <div className="flex items-center gap-2">
                         <LucideIcon.Search className="text-muted-foreground" />
                         Search site
