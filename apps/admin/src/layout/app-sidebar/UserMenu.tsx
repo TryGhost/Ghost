@@ -89,7 +89,13 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                 >
                     <LucideIcon.Moon />
                     <span className="flex-1">Dark mode</span>
-                    <Switch size='sm' checked={dummyDarkMode}/>
+                    <Switch
+                        size='sm'
+                        checked={dummyDarkMode}
+                        onCheckedChange={setDummyDarkMode}
+                        onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+                        tabIndex={-1}
+                    />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" onClick={() => {
