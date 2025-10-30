@@ -460,4 +460,225 @@ describe('MemberRepository', function () {
             })).should.be.true();
         });
     });
+
+    describe('create - outbox integration', function () {
+        let Member;
+        let Outbox;
+        let MemberStatusEvent;
+        let MemberSubscribeEvent;
+        let labsService;
+        let newslettersService;
+        const oldNodeEnv = process.env.NODE_ENV;
+
+        beforeEach(function () {
+            Member = {
+                transaction: sinon.stub().callsFake((callback) => {
+                    return callback({executionPromise: Promise.resolve()});
+                }),
+                add: sinon.stub().resolves({
+                    id: 'member_id_123',
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {
+                            email: 'test@example.com',
+                            name: 'Test Member',
+                            status: 'free',
+                            created_at: new Date()
+                        };
+                        return data[key];
+                    }),
+                    related: sinon.stub().callsFake((relation) => {
+                        if (relation === 'products') {
+                            return {models: []};
+                        }
+                        if (relation === 'newsletters') {
+                            return {models: []};
+                        }
+                        return {models: []};
+                    }),
+                    toJSON: sinon.stub().returns({
+                        id: 'member_id_123',
+                        email: 'test@example.com',
+                        name: 'Test Member',
+                        status: 'free'
+                    })
+                })
+            };
+
+            Outbox = {
+                add: sinon.stub().resolves()
+            };
+
+            MemberStatusEvent = {
+                add: sinon.stub().resolves()
+            };
+
+            MemberSubscribeEvent = {
+                add: sinon.stub().resolves()
+            };
+
+            newslettersService = {
+                getDefaultNewsletters: sinon.stub().resolves([]),
+                getAll: sinon.stub().resolves([])
+            };
+        });
+
+        afterEach(function () {
+            process.env.NODE_ENV = oldNodeEnv;
+        });
+
+        it('creates outbox entry when welcomeEmails lab flag is enabled and source is member', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            sinon.assert.calledOnce(Outbox.add);
+            const outboxCall = Outbox.add.firstCall.args[0];
+            assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
+            
+            const payload = JSON.parse(outboxCall.payload);
+            assert.equal(payload.memberId, 'member_id_123');
+            assert.equal(payload.email, 'test@example.com');
+            assert.equal(payload.name, 'Test Member');
+            assert.equal(payload.source, 'member');
+        });
+
+        it('creates outbox entry in development when source is api', async function () {
+            process.env.NODE_ENV = 'development';
+
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {api_key: true}});
+
+            sinon.assert.calledOnce(Outbox.add);
+            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
+            assert.equal(payload.source, 'api');
+        });
+
+        it('does NOT create outbox entry when welcomeEmails lab flag is disabled', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(false)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('does NOT create outbox entry for import source', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {import: true}});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('does NOT create outbox entry for admin source', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {user: true}});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('includes timestamp in outbox payload', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
+            assert.ok(payload.timestamp);
+            assert.ok(new Date(payload.timestamp).getTime() > 0);
+        });
+
+        it('passes transaction to outbox entry creation', async function () {
+            labsService = {
+                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                labsService,
+                newslettersService,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            const outboxOptions = Outbox.add.firstCall.args[1];
+            assert.ok(outboxOptions.transacting);
+        });
+    });
 });

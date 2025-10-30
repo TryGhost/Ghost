@@ -24,6 +24,14 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
+// Sources allowed to trigger welcome emails via outbox
+// 'member' = self-signups through public forms (Portal, Signup Form, etc.)
+// 'api' in development = allows testing with scripts like gm.js
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
+// if (process.env.NODE_ENV !== 'production') {
+//     WELCOME_EMAIL_SOURCES.push('api');
+// }
+
 /**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
@@ -43,6 +51,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
+     * @param {any} deps.Outbox
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
      * @param {any} deps.productRepository
@@ -62,6 +71,7 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         OfferRedemption,
+        Outbox,
         stripeAPIService,
         labsService,
         productRepository,
@@ -78,6 +88,7 @@ module.exports = class MemberRepository {
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
         this._OfferRedemption = OfferRedemption;
+        this._Outbox = Outbox;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
@@ -261,6 +272,15 @@ module.exports = class MemberRepository {
             options = {};
         }
 
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.create(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         if (!options.batch_id) {
             // We'll use this to link related events
             options.batch_id = ObjectId().toHexString();
@@ -402,6 +422,24 @@ module.exports = class MemberRepository {
                 }
             }
         }
+
+        // Insert into outbox if welcome emails feature is enabled and source is allowed
+        // Only self-signup members get welcome emails; excludes imports, admin-created, and system-generated members
+        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
+            await this._Outbox.add({
+                id: ObjectId().toHexString(),
+                event_type: MemberCreatedEvent.name,
+                payload: JSON.stringify({
+                    memberId: member.id,
+                    email: member.get('email'),
+                    name: member.get('name'),
+                    source,
+                    timestamp: eventData.created_at
+                }),
+                created_at: new Date()
+            }, options);
+        }
+                
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
