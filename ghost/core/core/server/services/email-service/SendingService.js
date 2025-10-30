@@ -9,6 +9,7 @@ const logging = require('@tryghost/logging');
  * @prop {string} from
  * @prop {string} emailId
  * @prop {string} [replyTo]
+ * @prop {string} [domain]
  * @prop {Recipient[]} recipients
  * @prop {import("./EmailRenderer").ReplacementDefinition[]} replacementDefinitions
  *
@@ -30,6 +31,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {boolean} useFallbackDomain
  * @prop {Date} deliveryTime
  * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
@@ -79,7 +81,7 @@ class SendingService {
 
     /**
      * Returns the configured target delivery window in seconds
-     * 
+     *
      * @returns {number}
      */
     getTargetDeliveryWindow() {
@@ -127,16 +129,18 @@ class SendingService {
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
             subject: this.#emailRenderer.getSubject(post, isTestEmail),
-            from: this.#emailRenderer.getFromAddress(post, newsletter),
+            from: this.#emailRenderer.getFromAddress(post, newsletter, !!options.useFallbackDomain),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
             html: emailBody.html,
             plaintext: emailBody.plaintext,
             recipients,
             emailId: emailId,
-            replacementDefinitions: emailBody.replacements
+            replacementDefinitions: emailBody.replacements,
+            domain: options.useFallbackDomain ? this.#emailRenderer.getFallbackDomain() : undefined
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
             openTrackingEnabled: !!options.openTrackingEnabled,
+            useFallbackDomain: !!options.useFallbackDomain,
             ...(options.deliveryTime && {deliveryTime: options.deliveryTime})
         });
     }

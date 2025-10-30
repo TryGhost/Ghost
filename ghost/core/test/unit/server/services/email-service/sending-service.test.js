@@ -36,7 +36,8 @@ describe('Sending service', function () {
                 getFromAddress: sinon.stub().returns('ghost@example.com'),
                 getReplyToAddress: () => {
                     return replyTo;
-                }
+                },
+                getFallbackDomain: sinon.stub().returns('fallback.example.com')
             };
 
             emailProvider = {
@@ -98,11 +99,13 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true,
+                    useFallbackDomain: false,
                     deliveryTime
                 }
             ));
@@ -158,11 +161,13 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    useFallbackDomain: false
                 }
             ));
         });
@@ -214,11 +219,13 @@ describe('Sending service', function () {
                                 value: ''
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    useFallbackDomain: false
                 }
             ));
         });
@@ -273,11 +280,13 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    useFallbackDomain: false
                 }
             ));
 
@@ -324,11 +333,13 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    useFallbackDomain: false
                 }
             ));
 
@@ -387,11 +398,13 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
-                    ]
+                    ],
+                    domain: undefined
                 },
                 {
                     clickTrackingEnabled: true,
-                    openTrackingEnabled: true
+                    openTrackingEnabled: true,
+                    useFallbackDomain: false
                 }
             ));
         });

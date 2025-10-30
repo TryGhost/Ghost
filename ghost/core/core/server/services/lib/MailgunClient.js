@@ -106,7 +106,11 @@ module.exports = class MailgunClient {
 
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
-            const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
+
+            // Use overriden domain if specified in message
+            const mailDomain = message.domain ? message.domain : mailgunConfig.domain;
+
+            const response = await mailgunInstance.messages.create(mailDomain, messageData);
             metrics.metric('mailgun-send-mail', {
                 value: Date.now() - startTime,
                 statusCode: 200

@@ -16,6 +16,7 @@ const MAX_SENDING_CONCURRENCY = 2;
  * @typedef {import('./EmailSegmenter')} EmailSegmenter
  * @typedef {import('./EmailRenderer')} EmailRenderer
  * @typedef {import('./EmailRenderer').MemberLike} MemberLike
+ * @typedef {import('./DomainWarmingService')} DomainWarmingService
  * @typedef {object} JobsService
  * @typedef {object} Email
  * @typedef {object} Newsletter
@@ -32,6 +33,7 @@ class BatchSendingService {
     #db;
     #sentry;
     #debugStorageFilePath;
+    #domainWarmingService;
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -44,6 +46,7 @@ class BatchSendingService {
      * @param {SendingService} dependencies.sendingService
      * @param {JobsService} dependencies.jobsService
      * @param {EmailSegmenter} dependencies.emailSegmenter
+     * @param {DomainWarmingService} dependencies.domainWarmingService
      * @param {object} dependencies.models
      * @param {object} dependencies.models.EmailRecipient
      * @param {EmailBatch} dependencies.models.EmailBatch
@@ -61,6 +64,7 @@ class BatchSendingService {
         sendingService,
         jobsService,
         emailSegmenter,
+        domainWarmingService,
         models,
         db,
         sentry,
@@ -73,6 +77,7 @@ class BatchSendingService {
         this.#sendingService = sendingService;
         this.#jobsService = jobsService;
         this.#emailSegmenter = emailSegmenter;
+        this.#domainWarmingService = domainWarmingService;
         this.#models = models;
         this.#db = db;
         this.#sentry = sentry;
@@ -234,6 +239,8 @@ class BatchSendingService {
     async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
+        // TODO: Add domain-based segmentation here. Get domain segments from DomainWarmingService, then intersect(?) with other segments.
+
         const segments = await this.#emailRenderer.getSegments(post);
         const batches = [];
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
@@ -265,7 +272,8 @@ class BatchSendingService {
                     totalCount += Math.min(members.length, BATCH_SIZE);
                     const batch = await this.retryDb(
                         async () => {
-                            return await this.createBatch(email, segment, members.slice(0, BATCH_SIZE));
+                            // TODO: Use domain segmentation to work out whether this should be a fallback domain batch or not
+                            return await this.createBatch(email, segment, members.slice(0, BATCH_SIZE), {useFallbackDomain: false});
                         },
                         {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment}`}
                     );
@@ -307,12 +315,15 @@ class BatchSendingService {
      * @param {Email} email
      * @param {import('./EmailRenderer').Segment} segment
      * @param {object[]} members
+     * @param {object} options
+     * @param {boolean} options.useFallbackDomain
+     * @param {import('knex').Knex} [options.transacting]
      * @returns {Promise<EmailBatch>}
      */
     async createBatch(email, segment, members, options) {
         if (!options || !options.transacting) {
             return this.#models.EmailBatch.transaction(async (transacting) => {
-                return this.createBatch(email, segment, members, {transacting});
+                return this.createBatch(email, segment, members, {transacting, ...options});
             });
         }
 
@@ -321,7 +332,8 @@ class BatchSendingService {
         const batch = await this.#models.EmailBatch.add({
             email_id: email.id,
             member_segment: segment,
-            status: 'pending'
+            status: 'pending',
+            fallback_domain: Boolean(options.useFallbackDomain)
         }, options);
 
         const recipientData = [];
@@ -357,7 +369,7 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
         const deadline = this.getDeliveryDeadline(email);
-        
+
         if (deadline) {
             logging.info(`Delivery deadline for email ${email.id} is ${deadline}`);
         }
@@ -457,6 +469,7 @@ class BatchSendingService {
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),
+                    useFallbackDomain: !!batch.get('fallback_domain'),
                     deliveryTime,
                     emailBodyCache
                 });
@@ -657,7 +670,7 @@ class BatchSendingService {
     /**
      * Returns the sending deadline for an email
      * Based on the email.created_at timestamp and the configured target delivery window
-     * @param {*} email 
+     * @param {*} email
      * @returns Date | undefined
      */
     getDeliveryDeadline(email) {

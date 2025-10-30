@@ -247,11 +247,11 @@ class EmailRenderer {
         return locale;
     }
 
-    getFromAddress(post, newsletter) {
+    getFromAddress(post, newsletter, useFallback = false) {
         // Clean from address to ensure DMARC alignment
         const addresses = this.#emailAddressService.getAddress({
             from: this.#getRawFromAddress(post, newsletter)
-        });
+        }, {useFallbackAddress: useFallback});
 
         return EmailAddressParser.stringify(addresses.from);
     }
@@ -281,6 +281,10 @@ class EmailRenderer {
             return EmailAddressParser.stringify(addresses.replyTo);
         }
         return null;
+    }
+
+    getFallbackDomain() {
+        return this.#emailAddressService.fallbackDomain;
     }
 
     /**
