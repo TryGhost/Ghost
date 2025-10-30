@@ -8,6 +8,13 @@ module.exports.shouldCompileToExpected = (templateString, hash, expected) => {
     assert.equal(result, expected);
 };
 
+module.exports.shouldCompileToExpectedWithGlobals = (templateString, hash, expected, globals) => {
+    const template = handlebars.compile(templateString);
+    const result = template(hash, globals);
+
+    assert.equal(result, expected);
+};
+
 module.exports.shouldCompileToError = (templateString, hash, error) => {
     const template = handlebars.compile(templateString);
 

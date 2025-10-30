@@ -5,19 +5,11 @@ const concat = require('../../../../core/frontend/helpers/concat');
 const url = require('../../../../core/frontend/helpers/url');
 
 const configUtils = require('../../../utils/configUtils');
+const {shouldCompileToExpected, shouldCompileToExpectedWithGlobals} = require('./utils/handlebars');
 
 let defaultGlobals;
 
-function compile(templateString) {
-    const template = handlebars.compile(templateString);
-    template.with = (locals = {}, globals) => {
-        globals = globals || defaultGlobals;
-
-        return template(locals, globals);
-    };
-
-    return template;
-}
+const draftPostData = {title: 'My Draft Post', slug: 'my-post', html: '<p>My Post</p>', uuid: '1234'};
 
 describe('{{concat}} helper', function () {
     before(function () {
@@ -35,66 +27,64 @@ describe('{{concat}} helper', function () {
     });
 
     it('can correctly concat nothing', function () {
-        compile('{{concat}}')
-            .with({})
-            .should.eql('');
+        let templateString = '{{concat}}';
+        let expected = '';
+        shouldCompileToExpected(templateString, {}, expected);
     });
 
     it('can correctly concat things that resolve to empty', function () {
-        compile('{{concat tag.slug slug}}')
-            .with({tag: {}})
-            .should.eql('');
+        let templateString = '{{concat tag.slug slug}}';
+        let expected = '';
+        shouldCompileToExpected(templateString, {tag: {}}, expected);
     });
 
     it('can concat simple strings', function () {
-        compile('{{concat "hello" "world"}}')
-            .with({})
-            .should.eql('helloworld');
+        let templateString = '{{concat "hello" "world"}}';
+        let expected = 'helloworld';
+        shouldCompileToExpected(templateString, {}, expected);
     });
 
     it('can concat simple strings with a custom separator', function () {
-        compile('{{concat "hello" "world" separator=" "}}')
-            .with({})
-            .should.eql('hello world');
+        let templateString = '{{concat "hello" "world" separator=" "}}';
+        let expected = 'hello world';
+        shouldCompileToExpected(templateString, {}, expected);
     });
 
     it('can concat strings and numbers', function () {
-        compile('{{concat "abcd" 1234}}')
-            .with({})
-            .should.eql('abcd1234');
+        let templateString = '{{concat "abcd" 1234}}';
+        let expected = 'abcd1234';
+        shouldCompileToExpected(templateString, {}, expected);
     });
 
     it('can concat strings and global variables', function () {
-        compile('{{concat @site.url "?my=param"}}')
-            .with({})
-            .should.eql('https://siteurl.com?my=param');
+        let templateString = '{{concat @site.url "?my=param"}}';
+        let expected = 'https://siteurl.com?my=param';
+        shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
     });
 
     it('can concat strings and local variables', function () {
-        compile('{{concat tag.slug "?my=param"}}')
-            .with({tag: {slug: 'my-tag'}})
-            .should.eql('my-tag?my=param');
+        let templateString = '{{concat tag.slug "?my=param"}}';
+        let expected = 'my-tag?my=param';
+        shouldCompileToExpected(templateString, {tag: {slug: 'my-tag'}}, expected);
     });
 
     it('can concat strings from custom helpers (SafeStrings)', function () {
-        compile('{{concat (url) "?my=param"}}')
-            // Simulate a post - using a draft to prove url helper gets called
-            // because published posts get their urls from a cache that we don't have access to, so we just get 404
-            .with({title: 'My Draft Post', slug: 'my-post', html: '<p>My Post</p>', uuid: '1234'})
-            .should.eql('/p/1234/?my=param');
+        // Simulate a post - using a draft to prove url helper gets called
+        // because published posts get their urls from a cache that we don't have access to, so we just get 404
+        let templateString = '{{concat (url) "?my=param"}}';
+        let expected = '/p/1234/?my=param';
+        shouldCompileToExpected(templateString, draftPostData, expected);
     });
 
     it('can concat mixed args', function () {
-        compile('{{concat @site.url (url) "?slug=" slug}}')
-            // Simulate a post - using a draft to prove url helper gets called
-            // because published posts get their urls from a cache that we don't have access to, so we just get 404
-            .with({title: 'My Draft Post', slug: 'my-post', html: '<p>My Post</p>', uuid: '1234'})
-            .should.eql('https://siteurl.com/p/1234/?slug=my-post');
+        let templateString = '{{concat @site.url (url) "?slug=" slug}}';
+        let expected = 'https://siteurl.com/p/1234/?slug=my-post';
+        shouldCompileToExpectedWithGlobals(templateString, draftPostData, expected, defaultGlobals);
     });
 
     it('will output object Object for sill args', function () {
-        compile('{{concat @site "?my=param"}}')
-            .with({})
-            .should.eql('[object Object]?my=param');
+        let templateString = '{{concat @site "?my=param"}}';
+        let expected = '[object Object]?my=param';
+        shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
     });
 });
