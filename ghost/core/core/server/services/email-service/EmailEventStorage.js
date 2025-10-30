@@ -206,7 +206,7 @@ class EmailEventStorage {
 
         // Build CASE statements for each event type
         const setClauses = [];
-        for (const {name, map, column} of eventTypes) {
+        for (const {map, column} of eventTypes) {
             const cases = [];
 
             for (const recipientId of recipientIds) {
