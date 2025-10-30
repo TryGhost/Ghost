@@ -42,7 +42,7 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
             <DropdownMenuContent
                 align="end"
                 sideOffset={10}
-                className="min-w-[280px]"
+                className="min-w-[260px]"
             >
                 <div className="p-3">
                     <div className="flex items-center gap-3">

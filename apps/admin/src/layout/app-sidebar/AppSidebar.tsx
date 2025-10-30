@@ -14,8 +14,8 @@ import NavFooter from "./NavFooter";
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar {...props}>
-            <NavHeader className="px-5 pt-6 pb-4" />
-            <SidebarContent className="px-3">
+            <NavHeader className="px-5 pt-6 pb-0" />
+            <SidebarContent className="px-3 pt-4">
                 <NavMain />
                 <NavContent />
                 <NavGhostPro />
