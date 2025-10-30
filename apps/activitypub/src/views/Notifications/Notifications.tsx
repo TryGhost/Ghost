@@ -39,7 +39,7 @@ interface NotificationGroupDescriptionProps {
  * Groups notifications into time windows
  */
 function getTimeBucket(timestamp: string): string {
-    const TIME_WINDOW_MS = 6 * 60 * 60 * 1000; // 6 hours
+    const TIME_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
     const date = new Date(timestamp);
     const timeMs = date.getTime();
     const bucketStart = Math.floor(timeMs / TIME_WINDOW_MS) * TIME_WINDOW_MS;
