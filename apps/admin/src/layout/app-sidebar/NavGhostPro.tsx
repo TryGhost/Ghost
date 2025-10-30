@@ -1,6 +1,7 @@
 import React from "react"
 
 import {
+    LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
     SidebarMenu
@@ -13,10 +14,11 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavLink
-                        icon="CreditCard"
                         label="Ghost(Pro)"
                         href="#/billing"
-                    />
+                    >
+                        <NavLink.Icon><LucideIcon.CreditCard /></NavLink.Icon>
+                    </NavLink>
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
