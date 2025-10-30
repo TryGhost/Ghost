@@ -187,16 +187,16 @@ class EmailEventStorage {
      * @returns {Promise<{delivered: number, opened: number, failed: number}>} Count of rows updated
      */
     async flushBatchedUpdates() {
-        const delivered = this.#pendingUpdates.delivered;
-        const opened = this.#pendingUpdates.opened;
-        const failed = this.#pendingUpdates.failed;
+        const eventTypes = [
+            {name: 'delivered', map: this.#pendingUpdates.delivered, column: 'delivered_at'},
+            {name: 'opened', map: this.#pendingUpdates.opened, column: 'opened_at'},
+            {name: 'failed', map: this.#pendingUpdates.failed, column: 'failed_at'}
+        ];
 
         // Collect all unique recipient IDs that need updating
-        const allRecipientIds = new Set([
-            ...delivered.keys(),
-            ...opened.keys(),
-            ...failed.keys()
-        ]);
+        const allRecipientIds = new Set(
+            eventTypes.flatMap(type => Array.from(type.map.keys()))
+        );
 
         if (allRecipientIds.size === 0) {
             return {delivered: 0, opened: 0, failed: 0};
@@ -204,46 +204,23 @@ class EmailEventStorage {
 
         const recipientIds = Array.from(allRecipientIds);
 
-        // Build CASE statements for each field
-        const deliveredCases = [];
-        const openedCases = [];
-        const failedCases = [];
-
-        for (const recipientId of recipientIds) {
-            const deliveredTimestamp = delivered.get(recipientId);
-            const openedTimestamp = opened.get(recipientId);
-            const failedTimestamp = failed.get(recipientId);
-
-            if (deliveredTimestamp) {
-                const formattedTime = moment.utc(deliveredTimestamp).format('YYYY-MM-DD HH:mm:ss');
-                deliveredCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
-            }
-
-            if (openedTimestamp) {
-                const formattedTime = moment.utc(openedTimestamp).format('YYYY-MM-DD HH:mm:ss');
-                openedCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
-            }
-
-            if (failedTimestamp) {
-                const formattedTime = moment.utc(failedTimestamp).format('YYYY-MM-DD HH:mm:ss');
-                failedCases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
-            }
-        }
-
-        // Build the UPDATE query with CASE statements
-        // Only update if current value is NULL (handles out-of-order events)
+        // Build CASE statements for each event type
         const setClauses = [];
+        for (const {name, map, column} of eventTypes) {
+            const cases = [];
 
-        if (deliveredCases.length > 0) {
-            setClauses.push(`delivered_at = CASE WHEN delivered_at IS NULL THEN CASE id ${deliveredCases.join(' ')} ELSE delivered_at END ELSE delivered_at END`);
-        }
+            for (const recipientId of recipientIds) {
+                const timestamp = map.get(recipientId);
+                if (timestamp) {
+                    const formattedTime = moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss');
+                    cases.push(`WHEN '${recipientId}' THEN '${formattedTime}'`);
+                }
+            }
 
-        if (openedCases.length > 0) {
-            setClauses.push(`opened_at = CASE WHEN opened_at IS NULL THEN CASE id ${openedCases.join(' ')} ELSE opened_at END ELSE opened_at END`);
-        }
-
-        if (failedCases.length > 0) {
-            setClauses.push(`failed_at = CASE WHEN failed_at IS NULL THEN CASE id ${failedCases.join(' ')} ELSE failed_at END ELSE failed_at END`);
+            if (cases.length > 0) {
+                // Only update if current value is NULL (handles out-of-order events)
+                setClauses.push(`${column} = CASE WHEN ${column} IS NULL THEN CASE id ${cases.join(' ')} ELSE ${column} END ELSE ${column} END`);
+            }
         }
 
         if (setClauses.length === 0) {
@@ -257,21 +234,13 @@ class EmailEventStorage {
             WHERE id IN (${recipientIds.map(id => `'${id}'`).join(',')})
         `);
 
-        // Record metrics
-        this.recordEventStored('delivered', delivered.size);
-        this.recordEventStored('opened', opened.size);
-        this.recordEventStored('failed', failed.size);
-
-        // Clear the pending updates
-        const counts = {
-            delivered: delivered.size,
-            opened: opened.size,
-            failed: failed.size
-        };
-
-        this.#pendingUpdates.delivered.clear();
-        this.#pendingUpdates.opened.clear();
-        this.#pendingUpdates.failed.clear();
+        // Record metrics and collect counts
+        const counts = {delivered: 0, opened: 0, failed: 0};
+        for (const type of eventTypes) {
+            this.recordEventStored(type.name, type.map.size);
+            counts[type.name] = type.map.size;
+            type.map.clear();
+        }
 
         return counts;
     }
