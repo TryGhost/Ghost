@@ -2,7 +2,7 @@ import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
 import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 export type PostsProps = {
     posts: Activity[],
@@ -53,7 +53,7 @@ const Posts: React.FC<PostsProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <>

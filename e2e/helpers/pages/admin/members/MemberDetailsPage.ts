@@ -1,5 +1,5 @@
-import {Page, Locator} from '@playwright/test';
-import {AdminPage} from './AdminPage';
+import {AdminPage} from '../AdminPage';
+import {Locator, Page} from '@playwright/test';
 
 export class MemberDetailsPage extends AdminPage {
     readonly nameInput: Locator;

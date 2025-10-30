@@ -1,11 +1,8 @@
 import React from "react"
-import { LucideIcon, SidebarMenuButton, SidebarMenuItem } from "@tryghost/shade"
+import { SidebarMenuButton, SidebarMenuItem } from "@tryghost/shade"
 import { useBaseRoute } from "@tryghost/admin-x-framework"
 
-type IconName = keyof typeof LucideIcon
-
 interface NavLinkProps {
-    icon?: IconName
     label: string
     href: string
     className?: string
@@ -15,15 +12,16 @@ interface NavLinkProps {
 interface NavLinkComposition {
     Before: React.FC<{ children: React.ReactNode }>
     After: React.FC<{ children: React.ReactNode }>
+    Icon: React.FC<{ children: React.ReactNode }>
 }
 
 // Define the slot components before the main component
 const Before: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
 const After: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+const Icon: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
 
-const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, href, className, children }) => {
+const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ label, href, className, children }) => {
     const currentBaseRoute = useBaseRoute()
-    const Icon = icon ? (LucideIcon[icon] as React.ComponentType) : null
 
     // Determine if this link is active by comparing the base route
     // Strip hash prefix if present (e.g., "#/analytics" -> "/analytics")
@@ -35,6 +33,7 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
 
     let before: React.ReactNode = null
     let after: React.ReactNode = null
+    let icon: React.ReactNode = null
 
     React.Children.forEach(children, (child) => {
         if (React.isValidElement(child)) {
@@ -42,6 +41,8 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
                 before = (child.props as { children: React.ReactNode }).children
             } else if (child.type === After) {
                 after = (child.props as { children: React.ReactNode }).children
+            } else if (child.type === Icon) {
+                icon = (child.props as { children: React.ReactNode }).children
             }
         }
     })
@@ -51,7 +52,7 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
             {before}
             <SidebarMenuButton asChild isActive={isActive}>
                 <a href={href} aria-current={isActive ? 'page' : undefined}>
-                    {Icon && <Icon />}
+                    {icon}
                     <span>{label}</span>
                 </a>
             </SidebarMenuButton>
@@ -62,5 +63,6 @@ const NavLink: React.FC<NavLinkProps> & NavLinkComposition = ({ icon, label, hre
 
 NavLink.Before = Before
 NavLink.After = After
+NavLink.Icon = Icon
 
 export default NavLink

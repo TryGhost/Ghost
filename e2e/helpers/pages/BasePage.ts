@@ -1,6 +1,6 @@
-import {appConfig} from '../utils/app-config';
-import {PageHttpLogger} from './PageHttpLogger';
 import {Locator, Page} from '@playwright/test';
+import {PageHttpLogger} from './PageHttpLogger';
+import {appConfig} from '../utils/app-config';
 
 export interface pageGotoOptions {
     referer?: string;

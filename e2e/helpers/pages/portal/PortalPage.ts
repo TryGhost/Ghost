@@ -1,5 +1,5 @@
 import {BasePage} from '../BasePage';
-import {Page, FrameLocator} from '@playwright/test';
+import {FrameLocator, Page} from '@playwright/test';
 
 export class PortalPage extends BasePage {
     protected readonly portalFrame: FrameLocator;
