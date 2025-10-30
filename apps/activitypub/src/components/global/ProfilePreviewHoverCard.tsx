@@ -6,7 +6,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, H3, HoverCard, HoverCardContent, HoverCardTrigger, LucideIcon, Skeleton, abbreviateNumber} from '@tryghost/shade';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {useAccountForUser} from '../../hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 type ProfilePreviewHoverCardProps = {
     actor?: ActorProperties | Account | null;
@@ -30,7 +30,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
     isCurrentUser = false
 }) => {
     const [shouldFetch, setShouldFetch] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     let targetHandle = actor?.handle;
     if (!targetHandle && actor && isActorProperties(actor)) {

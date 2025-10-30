@@ -21,5 +21,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts", "vite-ember-assets.ts"]
+  "include": ["vite.config.ts", "vite-ember-assets.ts", "vite-backend-proxy.ts"]
 }

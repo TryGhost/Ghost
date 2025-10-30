@@ -7,7 +7,7 @@
         <title>{{post.title}}</title>
         {{>styles}}
     </head>
-    <body>
+    <body data-testid="email-preview-body">
         <span class="preheader">{{preheader}}</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
@@ -178,7 +178,7 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
                             <tr>
                                 <td class="wrapper">
-                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" data-testid="email-preview-content">
                                         <tr class="post-content-row">
                                             <td class="{{classes.body}}">
                                                 <!-- POST CONTENT START -->
