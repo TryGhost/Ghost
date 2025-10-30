@@ -40,7 +40,7 @@ export default class StateBridgeService extends Service {
     @action
     onUpdate(dataType, response) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation updating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
@@ -92,7 +92,7 @@ export default class StateBridgeService extends Service {
     @action
     onInvalidate(dataType) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation invalidating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
@@ -104,7 +104,7 @@ export default class StateBridgeService extends Service {
 
         if (singleton) {
             // eslint-disable-next-line no-console
-            console.warn(`An AdminX mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
+            console.warn(`An React Admin mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
             return;
         }
 
@@ -119,7 +119,7 @@ export default class StateBridgeService extends Service {
     @action
     onDelete(dataType, id) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation deleting ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
