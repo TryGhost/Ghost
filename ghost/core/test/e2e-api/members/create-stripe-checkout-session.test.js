@@ -523,5 +523,98 @@ describe('Create Stripe Checkout Session', function () {
 
             should(scope.isDone()).eql(true);
         });
+
+        it('Does pass UTM parameters to session metadata', async function () {
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
+                            }];
+                        }
+                    }
+
+                    return [500];
+                });
+
+            const scope = nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        const parsed = new URLSearchParams(body);
+
+                        // Check UTM parameters are passed through
+                        should(parsed.get('subscription_data[metadata][utm_source]')).eql('newsletter');
+                        should(parsed.get('subscription_data[metadata][utm_medium]')).eql('email');
+                        should(parsed.get('subscription_data[metadata][utm_campaign]')).eql('spring_sale');
+                        should(parsed.get('subscription_data[metadata][utm_term]')).eql('ghost_pro');
+                        should(parsed.get('subscription_data[metadata][utm_content]')).eql('header_link');
+
+                        return [200, {id: 'cs_123', url: 'https://site.com'}];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_7',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
+                    }
+
+                    return [500];
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'utm@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        urlHistory: [
+                            {
+                                path: '/pricing',
+                                time: Date.now(),
+                                referrerSource: 'google',
+                                referrerMedium: null,
+                                referrerUrl: null,
+                                utmSource: 'newsletter',
+                                utmMedium: 'email',
+                                utmCampaign: 'spring_sale',
+                                utmTerm: 'ghost_pro',
+                                utmContent: 'header_link'
+                            }
+                        ]
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot();
+
+            should(scope.isDone()).eql(true);
+        });
     });
 });

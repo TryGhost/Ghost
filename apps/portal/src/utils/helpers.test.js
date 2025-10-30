@@ -431,39 +431,39 @@ describe('Helpers - ', () => {
 
     describe('getUrlHistory', () => {
         beforeEach(() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {
+            vi.spyOn(console, 'warn').mockImplementation(() => {
                 // don't log for these tests
             });
         });
         afterEach(() => {
-            jest.restoreAllMocks();
+            vi.restoreAllMocks();
         });
 
         test('returns valid history ', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([
+            vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([
                 {
                     path: '/',
                     time: 0
                 }
             ]));
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toHaveLength(1);
         });
 
         test('ignores invalid history ', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
+            vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
         });
 
-        test('doesn\'t throw if localStorage is disabled', () => {
-            jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-                throw new Error('LocalStorage disabled');
+        test('doesn\'t throw if sessionStorage is disabled', () => {
+            vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+                throw new Error('SessionStorage disabled');
             });
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
         });
     });

@@ -41,9 +41,18 @@ const availableAppFlags = {
     https: 'Serve apps using HTTPS',
     offline: 'Run in offline mode (no Stripe webhooks will be forwarded)'
 }
-const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
+
+// Split args on '--' separator to separate app flags from pass-through args
+const doubleDashIndex = process.argv.lastIndexOf('--');
+const devArgs = doubleDashIndex === -1 ? process.argv : process.argv.slice(0, doubleDashIndex);
+const passThroughArgs = doubleDashIndex === -1 ? [] : process.argv.slice(doubleDashIndex + 1);
+
+const DASH_DASH_ARGS = devArgs.filter(a => a.startsWith('--')).map(a => a.slice(2));
 const ENV_ARGS = process.env.GHOST_DEV_APP_FLAGS?.split(',') || [];
 const GHOST_APP_FLAGS = [...ENV_ARGS, ...DASH_DASH_ARGS].filter(flag => flag.trim().length > 0);
+
+// Format pass-through args for command usage
+const PASS_THROUGH_FLAGS = passThroughArgs.join(' ');
 
 function showAvailableAppFlags() {
     console.log(chalk.blue('App flags can be enabled by setting the GHOST_DEV_APP_FLAGS environment variable to a comma separated list of flags.'));
@@ -95,12 +104,12 @@ const COMMAND_ADMIN = {
 
 const COMMAND_BROWSERTESTS = {
     name: 'browser-tests',
-    command: 'nx run ghost:test:browser',
+    command: `nx run ghost:test:browser${PASS_THROUGH_FLAGS ? ` -- ${PASS_THROUGH_FLAGS}`: ''}`,
     prefixColor: 'blue',
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
+const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',

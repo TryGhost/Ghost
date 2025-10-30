@@ -34,7 +34,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
         if (!isPostLoading && post?.email_only) {
-            navigate(`/analytics/${postId}`);
+            navigate(`/posts/analytics/${postId}`);
         }
     }, [isPostLoading, post?.email_only, navigate, postId]);
 
@@ -111,10 +111,6 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
 
-    // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing
-    const testingSiteUrl = siteUrl || 'https://levernews.com';
-
     // Memoize the processed locations data with percentages
     const processedLocationsData = useMemo<ProcessedLocationData[]>(() => {
         const processed = locationsData?.map(row => ({
@@ -172,7 +168,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                     data={sourcesData as BaseSourceData[] | null}
                                     range={chartRange}
                                     siteIcon={siteIcon}
-                                    siteUrl={testingSiteUrl}
+                                    siteUrl={siteUrl}
                                     totalVisitors={totalSourcesVisits}
                                 />
                             </div>
@@ -181,7 +177,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                         <div className='grow'>
                             <EmptyIndicator
                                 className='h-full'
-                                description='Try adjusting your date range to see more data.'
+                                description='Try adjusting filters to see more data.'
                                 title={`No visitors ${getPeriodText(range)}`}
                             >
                                 <LucideIcon.Globe strokeWidth={1.5} />

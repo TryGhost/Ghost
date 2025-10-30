@@ -3,7 +3,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import AccountEmailPage from './AccountEmailPage';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, context, ...utils} = render(
+    const {mockDoActionFn, context, ...utils} = render(
         <AccountEmailPage />,
         {
             overrideContext: {
@@ -17,7 +17,7 @@ const setup = (overrides) => {
     return {
         unsubscribeAllBtn,
         closeBtn,
-        mockOnActionFn,
+        mockDoActionFn,
         context,
         ...utils
     };
@@ -43,7 +43,7 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockOnActionFn, unsubscribeAllBtn, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        const {mockDoActionFn, unsubscribeAllBtn, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
         let checkboxes = getAllByRole('checkbox');
         let newsletter1Checkbox = checkboxes[0];
         let newsletter2Checkbox = checkboxes[1];
@@ -52,9 +52,9 @@ describe('Account Email Page', () => {
         expect(newsletter2Checkbox).toBeChecked();
 
         fireEvent.click(unsubscribeAllBtn);
-        expect(mockOnActionFn).toHaveBeenCalledTimes(2);
-        expect(mockOnActionFn).toHaveBeenCalledWith('showPopupNotification', {action: 'updated:success', message: 'Unsubscribed from all emails.'});
-        expect(mockOnActionFn).toHaveBeenLastCalledWith('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
+        expect(mockDoActionFn).toHaveBeenCalledTimes(2);
+        expect(mockDoActionFn).toHaveBeenCalledWith('showPopupNotification', {action: 'updated:success', message: 'Unsubscribed from all emails.'});
+        expect(mockDoActionFn).toHaveBeenLastCalledWith('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
 
         checkboxes = getAllByRole('checkbox');
         expect(checkboxes).toHaveLength(3);
@@ -77,26 +77,26 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockOnActionFn, getAllByTestId, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        const {mockDoActionFn, getAllByTestId, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
         let checkboxes = getAllByRole('checkbox');
         let newsletter1Checkbox = checkboxes[0];
         // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
         expect(newsletter1Checkbox).toBeChecked();
         let subscriptionToggles = getAllByTestId('switch-input');
         fireEvent.click(subscriptionToggles[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}]});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}]});
         fireEvent.click(subscriptionToggles[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}, {id: newsletterData[0].id}]});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}, {id: newsletterData[0].id}]});
     });
 
     test('can update comment notifications', async () => {
         const siteData = getSiteData();
-        const {mockOnActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData()});
+        const {mockDoActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData()});
         let subscriptionToggles = getAllByTestId('switch-input');
         fireEvent.click(subscriptionToggles[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
         fireEvent.click(subscriptionToggles[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: false});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: false});
     });
 
     test('displays help for members with email suppressions', async () => {
@@ -114,8 +114,8 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockOnActionFn} = setup({site: siteData, member: null});
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
+        const {mockDoActionFn} = setup({site: siteData, member: null});
+        expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
     });
 
     test('newsletters are not visible when newsletters are disabled on the site but has comments enabled', async () => {
@@ -125,7 +125,7 @@ describe('Account Email Page', () => {
             editorDefaultEmailRecipients: 'disabled',
             member: getMemberData({newsletters: newsletterData})
         });
-        
+
         const {getAllByTestId, getByText} = setup({site: siteData});
         const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
 

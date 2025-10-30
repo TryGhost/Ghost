@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
-import {Button, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
-import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
+import SourceIcon from '../../components/SourceIcon';
+import {Button, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {getFaviconDomain, getSymbol, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
@@ -37,13 +38,10 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
                 <TableRow key={row.source} className='last:border-none'>
                     <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                            <img
-                                alt=""
-                                className="size-4"
-                                src={row.iconSrc}
-                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                    e.currentTarget.src = defaultSourceIconUrl;
-                                }}
+                            <SourceIcon
+                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                displayName={row.displayName}
+                                iconSrc={row.iconSrc}
                             />
                             {row.linkUrl ? (
                                 <a
@@ -96,6 +94,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     const {data: globalData} = useGlobalData();
     const {data: mrrHistoryResponse} = useMrrHistory();
     const {appSettings} = useAppContext();
+    const navigate = useNavigate();
 
     // Use external sort state if provided, otherwise use internal state
     const [internalSortBy, setInternalSortBy] = useState<SourcesOrder>('free_members desc');
@@ -168,23 +167,19 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     if (!appSettings?.analytics.membersTrackSources) {
         return (
             <TableBody>
-                <TableRow>
-                    <TableCell className='py-12 group-hover:!bg-transparent' colSpan={4}>
-                        <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                            <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                    <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                </svg>
-                            </div>
-                            <div className='space-y-1'>
-                                <h3 className='text-sm font-medium text-foreground'>
-                                    Member sources have been disabled
-                                </h3>
-                                <p className='text-sm text-muted-foreground'>
-                                    Enable member source tracking in settings to see which content drives member growth.
-                                </p>
-                            </div>
-                        </div>
+                <TableRow className='last:border-none'>
+                    <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                        <EmptyIndicator
+                            actions={
+                                <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                    Open settings
+                                </Button>
+                            }
+                            description='Enable member source tracking in settings to see which content drives member growth.'
+                            title='Member sources have been disabled'
+                        >
+                            <LucideIcon.Activity />
+                        </EmptyIndicator>
                     </TableCell>
                 </TableRow>
             </TableBody>
@@ -208,23 +203,14 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                 />
             ) : (
                 <TableBody>
-                    <TableRow>
-                        <TableCell className='py-12' colSpan={4}>
-                            <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                                <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                    <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                        <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                    </svg>
-                                </div>
-                                <div className='space-y-1'>
-                                    <h3 className='text-sm font-medium text-foreground'>
-                                        No conversions {getPeriodText(range).toLowerCase()}
-                                    </h3>
-                                    <p className='text-sm text-muted-foreground'>
-                                        Try adjusting your date range to see more data.
-                                    </p>
-                                </div>
-                            </div>
+                    <TableRow className='last:border-none'>
+                        <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                            <EmptyIndicator
+                                description='Try adjusting your date range to see more data.'
+                                title={`No conversions ${getPeriodText(range)}`}
+                            >
+                                <LucideIcon.FileText strokeWidth={1.5} />
+                            </EmptyIndicator>
                         </TableCell>
                     </TableRow>
                 </TableBody>

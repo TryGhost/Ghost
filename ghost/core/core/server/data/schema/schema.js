@@ -1,7 +1,7 @@
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
  * New/Updated column maxlengths should meet these guidlines
- * 
+ *
  * Small strings = length 50
  * Medium strings = length 191
  * Large strings = length 2000 (use soft limits via validation for 191-2000)
@@ -525,6 +525,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        // attribution values from ghost-history (member attribution tracking script)
         attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
@@ -532,9 +533,16 @@ module.exports = {
             }
         },
         attribution_url: {type: 'string', maxlength: 2000, nullable: true},
+        // referrer values from browser, processed by our referrerParser library
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        // raw values from URL query parameters
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         source: {
             type: 'string', maxlength: 50, nullable: false, validations: {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
@@ -705,6 +713,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true},
+        // attribution values from ghost-history (member attribution tracking script)
         attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
@@ -712,9 +721,16 @@ module.exports = {
             }
         },
         attribution_url: {type: 'string', maxlength: 2000, nullable: true},
+        // referrer values from browser, processed by our referrerParser library
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        // raw values from URL query parameters
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offer_redemptions: {
@@ -746,6 +762,7 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
         amount: {type: 'integer', nullable: false},
         currency: {type: 'string', maxlength: 50, nullable: false},
+        // attribution values from ghost-history (member attribution tracking script)
         attribution_id: {type: 'string', maxlength: 24, nullable: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
@@ -753,9 +770,16 @@ module.exports = {
             }
         },
         attribution_url: {type: 'string', maxlength: 2000, nullable: true},
+        // referrer values from browser, processed by our referrerParser library
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        // raw values from URL query parameters
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         donation_message: {type: 'string', maxlength: 255, nullable: true} // https://docs.stripe.com/payments/checkout/custom-fields
     },
@@ -896,11 +920,13 @@ module.exports = {
     tokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 32, nullable: false, index: true},
+        uuid: {type: 'string', maxlength: 36, nullable: false, unique: true, validations: {isUUID: true}},
         data: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         first_used_at: {type: 'dateTime', nullable: true},
-        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        otc_used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     snippets: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

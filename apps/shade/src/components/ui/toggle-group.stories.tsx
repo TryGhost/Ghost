@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {useState} from 'react';
 import {ToggleGroup, ToggleGroupItem} from './toggle-group';
 import {Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Square, RectangleVertical} from 'lucide-react';
@@ -7,6 +7,20 @@ const meta = {
     title: 'Components / Toggle group',
     component: ToggleGroup,
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Group of toggle buttons. Supports single or multiple selection modes for mutually exclusive or independent options.'
+            }
+        }
+    },
+    decorators: [
+        Story => (
+            <div style={{padding: '24px'}}>
+                <Story />
+            </div>
+        )
+    ],
     argTypes: {
         type: {
             control: false,
@@ -43,7 +57,14 @@ const TextFormattingComponent = () => {
 };
 
 export const TextFormatting: Story = {
-    render: () => <TextFormattingComponent />
+    render: () => <TextFormattingComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Single selection toggle group for text formatting options like bold, italic, and underline.'
+            }
+        }
+    }
 };
 
 const TextAlignmentComponent = () => {
@@ -69,7 +90,14 @@ const TextAlignmentComponent = () => {
 };
 
 export const TextAlignment: Story = {
-    render: () => <TextAlignmentComponent />
+    render: () => <TextAlignmentComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Single selection toggle group for text alignment options - left, center, right.'
+            }
+        }
+    }
 };
 
 const ViewModeComponent = () => {
@@ -92,7 +120,14 @@ const ViewModeComponent = () => {
 };
 
 export const ViewMode: Story = {
-    render: () => <ViewModeComponent />
+    render: () => <ViewModeComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Toggle group for switching between different view modes or layouts.'
+            }
+        }
+    }
 };
 
 const WithTextComponent = () => {
@@ -115,7 +150,44 @@ const WithTextComponent = () => {
 };
 
 export const WithText: Story = {
-    render: () => <WithTextComponent />
+    render: () => <WithTextComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Toggle group with text labels instead of icons for clearer meaning.'
+            }
+        }
+    }
+};
+
+const ButtonSizedComponent = () => {
+    const [value, setValue] = useState<string>('preview');
+
+    return (
+        <ToggleGroup size='button' type="single" value={value} onValueChange={(newValue) => {
+            if (newValue) {
+                setValue(newValue);
+            }
+        }}>
+            <ToggleGroupItem aria-label="Preview" value="preview">
+                Preview
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Code" value="code">
+                Code
+            </ToggleGroupItem>
+        </ToggleGroup>
+    );
+};
+
+export const ButtonSized: Story = {
+    render: () => <ButtonSizedComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Toggle group with button-sized variant for a more prominent appearance, suitable for primary navigation controls.'
+            }
+        }
+    }
 };
 
 const NoSelectionComponent = () => {
@@ -137,5 +209,12 @@ const NoSelectionComponent = () => {
 };
 
 export const NoSelection: Story = {
-    render: () => <NoSelectionComponent />
+    render: () => <NoSelectionComponent />,
+    parameters: {
+        docs: {
+            description: {
+                story: 'Toggle group starting with no selection - all options are deselected initially.'
+            }
+        }
+    }
 };

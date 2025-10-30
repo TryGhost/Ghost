@@ -7,6 +7,7 @@ import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
 import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
+import {t} from '../../utils/i18n';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -39,7 +40,7 @@ export const AccountPlanPageStyles = `
     }
 `;
 
-function getConfirmationPageTitle({confirmationType, t}) {
+function getConfirmationPageTitle({confirmationType}) {
     if (confirmationType === 'changePlan') {
         return t('Confirm subscription');
     } else if (confirmationType === 'cancel') {
@@ -50,10 +51,10 @@ function getConfirmationPageTitle({confirmationType, t}) {
 }
 
 const Header = ({showConfirmation, confirmationType}) => {
-    const {member, t} = useContext(AppContext);
+    const {member} = useContext(AppContext);
     let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
     if (showConfirmation) {
-        title = getConfirmationPageTitle({confirmationType, t});
+        title = getConfirmationPageTitle({confirmationType});
     }
     return (
         <header className='gh-portal-detail-header'>
@@ -63,7 +64,7 @@ const Header = ({showConfirmation, confirmationType}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site, t} = useContext(AppContext);
+    const {site} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -109,7 +110,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
 
 // For confirmation flows
 const PlanConfirmationSection = ({plan, type, onConfirm}) => {
-    const {site, action, member, brandColor, t} = useContext(AppContext);
+    const {site, action, member, brandColor} = useContext(AppContext);
     const [reason, setReason] = useState('');
     const subscription = getMemberSubscription({member});
     const isRunning = ['updateSubscription:running', 'checkoutPlan:running', 'cancelSubscription:running'].includes(action);
@@ -313,7 +314,7 @@ export default class AccountPlanPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (!member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'signin'
             });
         }
@@ -349,14 +350,14 @@ export default class AccountPlanPage extends React.Component {
 
     handleSignout(e) {
         e.preventDefault();
-        this.context.onAction('signout');
+        this.context.doAction('signout');
     }
 
     onBack() {
         if (this.state.showConfirmation) {
             this.cancelConfirmPage();
         } else {
-            this.context.onAction('back');
+            this.context.doAction('back');
         }
     }
 
@@ -369,7 +370,7 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onPlanCheckout(e, priceId) {
-        const {onAction, member} = this.context;
+        const {doAction, member} = this.context;
         let {confirmationPlan, selectedPlan} = this.state;
         if (priceId) {
             selectedPlan = priceId;
@@ -380,10 +381,10 @@ export default class AccountPlanPage extends React.Component {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
-                onAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
+                doAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
             }
         } else {
-            onAction('checkoutPlan', {plan: selectedPlan});
+            doAction('checkoutPlan', {plan: selectedPlan});
         }
     }
 
@@ -434,7 +435,7 @@ export default class AccountPlanPage extends React.Component {
         if (!subscription) {
             return null;
         }
-        this.context.onAction('cancelSubscription', {
+        this.context.doAction('cancelSubscription', {
             subscriptionId: subscription.id,
             cancelAtPeriodEnd: true,
             cancellationReason: reason

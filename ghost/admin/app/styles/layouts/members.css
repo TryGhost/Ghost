@@ -98,6 +98,10 @@
     margin: 0 -48px;
 }
 
+.members-header .gh-canvas-header-content {
+    z-index: 1100; /* Ensure the header content is above loading spinner */
+}
+
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 32px;
@@ -658,9 +662,9 @@ p.gh-members-list-email {
 
 
 .gh-members-help-card:hover {
-    box-shadow: 
-        0 0 1px rgba(0,0,0,.12), 
-        0 1px 6px rgba(0,0,0,.03), 
+    box-shadow:
+        0 0 1px rgba(0,0,0,.12),
+        0 1px 6px rgba(0,0,0,.03),
         0 8px 10px -8px rgba(0,0,0,.1);
     transition: all 0.15s ease-in-out;
 }

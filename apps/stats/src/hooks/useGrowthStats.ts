@@ -73,8 +73,11 @@ const calculateTotals = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             directions.free = freeChange > 0 ? 'up' : freeChange < 0 ? 'down' : 'same';
         }
 
-        if (first.paid > 0) {
-            const paidChange = ((latest.paid - first.paid) / first.paid) * 100;
+        const firstPaidTotal = first.paid + first.comped;
+        const latestPaidTotal = latest.paid + latest.comped;
+        
+        if (firstPaidTotal > 0) {
+            const paidChange = ((latestPaidTotal - firstPaidTotal) / firstPaidTotal) * 100;
             percentChanges.paid = formatPercentage(paidChange / 100);
             directions.paid = paidChange > 0 ? 'up' : paidChange < 0 ? 'down' : 'same';
         }
@@ -165,7 +168,8 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         const free = lastMemberItem?.free ?? 0;
         const paid = lastMemberItem?.paid ?? 0;
         const comped = lastMemberItem?.comped ?? 0;
-        const value = free + paid + comped;
+        const paidTotal = paid + comped;
+        const value = free + paidTotal;
         const mrr = lastMrrItem?.mrr ?? 0;
         const paidSubscribed = lastMemberItem?.paid_subscribed ?? 0;
         const paidCanceled = lastMemberItem?.paid_canceled ?? 0;
@@ -174,7 +178,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             date,
             value,
             free,
-            paid,
+            paid: paidTotal,
             comped,
             mrr,
             paid_subscribed: paidSubscribed,
@@ -200,7 +204,11 @@ export const useGrowthStats = (range: number) => {
         }
     });
 
-    const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory();
+    const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory({
+        searchParams: {
+            date_from: memberDataStartDate
+        }
+    });
 
     // Fetch subscription stats for real subscription events
     const {data: subscriptionStatsResponse, isLoading: isSubscriptionLoading} = useSubscriptionStats();

@@ -6,7 +6,7 @@ export default class CloseButton extends React.Component {
     static contextType = AppContext;
 
     closePopup = () => {
-        this.context.onAction('closePopup');
+        this.context.doAction('closePopup');
     };
 
     render() {

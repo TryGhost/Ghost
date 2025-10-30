@@ -130,6 +130,8 @@ Caddyfile
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
 /ghost/core/playwright-report
+/playwright-report
+/test-results
 
 # Admin
 /ghost/admin/dist
@@ -161,8 +163,6 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
-/e2e/build
-
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 
@@ -194,3 +194,8 @@ yalc.lock
 
 # e2e test suite
 /e2e/test-results
+/e2e/playwright-report
+/e2e/build
+/e2e/playwright
+/e2e/data
+.env.tinybird

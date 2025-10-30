@@ -1,0 +1,289 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Authors Content API Can request author by id including post count 1: [body] 1`] = `
+Object {
+  "authors": Array [
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Joe Bloggs",
+      "profile_image": "https://example.com/super_photo.jpg",
+      "slug": "joe-bloggs",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+}
+`;
+
+exports[`Authors Content API Can request author by id including post count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "459",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authors Content API Can request authors 1: [body] 1`] = `
+Object {
+  "authors": Array [
+    Object {
+      "bio": "You can delete this user to remove all the welcome posts",
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": "ghost",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "The Internet",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Ghost",
+      "profile_image": "https://static.ghost.org/v4.0.0/images/ghost-user.png",
+      "slug": "ghost",
+      "threads": null,
+      "tiktok": null,
+      "twitter": "ghost",
+      "url": "http://127.0.0.1:2369/author/ghost/",
+      "website": "https://ghost.org",
+      "youtube": null,
+    },
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Joe Bloggs",
+      "profile_image": "https://example.com/super_photo.jpg",
+      "slug": "joe-bloggs",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Slimer McEctoplasm",
+      "profile_image": null,
+      "slug": "slimer-mcectoplasm",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/404/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Authors Content API Can request authors 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1429",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authors Content API Can request authors including post count 1: [body] 1`] = `
+Object {
+  "authors": Array [
+    Object {
+      "bio": "You can delete this user to remove all the welcome posts",
+      "bluesky": null,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "cover_image": null,
+      "facebook": "ghost",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "The Internet",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Ghost",
+      "profile_image": "https://static.ghost.org/v4.0.0/images/ghost-user.png",
+      "slug": "ghost",
+      "threads": null,
+      "tiktok": null,
+      "twitter": "ghost",
+      "url": "http://127.0.0.1:2369/author/ghost/",
+      "website": "https://ghost.org",
+      "youtube": null,
+    },
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Joe Bloggs",
+      "profile_image": "https://example.com/super_photo.jpg",
+      "slug": "joe-bloggs",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "count": Object {
+        "posts": Any<Number>,
+      },
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Slimer McEctoplasm",
+      "profile_image": null,
+      "slug": "slimer-mcectoplasm",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/404/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
+}
+`;
+
+exports[`Authors Content API Can request authors including post count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authors Content API Can request single author 1: [body] 1`] = `
+Object {
+  "authors": Array [
+    Object {
+      "bio": "bio",
+      "bluesky": null,
+      "cover_image": null,
+      "facebook": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "instagram": null,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Joe Bloggs",
+      "profile_image": "https://example.com/super_photo.jpg",
+      "slug": "joe-bloggs",
+      "threads": null,
+      "tiktok": null,
+      "twitter": null,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+}
+`;
+
+exports[`Authors Content API Can request single author 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "439",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

@@ -82,7 +82,7 @@ describe('Unit: Service: notifications-count', function () {
                 })];
             });
 
-            server.get(`${siteUrl}/.ghost/activitypub/v1/notifications/unread/count`, function (request) {
+            server.get(`${siteUrl}/.ghost/activitypub/stable/notifications/unread/count`, function (request) {
                 expect(request.requestHeaders.Authorization).to.equal(`Bearer ${token}`);
                 expect(request.requestHeaders.Accept).to.equal('application/activity+json');
                 
@@ -130,7 +130,7 @@ describe('Unit: Service: notifications-count', function () {
                 })];
             });
 
-            server.get(`${siteUrl}/.ghost/activitypub/v1/notifications/unread/count`, function () {
+            server.get(`${siteUrl}/.ghost/activitypub/stable/notifications/unread/count`, function () {
                 return [200, {'Content-Type': 'application/json'}, JSON.stringify({
                     count: 5
                 })];

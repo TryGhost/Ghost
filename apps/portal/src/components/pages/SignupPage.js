@@ -10,6 +10,7 @@ import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
+import {t} from '../../utils/i18n';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -361,7 +362,7 @@ class SignupPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'accountHome'
             });
         }
@@ -395,7 +396,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
+            ...ValidateInputForm({fields: this.getInputFields({state})}),
             checkbox: checkboxError
         };
     }
@@ -406,7 +407,7 @@ class SignupPage extends React.Component {
                 errors: this.getFormErrors(state)
             };
         }, () => {
-            const {site, onAction} = this.context;
+            const {site, doAction} = this.context;
             const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
 
@@ -430,7 +431,7 @@ class SignupPage extends React.Component {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan, token});
+                    doAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -491,7 +492,7 @@ class SignupPage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
-        const {site: {portal_name: portalName}, t} = this.context;
+        const {site: {portal_name: portalName}} = this.context;
 
         const errors = state.errors || {};
         const fields = [
@@ -502,7 +503,7 @@ class SignupPage extends React.Component {
                 label: t('Email'),
                 name: 'email',
                 required: true,
-                tabindex: 2,
+                tabIndex: 2,
                 errorMessage: errors.email || ''
             },
             {
@@ -513,8 +514,8 @@ class SignupPage extends React.Component {
                 label: t('Phone number'),
                 name: 'phonenumber',
                 required: false,
-                tabindex: -1,
-                autocomplete: 'off',
+                tabIndex: -1,
+                autoComplete: 'off',
                 hidden: true
             }
         ];
@@ -528,7 +529,7 @@ class SignupPage extends React.Component {
                 label: t('Name'),
                 name: 'name',
                 required: true,
-                tabindex: 1,
+                tabIndex: 1,
                 errorMessage: errors.name || ''
             });
         }
@@ -585,7 +586,7 @@ class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action, site, brandColor, pageQuery, t} = this.context;
+        const {action, site, brandColor, pageQuery} = this.context;
 
         if (isInviteOnly({site}) || !hasAvailablePrices({site, pageQuery})) {
             return null;
@@ -621,13 +622,13 @@ class SignupPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
-                tabIndex='3'
+                tabIndex={3}
             />
         );
     }
 
     renderProducts() {
-        const {site, pageQuery, t} = this.context;
+        const {site, pageQuery} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const errors = this.state.errors || {};
         const priceErrors = {};
@@ -650,7 +651,7 @@ class SignupPage extends React.Component {
     }
 
     renderFreeTrialMessage() {
-        const {site, t, pageQuery} = this.context;
+        const {site, pageQuery} = this.context;
         if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             return (
                 <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
@@ -662,7 +663,7 @@ class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const {brandColor, onAction, t} = this.context;
+        const {brandColor, doAction} = this.context;
         return (
             <div>
                 {this.renderFreeTrialMessage()}
@@ -673,7 +674,7 @@ class SignupPage extends React.Component {
                         data-testid='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
-                        onClick={() => onAction('switchPage', {page: 'signin'})}
+                        onClick={() => doAction('switchPage', {page: 'signin'})}
                     >
                         <span>{t('Sign in')}</span>
                     </button>
@@ -768,7 +769,6 @@ class SignupPage extends React.Component {
     }
 
     renderPaidMembersOnlyMessage() {
-        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -785,7 +785,6 @@ class SignupPage extends React.Component {
     }
 
     renderInviteOnlyMessage() {
-        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -802,7 +801,6 @@ class SignupPage extends React.Component {
     }
 
     renderMembersDisabledMessage() {
-        const {t} = this.context;
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -884,7 +882,7 @@ class SignupPage extends React.Component {
                                     showNewsletterSelection: false
                                 });
                             } else {
-                                this.context.onAction('closePopup');
+                                this.context.doAction('closePopup');
                             }
                         }}
                     />

@@ -195,7 +195,7 @@ describe('EmailAnalyticsService', function () {
 
             it('returns 0 when nothing is scheduled', async function () {
                 const result = await service.fetchScheduled();
-                result.should.equal(0);
+                result.eventCount.should.equal(0);
                 processEventBatchStub.called.should.be.false();
                 aggregateStatsStub.called.should.be.false();
             });
@@ -207,7 +207,7 @@ describe('EmailAnalyticsService', function () {
                 });
                 service.cancelScheduled();
                 const result = await service.fetchScheduled();
-                result.should.equal(0);
+                result.eventCount.should.equal(0);
                 processEventBatchStub.called.should.be.false();
                 aggregateStatsStub.called.should.be.false();
             });
@@ -220,7 +220,7 @@ describe('EmailAnalyticsService', function () {
 
                 const result = await service.fetchScheduled({maxEvents: 100});
 
-                result.should.equal(10);
+                result.eventCount.should.equal(10);
                 setJobStatusStub.calledOnce.should.be.true();
                 processEventBatchStub.calledOnce.should.be.true();
             });
@@ -231,7 +231,7 @@ describe('EmailAnalyticsService', function () {
                     end: new Date(2023, 0, 1)
                 });
                 const result = await service.fetchScheduled({maxEvents: 100});
-                result.should.equal(0);
+                result.eventCount.should.equal(0);
             });
 
             it('resets fetchScheduledData when no events are fetched', async function () {
@@ -252,7 +252,7 @@ describe('EmailAnalyticsService', function () {
                     end: new Date(2023, 0, 2)
                 });
                 const result = await service.fetchScheduled({maxEvents: 100});
-                result.should.equal(0);
+                result.eventCount.should.equal(0);
             });
         });
 

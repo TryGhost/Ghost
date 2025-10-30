@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Bell, User} from 'lucide-react';
 
 import {Navbar, NavbarActions} from './navbar';
@@ -10,7 +10,12 @@ const meta = {
     component: Navbar,
     tags: ['autodocs'],
     parameters: {
-        layout: 'fullscreen'
+        layout: 'fullscreen',
+        docs: {
+            description: {
+                component: 'Navigation bar component for page-level navigation. Provides flexible layout with menu items and actions.'
+            }
+        }
     }
 } satisfies Meta<typeof Navbar>;
 
@@ -39,5 +44,12 @@ export const Default: Story = {
                 </NavbarActions>
             </>
         )
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Complete navbar with navigation menu and action buttons for a typical page header.'
+            }
+        }
     }
 };

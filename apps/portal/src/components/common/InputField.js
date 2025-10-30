@@ -94,8 +94,8 @@ function InputField({
     onChange = () => {},
     onBlur = () => {},
     onKeyDown = () => {},
-    tabindex,
-    maxlength,
+    tabIndex,
+    maxLength,
     autoFocus,
     errorMessage
 }) {
@@ -113,18 +113,29 @@ function InputField({
         disabled = true;
     }
 
-    let autocomplete = '';
-    let autocorrect = '';
-    let autocapitalize = '';
+    let autoComplete = '';
+    let autoCorrect = '';
+    let autoCapitalize = '';
+    let inputMode;
+    let pattern;
     switch (id) {
     case 'input-email':
-        autocomplete = 'off';
-        autocorrect = 'off';
-        autocapitalize = 'off';
+        autoComplete = 'off';
+        autoCorrect = 'off';
+        autoCapitalize = 'off';
         break;
     case 'input-name':
-        autocomplete = 'off';
-        autocorrect = 'off';
+        autoComplete = 'off';
+        autoCorrect = 'off';
+        break;
+    case 'input-otc':
+        autoComplete = 'one-time-code';
+        autoCorrect = 'off';
+        autoCapitalize = 'off';
+        inputMode = 'numeric';
+        pattern = '[0-9]*';
+        placeholder ??= '• • • • • •';
+
         break;
     default:
         break;
@@ -153,12 +164,14 @@ function InputField({
                 onKeyDown={e => onKeyDown(e, name)}
                 onBlur={e => onBlur(e, name)}
                 disabled={disabled}
-                tabIndex={tabindex}
-                maxLength={maxlength}
-                autoComplete={autocomplete}
-                autoCorrect={autocorrect}
-                autoCapitalize={autocapitalize}
+                tabIndex={tabIndex}
+                maxLength={maxLength}
+                autoComplete={autoComplete}
+                autoCorrect={autoCorrect}
+                autoCapitalize={autoCapitalize}
                 aria-label={label}
+                inputMode={inputMode}
+                pattern={pattern}
             />
         </section>
     );

@@ -1,7 +1,10 @@
-import React from 'react';
-import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
+import React, {useState} from 'react';
+import SourceIcon from '../../components/SourceIcon';
+import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, TabType, UtmCampaignTabs, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -34,22 +37,20 @@ export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data
                                     <div className='truncate font-medium'>
                                         {row.linkUrl ?
                                             <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span className='group-hover/link:underline'>{row.displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span>{row.displayName}</span>
                                             </span>
                                         }
@@ -67,6 +68,13 @@ export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data
         </DataList>
     );
 };
+
+interface SourcesData {
+    source?: string | number;
+    visits?: number;
+    [key: string]: unknown;
+    percentage?: number;
+}
 
 interface SourcesCardProps {
     title?: string;
@@ -92,16 +100,104 @@ export const Sources: React.FC<SourcesCardProps> = ({
     tableOnly = false,
     topSourcesLimit = 10
 }) => {
+    const {data: globalData, statsConfig, audience, post, isPostLoading} = useGlobalData();
+    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
+
+    // Check if UTM tracking is enabled in labs
+    const utmTrackingEnabled = globalData?.labs?.utmTracking || false;
+
+    // Get date range parameters
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    // Construct params object
+    const params = React.useMemo(() => {
+        const baseParams = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            timezone: timezone,
+            member_status: getAudienceQueryParam(audience),
+            post_uuid: ''
+        };
+
+        if (!isPostLoading && post?.uuid) {
+            return {
+                ...baseParams,
+                post_uuid: post.uuid
+            };
+        }
+
+        return baseParams;
+    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience]);
+
+    // Map campaign types to endpoints
+    const campaignEndpointMap: Record<CampaignType, string> = {
+        '': '',
+        'UTM sources': 'api_top_utm_sources',
+        'UTM mediums': 'api_top_utm_mediums',
+        'UTM campaigns': 'api_top_utm_campaigns',
+        'UTM contents': 'api_top_utm_contents',
+        'UTM terms': 'api_top_utm_terms'
+    };
+
+    // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
+    const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
+    const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
+        endpoint: campaignEndpoint,
+        statsConfig: statsConfig || {id: ''},
+        params: params || {},
+        enabled: utmTrackingEnabled && selectedTab === 'campaigns' && !!selectedCampaign
+    });
+
+    // Select and transform the appropriate data based on current view
+    const displayData = React.useMemo(() => {
+        // If we're viewing UTM campaigns, use and transform the UTM data
+        if (selectedTab === 'campaigns' && selectedCampaign) {
+            // If UTM data is still loading or undefined, return null
+            if (!utmData) {
+                return null;
+            }
+
+            // Map UTM field names to the generic key name
+            const utmKeyMap: Record<CampaignType, string> = {
+                '': '',
+                'UTM sources': 'utm_source',
+                'UTM mediums': 'utm_medium',
+                'UTM campaigns': 'utm_campaign',
+                'UTM contents': 'utm_content',
+                'UTM terms': 'utm_term'
+            };
+
+            const utmKey = utmKeyMap[selectedCampaign];
+            if (!utmKey) {
+                return utmData;
+            }
+
+            // Transform the data to use 'source' as the key, omitting the original utm_* field
+            return utmData.map((item: SourcesData) => {
+                const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
+                return {
+                    ...rest,
+                    source: String(utmValue || '(not set)')
+                };
+            });
+        }
+
+        // Default to regular sources data
+        return data;
+    }, [data, utmData, selectedTab, selectedCampaign]);
+
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
         return processSources({
-            data,
+            data: displayData,
             mode: 'visits',
             siteUrl,
             siteIcon,
             defaultSourceIconUrl
         });
-    }, [data, siteUrl, siteIcon, defaultSourceIconUrl]);
+    }, [displayData, siteUrl, siteIcon, defaultSourceIconUrl]);
 
     // Extend processed data with percentage values for visits mode
     const extendedData = React.useMemo(() => {
@@ -114,7 +210,8 @@ export const Sources: React.FC<SourcesCardProps> = ({
 
     const topSources = extendedData.slice(0, topSourcesLimit);
 
-    // Generate description based on mode and range
+    // Generate title and description based on mode and range
+    const cardTitle = selectedTab === 'campaigns' && selectedCampaign ? `${selectedCampaign}` : 'Top sources';
     const cardDescription = `How readers found this post ${range && ` ${getPeriodText(range)}`}`;
 
     if (tableOnly) {
@@ -139,7 +236,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                             </SheetTrigger>
                             <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                                 <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
-                                    <SheetTitle>Sources</SheetTitle>
+                                    <SheetTitle>{cardTitle}</SheetTitle>
                                     <SheetDescription>{cardDescription}</SheetDescription>
                                 </SheetHeader>
                                 <div className='group/datalist'>
@@ -158,29 +255,45 @@ export const Sources: React.FC<SourcesCardProps> = ({
         );
     }
 
+    const isLoading = isPostLoading || isUtmLoading;
+
     return (
         <Card className='group/datalist'>
             <div className='flex items-center justify-between p-6'>
                 <CardHeader className='p-0'>
-                    <CardTitle>Top sources</CardTitle>
+                    <CardTitle>{cardTitle}</CardTitle>
                     <CardDescription>{cardDescription}</CardDescription>
                 </CardHeader>
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <Separator />
-                {topSources.length > 0 ? (
-                    <SourcesTable
-                        data={topSources}
-                        dataTableHeader={false}
-                        defaultSourceIconUrl={defaultSourceIconUrl}
-                        range={range}
-                    />
-                ) : (
-                    <div className='py-20 text-center text-sm text-gray-700'>
-                        No sources data available.
+                {utmTrackingEnabled && (
+                    <div className='mb-4'>
+                        <UtmCampaignTabs
+                            selectedCampaign={selectedCampaign}
+                            selectedTab={selectedTab}
+                            onCampaignChange={setSelectedCampaign}
+                            onTabChange={setSelectedTab}
+                        />
                     </div>
                 )}
+                <div className='h-[1px] w-full bg-border' />
+                {isLoading ?
+                    <SkeletonTable lines={5} />
+                    :
+                    (topSources.length > 0 ? (
+                        <SourcesTable
+                            data={topSources}
+                            dataTableHeader={false}
+                            defaultSourceIconUrl={defaultSourceIconUrl}
+                            range={range}
+                        />
+                    ) : (
+                        <div className='py-20 text-center text-sm text-gray-700'>
+                    No sources data available.
+                        </div>
+                    ))
+                }
             </CardContent>
             {extendedData.length > 10 &&
                 <CardFooter>
@@ -190,7 +303,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
                             <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
-                                <SheetTitle>Sources</SheetTitle>
+                                <SheetTitle>{cardTitle}</SheetTitle>
                                 <SheetDescription>{cardDescription}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>

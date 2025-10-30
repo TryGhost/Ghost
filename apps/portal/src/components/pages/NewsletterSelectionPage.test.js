@@ -26,7 +26,7 @@ const mockNewsletters = [
 ];
 
 const setup = () => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <NewsletterSelectionPage
             pageData={{
                 name: 'Test User',
@@ -48,14 +48,14 @@ const setup = () => {
     return {
         title,
         continueBtn,
-        mockOnActionFn,
+        mockDoActionFn,
         ...utils
     };
 };
 
 describe('NewsletterSelectionPage', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     test('renders', () => {
@@ -80,12 +80,12 @@ describe('NewsletterSelectionPage', () => {
         expect(lockIcon).toBeInTheDocument();
     });
 
-    test('calls onAction with signup data when continue is clicked', async () => {
-        const {continueBtn, mockOnActionFn} = setup();
+    test('calls doAction with signup data when continue is clicked', async () => {
+        const {continueBtn, mockDoActionFn} = setup();
 
         fireEvent.click(continueBtn);
 
-        expect(mockOnActionFn).toHaveBeenCalledWith('signup', {
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', {
             name: 'Test User',
             email: 'test@example.com',
             plan: 'free',
@@ -96,7 +96,7 @@ describe('NewsletterSelectionPage', () => {
     });
 
     test('allows selecting multiple free newsletters', async () => {
-        const {getAllByTestId, continueBtn, mockOnActionFn} = setup();
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
 
         // Find and click the switch for the additional free newsletter
         const switches = getAllByTestId('switch-input');
@@ -106,7 +106,7 @@ describe('NewsletterSelectionPage', () => {
         fireEvent.click(continueBtn);
 
         // Verify both newsletters are included
-        expect(mockOnActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
             newsletters: expect.arrayContaining([
                 {name: 'Free Newsletter', id: '1'},
                 {name: 'Another Free Newsletter', id: '3'}
@@ -115,7 +115,7 @@ describe('NewsletterSelectionPage', () => {
     });
 
     test('allows deselecting default newsletter', async () => {
-        const {getAllByTestId, continueBtn, mockOnActionFn} = setup();
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
 
         // Find and click the switch for the default newsletter
         const switches = getAllByTestId('switch-input');
@@ -125,7 +125,7 @@ describe('NewsletterSelectionPage', () => {
         fireEvent.click(continueBtn);
 
         // Verify no newsletters are included
-        expect(mockOnActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
             newsletters: []
         }));
     });
