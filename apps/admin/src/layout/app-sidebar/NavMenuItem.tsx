@@ -14,12 +14,12 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
 }
 
 type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
-    href: string
+    href?: string
 };
 function NavMenuLink({ href, children, ...props }: NavMenuLinkProps) {
     const currentBaseRoute = useBaseRoute()
-    const normalizedHref = href.startsWith('#') ? href.slice(1) : href
-    const linkBaseRoute = normalizedHref.split('/')[1]
+    const normalizedHref = href?.startsWith('#') ? href.slice(1) : href
+    const linkBaseRoute = normalizedHref?.split('/')[1]
     const isActive = currentBaseRoute === linkBaseRoute
 
     return (

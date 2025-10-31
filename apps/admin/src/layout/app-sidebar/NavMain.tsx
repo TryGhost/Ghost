@@ -8,7 +8,7 @@ import {
 } from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import NetworkIcon from "./icons/NetworkIcon";
-import { NavMenuItem } from "./NavMenu";
+import { NavMenuItem } from "./NavMenuItem";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const site = useBrowseSite();
