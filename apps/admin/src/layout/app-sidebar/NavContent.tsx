@@ -19,10 +19,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                 <SidebarMenu>
                     <NavMenuItem>
                         <Button
-                            variant='ghost'
+                            aria-controls="posts-submenu"
+                            aria-expanded={postsExpanded}
                             aria-label="Toggle post views"
+                            variant='ghost'
                             size='icon'
-                            className='!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent'
+                            className='!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent'
                             onClick={() =>
                                 setPostsExpanded(!postsExpanded)
                             }
