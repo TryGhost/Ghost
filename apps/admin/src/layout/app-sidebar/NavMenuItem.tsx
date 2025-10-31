@@ -17,13 +17,17 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
 type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
     href?: string
     target?: string
-    /**
-     * When true, marks the link active for any descendant path (e.g., /members/zimo)
-     * and ignores query params when determining active state.
-     */
+    rel?: string
     activeOnSubpath?: boolean
 };
-function NavMenuLink({ href, target, activeOnSubpath = false, children, ...props }: NavMenuLinkProps) {
+function NavMenuLink({
+    href,
+    target,
+    rel,
+    activeOnSubpath = false,
+    children,
+    ...props
+}: NavMenuLinkProps) {
     const location = useLocation();
     const currentBaseRoute = useBaseRoute();
 
@@ -52,6 +56,7 @@ function NavMenuLink({ href, target, activeOnSubpath = false, children, ...props
             {...props}>
             <a
                 href={href}
+                rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
                 target={target}
                 aria-current={isActive ? 'page' : undefined}
             >
