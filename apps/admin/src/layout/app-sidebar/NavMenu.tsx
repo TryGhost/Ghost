@@ -3,41 +3,41 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@tryghost/shade';
+import { useBaseRoute } from '@tryghost/admin-x-framework';
 
-// Example composition:
-
-// <NavmenuItem>
-//     before
-//     <NavMenuItem.Link>
-//         <LucideIcon.User />
-//         <NavMenuItem.Label>User</NavMenuItem.Label>
-//     </NavMenuItem.Link>
-//     after
-// </NavmenuItem>
-
-function NavMenuItem({ ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
+function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
         <SidebarMenuItem {...props}>
-            children
+            {children}
         </SidebarMenuItem>
     );
 }
 
-function NavMenuLink({ ...props }: React.ComponentProps<typeof SidebarMenuButton>) {
-    const isActive = false;
+type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
+    href: string
+};
+function NavMenuLink({ href, children, ...props }: NavMenuLinkProps) {
+    const currentBaseRoute = useBaseRoute()
+    const normalizedHref = href.startsWith('#') ? href.slice(1) : href
+    const linkBaseRoute = normalizedHref.split('/')[1]
+    const isActive = currentBaseRoute === linkBaseRoute
 
     return (
-        <SidebarMenuButton asChild isActive={isActive} {...props}>
-            <a href='' aria-current={isActive ? 'page' : undefined}>
-                children
+        <SidebarMenuButton {...props} asChild isActive={isActive}>
+            <a href={href} aria-current={isActive ? 'page' : undefined}>
+                {children}
             </a>
         </SidebarMenuButton>
     )
 }
 
-function NavMenuLabel() {
+interface NavMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement>
+{
+    children?: React.ReactNode
+}
+function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
     return (
-        <span>label</span>
+        <span {...props}>{children}</span>
     );
 }
 
