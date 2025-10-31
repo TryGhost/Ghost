@@ -135,6 +135,21 @@ class SettingsHelpers {
         return supportAddress;
     }
 
+    getMembersTransactionalAddress() {
+        let transactionalAddress = this.settingsCache.get('members_transactional_address');
+
+        if (!transactionalAddress) {
+            // If no transactional address is configured, fall back to support address
+            return this.getMembersSupportAddress();
+        }
+
+        // Any fromAddress without domain uses site domain
+        if (transactionalAddress.indexOf('@') < 0) {
+            return `${transactionalAddress}@${this.getDefaultEmailDomain()}`;
+        }
+        return transactionalAddress;
+    }
+
     /**
      * @deprecated Use getDefaultEmail().address (without name) or EmailAddressParser.stringify(this.getDefaultEmail()) (with name) instead
      */
