@@ -8,7 +8,6 @@ import {
     SidebarMenu,
     SidebarMenuBadge
 } from "@tryghost/shade"
-import NavLink from "./NavLink"
 import { NavMenuItem } from "./NavMenuItem";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
@@ -51,21 +50,23 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     {postsExpanded && (
                         <div className="mb-5">
-                            <NavLink
-                                label="Drafts"
-                                href="#/posts?type=draft"
-                                className="[&_a]:pl-9"
-                            />
-                            <NavLink
-                                label="Scheduled"
-                                href="#/posts?type=scheduled"
-                                className="[&_a]:pl-9"
-                            />
-                            <NavLink
-                                label="Published"
-                                href="#/posts?type=published"
-                                className="[&_a]:pl-9"
-                            />
+                            <NavMenuItem>
+                                <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
+                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
+
+                            <NavMenuItem>
+                                <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
+                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
+
+                            <NavMenuItem>
+                                <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
+                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
                         </div>
                     )}
 
