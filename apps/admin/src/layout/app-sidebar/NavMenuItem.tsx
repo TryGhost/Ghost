@@ -40,6 +40,7 @@ function NavMenuLink({
     const linkBaseRoute = linkPath.split('/')[1] ?? '';
 
     let isActive = false;
+
     if (activeOnSubpath) {
         // Match by first segment only; ignore query and deeper segments
         isActive = !!linkBaseRoute && currentBaseRoute === linkBaseRoute;
