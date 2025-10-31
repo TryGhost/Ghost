@@ -85,7 +85,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/members">
+                        <NavMenuItem.Link href="#/members" activeOnSubpath>
                             <LucideIcon.Users />
                             <NavMenuItem.Label>Members</NavMenuItem.Label>
                         </NavMenuItem.Link>
