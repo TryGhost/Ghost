@@ -21,7 +21,7 @@ class EmailServiceWrapper {
         const SendingService = require('./SendingService');
         const BatchSendingService = require('./BatchSendingService');
         const EmailSegmenter = require('./EmailSegmenter');
-        const MailgunEmailProvider = require('./MailgunEmailProvider');
+        const adapterManager = require('../adapter-manager');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');
@@ -78,7 +78,9 @@ class EmailServiceWrapper {
             }
         });
 
-        const mailgunEmailProvider = new MailgunEmailProvider({
+        // Get email provider adapter from AdapterManager
+        // Runtime config (mailgunClient, errorHandler) is injected here
+        const mailgunEmailProvider = adapterManager.getAdapter('email', {
             mailgunClient,
             errorHandler
         });
