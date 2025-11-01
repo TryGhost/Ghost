@@ -178,28 +178,80 @@ module.exports = {
         await db.knex('emails').update(updateData).where('id', emailId);
     },
 
-    async aggregateMemberStats(memberId) {
-        const {trackedEmailCount} = await db.knex('email_recipients')
-            .select(db.knex.raw('COUNT(email_recipients.id) as trackedEmailCount'))
-            .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
-            .where('email_recipients.member_id', memberId)
-            .where('emails.track_opens', true)
-            .first() || {};
+    /**
+     * Aggregate member stats for multiple members in a batch
+     * Processes 100 members at a time using optimized batch queries
+     * @param {string[]} memberIds - Array of member IDs to aggregate stats for
+     * @returns {Promise<Object>} Timing information
+     */
+    async aggregateMemberStatsBatch(memberIds) {
+        const timings = {total: Date.now(), memberCount: memberIds.length};
 
-        const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
-        const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
+        timings.select = Date.now();
+        const stats = await db.knex('email_recipients')
+            .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
+            .select(
+                'email_recipients.member_id',
+                db.knex.raw('COUNT(email_recipients.id) as email_count'),
+                db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
+                db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
+            )
+            .whereIn('email_recipients.member_id', memberIds)
+            .groupBy('email_recipients.member_id');
+        timings.select = Date.now() - timings.select;
 
-        const updateQuery = {
-            email_count: emailCount.count,
-            email_opened_count: emailOpenedCount.count
-        };
+        // Perform batch update
+        const statsMap = new Map(stats.map(s => [s.member_id, s]));
+        timings.update = Date.now();
 
-        if (trackedEmailCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
-            updateQuery.email_open_rate = Math.round(emailOpenedCount.count / trackedEmailCount * 100);
+        const emailCountCases = [];
+        const emailOpenedCountCases = [];
+        const emailOpenRateCases = [];
+        const emailCountBindings = [];
+        const emailOpenedCountBindings = [];
+        const emailOpenRateBindings = [];
+
+        for (const memberId of memberIds) {
+            const memberStats = statsMap.get(memberId) || {email_count: 0, email_opened_count: 0, tracked_count: 0};
+            const trackedCount = memberStats.tracked_count || 0;
+
+            emailCountCases.push(`WHEN ? THEN ?`);
+            emailCountBindings.push(memberId, memberStats.email_count);
+
+            emailOpenedCountCases.push(`WHEN ? THEN ?`);
+            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
+
+            if (trackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
+                const openRate = Math.round((memberStats.email_opened_count / trackedCount) * 100);
+                emailOpenRateCases.push(`WHEN ? THEN ?`);
+                emailOpenRateBindings.push(memberId, openRate);
+            } else {
+                // Keep existing open rate
+                emailOpenRateCases.push(`WHEN ? THEN email_open_rate`);
+                emailOpenRateBindings.push(memberId);
+            }
         }
 
-        await db.knex('members')
-            .update(updateQuery)
-            .where('id', memberId);
+        const bindings = [
+            ...emailCountBindings,
+            ...emailOpenedCountBindings,
+            ...emailOpenRateBindings,
+            ...memberIds // for WHERE IN
+        ];
+
+        await db.knex.raw(`
+            UPDATE members
+            SET
+                email_count = CASE id ${emailCountCases.join(' ')} END,
+                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
+                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
+            WHERE id IN (${memberIds.map(() => '?').join(',')})
+        `, bindings);
+
+        timings.update = Date.now() - timings.update;
+        timings.total = Date.now() - timings.total;
+        timings.overhead = timings.total - (timings.select + timings.update);
+
+        return timings;
     }
 };

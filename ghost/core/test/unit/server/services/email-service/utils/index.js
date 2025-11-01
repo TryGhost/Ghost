@@ -157,9 +157,7 @@ const createDb = ({first, all} = {}) => {
             return this;
         }
     };
-    db.knex.raw = function () {
-        return this;
-    };
+    db.knex.raw = sinon.stub().resolves();
     return db;
 };
 
