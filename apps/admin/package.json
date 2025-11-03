@@ -35,7 +35,7 @@
     "typescript-eslint": "8.46.1",
     "vite": "7.1.12",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.0.5"
+    "vitest": "4.0.6"
   },
   "nx": {
     "targets": {
