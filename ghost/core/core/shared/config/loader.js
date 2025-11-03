@@ -29,9 +29,12 @@ function loadNconf(options) {
     nconf.env({
         // handle uppercase GHOST_ environment variables, like GHOST_MAIL_OPTIONS_HOST
         separator: '_',
+        parseValues: true,
         transform(obj) {
             const prefix = /^GHOST_/;
-            if (!prefix.test(obj.key)) return false;
+            if (!prefix.test(obj.key)) {
+                return false;
+            }
             
             // strip prefix and convert to lower case
             obj.key = obj.key.replace(prefix, '').toLowerCase();
