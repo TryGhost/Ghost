@@ -10,6 +10,7 @@ Object {
     "environment": StringMatching /\\^testing/,
     "labs": Object {
       "additionalPaymentMethods": true,
+      "adminForward": true,
       "announcementBar": true,
       "audienceFeedback": true,
       "contentVisibility": true,
