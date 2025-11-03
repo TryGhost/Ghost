@@ -9,6 +9,7 @@ import {
     SidebarMenuBadge
 } from "@tryghost/shade"
 import { NavMenuItem } from "./NavMenuItem";
+import NavSubMenu from "./NavSubMenu";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [postsExpanded, setPostsExpanded] = useState(false);
@@ -22,9 +23,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             aria-controls="posts-submenu"
                             aria-expanded={postsExpanded}
                             aria-label="Toggle post views"
-                            variant='ghost'
-                            size='icon'
-                            className='!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent'
+                            variant="ghost"
+                            size="icon"
+                            className="!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
                                 setPostsExpanded(!postsExpanded)
                             }
@@ -50,27 +51,25 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {/* Posts submenu */}
-                    {postsExpanded && (
-                        <div className="mb-5">
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
-                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                    <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
+                                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
-                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
+                                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
-                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
-                        </div>
-                    )}
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
+                                <NavMenuItem.Label>Published</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    </NavSubMenu>
 
                     <NavMenuItem>
                         <NavMenuItem.Link href="#/pages">
