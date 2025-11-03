@@ -7,10 +7,6 @@ import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 import { EmberFallback } from "./ember-bridge";
 
 export const routes: RouteObject[] = [
-    {
-        path: "/",
-        element: <div>Hello World</div>
-    },
     ...postRoutes[0].children!.filter(route => route.path !== "*"),
     {
         element: <GlobalDataProvider><Outlet /></GlobalDataProvider>,

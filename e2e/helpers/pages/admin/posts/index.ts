@@ -1,3 +1,3 @@
-export {PostEditorPage} from './PostEditorPage';
-export {PostPreviewModal} from './PostPreviewModal';
+export * from './post';
+export {PostsPage} from './PostsPage';
 
