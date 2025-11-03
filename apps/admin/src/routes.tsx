@@ -7,6 +7,14 @@ import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 import { EmberFallback } from "./ember-bridge";
 
 export const routes: RouteObject[] = [
+    {
+        // Override the blank tag detail route in the post app to ensure we
+        // display the Ember screen. Without this the posts app renders a blank
+        // screen. This is needed when running the posts app within Ember as it
+        // prevents the error fallback route screen from showing.
+        path: "/tags/:tagSlug",
+        Component: EmberFallback
+    },
     ...postRoutes[0].children!.filter(route => route.path !== "*"),
     {
         element: <GlobalDataProvider><Outlet /></GlobalDataProvider>,
