@@ -9,6 +9,7 @@ import {
     SidebarMenuBadge
 } from "@tryghost/shade"
 import { NavMenuItem } from "./NavMenuItem";
+import NavSubMenu from "./NavSubMenu";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [postsExpanded, setPostsExpanded] = useState(false);
@@ -50,29 +51,25 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {/* Posts submenu */}
-                    <div
-                        className={`grid transition-all duration-200 ease-out ${postsExpanded ? 'grid-rows-[1fr] mb-5' : 'grid-rows-[0fr] mb-0'}`}
-                    >
-                        <div className="overflow-hidden">
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
-                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                    <NavSubMenu isExpanded={postsExpanded}>
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
+                                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
-                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
+                                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
-                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
-                        </div>
-                    </div>
+                        <NavMenuItem>
+                            <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
+                                <NavMenuItem.Label>Published</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    </NavSubMenu>
 
                     <NavMenuItem>
                         <NavMenuItem.Link href="#/pages">
