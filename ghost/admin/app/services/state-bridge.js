@@ -1,3 +1,4 @@
+import Evented from '@ember/object/evented';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -16,7 +17,7 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
 };
 
-export default class StateBridgeService extends Service {
+export default class StateBridgeService extends Service.extend(Evented) {
     @service feature;
     @service membersUtils;
     @service session;
@@ -40,7 +41,7 @@ export default class StateBridgeService extends Service {
     @action
     onUpdate(dataType, response) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation updating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
@@ -92,7 +93,7 @@ export default class StateBridgeService extends Service {
     @action
     onInvalidate(dataType) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation invalidating ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
@@ -104,7 +105,7 @@ export default class StateBridgeService extends Service {
 
         if (singleton) {
             // eslint-disable-next-line no-console
-            console.warn(`An AdminX mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
+            console.warn(`An React Admin mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
             return;
         }
 
@@ -119,7 +120,7 @@ export default class StateBridgeService extends Service {
     @action
     onDelete(dataType, id) {
         if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+            throw new Error(`A mutation deleting ${dataType} succeeded in React Admin but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
         // Skip processing if mapping is explicitly set to null
@@ -134,5 +135,23 @@ export default class StateBridgeService extends Service {
         if (record) {
             record.unloadRecord();
         }
+    }
+
+    /* Ember -> React -------------------------------------------------------
+
+    When Ember Data store records are updated, created, or deleted via the
+    adapter (after successful API calls), we notify React to invalidate/update
+    its TanStack Query cache.
+
+    */
+
+    @action
+    triggerEmberDataChange(operation, modelName, id, response) {
+        this.trigger('emberDataChange', {
+            operation, // 'update' | 'create' | 'delete'
+            modelName, // e.g., 'post', 'user', 'setting'
+            id,
+            data: response // API response data for optimistic updates
+        });
     }
 }
