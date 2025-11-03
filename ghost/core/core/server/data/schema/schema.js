@@ -838,6 +838,7 @@ module.exports = {
         error: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        csd_email_count: {type: 'integer', nullable: true, unsigned: true},
         delivered_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         opened_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         failed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
