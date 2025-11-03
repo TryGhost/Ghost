@@ -867,6 +867,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email_id: {type: 'string', maxlength: 24, nullable: false, references: 'emails.id'},
         provider_id: {type: 'string', maxlength: 255, nullable: true},
+        fallback_sending_domain: {type: 'boolean', nullable: false, defaultTo: false},
         status: {
             type: 'string',
             maxlength: 50,
