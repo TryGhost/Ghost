@@ -6,17 +6,17 @@ body:not(.ember-application) .gh-canvas-header {
     padding-bottom: 24px;
 }
 
-body:not(.ember-application) .gh-canvas-title,
-body:not(.ember-application) [data-header="header-title"] {
-    font-size: 25px;
-}
-
 body:not(.ember-application) .gh-canvas-breadcrumb+.gh-canvas-title {
     padding-top: 0px;
     margin-top: -4px;
 }
 
-body:not(.ember-application) [data-header="header-container"] {
+body:not(.ember-application) .gh-canvas-title,
+body:not(.ember-application) [data-header="header-title"] {
+    font-size: 25px;
+}
+
+body:not(.ember-application) [data-header="header"] {
     padding-top: 24px;
 }
 
