@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
-import {useAppContext} from '../../../App';
+import {useAppContext} from '@src/providers/PostsAppContext';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
