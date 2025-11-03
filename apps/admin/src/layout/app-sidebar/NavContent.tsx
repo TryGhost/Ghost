@@ -51,7 +51,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {/* Posts submenu */}
-                    <NavSubMenu isExpanded={postsExpanded}>
+                    <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
                             <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
