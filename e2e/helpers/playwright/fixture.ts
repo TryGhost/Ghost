@@ -1,14 +1,14 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage, LoginPage} from '../pages/admin';
+import {AnalyticsOverviewPage} from '../pages/admin';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '../environment';
 import {SettingsService} from '../services/settings/SettingsService';
 import {faker} from '@faker-js/faker';
+import {loginToGetAuthenticatedSession} from '../../helpers/playwright/flows/login';
 import {setupUser} from '../utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
-
-interface User {
+export interface User {
     name: string;
     email: string;
     password: string;
@@ -25,22 +25,13 @@ export interface GhostInstanceFixture {
     };
 }
 
-async function loginToGetAuthenticatedSession(page: Page, user: User) {
-    const loginPage = new LoginPage(page);
-    await loginPage.waitForLoginPageAfterUserCreated();
-    await loginPage.signIn(user.email, user.password);
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.header.waitFor({state: 'visible'});
-    debug('Authentication completed for Ghost instance');
-}
-
 async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
     const analyticsPage = new AnalyticsOverviewPage(page);
     await analyticsPage.goto();
 
     debug('Updating labs settings:', labsFlags);
     const settingsService = new SettingsService(page.request);
-    await settingsService.updateSettings(labsFlags);
+    await settingsService.updateLabsSettings(labsFlags);
 
     // Reload the page to ensure the new labs settings take effect in the UI
     await page.reload();
@@ -60,7 +51,8 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
     });
     const page = await context.newPage();
 
-    await loginToGetAuthenticatedSession(page, ghostAccountOwner);
+    await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+    debug('Authentication completed for Ghost instance');
 
     return {page, context, ghostAccountOwner};
 }
