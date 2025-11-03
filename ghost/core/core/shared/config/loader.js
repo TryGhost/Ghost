@@ -26,6 +26,18 @@ function loadNconf(options) {
 
     // command line arguments take precedence, then environment variables
     nconf.argv();
+    nconf.env({
+        // handle uppercase GHOST_ environment variables, like GHOST_MAIL_OPTIONS_HOST
+        separator: '_',
+        transform(obj) {
+            const prefix = /^GHOST_/;
+            if (!prefix.test(obj.key)) return false;
+            
+            // strip prefix and convert to lower case
+            obj.key = obj.key.replace(prefix, '').toLowerCase();
+            return obj;
+        }
+    });
     nconf.env({separator: '__', parseValues: true});
 
     // Now load various config json files
