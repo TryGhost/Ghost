@@ -25,7 +25,7 @@ const openSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
 function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
     const site = useBrowseSite();
     const title = site.data?.site.title ?? "";
-    const logo = site.data?.site.logo ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
+    const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
 
     return (
         <SidebarHeader {...props}>
@@ -34,7 +34,7 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-md bg-transparent border-0 flex-shrink-0">
                             <img
-                                src={logo}
+                                src={siteIcon}
                                 alt="Site icon"
                                 className="w-full h-full rounded-md object-cover"
                                 />
