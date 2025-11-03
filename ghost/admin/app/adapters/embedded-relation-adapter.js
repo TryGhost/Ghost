@@ -130,7 +130,10 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     createRecord(store, type, snapshot) {
-        return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord');
+        return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord').then((response) => {
+            this.stateBridge.triggerEmberDataChange('create', type.modelName, snapshot.id, response);
+            return response;
+        });
     }
 
     updateRecord(store, type, snapshot) {
@@ -139,7 +142,10 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
             id: get(snapshot, 'id')
         };
 
-        return this.saveRecord(store, type, snapshot, options, 'updateRecord');
+        return this.saveRecord(store, type, snapshot, options, 'updateRecord').then((response) => {
+            this.stateBridge.triggerEmberDataChange('update', type.modelName, snapshot.id, response);
+            return response;
+        });
     }
 
     saveRecord(store, type, snapshot, options, requestType) {
@@ -148,6 +154,13 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
         let payload = this.preparePayload(store, type, snapshot);
 
         return this.ajax(url, _options.method, payload);
+    }
+
+    deleteRecord(store, type, snapshot) {
+        return super.deleteRecord(...arguments).then((response) => {
+            this.stateBridge.triggerEmberDataChange('delete', type.modelName, snapshot.id, null);
+            return response;
+        });
     }
 
     preparePayload(store, type, snapshot) {
