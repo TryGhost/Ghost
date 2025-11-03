@@ -1,6 +1,6 @@
-import {ALL_EVENT_TYPES, getAvailableEventTypes, needDivider, toggleEventType} from 'ghost-admin/utils/member-event-types';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {getAvailableEventTypes, needDivider, toggleEventType} from 'ghost-admin/utils/member-event-types';
 
 describe('Unit | Utility | event-type-utils', function () {
     it('should return available event types with settings and features applied', function () {
@@ -8,9 +8,7 @@ describe('Unit | Utility | event-type-utils', function () {
             commentsEnabled: 'on',
             emailTrackClicks: true
         };
-        const feature = {
-            audienceFeedback: true
-        };
+        const feature = {};
         const hiddenEvents = [];
 
         const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
@@ -54,13 +52,12 @@ describe('Unit | Utility | event-type-utils', function () {
             commentsEnabled: 'off',
             emailTrackClicks: false
         };
-        const feature = {
-            audienceFeedback: false
-        };
+        const feature = {};
         const hiddenEvents = [];
 
         const eventTypes = getAvailableEventTypes(settings, feature, hiddenEvents);
 
-        expect(eventTypes).to.deep.equal(ALL_EVENT_TYPES);
+        expect(eventTypes.find(type => type.event === 'comment_event')).to.be.undefined;
+        expect(eventTypes.find(type => type.event === 'click_event')).to.be.undefined;
     });
 });

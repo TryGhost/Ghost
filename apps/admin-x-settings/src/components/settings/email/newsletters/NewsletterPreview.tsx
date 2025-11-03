@@ -20,7 +20,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const headerSubtitle = (newsletter.show_header_title && newsletter.show_header_name) ? newsletter.name : undefined;
 
     const showCommentCta = newsletter.show_comment_cta && commentsEnabled !== 'off';
-    const showFeedback = newsletter.feedback_enabled && config.labs.audienceFeedback;
+    const showFeedback = newsletter.feedback_enabled;
 
     const backgroundColor = () => {
         const value = newsletter.background_color;
