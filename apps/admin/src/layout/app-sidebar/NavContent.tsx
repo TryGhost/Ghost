@@ -50,8 +50,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {/* Posts submenu */}
-                    {postsExpanded && (
-                        <div className="mb-5">
+                    <div
+                        className={`grid transition-all duration-200 ease-out ${postsExpanded ? 'grid-rows-[1fr] mb-5' : 'grid-rows-[0fr] mb-0'}`}
+                    >
+                        <div className="overflow-hidden">
                             <NavMenuItem>
                                 <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
                                     <NavMenuItem.Label>Drafts</NavMenuItem.Label>
@@ -70,7 +72,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 </NavMenuItem.Link>
                             </NavMenuItem>
                         </div>
-                    )}
+                    </div>
 
                     <NavMenuItem>
                         <NavMenuItem.Link href="#/pages">
