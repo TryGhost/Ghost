@@ -131,13 +131,13 @@ module.exports = class MailgunClient {
 
     /**
      * @param {import('mailgun.js').default} mailgunInstance
-     * @param {Object} mailgunConfig
+     * @param {string} domain - The Mailgun domain to fetch events from
      * @param {Object} mailgunOptions
      */
-    async getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions) {
+    async getEventsFromMailgun(mailgunInstance, domain, mailgunOptions) {
         const startTime = Date.now();
         try {
-            const page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
+            const page = await mailgunInstance.events.get(domain, mailgunOptions);
             metrics.metric('mailgun-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
@@ -167,8 +167,57 @@ module.exports = class MailgunClient {
             return;
         }
 
-        debug(`[MailgunClient fetchEvents]: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
+        if (!mailgunConfig) {
+            logging.warn(`Mailgun is not configured`);
+            return;
+        }
+
+        // Determine which domains to fetch from
+        const domains = this.#getDomainsToFetch(mailgunConfig);
+
+        // Fetch events from each domain
+        for (const domain of domains) {
+            await this.#fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {maxEvents});
+        }
+    }
+
+    /**
+     * Get list of domains to fetch events from
+     * Returns primary domain, and fallback domain if domain warming is enabled
+     * @private
+     * @param {Object} mailgunConfig
+     * @returns {string[]}
+     */
+    #getDomainsToFetch(mailgunConfig) {
+        const domains = [mailgunConfig.domain];
+
+        // Check if domain warming is enabled
+        const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
+        if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
+            const labs = require('../../shared/labs');
+            if (labs.isSet('domainWarming')) {
+                domains.push(fallbackDomain);
+                logging.info(`[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`);
+            }
+        }
+
+        return domains;
+    }
+
+    /**
+     * Fetches events from a specific Mailgun domain
+     * @private
+     * @param {string} domain - The domain to fetch from
+     * @param {import('mailgun.js').default} mailgunInstance
+     * @param {Object} mailgunOptions
+     * @param {Function} batchHandler
+     * @param {Object} options
+     * @param {Number} options.maxEvents
+     * @returns {Promise<void>}
+     */
+    async #fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {maxEvents}) {
+        debug(`[MailgunClient fetchEventsFromDomain]: starting fetching from domain ${domain}`);
         const startDate = new Date();
         const overallStartTime = Date.now();
 
@@ -176,12 +225,12 @@ module.exports = class MailgunClient {
         let totalBatchTime = 0;
 
         try {
-            let page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions);
+            let page = await this.getEventsFromMailgun(mailgunInstance, domain, mailgunOptions);
 
             // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
             // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
             let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-            debug(`[MailgunClient fetchEvents]: finished fetching first page with ${events.length} events`);
+            debug(`[MailgunClient fetchEventsFromDomain ${domain}]: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
             const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
@@ -202,23 +251,24 @@ module.exports = class MailgunClient {
                 }
 
                 const nextPageId = page.pages.next.page;
-                debug(`[MailgunClient fetchEvents]: starting fetching next page ${nextPageId}`);
-                page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
+                debug(`[MailgunClient fetchEventsFromDomain ${domain}]: starting fetching next page ${nextPageId}`);
+                page = await this.getEventsFromMailgun(mailgunInstance, domain, {
                     page: nextPageId,
                     ...mailgunOptions
                 });
 
                 // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-                debug(`[MailgunClient fetchEvents]: finished fetching next page with ${events.length} events`);
+                debug(`[MailgunClient fetchEventsFromDomain ${domain}]: finished fetching next page with ${events.length} events`);
             }
 
             const overallEndTime = Date.now();
             const totalDuration = overallEndTime - overallStartTime;
             const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
 
-            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            logging.info(`[MailgunClient fetchEventsFromDomain ${domain}]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
         } catch (error) {
+            logging.error(`[MailgunClient fetchEventsFromDomain ${domain}]: Error fetching events`);
             logging.error(error);
             throw error;
         }
