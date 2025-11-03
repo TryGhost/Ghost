@@ -9,6 +9,7 @@ export default RESTAdapter.extend(AjaxServiceSupport, {
     namespace: ghostPaths().apiRoot.slice(1),
 
     session: service(),
+    stateBridge: service(),
 
     shouldBackgroundReloadRecord() {
         return false;

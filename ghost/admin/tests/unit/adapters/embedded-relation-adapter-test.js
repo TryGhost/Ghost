@@ -7,11 +7,12 @@ import {setupTest} from 'ember-mocha';
 describe('Unit | Adapter | embedded-relation-adapter', function () {
     setupTest();
 
-    let adapter, store, type, sandbox;
+    let adapter, store, type, sandbox, stateBridge;
 
     beforeEach(function () {
-        adapter = this.owner.lookup('adapter:application');
         store = this.owner.lookup('service:store');
+        stateBridge = this.owner.lookup('service:state-bridge');
+        adapter = this.owner.lookup('adapter:application');
         type = {modelName: 'post'};
         sandbox = sinon.createSandbox();
     });
@@ -306,6 +307,136 @@ describe('Unit | Adapter | embedded-relation-adapter', function () {
                     throw error;
                 }
             });
+        });
+    });
+
+    describe('#createRecord', function () {
+        it('triggers emberDataChange event on successful create', async function () {
+            const snapshot = {id: '123'};
+            const mockResponse = {
+                posts: [{id: '123', title: 'New Post'}]
+            };
+
+            sandbox.stub(adapter, 'saveRecord').resolves(mockResponse);
+            // Spy on trigger method instead of the @action decorated method
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            const result = await adapter.createRecord(store, type, snapshot);
+
+            expect(triggerSpy).to.have.been.calledOnceWith('emberDataChange', {
+                operation: 'create',
+                modelName: 'post',
+                id: '123',
+                data: mockResponse
+            });
+            expect(result).to.deep.equal(mockResponse);
+        });
+
+        it('does not trigger event if create fails', async function () {
+            const snapshot = {id: '456'};
+            const error = new Error('Create failed');
+
+            sandbox.stub(adapter, 'saveRecord').rejects(error);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            try {
+                await adapter.createRecord(store, type, snapshot);
+                expect.fail('Should have thrown an error');
+            } catch (e) {
+                expect(e).to.equal(error);
+                expect(triggerSpy).to.not.have.been.called;
+            }
+        });
+    });
+
+    describe('#updateRecord', function () {
+        it('triggers emberDataChange event on successful update', async function () {
+            const snapshot = {id: '999'};
+            const mockResponse = {
+                posts: [{id: '999', title: 'Updated Post'}]
+            };
+
+            sandbox.stub(adapter, 'saveRecord').resolves(mockResponse);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            const result = await adapter.updateRecord(store, type, snapshot);
+
+            expect(triggerSpy).to.have.been.calledOnceWith('emberDataChange', {
+                operation: 'update',
+                modelName: 'post',
+                id: '999',
+                data: mockResponse
+            });
+            expect(result).to.deep.equal(mockResponse);
+        });
+
+        it('does not trigger event if update fails', async function () {
+            const snapshot = {id: '888'};
+            const error = new Error('Update failed');
+
+            sandbox.stub(adapter, 'saveRecord').rejects(error);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            try {
+                await adapter.updateRecord(store, type, snapshot);
+                expect.fail('Should have thrown an error');
+            } catch (e) {
+                expect(e).to.equal(error);
+                expect(triggerSpy).to.not.have.been.called;
+            }
+        });
+    });
+
+    describe('#deleteRecord', function () {
+        it('triggers emberDataChange event on successful delete', async function () {
+            const snapshot = {id: '555'};
+            const mockResponse = {};
+
+            // deleteRecord doesn't use saveRecord, it calls super directly
+            sandbox.stub(adapter, 'ajax').resolves(mockResponse);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            const result = await adapter.deleteRecord(store, type, snapshot);
+
+            expect(triggerSpy).to.have.been.calledOnceWith('emberDataChange', {
+                operation: 'delete',
+                modelName: 'post',
+                id: '555',
+                data: null
+            });
+            expect(result).to.deep.equal(mockResponse);
+        });
+
+        it('does not trigger event if delete fails', async function () {
+            const snapshot = {id: '666'};
+            const error = new Error('Delete failed');
+
+            sandbox.stub(adapter, 'ajax').rejects(error);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            try {
+                await adapter.deleteRecord(store, type, snapshot);
+                expect.fail('Should have thrown an error');
+            } catch (e) {
+                expect(e).to.equal(error);
+                expect(triggerSpy).to.not.have.been.called;
+            }
+        });
+
+        it('always passes null as data for delete operations', async function () {
+            const snapshot = {id: '777'};
+            const mockResponse = {posts: []};
+
+            sandbox.stub(adapter, 'ajax').resolves(mockResponse);
+            const triggerSpy = sandbox.spy(stateBridge, 'trigger');
+
+            await adapter.deleteRecord(store, type, snapshot);
+
+            const eventPayload = triggerSpy.firstCall.args[1];
+            expect(eventPayload.operation).to.equal('delete');
+            expect(eventPayload.modelName).to.equal('post');
+            expect(eventPayload.id).to.equal('777');
+            expect(eventPayload.data).to.be.null;
         });
     });
 });
