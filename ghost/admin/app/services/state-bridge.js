@@ -68,7 +68,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
 
-            this.settings.reload();
+            // TODO: Reloading settings does not trigger a re-fetch of the
+            // feature flags. We should maybe find a better way to do this.
+            this.settings.reload().then(() => {
+                this.feature.fetch();
+            });
         }
 
         if (dataType === 'TiersResponseType') {
