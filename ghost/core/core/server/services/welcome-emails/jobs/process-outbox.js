@@ -115,11 +115,13 @@ async function deleteProcessedEntry(db, entryId) {
 
 /**
  * Updates a failed entry with incremented retry count and new status
- * @param {Object} db - Database connection
- * @param {string} entryId - ID of the entry to update
- * @param {number} retryCount - Current retry count
+ * @param {Object} options - Update options
+ * @param {Object} options.db - Database connection
+ * @param {string} options.entryId - ID of the entry to update
+ * @param {number} options.retryCount - Current retry count
+ * @param {string} options.errorMessage - Error message to store
  */
-async function updateFailedEntry(db, entryId, retryCount) {
+async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
     const newRetryCount = retryCount + 1;
     const newStatus = newRetryCount >= MAX_RETRIES ? OUTBOX_STATUSES.FAILED : OUTBOX_STATUSES.PENDING;
 
@@ -128,7 +130,8 @@ async function updateFailedEntry(db, entryId, retryCount) {
         .update({
             status: newStatus,
             retry_count: newRetryCount,
-            last_retry_at: db.knex.raw('CURRENT_TIMESTAMP')
+            last_retry_at: db.knex.raw('CURRENT_TIMESTAMP'),
+            message: errorMessage.substring(0, 2000)
         });
 }
 
@@ -170,7 +173,7 @@ async function processEntry(db, entry) {
 
         return {success: true};
     } catch (err) {
-        await updateFailedEntry(db, entry.id, entry.retry_count);
+        await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: err.message});
 
         const memberInfo = payload ? `${payload.name} (${payload.email})` : 'unknown member';
         logging.error(`[WELCOME-EMAIL] Failed to send to ${memberInfo}: ${err.message}`);
@@ -189,12 +192,13 @@ if (parentPort) {
 
 /**
  * Formats the job completion message with stats
- * @param {number} processed - Number of successfully processed entries
- * @param {number} failed - Number of failed entries
- * @param {number} durationMs - Total processing time in milliseconds
+ * @param {Object} options - Completion stats
+ * @param {number} options.processed - Number of successfully processed entries
+ * @param {number} options.failed - Number of failed entries
+ * @param {number} options.durationMs - Total processing time in milliseconds
  * @returns {string} Formatted completion message
  */
-function formatCompletionMessage(processed, failed, durationMs) {
+function formatCompletionMessage({processed, failed, durationMs}) {
     return `Processed ${processed} outbox entries, ${failed} failed in ${(durationMs / 1000).toFixed(2)}s`;
 }
 
@@ -252,5 +256,5 @@ async function processEntries(db, entries) {
         return completeJob(MESSAGES.NO_ENTRIES);
     }
 
-    completeJob(formatCompletionMessage(totalProcessed, totalFailed, durationMs));
+    completeJob(formatCompletionMessage({processed: totalProcessed, failed: totalFailed, durationMs}));
 })();
