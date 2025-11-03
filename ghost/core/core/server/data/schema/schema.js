@@ -1125,6 +1125,7 @@ module.exports = {
         payload: {type: 'text', maxlength: 65535, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         retry_count: {type: 'integer', nullable: false, defaultTo: 0},
-        last_retry_at: {type: 'dateTime', nullable: true}
+        last_retry_at: {type: 'dateTime', nullable: true},
+        message: {type: 'string', maxlength: 2000, nullable: true}
     }
 };
