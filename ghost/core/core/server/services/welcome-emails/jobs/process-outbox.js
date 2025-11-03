@@ -5,6 +5,7 @@ const MemberCreatedEvent = require('../../../../shared/events/MemberCreatedEvent
 const {OUTBOX_STATUSES} = require('../../../models/outbox');
 
 const BATCH_SIZE = 100;
+const MAX_ENTRIES_PER_JOB = 1000;
 const MAX_RETRIES = 3;
 const SIMULATE_FAILURE_RATE = 0.3;
 
@@ -136,8 +137,7 @@ async function updateFailedEntry(db, entryId, retryCount) {
  * @returns {boolean} True if failure should be simulated (non-production only)
  */
 function shouldSimulateFailure() {
-    // return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
-    return Math.random() < SIMULATE_FAILURE_RATE;
+    return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
 }
 
 /**
@@ -191,11 +191,11 @@ if (parentPort) {
  * Formats the job completion message with stats
  * @param {number} processed - Number of successfully processed entries
  * @param {number} failed - Number of failed entries
- * @param {number} duration - Total processing time in milliseconds
+ * @param {number} durationMs - Total processing time in milliseconds
  * @returns {string} Formatted completion message
  */
-function formatCompletionMessage(processed, failed, duration) {
-    return `Processed ${processed} outbox entries, ${failed} failed in ${duration}ms`;
+function formatCompletionMessage(processed, failed, durationMs) {
+    return `Processed ${processed} outbox entries, ${failed} failed in ${(durationMs / 1000).toFixed(2)}s`;
 }
 
 /**
@@ -228,14 +228,29 @@ async function processEntries(db, entries) {
         logging.info(MESSAGES.SIMULATION_MODE);
     }
 
-    const entries = await fetchPendingEntries(db, BATCH_SIZE);
+    let totalProcessed = 0;
+    let totalFailed = 0;
+    let entries = await fetchPendingEntries(db, BATCH_SIZE);
 
-    if (entries.length === 0) {
+    while (entries.length > 0 && totalProcessed + totalFailed < MAX_ENTRIES_PER_JOB) {
+        const batchStartMs = Date.now();
+        const {processed, failed} = await processEntries(db, entries);
+        const batchDurationMs = Date.now() - batchStartMs;
+        const batchRate = ((processed + failed) / (batchDurationMs / 1000)).toFixed(1);
+        
+        totalProcessed += processed;
+        totalFailed += failed;
+
+        logging.info(`[WELCOME-EMAIL] Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+
+        entries = await fetchPendingEntries(db, BATCH_SIZE);
+    }
+
+    const durationMs = Date.now() - startTime;
+
+    if (totalProcessed + totalFailed === 0) {
         return completeJob(MESSAGES.NO_ENTRIES);
     }
 
-    const {processed, failed} = await processEntries(db, entries);
-    const duration = Date.now() - startTime;
-
-    completeJob(formatCompletionMessage(processed, failed, duration));
+    completeJob(formatCompletionMessage(totalProcessed, totalFailed, durationMs));
 })();
