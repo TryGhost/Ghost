@@ -6,10 +6,10 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem
 } from "@tryghost/shade"
 import UserMenu from "./UserMenu";
+import { NavMenuItem } from "./NavMenuItem";
 
 function NavFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     return (
@@ -17,22 +17,22 @@ function NavFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
             <SidebarGroup>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild>
-                                <a href='#/settings'>
-                                    <LucideIcon.Settings />
-                                    <span>Settings</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild>
-                                <a href="https://ghost.org/help?utm_source=admin&utm_campaign=help" target="_blank" rel="noopener noreferrer">
-                                    <LucideIcon.HelpCircle />
-                                    <span>Help</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <NavMenuItem>
+                            <NavMenuItem.Link href="#/settings">
+                                <LucideIcon.Settings />
+                                <NavMenuItem.Label>Settings</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+                                target="_blank"
+                            >
+                                <LucideIcon.HelpCircle />
+                                <NavMenuItem.Label>Help</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
                     </SidebarMenu>
                 </SidebarGroupContent>
             </SidebarGroup>
