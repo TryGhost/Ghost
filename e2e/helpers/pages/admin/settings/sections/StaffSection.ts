@@ -8,7 +8,7 @@ export class StaffSection extends BasePage {
         super(page, '/ghost/#/settings/staff');
         this.requireTwoFaButton = page.getByTestId('users').getByRole('switch');
     }
-    
+
     async enableRequireTwoFa(): Promise<void> {
         const isEnabled = await this.isRequireTwoFaEnabled();
 

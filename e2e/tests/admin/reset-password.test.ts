@@ -6,7 +6,6 @@ import {extractPasswordResetLink} from '../../helpers/services/email/utils';
 
 test.describe('Ghost Admin - Reset Password', () => {
     const emailClient:EmailClient = new MailPit();
-    test.use({labs: {tagsX: true}});
 
     async function logout(page: Page) {
         const loginPage = new LoginPage(page);
