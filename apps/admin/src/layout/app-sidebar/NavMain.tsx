@@ -19,7 +19,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/analytics">
+                        <NavMenuItem.Link href="#/analytics" activeOnSubpath>
                             <LucideIcon.TrendingUp />
                             <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                         </NavMenuItem.Link>
