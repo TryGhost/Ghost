@@ -2,9 +2,10 @@ import AppContext from '../../../../AppContext';
 import Switch from '../../../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../../../utils/helpers';
 import {useContext} from 'react';
+import {t} from '../../../../utils/i18n';
 
 function EmailNewsletterAction() {
-    const {member, site, onAction, t} = useContext(AppContext);
+    const {member, site, doAction} = useContext(AppContext);
     let {newsletters} = member;
 
     const subscribed = !!newsletters?.length;
@@ -13,7 +14,7 @@ function EmailNewsletterAction() {
         e.preventDefault();
         const siteNewsletters = getSiteNewsletters({site});
         const subscribedNewsletters = !member?.newsletters?.length ? siteNewsletters : [];
-        onAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
+        doAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
     };
 
     return (
@@ -22,7 +23,7 @@ function EmailNewsletterAction() {
                 <h3>{t('Email newsletter')}</h3>
                 <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
                     className='gh-portal-btn-text gh-email-faq-page-button'
-                    onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ', lastPage: 'accountHome'})}
+                    onClick={() => doAction('switchPage', {page: 'emailReceivingFAQ', lastPage: 'accountHome'})}
                 >
                     {t('Not receiving emails?')}
                 </button>}</p>

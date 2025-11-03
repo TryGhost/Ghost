@@ -4,7 +4,7 @@ import {site} from '../../../utils/fixtures';
 import {getSiteData, getNewslettersData} from '../../../utils/fixtures-generator';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <AccountHomePage />,
         {
             overrideContext: {
@@ -15,7 +15,7 @@ const setup = (overrides) => {
     const logoutBtn = utils.queryByRole('button', {name: 'logout'});
     return {
         logoutBtn,
-        mockOnActionFn,
+        mockDoActionFn,
         utils
     };
 };
@@ -30,14 +30,14 @@ describe('Account Home Page', () => {
     });
 
     test('can call signout', () => {
-        const {mockOnActionFn, logoutBtn} = setup();
+        const {mockDoActionFn, logoutBtn} = setup();
 
         fireEvent.click(logoutBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('signout');
+        expect(mockDoActionFn).toHaveBeenCalledWith('signout');
     });
 
     test('can show Manage button for few newsletters', () => {
-        const {mockOnActionFn, utils} = setup({site: site});
+        const {mockDoActionFn, utils} = setup({site: site});
 
         expect(utils.queryByText('Update your preferences')).toBeInTheDocument();
         expect(utils.queryByText('You\'re currently not receiving emails')).not.toBeInTheDocument();
@@ -46,7 +46,7 @@ describe('Account Home Page', () => {
         expect(manageBtn).toBeInTheDocument();
 
         fireEvent.click(manageBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});
     });
 
     test('hides Newsletter toggle if newsletters are disabled', () => {

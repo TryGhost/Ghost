@@ -14,7 +14,7 @@ x-service-template: &service-template
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
     - node_modules_e2e:/home/ghost/e2e/node_modules:delegated
-    - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
+    - node_modules_apps_activitypub:/home/ghost/apps/activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
     - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
@@ -66,6 +66,9 @@ services:
       tb-cli:
         condition: service_completed_successfully
         required: false
+      stripe:
+        condition: service_healthy
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -93,6 +96,20 @@ services:
       - "4201:4201"
     profiles: [ split, all ]
     tty: true
+
+  admin-apps:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost
+    command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
+    profiles: [ split, all ]
+    tty: true
+    restart: always
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - FORCE_COLOR=1
 
   caddy:
     image: caddy:latest
@@ -174,15 +191,16 @@ services:
 
   analytics:
     profiles: [ analytics, all ]
-    image: ghost/traffic-analytics:1
+    image: ghost/traffic-analytics:1.0.20
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
     container_name: ghost-analytics
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000" ]
+      # Simpler: use Node's global fetch (Node 18+)
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\"" ]
       interval: 1s
       retries: 120
     volumes:
@@ -259,15 +277,32 @@ services:
     ports:
       - 9091:9091
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
-    container_name: ghost-mailhog
+    container_name: ghost-mailpit
     profiles: [ ghost, split, all ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
     restart: always
+
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: ghost-stripe
+    profiles: [ stripe, all ]
+    entrypoint: [ "/entrypoint.sh" ]
+    volumes:
+      - ./.docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      interval: 1s
+      retries: 120
 
 volumes:
   mysql-data: {}
@@ -280,7 +315,7 @@ volumes:
   node_modules_ghost_core: {}
   node_modules_ghost_i18n: {}
   node_modules_e2e: {}
-  node_modules_apps_admin-x-activitypub: {}
+  node_modules_apps_activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
   node_modules_apps_admin-x-settings: {}

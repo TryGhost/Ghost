@@ -3,6 +3,11 @@
  * @prop {string|null} [referrerSource]
  * @prop {string|null} [referrerMedium]
  * @prop {string|null} [referrerUrl]
+ * @prop {string|null} [utmSource]
+ * @prop {string|null} [utmMedium]
+ * @prop {string|null} [utmCampaign]
+ * @prop {string|null} [utmTerm]
+ * @prop {string|null} [utmContent]
  */
 
 const {ReferrerParser} = require('@tryghost/referrer-parser');
@@ -36,10 +41,40 @@ class ReferrerTranslator {
             return {
                 referrerSource: null,
                 referrerMedium: null,
-                referrerUrl: null
+                referrerUrl: null,
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
             };
         }
 
+        // Look for UTM parameters (earliest entry with UTM data)
+        // Note: history is ordered newest-to-oldest, so we want the LAST match
+        // This captures the original campaign source rather than subsequent navigations
+        let utmData = {
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            utmTerm: null,
+            utmContent: null
+        };
+
+        // In finding the 'campaign' that got the user here, we want the earliest entry with UTM data
+        for (const item of history) {
+            if (item.utmSource || item.utmMedium || item.utmCampaign || item.utmTerm || item.utmContent) {
+                utmData = {
+                    utmSource: item.utmSource || null,
+                    utmMedium: item.utmMedium || null,
+                    utmCampaign: item.utmCampaign || null,
+                    utmTerm: item.utmTerm || null,
+                    utmContent: item.utmContent || null
+                };
+            }
+        }
+
+        // In finding the 'content' that got the user to sign up, we want the latest entry with referrer data
         for (const item of history) {
             let refUrl = this.getUrlFromStr(item.referrerUrl);
             if (refUrl?.hostname === 'checkout.stripe.com') {
@@ -53,7 +88,8 @@ class ReferrerTranslator {
                 return {
                     referrerSource,
                     referrerMedium,
-                    referrerUrl
+                    referrerUrl,
+                    ...utmData
                 };
             }
         }
@@ -61,7 +97,8 @@ class ReferrerTranslator {
         return {
             referrerSource: 'Direct',
             referrerMedium: null,
-            referrerUrl: null
+            referrerUrl: null,
+            ...utmData
         };
     }
 

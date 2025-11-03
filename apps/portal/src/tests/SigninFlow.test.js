@@ -7,22 +7,22 @@ const OTC_LABEL_REGEX = /Code/i;
 
 const setup = async ({site, member = null, labs = {}}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve('testtoken');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -63,22 +63,22 @@ const setup = async ({site, member = null, labs = {}}) => {
 
 const multiTierSetup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve(`testtoken`);
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -120,6 +120,16 @@ const multiTierSetup = async ({site, member = null}) => {
 
 const realLocation = window.location;
 
+// Helper function to verify OTC-enabled API calls
+const expectOTCEnabledSendMagicLinkAPICall = (ghostApi, email) => {
+    expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith({
+        email,
+        emailType: 'signin',
+        integrityToken: 'testtoken',
+        includeOTC: true
+    });
+};
+
 describe('Signin', () => {
     describe('on single tier site', () => {
         beforeEach(() => {
@@ -140,6 +150,11 @@ describe('Signin', () => {
                 site: FixtureSite.singleTier.basic
             });
 
+            // Mock sendMagicLink to return otc_ref for OTC flow
+            ghostApi.member.sendMagicLink = vi.fn(() => {
+                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
+            });
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
@@ -154,32 +169,10 @@ describe('Signin', () => {
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+            const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+            expect(description).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
-        });
-
-        test('with OTC enabled', async () => {
-            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
-                site: FixtureSite.singleTier.basic,
-                labs: {membersSigninOTC: true}
-            });
-
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.click(submitButton);
-
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
-            expect(magicLink).toBeInTheDocument();
-
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken',
-                includeOTC: true
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('without name field', async () => {
@@ -203,11 +196,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('with only free plan', async () => {
@@ -231,11 +220,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
     });
 });
@@ -275,11 +260,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('without name field', async () => {
@@ -303,11 +284,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
 
         test('with only free plan available', async () => {
@@ -331,11 +308,7 @@ describe('Signin', () => {
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin',
-                integrityToken: 'testtoken'
-            });
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
     });
 
@@ -396,7 +369,7 @@ describe('Signin', () => {
 });
 
 describe('OTC Integration Flow', () => {
-    const locationAssignMock = jest.fn();
+    const locationAssignMock = vi.fn();
 
     beforeEach(() => {
         const mockLocation = new URL('https://portal.localhost/#/portal/signin');
@@ -409,13 +382,13 @@ describe('OTC Integration Flow', () => {
 
     afterEach(() => {
         window.location = realLocation;
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
         locationAssignMock.mockReset();
     });
 
     const setupOTCFlow = async ({site, otcRef = 'test-otc-ref-123', returnOtcRef = true}) => {
         const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-        ghostApi.init = jest.fn(() => {
+        ghostApi.init = vi.fn(() => {
             return Promise.resolve({
                 site,
                 member: null
@@ -423,24 +396,24 @@ describe('OTC Integration Flow', () => {
         });
 
         // Mock sendMagicLink to return otcRef for OTC flow or fallback
-        ghostApi.member.sendMagicLink = jest.fn(() => {
+        ghostApi.member.sendMagicLink = vi.fn(() => {
             return returnOtcRef
                 ? Promise.resolve({success: true, otc_ref: otcRef})
                 : Promise.resolve({success: true});
         });
 
-        ghostApi.member.getIntegrityToken = jest.fn(() => {
+        ghostApi.member.getIntegrityToken = vi.fn(() => {
             return Promise.resolve('testtoken');
         });
 
-        ghostApi.member.verifyOTC = jest.fn(() => {
+        ghostApi.member.verifyOTC = vi.fn(() => {
             return Promise.resolve({
                 redirectUrl: 'https://example.com/welcome'
             });
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{membersSigninOTC: true}} />
+            <App api={ghostApi} labs={{}} />
         );
 
         await utils.findByTitle(/portal-trigger/i);
@@ -474,15 +447,6 @@ describe('OTC Integration Flow', () => {
         fireEvent.click(verifyButton);
     };
 
-    const expectOTCEnabledApiCall = (ghostApi, email) => {
-        expect(ghostApi.member.sendMagicLink).toHaveBeenCalledWith({
-            email,
-            emailType: 'signin',
-            integrityToken: 'testtoken',
-            includeOTC: true
-        });
-    };
-
     test('complete OTC flow from signin to verification', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
@@ -490,7 +454,7 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         submitOTCForm(popupIframeDocument, '123456');
@@ -517,7 +481,7 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         const otcInput = within(popupIframeDocument).queryByLabelText(OTC_LABEL_REGEX);
@@ -534,11 +498,22 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
 
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
 
         expect(otcInput).toBeInTheDocument();
+    });
+
+    test('MagicLink description shows submitted email on OTC flow', async () => {
+        const {popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+
+        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(description).toBeInTheDocument();
     });
 
     test('OTC verification with invalid code shows error', async () => {
@@ -547,11 +522,7 @@ describe('OTC Integration Flow', () => {
         });
 
         // Mock verifyOTC to return validation error
-        ghostApi.member.verifyOTC.mockResolvedValueOnce({
-            valid: false,
-            success: false,
-            message: 'Invalid verification code'
-        });
+        ghostApi.member.verifyOTC.mockRejectedValueOnce(new Error('Invalid verification code'));
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
         submitOTCForm(popupIframeDocument, '000000');
@@ -588,7 +559,7 @@ describe('OTC Integration Flow', () => {
             });
         });
 
-        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code/i);
         expect(errorNotification).toBeInTheDocument();
     });
 

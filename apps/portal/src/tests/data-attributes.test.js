@@ -3,8 +3,8 @@ import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtu
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
 import * as helpers from '../utils/helpers';
-import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../data-attributes';
-import * as i18nLib from '@tryghost/i18n';
+import {formSubmitHandler, planClickHandler} from '../data-attributes';
+import {vi} from 'vitest';
 
 // Mock data
 function getMockData({newsletterQuerySelectorResult = null} = {}) {
@@ -19,12 +19,12 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
     const clickHandler = () => {};
 
     const form = {
-        removeEventListener: jest.fn(),
-        classList: {remove: jest.fn(), add: jest.fn()},
+        removeEventListener: vi.fn(),
+        classList: {remove: vi.fn(), add: vi.fn()},
         dataset: {membersForm: 'signup'},
-        addEventListener: jest.fn()
+        addEventListener: vi.fn()
     };
-    jest.spyOn(form.classList, 'add');
+    vi.spyOn(form.classList, 'add');
 
     const element = {
         removeEventListener: () => {},
@@ -75,8 +75,10 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
 
 describe('Member Data attributes:', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+
         // Mock global fetch
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
                 return Promise.resolve({
                     ok: true,
@@ -115,7 +117,7 @@ describe('Member Data attributes:', () => {
 
         // Mock global Stripe
         window.Stripe = () => {};
-        jest.spyOn(window, 'Stripe').mockImplementation(() => {
+        vi.spyOn(window, 'Stripe').mockImplementation(() => {
             return {
                 redirectToCheckout: () => {
                     return Promise.resolve({});
@@ -124,7 +126,7 @@ describe('Member Data attributes:', () => {
         });
 
         // Mock url history method
-        jest.spyOn(helpers, 'getUrlHistory').mockImplementation(() => {
+        vi.spyOn(helpers, 'getUrlHistory').mockImplementation(() => {
             return [{
                 path: '/blog/',
                 refMedium: null,
@@ -135,13 +137,13 @@ describe('Member Data attributes:', () => {
         });
 
         // Mock window.location
-        let locationMock = jest.fn();
+        let locationMock = vi.fn();
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
     describe('data-members-form', () => {
         test('allows free signup', async () => {
@@ -166,6 +168,108 @@ describe('Member Data attributes:', () => {
                 integrityToken: 'testtoken'
             });
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+        });
+
+        test('requests OTC magic link and opens Portal when flagged with data-members-otc=true', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+            form.dataset.membersForm = 'signin';
+            form.dataset.membersOtc = 'true';
+
+            const originalQuerySelector = event.target.querySelector;
+            event.target.querySelector = vi.fn((selector) => {
+                if (selector === 'input[data-members-email]') {
+                    return {value: ' jamie@example.com '};
+                }
+                return originalQuerySelector(selector);
+            });
+
+            const labs = {};
+            const doAction = vi.fn(() => Promise.resolve());
+
+            const json = async () => ({otc_ref: 'otc_test_ref'});
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('send-magic-link')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json,
+                        clone: () => ({json})
+                    });
+                }
+
+                if (url.includes('integrity-token')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'testtoken'
+                    });
+                }
+
+                return Promise.resolve({ok: true});
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction});
+
+            const magicLinkCall = window.fetch.mock.calls.find(([fetchUrl]) => fetchUrl.includes('send-magic-link'));
+            const requestBody = JSON.parse(magicLinkCall[1].body);
+            expect(requestBody.includeOTC).toBe(true);
+            expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
+                email: 'jamie@example.com',
+                otcRef: 'otc_test_ref'
+            });
+            expect(form.classList.add).toHaveBeenCalledWith('success');
+        });
+
+        test('captures exceptions when OTC action fails', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+            form.dataset.membersForm = 'signin';
+            form.dataset.membersOtc = 'true';
+
+            const originalQuerySelector = event.target.querySelector;
+            event.target.querySelector = vi.fn((selector) => {
+                if (selector === 'input[data-members-email]') {
+                    return {value: ' jamie@example.com '};
+                }
+                return originalQuerySelector(selector);
+            });
+
+            const labs = {};
+            const actionErrorMessage = new Error('failed to start OTC sign-in');
+            const doAction = vi.fn(() => {
+                throw actionErrorMessage;
+            });
+            const captureException = vi.fn();
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+            const json = async () => ({otc_ref: 'otc_test_ref'});
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('send-magic-link')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json,
+                        clone: () => ({json})
+                    });
+                }
+
+                if (url.includes('integrity-token')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'testtoken'
+                    });
+                }
+
+                return Promise.resolve({ok: true});
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction, captureException});
+
+            expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
+                email: 'jamie@example.com',
+                otcRef: 'otc_test_ref'
+            });
+            expect(captureException).toHaveBeenCalledWith(actionErrorMessage);
+            expect(consoleSpy).toHaveBeenCalledWith(actionErrorMessage);
+            expect(form.classList.add).toHaveBeenCalledWith('success');
+
+            consoleSpy.mockRestore();
         });
     });
 
@@ -206,24 +310,6 @@ describe('Member Data attributes:', () => {
                     method: 'POST'
                 }
             );
-        });
-
-        test('sets correct i18n language based on site locale', async () => {
-            const {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
-            // Override the site locale to 'de'
-            site.locale = 'de';
-
-            // Mock i18nLib to verify it's called with correct parameters
-            const mockI18n = {
-                t: jest.fn(str => str)
-            };
-            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
-
-            await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
-
-            // Verify i18nLib was called with correct locale
-            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
-            expect(mockI18n.t).toBeDefined();
         });
 
         test('allows free member upgrade via direct checkout', async () => {
@@ -322,18 +408,18 @@ describe('Member Data attributes:', () => {
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -353,8 +439,10 @@ const setup = async ({site, member = null, showPopup = true}) => {
 
 describe('Portal Data attributes:', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+
         // Mock global fetch
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
                 return Promise.resolve({
                     ok: true,
@@ -386,7 +474,7 @@ describe('Portal Data attributes:', () => {
 
         // Mock global Stripe
         window.Stripe = () => {};
-        jest.spyOn(window, 'Stripe').mockImplementation(() => {
+        vi.spyOn(window, 'Stripe').mockImplementation(() => {
             return {
                 redirectToCheckout: () => {
                     return Promise.resolve({});
@@ -395,14 +483,14 @@ describe('Portal Data attributes:', () => {
         });
 
         // Mock window.location
-        let locationMock = jest.fn();
+        let locationMock = vi.fn();
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
         window.location.hash = '';
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
     });
     describe('data-portal', () => {
         test('opens default portal page', async () => {
@@ -607,26 +695,6 @@ describe('Portal Data attributes:', () => {
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
             expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
-        });
-    });
-
-    describe('handleDataAttributes', () => {
-        test('sets correct i18n language based on site locale', () => {
-            const {siteUrl, site, member} = getMockData();
-            // Override the site locale to 'de'
-            site.locale = 'de';
-
-            // Mock i18nLib to verify it's called with correct parameters
-            const mockI18n = {
-                t: jest.fn(str => str)
-            };
-            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
-
-            handleDataAttributes({siteUrl, site, member});
-
-            // Verify i18nLib was called with correct locale
-            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
-            expect(mockI18n.t).toBeDefined();
         });
     });
 });

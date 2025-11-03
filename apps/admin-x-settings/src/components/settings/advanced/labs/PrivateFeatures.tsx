@@ -28,10 +28,6 @@ const features: Feature[] = [{
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
 }, {
-    title: 'Members sign-in OTC (alpha)',
-    description: 'Enables one-time codes alongside magic links for members signin',
-    flag: 'membersSigninOTC'
-}, {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
@@ -43,6 +39,10 @@ const features: Feature[] = [{
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
+}, {
+    title: 'Welcome Emails',
+    description: 'Enables features related to sending welcome emails to new members',
+    flag: 'welcomeEmails'
 }];
 
 const AlphaFeatures: React.FC = () => {

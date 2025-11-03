@@ -51,7 +51,16 @@ export const routes: RouteObject[] = [
             },
             {
                 path: 'tags',
-                element: <Tags />
+                children: [
+                    {
+                        index: true,
+                        element: <Tags />
+                    },
+                    {
+                        path: ':tagSlug',
+                        element: null
+                    }
+                ]
             },
 
             // Error handling

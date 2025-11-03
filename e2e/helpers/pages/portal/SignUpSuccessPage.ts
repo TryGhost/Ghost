@@ -1,4 +1,4 @@
-import {Page, Locator} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 import {PortalPage} from './PortalPage';
 
 export class SignUpSuccessPage extends PortalPage {
@@ -14,5 +14,9 @@ export class SignUpSuccessPage extends PortalPage {
         this.successTitle = this.portalFrame.getByRole('heading', {name: 'Now check your email!'});
         this.successMessage = this.portalFrame.getByText('To complete signup, click the confirmation link in your inbox');
         this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
+    }
+
+    async waitForSignUpSuccess(): Promise<void> {
+        await this.successMessage.waitFor({state: 'visible'});
     }
 }

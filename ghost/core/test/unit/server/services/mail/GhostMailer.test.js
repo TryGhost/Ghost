@@ -326,4 +326,97 @@ describe('Mail: Ghostmailer', function () {
             sendMailSpy.firstCall.args[0].from.should.equal('"Ghost at default.com" <noreply@default.com>');
         });
     });
+
+    describe('Mailgun tagging', function () {
+        beforeEach(function () {
+            configUtils.set({mail: {transport: 'stub'}});
+        });
+
+        it('should add site-based tag when using Mailgun, site ID exists, and email tracking is enabled', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
+
+            mailer = new mail.GhostMailer();
+            // Mock the state to simulate Mailgun transport
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            sentMessage['o:tag'].should.be.an.Array();
+            sentMessage['o:tag'].should.containEql('transactional-email');
+            sentMessage['o:tag'].should.containEql('blog-123123');
+            sentMessage['o:tracking-opens'].should.equal(true);
+        });
+
+        it('should add tags but not enable open tracking when email tracking is disabled', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            sentMessage['o:tag'].should.be.an.Array();
+            sentMessage['o:tag'].should.containEql('transactional-email');
+            sentMessage['o:tag'].should.containEql('blog-123123');
+            should.not.exist(sentMessage['o:tracking-opens']);
+        });
+
+        it('should not add site ID tag when site ID is missing', async function () {
+            configUtils.set({
+                hostSettings: {} // No siteId
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            sentMessage['o:tag'].should.containEql('transactional-email');
+            sentMessage['o:tag'].should.not.containEql('blog-123123');
+        });
+
+        it('should not add tag when not using Mailgun transport', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '999999'}
+            });
+
+            mailer = new mail.GhostMailer();
+            // usingMailgun defaults to false when using stub transport
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            should.not.exist(sentMessage['o:tag']);
+        });
+    });
 });

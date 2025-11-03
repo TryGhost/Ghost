@@ -14,7 +14,7 @@ import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from './VirtualTable/useInfiniteVirtualScroll';
 
 const SpacerRow = ({height}: { height: number }) => (
-    <tr className="flex lg:table-row">
+    <tr aria-hidden="true" className="flex lg:table-row">
         <td className="flex lg:table-cell" style={{height}} />
     </tr>
 );
@@ -28,10 +28,11 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
         <TableRow
             ref={ref}
             {...props}
+            aria-hidden="true"
             className="relative flex flex-col lg:table-row"
         >
             <TableCell className="relative z-10 h-24 animate-pulse">
-                <div className="h-full rounded-md bg-muted" />
+                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
             </TableCell>
         </TableRow>
     );
@@ -61,8 +62,11 @@ function TagsList({
     });
 
     return (
-        <div ref={parentRef}>
-            <Table className="flex table-fixed flex-col lg:table">
+        <div ref={parentRef} className="overflow-hidden">
+            <Table
+                className="flex table-fixed flex-col lg:table"
+                data-testid="tags-list"
+            >
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
                         <TableHead className="w-auto px-4">
@@ -89,14 +93,17 @@ function TagsList({
                             <TableRow
                                 key={key}
                                 {...props}
-                                className="relative grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0"
+                                className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
+                                data-testid="tag-list-row"
                             >
-                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
+                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                                     <a
-                                        className="block truncate pb-1 text-lg font-medium before:absolute before:inset-0 before:z-10"
+                                        className="before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[100vw]"
                                         href={`#/tags/${item.slug}`}
                                     >
-                                        {item.name}
+                                        <span className="block truncate pb-1 text-lg font-medium">
+                                            {item.name}
+                                        </span>
                                     </a>
                                     <span className="block truncate text-muted-foreground">
                                         {item.description}

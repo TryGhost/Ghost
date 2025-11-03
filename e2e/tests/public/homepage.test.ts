@@ -1,7 +1,7 @@
-import {test, expect} from '../../helpers/playwright';
-import {HomePage} from '../../helpers/pages/public';
+import {HomePage} from '@tryghost/e2e/helpers/pages';
+import {expect, test} from '../../helpers/playwright';
 
-test.describe('Ghost Homepage', () => {
+test.describe('Ghost Public - Homepage', () => {
     test('loads correctly', async ({page}) => {
         const homePage = new HomePage(page);
 

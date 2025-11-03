@@ -47,10 +47,10 @@ const PRIVATE_FEATURES = [
     'lexicalIndicators',
     'contentVisibilityAlpha',
     'emailCustomization',
-    'membersSigninOTC',
     'tagsX',
     'utmTracking',
-    'emailUniqueid'
+    'emailUniqueid',
+    'welcomeEmails'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
