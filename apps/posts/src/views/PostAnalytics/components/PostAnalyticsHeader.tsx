@@ -30,18 +30,18 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false
     });
-    
+
     // Determine which tabs to show based on post type and settings
     const availableTabs = useMemo(() => {
         if (!post) {
             return [];
         }
         const tabs = [];
-        
+
         // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
         const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
         if (!isPublishedOnlyWithoutWebAnalytics) {
-            tabs.push('Overview');   
+            tabs.push('Overview');
             if (!post.email_only && appSettings?.analytics.webAnalytics) {
                 tabs.push('Web');
             }
@@ -50,7 +50,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             tabs.push('Newsletter');
         }
         tabs.push('Growth');
-        
+
         return tabs;
     }, [post, appSettings?.analytics.webAnalytics]);
 
@@ -179,7 +179,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 }}></div>
                             }
                             <div>
-                                <H1 className='-ml-px max-w-[920px] indent-0 text-xl md:min-h-[35px] md:text-3xl md:leading-[1.2em]'>
+                                <H1 className='-ml-px max-w-[920px] indent-0 text-xl md:min-h-[35px] md:text-3xl md:leading-[1.2em]' data-header='header-title'>
                                     {post?.title}
                                 </H1>
                                 {post?.published_at && (

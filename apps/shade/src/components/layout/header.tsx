@@ -22,7 +22,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl [grid-area:title]',
+                'text-2xl leading-[1.2em] lg:text-[25px] [grid-area:title]',
                 className
             )}
         >
@@ -67,7 +67,7 @@ function HeaderNav({className, children}: HeaderNavProps) {
     );
 }
 
-const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
+const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:px-8 lg:py-6 dark:bg-black`, {
     variants: {
         variant: {
             default: `lg:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav']`,
@@ -81,7 +81,7 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
 function Header({className, children, variant}: HeaderProps) {
     return (
-        <header className={cn(headerVariants({variant, className}))}>
+        <header className={cn(headerVariants({variant, className}))} data-header="header-container">
             {children}
         </header>
     );
