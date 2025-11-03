@@ -4,7 +4,7 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
-import {useAppContext} from '@src/App';
+import {useAppContext} from '@src/providers/PostsAppContext';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
