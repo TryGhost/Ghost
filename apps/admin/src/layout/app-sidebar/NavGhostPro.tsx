@@ -6,19 +6,19 @@ import {
     SidebarGroupContent,
     SidebarMenu
 } from "@tryghost/shade"
-import NavLink from "./NavLink"
+import { NavMenuItem } from "./NavMenuItem";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <NavLink
-                        label="Ghost(Pro)"
-                        href="#/billing"
-                    >
-                        <NavLink.Icon><LucideIcon.CreditCard /></NavLink.Icon>
-                    </NavLink>
+                    <NavMenuItem>
+                        <NavMenuItem.Link href="#/billing">
+                            <LucideIcon.CreditCard />
+                            <NavMenuItem.Label>Ghost(Pro)</NavMenuItem.Label>
+                        </NavMenuItem.Link>
+                    </NavMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
