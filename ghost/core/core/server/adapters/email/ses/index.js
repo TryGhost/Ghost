@@ -93,21 +93,23 @@ class SESEmailProvider extends EmailProviderBase {
     }
 
     /**
-     * Build MIME email content
+     * Build MIME email content for a single recipient
      * @private
      * @param {Object} params - Email parameters
      * @param {string} params.from - From address
+     * @param {string} params.to - To address (recipient email)
      * @param {string} params.subject - Email subject
      * @param {string} params.html - HTML content
      * @param {string} params.plaintext - Plain text content
      * @param {string} [params.replyTo] - Reply-to address
      * @returns {string} MIME formatted email
      */
-    #buildMIMEEmail({from, subject, html, plaintext, replyTo}) {
+    #buildMIMEEmail({from, to, subject, html, plaintext, replyTo}) {
         const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
         let mime = [
             `From: ${from}`,
+            `To: ${to}`,
             `Subject: ${subject}`
         ];
 
@@ -135,6 +137,37 @@ class SESEmailProvider extends EmailProviderBase {
         ]);
 
         return mime.join('\r\n');
+    }
+
+    /**
+     * Process replacement tokens in content
+     * @private
+     * @param {string} content - Content with %%{...}%% tokens
+     * @param {Array} replacements - Array of {id, token, value} objects
+     * @returns {string} Content with tokens replaced
+     */
+    #processReplacements(content, replacements) {
+        if (!content || !replacements || replacements.length === 0) {
+            return content;
+        }
+
+        let processedContent = content;
+
+        for (const replacement of replacements) {
+            if (!replacement.token) {
+                continue;
+            }
+
+            // Get value, defaulting to empty string if null/undefined
+            const value = replacement.value !== null && replacement.value !== undefined
+                ? String(replacement.value)
+                : '';
+
+            // Replace all occurrences of this token
+            processedContent = processedContent.replace(replacement.token, value);
+        }
+
+        return processedContent;
     }
 
     /**
@@ -177,56 +210,63 @@ class SESEmailProvider extends EmailProviderBase {
         } = data;
 
         const startTime = Date.now();
-        debug(`sending message to ${recipients.length} recipients`);
+        debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
 
         try {
             const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
 
-            // Build MIME email (raw format for SES)
-            // V1: Simple implementation without per-recipient personalization
-            // V2 (future): Add template support for personalization
-            const rawMessage = this.#buildMIMEEmail({
-                from: from || this.#config.fromEmail,
-                subject,
-                html,
-                plaintext,
-                replyTo
-            });
-
-            // SES has a 50 recipient limit per bulk send
-            const chunks = this.#chunkArray(recipients, 50);
+            // Process recipients with personalization
+            // Each recipient gets a personalized email with their specific replacement values
+            const batchSize = 10; // Process 10 recipients in parallel
+            const chunks = this.#chunkArray(recipients, batchSize);
             const results = [];
 
             for (const chunk of chunks) {
-                // Extract email addresses
-                const toAddresses = chunk.map(recipient => recipient.email);
+                // Send emails in parallel for this batch
+                const batchPromises = chunk.map(async (recipient) => {
+                    // Process replacements for this recipient
+                    const personalizedHtml = this.#processReplacements(html, recipient.replacements);
+                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements);
 
-                // Build SendRawEmail command for bulk sending
-                const command = new SendRawEmailCommand({
-                    Source: from || this.#config.fromEmail,
-                    Destinations: toAddresses,
-                    RawMessage: {
-                        Data: Buffer.from(rawMessage)
-                    },
-                    ConfigurationSetName: this.#config.configurationSet,
-                    Tags: [
-                        {
-                            Name: 'email-id',
-                            Value: emailId || 'unknown'
-                        }
-                    ]
+                    // Build personalized MIME email
+                    const rawMessage = this.#buildMIMEEmail({
+                        from: from || this.#config.fromEmail,
+                        to: recipient.email,
+                        subject,
+                        html: personalizedHtml,
+                        plaintext: personalizedPlaintext,
+                        replyTo
+                    });
+
+                    // Build SendRawEmail command
+                    const command = new SendRawEmailCommand({
+                        Source: from || this.#config.fromEmail,
+                        Destinations: [recipient.email],
+                        RawMessage: {
+                            Data: Buffer.from(rawMessage)
+                        },
+                        ConfigurationSetName: this.#config.configurationSet,
+                        Tags: [
+                            {
+                                Name: 'email-id',
+                                Value: emailId || 'unknown'
+                            }
+                        ]
+                    });
+
+                    // Send via SES
+                    const response = await this.#sesClient.send(command);
+                    return response.MessageId;
                 });
 
-                // Send via SES
-                const response = await this.#sesClient.send(command);
-
-                // Store message ID from response
-                if (response.MessageId) {
-                    results.push(response.MessageId);
-                }
+                // Wait for all emails in this batch to be sent
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults.filter(Boolean));
             }
 
-            debug(`sent message to ${recipients.length} recipients (${Date.now() - startTime}ms)`);
+            const duration = Date.now() - startTime;
+            const throughput = recipients.length / (duration / 1000);
+            debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
 
             // Return first message ID as provider reference
             return {
@@ -277,7 +317,9 @@ class SESEmailProvider extends EmailProviderBase {
      * @returns {number} Maximum number of recipients
      */
     getMaximumRecipients() {
-        return 50; // SES bulk send limit
+        // With personalization, we send individual emails in parallel batches
+        // Return a reasonable batch size for per-recipient processing
+        return 100;
     }
 
     /**
