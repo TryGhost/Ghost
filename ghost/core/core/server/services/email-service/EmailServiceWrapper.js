@@ -48,16 +48,16 @@ class EmailServiceWrapper {
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {imageSize} = require('../../lib/image');
 
-        // capture errors from mailgun client and log them in sentry
+        // Determine which email provider to use from config
+        const emailConfig = configService.get('adapters:email');
+        const activeProvider = emailConfig?.active || 'mailgun';
+
+        // capture errors from email provider and log them in sentry
         const errorHandler = (error) => {
-            logging.info(`Capturing error for mailgun email provider service`);
+            logging.info(`Capturing error for ${activeProvider} email provider service`);
             sentry.captureException(error);
         };
 
-        // Mailgun client instance for email provider
-        const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache
-        });
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
 
@@ -78,10 +78,33 @@ class EmailServiceWrapper {
             }
         });
 
-        const mailgunEmailProvider = new MailgunEmailProvider({
-            mailgunClient,
-            errorHandler
-        });
+        // Load the appropriate email provider based on config
+        let emailProvider;
+
+        if (activeProvider === 'ses') {
+            // Load SES adapter
+            const SESEmailProvider = require('../../adapters/email/ses');
+            const sesConfig = emailConfig.ses || {};
+
+            emailProvider = new SESEmailProvider({
+                config: sesConfig,
+                errorHandler
+            });
+
+            logging.info('Using Amazon SES email provider');
+        } else {
+            // Default to Mailgun for backward compatibility
+            const mailgunClient = new MailgunClient({
+                config: configService, settings: settingsCache
+            });
+
+            emailProvider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler
+            });
+
+            logging.info('Using Mailgun email provider');
+        }
 
         const emailRenderer = new EmailRenderer({
             settingsCache,
@@ -106,7 +129,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: emailProvider,
             emailRenderer
         });
 
