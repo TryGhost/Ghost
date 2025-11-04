@@ -237,16 +237,46 @@ Example config:
 }
 ```
 
+**3. Email Analytics** (open/click/bounce tracking for newsletters):
+- **Service:** `ghost/core/core/server/services/email-analytics/`
+- **Provider:** EmailAnalyticsProviderSES (uses AWS SQS for event polling)
+- **Configuration:** `ghost/core/config.development.json` → `emailAnalytics.ses`
+- **Event Flow:** SES → SNS → SQS → Ghost polls every 5 minutes
+- **Dependencies:** Requires `@aws-sdk/client-sqs` package
+- **Documentation:** See Phase 4.5 SQS Integration below
+
+Example config:
+```json
+{
+  "emailAnalytics": {
+    "ses": {
+      "queueUrl": "https://sqs.us-west-1.amazonaws.com/123456789/ses-events-queue",
+      "region": "us-west-1",
+      "accessKeyId": "YOUR_ACCESS_KEY",
+      "secretAccessKey": "YOUR_SECRET_KEY"
+    }
+  }
+}
+```
+
+**AWS Infrastructure Requirements for SES Analytics:**
+1. **SES Configuration Set**: Groups SES events (e.g., `ses-analytics`)
+2. **SNS Topic**: Receives SES events (e.g., `ses-events`)
+3. **SQS Queue**: Stores events for Ghost to poll (e.g., `ses-events-queue`)
+4. **IAM Permissions**: User needs `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:GetQueueAttributes`
+
 **Testing SES:**
 - **Transactional:** Send test email via Ghost Admin → Settings
 - **Bulk:** Create and send newsletter via Ghost Admin → Posts
+- **Analytics:** Check email analytics in Ghost Admin → Posts → Analytics
 - **Test scripts:** `examples/ses-transactional-tests/`
-- **AWS Console:** Check SES sending statistics and CloudWatch metrics
+- **AWS Console:** Check SES sending statistics, CloudWatch metrics, and SQS queue
 
 **Important:**
 - Never commit AWS credentials to git
 - `ghost/core/.gitignore` excludes `config.development.json`
 - Use environment variables or IAM roles in production
+- SQS polling happens every 5 minutes via scheduled job
 
 ## Troubleshooting
 
