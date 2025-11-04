@@ -34,7 +34,7 @@ test.describe('Admin', () => {
             const memberEmail = sharedPage.locator('tbody > tr > a > div > div > p').nth(0);
             await expect(memberEmail).toHaveText(email);
         });
-
+        
         test('A member cannot be created with invalid email', async ({sharedPage}) => {
             await sharedPage.goto('/ghost');
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
