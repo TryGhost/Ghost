@@ -107,7 +107,8 @@ class EmailServiceWrapper {
 
         const sendingService = new SendingService({
             emailProvider: mailgunEmailProvider,
-            emailRenderer
+            emailRenderer,
+            emailAddressService: emailAddressService.service
         });
 
         const emailSegmenter = new EmailSegmenter({

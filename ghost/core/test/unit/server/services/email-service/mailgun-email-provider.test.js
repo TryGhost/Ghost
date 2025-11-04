@@ -37,6 +37,7 @@ describe('Mailgun Email Provider', function () {
                 from: 'ghost@example.com',
                 replyTo: 'ghost@example.com',
                 emailId: '123',
+                domainOverride: undefined,
                 recipients: [
                     {
                         email: 'member@example.com',
@@ -71,6 +72,7 @@ describe('Mailgun Email Provider', function () {
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
                     id: '123',
+                    domainOverride: undefined,
                     deliveryTime,
                     track_opens: true,
                     track_clicks: true
