@@ -19,7 +19,7 @@ function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props 
     return (
         <Button
             asChild
-            className={`rounded-full px-8 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
+            className={`rounded-full w-full max-w-16 min-w-9 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
             variant="ghost"
             size="icon"
             data-active={isActive}
@@ -33,15 +33,24 @@ function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props 
 
 export function MobileNavBar() {
     return (
-        <div className="absolute flex justify-center bottom-0 w-full h-[55px] bg-sidebar bg-sidebar border-t border-sidebar-border">
-            <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[330px]">
-                <MobileNavBarButton href="#/analytics" activeOnSubpath>
+        <div className="absolute flex justify-center bottom-0 w-full h-[55px] bg-sidebar bg-sidebar border-t border-sidebar-border px-5">
+            <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px]">
+                <MobileNavBarButton
+                    activeOnSubpath
+                    href="#/analytics"
+                >
                     <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />
                 </MobileNavBarButton>
-                <MobileNavBarButton href="#/posts" activeOnSubpath>
+                <MobileNavBarButton
+                    activeOnSubpath
+                    href="#/posts"
+                >
                     <LucideIcon.PenLine strokeWidth={ICON_STROKE_WIDTH} />
                 </MobileNavBarButton>
-                <MobileNavBarButton href="#/members" activeOnSubpath>
+                <MobileNavBarButton
+                    activeOnSubpath
+                    href="#/members"
+                >
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
                 </MobileNavBarButton>
                 <SidebarTrigger className="rounded-full px-8">
