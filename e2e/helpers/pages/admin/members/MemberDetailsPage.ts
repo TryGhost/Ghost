@@ -6,10 +6,15 @@ export class MemberDetailsPage extends AdminPage {
     readonly emailInput: Locator;
     readonly noteInput: Locator;
     readonly labelsInput: Locator;
+    readonly subscriptionToggle: Locator;
 
     readonly saveButton: Locator;
     readonly savedButton: Locator;
+    readonly retryButton: Locator;
+    readonly memberActionsButton: Locator;
     readonly deleteButton: Locator;
+    readonly confirmDeleteButton: Locator;
+    readonly cancelDeleteButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -19,15 +24,27 @@ export class MemberDetailsPage extends AdminPage {
         this.emailInput = page.getByRole('textbox', {name: 'Email'});
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
         this.labelsInput = page.getByText('Labels').locator('+ div');
+        this.subscriptionToggle = page.locator('input[name="subscribed"] + span');
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
+        this.retryButton = page.getByRole('button', {name: 'Retry'});
+        this.memberActionsButton = page.getByTestId('member-actions');
         this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+
+        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
+        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
 
     async addLabel(label: string): Promise<void> {
         await this.labelsInput.click();
         await this.page.keyboard.type(label);
+        await this.page.keyboard.press('Tab');
+    }
+
+    async removeLabel(): Promise<void> {
+        await this.labelsInput.click();
+        await this.page.keyboard.press('Backspace');
         await this.page.keyboard.press('Tab');
     }
 
