@@ -1,6 +1,10 @@
 import {
     Badge,
     Button,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
     LucideIcon,
     Table,
     TableBody,
@@ -9,7 +13,7 @@ import {
     TableHeader,
     TableRow
 } from '@tryghost/shade';
-import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from '../../Tags/components/VirtualTable/useInfiniteVirtualScroll';
 
@@ -91,6 +95,10 @@ function CommentsList({
         parentRef
     });
 
+    const {mutate: hideComment} = useHideComment();
+    const {mutate: showComment} = useShowComment();
+    const {mutate: deleteComment} = useDeleteComment();
+
     return (
         <div ref={parentRef} className="overflow-hidden">
             <Table
@@ -166,15 +174,48 @@ function CommentsList({
                                     </span>
                                 </TableCell>
                                 <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                                    <Button
-                                        aria-hidden="true"
-                                        className="w-12"
-                                        size="icon"
-                                        tabIndex={-1}
-                                        variant="outline"
-                                    >
-                                        <LucideIcon.Eye />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                className="relative z-10 w-12"
+                                                size="icon"
+                                                variant="outline"
+                                            >
+                                                <LucideIcon.MoreVertical />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            {item.post?.slug && (
+                                                <DropdownMenuItem asChild>
+                                                    <a href={`#/editor/post/${item.post_id}`}>
+                                                        <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                                        Open post
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {item.status === 'published' && (
+                                                <DropdownMenuItem onClick={() => hideComment({id: item.id})}>
+                                                    <LucideIcon.EyeOff className="mr-2 size-4" />
+                                                    Hide comment
+                                                </DropdownMenuItem>
+                                            )}
+                                            {item.status === 'hidden' && (
+                                                <DropdownMenuItem onClick={() => showComment({id: item.id})}>
+                                                    <LucideIcon.Eye className="mr-2 size-4" />
+                                                    Show comment
+                                                </DropdownMenuItem>
+                                            )}
+                                            {item.status !== 'deleted' && (
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => deleteComment({id: item.id})}
+                                                >
+                                                    <LucideIcon.Trash2 className="mr-2 size-4" />
+                                                    Delete comment
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         );

@@ -1,7 +1,8 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {
     Meta,
-    createInfiniteQuery
+    createInfiniteQuery,
+    createMutation
 } from '../utils/api/hooks';
 
 export type Comment = {
@@ -70,3 +71,45 @@ export const useBrowseComments = (args?: Parameters<typeof useBrowseCommentsQuer
         }
     });
 };
+
+export const useHideComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            status: 'hidden'
+        }]
+    }),
+    invalidateQueries: {
+        dataType: 'CommentsResponseType'
+    }
+});
+
+export const useShowComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            status: 'published'
+        }]
+    }),
+    invalidateQueries: {
+        dataType: 'CommentsResponseType'
+    }
+});
+
+export const useDeleteComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            status: 'deleted'
+        }]
+    }),
+    invalidateQueries: {
+        dataType: 'CommentsResponseType'
+    }
+});
