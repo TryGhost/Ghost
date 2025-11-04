@@ -22,9 +22,15 @@ export const useFetchApi = () => {
     return async <ResponseData = any>(endpoint: string | URL, {headers = {}, retry, ...options}: RequestOptions = {}): Promise<ResponseData> => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
-            'app-pragma': 'no-cache',
-            'x-ghost-version': ghostVersion
+            'app-pragma': 'no-cache'
         };
+        
+        // Only include version header if ghostVersion is provided
+        // This allows forward admin deployments to skip version checks
+        if (ghostVersion) {
+            defaultHeaders['x-ghost-version'] = ghostVersion;
+        }
+        
         if (typeof options.body === 'string') {
             defaultHeaders['content-type'] = 'application/json';
         }
