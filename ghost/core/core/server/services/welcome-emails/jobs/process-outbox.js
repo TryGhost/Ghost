@@ -201,27 +201,24 @@ async function initializeMailer(db) {
  */
 async function sendWelcomeEmail(payload) {
     logging.info(`[WELCOME-EMAIL] Sending welcome email to ${payload.email}`);
+    const templateData = {
+        memberName: payload.name,
+        siteTitle: MAIL_CONFIG.siteSettings.title,
+        siteUrl: MAIL_CONFIG.siteSettings.url,
+        accentColor: MAIL_CONFIG.siteSettings.accentColor
+    };
 
-    if (config.get('welcomeEmails:enabled')) {
-        const templateData = {
-            memberName: payload.name,
-            siteTitle: MAIL_CONFIG.siteSettings.title,
-            siteUrl: MAIL_CONFIG.siteSettings.url,
-            accentColor: MAIL_CONFIG.siteSettings.accentColor
-        };
+    const html = require('../email-templates/welcome.html')(templateData);
+    const text = require('../email-templates/welcome.txt')(templateData);
 
-        const html = require('../email-templates/welcome.html')(templateData);
-        const text = require('../email-templates/welcome.txt')(templateData);
-
-        const toEmail = config.get('welcomeEmails:emailAddress');
-        await MAIL_CONFIG.mailer.send({
-            to: toEmail,
-            subject: `Welcome to ${MAIL_CONFIG.siteSettings.title}!`,
-            html,
-            text,
-            forceTextContent: true
-        });
-    }
+    const toEmail = config.get('welcomeEmailTestInbox');
+    await MAIL_CONFIG.mailer.send({
+        to: toEmail,
+        subject: `Welcome to ${MAIL_CONFIG.siteSettings.title}!`,
+        html,
+        text,
+        forceTextContent: true
+    });
 }
 
 /**
@@ -289,9 +286,7 @@ if (parentPort) {
     const startTime = Date.now();
     const db = require('../../../data/db');
 
-    if (config.get('welcomeEmails:enabled')) {
-        await initializeMailer(db);
-    }
+    await initializeMailer(db);
     
     if (process.env.NODE_ENV !== 'production') {
         logging.info(MESSAGES.SIMULATION_MODE);

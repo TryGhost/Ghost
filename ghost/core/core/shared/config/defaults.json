@@ -302,8 +302,5 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "welcomeEmails": {
-        "enabled": false,
-        "emailAddress": ""
-    }
+    "welcomeEmailTestInbox" : ""
 }
