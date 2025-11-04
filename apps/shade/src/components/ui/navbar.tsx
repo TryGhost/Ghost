@@ -11,6 +11,7 @@ const NavbarActions = React.forwardRef<HTMLDivElement, NavbarActionsProps>(({chi
         <div
             ref={ref}
             className={cn('flex items-center gap-2', className)}
+            data-navbar='navbar-actions'
             {...props}
         >
             {children}
@@ -30,6 +31,7 @@ const Navbar = React.forwardRef<HTMLDivElement, NavbarProps>(({children, classNa
         <div
             ref={ref}
             className={cn('flex items-center border-b justify-between gap-x-5 gap-y-2', className)}
+            data-navbar='navbar'
             {...props}
         >
             {children}
