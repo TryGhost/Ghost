@@ -151,9 +151,9 @@
     overflow-y: auto;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
     .shade {
-        height: calc(100vh - 55px);
+        height: calc(100vh - 64px);
     }
 }
 

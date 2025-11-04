@@ -3,6 +3,7 @@ import {
     Button,
     LucideIcon,
     SidebarTrigger,
+    useSidebar,
 } from "@tryghost/shade";
 import { useIsActiveLink } from "./useIsActiveLink";
 
@@ -32,8 +33,14 @@ function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props 
 }
 
 export function MobileNavBar() {
+    const { isMobile } = useSidebar();
+
+    if (!isMobile) {
+        return <></>
+    }
+
     return (
-        <div className="absolute flex justify-center bottom-0 w-full h-[55px] bg-sidebar bg-sidebar border-t border-sidebar-border px-5">
+        <div className="absolute flex justify-center bottom-0 w-full h-16 bg-sidebar bg-sidebar border-t border-sidebar-border px-5">
             <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px]">
                 <MobileNavBarButton
                     activeOnSubpath
