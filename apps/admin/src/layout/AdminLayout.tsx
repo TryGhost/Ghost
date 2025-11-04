@@ -2,6 +2,7 @@ import React from "react";
 import {
     SidebarInset,
     SidebarProvider,
+    SidebarTrigger,
 } from "@tryghost/shade";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import AppSidebar from "./app-sidebar";
@@ -19,6 +20,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <SidebarInset className="bg-white">
                 <main className="flex-1 min-h-screen">{children}</main>
             </SidebarInset>
+            <div className="absolute bottom-0 w-full h-[55px]">
+                <SidebarTrigger className="-ml-1" />
+            </div>
         </SidebarProvider>
     );
 }
