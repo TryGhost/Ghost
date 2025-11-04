@@ -39,6 +39,9 @@ Router.map(function () {
     this.route('posts-x', {path: '/posts/analytics/:post_id'}, function () {
         this.route('posts-x', {path: '/*sub'});
     });
+    this.route('comments-x', {path: '/comments'}, function () {
+        this.route('comments-x', {path: '/*sub'});
+    });
 
     this.route('restore-posts', {path: '/restore'});
 

@@ -88,12 +88,23 @@ const controller = {
         validation: {
             options: {
                 post_id: {
-                    required: true
+                    required: false
                 }
             }
         },
         permissions: true,
         async query(frame) {
+            // If post_id is not provided, browse all comments
+            if (!frame.options.post_id) {
+                // Use direct model query for browsing all comments
+                const options = {
+                    ...frame.options,
+                    withRelated: ['member', 'post'],
+                    isAdmin: true
+                };
+                const result = await models.Comment.findPage(options);
+                return result;
+            }
             const result = await commentsService.controller.adminBrowse(frame);
             return result;
         }
