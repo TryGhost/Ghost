@@ -1,5 +1,12 @@
 @import "@tryghost/shade/styles.css";
 
+/* Hide the nav menu and tab bar on mobile when running in React admin shell */
+body:not(.ember-application) #ember-app .gh-nav,
+body:not(.ember-application) #ember-app .gh-mobile-nav-bar {
+    display: none;
+}
+
+
 /* Temporary overrides until Ember transition is finished */
 body:not(.ember-application) .gh-canvas-header {
     padding-top: 24px;
