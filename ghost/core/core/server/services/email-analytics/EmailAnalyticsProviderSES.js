@@ -1,38 +1,57 @@
-const fs = require('fs').promises;
-const path = require('path');
 const debug = require('@tryghost/debug')('email-analytics:ses');
 const logging = require('@tryghost/logging');
 
 /**
  * Email Analytics Provider for Amazon SES
  *
- * Fetches email events from SES and normalizes them to Ghost's format.
+ * Fetches email events from SES via SQS queue and normalizes them to Ghost's format.
  *
- * MVP Implementation: Reads events from a JSON file
- * Future: Will read from SNS webhook endpoint or CloudWatch Logs
+ * Event Flow: SES → SNS → SQS → Ghost
  */
 class EmailAnalyticsProviderSES {
     #config;
-    #eventsFilePath;
+    #sqsClient;
     #lastFetchedEventId;
+    #processedMessageIds;
 
     constructor({config, contentPath}) {
         this.#config = config;
-
-        // For MVP, store events in a file in Ghost's content directory
-        // contentPath already points to the data directory
-        this.#eventsFilePath = contentPath
-            ? path.join(contentPath, 'ses-events.json')
-            : path.join(__dirname, '../../../../../../content/data/ses-events.json');
-
         this.#lastFetchedEventId = null;
+        this.#processedMessageIds = new Set(); // Track processed messages to avoid duplicates
 
-        debug('Initialized SES analytics provider');
-        debug(`Events file path: ${this.#eventsFilePath}`);
+        // Initialize SQS client if configuration is provided
+        if (config?.queueUrl) {
+            try {
+                const {SQSClient} = require('@aws-sdk/client-sqs');
+
+                const clientConfig = {
+                    region: config.region || 'us-west-1'
+                };
+
+                // Add credentials if provided (otherwise uses IAM role)
+                if (config.accessKeyId && config.secretAccessKey) {
+                    clientConfig.credentials = {
+                        accessKeyId: config.accessKeyId,
+                        secretAccessKey: config.secretAccessKey
+                    };
+                }
+
+                this.#sqsClient = new SQSClient(clientConfig);
+                debug('Initialized SES analytics provider with SQS client');
+                debug(`Queue URL: ${config.queueUrl}`);
+            } catch (err) {
+                if (err.code === 'MODULE_NOT_FOUND') {
+                    logging.error('[SES Analytics] AWS SQS SDK not installed. Install with: yarn add @aws-sdk/client-sqs');
+                }
+                throw err;
+            }
+        } else {
+            logging.warn('[SES Analytics] No SQS configuration provided. Analytics will not be available.');
+        }
     }
 
     /**
-     * Fetches the latest events from SES
+     * Fetches the latest events from SES via SQS
      *
      * @param {Function} batchHandler - Function to call with batches of events
      * @param {Object} [options] - Fetch options
@@ -44,100 +63,159 @@ class EmailAnalyticsProviderSES {
     async fetchLatest(batchHandler, options = {}) {
         debug('fetchLatest called with options:', options);
 
-        try {
-            // Read events from file
-            const events = await this.#readEventsFromFile();
+        if (!this.#sqsClient) {
+            debug('SQS client not initialized, skipping fetch');
+            return;
+        }
 
-            if (!events || events.length === 0) {
-                debug('No events found');
+        try {
+            // Poll SQS queue for messages
+            const messages = await this.#pollSQSQueue(options.maxEvents || 10);
+
+            if (!messages || messages.length === 0) {
+                debug('No messages in queue');
                 return;
             }
 
-            // Filter events based on options
-            let filteredEvents = this.#filterEvents(events, options);
+            debug(`Received ${messages.length} messages from SQS`);
 
-            // Normalize events to Ghost format
-            const normalizedEvents = filteredEvents
-                .map(event => this.#normalizeEvent(event))
-                .filter(event => event !== null);
+            // Extract and normalize events from SQS messages
+            const events = [];
+            const messagesToDelete = [];
 
-            debug(`Fetched ${normalizedEvents.length} events`);
+            for (const message of messages) {
+                try {
+                    // Skip if already processed (deduplication)
+                    if (this.#processedMessageIds.has(message.MessageId)) {
+                        debug(`Skipping duplicate message: ${message.MessageId}`);
+                        messagesToDelete.push(message);
+                        continue;
+                    }
 
-            // Process events in batches
-            if (normalizedEvents.length > 0) {
-                await batchHandler(normalizedEvents);
+                    // Parse SNS message wrapper
+                    const snsMessage = JSON.parse(message.Body);
 
-                // Remember the last event ID we processed
-                if (normalizedEvents.length > 0) {
-                    this.#lastFetchedEventId = normalizedEvents[normalizedEvents.length - 1].id;
+                    // Parse SES event from SNS message
+                    const sesEvent = JSON.parse(snsMessage.Message);
+
+                    // Normalize to Ghost format
+                    const normalizedEvent = this.#normalizeEvent(sesEvent);
+
+                    if (normalizedEvent) {
+                        // Apply filters
+                        if (this.#shouldIncludeEvent(normalizedEvent, options)) {
+                            events.push(normalizedEvent);
+                        }
+
+                        // Mark for deletion (successfully processed)
+                        messagesToDelete.push(message);
+                        this.#processedMessageIds.add(message.MessageId);
+                    }
+                } catch (error) {
+                    logging.error('[SES Analytics] Error processing SQS message:', error);
+                    // Don't delete messages that failed to process
                 }
             }
 
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                debug('Events file does not exist yet');
-                logging.info('[SES Analytics] No events file found. Waiting for events...');
-            } else {
-                logging.error('[SES Analytics] Error fetching events:', error);
-                throw error;
+            debug(`Normalized ${events.length} events`);
+
+            // Process events in batches
+            if (events.length > 0) {
+                await batchHandler(events);
+
+                // Remember the last event ID we processed
+                this.#lastFetchedEventId = events[events.length - 1].id;
             }
+
+            // Delete successfully processed messages from queue
+            if (messagesToDelete.length > 0) {
+                await this.#deleteMessages(messagesToDelete);
+            }
+
+        } catch (error) {
+            logging.error('[SES Analytics] Error fetching events from SQS:', error);
+            throw error;
         }
     }
 
     /**
-     * Read events from the JSON file
+     * Poll SQS queue for messages
      * @private
+     * @param {number} maxMessages - Maximum number of messages to receive (1-10)
+     * @returns {Promise<Array>} Array of SQS messages
      */
-    async #readEventsFromFile() {
+    async #pollSQSQueue(maxMessages = 10) {
         try {
-            const fileContent = await fs.readFile(this.#eventsFilePath, 'utf8');
-            const data = JSON.parse(fileContent);
-            return Array.isArray(data) ? data : (data.events || []);
+            const {ReceiveMessageCommand} = require('@aws-sdk/client-sqs');
+
+            const command = new ReceiveMessageCommand({
+                QueueUrl: this.#config.queueUrl,
+                MaxNumberOfMessages: Math.min(maxMessages, 10), // SQS max is 10
+                WaitTimeSeconds: 5, // Long polling
+                VisibilityTimeout: 30 // 30 seconds to process before message becomes visible again
+            });
+
+            const response = await this.#sqsClient.send(command);
+            return response.Messages || [];
         } catch (error) {
-            if (error.code !== 'ENOENT') {
-                logging.error('[SES Analytics] Error reading events file:', error);
-            }
-            return [];
+            logging.error('[SES Analytics] Error polling SQS queue:', error);
+            throw error;
         }
     }
 
     /**
-     * Filter events based on timestamp and type
+     * Delete messages from SQS queue after successful processing
      * @private
+     * @param {Array} messages - Array of SQS messages to delete
      */
-    #filterEvents(events, options) {
-        let filtered = events;
+    async #deleteMessages(messages) {
+        try {
+            const {DeleteMessageCommand} = require('@aws-sdk/client-sqs');
 
+            // Delete messages in parallel
+            const deletePromises = messages.map(message =>
+                this.#sqsClient.send(new DeleteMessageCommand({
+                    QueueUrl: this.#config.queueUrl,
+                    ReceiptHandle: message.ReceiptHandle
+                }))
+            );
+
+            await Promise.all(deletePromises);
+            debug(`Deleted ${messages.length} messages from queue`);
+        } catch (error) {
+            logging.error('[SES Analytics] Error deleting messages from queue:', error);
+            // Don't throw - we don't want to fail the entire fetch if deletion fails
+            // Messages will be reprocessed due to deduplication check
+        }
+    }
+
+    /**
+     * Check if event should be included based on filters
+     * @private
+     * @param {Object} event - Normalized event
+     * @param {Object} options - Filter options
+     * @returns {boolean}
+     */
+    #shouldIncludeEvent(event, options) {
         // Filter by timestamp range
-        if (options.begin) {
-            filtered = filtered.filter(event => {
-                const eventTime = new Date(event.timestamp || event.mail?.timestamp);
-                return eventTime >= options.begin;
-            });
+        if (options.begin && event.timestamp < options.begin) {
+            return false;
         }
 
-        if (options.end) {
-            filtered = filtered.filter(event => {
-                const eventTime = new Date(event.timestamp || event.mail?.timestamp);
-                return eventTime <= options.end;
-            });
+        if (options.end && event.timestamp > options.end) {
+            return false;
         }
 
         // Filter by event type
         if (options.events && options.events.length > 0) {
-            filtered = filtered.filter(event => {
-                const eventType = this.#mapSESEventType(event.eventType);
-                return options.events.includes(eventType);
-            });
+            if (!options.events.includes(event.type)) {
+                return false;
+            }
         }
 
-        // Limit number of events
-        if (options.maxEvents) {
-            filtered = filtered.slice(0, options.maxEvents);
-        }
-
-        return filtered;
+        return true;
     }
+
 
     /**
      * Normalize SES event to Ghost format

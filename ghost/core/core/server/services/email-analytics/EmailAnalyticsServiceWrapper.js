@@ -53,8 +53,12 @@ class EmailAnalyticsServiceWrapper {
         if (activeProvider === 'ses') {
             // Use SES analytics provider
             logging.info('[EmailAnalytics] Using Amazon SES analytics provider');
+
+            // Get analytics config (with SQS queue) or fall back to email adapter config
+            const analyticsConfig = config.get('emailAnalytics:ses') || emailConfig.ses;
+
             providers.push(new SESProvider({
-                config: emailConfig.ses,
+                config: analyticsConfig,
                 contentPath: config.getContentPath('data')
             }));
         } else {
