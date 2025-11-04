@@ -24,6 +24,7 @@ export type Comment = {
         id: string;
         title: string;
         slug: string;
+        url: string;
     };
     count?: {
         replies?: number;
