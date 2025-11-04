@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {click, find, findAll} from '@ember/test-helpers';
+import {click, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMembers, disablePaidMembers, enableMembers, enablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
@@ -111,5 +111,25 @@ describe('Acceptance: Post email preview', function () {
 
         // segment dropdown should be hidden when there's only one option
         expect(find('[data-test-select="preview-segment"]'), 'segment select').not.to.exist;
+    });
+
+    it('allows keyboard users to focus the email preview for keyboard navigation', async function () {
+        await openEmailPreviewModal.call(this);
+        await waitFor('.gh-pe-iframe');
+
+        const iframe = find('.gh-pe-iframe');
+        expect(iframe, 'email preview iframe exists').to.exist;
+        expect(iframe.getAttribute('tabindex')).to.equal('0');
+
+        await triggerEvent(iframe, 'focusin');
+        await waitUntil(() => {
+            return iframe.contentDocument && iframe.contentDocument.activeElement === iframe.contentDocument.body;
+        });
+
+        const iframeDocument = iframe.contentDocument;
+        expect(iframeDocument, 'iframe document is available').to.exist;
+        expect(iframeDocument.activeElement, 'iframe body receives focus').to.equal(iframeDocument.body);
+        expect(iframeDocument.body.getAttribute('tabindex')).to.equal('-1');
+
     });
 });
