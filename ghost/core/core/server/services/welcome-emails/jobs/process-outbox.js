@@ -1,13 +1,14 @@
 const {parentPort} = require('worker_threads');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const config = require('../../../../shared/config');
 const MemberCreatedEvent = require('../../../../shared/events/MemberCreatedEvent');
 const {OUTBOX_STATUSES} = require('../../../models/outbox');
 
 const BATCH_SIZE = 100;
 const MAX_ENTRIES_PER_JOB = 1000;
 const MAX_RETRIES = 3;
-const SIMULATE_FAILURE_RATE = 0.3;
+const SIMULATE_FAILURE_RATE = 0;
 
 const EXPONENTIAL_BACKOFF = {
     enabled: false,
@@ -19,6 +20,12 @@ const MESSAGES = {
     NO_ENTRIES: 'No pending outbox entries to process',
     SIMULATION_MODE: `Welcome email processor running in simulation mode (${SIMULATE_FAILURE_RATE * 100}% failure rate)`,
     SIMULATED_FAILURE: 'Simulated random failure for testing retry logic'
+};
+
+const MAIL_CONFIG = {
+    initialized: false,
+    mailer: null,
+    siteSettings: {}
 };
 
 /**
@@ -58,6 +65,26 @@ function cancel() {
             process.exit(0);
         }, 1000);
     }
+}
+
+/**
+ * Formats the job completion message with stats
+ * @param {Object} options - Completion stats
+ * @param {number} options.processed - Number of successfully processed entries
+ * @param {number} options.failed - Number of failed entries
+ * @param {number} options.durationMs - Total processing time in milliseconds
+ * @returns {string} Formatted completion message
+ */
+function formatCompletionMessage({processed, failed, durationMs}) {
+    return `Processed ${processed} outbox entries, ${failed} failed in ${(durationMs / 1000).toFixed(2)}s`;
+}
+
+/**
+ * Determines whether to simulate a failure for testing retry logic
+ * @returns {boolean} True if failure should be simulated (non-production only)
+ */
+function shouldSimulateFailure() {
+    return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
 }
 
 /**
@@ -136,19 +163,65 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 }
 
 /**
- * Determines whether to simulate a failure for testing retry logic
- * @returns {boolean} True if failure should be simulated (non-production only)
+ * Initializes the mail service and fetches site settings
+ * @param {Object} db - Database connection
  */
-function shouldSimulateFailure() {
-    return process.env.NODE_ENV !== 'production' && Math.random() < SIMULATE_FAILURE_RATE;
+async function initializeMailer(db) {
+    if (MAIL_CONFIG.initialized) {
+        return;
+    }
+
+    const emailAddressService = require('../../email-address');
+    emailAddressService.init();
+
+    const mail = require('../../mail');
+    MAIL_CONFIG.mailer = new mail.GhostMailer();
+
+    const settings = await db.knex('settings')
+        .whereIn('key', ['title', 'accent_color', 'url'])
+        .select('key', 'value');
+
+    const settingsMap = settings.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+    }, {});
+
+    MAIL_CONFIG.siteSettings = {
+        title: settingsMap.title || 'Ghost',
+        url: settingsMap.url || 'http://localhost:2368',
+        accentColor: settingsMap.accent_color || '#15212A'
+    };
+
+    MAIL_CONFIG.initialized = true;
 }
 
 /**
- * Sends a welcome email to a new member (currently logs only)
+ * Sends a welcome email to a new member
  * @param {Object} payload - Member data containing name and email
  */
 async function sendWelcomeEmail(payload) {
-    logging.info(`[WELCOME-EMAIL] Welcome email sent to ${payload.name} at ${payload.email}`);
+    logging.info(`[WELCOME-EMAIL] Sending welcome email to ${payload.email}`);
+
+    if (config.get('welcomeEmails:enabled')) {
+        const templateData = {
+            memberName: payload.name,
+            siteTitle: MAIL_CONFIG.siteSettings.title,
+            siteUrl: MAIL_CONFIG.siteSettings.url,
+            accentColor: MAIL_CONFIG.siteSettings.accentColor
+        };
+
+        const html = require('../email-templates/welcome.html')(templateData);
+        const text = require('../email-templates/welcome.txt')(templateData);
+
+        const toEmail = config.get('welcomeEmails:emailAddress');
+        await MAIL_CONFIG.mailer.send({
+            to: toEmail,
+            subject: `Welcome to ${MAIL_CONFIG.siteSettings.title}!`,
+            html,
+            text,
+            forceTextContent: true
+        });
+    }
 }
 
 /**
@@ -167,7 +240,7 @@ async function processEntry(db, entry) {
                 message: MESSAGES.SIMULATED_FAILURE
             });
         }
-
+        
         await sendWelcomeEmail(payload);
         await deleteProcessedEntry(db, entry.id);
 
@@ -180,26 +253,6 @@ async function processEntry(db, entry) {
 
         return {success: false};
     }
-}
-
-if (parentPort) {
-    parentPort.once('message', (message) => {
-        if (message === 'cancel') {
-            return cancel();
-        }
-    });
-}
-
-/**
- * Formats the job completion message with stats
- * @param {Object} options - Completion stats
- * @param {number} options.processed - Number of successfully processed entries
- * @param {number} options.failed - Number of failed entries
- * @param {number} options.durationMs - Total processing time in milliseconds
- * @returns {string} Formatted completion message
- */
-function formatCompletionMessage({processed, failed, durationMs}) {
-    return `Processed ${processed} outbox entries, ${failed} failed in ${(durationMs / 1000).toFixed(2)}s`;
 }
 
 /**
@@ -224,10 +277,22 @@ async function processEntries(db, entries) {
     return {processed, failed};
 }
 
+if (parentPort) {
+    parentPort.once('message', (message) => {
+        if (message === 'cancel') {
+            return cancel();
+        }
+    });
+}
+
 (async () => {
     const startTime = Date.now();
     const db = require('../../../data/db');
 
+    if (config.get('welcomeEmails:enabled')) {
+        await initializeMailer(db);
+    }
+    
     if (process.env.NODE_ENV !== 'production') {
         logging.info(MESSAGES.SIMULATION_MODE);
     }
