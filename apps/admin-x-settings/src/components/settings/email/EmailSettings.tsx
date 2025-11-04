@@ -31,7 +31,9 @@ const EmailSettings: React.FC = () => {
                     {config.emailProvider?.active && config.emailProvider.active !== 'mailgun' && (
                         <EmailProvider keywords={searchKeywords.emailProvider} />
                     )}
-                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
+                    {(!config.emailProvider?.active || config.emailProvider.active === 'mailgun') && (
+                        <MailGun keywords={searchKeywords.mailgun} />
+                    )}
                 </>
             )}
         </SearchableSection>
