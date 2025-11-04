@@ -39,7 +39,7 @@ describe('Click Tracking', function () {
             body: {
                 posts: [{
                     title: 'My Newsletter',
-                    html: `<p>External link <a href="https://example.com/a">https://example.com/a</a>; Internal link <a href=${siteUrl.href}/about">${siteUrl.href}/about</a>;Ghost homepage <a href="https://ghost.org">https://ghost.org</a></p>`
+                    html: `<p>External link <a href="https://example.com/a">https://example.com/a</a>; Internal link <a href="${siteUrl.href}/about">${siteUrl.href}/about</a>;Ghost homepage <a href="https://ghost.org">https://ghost.org</a></p>`
                 }]
             }
         });
