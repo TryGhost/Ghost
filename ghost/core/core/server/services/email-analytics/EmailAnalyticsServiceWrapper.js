@@ -12,6 +12,7 @@ class EmailAnalyticsServiceWrapper {
         const EmailEventStorage = require('../email-service/EmailEventStorage');
         const EmailEventProcessor = require('../email-service/EmailEventProcessor');
         const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
+        const SESProvider = require('./EmailAnalyticsProviderSES');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
@@ -44,13 +45,29 @@ class EmailAnalyticsServiceWrapper {
             prometheusClient
         });
 
+        // Determine which analytics provider(s) to use based on email configuration
+        const emailConfig = config.get('adapters:email');
+        const activeProvider = emailConfig?.active || 'mailgun';
+        const providers = [];
+
+        if (activeProvider === 'ses') {
+            // Use SES analytics provider
+            logging.info('[EmailAnalytics] Using Amazon SES analytics provider');
+            providers.push(new SESProvider({
+                config: emailConfig.ses,
+                contentPath: config.getContentPath('data')
+            }));
+        } else {
+            // Default to Mailgun provider
+            logging.info('[EmailAnalytics] Using Mailgun analytics provider');
+            providers.push(new MailgunProvider({config, settings}));
+        }
+
         this.service = new EmailAnalyticsService({
             config,
             settings,
             eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings})
-            ],
+            providers,
             queries,
             domainEvents,
             prometheusClient
