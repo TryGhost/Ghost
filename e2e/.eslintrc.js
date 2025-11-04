@@ -2,10 +2,10 @@ module.exports = {
     parser: '@typescript-eslint/parser',
     plugins: [
         'ghost',
-        'eslint-plugin-playwright'
+        'playwright'
     ],
     extends: [
-        'plugin:ghost/ts',
+        'plugin:ghost/ts'
     ],
     ignorePatterns: ['build/'],
     rules: {
