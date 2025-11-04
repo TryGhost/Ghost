@@ -192,7 +192,7 @@ export default class AdminXComponent extends Component {
                     <Suspense fallback={fallback}>
                         <this.AdminXApp
                             framework={{
-                                ghostVersion: config.APP.version,
+                                ghostVersion: this.feature.inAdminForward ? '' : config.APP.version,
                                 externalNavigate: this.externalNavigate,
                                 unsplashConfig: defaultUnsplashHeaders,
                                 sentryDSN: this.config.sentry_dsn ?? null,
