@@ -190,6 +190,64 @@ Users requested ability to switch themes for better accessibility
 - **Scripts:** `ghost/core/core/server/data/tinybird/scripts/`
 - **Datafiles:** `ghost/core/core/server/data/tinybird/`
 
+### Amazon SES Email Configuration
+
+Ghost has TWO separate email systems:
+
+**1. Transactional Emails** (password resets, invitations, magic links):
+- **Service:** `ghost/core/core/server/services/mail/`
+- **Library:** `@tryghost/nodemailer` (built-in SES support via AWS SDK v3)
+- **Configuration:** `ghost/core/config.development.json` → `mail.transport = "ses"`
+- **Documentation:** `ai/phase-3-transactional/`
+
+Example config:
+```json
+{
+  "mail": {
+    "transport": "ses",
+    "options": {
+      "region": "us-east-1",
+      "accessKeyId": "YOUR_ACCESS_KEY",
+      "secretAccessKey": "YOUR_SECRET_KEY"
+    }
+  }
+}
+```
+
+**2. Bulk Newsletter Emails** (member newsletters, announcements):
+- **Service:** `ghost/core/core/server/services/email-service/`
+- **Library:** Custom adapter system (EmailProviderBase)
+- **Configuration:** `ghost/core/config.development.json` → `adapters.email.active = "ses"`
+- **Documentation:** `ai/phase-1-2-mailgun-ses/`
+
+Example config:
+```json
+{
+  "adapters": {
+    "email": {
+      "active": "ses",
+      "ses": {
+        "region": "us-east-1",
+        "accessKeyId": "YOUR_ACCESS_KEY",
+        "secretAccessKey": "YOUR_SECRET_KEY",
+        "fromEmail": "noreply@yourdomain.com"
+      }
+    }
+  }
+}
+```
+
+**Testing SES:**
+- **Transactional:** Send test email via Ghost Admin → Settings
+- **Bulk:** Create and send newsletter via Ghost Admin → Posts
+- **Test scripts:** `examples/ses-transactional-tests/`
+- **AWS Console:** Check SES sending statistics and CloudWatch metrics
+
+**Important:**
+- Never commit AWS credentials to git
+- `ghost/core/.gitignore` excludes `config.development.json`
+- Use environment variables or IAM roles in production
+
 ## Troubleshooting
 
 ### Build Issues
