@@ -41,7 +41,7 @@
     "Sign in": "Einloggen",
     "Sign in now": "Jetzt einloggen",
     "Sign in to {siteTitle}": "Bei {siteTitle} einloggen",
-    "Sign in to {siteTitle} with code {otc}": "Mit Bestätigungscode auf {siteTitle} einloggen",
+    "Sign in to {siteTitle} with code {otc}": "Auf {siteTitle} einloggen mit Bestätigungscode {otc}",
     "Sign in verification": "Bestätigung fürs Einloggen",
     "Someone just replied to your comment": "Jemand hat auf deinen Kommentar geantwortet",
     "Someone just replied to your comment on {postTitle}.": "Jemand hat auf deinen Kommentar zu {postTitle} geantwortet.",
