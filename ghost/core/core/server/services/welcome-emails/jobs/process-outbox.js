@@ -211,7 +211,7 @@ async function sendWelcomeEmail(payload) {
     const html = require('../email-templates/welcome.html')(templateData);
     const text = require('../email-templates/welcome.txt')(templateData);
 
-    const toEmail = config.get('welcomeEmailTestInbox');
+    const toEmail = config.get('memberWelcomeEmailTestInbox');
     await MAIL_CONFIG.mailer.send({
         to: toEmail,
         subject: `Welcome to ${MAIL_CONFIG.siteSettings.title}!`,
