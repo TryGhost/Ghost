@@ -1,7 +1,8 @@
 import React from 'react';
 import {
     SidebarMenuButton,
-    SidebarMenuItem
+    SidebarMenuItem,
+    useSidebar
 } from '@tryghost/shade';
 import { useIsActiveLink } from './useIsActiveLink';
 
@@ -28,6 +29,13 @@ function NavMenuLink({
     ...props
 }: NavMenuLinkProps) {
     const isActive = useIsActiveLink({ href, activeOnSubpath });
+    const { isMobile, setOpenMobile } = useSidebar();
+
+    const handleClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     return (
         <SidebarMenuButton
@@ -39,6 +47,7 @@ function NavMenuLink({
                 rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
                 target={target}
                 aria-current={isActive ? 'page' : undefined}
+                onClick={handleClick}
             >
                 {children}
             </a>
