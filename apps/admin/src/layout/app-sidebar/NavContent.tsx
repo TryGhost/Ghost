@@ -27,7 +27,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             aria-label="Toggle post views"
                             variant="ghost"
                             size="icon"
-                            className="!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
+                            className="!h-[34px] absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
                                 setPostsExpanded(!postsExpanded)
                             }
@@ -38,7 +38,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             />
                         </Button>
                         <NavMenuItem.Link href="#/posts">
-                            <LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
+                            <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
                         <a href="#/editor/post"
