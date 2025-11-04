@@ -80,7 +80,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     return (
         <>
             <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pb-0 pt-8'>
+                <div
+                    className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pb-0 pt-8'
+                    data-header='header'
+                >
                     <div className='flex w-full flex-col gap-5'>
                         <div className='flex w-full flex-col justify-between md:flex-row md:items-center'>
                             <Breadcrumb>
