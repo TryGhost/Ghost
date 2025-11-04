@@ -151,12 +151,9 @@ function CommentsList({
                                 </TableCell>
                                 <TableCell className="col-start-1 col-end-1 row-start-3 row-end-3 flex p-0 md:col-start-2 md:col-end-2 md:row-start-1 md:row-end-3 lg:table-cell lg:p-4">
                                     {item.post?.title ? (
-                                        <a
-                                            className="relative z-10 -m-4 inline-block p-4 hover:underline"
-                                            href={`#/posts/${item.post_id}`}
-                                        >
+                                        <span className="block truncate">
                                             {item.post.title}
-                                        </a>
+                                        </span>
                                     ) : (
                                         <span className="text-muted-foreground">
                                             Unknown post
@@ -164,7 +161,7 @@ function CommentsList({
                                     )}
                                 </TableCell>
                                 <TableCell className="col-start-2 col-end-2 row-start-1 row-end-1 p-0 lg:table-cell lg:p-4">
-                                    <Badge variant={getStatusBadgeVariant(item.status)}>
+                                    <Badge className="capitalize" variant={getStatusBadgeVariant(item.status)}>
                                         {item.status}
                                     </Badge>
                                 </TableCell>
@@ -185,11 +182,11 @@ function CommentsList({
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            {item.post?.slug && (
+                                            {item.post?.url && (
                                                 <DropdownMenuItem asChild>
-                                                    <a href={`#/editor/post/${item.post_id}`}>
+                                                    <a href={item.post.url} rel="noopener noreferrer" target="_blank">
                                                         <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                                        Open post
+                                                        View post
                                                     </a>
                                                 </DropdownMenuItem>
                                             )}
