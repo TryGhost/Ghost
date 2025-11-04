@@ -1,50 +1,33 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolve } from "path";
+import { defineConfig } from "vitest/config";
+import tsconfigPaths from "vite-tsconfig-paths";
+import react from "@vitejs/plugin-react-swc";
 
 import { emberAssetsPlugin } from "./vite-ember-assets";
+import { ghostBackendProxyPlugin } from "./vite-backend-proxy";
 
-const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/core/frontend/src/cards');
-
-const adminApiProxy = {
-    // Proxy requests to the Ghost Admin API. We need to rewrite the
-    // cookies and headers for the existing security middleware not to
-    // reject the requests.
-    "^/ghost/api/.*": {
-        changeOrigin: true,
-        cookieDomainRewrite: {
-            "*": "localhost:2368",
-        },
-        target: "http://localhost:2368",
-    },
-};
+const GHOST_CARDS_PATH = resolve(
+    __dirname,
+    "../../ghost/core/core/frontend/src/cards"
+);
 
 // https://vite.dev/config/
 export default defineConfig({
-    base: process.env.GHOST_CDN_URL ?? '/ghost',
-    plugins: [react(), emberAssetsPlugin(), tsconfigPaths()],
+    base: process.env.GHOST_CDN_URL ?? "/ghost",
+    plugins: [
+        react(),
+        emberAssetsPlugin(),
+        ghostBackendProxyPlugin(),
+        tsconfigPaths(),
+    ],
     resolve: {
         alias: {
-            '@ghost-cards': GHOST_CARDS_PATH
-        }
-    },
-    server: {
-        proxy: {
-            ...adminApiProxy,
-
-            // Proxy requests for Ghost Admin (Ember) assets
-            "^/ghost/assets/.*": {
-                target: "http://localhost:2368",
-            },
-            "^/ghost/ember-cli-live-reload.js": {
-                target: "http://localhost:2368",
-            },
+            "@ghost-cards": GHOST_CARDS_PATH,
         },
     },
-    preview: {
-        proxy: {
-            ...adminApiProxy,
-        },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        include: ['src/**/*.test.ts', 'src/**/*.test.tsx']
     },
 });

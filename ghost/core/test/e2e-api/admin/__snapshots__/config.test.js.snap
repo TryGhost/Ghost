@@ -10,6 +10,7 @@ Object {
     "environment": StringMatching /\\^testing/,
     "labs": Object {
       "additionalPaymentMethods": true,
+      "adminForward": true,
       "announcementBar": true,
       "audienceFeedback": true,
       "contentVisibility": true,
@@ -30,6 +31,7 @@ Object {
       "urlCache": true,
       "utmTracking": true,
       "webmentions": true,
+      "welcomeEmails": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,

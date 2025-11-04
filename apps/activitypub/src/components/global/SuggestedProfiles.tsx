@@ -5,7 +5,7 @@ import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard'
 import React from 'react';
 import {type Account} from '../../api/activitypub';
 import {Skeleton} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 interface SuggestedProfileProps {
@@ -31,7 +31,7 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
         });
     };
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <ProfilePreviewHoverCard actor={profile} align='center' isCurrentUser={false} side='left'>

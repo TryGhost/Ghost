@@ -49,7 +49,9 @@ const PRIVATE_FEATURES = [
     'emailCustomization',
     'tagsX',
     'utmTracking',
-    'emailUniqueid'
+    'emailUniqueid',
+    'welcomeEmails',
+    'adminForward'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

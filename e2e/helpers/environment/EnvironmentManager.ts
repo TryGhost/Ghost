@@ -1,27 +1,12 @@
-import * as fs from 'fs';
 import Docker from 'dockerode';
-import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
-import path from 'path';
-import {randomUUID} from 'crypto';
+import logging from '@tryghost/logging';
+import {DOCKER_COMPOSE_CONFIG, PORTAL, TINYBIRD} from './constants';
 import {DockerCompose} from './DockerCompose';
-import {MySQLManager} from './MySQLManager';
-import {TinybirdManager} from './TinybirdManager';
-import {GhostManager} from './GhostManager';
-import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, STATE_DIR} from './constants';
+import {GhostInstance, GhostManager, MySQLManager, PortalManager, TinybirdManager} from './service-managers';
+import {randomUUID} from 'crypto';
 
 const debug = baseDebug('e2e:EnvironmentManager');
-
-export interface GhostInstance {
-    containerId: string; // docker container ID
-    instanceId: string; // unique instance name (e.g. ghost_<siteUuid>)
-    database: string;
-    port: number;
-    baseUrl: string;
-    siteUuid: string;
-}
-
-// Tinybird state type is managed by TinybirdManager
 
 /**
  * Manages the lifecycle of Docker containers and shared services for end-to-end tests
@@ -30,73 +15,33 @@ export interface GhostInstance {
  * ```
  * const environmentManager = new EnvironmentManager();
  * await environmentManager.globalSetup(); // Call once before all tests to start MySQL, Tinybird, etc.
- * const ghostInstance = await environmentManager.setupGhostInstance(workerId); // Call before each test to create an isolated Ghost instance
- * await environmentManager.teardownGhostInstance(ghostInstance); // Call after each test to clean up the Ghost instance
+ * const ghostInstance = await environmentManager.perTestSetup(); // Call before each test to create an isolated Ghost instance
+ * await environmentManager.perTestTeardown(ghostInstance); // Call after each test to clean up the Ghost instance
  * await environmentManager.globalTeardown(); // Call once after all tests to stop shared services
  * ````
  */
 export class EnvironmentManager {
-    private docker: Docker;
-    private dockerCompose: DockerCompose;
-    private mysql: MySQLManager;
-    private tinybird: TinybirdManager;
-    private ghost: GhostManager;
+    private readonly dockerCompose: DockerCompose;
+    private readonly mysql: MySQLManager;
+    private readonly tinybird: TinybirdManager;
+    private readonly ghost: GhostManager;
+    private readonly portal: PortalManager;
 
-    constructor() {
-        this.docker = new Docker();
+    constructor(
+        composeFilePath: string = DOCKER_COMPOSE_CONFIG.FILE_PATH,
+        composeProjectName: string = DOCKER_COMPOSE_CONFIG.PROJECT
+    ) {
+        const docker = new Docker();
         this.dockerCompose = new DockerCompose({
-            composeFilePath: COMPOSE_FILE_PATH,
-            projectName: COMPOSE_PROJECT,
-            docker: this.docker
+            composeFilePath: composeFilePath,
+            projectName: composeProjectName,
+            docker: docker
         });
+
         this.mysql = new MySQLManager(this.dockerCompose);
-        this.tinybird = new TinybirdManager(this.dockerCompose);
-        this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
-    }
-
-    /**
-     * Get the Portal URL with the dynamically assigned port
-     */
-    private async getPortalUrl(): Promise<string> {
-        try {
-            const hostPort = await this.dockerCompose.getHostPortForService('portal', '4175');
-            const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
-            debug(`Portal is available at: ${portalUrl}`);
-            return portalUrl;
-        } catch (error) {
-            logging.error('Failed to get Portal URL:', error);
-            throw new Error(`Failed to get portal URL: ${error}. Ensure portal service is running.`);
-        }
-    }
-
-    /**
-     * Clean up leftover resources from previous test runs
-     * This should be called at the start of globalSetup to ensure a clean slate,
-     * especially after interrupted test runs (e.g. via ctrl+c)
-     *
-     * 1. Remove all leftover Ghost containers
-     * 2. Clean up leftover test databases (if MySQL is running)
-     * 3. Delete the MySQL snapshot (if MySQL is running)
-     * 4. Recreate the ghost_testing database (if MySQL is running)
-     * 5. Truncate Tinybird analytics_events datasource (if Tinybird is running)
-     *
-     * Note: Docker compose services are left running for reuse across test runs
-     */
-    private async cleanupLeftoverResources(): Promise<void> {
-        try {
-            logging.info('Cleaning up leftover resources from previous test runs...');
-
-            await this.ghost.removeAll();
-            await this.mysql.dropAllTestDatabases();
-            await this.mysql.deleteSnapshot();
-            await this.mysql.recreateBaseDatabase();
-            this.tinybird.truncateAnalyticsEvents();
-
-            logging.info('Leftover resources cleaned up successfully');
-        } catch (error) {
-            logging.warn('Failed to clean up some leftover resources:', error);
-            // Don't throw - we want to continue with setup even if cleanup fails
-        }
+        this.tinybird = new TinybirdManager(this.dockerCompose, TINYBIRD.CONFIG_DIR, TINYBIRD.CLI_ENV_PATH);
+        this.ghost = new GhostManager(docker, this.dockerCompose, this.tinybird);
+        this.portal = new PortalManager(this.dockerCompose, PORTAL.PORT);
     }
 
     /**
@@ -114,20 +59,33 @@ export class EnvironmentManager {
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        await this.cleanupLeftoverResources();
-        this.dockerCompose.up();
-        await this.dockerCompose.waitForAll();
+
+        await this.cleanupResources();
+        await this.dockerCompose.up();
         await this.mysql.createSnapshot();
-        this.tinybird.fetchTokens();
+        this.tinybird.fetchAndSaveConfig();
+
         logging.info('Global environment setup complete');
     }
 
     /**
-     * Teardown global environment
+     * Setup that executes on each test start
+     */
+    public async perTestSetup(): Promise<GhostInstance> {
+        try {
+            const {siteUuid, instanceId} = this.uniqueTestDetails();
+            await this.mysql.setupTestDatabase(instanceId, siteUuid);
+            const portalUrl = await this.portal.getUrl();
+
+            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
+        } catch (error) {
+            logging.error('Failed to setup Ghost instance:', error);
+            throw new Error(`Failed to setup Ghost instance: ${error}`);
+        }
+    }
+
+    /**
      * This should be called once after all tests have finished.
-     *
-     * Note: Docker compose services are left running for reuse across test runs.
-     * To fully stop all services, manually run: docker compose down
      *
      * 1. Remove all Ghost containers
      * 2. Clean up test databases
@@ -140,80 +98,73 @@ export class EnvironmentManager {
             logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
             return;
         }
+
         logging.info('Starting global environment teardown...');
 
-        // Clean up Ghost containers
-        await this.ghost.removeAll();
-
-        // Clean up test databases
-        await this.mysql.dropAllTestDatabases();
-
-        // Recreate the base database for the next run
-        await this.mysql.recreateBaseDatabase();
-
-        // Truncate Tinybird analytics data for the next run
-        this.tinybird.truncateAnalyticsEvents();
+        await this.cleanupResources();
 
         logging.info('Global environment teardown complete (docker compose services left running)');
     }
 
     /**
-     * Setup an isolated Ghost instance for a test
+     * Setup that executes on each test stop
      */
-    public async setupGhostInstance(): Promise<GhostInstance> {
+    public async perTestTeardown(ghostInstance: GhostInstance): Promise<void> {
         try {
-            const siteUuid = randomUUID();
-            const instanceId = `ghost_${siteUuid}`;
-            await this.mysql.setupTestDatabase(instanceId, siteUuid);
-            const portalUrl = await this.getPortalUrl();
-            return await this.ghost.startInstance(instanceId, siteUuid, portalUrl);
+            debug('Tearing down Ghost instance:', ghostInstance.containerId);
+
+            await this.ghost.stopAndRemoveInstance(ghostInstance.containerId);
+            await this.mysql.cleanupTestDatabase(ghostInstance.database);
+
+            debug('Ghost instance teardown completed');
         } catch (error) {
-            logging.error('Failed to setup Ghost instance:', error);
-            throw new Error(`Failed to setup Ghost instance: ${error}`);
+            // Don't throw - we want tests to continue even if cleanup fails
+            logging.error('Failed to teardown Ghost instance:', error);
         }
     }
 
     /**
-     * Teardown a Ghost instance
+     * Clean up leftover resources from previous test runs
+     * This should be called at the start of globalSetup to ensure a clean slate,
+     * especially after interrupted test runs (e.g. via ctrl+c)
+     *
+     * 1. Remove all leftover Ghost containers
+     * 2. Clean up leftover test databases (if MySQL is running)
+     * 3. Delete the MySQL snapshot (if MySQL is running)
+     * 4. Recreate the ghost_testing database (if MySQL is running)
+     * 5. Truncate Tinybird analytics_events datasource (if Tinybird is running)
+     *
+     * Note: Docker compose services are left running for reuse across test runs
      */
-    public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
-        if (this.shouldPreserveEnvironment()) {
-            return;
-        }
+    private async cleanupResources(): Promise<void> {
         try {
-            debug('Tearing down Ghost instance:', ghostInstance.containerId);
-            await this.ghost.remove(ghostInstance.containerId);
-            await this.mysql.cleanupTestDatabase(ghostInstance.database);
-            debug('Ghost instance teardown completed');
-        } catch (error) {
-            logging.error('Failed to teardown Ghost instance:', error);
-            // Don't throw - we want tests to continue even if cleanup fails
-        }
-    }
+            logging.info('Cleaning up leftover resources from previous test runs...');
 
-    private cleanupStateFiles(): void {
-        try {
-            if (fs.existsSync(STATE_DIR)) {
-                // Delete all files in the directory, but keep the directory itself
-                const files = fs.readdirSync(STATE_DIR);
-                for (const file of files) {
-                    const filePath = path.join(STATE_DIR, file);
-                    const stat = fs.statSync(filePath);
-                    if (stat.isDirectory()) {
-                        fs.rmSync(filePath, {recursive: true, force: true});
-                    } else {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-                debug('State files cleaned up');
-            }
+            await this.ghost.removeAll();
+            await this.mysql.dropAllTestDatabases();
+            await this.mysql.deleteSnapshot();
+            await this.mysql.recreateBaseDatabase();
+            this.tinybird.truncateAnalyticsEvents();
+
+            logging.info('Leftover resources cleaned up successfully');
         } catch (error) {
-            logging.error('Failed to cleanup state files:', error);
-            throw new Error(`Failed to cleanup state files: ${error}`);
+            // Don't throw - we want to continue with setup even if cleanup fails
+            logging.warn('Failed to clean up some leftover resources:', error);
         }
     }
 
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
+    }
+
+    // each test is going to have unique Ghost container, and site uuid for analytic events
+    private uniqueTestDetails() {
+        const siteUuid = randomUUID();
+        const instanceId = `ghost_${siteUuid}`;
+
+        return {
+            siteUuid,
+            instanceId
+        };
     }
 }
