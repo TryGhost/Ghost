@@ -66,7 +66,7 @@ const EmailProvider: React.FC<{keywords: string[]}> = ({keywords}) => {
                 <div className="mt-4 rounded border border-grey-200 bg-grey-50 p-4 dark:border-grey-800 dark:bg-grey-950">
                     <p className="text-xs text-grey-700 dark:text-grey-400">
                         <strong>Note:</strong> Amazon SES configuration is managed through Ghost's config files.
-                        Update your <code className="rounded bg-grey-200 px-1 dark:bg-grey-900">config.production.json</code> or environment variables to configure SES settings.
+                        Update your <code className="rounded bg-grey-200 px-1 dark:bg-grey-900">config.{config.environment}.json</code> or environment variables to configure SES settings.
                     </p>
                 </div>
             )}
