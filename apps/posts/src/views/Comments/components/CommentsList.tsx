@@ -1,4 +1,12 @@
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
     Badge,
     Button,
     DropdownMenu,
@@ -14,7 +22,7 @@ import {
     TableRow
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
-import {forwardRef, useRef} from 'react';
+import {forwardRef, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '../../Tags/components/VirtualTable/useInfiniteVirtualScroll';
 
 const SpacerRow = ({height}: { height: number }) => (
@@ -98,6 +106,18 @@ function CommentsList({
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: deleteComment} = useDeleteComment();
+    const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+
+    const handleDeleteClick = (comment: Comment) => {
+        setCommentToDelete(comment);
+    };
+
+    const confirmDelete = () => {
+        if (commentToDelete) {
+            deleteComment({id: commentToDelete.id});
+            setCommentToDelete(null);
+        }
+    };
 
     return (
         <div ref={parentRef} className="overflow-hidden">
@@ -205,7 +225,7 @@ function CommentsList({
                                             {item.status !== 'deleted' && (
                                                 <DropdownMenuItem
                                                     className="text-destructive focus:text-destructive"
-                                                    onClick={() => deleteComment({id: item.id})}
+                                                    onClick={() => handleDeleteClick(item)}
                                                 >
                                                     <LucideIcon.Trash2 className="mr-2 size-4" />
                                                     Delete comment
@@ -220,6 +240,26 @@ function CommentsList({
                     <SpacerRow height={spaceAfter} />
                 </TableBody>
             </Table>
+
+            <AlertDialog open={!!commentToDelete} onOpenChange={(open) => !open && setCommentToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete comment?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This comment will be permanently deleted and cannot be recovered.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 text-white hover:bg-red-700"
+                            onClick={confirmDelete}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
