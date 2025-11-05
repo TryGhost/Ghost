@@ -6,6 +6,7 @@ module.exports = addTable('outbox', {
     status: {type: 'string', maxlength: 20, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'processing', 'failed']]}},
     payload: {type: 'text', maxlength: 65535, nullable: false},
     created_at: {type: 'dateTime', nullable: false},
+    updated_at: {type: 'dateTime', nullable: true},
     retry_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
     last_retry_at: {type: 'dateTime', nullable: true},
     message: {type: 'string', maxlength: 2000, nullable: true},
