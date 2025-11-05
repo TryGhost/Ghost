@@ -20,7 +20,7 @@ function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props 
     return (
         <Button
             asChild
-            className={`rounded-full w-full max-w-16 min-w-9 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
+            className={`rounded-full w-full max-w-16 min-w-9 hover:bg-gray-200 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
             variant="ghost"
             size="icon"
             data-active={isActive}
@@ -60,7 +60,7 @@ export function MobileNavBar() {
                 >
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
                 </MobileNavBarButton>
-                <SidebarTrigger className="rounded-full px-8">
+                <SidebarTrigger className="rounded-full px-8 h-9 hover:bg-transparent">
                     <LucideIcon.Ellipsis strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Toggle Sidebar</span>
                 </SidebarTrigger>
