@@ -265,18 +265,41 @@ Example config:
 3. **SQS Queue**: Stores events for Ghost to poll (e.g., `ses-events-queue`)
 4. **IAM Permissions**: User needs `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:GetQueueAttributes`
 
+**Complete Local Development Setup:**
+
+1. **Create `ghost/core/config.development.json`** with all three configs (mail, adapters, emailAnalytics)
+2. **Add `mail.from` at top level** (not nested in options) - prevents "Missing mail.from" warning
+3. **Restart Ghost** - Config only loads on startup (`yarn dev`)
+4. **Add newsletter subscribers** - At least 1 member must be subscribed to a newsletter for "Send as email" option to appear
+
 **Testing SES:**
-- **Transactional:** Send test email via Ghost Admin → Settings
-- **Bulk:** Create and send newsletter via Ghost Admin → Posts
+- **Transactional:** Send test email via Ghost Admin → Settings → Staff → Invite user
+- **Bulk:** Create and send newsletter via Ghost Admin → Posts (requires newsletter subscribers!)
 - **Analytics:** Check email analytics in Ghost Admin → Posts → Analytics
 - **Test scripts:** `examples/ses-transactional-tests/`
 - **AWS Console:** Check SES sending statistics, CloudWatch metrics, and SQS queue
+
+**Verification After `yarn dev`:**
+```bash
+# Logs should show:
+[INFO] Using Amazon SES email provider
+[INFO] [EmailAnalytics] Using Amazon SES analytics provider
+
+# Should NOT show:
+[WARN] Missing mail.from config
+```
+
+**Common Issues:**
+- **"Check your Mailgun configuration" on invite:** Config not loaded - restart `yarn dev`
+- **"You need to set up Mailgun" when publishing:** No newsletter subscribers - add a member and subscribe them to a newsletter
+- **Newsletter option missing:** Check Settings → Email newsletter shows "Amazon SES ✅"
 
 **Important:**
 - Never commit AWS credentials to git
 - `ghost/core/.gitignore` excludes `config.development.json`
 - Use environment variables or IAM roles in production
 - SQS polling happens every 5 minutes via scheduled job
+- **Newsletter publishing requires active newsletter subscribers** - this is a Ghost requirement, not a config issue
 
 ## Troubleshooting
 
