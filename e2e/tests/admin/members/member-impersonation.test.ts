@@ -1,4 +1,4 @@
-import {HomePage, MemberDetailsPage, MembersPage} from '../../../helpers/pages';
+import {HomePage, MemberDetailsPage, MembersPage, PortalPage} from '../../../helpers/pages';
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
 import {expect, test} from '../../../helpers/playwright';
 
@@ -34,5 +34,9 @@ test.describe('Ghost Admin - Member Impersonation', () => {
 
         const homePage = new HomePage(page);
         await homePage.accountButton.click();
+
+        const portal = new PortalPage(page);
+        await expect(portal.body).toContainText('Your account');
+        await expect(portal.body).toContainText('impersonate@ghost.org');
     });
 });
