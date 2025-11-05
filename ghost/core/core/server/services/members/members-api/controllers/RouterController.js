@@ -705,19 +705,19 @@ module.exports = class RouterController {
             });
         }
 
-        const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
-        if (!isValidOTC) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.invalidCode),
-                code: 'INVALID_OTC'
-            });
-        }
-
         const tokenValue = await tokenProvider.getTokenByRef(otcRef);
         if (!tokenValue) {
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidCode),
                 code: 'INVALID_OTC_REF'
+            });
+        }
+
+        const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
+        if (!isValidOTC) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC'
             });
         }
 
