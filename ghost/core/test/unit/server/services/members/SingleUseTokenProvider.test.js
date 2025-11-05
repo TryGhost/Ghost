@@ -385,6 +385,14 @@ describe('SingleUseTokenProvider', function () {
                     {code: 'TOKEN_EXPIRED'}
                 );
             });
+
+            it('should not throw ValidationError when token is past validityPeriodAfterUsage but has not been used', async function () {
+                const oldCreatedAt = new Date(Date.now() - (HOUR_MS + 1));
+                buildModel({usedCount: 0, firstUsedAt: null, createdAt: oldCreatedAt});
+                await assert.doesNotReject(
+                    tokenProvider.validate(testToken)
+                );
+            });
         });
 
         it('should increment usage count for previously used token', async function () {
