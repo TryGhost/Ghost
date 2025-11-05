@@ -13,11 +13,13 @@ class EmailAnalyticsProviderSES {
     #sqsClient;
     #lastFetchedEventId;
     #processedMessageIds;
+    #maxProcessedMessageIds;
 
     constructor({config, contentPath}) {
         this.#config = config;
         this.#lastFetchedEventId = null;
         this.#processedMessageIds = new Set(); // Track processed messages to avoid duplicates
+        this.#maxProcessedMessageIds = 10000; // Limit Set size to prevent memory leak
 
         // Initialize SQS client if configuration is provided
         if (config?.queueUrl) {
@@ -131,13 +133,18 @@ class EmailAnalyticsProviderSES {
                     // Parse SES event from SNS message
                     const sesEvent = JSON.parse(snsMessage.Message);
 
-                    // Normalize to Ghost format
-                    const normalizedEvent = this.#normalizeEvent(sesEvent);
+                    // Normalize to Ghost format - may return array for bulk emails
+                    const normalizedEvents = this.#normalizeEvent(sesEvent);
 
-                    if (normalizedEvent) {
-                        // Apply filters
-                        if (this.#shouldIncludeEvent(normalizedEvent, options)) {
-                            events.push(normalizedEvent);
+                    if (normalizedEvents) {
+                        // Handle both single event and array of events (bulk sends)
+                        const eventsArray = Array.isArray(normalizedEvents) ? normalizedEvents : [normalizedEvents];
+
+                        for (const normalizedEvent of eventsArray) {
+                            // Apply filters
+                            if (this.#shouldIncludeEvent(normalizedEvent, options)) {
+                                events.push(normalizedEvent);
+                            }
                         }
 
                         // Mark for deletion (successfully processed)
@@ -163,6 +170,15 @@ class EmailAnalyticsProviderSES {
             // Delete successfully processed messages from queue
             if (messagesToDelete.length > 0) {
                 await this.#deleteMessages(messagesToDelete);
+            }
+
+            // Cleanup processed message IDs to prevent memory leak
+            // Keep only the most recent maxProcessedMessageIds entries
+            if (this.#processedMessageIds.size > this.#maxProcessedMessageIds) {
+                const idsArray = Array.from(this.#processedMessageIds);
+                const toKeep = idsArray.slice(-this.#maxProcessedMessageIds);
+                this.#processedMessageIds = new Set(toKeep);
+                debug(`Cleaned up processed message IDs (kept ${toKeep.length}, removed ${idsArray.length - toKeep.length})`);
             }
 
         } catch (error) {
@@ -253,6 +269,7 @@ class EmailAnalyticsProviderSES {
     /**
      * Normalize SES event to Ghost format
      * @private
+     * @returns {Object|Array|null} Single event or array of events (for bulk sends with multiple recipients)
      */
     #normalizeEvent(sesEvent) {
         try {
@@ -272,11 +289,11 @@ class EmailAnalyticsProviderSES {
             // Extract email ID from message tags (set during send)
             const emailId = this.#extractEmailId(mail.tags, mail.headers);
 
-            // Get recipient email
-            const recipientEmail = this.#getRecipientEmail(event);
+            // Get all recipient emails (array for bulk sends, single for personalized)
+            const recipientEmails = this.#getRecipientEmails(event);
 
-            if (!recipientEmail) {
-                debug('Skipping event without recipient email');
+            if (!recipientEmails || recipientEmails.length === 0) {
+                debug('Skipping event without recipient emails');
                 return null;
             }
 
@@ -288,36 +305,46 @@ class EmailAnalyticsProviderSES {
                 return null;
             }
 
-            // Build normalized event
-            const normalizedEvent = {
-                id: `${messageId}-${eventType}-${Date.now()}`,
-                type: ghostEventType,
-                recipientEmail: recipientEmail,
-                emailId: emailId,
-                providerId: messageId,
-                timestamp: new Date(event.timestamp || mail.timestamp),
-            };
+            // Create one event per recipient (important for bulk sends)
+            const events = recipientEmails.map((recipientEmail, index) => {
+                const normalizedEvent = {
+                    id: `${messageId}-${eventType}-${index}-${Date.now()}`,
+                    type: ghostEventType,
+                    recipientEmail: recipientEmail,
+                    emailId: emailId,
+                    providerId: messageId,
+                    timestamp: new Date(event.timestamp || mail.timestamp),
+                };
 
-            // Add severity and error info for bounces
-            if (eventType === 'Bounce') {
-                const bounce = event.bounce || {};
-                normalizedEvent.severity = bounce.bounceType === 'Permanent' ? 'permanent' : 'temporary';
+                // Add severity and error info for bounces
+                if (eventType === 'Bounce') {
+                    const bounce = event.bounce || {};
+                    normalizedEvent.severity = bounce.bounceType === 'Permanent' ? 'permanent' : 'temporary';
 
-                if (bounce.bouncedRecipients && bounce.bouncedRecipients[0]) {
-                    normalizedEvent.error = {
-                        code: bounce.bouncedRecipients[0].status || 550,
-                        message: bounce.bouncedRecipients[0].diagnosticCode || 'Email bounced'
-                    };
+                    // Find the specific bounced recipient
+                    const bouncedRecipient = bounce.bouncedRecipients?.find(r => r.emailAddress === recipientEmail) ||
+                                            bounce.bouncedRecipients?.[0];
+
+                    if (bouncedRecipient) {
+                        normalizedEvent.error = {
+                            code: bouncedRecipient.status || 550,
+                            message: bouncedRecipient.diagnosticCode || 'Email bounced'
+                        };
+                    }
                 }
-            }
 
-            // Add severity for complaints
-            if (eventType === 'Complaint') {
-                normalizedEvent.severity = 'permanent';
-            }
+                // Add severity for complaints
+                if (eventType === 'Complaint') {
+                    normalizedEvent.severity = 'permanent';
+                }
 
-            debug(`Normalized event: ${ghostEventType} for ${recipientEmail}`);
-            return normalizedEvent;
+                return normalizedEvent;
+            });
+
+            debug(`Normalized ${events.length} event(s): ${ghostEventType} for ${recipientEmails.length} recipient(s)`);
+
+            // Return array if multiple recipients, single event otherwise
+            return events.length === 1 ? events[0] : events;
 
         } catch (error) {
             logging.error('[SES Analytics] Error normalizing event:', error);
@@ -375,28 +402,35 @@ class EmailAnalyticsProviderSES {
     }
 
     /**
-     * Get recipient email from SES event
+     * Get ALL recipient emails from SES event (supports bulk sends with multiple recipients)
      * @private
+     * @returns {Array<string>} Array of recipient email addresses
      */
-    #getRecipientEmail(event) {
-        // Try different locations where recipient might be
-        if (event.mail && event.mail.destination && event.mail.destination[0]) {
-            return event.mail.destination[0];
+    #getRecipientEmails(event) {
+        // Try different locations where recipients might be
+        // For bulk sends, SES events can have multiple recipients
+
+        // Delivery events: recipients array
+        if (event.delivery && event.delivery.recipients && event.delivery.recipients.length > 0) {
+            return event.delivery.recipients;
         }
 
-        if (event.bounce && event.bounce.bouncedRecipients && event.bounce.bouncedRecipients[0]) {
-            return event.bounce.bouncedRecipients[0].emailAddress;
+        // Mail destination (used for most event types)
+        if (event.mail && event.mail.destination && event.mail.destination.length > 0) {
+            return event.mail.destination;
         }
 
-        if (event.complaint && event.complaint.complainedRecipients && event.complaint.complainedRecipients[0]) {
-            return event.complaint.complainedRecipients[0].emailAddress;
+        // Bounce events: bouncedRecipients array
+        if (event.bounce && event.bounce.bouncedRecipients && event.bounce.bouncedRecipients.length > 0) {
+            return event.bounce.bouncedRecipients.map(r => r.emailAddress);
         }
 
-        if (event.delivery && event.delivery.recipients && event.delivery.recipients[0]) {
-            return event.delivery.recipients[0];
+        // Complaint events: complainedRecipients array
+        if (event.complaint && event.complaint.complainedRecipients && event.complaint.complainedRecipients.length > 0) {
+            return event.complaint.complainedRecipients.map(r => r.emailAddress);
         }
 
-        return null;
+        return [];
     }
 }
 
