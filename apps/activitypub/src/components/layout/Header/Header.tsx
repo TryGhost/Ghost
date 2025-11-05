@@ -17,6 +17,7 @@ interface MobileMenuButtonProps {
 
 interface HeaderProps {
     onToggleMobileSidebar: () => void;
+    showBorder?: boolean;
 }
 
 const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
@@ -41,7 +42,7 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({onToggleMobileSideba
     );
 };
 
-const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
+const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar, showBorder = true}) => {
     const {canGoBack} = useNavigationStack();
     const currentPage = useCurrentPage();
     const routeHasParams = useRouteHasParams();
@@ -69,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>
-                    <div className='relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] max-md:h-[68px] before:dark:border-gray-950'>
+                    <div className={`relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] before:dark:border-gray-950' : ''}`}>
                         <HeaderTitle
                             backIcon={backActive}
                             title={activeRoute?.pageTitle || ''}

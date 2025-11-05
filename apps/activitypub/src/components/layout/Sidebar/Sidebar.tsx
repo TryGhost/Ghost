@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             </DialogContent>
                         </Dialog>
                     </div>
-                    <div className='flex w-full flex-col gap-px'>
+                    <div className='mt-0.5 flex w-full flex-col gap-px'>
                         <SidebarMenuLink to='/reader'>
                             <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
                             Reader

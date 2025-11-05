@@ -42,21 +42,19 @@ interface TopicFilterProps {
 
 const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange}) => {
     return (
-        <div className="mt-4">
-            <div
-                className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-                {TOPICS.map(({value, label}) => (
-                    <Button
-                        key={value}
-                        className="snap-start"
-                        variant={currentTopic === value ? 'default' : 'secondary'}
-                        onClick={() => onTopicChange(value)}
-                    >
-                        {label}
-                    </Button>
-                ))}
-            </div>
+        <div
+            className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+            {TOPICS.map(({value, label}) => (
+                <Button
+                    key={value}
+                    className="snap-start"
+                    variant={currentTopic === value ? 'default' : 'secondary'}
+                    onClick={() => onTopicChange(value)}
+                >
+                    {label}
+                </Button>
+            ))}
         </div>
     );
 };

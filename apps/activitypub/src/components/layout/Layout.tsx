@@ -4,6 +4,7 @@ import Onboarding, {useOnboardingStatus} from './Onboarding';
 import React, {useRef, useState} from 'react';
 import Sidebar from './Sidebar';
 import {Navigate, ScrollRestoration} from '@tryghost/admin-x-framework';
+import {useCurrentPage} from '@src/hooks/use-current-page';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 
@@ -12,6 +13,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     const {data: currentUser, isLoading} = useCurrentUser();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const currentPage = useCurrentPage();
 
     const {isNewNoteModalOpen, setIsNewNoteModalOpen} = useKeyboardShortcuts();
 
@@ -40,6 +42,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
                         <div className='block grid-cols-[auto_320px] items-start lg:grid'>
                             <div className='z-0 min-w-0'>
                                 <Header
+                                    showBorder={currentPage !== 'reader'}
                                     onToggleMobileSidebar={toggleMobileSidebar}
                                 />
                                 <div className='px-[min(4vw,32px)]'>
