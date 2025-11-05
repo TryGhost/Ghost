@@ -40,7 +40,7 @@ const ToasterPortal = () => {
 
     return mounted
         ? createPortal(
-            <div className={SHADE_APP_NAMESPACES}>
+            <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset'}}>
                 <Toaster
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,
