@@ -123,6 +123,10 @@ class SESEmailProvider extends EmailProviderBase {
             mime.push(`Reply-To: ${replyTo}`);
         }
 
+        // Encode content as quoted-printable
+        const encodedPlaintext = this.#encodeQuotedPrintable(plaintext || '');
+        const encodedHtml = this.#encodeQuotedPrintable(html || '');
+
         mime = mime.concat([
             'MIME-Version: 1.0',
             `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -131,13 +135,13 @@ class SESEmailProvider extends EmailProviderBase {
             'Content-Type: text/plain; charset=UTF-8',
             'Content-Transfer-Encoding: quoted-printable',
             '',
-            plaintext || '',
+            encodedPlaintext,
             '',
             `--${boundary}`,
             'Content-Type: text/html; charset=UTF-8',
             'Content-Transfer-Encoding: quoted-printable',
             '',
-            html || '',
+            encodedHtml,
             '',
             `--${boundary}--`
         ]);
@@ -161,6 +165,50 @@ class SESEmailProvider extends EmailProviderBase {
             '/': '&#x2F;'
         };
         return String(str).replace(/[&<>"'\/]/g, char => htmlEscapes[char]);
+    }
+
+    /**
+     * Encode string as quoted-printable (RFC 2045)
+     * @private
+     * @param {string} str - String to encode
+     * @returns {string} Quoted-printable encoded string
+     */
+    #encodeQuotedPrintable(str) {
+        if (!str) {
+            return '';
+        }
+
+        // Encode as quoted-printable with soft line breaks at 76 chars
+        let encoded = '';
+        let lineLength = 0;
+
+        for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+            const code = char.charCodeAt(0);
+
+            // Characters that need encoding
+            if (code > 126 || code < 32 || char === '=' || (code === 32 && (str[i + 1] === '\r' || str[i + 1] === '\n'))) {
+                const hex = ('0' + code.toString(16).toUpperCase()).slice(-2);
+                encoded += '=' + hex;
+                lineLength += 3;
+            } else if (char === '\r' || char === '\n') {
+                // Preserve line breaks
+                encoded += char;
+                lineLength = 0;
+            } else {
+                // Safe character
+                encoded += char;
+                lineLength += 1;
+            }
+
+            // Soft line break at 76 chars
+            if (lineLength >= 75 && str[i + 1] !== '\r' && str[i + 1] !== '\n') {
+                encoded += '=\r\n';
+                lineLength = 0;
+            }
+        }
+
+        return encoded;
     }
 
     /**
@@ -194,7 +242,17 @@ class SESEmailProvider extends EmailProviderBase {
             }
 
             // Replace all occurrences of this token (global replace)
-            const tokenRegex = new RegExp(replacement.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+            // Handle both string tokens and RegExp tokens
+            let tokenRegex;
+            if (replacement.token instanceof RegExp) {
+                // If already a RegExp, ensure it has global flag
+                const flags = replacement.token.flags.includes('g') ? replacement.token.flags : replacement.token.flags + 'g';
+                tokenRegex = new RegExp(replacement.token.source, flags);
+            } else {
+                // If string, escape special chars and create RegExp
+                const escapedToken = String(replacement.token).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                tokenRegex = new RegExp(escapedToken, 'g');
+            }
             processedContent = processedContent.replace(tokenRegex, value);
         }
 
@@ -242,11 +300,6 @@ class SESEmailProvider extends EmailProviderBase {
 
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
-
-        // Generate deterministic batch-level MessageId (matches Mailgun's approach)
-        // This allows Ghost to track all recipients under a single batch ID
-        const batchMessageId = `${emailId || 'batch'}.${Date.now()}.${Math.random().toString(36).substring(2, 15)}@ses.amazonses.com`;
-        debug(`Generated batch MessageId: ${batchMessageId}`);
 
         try {
             const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
@@ -303,12 +356,13 @@ class SESEmailProvider extends EmailProviderBase {
             const duration = Date.now() - startTime;
             const throughput = recipients.length / (duration / 1000);
             debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
-            debug(`SES returned ${results.length} individual MessageIds, returning batch ID for tracking`);
+            debug(`SES returned ${results.length} individual MessageIds, returning first for analytics`);
 
-            // Return batch-level MessageId for analytics tracking
-            // This matches Mailgun's behavior where all recipients share a batch ID
+            // Return first SES MessageId for analytics tracking
+            // Analytics will match via SES's real MessageIds from SNS/SQS events
+            // All emails are grouped by emailId tag for batch tracking
             return {
-                id: batchMessageId
+                id: results[0] || 'unknown'
             };
         } catch (e) {
             let ghostError;
