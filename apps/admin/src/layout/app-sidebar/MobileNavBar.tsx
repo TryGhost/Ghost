@@ -40,7 +40,7 @@ export function MobileNavBar() {
     }
 
     return (
-        <div className="absolute flex justify-center bottom-0 w-full h-16 bg-sidebar border-t border-sidebar-border px-5">
+        <div className="fixed flex justify-center bottom-0 w-full h-16 bg-sidebar border-t border-sidebar-border px-5">
             <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px]">
                 <MobileNavBarButton
                     activeOnSubpath
