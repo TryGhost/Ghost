@@ -11,21 +11,138 @@ This guide explains how to configure Ghost to use Amazon SES for email delivery.
 
 ## Required AWS Infrastructure
 
-### 1. SES Configuration
-- Verify your sending domain in SES
-- Move out of SES sandbox (production only)
-- Create a Configuration Set (e.g., `ses-analytics`)
+### Overview
 
-### 2. SNS Topic (for email analytics)
-- Create an SNS topic (e.g., `ses-events`)
-- Subscribe the SQS queue to this topic
+Ghost's SES integration requires four AWS services working together:
 
-### 3. SQS Queue (for email analytics)
-- Create an SQS queue (e.g., `ses-events-queue`)
-- Configure the queue to receive messages from SNS
+1. **Amazon SES** - Sends emails with event tracking via Configuration Sets
+2. **Amazon SNS** - Receives SES events (opens, bounces, etc.) and publishes to subscribers
+3. **Amazon SQS** - Queues events for Ghost to poll every 5 minutes
+4. **IAM User/Role** - Provides permissions for SES sending and SQS polling
 
-### 4. IAM Permissions
-Your IAM user needs these permissions:
+**Event Flow**: SES → SNS Topic → SQS Queue → Ghost Analytics
+
+### Step-by-Step AWS Setup
+
+The following commands will create all required AWS infrastructure. Replace the placeholder values:
+- `us-east-1` - Your AWS region
+- `123456789012` - Your AWS account ID
+- `ses-analytics` - Your SES configuration set name (can be customized)
+- `ses-events` - Your SNS topic name (recommended)
+- `ses-events-queue` - Your SQS queue name (recommended)
+
+#### 1. Create SNS Topic
+
+```bash
+aws sns create-topic --name ses-events --region us-east-1
+```
+
+This creates an SNS topic that will receive SES events. Save the returned `TopicArn` for later steps.
+
+#### 2. Create SQS Queue
+
+```bash
+aws sqs create-queue \
+  --queue-name ses-events-queue \
+  --attributes VisibilityTimeout=300,MessageRetentionPeriod=345600,ReceiveMessageWaitTimeSeconds=20 \
+  --region us-east-1
+```
+
+**Queue Attributes Explained**:
+- `VisibilityTimeout=300` - 5 minutes for Ghost to process messages before they reappear
+- `MessageRetentionPeriod=345600` - Keep messages for 4 days if not processed
+- `ReceiveMessageWaitTimeSeconds=20` - Long polling reduces empty responses
+
+Save the returned `QueueUrl` - you'll need this for Ghost's `emailAnalytics.ses.queueUrl` config.
+
+#### 3. Subscribe SQS Queue to SNS Topic
+
+```bash
+aws sns subscribe \
+  --topic-arn arn:aws:sns:us-east-1:123456789012:ses-events \
+  --protocol sqs \
+  --notification-endpoint arn:aws:sqs:us-east-1:123456789012:ses-events-queue \
+  --region us-east-1
+```
+
+Replace the ARNs with your actual Topic ARN and Queue ARN.
+
+#### 4. Set SQS Access Policy
+
+The SQS queue needs permission to receive messages from SNS:
+
+```bash
+aws sqs set-queue-attributes \
+  --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/ses-events-queue \
+  --attributes Policy='{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"sns.amazonaws.com"},"Action":"sqs:SendMessage","Resource":"arn:aws:sqs:us-east-1:123456789012:ses-events-queue","Condition":{"ArnEquals":{"aws:SourceArn":"arn:aws:sns:us-east-1:123456789012:ses-events"}}}]}' \
+  --region us-east-1
+```
+
+Replace the queue URL and ARNs with your actual values.
+
+#### 5. Create SES Configuration Set
+
+```bash
+aws sesv2 create-configuration-set \
+  --configuration-set-name ses-analytics \
+  --region us-east-1
+```
+
+This groups your SES sending settings and event destinations.
+
+#### 6. Create SES Event Destination
+
+**⚠️ CRITICAL: Ghost Click Tracking Configuration**
+
+Ghost wraps links with `/r/` redirects for tracking **before** sending emails. If SES click tracking is enabled, it will double-wrap these links, breaking click tracking entirely (404 errors).
+
+**Therefore**: Configure event tracking with `OPEN` enabled but `CLICK` disabled:
+
+```bash
+aws sesv2 put-configuration-set-event-destination \
+  --configuration-set-name ses-analytics \
+  --event-destination-name to-sns \
+  --event-destination '{
+    "Enabled": true,
+    "MatchingEventTypes": ["SEND","BOUNCE","COMPLAINT","DELIVERY","OPEN","REJECT","RENDERING_FAILURE"],
+    "SnsDestination": {
+      "TopicArn": "arn:aws:sns:us-east-1:123456789012:ses-events"
+    }
+  }' \
+  --region us-east-1
+```
+
+**Event Types Tracked**:
+- `SEND` - Email accepted by SES
+- `BOUNCE` - Hard or soft bounce
+- `COMPLAINT` - Spam complaint
+- `DELIVERY` - Successfully delivered
+- `OPEN` - Recipient opened email (tracked via pixel)
+- `REJECT` - Rejected by SES (invalid email, suppression list)
+- `RENDERING_FAILURE` - Template rendering failed
+
+**Event Types NOT Tracked**:
+- `CLICK` - Disabled to prevent double-wrapping (Ghost handles click tracking)
+
+#### 7. Verify Configuration
+
+Check that your event destination is configured correctly:
+
+```bash
+aws sesv2 get-configuration-set-event-destinations \
+  --configuration-set-name ses-analytics \
+  --region us-east-1
+```
+
+Verify that:
+- ✅ `OPEN` is in `MatchingEventTypes`
+- ❌ `CLICK` is NOT in `MatchingEventTypes`
+- ✅ `SnsDestination.TopicArn` points to your SNS topic
+
+#### 8. IAM Permissions
+
+Your IAM user or role needs these permissions:
+
 ```json
 {
   "Version": "2012-10-17",
@@ -45,11 +162,13 @@ Your IAM user needs these permissions:
         "sqs:DeleteMessage",
         "sqs:GetQueueAttributes"
       ],
-      "Resource": "arn:aws:sqs:REGION:ACCOUNT_ID:ses-events-queue"
+      "Resource": "arn:aws:sqs:us-east-1:123456789012:ses-events-queue"
     }
   ]
 }
 ```
+
+Replace the SQS ARN with your actual queue ARN.
 
 ## Ghost Configuration
 
