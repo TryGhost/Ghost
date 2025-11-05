@@ -18447,6 +18447,11 @@ eslint-plugin-n@16.2.0:
     resolve "^1.22.2"
     semver "^7.5.3"
 
+eslint-plugin-no-relative-import-paths@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-no-relative-import-paths/-/eslint-plugin-no-relative-import-paths-1.6.1.tgz#7d1e8f34694016d6d390c28063bedfa7203e7771"
+  integrity sha512-YZNeOnsOrJcwhFw0X29MXjIzu2P/f5X2BZDPWw1R3VUYBRFxNIh77lyoL/XrMU9ewZNQPcEvAgL/cBOT1P330A==
+
 eslint-plugin-playwright@2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-playwright/-/eslint-plugin-playwright-2.3.0.tgz#e14dfe981455254bbf5a7299802f5c01bb93d148"
