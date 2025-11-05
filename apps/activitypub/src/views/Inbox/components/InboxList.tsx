@@ -3,11 +3,10 @@ import Layout from '@src/components/layout';
 import Reader from './Reader';
 import TopicFilter, {Topic} from '@src/components/TopicFilter';
 import {Activity} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
-import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {FeedMode} from '@src/hooks/use-feed-mode';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyIndicator, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
@@ -15,7 +14,6 @@ export type InboxListProps = {
     isLoading: boolean,
     activities: Activity[],
     currentTopic: Topic,
-    feedMode: FeedMode,
     fetchNextPage: () => void,
     hasNextPage: boolean,
     isFetchingNextPage: boolean,
@@ -26,12 +24,12 @@ const InboxList:React.FC<InboxListProps> = ({
     isLoading,
     activities,
     currentTopic,
-    feedMode,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     onTopicChange
 }) => {
+    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigateWithBasePath();
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -76,7 +74,7 @@ const InboxList:React.FC<InboxListProps> = ({
 
     return (
         <Layout>
-            {feedMode === 'discover' && <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />}
+            {isEnabled('global-feed') && <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />}
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
@@ -126,19 +124,28 @@ const InboxList:React.FC<InboxListProps> = ({
                                 </div>
                             </div>
                         </div>
+                    ) : currentTopic !== 'following' ? (
+                        <div className='mt-[24vh]'>
+                            <EmptyIndicator
+                                description="Explore other topics for more content."
+                                title="Nothing here yet"
+                            >
+                                <LucideIcon.Inbox />
+                            </EmptyIndicator>
+                        </div>
                     ) : (
-                        <div className='flex w-full flex-col items-center gap-10'>
-                            <div className='flex w-full max-w-[620px] flex-col items-center'>
-                                <EmptyViewIndicator>
-                                    <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
-                                    <div>Your inbox is the home for <span className='text-black dark:text-white'>long-form posts</span>. It&apos;s empty for now, but posts will show up as soon as the people you follow share something.</div>
-                                    <Button className='text-white dark:text-black' onClick={() => {
-                                        navigate('/explore');
-                                    }}>
-                                    Find accounts to follow &rarr;
+                        <div className='mt-[24vh]'>
+                            <EmptyIndicator
+                                actions={
+                                    <Button onClick={() => navigate('/explore')}>
+                                        Find accounts to follow &rarr;
                                     </Button>
-                                </EmptyViewIndicator>
-                            </div>
+                                }
+                                description="Start following publishers to see their long-form posts here."
+                                title="Your Reader is empty"
+                            >
+                                <LucideIcon.Inbox />
+                            </EmptyIndicator>
                         </div>
                     )}
                 </div>
