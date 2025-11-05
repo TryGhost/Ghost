@@ -450,7 +450,7 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts('.ghost/activitypub/v1/feed/reader', next);
     }
 
-    async getDiscoveryFeed(next?: string, topic: string = 'top'): Promise<PaginatedPostsResponse> {
+    async getDiscoveryFeed(topic: string, next?: string): Promise<PaginatedPostsResponse> {
         const endpoint = `.ghost/activitypub/v1/feed/discover/${topic}`;
         return this.getPaginatedPosts(endpoint, next);
     }
