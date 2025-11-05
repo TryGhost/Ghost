@@ -8,7 +8,7 @@ import {
 } from "@tryghost/shade"
 import UserMenu from "./UserMenu";
 
-function NavFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
+function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     return (
         <SidebarFooter {...props}>
             <SidebarGroup>
@@ -22,4 +22,4 @@ function NavFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     );
 }
 
-export default NavFooter;
+export default AppSidebarFooter;
