@@ -193,25 +193,28 @@ describe("useUserPreferences", () => {
             expect(result.current.data).toEqual(fixtures.existingPreferences);
         });
 
-        [
-            {
-                scenario: "invalid JSON",
-                accessibility: "{invalid json",
-            },
-            {
-                scenario: "invalid schema",
+        queryTest("errors when invalid JSON", async ({ setup }) => {
+            const result = await setup({ accessibility: "{invalid json" });
+
+            expect(result.current.isError).toBe(true);
+            expect(result.current.error).toBeInstanceOf(Error);
+        });
+
+        queryTest("gracefully handles invalid schema values", async ({ setup }) => {
+            const result = await setup({
                 accessibility: JSON.stringify({
                     whatsNew: {
                         lastSeenDate: "not-a-valid-datetime",
                     },
                 }),
-            },
-        ].forEach(({ scenario, accessibility }) => {
-            queryTest(`errors when ${scenario}`, async ({ setup }) => {
-                const result = await setup({ accessibility });
+            });
 
-                expect(result.current.isError).toBe(true);
-                expect(result.current.error).toBeInstanceOf(Error);
+            // Should not error - catches and returns undefined for invalid fields
+            expect(result.current.isError).toBe(false);
+            expect(result.current.data).toEqual({
+                whatsNew: {
+                    lastSeenDate: undefined,
+                },
             });
         });
 
