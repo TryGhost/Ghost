@@ -10,7 +10,7 @@ describe('Unit: models/outbox', function () {
     describe('OUTBOX_STATUSES constant', function () {
         it('exports the expected status values', function () {
             assert.equal(OUTBOX_STATUSES.PENDING, 'pending');
-            assert.equal(OUTBOX_STATUSES.SUBMITTING, 'submitting');
+            assert.equal(OUTBOX_STATUSES.PROCESSING, 'processing');
             assert.equal(OUTBOX_STATUSES.FAILED, 'failed');
         });
     });

@@ -64,7 +64,7 @@ function cancel() {
  * Fetches pending outbox entries with exponential backoff and locks them for processing
  * @param {Object} db - Database connection
  * @param {number} batchSize - Maximum number of entries to fetch
- * @returns {Promise<Array>} Array of outbox entries marked as SUBMITTING
+ * @returns {Promise<Array>} Array of outbox entries marked as PROCESSING
  */
 async function fetchPendingEntries(db, batchSize) {
     let entries = [];
@@ -95,7 +95,7 @@ async function fetchPendingEntries(db, batchSize) {
             const ids = entries.map(e => e.id);
             await trx('outbox')
                 .whereIn('id', ids)
-                .update({status: OUTBOX_STATUSES.SUBMITTING});
+                .update({status: OUTBOX_STATUSES.PROCESSING});
         }
     });
     

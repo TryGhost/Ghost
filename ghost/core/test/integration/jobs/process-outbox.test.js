@@ -115,7 +115,7 @@ describe('Process Outbox Job', function () {
                 email: 'test1@example.com',
                 name: 'Test Member 1'
             }),
-            status: OUTBOX_STATUSES.SUBMITTING
+            status: OUTBOX_STATUSES.PROCESSING
         });
 
         await models.Outbox.add({

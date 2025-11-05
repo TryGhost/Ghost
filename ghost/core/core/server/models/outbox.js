@@ -2,7 +2,7 @@ const ghostBookshelf = require('./base');
 
 const OUTBOX_STATUSES = {
     PENDING: 'pending',
-    SUBMITTING: 'submitting',
+    PROCESSING: 'processing',
     FAILED: 'failed'
 };
 
