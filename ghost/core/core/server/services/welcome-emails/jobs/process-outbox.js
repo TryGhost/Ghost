@@ -9,11 +9,6 @@ const MAX_ENTRIES_PER_JOB = 1000;
 const MAX_RETRIES = 3;
 const SIMULATE_FAILURE_RATE = 0.3;
 
-const EXPONENTIAL_BACKOFF = {
-    enabled: false,
-    baseDelayMs: 30000
-};
-
 const MESSAGES = {
     CANCELLED: 'Outbox processing cancelled',
     NO_ENTRIES: 'No pending outbox entries to process',
@@ -72,18 +67,6 @@ async function fetchPendingEntries(db, batchSize) {
         const query = trx('outbox')
             .where('event_type', MemberCreatedEvent.name)
             .where('status', OUTBOX_STATUSES.PENDING);
-        
-        if (EXPONENTIAL_BACKOFF.enabled) {
-            query.andWhere(function () {
-                this.whereNull('last_retry_at')
-                    .orWhereRaw('last_retry_at < DATE_SUB(NOW(), INTERVAL ? SECOND)', [
-                        Math.floor(EXPONENTIAL_BACKOFF.baseDelayMs / 1000)
-                    ])
-                    .orWhereRaw('last_retry_at < DATE_SUB(NOW(), INTERVAL (? * POW(2, retry_count)) SECOND)', [
-                        Math.floor(EXPONENTIAL_BACKOFF.baseDelayMs / 1000)
-                    ]);
-            });
-        }
         
         entries = await query
             .orderBy('created_at', 'asc')
