@@ -301,6 +301,128 @@ Example config:
 - SQS polling happens every 5 minutes via scheduled job
 - **Newsletter publishing requires active newsletter subscribers** - this is a Ghost requirement, not a config issue
 
+## Pull Request Validation Workflow
+
+When creating PRs for Ghost, follow this validation workflow to ensure code quality:
+
+### 1. Pre-Validation: Lint and Format
+```bash
+# From repository root
+yarn lint ghost/core/server/path/to/changed/files.js
+
+# Fix auto-fixable issues
+yarn lint --fix ghost/core/server/path/to/changed/files.js
+```
+
+**Common lint errors to fix manually:**
+- Use single quotes (not double quotes)
+- Use `i += 1` instead of `i++`
+- Avoid variable shadowing (rename variables in nested scopes)
+- Remove unused parameters
+- Add parentheses around arrow function arguments with curly braces
+
+### 2. Create PR Branches and Tags
+```bash
+# Create/update PR branch
+git checkout -b feature/your-feature main
+
+# Make your changes and commit
+git add .
+git commit -m "✨ Added feature X"
+
+# Tag for testing
+git tag -a pr-v1.0-testing -m "PR v1.0 - Feature X (ready for testing)"
+```
+
+### 3. Validate PR with ChatGPT
+Before submitting to TryGhost/Ghost, get code review from ChatGPT:
+
+1. **Prepare PR files** for review (create `ai/PR-BOT-RESPONSE.md` files)
+2. **Submit all modified files** to ChatGPT with context
+3. **Address all feedback** through multiple review rounds if needed
+4. **Document fixes** in response files (e.g., `ai/PR5-ROUND2-RESPONSE.md`)
+5. **Get final approval** before proceeding to testing
+
+**Example ChatGPT review workflow:**
+- Round 1: Initial implementation review
+- Round 2-5: Address critical issues (security, functionality, edge cases)
+- Final: Get "No blocking issues" approval
+
+### 4. Local Testing
+```bash
+# Switch to PR branch
+git checkout feature/your-feature
+
+# Run development server
+yarn dev
+
+# Verify feature works in browser
+# Check console for errors
+# Test edge cases
+```
+
+### 5. Unit Test Validation
+```bash
+# Run relevant unit tests
+cd ghost/core
+yarn test:unit test/unit/path/to/feature.test.js
+
+# If tests don't exist yet, create them before PR submission
+```
+
+### 6. VM Testing (Optional but Recommended)
+Deploy to test VM to validate in production-like environment:
+```bash
+# SSH to test VM
+ssh user@test-vm
+
+# Pull latest changes
+cd /var/www/ghost
+git fetch origin
+git checkout feature/your-feature
+ghost restart
+
+# Monitor logs
+ghost log
+```
+
+### 7. Verify Merge Strategy
+If creating multiple related PRs (e.g., PR5, PR6, PR7):
+```bash
+# Verify PR5 and PR6 merge cleanly into PR7
+git checkout pr7-branch
+git merge pr5-branch --no-commit --no-ff
+git merge pr6-branch --no-commit --no-ff
+
+# Check for conflicts
+git status
+
+# Abort test merge
+git merge --abort
+```
+
+### 8. Update PR Descriptions
+Ensure PR title and description accurately reflect:
+- **What** was changed
+- **Why** it was changed
+- **How** to test it
+- **Dependencies** (if any)
+- **Breaking changes** (if any)
+
+Include test results and ChatGPT review summary in description.
+
+### 9. Final Checklist Before Submission
+- ✅ All lint errors fixed (0 errors, warnings OK)
+- ✅ ChatGPT code review completed with approval
+- ✅ Unit tests pass (or new tests added)
+- ✅ Feature tested locally
+- ✅ No console errors in browser
+- ✅ Commit messages follow Ghost conventions
+- ✅ PR description is complete and accurate
+- ✅ (Optional) Tested on VM environment
+
+---
+
 ## Troubleshooting
 
 ### Build Issues
