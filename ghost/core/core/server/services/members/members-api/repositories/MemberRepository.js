@@ -429,8 +429,7 @@ module.exports = class MemberRepository {
                     name: member.get('name'),
                     source,
                     timestamp: eventData.created_at
-                }),
-                created_at: new Date()
+                })
             }, options);
         }
                 
