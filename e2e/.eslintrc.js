@@ -1,6 +1,9 @@
 module.exports = {
     parser: '@typescript-eslint/parser',
-    plugins: ['ghost'],
+    plugins: [
+        'ghost',
+        'playwright'
+    ],
     extends: [
         'plugin:ghost/ts'
     ],
@@ -10,5 +13,11 @@ module.exports = {
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }]
-    }
+    },
+    overrides: [
+        {
+            files: ['tests/**', 'helpers/playwright/**', 'helpers/pages/**'],
+            extends: ['plugin:playwright/recommended']
+        }
+    ]
 };
