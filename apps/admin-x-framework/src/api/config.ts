@@ -82,6 +82,10 @@ export type Config = {
     security?: {
         staffDeviceVerification?: boolean;
     };
+    emailProvider?: {
+        active: string | null;
+        isConfigured: boolean;
+    };
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
     [key: string]: JSONValue | undefined;
 };
