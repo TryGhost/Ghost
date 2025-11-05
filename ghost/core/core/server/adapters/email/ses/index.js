@@ -478,7 +478,9 @@ class SESEmailProvider extends EmailProviderBase {
                             },
                             {
                                 Name: 'recipient-email',
-                                Value: recipient.email
+                                // SES tags only allow: alphanumeric, '_', '-', '.', '@'
+                                // Replace '+' and other invalid characters with '_'
+                                Value: recipient.email.replace(/[^a-zA-Z0-9_.\-@]/g, '_')
                             }
                         ]
                     });
