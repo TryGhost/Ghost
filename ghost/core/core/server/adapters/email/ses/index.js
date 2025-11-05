@@ -93,17 +93,18 @@ class SESEmailProvider extends EmailProviderBase {
     }
 
     /**
-     * Build MIME email content
+     * Build MIME email content for a single recipient
      * @private
      * @param {Object} params - Email parameters
      * @param {string} params.from - From address
+     * @param {string} params.to - To address (recipient email)
      * @param {string} params.subject - Email subject
      * @param {string} params.html - HTML content
      * @param {string} params.plaintext - Plain text content
      * @param {string} [params.replyTo] - Reply-to address
      * @returns {string} MIME formatted email
      */
-    #buildMIMEEmail({from, subject, html, plaintext, replyTo}) {
+    #buildMIMEEmail({from, to, subject, html, plaintext, replyTo}) {
         const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
         // Extract domain from 'from' address for Message-ID
@@ -112,6 +113,7 @@ class SESEmailProvider extends EmailProviderBase {
 
         let mime = [
             `From: ${from}`,
+            `To: ${to}`,
             `Subject: ${subject}`,
             `Date: ${new Date().toUTCString()}`,
             `Message-ID: ${messageId}`
@@ -121,6 +123,10 @@ class SESEmailProvider extends EmailProviderBase {
             mime.push(`Reply-To: ${replyTo}`);
         }
 
+        // Encode content as quoted-printable
+        const encodedPlaintext = this.#encodeQuotedPrintable(plaintext || '');
+        const encodedHtml = this.#encodeQuotedPrintable(html || '');
+
         mime = mime.concat([
             'MIME-Version: 1.0',
             `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -129,18 +135,151 @@ class SESEmailProvider extends EmailProviderBase {
             'Content-Type: text/plain; charset=UTF-8',
             'Content-Transfer-Encoding: quoted-printable',
             '',
-            plaintext || '',
+            encodedPlaintext,
             '',
             `--${boundary}`,
             'Content-Type: text/html; charset=UTF-8',
             'Content-Transfer-Encoding: quoted-printable',
             '',
-            html || '',
+            encodedHtml,
             '',
             `--${boundary}--`
         ]);
 
         return mime.join('\r\n');
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS
+     * @private
+     * @param {string} str - String to escape
+     * @returns {string} HTML-escaped string
+     */
+    #escapeHtml(str) {
+        const htmlEscapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+        return String(str).replace(/[&<>"'\/]/g, char => htmlEscapes[char]);
+    }
+
+    /**
+     * Encode string as quoted-printable (RFC 2045)
+     * Works on UTF-8 bytes, not UTF-16 code units
+     * @private
+     * @param {string} str - String to encode
+     * @returns {string} Quoted-printable encoded string
+     */
+    #encodeQuotedPrintable(str) {
+        if (!str) {
+            return '';
+        }
+
+        // Convert string to UTF-8 bytes
+        const utf8Bytes = Buffer.from(str, 'utf8');
+
+        let encoded = '';
+        let lineLength = 0;
+
+        for (let i = 0; i < utf8Bytes.length; i++) {
+            const byte = utf8Bytes[i];
+            const nextByte = i + 1 < utf8Bytes.length ? utf8Bytes[i + 1] : null;
+
+            // RFC 2045: Preserve CRLF sequences as literal \r\n (not encoded)
+            if (byte === 0x0D && nextByte === 0x0A) {
+                // Hard line break - preserve as-is
+                encoded += '\r\n';
+                lineLength = 0;
+                i++; // Skip the LF byte (already processed)
+                continue;
+            }
+
+            // Check if trailing space/tab before line break
+            const isTrailingSpace = (byte === 0x20 || byte === 0x09) &&
+                                   (nextByte === 0x0D || nextByte === 0x0A || nextByte === null);
+
+            // RFC 2045: Must encode if:
+            // - Outside printable ASCII range (33-126, excluding 61)
+            // - Equals sign (61 = '=')
+            // - Trailing space or tab before line break
+            // - Standalone CR or LF (not part of CRLF)
+            if (byte < 33 || byte > 126 || byte === 61 || isTrailingSpace) {
+                // Encode as =XX
+                const hex = byte.toString(16).toUpperCase().padStart(2, '0');
+                encoded += '=' + hex;
+                lineLength += 3;
+            } else {
+                // Safe printable character
+                encoded += String.fromCharCode(byte);
+                lineLength += 1;
+            }
+
+            // Soft line break at 75 chars (leave room for =\r\n)
+            // Don't break if we're about to hit a hard line break
+            if (lineLength >= 75 && i + 1 < utf8Bytes.length) {
+                const nextByte = utf8Bytes[i + 1];
+                // Check if next is start of CRLF sequence
+                const isNextCRLF = nextByte === 0x0D && i + 2 < utf8Bytes.length && utf8Bytes[i + 2] === 0x0A;
+                if (!isNextCRLF) {
+                    encoded += '=\r\n';
+                    lineLength = 0;
+                }
+            }
+        }
+
+        return encoded;
+    }
+
+    /**
+     * Process replacement tokens in content
+     * @private
+     * @param {string} content - Content with %%{...}%% tokens
+     * @param {Array} replacements - Array of {id, token, value} objects
+     * @param {boolean} isHtml - Whether content is HTML (requires escaping)
+     * @returns {string} Content with tokens replaced
+     */
+    #processReplacements(content, replacements, isHtml = false) {
+        if (!content || !replacements || replacements.length === 0) {
+            return content;
+        }
+
+        let processedContent = content;
+
+        for (const replacement of replacements) {
+            if (!replacement.token) {
+                continue;
+            }
+
+            // Get value, defaulting to empty string if null/undefined
+            let value = replacement.value !== null && replacement.value !== undefined
+                ? String(replacement.value)
+                : '';
+
+            // Escape HTML entities in values when processing HTML content (XSS prevention)
+            if (isHtml) {
+                value = this.#escapeHtml(value);
+            }
+
+            // Replace all occurrences of this token (global replace)
+            // Handle both string tokens and RegExp tokens
+            let tokenRegex;
+            if (replacement.token instanceof RegExp) {
+                // If already a RegExp, ensure it has global flag
+                const flags = replacement.token.flags.includes('g') ? replacement.token.flags : replacement.token.flags + 'g';
+                tokenRegex = new RegExp(replacement.token.source, flags);
+            } else {
+                // If string, escape special chars and create RegExp
+                const escapedToken = String(replacement.token).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                tokenRegex = new RegExp(escapedToken, 'g');
+            }
+            processedContent = processedContent.replace(tokenRegex, value);
+        }
+
+        return processedContent;
     }
 
     /**
@@ -152,6 +291,99 @@ class SESEmailProvider extends EmailProviderBase {
     #createSESErrorMessage(error) {
         const message = (error?.message || 'SES Error') + (error?.$metadata?.httpStatusCode ? ` (${error.$metadata.httpStatusCode})` : '');
         return message.slice(0, 2000);
+    }
+
+    /**
+     * Send bulk email without personalization (efficient for large newsletters)
+     * Sends ONE email with up to 50 recipients in BCC per batch
+     * @private
+     */
+    async #sendBulk({subject, html, plaintext, from, replyTo, emailId, recipients, startTime}) {
+        const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
+
+        // SES allows up to 50 destinations per SendRawEmail call
+        const BATCH_SIZE = 50;
+        const batches = this.#chunkArray(recipients, BATCH_SIZE);
+        const results = [];
+
+        debug(`sending bulk email to ${recipients.length} recipients in ${batches.length} batches`);
+
+        for (const batch of batches) {
+            // Build MIME email with BCC recipients
+            const bccList = batch.map(r => r.email).join(', ');
+
+            // Encode content as quoted-printable
+            const encodedPlaintext = this.#encodeQuotedPrintable(plaintext || '');
+            const encodedHtml = this.#encodeQuotedPrintable(html || '');
+
+            const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            const domain = (from || this.#config.fromEmail).match(/@([^>]+)/)?.[1] || 'localhost';
+            const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
+
+            let mime = [
+                `From: ${from || this.#config.fromEmail}`,
+                `To: undisclosed-recipients:;`,
+                `Bcc: ${bccList}`,
+                `Subject: ${subject}`,
+                `Date: ${new Date().toUTCString()}`,
+                `Message-ID: ${messageId}`
+            ];
+
+            if (replyTo) {
+                mime.push(`Reply-To: ${replyTo}`);
+            }
+
+            mime = mime.concat([
+                'MIME-Version: 1.0',
+                `Content-Type: multipart/alternative; boundary="${boundary}"`,
+                '',
+                `--${boundary}`,
+                'Content-Type: text/plain; charset=UTF-8',
+                'Content-Transfer-Encoding: quoted-printable',
+                '',
+                encodedPlaintext,
+                '',
+                `--${boundary}`,
+                'Content-Type: text/html; charset=UTF-8',
+                'Content-Transfer-Encoding: quoted-printable',
+                '',
+                encodedHtml,
+                '',
+                `--${boundary}--`
+            ]);
+
+            const rawMessage = mime.join('\r\n');
+
+            // Build SendRawEmail command with all batch recipients as Destinations
+            const command = new SendRawEmailCommand({
+                Source: from || this.#config.fromEmail,
+                Destinations: batch.map(r => r.email),
+                RawMessage: {
+                    Data: Buffer.from(rawMessage)
+                },
+                ConfigurationSetName: this.#config.configurationSet,
+                Tags: [
+                    {
+                        Name: 'email-id',
+                        Value: emailId || 'unknown'
+                    }
+                ]
+            });
+
+            // Send via SES
+            const response = await this.#sesClient.send(command);
+            results.push(response.MessageId);
+        }
+
+        const duration = Date.now() - startTime;
+        const throughput = recipients.length / (duration / 1000);
+        debug(`sent bulk email to ${recipients.length} recipients in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
+        debug(`SES returned ${results.length} batch MessageId(s)`);
+
+        // Return first MessageId (represents the bulk send)
+        return {
+            id: results[0] || 'unknown'
+        };
     }
 
     /**
@@ -183,60 +415,99 @@ class SESEmailProvider extends EmailProviderBase {
         } = data;
 
         const startTime = Date.now();
-        debug(`sending message to ${recipients.length} recipients`);
+        debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
 
+        // Check if personalization is actually being used
+        // Note: Ghost always adds required system tokens (list_unsubscribe, etc) to every recipient
+        // We need to check if there are ANY tokens beyond the required ones
+        // Required tokens that are always present: list_unsubscribe
+        const REQUIRED_TOKEN_IDS = ['list_unsubscribe'];
+
+        const hasPersonalization = recipients.some(r => {
+            if (!r.replacements || r.replacements.length === 0) {
+                return false;
+            }
+            // Check if there are any replacements beyond required system tokens
+            return r.replacements.some(replacement => !REQUIRED_TOKEN_IDS.includes(replacement.id));
+        });
+
+        if (!hasPersonalization) {
+            // No personalization: send ONE email with all recipients in BCC (efficient for large newsletters)
+            return await this.#sendBulk({subject, html, plaintext, from, replyTo, emailId, recipients, startTime});
+        }
+
+        // With personalization: send individual emails per recipient
         try {
             const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
 
-            // Build MIME email (raw format for SES)
-            // V1: Simple implementation without per-recipient personalization
-            // V2 (future): Add template support for personalization
-            const rawMessage = this.#buildMIMEEmail({
-                from: from || this.#config.fromEmail,
-                subject,
-                html,
-                plaintext,
-                replyTo
-            });
-
-            // SES has a 50 recipient limit per bulk send
-            const chunks = this.#chunkArray(recipients, 50);
+            // Process recipients with personalization
+            // Each recipient gets a personalized email with their specific replacement values
+            const batchSize = 10; // Process 10 recipients in parallel
+            const chunks = this.#chunkArray(recipients, batchSize);
             const results = [];
 
             for (const chunk of chunks) {
-                // Extract email addresses
-                const toAddresses = chunk.map(recipient => recipient.email);
+                // Send emails in parallel for this batch
+                const batchPromises = chunk.map(async (recipient) => {
+                    // Process replacements for this recipient (escape HTML in values)
+                    const personalizedHtml = this.#processReplacements(html, recipient.replacements, true);
+                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements, false);
 
-                // Build SendRawEmail command for bulk sending
-                const command = new SendRawEmailCommand({
-                    Source: from || this.#config.fromEmail,
-                    Destinations: toAddresses,
-                    RawMessage: {
-                        Data: Buffer.from(rawMessage)
-                    },
-                    ConfigurationSetName: this.#config.configurationSet,
-                    Tags: [
-                        {
-                            Name: 'email-id',
-                            Value: emailId || 'unknown'
-                        }
-                    ]
+                    // Build personalized MIME email
+                    const rawMessage = this.#buildMIMEEmail({
+                        from: from || this.#config.fromEmail,
+                        to: recipient.email,
+                        subject,
+                        html: personalizedHtml,
+                        plaintext: personalizedPlaintext,
+                        replyTo
+                    });
+
+                    // Build SendRawEmail command
+                    const command = new SendRawEmailCommand({
+                        Source: from || this.#config.fromEmail,
+                        Destinations: [recipient.email],
+                        RawMessage: {
+                            Data: Buffer.from(rawMessage)
+                        },
+                        ConfigurationSetName: this.#config.configurationSet,
+                        Tags: [
+                            {
+                                Name: 'email-id',
+                                Value: emailId || 'unknown'
+                            },
+                            {
+                                Name: 'recipient-email',
+                                Value: recipient.email
+                            }
+                        ]
+                    });
+
+                    // Send via SES
+                    const response = await this.#sesClient.send(command);
+                    return {
+                        messageId: response.MessageId,
+                        recipient: recipient.email
+                    };
                 });
 
-                // Send via SES
-                const response = await this.#sesClient.send(command);
-
-                // Store message ID from response
-                if (response.MessageId) {
-                    results.push(response.MessageId);
-                }
+                // Wait for all emails in this batch to be sent
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults.filter(Boolean));
             }
 
-            debug(`sent message to ${recipients.length} recipients (${Date.now() - startTime}ms)`);
+            const duration = Date.now() - startTime;
+            const throughput = recipients.length / (duration / 1000);
+            debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
+            debug(`SES returned ${results.length} individual MessageIds`);
 
-            // Return first message ID as provider reference
+            // Return first MessageId as provider_id (fits in 255 char column)
+            // Analytics reconciliation works via:
+            // 1. Each SES event has its own real MessageId (in providerId field)
+            // 2. All events grouped by email-id tag (set in SES Tags)
+            // 3. Database provider_id is just a reference, not used for matching
             return {
-                id: results[0] || 'unknown'
+                id: results[0]?.messageId || 'unknown'
             };
         } catch (e) {
             let ghostError;
@@ -283,7 +554,9 @@ class SESEmailProvider extends EmailProviderBase {
      * @returns {number} Maximum number of recipients
      */
     getMaximumRecipients() {
-        return 50; // SES bulk send limit
+        // With personalization, we send individual emails in parallel batches
+        // Return a reasonable batch size for per-recipient processing
+        return 100;
     }
 
     /**
