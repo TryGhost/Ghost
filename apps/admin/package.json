@@ -18,7 +18,8 @@
     "@tryghost/shade": "*",
     "@tryghost/stats": "*",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "9.37.0",
@@ -30,6 +31,7 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.24",
     "globals": "16.4.0",
+    "jest-extended": "^6.0.0",
     "jsdom": "24.1.0",
     "typescript": "5.8.3",
     "typescript-eslint": "8.46.1",
