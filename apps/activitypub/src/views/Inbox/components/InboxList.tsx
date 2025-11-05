@@ -6,7 +6,6 @@ import {Activity} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyIndicator, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
@@ -29,7 +28,6 @@ const InboxList:React.FC<InboxListProps> = ({
     isFetchingNextPage,
     onTopicChange
 }) => {
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigateWithBasePath();
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -74,7 +72,7 @@ const InboxList:React.FC<InboxListProps> = ({
 
     return (
         <Layout>
-            {isEnabled('global-feed') && <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />}
+            <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
