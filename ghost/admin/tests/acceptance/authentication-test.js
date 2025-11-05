@@ -139,7 +139,7 @@ describe('Acceptance: Authentication', function () {
             windowProxy.replaceLocation = originalReplaceLocation;
         });
 
-        it('invalidates session on 401 API response', async function () {
+        it('redirects to signin on 401 API response when populating current user', async function () {
             // return a 401 when attempting to retrieve users
             this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
@@ -150,18 +150,11 @@ describe('Acceptance: Authentication', function () {
             await authenticateSession();
             await visit('/members');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
-
             expect(currentURL(), 'url after 401').to.equal('/signin');
         });
 
-        it('invalidates session on 403 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('redirects to signin on 403 API response when populating current user', async function () {
+            // return a 401 when attempting to retrieve current user
             this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
@@ -171,20 +164,32 @@ describe('Acceptance: Authentication', function () {
             await authenticateSession();
             await visit('/members');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
-
             expect(currentURL(), 'url after 403').to.equal('/signin');
+        });
+
+        it('shows error page on 403 API response when navigating', async function () {
+            const member = this.server.create('member');
+
+            // return a 403 when attempting to retrieve members
+            this.server.get(`/members/${member.id}`, () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/members');
+            await visit(`/members/${member.id}`);
+
+            expect(currentURL(), 'url after 403').to.equal(`/members/${member.id}`);
+            expect(findAll('.gh-alert').length, 'no of alerts').to.equal(1);
+            expect(find('.gh-alert')).to.contain.text('Authorization failed');
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
             await visit('/');
-            
+
             expect(currentURL(), 'current url').to.equal('/signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
