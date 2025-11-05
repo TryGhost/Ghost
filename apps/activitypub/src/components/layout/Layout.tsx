@@ -38,7 +38,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
                 {isOnboarded ?
                     <>
                         <div className='block grid-cols-[auto_320px] items-start lg:grid'>
-                            <div className='z-0'>
+                            <div className='z-0 min-w-0'>
                                 <Header
                                     onToggleMobileSidebar={toggleMobileSidebar}
                                 />
