@@ -475,4 +475,136 @@ describe('SES Email Provider Adapter', function () {
             adapter.requiredFns.should.containEql('send');
         });
     });
+
+    describe('Personalization Detection', function () {
+        let adapter;
+        let emailData;
+
+        beforeEach(function () {
+            adapter = new SESEmailProvider({
+                ses: {
+                    region: 'us-east-1',
+                    fromEmail: 'test@example.com',
+                    configurationSet: 'test-config'
+                }
+            });
+
+            emailData = {
+                subject: 'Test Newsletter',
+                html: '<p>Hello %%{name}%%</p>',
+                plaintext: 'Hello %%{name}%%',
+                from: 'test@example.com',
+                emailId: 'test-email-123',
+                recipients: []
+            };
+        });
+
+        it('should use bulk BCC path when only required system tokens present', async function () {
+            // Only list_unsubscribe token (required system token)
+            emailData.recipients = [
+                {
+                    email: 'user1@example.com',
+                    replacements: [{id: 'list_unsubscribe', value: 'https://unsubscribe.com'}]
+                },
+                {
+                    email: 'user2@example.com',
+                    replacements: [{id: 'list_unsubscribe', value: 'https://unsubscribe.com'}]
+                }
+            ];
+
+            await adapter.send(emailData);
+
+            // Should send ONE bulk email with BCC
+            sesClient.send.callCount.should.equal(1);
+
+            // Verify BCC header exists
+            const callArgs = sesClient.send.getCall(0).args[0];
+            const rawMessage = Buffer.from(callArgs.input.RawMessage.Data).toString();
+            rawMessage.should.match(/^Bcc: user1@example\.com, user2@example\.com$/m);
+        });
+
+        it('should use personalized path when name token present', async function () {
+            // list_unsubscribe + name token (personalization)
+            emailData.recipients = [
+                {
+                    email: 'user1@example.com',
+                    replacements: [
+                        {id: 'list_unsubscribe', value: 'https://unsubscribe.com'},
+                        {id: 'name', value: 'Alice'}
+                    ]
+                },
+                {
+                    email: 'user2@example.com',
+                    replacements: [
+                        {id: 'list_unsubscribe', value: 'https://unsubscribe.com'},
+                        {id: 'name', value: 'Bob'}
+                    ]
+                }
+            ];
+
+            await adapter.send(emailData);
+
+            // Should send TWO personalized emails
+            sesClient.send.callCount.should.equal(2);
+
+            // Verify To headers (not BCC)
+            const call1Args = sesClient.send.getCall(0).args[0];
+            const message1 = Buffer.from(call1Args.input.RawMessage.Data).toString();
+            message1.should.match(/^To: user1@example\.com$/m);
+
+            const call2Args = sesClient.send.getCall(1).args[0];
+            const message2 = Buffer.from(call2Args.input.RawMessage.Data).toString();
+            message2.should.match(/^To: user2@example\.com$/m);
+        });
+
+        it('should use bulk path when recipients have no replacements', async function () {
+            emailData.recipients = [
+                {email: 'user1@example.com', replacements: []},
+                {email: 'user2@example.com', replacements: []}
+            ];
+
+            await adapter.send(emailData);
+
+            // Should send ONE bulk email
+            sesClient.send.callCount.should.equal(1);
+        });
+
+        it('should use personalized path when email token present', async function () {
+            emailData.recipients = [
+                {
+                    email: 'user1@example.com',
+                    replacements: [
+                        {id: 'list_unsubscribe', value: 'https://unsubscribe.com'},
+                        {id: 'email', value: 'user1@example.com'}
+                    ]
+                }
+            ];
+
+            await adapter.send(emailData);
+
+            // Should send personalized email
+            sesClient.send.callCount.should.equal(1);
+
+            const callArgs = sesClient.send.getCall(0).args[0];
+            const message = Buffer.from(callArgs.input.RawMessage.Data).toString();
+            message.should.match(/^To: user1@example\.com$/m);
+        });
+
+        it('should include undisclosed-recipients To header in bulk sends', async function () {
+            emailData.recipients = [
+                {
+                    email: 'user1@example.com',
+                    replacements: [{id: 'list_unsubscribe', value: 'https://unsubscribe.com'}]
+                }
+            ];
+
+            await adapter.send(emailData);
+
+            const callArgs = sesClient.send.getCall(0).args[0];
+            const message = Buffer.from(callArgs.input.RawMessage.Data).toString();
+
+            // Should have undisclosed-recipients To header
+            message.should.match(/^To: undisclosed-recipients:;$/m);
+        });
+    });
 });
