@@ -141,6 +141,12 @@ class EmailAnalyticsProviderSES {
                         const eventsArray = Array.isArray(normalizedEvents) ? normalizedEvents : [normalizedEvents];
 
                         for (const normalizedEvent of eventsArray) {
+                            // Stop if we've reached maxEvents limit
+                            if (events.length >= maxEvents) {
+                                debug(`Reached maxEvents limit of ${maxEvents}, stopping event processing`);
+                                break;
+                            }
+
                             // Apply filters
                             if (this.#shouldIncludeEvent(normalizedEvent, options)) {
                                 events.push(normalizedEvent);
@@ -151,17 +157,25 @@ class EmailAnalyticsProviderSES {
                         messagesToDelete.push(message);
                         this.#processedMessageIds.add(message.MessageId);
                     }
+
+                    // Stop processing messages if we've hit maxEvents
+                    if (events.length >= maxEvents) {
+                        break;
+                    }
                 } catch (error) {
                     logging.error('[SES Analytics] Error processing SQS message:', error);
                     // Don't delete messages that failed to process
                 }
             }
 
-            debug(`Normalized ${events.length} events`);
+            debug(`Normalized ${events.length} events (limit: ${maxEvents})`);
+
+            // Trim events to maxEvents limit (in case we slightly exceeded)
+            const eventsToProcess = events.length > maxEvents ? events.slice(0, maxEvents) : events;
 
             // Process events in batches
-            if (events.length > 0) {
-                await batchHandler(events);
+            if (eventsToProcess.length > 0) {
+                await batchHandler(eventsToProcess);
 
                 // Remember the last event ID we processed
                 this.#lastFetchedEventId = events[events.length - 1].id;

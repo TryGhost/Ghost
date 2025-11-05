@@ -187,9 +187,18 @@ class SESEmailProvider extends EmailProviderBase {
 
         for (let i = 0; i < utf8Bytes.length; i++) {
             const byte = utf8Bytes[i];
-
-            // Check if next byte is line break for trailing space detection
             const nextByte = i + 1 < utf8Bytes.length ? utf8Bytes[i + 1] : null;
+
+            // RFC 2045: Preserve CRLF sequences as literal \r\n (not encoded)
+            if (byte === 0x0D && nextByte === 0x0A) {
+                // Hard line break - preserve as-is
+                encoded += '\r\n';
+                lineLength = 0;
+                i++; // Skip the LF byte (already processed)
+                continue;
+            }
+
+            // Check if trailing space/tab before line break
             const isTrailingSpace = (byte === 0x20 || byte === 0x09) &&
                                    (nextByte === 0x0D || nextByte === 0x0A || nextByte === null);
 
@@ -197,6 +206,7 @@ class SESEmailProvider extends EmailProviderBase {
             // - Outside printable ASCII range (33-126, excluding 61)
             // - Equals sign (61 = '=')
             // - Trailing space or tab before line break
+            // - Standalone CR or LF (not part of CRLF)
             if (byte < 33 || byte > 126 || byte === 61 || isTrailingSpace) {
                 // Encode as =XX
                 const hex = byte.toString(16).toUpperCase().padStart(2, '0');
@@ -208,16 +218,13 @@ class SESEmailProvider extends EmailProviderBase {
                 lineLength += 1;
             }
 
-            // Handle line breaks
-            if (byte === 0x0D || byte === 0x0A) {
-                lineLength = 0;
-            }
-
             // Soft line break at 75 chars (leave room for =\r\n)
-            // Don't break if we're about to encode a byte or hit a hard line break
+            // Don't break if we're about to hit a hard line break
             if (lineLength >= 75 && i + 1 < utf8Bytes.length) {
                 const nextByte = utf8Bytes[i + 1];
-                if (nextByte !== 0x0D && nextByte !== 0x0A) {
+                // Check if next is start of CRLF sequence
+                const isNextCRLF = nextByte === 0x0D && i + 2 < utf8Bytes.length && utf8Bytes[i + 2] === 0x0A;
+                if (!isNextCRLF) {
                     encoded += '=\r\n';
                     lineLength = 0;
                 }
@@ -315,6 +322,7 @@ class SESEmailProvider extends EmailProviderBase {
 
             let mime = [
                 `From: ${from || this.#config.fromEmail}`,
+                `To: undisclosed-recipients:;`,
                 `Bcc: ${bccList}`,
                 `Subject: ${subject}`,
                 `Date: ${new Date().toUTCString()}`,
@@ -482,11 +490,13 @@ class SESEmailProvider extends EmailProviderBase {
             debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
             debug(`SES returned ${results.length} individual MessageIds`);
 
-            // Return all MessageIds for reconciliation
-            // Format: "messageId1,messageId2,messageId3"
-            const messageIds = results.map(r => r.messageId).join(',');
+            // Return first MessageId as provider_id (fits in 255 char column)
+            // Analytics reconciliation works via:
+            // 1. Each SES event has its own real MessageId (in providerId field)
+            // 2. All events grouped by email-id tag (set in SES Tags)
+            // 3. Database provider_id is just a reference, not used for matching
             return {
-                id: messageIds
+                id: results[0]?.messageId || 'unknown'
             };
         } catch (e) {
             let ghostError;
