@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button} from '@tryghost/shade';
 
-export type Topic = 'following' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith' | 'science' | 'crypto' | 'food' | 'music' | 'nature' | 'fashion' | 'climate' | 'fiction' | 'history' | 'parenting' | 'gear' | 'house';
+export type Topic = 'following' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'fashion-beauty' | 'climate' | 'fiction' | 'history' | 'parenting' | 'gear-gadgets' | 'house-home';
 
 const TOPICS: {value: Topic; label: string}[] = [
     {value: 'following', label: 'Following'},
@@ -20,19 +20,19 @@ const TOPICS: {value: Topic; label: string}[] = [
     {value: 'programming', label: 'Programming'},
     {value: 'design', label: 'Design'},
     {value: 'sport', label: 'Sport & fitness'},
-    {value: 'faith', label: 'Faith & spirituality'},
+    {value: 'faith-spirituality', label: 'Faith & spirituality'},
     {value: 'science', label: 'Science'},
     {value: 'crypto', label: 'Crypto'},
-    {value: 'food', label: 'Food & drink'},
+    {value: 'food-drink', label: 'Food & drink'},
     {value: 'music', label: 'Music'},
-    {value: 'nature', label: 'Nature & outdoors'},
-    {value: 'fashion', label: 'Fashion & beauty'},
+    {value: 'nature-outdoors', label: 'Nature & outdoors'},
+    {value: 'fashion-beauty', label: 'Fashion & beauty'},
     {value: 'climate', label: 'Climate'},
     {value: 'fiction', label: 'Fiction'},
     {value: 'history', label: 'History'},
     {value: 'parenting', label: 'Parenting'},
-    {value: 'gear', label: 'Gear & gadgets'},
-    {value: 'house', label: 'House & home'}
+    {value: 'gear-gadgets', label: 'Gear & gadgets'},
+    {value: 'house-home', label: 'House & home'}
 ];
 
 interface TopicFilterProps {
