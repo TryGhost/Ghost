@@ -13,8 +13,10 @@ export class MemberDetailsPage extends AdminPage {
     readonly retryButton: Locator;
     readonly memberActionsButton: Locator;
     readonly deleteButton: Locator;
+
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
+    readonly confirmLeaveButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -31,6 +33,8 @@ export class MemberDetailsPage extends AdminPage {
         this.retryButton = page.getByRole('button', {name: 'Retry'});
         this.memberActionsButton = page.getByTestId('member-actions');
         this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+
+        this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
 
         this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
         this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
