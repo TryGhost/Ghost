@@ -49,7 +49,7 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange}) 
                 {TOPICS.map(({value, label}) => (
                     <Button
                         key={value}
-                        className="h-6 snap-start rounded-full px-2.5 text-xs"
+                        className="h-8 snap-start rounded-full px-3.5 text-sm"
                         variant={currentTopic === value ? 'default' : 'secondary'}
                         onClick={() => onTopicChange(value)}
                     >
