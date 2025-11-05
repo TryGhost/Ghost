@@ -107,10 +107,16 @@ class SESEmailProvider extends EmailProviderBase {
     #buildMIMEEmail({from, to, subject, html, plaintext, replyTo}) {
         const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
+        // Extract domain from 'from' address for Message-ID
+        const domain = from.match(/@([^>]+)/)?.[1] || 'localhost';
+        const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
+
         let mime = [
             `From: ${from}`,
             `To: ${to}`,
-            `Subject: ${subject}`
+            `Subject: ${subject}`,
+            `Date: ${new Date().toUTCString()}`,
+            `Message-ID: ${messageId}`
         ];
 
         if (replyTo) {
@@ -123,13 +129,13 @@ class SESEmailProvider extends EmailProviderBase {
             '',
             `--${boundary}`,
             'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: 7bit',
+            'Content-Transfer-Encoding: quoted-printable',
             '',
             plaintext || '',
             '',
             `--${boundary}`,
             'Content-Type: text/html; charset=UTF-8',
-            'Content-Transfer-Encoding: 7bit',
+            'Content-Transfer-Encoding: quoted-printable',
             '',
             html || '',
             '',
@@ -140,13 +146,32 @@ class SESEmailProvider extends EmailProviderBase {
     }
 
     /**
+     * Escape HTML special characters to prevent XSS
+     * @private
+     * @param {string} str - String to escape
+     * @returns {string} HTML-escaped string
+     */
+    #escapeHtml(str) {
+        const htmlEscapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+        return String(str).replace(/[&<>"'\/]/g, char => htmlEscapes[char]);
+    }
+
+    /**
      * Process replacement tokens in content
      * @private
      * @param {string} content - Content with %%{...}%% tokens
      * @param {Array} replacements - Array of {id, token, value} objects
+     * @param {boolean} isHtml - Whether content is HTML (requires escaping)
      * @returns {string} Content with tokens replaced
      */
-    #processReplacements(content, replacements) {
+    #processReplacements(content, replacements, isHtml = false) {
         if (!content || !replacements || replacements.length === 0) {
             return content;
         }
@@ -159,12 +184,18 @@ class SESEmailProvider extends EmailProviderBase {
             }
 
             // Get value, defaulting to empty string if null/undefined
-            const value = replacement.value !== null && replacement.value !== undefined
+            let value = replacement.value !== null && replacement.value !== undefined
                 ? String(replacement.value)
                 : '';
 
-            // Replace all occurrences of this token
-            processedContent = processedContent.replace(replacement.token, value);
+            // Escape HTML entities in values when processing HTML content (XSS prevention)
+            if (isHtml) {
+                value = this.#escapeHtml(value);
+            }
+
+            // Replace all occurrences of this token (global replace)
+            const tokenRegex = new RegExp(replacement.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+            processedContent = processedContent.replace(tokenRegex, value);
         }
 
         return processedContent;
@@ -212,6 +243,11 @@ class SESEmailProvider extends EmailProviderBase {
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
 
+        // Generate deterministic batch-level MessageId (matches Mailgun's approach)
+        // This allows Ghost to track all recipients under a single batch ID
+        const batchMessageId = `${emailId || 'batch'}.${Date.now()}.${Math.random().toString(36).substring(2, 15)}@ses.amazonses.com`;
+        debug(`Generated batch MessageId: ${batchMessageId}`);
+
         try {
             const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
 
@@ -224,9 +260,9 @@ class SESEmailProvider extends EmailProviderBase {
             for (const chunk of chunks) {
                 // Send emails in parallel for this batch
                 const batchPromises = chunk.map(async (recipient) => {
-                    // Process replacements for this recipient
-                    const personalizedHtml = this.#processReplacements(html, recipient.replacements);
-                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements);
+                    // Process replacements for this recipient (escape HTML in values)
+                    const personalizedHtml = this.#processReplacements(html, recipient.replacements, true);
+                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements, false);
 
                     // Build personalized MIME email
                     const rawMessage = this.#buildMIMEEmail({
@@ -267,10 +303,12 @@ class SESEmailProvider extends EmailProviderBase {
             const duration = Date.now() - startTime;
             const throughput = recipients.length / (duration / 1000);
             debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
+            debug(`SES returned ${results.length} individual MessageIds, returning batch ID for tracking`);
 
-            // Return first message ID as provider reference
+            // Return batch-level MessageId for analytics tracking
+            // This matches Mailgun's behavior where all recipients share a batch ID
             return {
-                id: results[0] || 'unknown'
+                id: batchMessageId
             };
         } catch (e) {
             let ghostError;

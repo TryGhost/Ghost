@@ -15,8 +15,8 @@ const path = require('path');
 // Set up environment
 process.env.NODE_ENV = 'development';
 
-const config = require('./ghost/core/core/shared/config');
-const adapterManager = require('./ghost/core/core/server/services/adapter-manager');
+const config = require('../../ghost/core/core/shared/config');
+const adapterManager = require('../../ghost/core/core/server/services/adapter-manager');
 
 async function testSESEmail() {
     console.log('🚀 Testing SES Email Adapter...\n');
