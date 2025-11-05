@@ -57,6 +57,11 @@ class EmailAnalyticsServiceWrapper {
             // Get analytics config (with SQS queue) or fall back to email adapter config
             const analyticsConfig = config.get('emailAnalytics:ses') || emailConfig.ses;
 
+            // Validate required SQS queue URL
+            if (!analyticsConfig || !analyticsConfig.queueUrl) {
+                throw new Error('SES email analytics requires emailAnalytics.ses.queueUrl configuration. See https://ghost.org/docs/config/#email-analytics');
+            }
+
             providers.push(new SESProvider({
                 config: analyticsConfig,
                 contentPath: config.getContentPath('data')
