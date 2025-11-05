@@ -106,9 +106,15 @@ class SESEmailProvider extends EmailProviderBase {
     #buildMIMEEmail({from, subject, html, plaintext, replyTo}) {
         const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
+        // Extract domain from 'from' address for Message-ID
+        const domain = from.match(/@([^>]+)/)?.[1] || 'localhost';
+        const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
+
         let mime = [
             `From: ${from}`,
-            `Subject: ${subject}`
+            `Subject: ${subject}`,
+            `Date: ${new Date().toUTCString()}`,
+            `Message-ID: ${messageId}`
         ];
 
         if (replyTo) {
@@ -121,13 +127,13 @@ class SESEmailProvider extends EmailProviderBase {
             '',
             `--${boundary}`,
             'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: 7bit',
+            'Content-Transfer-Encoding: quoted-printable',
             '',
             plaintext || '',
             '',
             `--${boundary}`,
             'Content-Type: text/html; charset=UTF-8',
-            'Content-Transfer-Encoding: 7bit',
+            'Content-Transfer-Encoding: quoted-printable',
             '',
             html || '',
             '',
