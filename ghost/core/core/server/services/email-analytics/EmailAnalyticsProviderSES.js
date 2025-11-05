@@ -140,10 +140,14 @@ class EmailAnalyticsProviderSES {
                         // Handle both single event and array of events (bulk sends)
                         const eventsArray = Array.isArray(normalizedEvents) ? normalizedEvents : [normalizedEvents];
 
+                        // Track if we processed all events from this message
+                        let fullyProcessed = true;
+
                         for (const normalizedEvent of eventsArray) {
                             // Stop if we've reached maxEvents limit
                             if (events.length >= maxEvents) {
                                 debug(`Reached maxEvents limit of ${maxEvents}, stopping event processing`);
+                                fullyProcessed = false; // We broke early, don't delete message
                                 break;
                             }
 
@@ -153,9 +157,14 @@ class EmailAnalyticsProviderSES {
                             }
                         }
 
-                        // Mark for deletion (successfully processed)
-                        messagesToDelete.push(message);
-                        this.#processedMessageIds.add(message.MessageId);
+                        // Only mark for deletion if we fully processed all events from this message
+                        // If we broke early due to maxEvents, leave message in queue for next run
+                        if (fullyProcessed) {
+                            messagesToDelete.push(message);
+                            this.#processedMessageIds.add(message.MessageId);
+                        } else {
+                            debug(`Partially processed message ${message.MessageId} - leaving in queue for next run`);
+                        }
                     }
 
                     // Stop processing messages if we've hit maxEvents

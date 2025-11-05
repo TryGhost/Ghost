@@ -417,8 +417,19 @@ class SESEmailProvider extends EmailProviderBase {
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
 
-        //  Check if personalization is actually being used
-        const hasPersonalization = recipients.some(r => r.replacements && r.replacements.length > 0);
+        // Check if personalization is actually being used
+        // Note: Ghost always adds required system tokens (list_unsubscribe, etc) to every recipient
+        // We need to check if there are ANY tokens beyond the required ones
+        // Required tokens that are always present: list_unsubscribe
+        const REQUIRED_TOKEN_IDS = ['list_unsubscribe'];
+
+        const hasPersonalization = recipients.some(r => {
+            if (!r.replacements || r.replacements.length === 0) {
+                return false;
+            }
+            // Check if there are any replacements beyond required system tokens
+            return r.replacements.some(replacement => !REQUIRED_TOKEN_IDS.includes(replacement.id));
+        });
 
         if (!hasPersonalization) {
             // No personalization: send ONE email with all recipients in BCC (efficient for large newsletters)
