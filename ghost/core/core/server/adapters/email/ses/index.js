@@ -161,10 +161,10 @@ class SESEmailProvider extends EmailProviderBase {
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
-            "'": '&#x27;',
+            '\'': '&#x27;',
             '/': '&#x2F;'
         };
-        return String(str).replace(/[&<>"'\/]/g, char => htmlEscapes[char]);
+        return String(str).replace(/[&<>"'/]/g, char => htmlEscapes[char]);
     }
 
     /**
@@ -194,7 +194,7 @@ class SESEmailProvider extends EmailProviderBase {
                 // Hard line break - preserve as-is
                 encoded += '\r\n';
                 lineLength = 0;
-                i++; // Skip the LF byte (already processed)
+                i += 1; // Skip the LF byte (already processed)
                 continue;
             }
 
@@ -221,9 +221,9 @@ class SESEmailProvider extends EmailProviderBase {
             // Soft line break at 75 chars (leave room for =\r\n)
             // Don't break if we're about to hit a hard line break
             if (lineLength >= 75 && i + 1 < utf8Bytes.length) {
-                const nextByte = utf8Bytes[i + 1];
+                const next = utf8Bytes[i + 1];
                 // Check if next is start of CRLF sequence
-                const isNextCRLF = nextByte === 0x0D && i + 2 < utf8Bytes.length && utf8Bytes[i + 2] === 0x0A;
+                const isNextCRLF = next === 0x0D && i + 2 < utf8Bytes.length && utf8Bytes[i + 2] === 0x0A;
                 if (!isNextCRLF) {
                     encoded += '=\r\n';
                     lineLength = 0;
@@ -402,7 +402,7 @@ class SESEmailProvider extends EmailProviderBase {
      * @param {boolean} options.clickTrackingEnabled - Enable click tracking
      * @returns {Promise<{id: string}>} Provider message ID
      */
-    async send(data, options = {}) {
+    async send(data) {
         const {
             subject,
             html,
@@ -423,7 +423,7 @@ class SESEmailProvider extends EmailProviderBase {
         // Required tokens that are always present: list_unsubscribe
         const REQUIRED_TOKEN_IDS = ['list_unsubscribe'];
 
-        const hasPersonalization = recipients.some(r => {
+        const hasPersonalization = recipients.some((r) => {
             if (!r.replacements || r.replacements.length === 0) {
                 return false;
             }
