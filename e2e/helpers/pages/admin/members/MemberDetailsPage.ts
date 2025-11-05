@@ -13,6 +13,9 @@ export class MemberDetailsPage extends AdminPage {
     readonly retryButton: Locator;
     readonly memberActionsButton: Locator;
     readonly deleteButton: Locator;
+    readonly impersonateButton: Locator;
+    readonly copyLinkButton: Locator;
+    readonly magicLinkInput: Locator;
 
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
@@ -33,6 +36,9 @@ export class MemberDetailsPage extends AdminPage {
         this.retryButton = page.getByRole('button', {name: 'Retry'});
         this.memberActionsButton = page.getByTestId('member-actions');
         this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
+        this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
+        this.magicLinkInput = page.getByTestId('member-signin-url').last();
 
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
 
