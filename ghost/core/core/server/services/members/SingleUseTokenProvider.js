@@ -397,6 +397,10 @@ class SingleUseTokenProvider {
      * @returns {void}
      */
     _validateTimeSinceFirstUsage(model) {
+        if (model.get('used_count') === 0 && !model.get('first_used_at')) {
+            return;
+        }
+
         const createdAtEpoch = model.get('created_at').getTime();
         const firstUsedAtEpoch = model.get('first_used_at')?.getTime() ?? createdAtEpoch;
         const timeSinceFirstUsage = Date.now() - firstUsedAtEpoch;
