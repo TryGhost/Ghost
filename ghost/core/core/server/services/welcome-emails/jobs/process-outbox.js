@@ -95,7 +95,10 @@ async function fetchPendingEntries(db, batchSize) {
             const ids = entries.map(e => e.id);
             await trx('outbox')
                 .whereIn('id', ids)
-                .update({status: OUTBOX_STATUSES.PROCESSING});
+                .update({
+                    status: OUTBOX_STATUSES.PROCESSING,
+                    updated_at: db.knex.raw('CURRENT_TIMESTAMP')
+                });
         }
     });
     
@@ -131,7 +134,8 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
             status: newStatus,
             retry_count: newRetryCount,
             last_retry_at: db.knex.raw('CURRENT_TIMESTAMP'),
-            message: errorMessage.substring(0, 2000)
+            message: errorMessage.substring(0, 2000),
+            updated_at: db.knex.raw('CURRENT_TIMESTAMP')
         });
 }
 
