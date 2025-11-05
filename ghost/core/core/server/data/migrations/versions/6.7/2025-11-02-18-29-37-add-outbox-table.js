@@ -11,6 +11,6 @@ module.exports = addTable('outbox', {
     last_retry_at: {type: 'dateTime', nullable: true},
     message: {type: 'string', maxlength: 2000, nullable: true},
     '@@INDEXES@@': [
-        ['status', 'created_at']
+        ['event_type', 'status', 'created_at']
     ]
 });
