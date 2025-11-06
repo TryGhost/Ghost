@@ -47,21 +47,36 @@ Self-hosted Ghost installs can configure Amazon SES for bulk email newsletters.
 
 Requires: SES Configuration Set → SNS Topic → SQS Queue
 
-**Setup Script**: Use AWS CLI to automate infrastructure setup:
+**Manual Setup Steps**:
 
-```bash
-# Download setup script
-curl -O https://raw.githubusercontent.com/TryGhost/Ghost/main/scripts/setup-ses-infrastructure.sh
-chmod +x setup-ses-infrastructure.sh
+1. Create SES Configuration Set:
+   ```bash
+   aws sesv2 create-configuration-set --configuration-set-name ghost-analytics --region us-east-1
+   ```
 
-# Edit configuration
-export AWS_REGION="us-east-1"
-export SES_CONFIGURATION_SET="ghost-analytics"
-export SQS_QUEUE_NAME="ses-events"
+2. Create SNS Topic:
+   ```bash
+   aws sns create-topic --name ses-events --region us-east-1
+   ```
 
-# Run setup
-./setup-ses-infrastructure.sh
-```
+3. Create SQS Queue:
+   ```bash
+   aws sqs create-queue --queue-name ses-events --region us-east-1
+   ```
+
+4. Subscribe SQS to SNS:
+   ```bash
+   aws sns subscribe --topic-arn arn:aws:sns:REGION:ACCOUNT:ses-events \
+     --protocol sqs --notification-endpoint arn:aws:sqs:REGION:ACCOUNT:ses-events
+   ```
+
+5. Configure SES event destination:
+   ```bash
+   aws sesv2 create-configuration-set-event-destination \
+     --configuration-set-name ghost-analytics \
+     --event-destination-name ses-to-sns \
+     --event-destination '{"SnsDestination":{"TopicArn":"arn:aws:sns:REGION:ACCOUNT:ses-events"},"MatchingEventTypes":["OPEN","BOUNCE","COMPLAINT"]}'
+   ```
 
 More info: [AWS SES Documentation](https://docs.aws.amazon.com/ses/)
 

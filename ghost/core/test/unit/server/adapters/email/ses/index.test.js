@@ -30,12 +30,13 @@ describe('SES Email Provider Adapter', function () {
             SendRawEmailCommand
         };
 
+        const originalLoad = module.constructor._load;
         sandbox.stub(module.constructor, '_load').callsFake(function (request, parent) {
             if (request === '@aws-sdk/client-ses') {
                 return mockAwsSdk;
             }
-            // Call the original require for everything else
-            return sandbox.stub().throwsException(new Error(`MODULE_NOT_FOUND: ${request}`));
+            // Delegate to original for all other modules
+            return originalLoad.apply(this, arguments);
         });
     });
 
