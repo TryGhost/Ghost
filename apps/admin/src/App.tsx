@@ -14,11 +14,14 @@ function App() {
             {currentUser ?
                 <AdminLayout>
                     <Outlet />
+                    <EmberRoot />
                 </AdminLayout>
                 :
-                <EmberFallback />
+                <>
+                    <EmberFallback />
+                    <EmberRoot />
+                </>
             }
-            <EmberRoot />
         </EmberProvider>
     );
 }

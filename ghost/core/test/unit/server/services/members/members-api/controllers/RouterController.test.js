@@ -1176,6 +1176,7 @@ describe('RouterController', function () {
 
                 for (const invalid of invalidOtcs) {
                     req.body.otc = invalid;
+                    mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                     mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
                     await assert.rejects(
@@ -1224,6 +1225,7 @@ describe('RouterController', function () {
             });
 
             it('should throw BadRequestError when verifyOTC returns false', async function () {
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
                 await assert.rejects(
