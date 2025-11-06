@@ -80,6 +80,20 @@ class SESEmailProvider extends EmailProviderBase {
     }
 
     /**
+     * Sanitize email header value to prevent header injection attacks
+     * @private
+     * @param {string} value - Header value to sanitize
+     * @returns {string} Sanitized header value
+     */
+    #sanitizeHeader(value) {
+        if (!value) {
+            return '';
+        }
+        // Remove all CR and LF characters to prevent header injection
+        return String(value).replace(/[\r\n]/g, '');
+    }
+
+    /**
      * Chunk array into smaller arrays
      * @private
      * @param {Array} array - Array to chunk
@@ -109,20 +123,26 @@ class SESEmailProvider extends EmailProviderBase {
     #buildMIMEEmail({from, to, subject, html, plaintext, replyTo}) {
         const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
+        // Sanitize all header values to prevent header injection attacks
+        const sanitizedFrom = this.#sanitizeHeader(from);
+        const sanitizedTo = this.#sanitizeHeader(to);
+        const sanitizedSubject = this.#sanitizeHeader(subject);
+        const sanitizedReplyTo = this.#sanitizeHeader(replyTo);
+
         // Extract domain from 'from' address for Message-ID
-        const domain = from.match(/@([^>]+)/)?.[1] || 'localhost';
+        const domain = sanitizedFrom.match(/@([^>]+)/)?.[1] || 'localhost';
         const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
 
         let mime = [
-            `From: ${from}`,
-            `To: ${to}`,
-            `Subject: ${subject}`,
+            `From: ${sanitizedFrom}`,
+            `To: ${sanitizedTo}`,
+            `Subject: ${sanitizedSubject}`,
             `Date: ${new Date().toUTCString()}`,
             `Message-ID: ${messageId}`
         ];
 
-        if (replyTo) {
-            mime.push(`Reply-To: ${replyTo}`);
+        if (sanitizedReplyTo) {
+            mime.push(`Reply-To: ${sanitizedReplyTo}`);
         }
 
         // Encode content as quoted-printable
@@ -240,11 +260,12 @@ class SESEmailProvider extends EmailProviderBase {
      * Process replacement tokens in content
      * @private
      * @param {string} content - Content with %%{...}%% tokens
-     * @param {Array} replacements - Array of {id, token, value} objects
+     * @param {Array} replacements - Array of {id, value} objects
+     * @param {Array} replacementDefinitions - Array of {id, token} objects defining the tokens
      * @param {boolean} isHtml - Whether content is HTML (requires escaping)
      * @returns {string} Content with tokens replaced
      */
-    #processReplacements(content, replacements, isHtml = false) {
+    #processReplacements(content, replacements, replacementDefinitions = [], isHtml = false) {
         if (!content || !replacements || replacements.length === 0) {
             return content;
         }
@@ -252,7 +273,9 @@ class SESEmailProvider extends EmailProviderBase {
         let processedContent = content;
 
         for (const replacement of replacements) {
-            if (!replacement.token) {
+            // Find the token string from replacementDefinitions using the replacement id
+            const token = replacement.token || replacementDefinitions.find(def => def.id === replacement.id)?.token;
+            if (!token) {
                 continue;
             }
 
@@ -269,13 +292,13 @@ class SESEmailProvider extends EmailProviderBase {
             // Replace all occurrences of this token (global replace)
             // Handle both string tokens and RegExp tokens
             let tokenRegex;
-            if (replacement.token instanceof RegExp) {
+            if (token instanceof RegExp) {
                 // If already a RegExp, ensure it has global flag
-                const flags = replacement.token.flags.includes('g') ? replacement.token.flags : replacement.token.flags + 'g';
-                tokenRegex = new RegExp(replacement.token.source, flags);
+                const flags = token.flags.includes('g') ? token.flags : `${token.flags}g`;
+                tokenRegex = new RegExp(token.source, flags);
             } else {
                 // If string, escape special chars and create RegExp
-                const escapedToken = String(replacement.token).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const escapedToken = String(token).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 tokenRegex = new RegExp(escapedToken, 'g');
             }
             processedContent = processedContent.replace(tokenRegex, value);
@@ -327,25 +350,30 @@ class SESEmailProvider extends EmailProviderBase {
             }
             bccHeaderLines.push(currentLine);
 
+            // Sanitize all header values to prevent header injection attacks
+            const sanitizedFrom = this.#sanitizeHeader(from || this.#sesConfig.fromEmail);
+            const sanitizedSubject = this.#sanitizeHeader(subject);
+            const sanitizedReplyTo = this.#sanitizeHeader(replyTo);
+
             // Encode content as quoted-printable
             const encodedPlaintext = this.#encodeQuotedPrintable(plaintext || '');
             const encodedHtml = this.#encodeQuotedPrintable(html || '');
 
             const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-            const domain = (from || this.#sesConfig.fromEmail).match(/@([^>]+)/)?.[1] || 'localhost';
+            const domain = sanitizedFrom.match(/@([^>]+)/)?.[1] || 'localhost';
             const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
 
             let mime = [
-                `From: ${from || this.#sesConfig.fromEmail}`,
+                `From: ${sanitizedFrom}`,
                 `To: undisclosed-recipients:;`,
                 ...bccHeaderLines,
-                `Subject: ${subject}`,
+                `Subject: ${sanitizedSubject}`,
                 `Date: ${new Date().toUTCString()}`,
                 `Message-ID: ${messageId}`
             ];
 
-            if (replyTo) {
-                mime.push(`Reply-To: ${replyTo}`);
+            if (sanitizedReplyTo) {
+                mime.push(`Reply-To: ${sanitizedReplyTo}`);
             }
 
             mime = mime.concat([
@@ -391,7 +419,7 @@ class SESEmailProvider extends EmailProviderBase {
         }
 
         const duration = Date.now() - startTime;
-        const throughput = recipients.length / (duration / 1000);
+        const throughput = recipients.length / (Math.max(duration, 1) / 1000);
         debug(`sent bulk email to ${recipients.length} recipients in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
         debug(`SES returned ${results.length} batch MessageId(s)`);
 
@@ -465,8 +493,8 @@ class SESEmailProvider extends EmailProviderBase {
                 // Send emails in parallel for this batch
                 const batchPromises = chunk.map(async (recipient) => {
                     // Process replacements for this recipient (escape HTML in values)
-                    const personalizedHtml = this.#processReplacements(html, recipient.replacements, true);
-                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements, false);
+                    const personalizedHtml = this.#processReplacements(html, recipient.replacements, replacementDefinitions, true);
+                    const personalizedPlaintext = this.#processReplacements(plaintext, recipient.replacements, replacementDefinitions, false);
 
                     // Build personalized MIME email
                     const rawMessage = this.#buildMIMEEmail({
@@ -514,7 +542,7 @@ class SESEmailProvider extends EmailProviderBase {
             }
 
             const duration = Date.now() - startTime;
-            const throughput = recipients.length / (duration / 1000);
+            const throughput = recipients.length / (Math.max(duration, 1) / 1000);
             debug(`sent ${recipients.length} personalized messages in ${duration}ms (${throughput.toFixed(2)} emails/sec)`);
             debug(`SES returned ${results.length} individual MessageIds`);
 
