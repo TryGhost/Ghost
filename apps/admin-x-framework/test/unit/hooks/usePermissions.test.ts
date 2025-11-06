@@ -13,7 +13,7 @@ const mockUseCurrentUser = useCurrentUser as any;
 describe('usePermissions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseCurrentUser.mockReturnValue({data: null, isLoading: false});
+        mockUseCurrentUser.mockReturnValue({data: undefined, isLoading: false});
     });
 
     afterEach(() => {
@@ -23,7 +23,7 @@ describe('usePermissions', () => {
 
     it('returns false when current user is not loaded', () => {
         mockUseCurrentUser.mockReturnValue({
-            data: null
+            data: undefined
         });
 
         const {result} = renderHook(() => usePermission(['admin']));
