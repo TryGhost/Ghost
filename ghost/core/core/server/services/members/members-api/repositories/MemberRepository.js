@@ -409,6 +409,13 @@ module.exports = class MemberRepository {
             source
         }, eventData.created_at), options);
 
+        logging.info('MemberCreatedEvent', {
+            system: {
+                memberId: member.id,
+                batchId: options.batch_id,
+                source
+            }
+        });
         return member;
     }
 
