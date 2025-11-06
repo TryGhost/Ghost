@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@tryghost/activitypub": "*",
