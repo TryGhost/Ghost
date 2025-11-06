@@ -23,15 +23,22 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         let toggle = find('button[aria-controls="gh-nav"]');
         expect(toggle, 'nav toggle exists').to.exist;
 
-        // Press Enter on the toggle and wait for aria-expanded to become "true"
+        // Store the initial state
+        let initialState = toggle.getAttribute('aria-expanded');
+        expect(initialState, 'initial aria-expanded exists').to.exist;
+        
+        let expectedState = initialState === 'true' ? 'false' : 'true';
+
+        // Press Enter on the toggle and wait for aria-expanded to change
         await triggerKeyEvent(toggle, 'keydown', 'Enter');
 
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
-            return t && t.getAttribute('aria-expanded') === 'true';
+            return t && t.getAttribute('aria-expanded') === expectedState;
         }, {timeout: 1000});
 
-        let after = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
-        expect(after).to.equal('true');
+        let afterState = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
+        expect(afterState, 'aria-expanded toggled correctly').to.equal(expectedState);
+        expect(afterState, 'state changed from initial').to.not.equal(initialState);
     });
 });
