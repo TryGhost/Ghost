@@ -12,8 +12,10 @@ describe('SES Email Provider Adapter', function () {
     beforeEach(function () {
         sandbox = sinon.createSandbox();
 
-        // Mock AWS SDK
-        SendRawEmailCommand = sandbox.stub();
+        // Mock AWS SDK - SendRawEmailCommand constructor captures input
+        SendRawEmailCommand = sandbox.stub().callsFake(function (input) {
+            return {input};
+        });
 
         // Mock SES client
         sesClient = {
@@ -240,9 +242,9 @@ describe('SES Email Provider Adapter', function () {
             const rawMessage = command.RawMessage.Data.toString();
 
             rawMessage.should.match(/Content-Type: text\/plain/);
-            rawMessage.should.match(/Hello World/); // plaintext
+            rawMessage.should.match(/Hello=20World/); // plaintext (quoted-printable encoded)
             rawMessage.should.match(/Content-Type: text\/html/);
-            rawMessage.should.match(/<p>Hello World<\/p>/); // html
+            rawMessage.should.match(/<p>Hello=20World<\/p>/); // html (quoted-printable encoded)
         });
 
         it('should use from address from email data', async function () {
