@@ -6,7 +6,7 @@ const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE} = require('./lib/constants');
 const processEntries = require('./lib/process-entries');
 
 /**
- * Fetches pending outbox entries with exponential backoff and locks them for processing
+ * Fetches pending outbox entries and sets them to processing
  * @param {Object} db - Database connection
  * @param {number} batchSize - Maximum number of entries to fetch
  * @param {string} jobStartISO - ISO-formatted timestamp when the job started (YYYY-MM-DD HH:mm:ss)

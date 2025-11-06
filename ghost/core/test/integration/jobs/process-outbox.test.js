@@ -19,6 +19,11 @@ describe('Process Outbox Job', function () {
 
     afterEach(async function () {
         await db.knex('outbox').del();
+        try {
+            await jobService.removeJob(JOB_NAME);
+        } catch (err) {
+            // Job might not exist if test failed early
+        }
     });
 
     it('processes pending outbox entries and deletes them after success', async function () {

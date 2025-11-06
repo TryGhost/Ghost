@@ -7,7 +7,12 @@ const labs = require('../../../core/shared/labs');
 const sinon = require('sinon');
 
 describe('Welcome Emails Integration', function () {
-    before(testUtils.setup('default'));
+    let membersService;
+
+    before(async function () {
+        await testUtils.setup('default')();
+        membersService = require('../../../core/server/services/members');
+    });
 
     beforeEach(async function () {
         await db.knex('outbox').del();
@@ -24,11 +29,10 @@ describe('Welcome Emails Integration', function () {
         it('creates outbox entry when member source is "member"', async function () {
             sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
 
-            const member = await models.Member.add({
+            const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
-                name: 'Welcome Test Member',
-                email_disabled: false
-            }, {context: {}});
+                name: 'Welcome Test Member'
+            }, {});
 
             const outboxEntries = await models.Outbox.findAll({
                 filter: 'event_type:MemberCreatedEvent'
@@ -49,11 +53,10 @@ describe('Welcome Emails Integration', function () {
         it('does NOT create outbox entry when welcome emails feature is disabled', async function () {
             sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(false);
 
-            await models.Member.add({
+            await membersService.api.members.create({
                 email: 'no-welcome@example.com',
-                name: 'No Welcome Member',
-                email_disabled: false
-            }, {context: {}});
+                name: 'No Welcome Member'
+            }, {});
 
             const outboxEntries = await models.Outbox.findAll({
                 filter: 'event_type:MemberCreatedEvent'
@@ -65,10 +68,9 @@ describe('Welcome Emails Integration', function () {
         it('does NOT create outbox entry when member is imported', async function () {
             sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
 
-            await models.Member.add({
+            await membersService.api.members.create({
                 email: 'imported@example.com',
-                name: 'Imported Member',
-                email_disabled: false
+                name: 'Imported Member'
             }, {context: {import: true}});
 
             const outboxEntries = await models.Outbox.findAll({
@@ -81,10 +83,9 @@ describe('Welcome Emails Integration', function () {
         it('does NOT create outbox entry when member is created by admin', async function () {
             sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
 
-            await models.Member.add({
+            await membersService.api.members.create({
                 email: 'admin-created@example.com',
-                name: 'Admin Created Member',
-                email_disabled: false
+                name: 'Admin Created Member'
             }, {context: {user: true}});
 
             const outboxEntries = await models.Outbox.findAll({
@@ -97,15 +98,14 @@ describe('Welcome Emails Integration', function () {
         it('creates outbox entry with correct timestamp', async function () {
             sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
 
-            const beforeCreation = new Date();
+            const beforeCreation = new Date(Date.now() - 1000);
             
-            await models.Member.add({
+            await membersService.api.members.create({
                 email: 'timestamp-test@example.com',
-                name: 'Timestamp Test',
-                email_disabled: false
-            }, {context: {}});
+                name: 'Timestamp Test'
+            }, {});
 
-            const afterCreation = new Date();
+            const afterCreation = new Date(Date.now() + 1000);
 
             const outboxEntries = await models.Outbox.findAll({
                 filter: 'event_type:MemberCreatedEvent'
