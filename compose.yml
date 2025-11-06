@@ -1,3 +1,5 @@
+# Development Docker Compose configuration for Ghost Monorepo
+# Not intended for production use. See https://github.com/tryghost/ghost-docker for production-ready self-hosting setup.
 name: ghost
 
 # Template to share volumes and environment variable between all services running the same base image
@@ -42,10 +44,8 @@ services:
     <<: *service-template
     image: ghost-monorepo:latest
     build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
       target: development
-    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    entrypoint: [ "/home/ghost/docker/development.entrypoint.sh" ]
     working_dir: /home/ghost/ghost/core
     command: [ "yarn", "dev" ]
     ports:
@@ -88,7 +88,7 @@ services:
   admin:
     <<: *service-template
     image: ghost-monorepo:latest
-    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    entrypoint: [ "/home/ghost/docker/development.entrypoint.sh" ]
     working_dir: /home/ghost/ghost/admin
     command: [ "yarn", "dev" ]
     ports:
@@ -100,9 +100,9 @@ services:
   admin-apps:
     <<: *service-template
     image: ghost-monorepo:latest
-    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    entrypoint: [ "/home/ghost/docker/development.entrypoint.sh" ]
     working_dir: /home/ghost
-    command: [ "node", "/home/ghost/.docker/watch-admin-apps.js" ]
+    command: [ "node", "/home/ghost/docker/watch-admin-apps.js" ]
     profiles: [ split, all ]
     tty: true
     restart: always
@@ -119,7 +119,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
     environment:
       - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-analytics:3000}
@@ -129,10 +129,8 @@ services:
     <<: *service-template
     image: ghost-monorepo:latest
     build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
       target: development
-    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    entrypoint: [ "/home/ghost/docker/development.entrypoint.sh" ]
     command: [ "yarn", "dev" ]
     ports:
       - "2368:2368" # Ghost
@@ -164,7 +162,7 @@ services:
       MYSQL_DATABASE: ghost
     restart: always
     volumes:
-      - ./.docker/mysql-preload:/docker-entrypoint-initdb.d
+      - ./docker/mysql-preload:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     healthcheck:
       test: mysql -uroot -proot ghost -e 'select 1'
@@ -204,7 +202,7 @@ services:
       interval: 1s
       retries: 120
     volumes:
-      - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - ./docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
@@ -217,7 +215,7 @@ services:
   tb-cli:
     build:
       context: .
-      dockerfile: ./.docker/tb-cli/Dockerfile
+      dockerfile: ./docker/tb-cli/Dockerfile
     profiles: [ analytics, all ]
     working_dir: /home/tinybird
     tty: true
@@ -253,7 +251,7 @@ services:
       - 9090:9090
     restart: always
     volumes:
-      - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
     profiles: [ monitoring, all ]
@@ -266,9 +264,9 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
-      - ./.docker/grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
-      - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
 
   pushgateway:
     profiles: [ monitoring, all ]
@@ -293,7 +291,7 @@ services:
     profiles: [ stripe, all ]
     entrypoint: [ "/entrypoint.sh" ]
     volumes:
-      - ./.docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
       - shared-config:/mnt/shared-config
     environment:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}

@@ -2,7 +2,7 @@
 	local_certs
 }
 
-# Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
+# Run `sudo ./docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
 (common_ghost_config) {
 
     log {
@@ -32,7 +32,7 @@ http://localhost {
 
 # Allow https to be used by explicitly requesting https://localhost
 ## Note: Caddy uses self-signed certificates. Your browser will warn you about this.
-## Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
+## Run `sudo ./docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
 https://localhost {
     import common_ghost_config
 }
