@@ -141,7 +141,7 @@ describe('{{concat}} helper', function () {
     });
     it('can concatenate an array produced by the split helper', function () {
         const templateString = '{{concat (split "hello,world,") separator="|"}}';
-        const expected = 'hello|world|';
+        const expected = 'hello|world';
         shouldCompileToExpected(templateString, {}, expected);
     });
     it('can concatenate an array produced by the split helper with a custom separator', function () {
