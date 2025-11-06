@@ -156,10 +156,6 @@
     body.ember-application .shade {
         height: calc(100vh - var(--mobile-navbar-height));
     }
-
-    body:not(.ember-application) .shade {
-        padding-bottom: var(--mobile-navbar-height);
-    }
 }
 
 .dark .shade {

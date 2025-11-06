@@ -19,8 +19,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <AppSidebar />
             <SidebarInset className="bg-white">
                 <main className="flex-1 min-h-screen">{children}</main>
+                <MobileNavBar />
             </SidebarInset>
-            <MobileNavBar />
         </SidebarProvider>
     );
 }
