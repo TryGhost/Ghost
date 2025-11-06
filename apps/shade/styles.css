@@ -73,6 +73,7 @@
         --sidebar-accent-foreground: 216 11% 9%;
         --sidebar-border: 200 12% 96%;
         --sidebar-ring: 215 13% 63%;
+        --mobile-navbar-height: 64px;
     }
 
     .dark {
@@ -152,8 +153,12 @@
 }
 
 @media (max-width: 800px) {
-    .shade {
-        height: calc(100vh - 64px);
+    body.ember-application .shade {
+        height: calc(100vh - var(--mobile-navbar-height));
+    }
+
+    body:not(.ember-application) .shade {
+        padding-bottom: var(--mobile-navbar-height);
     }
 }
 
