@@ -15,6 +15,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@test-utils/*": ["./test-utils/*"],
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -23,7 +30,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"],
+  "include": ["src", "test-utils"],
   "references": [
     { "path": "../posts/tsconfig.declaration.json" },
     { "path": "../stats/tsconfig.declaration.json" },
