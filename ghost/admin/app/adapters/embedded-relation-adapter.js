@@ -1,6 +1,7 @@
 import BaseAdapter from 'ghost-admin/adapters/base';
 import {decamelize, underscore} from '@ember/string';
 import {get} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {isNone} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 
@@ -15,6 +16,7 @@ import {pluralize} from 'ember-inflector';
 // roles: DS.hasMany('role', { embedded: 'always' }) => ?include=roles
 
 export default class EmbeddedRelationAdapter extends BaseAdapter {
+    @service stateBridge;
     find(store, type, id, snapshot) {
         return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'find'), 'GET');
     }
