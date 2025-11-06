@@ -10,9 +10,11 @@ import {
 } from "@tryghost/shade"
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
+import { useMemberCount } from "./hooks/useMemberCount";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [postsExpanded, setPostsExpanded] = useState(false);
+    const memberCount = useMemberCount();
 
     return (
         <SidebarGroup {...props}>
@@ -90,7 +92,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <LucideIcon.Users />
                             <NavMenuItem.Label>Members</NavMenuItem.Label>
                         </NavMenuItem.Link>
-                        <SidebarMenuBadge>24</SidebarMenuBadge>
+                        {memberCount != null && (
+                            <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                        )}
                     </NavMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>
