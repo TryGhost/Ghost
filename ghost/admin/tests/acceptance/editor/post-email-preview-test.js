@@ -115,4 +115,28 @@ describe('Acceptance: Post email preview', function () {
         expect(options.length).to.equal(1);
         expect(options[0].textContent.trim()).to.equal('Free member');
     });
+
+    it('allows sending preview email when SES is configured', async function () {
+        // Mock SES configuration via config API
+        this.server.get('/config/', function () {
+            return {
+                config: {
+                    emailProvider: {
+                        active: 'ses',
+                        isConfigured: true
+                    }
+                }
+            };
+        });
+
+        await openEmailPreviewModal.call(this);
+
+        // Should be able to send test email
+        await click(find('[data-test-button="post-preview-test-email"]'));
+        await click(find('[data-test-button="send-test-email"]'));
+
+        // Verify request was sent
+        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+        expect(lastRequest.url).to.include('/email_previews/posts/');
+    });
 });
