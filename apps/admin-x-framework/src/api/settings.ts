@@ -46,7 +46,8 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
             ...newData,
             settings: newData.settings
         })
-    }
+    },
+    invalidateQueries: {dataType: 'SiteResponseType'}
 });
 
 export const useDeleteStripeSettings = createMutation<unknown, null>({
