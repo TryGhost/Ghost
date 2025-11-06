@@ -8,17 +8,19 @@ export class MemberDetailsPage extends AdminPage {
     readonly labelsInput: Locator;
     readonly subscriptionToggle: Locator;
 
+    readonly memberActionsButton: Locator;
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;
-    readonly memberActionsButton: Locator;
-    readonly deleteButton: Locator;
+
     readonly impersonateButton: Locator;
     readonly copyLinkButton: Locator;
     readonly magicLinkInput: Locator;
 
+    readonly deleteButton: Locator;
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
+
     readonly confirmLeaveButton: Locator;
 
     constructor(page: Page) {
@@ -29,7 +31,7 @@ export class MemberDetailsPage extends AdminPage {
         this.emailInput = page.getByRole('textbox', {name: 'Email'});
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
         this.labelsInput = page.getByText('Labels').locator('+ div');
-        this.subscriptionToggle = page.locator('input[name="subscribed"] + span');
+        this.subscriptionToggle = page.getByTestId('member-subscription-toggle');
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});

@@ -46,7 +46,7 @@ test.describe('Ghost Admin - Members', () => {
         await expect(memberDetailsPage.body).toContainText('Invalid Email');
     });
 
-    test('edits an existing member', async ({page}) => {
+    test('updates an existing member', async ({page}) => {
         const memberToCreate = memberFactory.build({
             name: 'Original Name',
             email: 'original@example.com',
