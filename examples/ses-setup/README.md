@@ -162,5 +162,5 @@ export NODE_ENV=production
 
 For issues or questions:
 - Review unit tests: `ghost/core/test/unit/server/adapters/email/ses/`
-- Check AWS SES documentation: https://docs.aws.amazon.com/ses/
-- Ghost documentation: https://ghost.org/docs/
+- Check [AWS SES documentation](https://docs.aws.amazon.com/ses/)
+- [Ghost documentation](https://ghost.org/docs/)

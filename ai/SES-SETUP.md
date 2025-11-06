@@ -270,7 +270,7 @@ yarn dev
 ```
 
 You should see these log messages on startup:
-```
+```text
 [INFO] Using Amazon SES email provider
 [INFO] [EmailAnalytics] Using Amazon SES analytics provider
 ```

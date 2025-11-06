@@ -26,6 +26,10 @@ async function testSESEmail() {
         const emailAdapter = adapterManager.getAdapter('email');
         console.log('✅ SES adapter loaded successfully');
 
+        // Get fromEmail from config
+        const emailConfig = config.get('adapters:email:ses');
+        const fromEmail = emailConfig.fromEmail || 'newsletter@yourdomain.com';
+
         // Configure test email - REPLACE WITH YOUR TEST EMAIL
         const testEmail = 'recipient@example.com';
         console.log(`📧 Sending test email to ${testEmail}...\n`);
@@ -34,7 +38,7 @@ async function testSESEmail() {
             subject: 'Test Email from Ghost SES Adapter',
             html: '<h1>Success!</h1><p>Your Ghost SES adapter is working perfectly! 🎉</p>',
             plaintext: 'Success! Your Ghost SES adapter is working perfectly!',
-            from: 'newsletter@yourdomain.com', // Must match verified SES sender
+            from: fromEmail, // Must match verified SES sender
             emailId: 'test-ses-' + Date.now(),
             recipients: [{ email: testEmail }],
             replacementDefinitions: []
