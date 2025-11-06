@@ -53,17 +53,13 @@ export class MembersPage extends AdminPage {
         await this.filterActionsButton.click();
         await this.filterSelect.selectOption('label');
 
-        // Wait for the label input to appear and click it using class selector
-        const labelInput = this.page.locator('.ember-power-select-trigger');
-        await labelInput.click();
-
         await this.addLabelToLabelFilter(labelName);
 
         await this.applyFilterButton.click();
     }
 
     async addLabelToLabelFilter(labelName: string) {
-        await this.page.getByTestId(`label-filter-${labelName}`).click();
+        await this.page.getByTestId('token-input-search').fill(labelName);
         await this.page.keyboard.press('Tab');
     }
 
