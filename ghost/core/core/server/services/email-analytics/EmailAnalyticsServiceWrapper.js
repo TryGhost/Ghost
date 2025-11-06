@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
+const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 
 class EmailAnalyticsServiceWrapper {
@@ -59,7 +60,9 @@ class EmailAnalyticsServiceWrapper {
 
             // Validate required SQS queue URL
             if (!analyticsConfig || !analyticsConfig.queueUrl) {
-                throw new Error('SES email analytics requires emailAnalytics.ses.queueUrl configuration. See https://ghost.org/docs/config/#email-analytics');
+                throw new errors.IncorrectUsageError({
+                    message: 'SES email analytics requires emailAnalytics.ses.queueUrl configuration. See https://ghost.org/docs/config/#email-analytics'
+                });
             }
 
             providers.push(new SESProvider({

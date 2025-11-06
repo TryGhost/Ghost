@@ -187,7 +187,7 @@ class EmailAnalyticsProviderSES {
                 await batchHandler(eventsToProcess);
 
                 // Remember the last event ID we processed
-                this.#lastFetchedEventId = events[events.length - 1].id;
+                this.#lastFetchedEventId = eventsToProcess[eventsToProcess.length - 1].id;
             }
 
             // Delete successfully processed messages from queue
