@@ -8,7 +8,7 @@ Add this section after the existing Mailgun documentation for self-hosted users.
 
 ### Amazon SES
 
-Self-hosted Ghost installs can configure Amazon SES for bulk email newsletters. SES is free for up to 3,000 emails per month when sending from EC2, and has competitive pricing beyond that.
+Self-hosted Ghost installs can configure Amazon SES for bulk email newsletters.
 
 **Configuration**: Add to your `config.production.json`:
 
@@ -79,7 +79,7 @@ More info: [AWS SES Documentation](https://docs.aws.amazon.com/ses/)
 - All config files follow existing Ghost patterns
 
 **Setup Script Location:**
-The referenced `scripts/setup-ses-infrastructure.sh` should be added to the Ghost repository at release time. This script automates:
+The referenced `scripts/setup-ses-infrastructure.sh` could be added to the Ghost docs at release time. This script automates:
 - Creating SNS topic for SES events
 - Creating SQS queue with proper attributes
 - Subscribing SQS to SNS
@@ -94,6 +94,3 @@ This documentation assumes self-hosted users are comfortable with:
 - AWS Console or CLI
 - JSON configuration files
 - IAM permissions
-
-**Testing:**
-This implementation is production-validated on danielraffel.me with 1000+ members.
