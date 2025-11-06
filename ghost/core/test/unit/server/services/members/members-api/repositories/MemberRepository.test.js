@@ -526,7 +526,7 @@ describe('MemberRepository', function () {
             process.env.NODE_ENV = oldNodeEnv;
         });
 
-        it('creates outbox entry when welcomeEmails lab flag is enabled and source is member', async function () {
+        it('creates outbox entry for allowed source', async function () {
             labsService = {
                 isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
             };
@@ -554,30 +554,6 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('creates outbox entry in development when source is api', async function () {
-            process.env.NODE_ENV = 'development';
-
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
-                newslettersService,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {api_key: true}});
-
-            sinon.assert.calledOnce(Outbox.add);
-            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
-            assert.equal(payload.source, 'api');
-        });
-
         it('does NOT create outbox entry when welcomeEmails lab flag is disabled', async function () {
             labsService = {
                 isSet: sinon.stub().withArgs('welcomeEmails').returns(false)
@@ -598,7 +574,7 @@ describe('MemberRepository', function () {
             sinon.assert.notCalled(Outbox.add);
         });
 
-        it('does NOT create outbox entry for import source', async function () {
+        it('does not create outbox entry for disallowed sources', async function () {
             labsService = {
                 isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
             };
@@ -613,29 +589,17 @@ describe('MemberRepository', function () {
                 OfferRedemption: mockOfferRedemption
             });
 
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {import: true}});
+            const disallowedSources = [
+                {name: 'import', context: {import: true}},
+                {name: 'admin', context: {user: true}},
+                {name: 'api', context: {api_key: true}}
+            ];
 
-            sinon.assert.notCalled(Outbox.add);
-        });
-
-        it('does NOT create outbox entry for admin source', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
-                newslettersService,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: {user: true}});
-
-            sinon.assert.notCalled(Outbox.add);
+            for (const source of disallowedSources) {
+                Outbox.add.resetHistory();
+                await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: source.context});
+                sinon.assert.notCalled(Outbox.add);
+            }
         });
 
         it('includes timestamp in outbox payload', async function () {
