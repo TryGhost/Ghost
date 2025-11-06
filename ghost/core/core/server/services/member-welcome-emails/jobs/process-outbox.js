@@ -96,10 +96,6 @@ async function processOutbox() {
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
-    if (process.env.NODE_ENV !== 'production') {
-        logging.info(MESSAGES.SIMULATION_MODE);
-    }
-
     let totalProcessed = 0;
     let totalFailed = 0;
 

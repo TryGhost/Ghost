@@ -1,6 +1,5 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const {MAX_RETRIES, SIMULATE_FAILURE_RATE, MESSAGES, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
+const {MAX_RETRIES, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const sendMemberWelcomeEmail = require('./send-member-welcome-email');
 
@@ -39,16 +38,6 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 }
 
 /**
- * Determines whether to simulate a failure for testing retry logic
- * @returns {boolean} True if failure should be simulated (non-production only)
- */
-function shouldSimulateFailure() {
-    return process.env.NODE_ENV !== 'production' 
-        && !process.env.NODE_ENV.startsWith('test') 
-        && Math.random() < SIMULATE_FAILURE_RATE;
-}
-
-/**
 * Processes a single outbox entry by sending welcome email and managing retry logic
 * @param {Object} db - Database connection
 * @param {Object} entry - Outbox entry to process
@@ -58,12 +47,6 @@ async function processEntry(db, entry) {
     let payload;
     try {
         payload = JSON.parse(entry.payload);
-
-        if (shouldSimulateFailure()) {
-            throw new errors.InternalServerError({
-                message: MESSAGES.SIMULATED_FAILURE
-            });
-        }
 
         await sendMemberWelcomeEmail(payload);
         await deleteProcessedEntry(db, entry.id);
