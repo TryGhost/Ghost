@@ -16,6 +16,6 @@ RUN uv tool install tinybird@0.0.1.dev285 --python 3.13 --force
 
 ENV PATH="/root/.local/bin:$PATH"
 
-COPY .docker/tb-cli/entrypoint.sh /usr/local/bin
+COPY docker/tb-cli/entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
