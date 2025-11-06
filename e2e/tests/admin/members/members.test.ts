@@ -43,7 +43,7 @@ test.describe('Ghost Admin - Members', () => {
         await memberDetailsPage.saveButton.click();
 
         await expect(memberDetailsPage.retryButton).toBeVisible();
-        await expect(page.getByText('Invalid Email')).toBeVisible();
+        await expect(memberDetailsPage.body).toContainText('Invalid Email');
     });
 
     test('edits an existing member', async ({page}) => {
@@ -70,11 +70,11 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.goto();
         await membersPage.getMemberByName(memberToCreate.name).click();
 
-        const editedMember = {
+        const editedMember = memberFactory.build({
             name: 'Test Member Edited',
             email: 'edited@ghost.org',
             note: 'This is an edited test member'
-        };
+        });
 
         await memberDetailsPage.nameInput.fill(editedMember.name);
         await memberDetailsPage.emailInput.fill(editedMember.email);
@@ -107,11 +107,11 @@ test.describe('Ghost Admin - Members', () => {
         await memberDetailsPage.saveButton.click();
 
         await expect(memberDetailsPage.retryButton).toBeVisible();
-        await expect(page.getByText('Invalid Email')).toBeVisible();
+        await expect(memberDetailsPage.body).toContainText('Invalid Email');
 
         await membersPage.goto();
         await memberDetailsPage.confirmLeaveButton.click();
-        await expect(membersPage.getMemberByName('membertocreate@ghost.org')).toBeVisible();
+        await expect(membersPage.getMemberEmail('membertocreate@ghost.org')).toBeVisible();
     });
 
     test('deletes an existing member', async ({page}) => {
