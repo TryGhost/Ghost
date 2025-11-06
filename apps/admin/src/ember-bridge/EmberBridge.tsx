@@ -75,7 +75,15 @@ export function useEmberDataSync() {
             void queryClient.invalidateQueries({
                 predicate: (query) => {
                     // Query keys are structured as [dataType, url]
-                    return query.queryKey[0] === reactDataType;
+                    const queryKeyType = query.queryKey[0];
+
+                    // Settings updates also need to clear `SiteResponseType` queries
+                    // because the site API includes settings data
+                    if (modelName === 'setting' && queryKeyType === 'SiteResponseType') {
+                        return true;
+                    }
+
+                    return queryKeyType === reactDataType;
                 }
             });
         };
