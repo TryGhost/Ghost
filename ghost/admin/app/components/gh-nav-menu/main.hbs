@@ -2,7 +2,14 @@
     ...attributes>
 
     <div class="gh-toggle-nav-menu">
-        <button type="button" class="gh-btn-toggle-menu" {{on "click" (fn this.navigation.toggleMenu)}} title="Toggle sidebar">
+        <button
+            type="button"
+            class="gh-btn-toggle-menu"
+            {{on "click" (fn this.navigation.toggleMenu)}}
+            title="Toggle sidebar"
+            aria-controls="gh-nav"
+            aria-expanded={{if this.navigation.settings.menu.visible "true" "false"}}
+        >
             <div class="segment-1"></div>
             <div class="segment-2"></div>
         </button>
