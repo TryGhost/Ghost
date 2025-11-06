@@ -75,7 +75,7 @@ test.describe('Migration tools', async () => {
 
         await migrationSection.getByRole('tab', {name: 'Export'}).click();
 
-        await migrationSection.getByRole('button', {name: 'Export content'}).click();
+        await migrationSection.getByRole('button', {name: 'Content & settings'}).click();
 
         await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/db\/$/);
 
