@@ -24,7 +24,7 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
-const WELCOME_EMAIL_SOURCES = ['member'];
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
 
 /**
  * @typedef {object} ITokenService
@@ -309,9 +309,11 @@ module.exports = class MemberRepository {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
         }
 
+        const transactionalOptions = options.transacting ? {transacting: options.transacting} : undefined;
+
         if (memberData.products) {
             for (const productData of memberData.products) {
-                const product = await this._productRepository.get(productData);
+                const product = await this._productRepository.get(productData, transactionalOptions || {});
                 if (product.get('active') !== true) {
                     throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
                 }
@@ -396,16 +398,24 @@ module.exports = class MemberRepository {
                 customer_id: stripeCustomer.id,
                 name: stripeCustomer.name,
                 email: stripeCustomer.email
-            });
+            }, transactionalOptions);
 
             for (const subscription of stripeCustomer.subscriptions.data) {
+                const linkOptions = {
+                    batch_id: options.batch_id
+                };
+
+                if (options.transacting) {
+                    linkOptions.transacting = options.transacting;
+                }
+
                 try {
                     await this.linkSubscription({
                         id: member.id,
                         subscription,
                         offerId,
                         attribution
-                    }, {batch_id: options.batch_id});
+                    }, linkOptions);
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                         throw err;
@@ -869,13 +879,13 @@ module.exports = class MemberRepository {
         }
     }
 
-    async upsertCustomer(data) {
+    async upsertCustomer(data, options = {}) {
         return await this._StripeCustomer.upsert({
             customer_id: data.customer_id,
             member_id: data.member_id,
             name: data.name,
             email: data.email
-        });
+        }, options);
     }
 
     async linkStripeCustomer(data, options) {
