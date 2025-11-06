@@ -64,13 +64,35 @@ Requires: SES Configuration Set → SNS Topic → SQS Queue
    aws sqs create-queue --queue-name ses-events --region us-east-1
    ```
 
-4. Subscribe SQS to SNS:
+4. Allow SNS to publish to the SQS queue:
+   ```bash
+   cat <<'EOF' > sns-to-sqs-policy.json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {"Service": "sns.amazonaws.com"},
+         "Action": "sqs:SendMessage",
+         "Resource": "arn:aws:sqs:REGION:ACCOUNT:ses-events",
+         "Condition": {
+           "ArnEquals": {"aws:SourceArn": "arn:aws:sns:REGION:ACCOUNT:ses-events"}
+         }
+       }
+     ]
+   }
+   EOF
+   aws sqs set-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/YOUR_ACCOUNT_ID/ses-events \
+     --attributes file://sns-to-sqs-policy.json
+   ```
+
+5. Subscribe SQS to SNS:
    ```bash
    aws sns subscribe --topic-arn arn:aws:sns:REGION:ACCOUNT:ses-events \
      --protocol sqs --notification-endpoint arn:aws:sqs:REGION:ACCOUNT:ses-events
    ```
 
-5. Configure SES event destination:
+6. Configure SES event destination:
    ```bash
    aws sesv2 create-configuration-set-event-destination \
      --configuration-set-name ghost-analytics \
