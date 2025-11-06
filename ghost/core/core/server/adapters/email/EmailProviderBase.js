@@ -40,7 +40,7 @@ class EmailProviderBase {
      * @param {boolean} [options.openTrackingEnabled] - Enable open tracking
      * @returns {Promise<{id: string}>} Object containing the provider's message ID
      */
-    async send() {
+    async send(data, options) {
         throw new errors.IncorrectUsageError({
             message: 'send() must be implemented by email provider adapter'
         });
