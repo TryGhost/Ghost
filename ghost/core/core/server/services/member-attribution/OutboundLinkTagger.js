@@ -8,7 +8,9 @@ const blockedReferrerDomains = [
     'web.archive.org',
     'archive.org',
     'www.federalreserve.gov',
-    'www.chicagomag.com'
+    'www.chicagomag.com',
+    'bailii.org',
+    'www.bailii.org'
 ];
 
 /**
