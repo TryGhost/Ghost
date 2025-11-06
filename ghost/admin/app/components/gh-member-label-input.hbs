@@ -22,7 +22,8 @@
             class="dropdown-label"
             style="display: -webkit-box; flex-grow: 1; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2;"
             title="{{label.name}}"
-            data-test-label-filter={{label.name}}>
+            data-test-label-filter={{label.name}}
+            data-testid="label-filter-{{label.name}}">
             {{label.name}}
         </span>
         {{#if (and @allowEdit label.slug)}}

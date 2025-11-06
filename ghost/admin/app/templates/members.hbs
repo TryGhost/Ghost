@@ -52,6 +52,7 @@
                             @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                             @title="Members Actions"
                             data-test-button="members-actions"
+                            data-testid="members-actions"
                         >
                             <span>
                                 {{svg-jar "settings"}}
@@ -72,7 +73,7 @@
                             {{/if}}
                             <li class="{{if this.members.length "" "disabled"}}">
                                 {{#if this.members.length}}
-                                    <button class="mr2 {{if this.isExporting 'is-loading' ''}}" type="button" {{on "click" this.exportData}} data-test-button="export-members">
+                                    <button class="mr2 {{if this.isExporting 'is-loading' ''}}" type="button" {{on "click" this.exportData}} data-test-button="export-members" data-testid="export-members">
                                         {{#if this.showingAll}}
                                             <span>Export all members</span>
                                         {{else}}
@@ -80,7 +81,7 @@
                                         {{/if}}
                                     </button>
                                 {{else}}
-                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members">
+                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members" data-testid="export-members">
                                         <span>Export selected members (0)</span>
                                     </button>
                                 {{/if}}
