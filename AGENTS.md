@@ -290,9 +290,57 @@ Example config:
 ```
 
 **Common Issues:**
+- **Admin UI shows "Mailgun" instead of "Amazon SES":** Config file is missing complete adapters object. Ghost's nconf requires ALL adapters (sso, cache, email) to be present. If only adapters.email exists, Ghost can't read it. Solution: Ensure config has all three adapters (see complete example below).
 - **"Check your Mailgun configuration" on invite:** Config not loaded - restart `yarn dev`
 - **"You need to set up Mailgun" when publishing:** No newsletter subscribers - add a member and subscribe them to a newsletter
 - **Newsletter option missing:** Check Settings → Email newsletter shows "Amazon SES ✅"
+- **emailProvider not showing in API:** Serializer at `ghost/core/core/server/api/endpoints/utils/serializers/output/config.js` must include 'emailProvider' in the keys array (line 19)
+
+**Complete Production Config Example (config.production.json):**
+```json
+{
+  "url": "https://yourdomain.com",
+  "server": { "port": 2368, "host": "127.0.0.1" },
+  "database": { ... },
+  "mail": {
+    "transport": "ses",
+    "from": "noreply@yourdomain.com",
+    "options": {
+      "region": "us-west-1",
+      "accessKeyId": "YOUR_KEY",
+      "secretAccessKey": "YOUR_SECRET"
+    }
+  },
+  "adapters": {
+    "sso": { "active": "DefaultSSOAdapter" },
+    "cache": {
+      "active": "MemoryCache",
+      "settings": {},
+      "imageSizes": {},
+      "gscan": {}
+    },
+    "email": {
+      "active": "ses",
+      "ses": {
+        "region": "us-west-1",
+        "accessKeyId": "YOUR_KEY",
+        "secretAccessKey": "YOUR_SECRET",
+        "fromEmail": "noreply@yourdomain.com",
+        "configurationSet": "ses-analytics"
+      }
+    }
+  },
+  "emailAnalytics": {
+    "ses": {
+      "queueUrl": "https://sqs.us-west-1.amazonaws.com/ACCOUNT/QUEUE",
+      "region": "us-west-1",
+      "accessKeyId": "YOUR_KEY",
+      "secretAccessKey": "YOUR_SECRET"
+    }
+  }
+}
+```
+**CRITICAL:** The adapters object MUST include sso, cache, AND email. If any are missing, Ghost's nconf cannot read the config properly.
 
 **Important:**
 - Never commit AWS credentials to git
