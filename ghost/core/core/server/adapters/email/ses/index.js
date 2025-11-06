@@ -312,7 +312,20 @@ class SESEmailProvider extends EmailProviderBase {
 
         for (const batch of batches) {
             // Build MIME email with BCC recipients
-            const bccList = batch.map(r => r.email).join(', ');
+            // Fold Bcc header to stay within RFC 5322's 998-character line limit
+            const bccAddresses = batch.map(r => r.email);
+            const bccHeaderLines = [];
+            let currentLine = 'Bcc: ';
+            for (const address of bccAddresses) {
+                const separator = currentLine === 'Bcc: ' ? '' : ', ';
+                if ((currentLine + separator + address).length > 998) {
+                    bccHeaderLines.push(`${currentLine},`);
+                    currentLine = ` ${address}`;
+                } else {
+                    currentLine += `${separator}${address}`;
+                }
+            }
+            bccHeaderLines.push(currentLine);
 
             // Encode content as quoted-printable
             const encodedPlaintext = this.#encodeQuotedPrintable(plaintext || '');
@@ -325,7 +338,7 @@ class SESEmailProvider extends EmailProviderBase {
             let mime = [
                 `From: ${from || this.#sesConfig.fromEmail}`,
                 `To: undisclosed-recipients:;`,
-                `Bcc: ${bccList}`,
+                ...bccHeaderLines,
                 `Subject: ${subject}`,
                 `Date: ${new Date().toUTCString()}`,
                 `Message-ID: ${messageId}`

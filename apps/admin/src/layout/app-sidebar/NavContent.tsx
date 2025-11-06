@@ -8,11 +8,13 @@ import {
     SidebarMenu,
     SidebarMenuBadge
 } from "@tryghost/shade"
+import { useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [postsExpanded, setPostsExpanded] = useState(false);
+    const { data: members } = useBrowseMembers();
 
     return (
         <SidebarGroup {...props}>
@@ -90,7 +92,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <LucideIcon.Users />
                             <NavMenuItem.Label>Members</NavMenuItem.Label>
                         </NavMenuItem.Link>
-                        <SidebarMenuBadge>24</SidebarMenuBadge>
+                        <SidebarMenuBadge>{members?.meta?.pagination?.total ?? members?.members?.length ?? 0}</SidebarMenuBadge>
                     </NavMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>

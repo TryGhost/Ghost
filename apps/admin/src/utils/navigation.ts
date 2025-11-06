@@ -31,6 +31,12 @@ export function navigateTo(route: string): boolean {
         }
     } else {
         // Internal cross-app navigation - use hash routing
+        // Handle hash-prefixed routes (e.g., #/members) without double-prefixing
+        if (route.startsWith('#')) {
+            window.location.hash = route;
+            return true;
+        }
+
         const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
         window.location.hash = normalizedRoute;
         return true;
