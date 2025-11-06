@@ -417,27 +417,27 @@ class SESEmailProvider extends EmailProviderBase {
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients with ${replacementDefinitions.length} replacements`);
 
-        // Check if personalization is actually being used
-        // Note: Ghost always adds required system tokens (list_unsubscribe, etc) to every recipient
-        // We need to check if there are ANY tokens beyond the required ones
-        // Required tokens that are always present: list_unsubscribe
-        const REQUIRED_TOKEN_IDS = ['list_unsubscribe'];
-
-        const hasPersonalization = recipients.some((r) => {
-            if (!r.replacements || r.replacements.length === 0) {
-                return false;
-            }
-            // Check if there are any replacements beyond required system tokens
-            return r.replacements.some(replacement => !REQUIRED_TOKEN_IDS.includes(replacement.id));
-        });
-
-        if (!hasPersonalization) {
-            // No personalization: send ONE email with all recipients in BCC (efficient for large newsletters)
-            return await this.#sendBulk({subject, html, plaintext, from, replyTo, emailId, recipients, startTime});
-        }
-
-        // With personalization: send individual emails per recipient
         try {
+            // Check if personalization is actually being used
+            // Note: Ghost always adds required system tokens (list_unsubscribe, etc) to every recipient
+            // We need to check if there are ANY tokens beyond the required ones
+            // Required tokens that are always present: list_unsubscribe
+            const REQUIRED_TOKEN_IDS = ['list_unsubscribe'];
+
+            const hasPersonalization = recipients.some((r) => {
+                if (!r.replacements || r.replacements.length === 0) {
+                    return false;
+                }
+                // Check if there are any replacements beyond required system tokens
+                return r.replacements.some(replacement => !REQUIRED_TOKEN_IDS.includes(replacement.id));
+            });
+
+            if (!hasPersonalization) {
+                // No personalization: send ONE email with all recipients in BCC (efficient for large newsletters)
+                return await this.#sendBulk({subject, html, plaintext, from, replyTo, emailId, recipients, startTime});
+            }
+
+            // With personalization: send individual emails per recipient
             const {SendRawEmailCommand} = require('@aws-sdk/client-ses');
 
             // Process recipients with personalization
@@ -556,9 +556,9 @@ class SESEmailProvider extends EmailProviderBase {
      * @returns {number} Maximum number of recipients
      */
     getMaximumRecipients() {
-        // With personalization, we send individual emails in parallel batches
-        // Return a reasonable batch size for per-recipient processing
-        return 100;
+        // SES bulk send limit is 50 recipients per call
+        // This matches AWS SES API limits for batch sending
+        return 50;
     }
 
     /**
