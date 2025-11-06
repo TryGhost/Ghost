@@ -8,7 +8,7 @@ import {NewsletterRadialChart, NewsletterRadialChartData} from './components/New
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
-import {useAppContext} from '@src/App';
+import {useAppContext} from '@src/providers/PostsAppContext';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@src/hooks/usePostNewsletterStats';

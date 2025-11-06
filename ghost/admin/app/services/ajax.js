@@ -227,6 +227,7 @@ export function isAcceptedResponse(errorOrStatus) {
 class ajaxService extends AjaxService {
     @service session;
     @service upgradeStatus;
+    @service feature;
 
     @inject config;
 
@@ -237,10 +238,19 @@ class ajaxService extends AjaxService {
     skipSessionDeletion = false;
 
     get headers() {
-        return {
-            'X-Ghost-Version': config.APP.version,
+        const headers = {
             'App-Pragma': 'no-cache'
         };
+
+        // Omit the version header when running in forward admin to avoid issues
+        // with the server triggering a version mismatch error. We can expect
+        // the admin and backend will be on different versions from time to time
+        // due to different release cadences.
+        if (!this.feature.inAdminForward) {
+            headers['X-Ghost-Version'] = config.APP.version;
+        }
+
+        return headers;
     }
 
     init() {

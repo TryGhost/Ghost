@@ -23,7 +23,7 @@ export class SettingsService {
         return await response.json() as SettingsResponse;
     }
 
-    async updateSettings(flags: Record<string, boolean>) {
+    async updateLabsSettings(flags: Record<string, boolean>) {
         const currentSettings = await this.getSettings();
         const labsSetting = currentSettings.settings.find(s => s.key === 'labs');
 

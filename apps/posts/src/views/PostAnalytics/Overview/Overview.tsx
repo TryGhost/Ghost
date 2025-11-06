@@ -10,7 +10,7 @@ import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {useAppContext} from '@src/App';
+import {useAppContext} from '@src/providers/PostsAppContext';
 import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 

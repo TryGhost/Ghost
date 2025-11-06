@@ -16,7 +16,6 @@ import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
@@ -45,20 +44,30 @@ function getTimeBucket(timestamp: string): string {
     return bucketStart.toString();
 }
 
-function groupNotifications(notifications: Notification[], useTimeGrouping: boolean = false): NotificationGroup[] {
+function groupNotifications(notifications: Notification[]): NotificationGroup[] {
     const groups: {
         [key: string]: NotificationGroup
     } = {};
 
+    let lastType: string | null = null;
+    let sequenceCounter = 0;
+
     notifications.forEach((notification) => {
+        // Increment sequence counter when we encounter a different type
+        // This preserves chronological order by preventing grouping across type boundaries
+        if (notification.type !== lastType) {
+            sequenceCounter += 1;
+            lastType = notification.type;
+        }
+
         let groupKey = '';
-        const timeBucket = useTimeGrouping ? `_${getTimeBucket(notification.createdAt)}` : '';
+        const timeBucket = `_${getTimeBucket(notification.createdAt)}`;
+        const sequence = `_seq${sequenceCounter}`;
 
         switch (notification.type) {
         case 'like':
             if (notification.post?.id) {
-                // Group likes by the target object and time window
-                groupKey = `like_${notification.post.id}${timeBucket}`;
+                groupKey = `like_${notification.post.id}${timeBucket}${sequence}`;
             }
             break;
         case 'reply':
@@ -67,13 +76,11 @@ function groupNotifications(notifications: Notification[], useTimeGrouping: bool
             break;
         case 'repost':
             if (notification.post?.id) {
-                // Group reposts by the target object and time window
-                groupKey = `repost_${notification.post.id}${timeBucket}`;
+                groupKey = `repost_${notification.post.id}${timeBucket}${sequence}`;
             }
             break;
         case 'follow':
-            // Group follows by time window
-            groupKey = `follow_${timeBucket}`;
+            groupKey = `follow_${timeBucket}${sequence}`;
             break;
         case 'mention':
             // Don't group mentions
@@ -193,7 +200,6 @@ const ProfileLinkedContent: React.FC<{
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
     const navigate = useNavigateWithBasePath();
-    const {isEnabled} = useFeatureFlags();
 
     const toggleOpen = (groupId: string) => {
         setOpenStates(prev => ({
@@ -213,7 +219,7 @@ const Notifications: React.FC = () => {
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
-            return groupNotifications(page.notifications, isEnabled('notification-group'));
+            return groupNotifications(page.notifications);
         })
         // If no notifications, return 10 empty groups for the loading state
         ?? Array(10).fill({actors: [{}]}));

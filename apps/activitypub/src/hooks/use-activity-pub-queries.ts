@@ -1735,7 +1735,7 @@ export function useDiscoveryFeedForUser(options: {enabled: boolean; topic: strin
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getDiscoveryFeed(pageParam, options.topic).then((response) => {
+            return api.getDiscoveryFeed(options.topic, pageParam).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next

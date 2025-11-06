@@ -4,7 +4,7 @@ export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 
 // App Context
 export type {AppSettings, BaseAppProps, AppContextType, AppProviderProps} from './providers/AppProvider';
-export {AppProvider, useAppContext} from './providers/AppProvider';
+export {AppContext, AppProvider, useAppContext} from './providers/AppProvider';
 
 // Hooks
 export {useActiveVisitors} from './hooks/useActiveVisitors';

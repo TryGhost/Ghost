@@ -23,8 +23,14 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     return (
         <>
             <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'>
-                    <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
+                <div
+                    className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'
+                    data-header='header'
+                >
+                    <H1
+                        className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'
+                        data-header='header-title'
+                    >
                         Analytics
                     </H1>
                     {appSettings?.analytics.webAnalytics && (
