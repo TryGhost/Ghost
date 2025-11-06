@@ -27,8 +27,15 @@ module.exports = function split(...args) {
     if (string === '') {
         return renderResult([], options, data);
     }
-
-    const result = string.split(separator).map(item => new SafeString(item));
     
+    // Filter out all empty strings
+    const result = string.split(separator)
+        .filter(item => item !== '')
+        .map(item => new SafeString(item));
+
+    if (result.length === 0) {
+        return renderResult([], options, data);
+    }
+
     return renderResult(result, options, data);
 };
