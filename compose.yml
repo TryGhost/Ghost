@@ -1,3 +1,5 @@
+# Development Docker Compose configuration for Ghost Monorepo
+# Not intended for production use. See https://github.com/tryghost/ghost-docker for production-ready self-hosting setup.
 name: ghost
 
 # Template to share volumes and environment variable between all services running the same base image
