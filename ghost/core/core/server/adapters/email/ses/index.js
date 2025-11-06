@@ -11,6 +11,7 @@ const debug = require('@tryghost/debug')('email-service:ses-adapter');
 class SESEmailProvider extends EmailProviderBase {
     #sesClient;
     #config;
+    #sesConfig;
     #errorHandler;
 
     /**
@@ -46,10 +47,11 @@ class SESEmailProvider extends EmailProviderBase {
 
         // Dynamically load AWS SDK (optional dependency)
         try {
-            const {SESClient, SendBulkEmailCommand} = require('@aws-sdk/client-ses');
+            const {SESClient} = require('@aws-sdk/client-ses');
 
-            // Store config
-            this.#config = sesConfig;
+            // Store full config to preserve root-level fields
+            this.#config = config;
+            this.#sesConfig = sesConfig;
             this.#errorHandler = config.errorHandler;
 
             // Create SES client
@@ -317,11 +319,11 @@ class SESEmailProvider extends EmailProviderBase {
             const encodedHtml = this.#encodeQuotedPrintable(html || '');
 
             const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-            const domain = (from || this.#config.fromEmail).match(/@([^>]+)/)?.[1] || 'localhost';
+            const domain = (from || this.#sesConfig.fromEmail).match(/@([^>]+)/)?.[1] || 'localhost';
             const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@${domain}>`;
 
             let mime = [
-                `From: ${from || this.#config.fromEmail}`,
+                `From: ${from || this.#sesConfig.fromEmail}`,
                 `To: undisclosed-recipients:;`,
                 `Bcc: ${bccList}`,
                 `Subject: ${subject}`,
@@ -356,12 +358,12 @@ class SESEmailProvider extends EmailProviderBase {
 
             // Build SendRawEmail command with all batch recipients as Destinations
             const command = new SendRawEmailCommand({
-                Source: from || this.#config.fromEmail,
+                Source: from || this.#sesConfig.fromEmail,
                 Destinations: batch.map(r => r.email),
                 RawMessage: {
                     Data: Buffer.from(rawMessage)
                 },
-                ConfigurationSetName: this.#config.configurationSet,
+                ConfigurationSetName: this.#sesConfig.configurationSet,
                 Tags: [
                     {
                         Name: 'email-id',
@@ -455,7 +457,7 @@ class SESEmailProvider extends EmailProviderBase {
 
                     // Build personalized MIME email
                     const rawMessage = this.#buildMIMEEmail({
-                        from: from || this.#config.fromEmail,
+                        from: from || this.#sesConfig.fromEmail,
                         to: recipient.email,
                         subject,
                         html: personalizedHtml,
@@ -465,12 +467,12 @@ class SESEmailProvider extends EmailProviderBase {
 
                     // Build SendRawEmail command
                     const command = new SendRawEmailCommand({
-                        Source: from || this.#config.fromEmail,
+                        Source: from || this.#sesConfig.fromEmail,
                         Destinations: [recipient.email],
                         RawMessage: {
                             Data: Buffer.from(rawMessage)
                         },
-                        ConfigurationSetName: this.#config.configurationSet,
+                        ConfigurationSetName: this.#sesConfig.configurationSet,
                         Tags: [
                             {
                                 Name: 'email-id',
