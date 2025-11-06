@@ -29,7 +29,7 @@ const MAX_CONFIRMATION_RETRIES = 12;
 
 const BlueskySharing: React.FC = () => {
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(() => account?.blueskyEnabled && !account?.blueskyHandleConfirmed);
     const [copied, setCopied] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -38,7 +38,6 @@ const BlueskySharing: React.FC = () => {
     const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
     const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
     const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
-    const enabled = account?.blueskyEnabled ?? false;
 
     const handleCopy = async () => {
         setCopied(true);
@@ -53,9 +52,9 @@ const BlueskySharing: React.FC = () => {
             setLoading(true);
             try {
                 await enableBlueskyMutation.mutateAsync();
-                toast.success('Bluesky sharing enabled');
-            } finally {
+            } catch (error) {
                 setLoading(false);
+                toast.error('Something went wrong, please try again.');
             }
         }
     };
@@ -83,7 +82,7 @@ const BlueskySharing: React.FC = () => {
     useEffect(() => {
         if (!account?.blueskyEnabled) {
             setHandleConfirmed(false);
-
+            setLoading(false);
             retryCountRef.current = 0;
 
             return;
@@ -91,13 +90,15 @@ const BlueskySharing: React.FC = () => {
 
         if (account?.blueskyHandleConfirmed) {
             setHandleConfirmed(true);
-
+            setLoading(false);
             retryCountRef.current = 0;
+            toast.success('Bluesky sharing enabled');
 
             return;
         }
 
         setHandleConfirmed(false);
+        setLoading(true);
         retryCountRef.current = 0;
 
         const confirmHandleInterval = setInterval(async () => {
@@ -106,9 +107,10 @@ const BlueskySharing: React.FC = () => {
             if (retryCountRef.current > MAX_CONFIRMATION_RETRIES) {
                 clearInterval(confirmHandleInterval);
 
-                toast.error('Failed to confirm Bluesky handle');
+                toast.error('Something went wrong, please try again.');
 
                 await disableBlueskyMutation.mutateAsync();
+                setLoading(false);
 
                 return;
             }
@@ -135,18 +137,20 @@ const BlueskySharing: React.FC = () => {
         );
     }
 
+    const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed;
+
     return (
         <Layout>
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {enabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
                         <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
                         <span className='group-hover:hidden'>Enabled</span>
                         <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
                     </Button>}
                 </div>
-                {!enabled ?
+                {!showAsEnabled ?
                     <div className='mt-3 flex flex-col gap-5'>
                         <p className='text-base'>{!account?.avatarUrl ?
                             'Add a profile image to connect to Bluesky. Profile pictures help prevent spam.' :
@@ -166,23 +170,25 @@ const BlueskySharing: React.FC = () => {
                                 </DialogContent>
                             </Dialog>
                         ) : (
-                            <Button className='h-10 text-base' disabled={loading} variant='secondary' onClick={handleEnable}>
-                                {!loading ?
-                                    <><svg height="32" role="img" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
-                                        Enable Bluesky sharing</> :
-                                    <LoadingIndicator size='sm' />
-                                }
-                            </Button>
+                            <>
+                                <Button className='h-10 text-base' disabled={loading} variant='secondary' onClick={handleEnable}>
+                                    {!loading ?
+                                        <><svg height="32" role="img" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
+                                            Enable Bluesky sharing</> :
+                                        <div className='flex items-center gap-2'>
+                                            <LoadingIndicator size='sm' />
+                                            <span>Creating handle...</span>
+                                        </div>
+                                    }
+                                </Button>
+                                {loading && (
+                                    <p className='-mt-2 text-center text-sm text-gray-700 dark:text-gray-600'>You can leave this page and come back to check the status.</p>
+                                )}
+                            </>
                         )}
                     </div> :
                     <>
                         <p className='mt-2 pr-32 text-base'>Your social web profile is now connected to Bluesky, via <a className="text-purple hover:text-purple-600" href="https://fed.brid.gy" rel="noreferrer" target="_blank">Bridgy Fed</a>. Posts are automatically synced after a short delay to complete activation.</p>
-                        {!handleConfirmed && (
-                            <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
-                                <p className='text-base'>Confirming your Bluesky handle...</p>
-                                <LoadingIndicator size='sm' />
-                            </div>
-                        )}
                         {handleConfirmed && (
                             <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                                 <div className='relative'>
