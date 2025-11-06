@@ -50,6 +50,10 @@ export interface UsersResponseType {
     users: User[];
 }
 
+export interface UpdateUserRequestBody {
+    users: Array<User>;
+}
+
 interface UpdatePasswordOptions {
     newPassword: string;
     confirmNewPassword: string;
