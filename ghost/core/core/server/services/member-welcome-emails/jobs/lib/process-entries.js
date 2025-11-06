@@ -1,8 +1,8 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const {MAX_RETRIES, SIMULATE_FAILURE_RATE, MESSAGES} = require('./constants');
+const {MAX_RETRIES, SIMULATE_FAILURE_RATE, MESSAGES, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
-const sendWelcomeEmail = require('./send-welcome-email');
+const sendMemberWelcomeEmail = require('./send-member-welcome-email');
 
 /**
  * Deletes a successfully processed outbox entry
@@ -65,7 +65,7 @@ async function processEntry(db, entry) {
             });
         }
 
-        await sendWelcomeEmail(payload);
+        await sendMemberWelcomeEmail(payload);
         await deleteProcessedEntry(db, entry.id);
 
         return {success: true};
@@ -73,7 +73,7 @@ async function processEntry(db, entry) {
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: err.message});
 
         const memberInfo = payload ? `${payload.name} (${payload.email})` : 'unknown member';
-        logging.error(`[WELCOME-EMAIL] Failed to send to ${memberInfo}: ${err.message}`);
+        logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${err.message}`);
 
         return {success: false};
     }

@@ -2,7 +2,7 @@ const {parentPort} = require('worker_threads');
 const logging = require('@tryghost/logging');
 const MemberCreatedEvent = require('../../../../shared/events/MemberCreatedEvent');
 const {OUTBOX_STATUSES} = require('../../../models/outbox');
-const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE} = require('./lib/constants');
+const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./lib/constants');
 const processEntries = require('./lib/process-entries');
 
 /**
@@ -120,7 +120,7 @@ async function processOutbox() {
         totalProcessed += processed;
         totalFailed += failed;
 
-        logging.info(`[WELCOME-EMAIL] Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
     }
 
     const durationMs = Date.now() - jobStartMs;
@@ -129,7 +129,7 @@ async function processOutbox() {
         return completeJob(MESSAGES.NO_ENTRIES);
     }
 
-    completeJob(`[WELCOME-EMAIL] Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
+    completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
 }
 
 processOutbox();

@@ -7,7 +7,7 @@ let hasScheduled = {
 };
 
 module.exports = {
-    async scheduleWelcomeEmailJob() {
+    async scheduleMemberWelcomeEmailJob() {
         if (!labs.isSet('welcomeEmails')) {
             return false;
         }
@@ -16,7 +16,7 @@ module.exports = {
             jobsService.addJob({
                 at: '0 */5 * * * *',
                 job: path.resolve(__dirname, 'process-outbox.js'),
-                name: 'welcome-emails-process-outbox'
+                name: 'process-member-welcome-emails'
             });
 
             hasScheduled.processOutbox = true;

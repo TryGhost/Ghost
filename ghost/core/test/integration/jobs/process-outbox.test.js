@@ -7,7 +7,7 @@ const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 
 const JOB_NAME = 'process-outbox-test';
-const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/welcome-emails/jobs/process-outbox.js');
+const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/member-welcome-emails/jobs/process-outbox.js');
 
 describe('Process Outbox Job', function () {
     let jobService;

@@ -6,7 +6,7 @@ const db = require('../../../core/server/data/db');
 const labs = require('../../../core/shared/labs');
 const sinon = require('sinon');
 
-describe('Welcome Emails Integration', function () {
+describe('Member Welcome Emails Integration', function () {
     let membersService;
 
     before(async function () {

@@ -1,15 +1,15 @@
 const jobs = require('./jobs');
 
-class WelcomeEmailsServiceWrapper {
+class MemberWelcomeEmailsServiceWrapper {
     init() {
         if (this.initialized) {
             return;
         }
 
-        jobs.scheduleWelcomeEmailJob();
+        jobs.scheduleMemberWelcomeEmailJob();
 
         this.initialized = true;
     }
 }
 
-module.exports = new WelcomeEmailsServiceWrapper();
+module.exports = new MemberWelcomeEmailsServiceWrapper();
