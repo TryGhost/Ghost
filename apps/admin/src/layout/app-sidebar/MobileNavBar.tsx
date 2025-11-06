@@ -47,18 +47,21 @@ export function MobileNavBar() {
                     href="#/analytics"
                 >
                     <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />
+                    <span className="sr-only">Analytics</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
                     href="#/posts"
                 >
                     <LucideIcon.PenLine strokeWidth={ICON_STROKE_WIDTH} />
+                    <span className="sr-only">Posts</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
                     href="#/members"
                 >
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
+                    <span className="sr-only">Members</span>
                 </MobileNavBarButton>
                 <SidebarTrigger className="rounded-full px-8 h-9 hover:bg-transparent">
                     <LucideIcon.Ellipsis strokeWidth={ICON_STROKE_WIDTH} />
