@@ -58,7 +58,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
 
     get mailgunIsEnabled() {
         // Check for any configured email provider (Mailgun or SES)
-        const hasEmailProvider = this.config.emailProvider?.isConfigured;
+        const hasEmailProvider = this.config.emailProvider && this.config.emailProvider.isConfigured;
         const hasMailgunConfig = this.config.mailgunIsConfigured ||
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
 
