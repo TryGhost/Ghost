@@ -483,3 +483,58 @@ yarn nx reset                  # Reset Nx cache
 ### Test Issues
 - **E2E failures:** Check `e2e/CLAUDE.md` for debugging tips
 - **Docker issues:** `yarn docker:clean && yarn docker:build`
+
+---
+
+## Active Pull Requests (SES Integration)
+
+This section tracks the active PR branches for Amazon SES email integration work. Keep this updated when working on these PRs.
+
+### PR Branch Mappings
+
+| PR # | GitHub PR | Local Branch | Status | Description |
+|------|-----------|--------------|--------|-------------|
+| PR5 | [#25367](https://github.com/TryGhost/Ghost/pull/25367) | `adapter/email-provider-ses` | ✅ Open | Phase 2 SES Integration (1/3) - Amazon SES email provider for bulk newsletters |
+| PR6 | [#25365](https://github.com/TryGhost/Ghost/pull/25365) | `pr6/ses-analytics` | ✅ Open | Phase 2 SES Integration (2/3) - Email analytics and provider config exposure |
+| PR7 | [#25366](https://github.com/TryGhost/Ghost/pull/25366) | `personalization/ses-personalization` | ✅ Open | Phase 2 SES Integration (3/3) - Newsletter personalization with config exposure |
+
+### Important Notes
+
+**Working Branches:**
+- All PRs push to `origin` (your fork: `danielraffel/Ghost`)
+- PRs target `upstream` (official repo: `TryGhost/Ghost`)
+- **Do NOT push directly to upstream** - always work through your fork
+
+**Local-Only Branches:**
+- `admin/ses-ui-pr6` - Local development branch (NOT connected to GitHub PR)
+- `pr5/ses-adapter-bulk` - Legacy branch name (use `adapter/email-provider-ses` instead)
+
+**Recent Fixes Applied:**
+- **Preview email validation** - Fixed optional chaining (`?.`) causing stack overflow
+  - PR6: Commit d9439e80f8 (2025-01-06)
+  - PR7: Commit 9558bbb180 (2025-01-06)
+  - Changed from `this.config.emailProvider?.isConfigured` to `this.config.emailProvider && this.config.emailProvider.isConfigured`
+
+**Checking PR Status:**
+```bash
+# List all your PRs
+gh pr list --author danielraffel --repo TryGhost/Ghost --state all --limit 10
+
+# Check specific PR
+gh pr view 25365 --repo TryGhost/Ghost
+
+# Check branch sync status
+git fetch origin
+git log origin/pr6/ses-analytics..pr6/ses-analytics  # Shows unpushed commits
+git log pr6/ses-analytics..origin/pr6/ses-analytics  # Shows unpulled commits
+```
+
+**Pushing Updates:**
+```bash
+# Always push to your fork (origin), not upstream
+git push origin pr6/ses-analytics
+git push origin personalization/ses-personalization
+git push origin adapter/email-provider-ses
+```
+
+**Last Updated:** 2025-01-06
