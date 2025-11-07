@@ -1,0 +1,206 @@
+name: CI (Docker + Nix)
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - 'v[0-9]+.*'
+      - '[0-9]+.x'
+
+env:
+  HEAD_COMMIT: ${{ github.sha }}
+  CACHIX_CACHE: hello-stocha
+
+jobs:
+  build:
+    name: Build Docker Image with Nix (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+            system: x86_64-linux
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            system: aarch64-linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Check if Docker image is cached
+        id: cache-check
+        run: |
+          # Get the output path without building (using local checkout)
+          OUT_PATH=$(nix eval --raw ".#packages.${{ matrix.system }}.dockerImage.outPath" 2>/dev/null || echo "")
+
+          # Check if that exact store path exists in Cachix
+          if [ -n "$OUT_PATH" ] && nix path-info --store "https://${{ env.CACHIX_CACHE }}.cachix.org" \
+              "$OUT_PATH" >/dev/null 2>&1; then
+            echo "cache_hit=true" >> $GITHUB_OUTPUT
+            echo "✅ Full image cached, build will just download"
+            echo "   Cached path: $OUT_PATH"
+          else
+            echo "cache_hit=false" >> $GITHUB_OUTPUT
+            echo "❌ Image not cached, will need to build"
+          fi
+
+      - name: Free disk space (only if building from scratch)
+        if: steps.cache-check.outputs.cache_hit == 'false'
+        run: |
+          echo "Freeing disk space for full build..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: ${{ env.CACHIX_CACHE }}
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Build Docker image with Nix
+        run: |
+          echo "::group::Nix build output"
+          # Build from checked-out source (works for both same-repo and fork PRs)
+          # Output paths are deterministic based on content, so precaching with
+          # git+file://$PWD or github:owner/repo/SHA produces matching cache keys
+          echo "Building from checked-out source at ${{ github.sha }}"
+
+          # Build image - cachix-action automatically pushes to cache
+          nix build ".#packages.${{ matrix.system }}.dockerImage" \
+            --print-build-logs \
+            --accept-flake-config
+          echo "::endgroup::"
+
+      - name: Determine image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/ghost-development
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost Development (Nix)
+            org.opencontainers.image.description=Ghost development build (Nix-based)
+            org.opencontainers.image.vendor=hello-stocha
+            maintainer=hello-stocha
+
+      - name: Push Docker image to registry
+        env:
+          REGISTRY_AUTH_FILE: /tmp/auth.json
+        run: |
+          # Login to GHCR via skopeo from nixpkgs
+          echo "${{ secrets.GITHUB_TOKEN }}" | nix run nixpkgs#skopeo -- login ghcr.io \
+            --username ${{ github.actor }} \
+            --password-stdin
+
+          # Push with all tags, appending arch suffix
+          TAGS="${{ steps.meta.outputs.tags }}"
+          for tag in $TAGS; do
+            echo "Pushing: $tag-${{ matrix.arch }}"
+            nix run nixpkgs#skopeo -- copy \
+              --preserve-digests \
+              docker-archive:result \
+              docker://$tag-${{ matrix.arch }}
+          done
+
+      - name: Inspect image
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)-${{ matrix.arch }}
+
+          # Get image size from the tarball file
+          IMAGE_SIZE_BYTES=$(stat -c%s result 2>/dev/null || stat -f%z result 2>/dev/null)
+          IMAGE_SIZE_GB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024 / 1024" | bc)
+
+          {
+            echo "## Docker Image Analysis (Nix Build - ${{ matrix.arch }})"
+            echo ""
+            echo "**Image:** \`$IMAGE_TAG\`"
+            echo "**Architecture:** ${{ matrix.arch }}"
+            echo ""
+            echo "**Tarball Size:** ${IMAGE_SIZE_GB} GB"
+            echo ""
+            echo "**Built with:** Nix flakes + Cachix binary cache"
+          } >> $GITHUB_STEP_SUMMARY
+
+    outputs:
+      image-tags: ${{ steps.meta.outputs.tags }}
+
+  create-manifest:
+    name: Create Multi-Arch Manifest
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-arch manifests
+        run: |
+          # Get the base tags (without arch suffix)
+          TAGS="${{ needs.build.outputs.image-tags }}"
+
+          for tag in $TAGS; do
+            echo "Creating manifest for: $tag"
+
+            # Create manifest pointing to both arch-specific images
+            docker manifest create "$tag" \
+              "$tag-x86_64" \
+              "$tag-aarch64"
+
+            # Annotate with platform metadata
+            docker manifest annotate "$tag" "$tag-x86_64" \
+              --os linux --arch amd64
+
+            docker manifest annotate "$tag" "$tag-aarch64" \
+              --os linux --arch arm64 --variant v8
+
+            # Push the manifest
+            echo "Pushing manifest: $tag"
+            docker manifest push "$tag"
+          done
+
+      - name: Summary
+        run: |
+          echo "## Multi-Architecture Images Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The following images support both x86_64 and ARM64:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          TAGS="${{ needs.build.outputs.image-tags }}"
+          for tag in $TAGS; do
+            echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Docker will automatically select the correct architecture when pulling." >> $GITHUB_STEP_SUMMARY
+
+  # TODO: Add E2E test integration similar to ci-docker.yml
+  # test_e2e:
+  #   name: E2E Tests
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Pull Nix-built image from GHCR
+  #       run: docker pull $(echo "${{ needs.build.outputs.image-tags }}" | head -n1)

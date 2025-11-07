@@ -1,0 +1,119 @@
+version: "0.5"
+
+environment:
+  - NX_DAEMON=true
+  - GHOST_DEV_IS_DOCKER=false
+  - PWD=${PWD}
+
+processes:
+  mysql:
+    command: |
+      mkdir -p .dev-data/mysql
+
+      if [ ! -d ".dev-data/mysql/mysql" ]; then
+        echo "Initializing MySQL database..."
+        mysqld --initialize-insecure \
+          --datadir=$PWD/.dev-data/mysql \
+          --user=$(whoami)
+      fi
+
+      mysqld \
+        --datadir=$PWD/.dev-data/mysql \
+        --socket=$PWD/.dev-data/mysql.sock \
+        --port=3306 \
+        --bind-address=127.0.0.1 \
+        --innodb-buffer-pool-size=1G \
+        --innodb-log-buffer-size=500M \
+        --innodb-change-buffer-max-size=50 \
+        --innodb-flush-log-at-trx-commit=0
+    readiness_probe:
+      exec:
+        command: "mysqladmin ping -S $PWD/.dev-data/mysql.sock"
+      initial_delay_seconds: 2
+      period_seconds: 1
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 120
+    availability:
+      restart: on_failure
+      max_restarts: 5
+
+  mysql-init:
+    command: |
+      cd ghost/core
+      yarn knex-migrator init
+    depends_on:
+      mysql:
+        condition: process_healthy
+    environment:
+      - database__client=mysql
+      - database__connection__socketPath=${PWD}/.dev-data/mysql.sock
+      - database__connection__user=root
+      - database__connection__password=
+      - database__connection__database=ghost
+    availability:
+      restart: "no"
+
+  redis:
+    command: |
+      mkdir -p .dev-data/redis
+      redis-server \
+        --dir $PWD/.dev-data/redis \
+        --port 6379 \
+        --bind 127.0.0.1
+    readiness_probe:
+      exec:
+        command: "redis-cli --raw incr ping"
+      initial_delay_seconds: 1
+      period_seconds: 1
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 120
+    availability:
+      restart: on_failure
+      max_restarts: 5
+
+  mailpit:
+    command: |
+      mailpit \
+        --smtp 127.0.0.1:1025 \
+        --listen 127.0.0.1:8025
+    readiness_probe:
+      http_get:
+        host: 127.0.0.1
+        port: 8025
+        path: /
+      initial_delay_seconds: 1
+      period_seconds: 1
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 10
+    availability:
+      restart: on_failure
+      max_restarts: 5
+
+  ghost:
+    command: yarn dev
+    depends_on:
+      mysql-init:
+        condition: process_completed_successfully
+      redis:
+        condition: process_healthy
+      mailpit:
+        condition: process_healthy
+    environment:
+      - database__client=mysql
+      - database__connection__socketPath=${PWD}/.dev-data/mysql.sock
+      - database__connection__user=root
+      - database__connection__password=
+      - database__connection__database=ghost
+      - mail__from=test@example.com
+      - mail__transport=SMTP
+      - mail__options__host=127.0.0.1
+      - mail__options__port=1025
+      - adapters__Redis__host=127.0.0.1
+      - adapters__Redis__port=6379
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+    availability:
+      restart: on_failure
+      max_restarts: 3
