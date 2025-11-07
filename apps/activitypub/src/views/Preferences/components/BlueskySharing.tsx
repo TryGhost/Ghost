@@ -177,7 +177,7 @@ const BlueskySharing: React.FC = () => {
                                             Enable Bluesky sharing</> :
                                         <div className='flex items-center gap-2'>
                                             <LoadingIndicator size='sm' />
-                                            <span>Creating handle...</span>
+                                            <span>Enabling Bluesky sharing...</span>
                                         </div>
                                     }
                                 </Button>
