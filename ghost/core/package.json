@@ -214,7 +214,7 @@
     "stripe": "8.222.0",
     "superagent": "5.3.1",
     "superagent-throttle": "1.0.1",
-    "terser": "5.44.0",
+    "terser": "5.44.1",
     "tiny-glob": "0.2.9",
     "ua-parser-js": "1.0.41",
     "xml": "1.0.1"
