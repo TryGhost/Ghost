@@ -198,7 +198,7 @@ module.exports = {
 
         // Count distinct emails that the member received and clicked (scoped to email recipients with click tracking)
         const {emailClickedCount} = await db.knex('members_click_events as mce')
-            .countDistinct({'emailClickedCount': 'er.email_id'})
+            .countDistinct({emailClickedCount: 'er.email_id'})
             .join('redirects as r', 'mce.redirect_id', 'r.id')
             .join('emails as e', 'r.post_id', 'e.post_id')
             .join('email_recipients as er', function () {
