@@ -18,7 +18,6 @@ export * from './email-clicked';
 export * from './email-opened-count';
 export * from './email-open-rate';
 export * from './email-click-rate';
-export * from './email-clicked';
 export * from './email-sent';
 export * from './audience-feedback';
 export * from './offers';

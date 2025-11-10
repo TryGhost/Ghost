@@ -196,13 +196,17 @@ module.exports = {
         const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
 
-        // Count distinct emails where member clicked at least once
-        const {emailClickedCount} = await db.knex('members_click_events')
-            .select(db.knex.raw('COUNT(DISTINCT emails.id) as emailClickedCount'))
-            .leftJoin('redirects', 'members_click_events.redirect_id', 'redirects.id')
-            .leftJoin('emails', 'redirects.post_id', 'emails.post_id')
-            .where('members_click_events.member_id', memberId)
-            .whereNotNull('emails.id')
+        // Count distinct emails that the member received and clicked (scoped to email recipients with click tracking)
+        const {emailClickedCount} = await db.knex('members_click_events as mce')
+            .countDistinct({'emailClickedCount': 'er.email_id'})
+            .join('redirects as r', 'mce.redirect_id', 'r.id')
+            .join('emails as e', 'r.post_id', 'e.post_id')
+            .join('email_recipients as er', function () {
+                this.on('er.email_id', '=', 'e.id')
+                    .andOn('er.member_id', '=', db.knex.raw('?', [memberId]));
+            })
+            .where('mce.member_id', memberId)
+            .where('e.track_clicks', true)
             .first() || {};
 
         const updateQuery = {
@@ -215,7 +219,7 @@ module.exports = {
         }
 
         if (trackedEmailCountForClicks >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
-            updateQuery.email_click_rate = Math.round(emailClickedCount / trackedEmailCountForClicks * 100);
+            updateQuery.email_click_rate = Math.round((emailClickedCount || 0) / trackedEmailCountForClicks * 100);
         }
 
         await db.knex('members')
