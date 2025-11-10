@@ -1,6 +1,5 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createMember} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 
 test.describe('Admin', () => {
