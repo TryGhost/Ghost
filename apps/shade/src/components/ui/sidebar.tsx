@@ -20,7 +20,7 @@ import {
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '30rem';
-const SIDEBAR_WIDTH_MOBILE = '18rem';
+const SIDEBAR_WIDTH_MOBILE = '28rem';
 const SIDEBAR_WIDTH_ICON = '4rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 const SIDEBAR_MENU_HEIGHT = '[34px]';
@@ -261,7 +261,7 @@ Sidebar.displayName = 'Sidebar';
 const SidebarTrigger = React.forwardRef<
     React.ElementRef<typeof Button>,
     React.ComponentProps<typeof Button>
->(({className, onClick, ...props}, ref) => {
+>(({children, className, onClick, ...props}, ref) => {
     const {toggleSidebar} = useSidebar();
 
     return (
@@ -277,8 +277,13 @@ const SidebarTrigger = React.forwardRef<
             }}
             {...props}
         >
-            <PanelLeft />
-            <span className="sr-only">Toggle Sidebar</span>
+            {
+                children ||
+                <>
+                    <PanelLeft />
+                    <span className="sr-only">Toggle Sidebar</span>
+                </>
+            }
         </Button>
     );
 });
