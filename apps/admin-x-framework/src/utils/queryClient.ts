@@ -3,6 +3,7 @@ import {QueryClient} from '@tanstack/react-query';
 declare global {
     interface Window {
         adminXQueryClient?: QueryClient;
+        __TANSTACK_QUERY_CLIENT__: QueryClient;
     }
 }
 
@@ -18,6 +19,8 @@ const queryClient = window.adminXQueryClient || new QueryClient({
         }
     }
 });
+  
+window.__TANSTACK_QUERY_CLIENT__ = queryClient;
 
 if (!window.adminXQueryClient) {
     window.adminXQueryClient = queryClient;
