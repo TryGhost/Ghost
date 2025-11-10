@@ -3,7 +3,7 @@ import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {MemberDetailsPage, MembersPage} from '../../helpers/pages/admin';
 import {Page} from '@playwright/test';
 import {PostFactory, createPostFactory} from '../../data-factory';
-import {expect, getHttpClient, test} from '../../helpers/playwright';
+import {expect, test} from '../../helpers/playwright';
 import {extractMagicLink} from '../../helpers/services/email/utils';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 
@@ -46,7 +46,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - direct from post', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(getHttpClient(page));
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Test Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -68,7 +68,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - from referrer', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(getHttpClient(page));
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Google Test Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -90,7 +90,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - direct from newsletter', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(getHttpClient(page));
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'Newsletter Post', status: 'published'});
 
         const homePage = new HomePage(page);
@@ -111,7 +111,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     });
 
     test('signed up with magic link - utm_source=twitter', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(getHttpClient(page));
+        const postFactory: PostFactory = createPostFactory(page.request);
         const post = await postFactory.create({title: 'UTM Source Post', status: 'published'});
 
         const homePage = new HomePage(page);

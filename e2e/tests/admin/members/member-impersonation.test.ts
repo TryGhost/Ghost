@@ -1,12 +1,12 @@
 import {HomePage, MemberDetailsPage, MembersPage, PortalPage} from '../../../helpers/pages';
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, getHttpClient, test} from '../../../helpers/playwright';
+import {expect, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Member Impersonation', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(getHttpClient(page));
+        memberFactory = createMemberFactory(page.request);
     });
 
     test('impersonates a member and verifies magic link generation', async ({page}) => {
