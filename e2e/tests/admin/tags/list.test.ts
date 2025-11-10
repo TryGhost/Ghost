@@ -1,12 +1,12 @@
 import {Page} from '@playwright/test';
 import {TagEditorPage, TagsPage} from '../../../helpers/pages/admin';
 import {TagFactory, createPostFactory,createTagFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;
     test.beforeEach(async ({page}) => {
-        tagFactory = createTagFactory(page.request);
+        tagFactory = createTagFactory(getHttpClient(page));
     });
 
     test('shows empty list with call to action buttons', async ({page}) => {
@@ -79,7 +79,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('lists tags with posts count', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        const postFactory = createPostFactory(page.request);
+        const postFactory = createPostFactory(getHttpClient(page));
 
         const tag = await tagFactory.create({
             name: 'Tag 1',

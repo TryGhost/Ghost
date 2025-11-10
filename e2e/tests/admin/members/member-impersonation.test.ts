@@ -1,28 +1,27 @@
 import {HomePage, MemberDetailsPage, MembersPage, PortalPage} from '../../../helpers/pages';
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Member Impersonation', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
+        memberFactory = createMemberFactory(getHttpClient(page));
     });
 
     test('impersonates a member and verifies magic link generation', async ({page}) => {
-        const memberToImpersonate = memberFactory.build({email: 'impersonate@ghost.org'});
+        const {name, email, note} = memberFactory.build({email: 'impersonate@ghost.org'});
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(memberToImpersonate.name);
-        await memberDetailsPage.emailInput.fill(memberToImpersonate.email);
+        await memberDetailsPage.fillMemberDetails(name, email, note);
         await memberDetailsPage.save();
 
         await membersPage.goto();
-        await membersPage.getMemberByName(memberToImpersonate.name).click();
+        await membersPage.getMemberByName(name).click();
 
         await memberDetailsPage.memberActionsButton.click();
         await memberDetailsPage.impersonateButton.click();
@@ -36,7 +35,7 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await homePage.accountButton.click();
 
         const portal = new PortalPage(page);
-        await expect(portal.body).toContainText('Your account');
-        await expect(portal.body).toContainText('impersonate@ghost.org');
+        await expect(portal.portalFrameBody).toContainText('Your account');
+        await expect(portal.portalFrameBody).toContainText('impersonate@ghost.org');
     });
 });

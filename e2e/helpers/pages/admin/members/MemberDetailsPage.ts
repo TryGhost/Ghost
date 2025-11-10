@@ -6,6 +6,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly emailInput: Locator;
     readonly noteInput: Locator;
     readonly labelsInput: Locator;
+    readonly labels: Locator;
     readonly subscriptionToggle: Locator;
 
     readonly memberActionsButton: Locator;
@@ -31,6 +32,7 @@ export class MemberDetailsPage extends AdminPage {
         this.emailInput = page.getByRole('textbox', {name: 'Email'});
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
         this.labelsInput = page.getByText('Labels').locator('+ div');
+        this.labels = this.labelsInput.getByRole('listitem');
         this.subscriptionToggle = page.getByTestId('member-subscription-toggle');
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
@@ -48,16 +50,31 @@ export class MemberDetailsPage extends AdminPage {
         this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
 
+    async fillMemberDetails(name: string, email: string, note: string): Promise<void> {
+        await this.nameInput.fill(name);
+        await this.emailInput.fill(email);
+        await this.noteInput.fill(note);
+    }
+
     async addLabel(label: string): Promise<void> {
         await this.labelsInput.click();
         await this.page.keyboard.type(label);
         await this.page.keyboard.press('Tab');
     }
 
-    async removeLabel(): Promise<void> {
+    async removeLabels() {
         await this.labelsInput.click();
-        await this.page.keyboard.press('Backspace');
-        await this.page.keyboard.press('Tab');
+        let labelsCount = await this.labels.count();
+
+        while (labelsCount > 0) {
+            await this.labels.last().getByLabel('remove element').click();
+            labelsCount = await this.labels.count();
+        }
+    }
+
+    async removeLabel(labelName: string): Promise<void> {
+        await this.labelsInput.click();
+        await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async save(): Promise<void> {
