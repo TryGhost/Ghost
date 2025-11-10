@@ -117,6 +117,17 @@ test.describe('Admin', () => {
             expect(await sharedPage.locator('div h4:has-text("Start building your audience")')).not.toBeNull();
         });
 
+        test('Comment deletion checkbox appears for members with comments', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
+            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
+            await sharedPage.locator('tbody > tr > a').nth(0).click();
+            await sharedPage.waitForSelector('[data-test-button="member-actions"]');
+            await sharedPage.locator('[data-test-button="member-actions"]').click();
+            await sharedPage.getByRole('button', {name: 'Delete member'}).click();
+            
+            await expect(sharedPage.locator('[data-test-modal="delete-member"]')).toBeVisible();
+        });
+
         const membersFixture = [
             {
                 name: 'Test Member 1',
