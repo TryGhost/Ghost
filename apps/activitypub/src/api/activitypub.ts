@@ -26,7 +26,8 @@ export interface Account {
     domainBlockedByMe: boolean;
     attachment: { name: string; value: string }[];
     blueskyEnabled?: boolean;
-    blueskyHandle?: string;
+    blueskyHandleConfirmed?: boolean;
+    blueskyHandle?: string | null;
 }
 
 export type AccountSearchResult = Pick<
@@ -662,8 +663,20 @@ export class ActivityPubAPI {
         return json.fileUrl;
     }
 
-    async enableBluesky(): Promise<string> {
+    async enableBluesky() {
         const url = new URL('.ghost/activitypub/v1/actions/bluesky/enable', this.apiUrl);
+
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async disableBluesky() {
+        const url = new URL('.ghost/activitypub/v1/actions/bluesky/disable', this.apiUrl);
+
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async confirmBlueskyHandle(): Promise<string> {
+        const url = new URL('.ghost/activitypub/v1/actions/bluesky/confirm-handle', this.apiUrl);
 
         const json = await this.fetchJSON(url, 'POST');
 
@@ -672,11 +685,5 @@ export class ActivityPubAPI {
         }
 
         return String(json.handle);
-    }
-
-    async disableBluesky() {
-        const url = new URL('.ghost/activitypub/v1/actions/bluesky/disable', this.apiUrl);
-
-        await this.fetchJSON(url, 'POST');
     }
 }
