@@ -43,7 +43,7 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('updates an existing member', async ({page}) => {
-        const memberToCreate = await memberFactory.create({
+        const memberToEdit = await memberFactory.create({
             name: 'Original Name',
             email: 'original@example.com',
             note: 'original note',
@@ -53,7 +53,7 @@ test.describe('Ghost Admin - Members', () => {
         // Edit the member
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.getMemberByName(memberToCreate.name).click();
+        await membersPage.getMemberByName(memberToEdit.name).click();
 
         const editedMember = memberFactory.build({
             name: 'Test Member Edited',
