@@ -349,7 +349,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                 <FormPrimitive.Control asChild>
                                     <input
                                         ref={imageInputRef}
-                                        accept="image/jpeg,image/png,image/webp"
+                                        accept="image/jpeg,image/png,image/webp,image/gif"
                                         className='hidden'
                                         type="file"
                                         onChange={handleImageChange}

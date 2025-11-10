@@ -1,3 +1,6 @@
+# Development Dockerfile for Ghost Monorepo
+# Not intended for production use. See https://github.com/tryghost/ghost-docker for production-ready self-hosting setup.
+
 ARG NODE_VERSION=22.13.1
 
 # --------------------
