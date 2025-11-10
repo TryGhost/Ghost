@@ -1,2 +1,2 @@
 export * from './fixture';
-export * from './helpers';
+export * from './with-isolated-page';
