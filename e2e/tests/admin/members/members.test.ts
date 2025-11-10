@@ -65,7 +65,7 @@ test.describe('Ghost Admin - Members', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(editedMember.name, editedMember.email, editedMember.note);
-        await memberDetailsPage.removeLabel();
+        await memberDetailsPage.removeLabel('original');
         await memberDetailsPage.subscriptionToggle.click();
         await memberDetailsPage.save();
 
