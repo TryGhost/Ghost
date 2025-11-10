@@ -47,7 +47,7 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('updates an existing member', async ({page}) => {
-        const memberToCreate = memberFactory.build({
+        const memberToCreate = await memberFactory.create({
             name: 'Original Name',
             email: 'original@example.com',
             note: 'original note',
@@ -56,15 +56,6 @@ test.describe('Ghost Admin - Members', () => {
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.newMemberButton.click();
-
-        // Create a new member
-        const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(memberToCreate.name);
-        await memberDetailsPage.emailInput.fill(memberToCreate.email);
-        await memberDetailsPage.noteInput.fill(memberToCreate.note);
-        await memberDetailsPage.addLabel(memberToCreate.labels[0]);
-        await memberDetailsPage.save();
 
         // Edit the member
         await membersPage.goto();
@@ -76,6 +67,7 @@ test.describe('Ghost Admin - Members', () => {
             note: 'This is an edited test member'
         });
 
+        const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.nameInput.fill(editedMember.name);
         await memberDetailsPage.emailInput.fill(editedMember.email);
         await memberDetailsPage.noteInput.fill(editedMember.note);
@@ -91,16 +83,16 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('cannot update an existing member with invalid email', async ({page}) => {
-        const memberToCreate = memberFactory.build({email: 'membertocreate@ghost.org'});
+        const {name, email, note} = memberFactory.build({email: 'membertocreate@ghost.org'});
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(memberToCreate.name);
-        await memberDetailsPage.emailInput.fill(memberToCreate.email);
-        await memberDetailsPage.noteInput.fill(memberToCreate.note);
+        await memberDetailsPage.nameInput.fill(name);
+        await memberDetailsPage.emailInput.fill(email);
+        await memberDetailsPage.noteInput.fill(note);
         await memberDetailsPage.save();
 
         await memberDetailsPage.emailInput.fill('invalid-email-address');
@@ -115,22 +107,16 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('deletes an existing member', async ({page}) => {
-        const toBeDeletedMember = memberFactory.build();
+        const {name} = await memberFactory.create();
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.newMemberButton.click();
-
-        // Create a new member
-        const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(toBeDeletedMember.name);
-        await memberDetailsPage.emailInput.fill(toBeDeletedMember.email);
-        await memberDetailsPage.save();
 
         await membersPage.goto();
-        await membersPage.getMemberByName(toBeDeletedMember.name).click();
+        await membersPage.getMemberByName(name).click();
 
         // Delete the member
+        const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.memberActionsButton.click();
         await memberDetailsPage.deleteButton.click();
         await memberDetailsPage.confirmDeleteButton.click();
