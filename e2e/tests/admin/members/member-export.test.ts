@@ -1,4 +1,4 @@
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
 import {MembersPage} from '../../../helpers/pages';
@@ -70,13 +70,11 @@ test.describe('Ghost Admin - Member Export', () => {
     ];
 
     test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
+        memberFactory = createMemberFactory(getHttpClient(page));
     });
 
     test('exports all members to CSV', async ({page}) => {
-        for (const memberData of membersFixture) {
-            await memberFactory.create(memberData);
-        }
+        await memberFactory.createMany(membersFixture);
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
@@ -101,10 +99,7 @@ test.describe('Ghost Admin - Member Export', () => {
     });
 
     test('exports filtered members by label to CSV', async ({page}) => {
-        for (const memberData of membersFixture) {
-            await memberFactory.create(memberData);
-        }
-
+        await memberFactory.createMany(membersFixture);
         const labelToFilterBy = 'dog';
 
         const membersPage = new MembersPage(page);
