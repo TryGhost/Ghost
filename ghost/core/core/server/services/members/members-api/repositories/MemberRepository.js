@@ -24,7 +24,7 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
-const WELCOME_EMAIL_SOURCES = ['member'];
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
 
 /**
  * @typedef {object} ITokenService
@@ -266,15 +266,6 @@ module.exports = class MemberRepository {
             options = {};
         }
 
-        if (!options.transacting) {
-            return this._Member.transaction((transacting) => {
-                return this.create(data, {
-                    ...options,
-                    transacting
-                });
-            });
-        }
-
         if (!options.batch_id) {
             // We'll use this to link related events
             options.batch_id = ObjectId().toHexString();
@@ -309,11 +300,9 @@ module.exports = class MemberRepository {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
         }
 
-        const transactionalOptions = options.transacting ? {transacting: options.transacting} : undefined;
-
         if (memberData.products) {
             for (const productData of memberData.products) {
-                const product = await this._productRepository.get(productData, transactionalOptions || {});
+                const product = await this._productRepository.get(productData);
                 if (product.get('active') !== true) {
                     throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
                 }
@@ -342,11 +331,46 @@ module.exports = class MemberRepository {
             withRelated.push('newsletters');
         }
 
-        const member = await this._Member.add({
-            ...memberData,
-            ...memberStatusData,
-            labels
-        }, {...options, withRelated});
+        const context = options && options.context || {};
+        const source = this._resolveContextSource(context);
+        const eventData = _.pick(data, ['created_at']);
+
+        let member;
+        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
+            member = await this._Member.transaction(async (transacting) => {
+                const m = await this._Member.add({
+                    ...memberData,
+                    ...memberStatusData,
+                    labels
+                }, {...options, withRelated, transacting});
+
+                const timestamp = eventData.created_at || m.get('created_at');
+
+                await this._Outbox.add({
+                    id: ObjectId().toHexString(),
+                    event_type: MemberCreatedEvent.name,
+                    payload: JSON.stringify({
+                        memberId: m.id,
+                        email: m.get('email'),
+                        name: m.get('name'),
+                        source,
+                        timestamp
+                    })
+                }, {transacting});
+
+                return m;
+            });
+        } else {
+            member = await this._Member.add({
+                ...memberData,
+                ...memberStatusData,
+                labels
+            }, {...options, withRelated});
+        }
+
+        if (!eventData.created_at) {
+            eventData.created_at = member.get('created_at');
+        }
 
         for (const product of member.related('products').models) {
             await this._MemberProductEvent.add({
@@ -354,15 +378,6 @@ module.exports = class MemberRepository {
                 product_id: product.id,
                 action: 'added'
             }, options);
-        }
-
-        const context = options && options.context || {};
-        const source = this._resolveContextSource(context);
-
-        const eventData = _.pick(data, ['created_at']);
-
-        if (!eventData.created_at) {
-            eventData.created_at = member.get('created_at');
         }
 
         await this._MemberStatusEvent.add({
@@ -398,24 +413,16 @@ module.exports = class MemberRepository {
                 customer_id: stripeCustomer.id,
                 name: stripeCustomer.name,
                 email: stripeCustomer.email
-            }, transactionalOptions);
+            });
 
             for (const subscription of stripeCustomer.subscriptions.data) {
-                const linkOptions = {
-                    batch_id: options.batch_id
-                };
-
-                if (options.transacting) {
-                    linkOptions.transacting = options.transacting;
-                }
-
                 try {
                     await this.linkSubscription({
                         id: member.id,
                         subscription,
                         offerId,
                         attribution
-                    }, linkOptions);
+                    }, {batch_id: options.batch_id});
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                         throw err;
@@ -425,22 +432,6 @@ module.exports = class MemberRepository {
                     });
                 }
             }
-        }
-
-        // Insert into outbox if welcome emails feature is enabled and source is allowed
-        // Only self-signup members get welcome emails; excludes imports, admin-created, and system-generated members
-        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
-            await this._Outbox.add({
-                id: ObjectId().toHexString(),
-                event_type: MemberCreatedEvent.name,
-                payload: JSON.stringify({
-                    memberId: member.id,
-                    email: member.get('email'),
-                    name: member.get('name'),
-                    source,
-                    timestamp: eventData.created_at
-                })
-            }, options);
         }
                 
         this.dispatchEvent(MemberCreatedEvent.create({
@@ -879,13 +870,13 @@ module.exports = class MemberRepository {
         }
     }
 
-    async upsertCustomer(data, options = {}) {
+    async upsertCustomer(data) {
         return await this._StripeCustomer.upsert({
             customer_id: data.customer_id,
             member_id: data.member_id,
             name: data.name,
             email: data.email
-        }, options);
+        });
     }
 
     async linkStripeCustomer(data, options) {
