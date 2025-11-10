@@ -104,7 +104,7 @@ test.describe('Ghost Admin - Member Export', () => {
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.applyLabelFilter(labelToFilterBy);
+        await membersPage.filterSection.applyLabel(labelToFilterBy);
         await expect(membersPage.memberListItems).toHaveCount(3);
 
         await membersPage.membersActionsButton.click();
