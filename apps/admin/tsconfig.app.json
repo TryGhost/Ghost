@@ -32,6 +32,7 @@
   },
   "include": ["src", "test-utils"],
   "references": [
+    { "path": "../admin-x-framework/tsconfig.declaration.json" },
     { "path": "../posts/tsconfig.declaration.json" },
     { "path": "../stats/tsconfig.declaration.json" },
     { "path": "../activitypub/tsconfig.declaration.json" }
