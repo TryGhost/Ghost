@@ -6,19 +6,26 @@ import {
     SidebarGroupContent,
     SidebarMenu
 } from "@tryghost/shade"
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { canAccessSettings } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./NavMenuItem";
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+    const { data: currentUser } = useCurrentUser();
+    const showSettings = currentUser && canAccessSettings(currentUser);
+
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="settings">
-                            <LucideIcon.Settings />
-                            <NavMenuItem.Label>Settings</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
+                    {showSettings && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="settings">
+                                <LucideIcon.Settings />
+                                <NavMenuItem.Label>Settings</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
 
                     <NavMenuItem>
                         <NavMenuItem.Link
