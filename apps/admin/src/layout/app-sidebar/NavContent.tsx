@@ -8,13 +8,19 @@ import {
     SidebarMenu,
     SidebarMenuBadge
 } from "@tryghost/shade"
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+    const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useState(false);
     const memberCount = useMemberCount();
+
+    const showTags = currentUser && canManageTags(currentUser);
+    const showMembers = currentUser && canManageMembers(currentUser);
 
     return (
         <SidebarGroup {...props}>
@@ -80,22 +86,26 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="tags">
-                            <LucideIcon.Tag />
-                            <NavMenuItem.Label>Tags</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
+                    {showTags && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="tags">
+                                <LucideIcon.Tag />
+                                <NavMenuItem.Label>Tags</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
 
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="members" activeOnSubpath>
-                            <LucideIcon.Users />
-                            <NavMenuItem.Label>Members</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                        {memberCount != null && (
-                            <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
-                        )}
-                    </NavMenuItem>
+                    {showMembers && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="members" activeOnSubpath>
+                                <LucideIcon.Users />
+                                <NavMenuItem.Label>Members</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                            {memberCount != null && (
+                                <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                            )}
+                        </NavMenuItem>
+                    )}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

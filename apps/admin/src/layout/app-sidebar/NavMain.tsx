@@ -7,12 +7,25 @@ import {
     SidebarMenu
 } from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
+import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
+import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
 import NetworkIcon from "./icons/NetworkIcon";
 import { NavMenuItem } from "./NavMenuItem";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+    const { data: currentUser } = useCurrentUser();
+    const { data: settings } = useBrowseSettings();
     const site = useBrowseSite();
     const url = site.data?.site.url;
+
+    // Only show NavMain for admin users
+    if (!currentUser || !hasAdminAccess(currentUser)) {
+        return null;
+    }
+
+    const socialWebEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled');
 
     return (
         <SidebarGroup {...props}>
@@ -24,12 +37,14 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="network">
-                            <NetworkIcon />
-                            <NavMenuItem.Label>Network</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
+                    {socialWebEnabled && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="network">
+                                <NetworkIcon />
+                                <NavMenuItem.Label>Network</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
                     <NavMenuItem className="relative group/viewsite">
                         <NavMenuItem.Link to="site">
                             <LucideIcon.AppWindow />
