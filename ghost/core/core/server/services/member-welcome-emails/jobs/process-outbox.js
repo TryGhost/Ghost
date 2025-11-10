@@ -122,7 +122,7 @@ async function processOutbox() {
     const durationMs = Date.now() - jobStartMs;
 
     if (totalProcessed + totalFailed === 0) {
-        return completeJob(MESSAGES.NO_ENTRIES);
+        return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} ${MESSAGES.NO_ENTRIES}`);
     }
 
     completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
