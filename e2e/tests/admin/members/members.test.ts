@@ -17,9 +17,7 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(memberToCreate.name);
-        await memberDetailsPage.emailInput.fill(memberToCreate.email);
-        await memberDetailsPage.noteInput.fill(memberToCreate.note);
+        await memberDetailsPage.fillMemberDetails(memberToCreate.name, memberToCreate.email, memberToCreate.note);
         await memberDetailsPage.addLabel(memberToCreate.labels[0]);
         await memberDetailsPage.save();
 
@@ -37,9 +35,7 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(memberToCreate.name);
-        await memberDetailsPage.emailInput.fill(memberToCreate.email);
-        await memberDetailsPage.noteInput.fill(memberToCreate.note);
+        await memberDetailsPage.fillMemberDetails(memberToCreate.name, memberToCreate.email, memberToCreate.note);
         await memberDetailsPage.saveButton.click();
 
         await expect(memberDetailsPage.retryButton).toBeVisible();
@@ -68,9 +64,7 @@ test.describe('Ghost Admin - Members', () => {
         });
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(editedMember.name);
-        await memberDetailsPage.emailInput.fill(editedMember.email);
-        await memberDetailsPage.noteInput.fill(editedMember.note);
+        await memberDetailsPage.fillMemberDetails(editedMember.name, editedMember.email, editedMember.note);
         await memberDetailsPage.removeLabel();
         await memberDetailsPage.subscriptionToggle.click();
         await memberDetailsPage.save();
@@ -90,9 +84,7 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(name);
-        await memberDetailsPage.emailInput.fill(email);
-        await memberDetailsPage.noteInput.fill(note);
+        await memberDetailsPage.fillMemberDetails(name, email, note);
         await memberDetailsPage.save();
 
         await memberDetailsPage.emailInput.fill('invalid-email-address');

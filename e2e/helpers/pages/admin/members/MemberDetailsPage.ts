@@ -48,6 +48,12 @@ export class MemberDetailsPage extends AdminPage {
         this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
 
+    async fillMemberDetails(name: string, email: string, note: string): Promise<void> {
+        await this.nameInput.fill(name);
+        await this.emailInput.fill(email);
+        await this.noteInput.fill(note);
+    }
+
     async addLabel(label: string): Promise<void> {
         await this.labelsInput.click();
         await this.page.keyboard.type(label);

@@ -23,8 +23,8 @@ export class MembersPage extends AdminPage {
         return this.memberListItems.filter({hasText: name});
     }
 
-    getMemberEmail(name: string): Locator {
-        return this.memberListItems.filter({hasText: name}).getByRole('paragraph');
+    getMemberEmail(emailAddress: string): Locator {
+        return this.memberListItems.filter({hasText: emailAddress}).getByRole('paragraph');
     }
 
     async getMemberCount(): Promise<number> {

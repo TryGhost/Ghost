@@ -5,14 +5,14 @@ export class PortalPage extends BasePage {
     readonly portalFrame: FrameLocator;
     private readonly frameSelector = '[data-testid="portal-popup-frame"]';
     readonly closeButton: Locator;
-    readonly body: Locator;
+    readonly portalFrameBody: Locator;
 
     constructor(page: Page) {
         super(page);
         this.portalFrame = page.frameLocator(this.frameSelector);
 
         this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
-        this.body = this.portalFrame.locator('body');
+        this.portalFrameBody = this.portalFrame.locator('body');
     }
 
     async closePortal(): Promise<void> {

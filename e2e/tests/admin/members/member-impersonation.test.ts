@@ -10,15 +10,14 @@ test.describe('Ghost Admin - Member Impersonation', () => {
     });
 
     test('impersonates a member and verifies magic link generation', async ({page}) => {
-        const {name, email} = memberFactory.build({email: 'impersonate@ghost.org'});
+        const {name, email, note} = memberFactory.build({email: 'impersonate@ghost.org'});
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.nameInput.fill(name);
-        await memberDetailsPage.emailInput.fill(email);
+        await memberDetailsPage.fillMemberDetails(name, email, note);
         await memberDetailsPage.save();
 
         await membersPage.goto();
@@ -36,7 +35,7 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await homePage.accountButton.click();
 
         const portal = new PortalPage(page);
-        await expect(portal.body).toContainText('Your account');
-        await expect(portal.body).toContainText('impersonate@ghost.org');
+        await expect(portal.portalFrameBody).toContainText('Your account');
+        await expect(portal.portalFrameBody).toContainText('impersonate@ghost.org');
     });
 });
