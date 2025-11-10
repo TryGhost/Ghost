@@ -14,7 +14,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/settings">
+                        <NavMenuItem.Link to="settings">
                             <LucideIcon.Settings />
                             <NavMenuItem.Label>Settings</NavMenuItem.Label>
                         </NavMenuItem.Link>
@@ -22,7 +22,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     <NavMenuItem>
                         <NavMenuItem.Link
-                            href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+                            to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
                             target="_blank"
                             rel="noopener noreferrer"
                         >

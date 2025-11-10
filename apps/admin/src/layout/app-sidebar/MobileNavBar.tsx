@@ -10,12 +10,12 @@ import { useIsActiveLink } from "./useIsActiveLink";
 const ICON_STROKE_WIDTH = 1.5;
 
 interface MobileNavBarButtonProps extends Omit<React.ComponentProps<typeof Button>, 'asChild'> {
-    href?: string;
+    to?: string;
     activeOnSubpath?: boolean;
 }
 
-function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props }: MobileNavBarButtonProps) {
-    const isActive = useIsActiveLink({ href, activeOnSubpath });
+function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }: MobileNavBarButtonProps) {
+    const isActive = useIsActiveLink({ path: to, activeOnSubpath });
 
     return (
         <Button
@@ -25,7 +25,7 @@ function MobileNavBarButton({ href, activeOnSubpath = false, children, ...props 
             size="icon"
             data-active={isActive}
         >
-            <a href={href}>
+            <a href={to}>
                 {children}
             </a>
         </Button>
@@ -44,21 +44,21 @@ export function MobileNavBar() {
             <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px]">
                 <MobileNavBarButton
                     activeOnSubpath
-                    href="#/analytics"
+                    to="analytics"
                 >
                     <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Analytics</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
-                    href="#/posts"
+                    to="posts"
                 >
                     <LucideIcon.PenLine strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Posts</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
-                    href="#/members"
+                    to="members"
                 >
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
                     <span className="sr-only">Members</span>
