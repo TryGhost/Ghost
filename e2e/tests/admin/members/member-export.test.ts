@@ -1,4 +1,4 @@
-import {expect, getHttpClient, test} from '../../../helpers/playwright';
+import {expect, test} from '../../../helpers/playwright';
 
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
 import {MembersPage} from '../../../helpers/pages';
@@ -70,7 +70,7 @@ test.describe('Ghost Admin - Member Export', () => {
     ];
 
     test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(getHttpClient(page));
+        memberFactory = createMemberFactory(page.request);
     });
 
     test('exports all members to CSV', async ({page}) => {
