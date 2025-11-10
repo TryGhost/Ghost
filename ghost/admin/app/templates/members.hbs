@@ -89,12 +89,12 @@
                             {{#if (and this.members.length this.isFiltered)}}
                                 <li class="divider"></li>
                                 <li>
-                                    <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
+                                    <button class="mr2" data-test-button="add-label-selected" data-testid="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
                                         <span>Add label for selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
+                                    <button class="mr2" data-test-button="remove-label-selected" data-testid="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
                                         <span>Remove label from selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
