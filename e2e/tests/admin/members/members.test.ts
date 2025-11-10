@@ -77,7 +77,7 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('cannot update an existing member with invalid email', async ({page}) => {
-        const {name, email, note} = memberFactory.build({email: 'membertocreate@ghost.org'});
+        const {name, email, note} = memberFactory.build({email: 'membertocreate@ghost.org', name: 'Test Member'});
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
@@ -95,7 +95,7 @@ test.describe('Ghost Admin - Members', () => {
 
         await membersPage.goto();
         await memberDetailsPage.confirmLeaveButton.click();
-        await expect(membersPage.getMemberEmail('membertocreate@ghost.org')).toBeVisible();
+        await expect(membersPage.getMemberEmail('Test Member')).toBeVisible();
     });
 
     test('deletes an existing member', async ({page}) => {

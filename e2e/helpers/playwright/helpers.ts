@@ -16,8 +16,7 @@ export async function withIsolatedPage<T>(
 }
 
 /**
- * Playwrights has it's HTTP client abstraction - page.request. It auto stores cookies, headers and other states as
- * you navigate through the site.
+ * Playwright has its HTTP client abstraction - page.request. It auto-stores cookies, headers and other states as
  *
  * This function returns the page.request object, so you can use it to make requests to the Ghost backend without worrying
  * about things like cookies, headers (authentication), since they are already pre-set up for you in this HTTP client.
