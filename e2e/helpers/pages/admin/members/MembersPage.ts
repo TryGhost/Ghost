@@ -24,10 +24,10 @@ export class MembersPage extends AdminPage {
     }
 
     getMemberEmail(memberName: string): Locator {
-        return this.memberListItems.filter({hasText: memberName}).getByRole('paragraph');
+        return this.getMemberByName(memberName).getByRole('paragraph');
     }
 
-    async getMemberCount(): Promise<number> {
+    async getMemberListCount(): Promise<number> {
         return await this.memberListItems.count();
     }
 }

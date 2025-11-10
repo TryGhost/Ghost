@@ -10,19 +10,14 @@ test.describe('Ghost Admin - Member Impersonation', () => {
     });
 
     test('impersonates a member and verifies magic link generation', async ({page}) => {
-        const {name, email, note} = memberFactory.build({email: 'impersonate@ghost.org'});
+        const {name} = await memberFactory.create({email: 'impersonate@ghost.org'});
 
         const membersPage = new MembersPage(page);
-        await membersPage.goto();
-        await membersPage.newMemberButton.click();
-
-        const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(name, email, note);
-        await memberDetailsPage.save();
 
         await membersPage.goto();
         await membersPage.getMemberByName(name).click();
 
+        const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.memberActionsButton.click();
         await memberDetailsPage.impersonateButton.click();
 
