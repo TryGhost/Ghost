@@ -1,6 +1,22 @@
 const path = require('path');
 const errors = require('@tryghost/errors');
 
+const resolveAdapterExport = (moduleExport) => {
+    if (!moduleExport) {
+        return moduleExport;
+    }
+
+    if (typeof moduleExport === 'function') {
+        return moduleExport;
+    }
+
+    if (typeof moduleExport === 'object' && typeof moduleExport.default === 'function') {
+        return moduleExport.default;
+    }
+
+    return moduleExport;
+};
+
 /**
  * @typedef { function(new: Adapter, object) } AdapterConstructor
  */
@@ -108,7 +124,8 @@ module.exports = class AdapterManager {
                 pathToAdapter = path.join(pathToAdapters, adapterClassName);
             }
             try {
-                Adapter = this.loadAdapterFromPath(pathToAdapter);
+                const adapterModule = this.loadAdapterFromPath(pathToAdapter);
+                Adapter = resolveAdapterExport(adapterModule);
                 if (Adapter) {
                     break;
                 }
