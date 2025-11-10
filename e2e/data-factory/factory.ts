@@ -25,8 +25,9 @@ export abstract class Factory<TOptions extends Record<string, unknown> = Record<
 
     async createMany(optionsList: Partial<TOptions>[]): Promise<TResult[]> {
         if (!this.adapter) {
-            throw new Error('Cannot create without a persistence adapter. Use buildList() for in-memory objects.');
+            throw new Error('Cannot create without a persistence adapter. Use buildMany() for in-memory objects.');
         }
+
         const results: TResult[] = [];
         for (const options of optionsList) {
             const result = await this.create(options);

@@ -9,23 +9,24 @@ export interface ExportedFile {
 }
 
 class FilterSection extends BasePage {
-    readonly filterActionsButton: Locator;
-    readonly filterSelect: Locator;
+    readonly actionsButton: Locator;
     readonly applyFilterButton: Locator;
-    readonly filterInput: Locator;
+
+    readonly selectType: Locator;
+    readonly input: Locator;
 
     constructor(page: Page) {
         super(page);
 
-        this.filterActionsButton = page.getByTestId('members-filter-actions');
-        this.filterSelect = page.getByTestId('members-filter');
-        this.filterInput = page.getByTestId('token-input-search');
+        this.actionsButton = page.getByTestId('members-filter-actions');
         this.applyFilterButton = page.getByTestId('members-apply-filter');
+        this.selectType = page.getByTestId('members-filter');
+        this.input = page.getByTestId('token-input-search');
     }
 
     async applyLabel(labelName: string): Promise<void> {
-        await this.filterActionsButton.click();
-        await this.filterSelect.selectOption('label');
+        await this.actionsButton.click();
+        await this.selectType.selectOption('label');
 
         await this.addLabelToLabelFilter(labelName);
 
@@ -33,7 +34,7 @@ class FilterSection extends BasePage {
     }
 
     private async addLabelToLabelFilter(labelName: string) {
-        await this.filterInput.fill(labelName);
+        await this.input.fill(labelName);
         await this.page.keyboard.press('Tab');
     }
 }
