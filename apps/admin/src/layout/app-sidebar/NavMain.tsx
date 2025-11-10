@@ -19,19 +19,19 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <SidebarGroupContent>
                 <SidebarMenu>
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/analytics" activeOnSubpath>
+                        <NavMenuItem.Link to="analytics" activeOnSubpath>
                             <LucideIcon.TrendingUp />
                             <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/network">
+                        <NavMenuItem.Link to="network">
                             <NetworkIcon />
                             <NavMenuItem.Label>Network</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
                     <NavMenuItem className="relative group/viewsite">
-                        <NavMenuItem.Link href="#/site">
+                        <NavMenuItem.Link to="site">
                             <LucideIcon.AppWindow />
                             <NavMenuItem.Label>View site</NavMenuItem.Label>
                         </NavMenuItem.Link>
