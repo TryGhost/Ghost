@@ -55,7 +55,8 @@ async function processEntry(db, entry) {
     } catch (err) {
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: err.message});
 
-        const memberInfo = payload ? `${payload.name} (${payload.email})` : 'unknown member';
+        const email = payload?.email || 'unknown member';
+        const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
         logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${err.message}`);
 
         return {success: false};
