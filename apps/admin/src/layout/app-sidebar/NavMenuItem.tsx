@@ -1,10 +1,10 @@
 import React from 'react';
 import {
     SidebarMenuButton,
-    SidebarMenuItem
+    SidebarMenuItem,
+    useSidebar
 } from '@tryghost/shade';
-import {useLocation} from 'react-router';
-import { useBaseRoute } from '@tryghost/admin-x-framework';
+import { useIsActiveLink } from './useIsActiveLink';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
@@ -15,40 +15,28 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
 }
 
 type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
-    href?: string
+    to?: string
     target?: string
     rel?: string
     activeOnSubpath?: boolean
 };
 function NavMenuLink({
-    href,
+    to,
     target,
     rel,
     activeOnSubpath = false,
     children,
     ...props
 }: NavMenuLinkProps) {
-    const location = useLocation();
-    const currentBaseRoute = useBaseRoute();
+    const href = `#/${to}`;
+    const isActive = useIsActiveLink({ path: to, activeOnSubpath });
+    const { isMobile, setOpenMobile } = useSidebar();
 
-    // Normalize href: strip leading hash and any trailing fragment
-    const normalizedHref = href?.startsWith('#') ? href.slice(1) : href;
-    const hrefNoHash = normalizedHref?.split('#')[0];
-
-    // Extract path (keep optional query for exact match mode)
-    const [linkPath = ''] = (hrefNoHash ?? '').split('?');
-    const linkBaseRoute = linkPath.split('/')[1] ?? '';
-
-    let isActive = false;
-
-    if (activeOnSubpath) {
-        // Match by first segment only; ignore query and deeper segments
-        isActive = !!linkBaseRoute && currentBaseRoute === linkBaseRoute;
-    } else if (hrefNoHash) {
-        // Exact path + query match
-        const currentFull = `${location.pathname}${location.search}`;
-        isActive = currentFull === hrefNoHash;
-    }
+    const handleClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     return (
         <SidebarMenuButton
@@ -60,6 +48,7 @@ function NavMenuLink({
                 rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
                 target={target}
                 aria-current={isActive ? 'page' : undefined}
+                onClick={handleClick}
             >
                 {children}
             </a>

@@ -20,7 +20,7 @@ const App: React.FC<BaseAppProps> = ({framework, designSystem, appSettings}) => 
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <StatsErrorBoundary>
                         <GlobalDataProvider>
-                            <ShadeApp className="shade-stats" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                            <ShadeApp className="shade-stats app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                                 <Outlet />
                             </ShadeApp>
                         </GlobalDataProvider>
