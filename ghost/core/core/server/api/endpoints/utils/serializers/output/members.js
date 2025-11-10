@@ -175,6 +175,7 @@ function serializeMember(member, options) {
         email_count: json.email_count,
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
+        email_click_rate: json.email_click_rate,
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
@@ -262,6 +263,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_count
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
+ * @prop {number} email_click_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
  * @prop {'free'|'paid'} status
  */

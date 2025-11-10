@@ -186,8 +186,24 @@ module.exports = {
             .where('emails.track_opens', true)
             .first() || {};
 
+        const {trackedEmailCountForClicks} = await db.knex('email_recipients')
+            .select(db.knex.raw('COUNT(email_recipients.id) as trackedEmailCountForClicks'))
+            .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
+            .where('email_recipients.member_id', memberId)
+            .where('emails.track_clicks', true)
+            .first() || {};
+
         const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
+
+        // Count distinct emails where member clicked at least once
+        const {emailClickedCount} = await db.knex('members_click_events')
+            .select(db.knex.raw('COUNT(DISTINCT emails.id) as emailClickedCount'))
+            .leftJoin('redirects', 'members_click_events.redirect_id', 'redirects.id')
+            .leftJoin('emails', 'redirects.post_id', 'emails.post_id')
+            .where('members_click_events.member_id', memberId)
+            .whereNotNull('emails.id')
+            .first() || {};
 
         const updateQuery = {
             email_count: emailCount.count,
@@ -196,6 +212,10 @@ module.exports = {
 
         if (trackedEmailCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
             updateQuery.email_open_rate = Math.round(emailOpenedCount.count / trackedEmailCount * 100);
+        }
+
+        if (trackedEmailCountForClicks >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
+            updateQuery.email_click_rate = Math.round(emailClickedCount / trackedEmailCountForClicks * 100);
         }
 
         await db.knex('members')

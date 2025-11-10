@@ -766,6 +766,64 @@ describe('Members API', function () {
             });
     });
 
+    it('Can order by email_click_rate', async function () {
+        await agent
+            .get('members/?order=email_click_rate%20desc')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                // Verify email_click_rate field exists in response
+                members.forEach((member) => {
+                    assert.ok(member.hasOwnProperty('email_click_rate'), 'Member should have email_click_rate field');
+                });
+            });
+
+        await agent
+            .get('members/?order=email_click_rate%20asc')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-length': anyContentLength,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                // Verify email_click_rate field exists in response
+                members.forEach((member) => {
+                    assert.ok(member.hasOwnProperty('email_click_rate'), 'Member should have email_click_rate field');
+                });
+            });
+    });
+
     it('Search by case-insensitive name egg receives member with name Mr Egg', async function () {
         await agent
             .get('members/?search=egg')
