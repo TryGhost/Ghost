@@ -39,37 +39,50 @@ class FilterSection extends BasePage {
 }
 
 class SettingsSection extends BasePage {
-    readonly addLabelButton: Locator;
-    readonly removeLabelButton: Locator;
-
-    readonly confirmButton: Locator;
+    readonly addLabelForSelectedMembersButton: Locator;
+    readonly removeLabelForSelectedMembersButton: Locator;
+    readonly selectLabel: Locator;
+    readonly confirmAddLabelButton: Locator;
+    readonly confirmRemoveLabelButton: Locator;
     readonly closeModalButton: Locator;
+
+    private readonly labelRemoved: Locator;
+    private readonly labelAdded: Locator;
 
     constructor(page: Page) {
         super(page);
 
-        this.addLabelButton = page.getByTestId('add-label-selected');
-        this.removeLabelButton = page.getByTestId('remove-label-selected');
-        this.confirmButton = page.getByTestId('confirm');
+        this.addLabelForSelectedMembersButton = page.getByTestId('add-label-selected');
+        this.removeLabelForSelectedMembersButton = page.getByTestId('remove-label-selected');
+
+        this.selectLabel = page.getByTestId('label-select');
+        this.confirmAddLabelButton = page.getByTestId('confirm');
+        this.confirmRemoveLabelButton = page.getByTestId('confirm');
         this.closeModalButton = page.getByTestId('close-modal');
+
+        this.labelAdded = page.getByTestId('add-label-complete');
+        this.labelRemoved = page.getByTestId('remove-label-complete');
     }
 
     async addLabelOnSelectedMembers(labelName: string): Promise<void> {
-        await this.addLabelButton.click();
-        await this.page.locator('[data-test-state="add-label-unconfirmed"] select').selectOption({label: labelName});
-        await this.confirmButton.click();
-        await this.page.locator('[data-test-state="add-complete"]').waitFor({state: 'visible'});
+        await this.addLabelForSelectedMembersButton.click();
+        await this.selectLabel.waitFor({state: 'visible'});
+        await this.selectLabel.selectOption({label: labelName});
+
+        await this.confirmAddLabelButton.click();
+        await this.labelAdded.waitFor({state: 'visible'});
     }
 
     async removeLabelOnSelectedMembers(labelName: string): Promise<void> {
-        await this.removeLabelButton.click();
-        await this.page.locator('[data-test-state="remove-label-unconfirmed"] select').selectOption({label: labelName});
-        await this.confirmButton.click();
-        await this.page.locator('[data-test-state="remove-complete"]').waitFor({state: 'visible'});
+        await this.removeLabelForSelectedMembersButton.click();
+        await this.selectLabel.selectOption({label: labelName});
+
+        await this.confirmRemoveLabelButton.click();
+        await this.labelRemoved.waitFor({state: 'visible'});
     }
 
     getSuccessMessage(): Locator {
-        return this.page.locator('[data-test-state="add-complete"] p, [data-test-state="remove-complete"] p');
+        return this.page.getByTestId('label-success-message');
     }
 }
 
