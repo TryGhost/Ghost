@@ -26,13 +26,15 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
     const newRetryCount = retryCount + 1;
     const newStatus = newRetryCount <= MAX_RETRIES ? OUTBOX_STATUSES.PENDING : OUTBOX_STATUSES.FAILED;
 
+    const truncatedMessage = (errorMessage ?? 'Unknown error').toString().slice(0, 2000);
+
     await db.knex('outbox')
         .where('id', entryId)
         .update({
             status: newStatus,
             retry_count: newRetryCount,
             last_retry_at: db.knex.raw('CURRENT_TIMESTAMP'),
-            message: errorMessage.substring(0, 2000),
+            message: truncatedMessage,
             updated_at: db.knex.raw('CURRENT_TIMESTAMP')
         });
 }
@@ -53,11 +55,12 @@ async function processEntry(db, entry) {
 
         return {success: true};
     } catch (err) {
-        await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: err.message});
+        const errorMessage = err?.message ?? 'Unknown error';
+        await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
 
         const email = payload?.email || 'unknown member';
         const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
-        logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${err.message}`);
+        logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${errorMessage}`);
 
         return {success: false};
     }
