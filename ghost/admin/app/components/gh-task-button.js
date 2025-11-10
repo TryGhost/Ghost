@@ -19,15 +19,7 @@ import {task, timeout} from 'ember-concurrency';
  * component is removed from the DOM
  */
 const GhTaskButton = Component.extend({
-    tagName: 'button',
-    classNameBindings: [
-        'isRunning:appear-disabled',
-        'isIdleClass',
-        'isRunningClass',
-        'isSuccessClass',
-        'isFailureClass'
-    ],
-    attributeBindings: ['disabled', 'form', 'type', 'tabindex', 'data-test-button', 'style'],
+    tagName: '',
 
     task: null,
     taskArgs: undefined,
@@ -132,20 +124,21 @@ const GhTaskButton = Component.extend({
         }
     },
 
-    click() {
+    handleClick: action(function (event) {
         // let the default click bubble if defaultClick===true - useful when
         // you want to handle a form submit action rather than triggering a
         // task directly
         if (this.defaultClick) {
             if (!this.isRunning) {
-                this._restartAnimation.perform();
+                this._restartAnimation.perform(event.currentTarget);
             }
             return;
         }
 
         // do nothing if disabled externally
         if (this.disabled) {
-            return false;
+            event.preventDefault();
+            return;
         }
 
         let taskName = this.get('task.name');
@@ -160,19 +153,19 @@ const GhTaskButton = Component.extend({
         this.action();
         this._handleMainTask.perform();
 
-        this._restartAnimation.perform();
+        this._restartAnimation.perform(event.currentTarget);
 
         // prevent the click from bubbling and triggering form actions
-        return false;
-    },
+        event.preventDefault();
+    }),
 
     // mouseDown can be prevented, this is useful for situations where we want
     // to avoid on-blur events triggering before the button click
-    mouseDown(event) {
+    handleMouseDown: action(function (event) {
         if (this.disableMouseDown) {
             event.preventDefault();
         }
-    },
+    }),
 
     handleReset: action(function () {
         const isTaskSuccess = this.get('task.last.isSuccessful') && this.get('task.last.value');
@@ -184,8 +177,11 @@ const GhTaskButton = Component.extend({
     // when local validation fails there's no transition from failed->running
     // so we want to restart the retry spinner animation to show something
     // has happened when the button is clicked
-    _restartAnimation: task(function* () {
-        let elem = this.element.querySelector('.retry-animated');
+    _restartAnimation: task(function* (buttonElement) {
+        if (!buttonElement) {
+            return;
+        }
+        let elem = buttonElement.querySelector('.retry-animated');
         if (elem) {
             elem.classList.remove('retry-animated');
             yield timeout(10);

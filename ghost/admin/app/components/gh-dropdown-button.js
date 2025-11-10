@@ -1,34 +1,31 @@
 import Component from '@ember/component';
-import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
 import classic from 'ember-classic-decorator';
-import {attributeBindings, tagName} from '@ember-decorators/component';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 @classic
-@tagName('button')
-@attributeBindings('href', 'role', 'type')
-export default class GhDropdownButton extends Component.extend(DropdownMixin) {
+export default class GhDropdownButton extends Component {
+    tagName = '';
+
     @service dropdown;
 
     role = 'button';
+    type = 'button';
+    isOpen = false;
 
     // matches with the dropdown this button toggles
     dropdownName = null;
 
-    @computed
-    get type() {
-        return this.tagName === 'button' ? 'button' : null;
+    @computed('isOpen')
+    get openClosedClass() {
+        return this.isOpen ? 'open' : 'closed';
     }
 
     // Notify dropdown service this dropdown should be toggled
-    click() {
-        super.click(...arguments);
-
+    @action
+    handleClick(event) {
         this.dropdown.toggleDropdown(this.dropdownName, this);
-
-        if (this.tagName === 'a') {
-            return false;
-        }
+        event.stopPropagation();
+        event.preventDefault();
     }
 }

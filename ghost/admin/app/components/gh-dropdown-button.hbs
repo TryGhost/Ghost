@@ -1,0 +1,10 @@
+<button
+    type={{this.type}}
+    role={{this.role}}
+    class="{{@classNames}} {{this.openClosedClass}}"
+    {{on "click" this.handleClick}}
+    ...attributes
+>
+    {{yield}}
+</button>
+
