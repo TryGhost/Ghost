@@ -50,10 +50,8 @@ test.describe('Ghost Admin - Members', () => {
             labels: ['original']
         });
 
-        const membersPage = new MembersPage(page);
-        await membersPage.goto();
-
         // Edit the member
+        const membersPage = new MembersPage(page);
         await membersPage.goto();
         await membersPage.getMemberByName(memberToCreate.name).click();
 
@@ -102,8 +100,6 @@ test.describe('Ghost Admin - Members', () => {
         const {name} = await memberFactory.create();
 
         const membersPage = new MembersPage(page);
-        await membersPage.goto();
-
         await membersPage.goto();
         await membersPage.getMemberByName(name).click();
 
