@@ -440,7 +440,6 @@ module.exports = class MemberRepository {
                 }
             }
         }
-                
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
