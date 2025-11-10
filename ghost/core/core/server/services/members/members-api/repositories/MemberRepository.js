@@ -335,37 +335,44 @@ module.exports = class MemberRepository {
         const source = this._resolveContextSource(context);
         const eventData = _.pick(data, ['created_at']);
 
+        const memberAddOptions = {...(options || {}), withRelated};
         let member;
         if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
-            member = await this._Member.transaction(async (transacting) => {
-                const m = await this._Member.add({
+            const runMemberCreation = async (transacting) => {
+                const newMember = await this._Member.add({
                     ...memberData,
                     ...memberStatusData,
                     labels
-                }, {...options, withRelated, transacting});
+                }, {...memberAddOptions, transacting});
 
-                const timestamp = eventData.created_at || m.get('created_at');
+                const timestamp = eventData.created_at || newMember.get('created_at');
 
                 await this._Outbox.add({
                     id: ObjectId().toHexString(),
                     event_type: MemberCreatedEvent.name,
                     payload: JSON.stringify({
-                        memberId: m.id,
-                        email: m.get('email'),
-                        name: m.get('name'),
+                        memberId: newMember.id,
+                        email: newMember.get('email'),
+                        name: newMember.get('name'),
                         source,
                         timestamp
                     })
                 }, {transacting});
 
-                return m;
-            });
+                return newMember;
+            };
+
+            if (memberAddOptions.transacting) {
+                member = await runMemberCreation(memberAddOptions.transacting);
+            } else {
+                member = await this._Member.transaction(runMemberCreation);
+            }
         } else {
             member = await this._Member.add({
                 ...memberData,
                 ...memberStatusData,
                 labels
-            }, {...options, withRelated});
+            }, memberAddOptions);
         }
 
         if (!eventData.created_at) {

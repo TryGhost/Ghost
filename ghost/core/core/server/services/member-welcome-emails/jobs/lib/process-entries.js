@@ -24,7 +24,7 @@ async function deleteProcessedEntry(db, entryId) {
 */
 async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
     const newRetryCount = retryCount + 1;
-    const newStatus = newRetryCount >= MAX_RETRIES ? OUTBOX_STATUSES.FAILED : OUTBOX_STATUSES.PENDING;
+    const newStatus = newRetryCount < MAX_RETRIES ? OUTBOX_STATUSES.PENDING : OUTBOX_STATUSES.FAILED;
 
     await db.knex('outbox')
         .where('id', entryId)

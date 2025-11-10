@@ -6,7 +6,8 @@ const {MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
  * @param {Object} payload - Member data containing name and email
  */
 async function sendMemberWelcomeEmail(payload) {
-    logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Welcome email sent to ${payload.name} at ${payload.email}`);
+    const name = payload?.name ? `${payload.name} at ` : '';
+    logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Welcome email mock sent to ${name}${payload?.email}`);
 }
 
 module.exports = sendMemberWelcomeEmail;
