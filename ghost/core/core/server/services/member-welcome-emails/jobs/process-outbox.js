@@ -111,7 +111,7 @@ async function processOutbox() {
         const batchStartMs = Date.now();
         const {processed, failed} = await processEntries(db, entries);
         const batchDurationMs = Date.now() - batchStartMs;
-        const batchRate = ((processed + failed) / (batchDurationMs / 1000)).toFixed(1);
+        const batchRate = ((processed + failed) / (Math.max(batchDurationMs, 1) / 1000)).toFixed(1);
         
         totalProcessed += processed;
         totalFailed += failed;
