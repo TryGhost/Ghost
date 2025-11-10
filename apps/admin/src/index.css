@@ -41,3 +41,7 @@ body.react-admin [data-navbar="navbar"] {
     padding-top: 24px;
     padding-bottom: 24px;
 }
+
+body.react-admin #ember-app .gh-viewport {
+    padding-bottom: 0px;
+}

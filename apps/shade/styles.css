@@ -155,7 +155,7 @@
 }
 
 @media (max-width: 800px) {
-    body.ember-application .shade {
+    body:not(.react-admin) .shade {
         height: calc(100vh - var(--mobile-navbar-height));
     }
 }
