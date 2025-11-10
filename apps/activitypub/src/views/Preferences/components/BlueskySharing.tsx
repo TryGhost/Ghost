@@ -91,8 +91,12 @@ const BlueskySharing: React.FC = () => {
         if (account?.blueskyHandleConfirmed) {
             setHandleConfirmed(true);
             setLoading(false);
+
+            // Only show toast on first confirmation
+            if (retryCountRef.current > 0) {
+                toast.success('Bluesky sharing enabled');
+            }
             retryCountRef.current = 0;
-            toast.success('Bluesky sharing enabled');
 
             return;
         }
