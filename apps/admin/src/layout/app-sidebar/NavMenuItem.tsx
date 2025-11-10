@@ -15,20 +15,21 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
 }
 
 type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
-    href?: string
+    to?: string
     target?: string
     rel?: string
     activeOnSubpath?: boolean
 };
 function NavMenuLink({
-    href,
+    to,
     target,
     rel,
     activeOnSubpath = false,
     children,
     ...props
 }: NavMenuLinkProps) {
-    const isActive = useIsActiveLink({ href, activeOnSubpath });
+    const href = `#/${to}`;
+    const isActive = useIsActiveLink({ path: to, activeOnSubpath });
     const { isMobile, setOpenMobile } = useSidebar();
 
     const handleClick = () => {

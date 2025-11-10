@@ -37,7 +37,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
                             />
                         </Button>
-                        <NavMenuItem.Link href="#/posts">
+                        <NavMenuItem.Link to="posts">
                             <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
@@ -55,40 +55,40 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=draft">
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=scheduled">
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=published">
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     </NavSubMenu>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/pages">
+                        <NavMenuItem.Link to="pages">
                             <LucideIcon.File />
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/tags">
+                        <NavMenuItem.Link to="tags">
                             <LucideIcon.Tag />
                             <NavMenuItem.Label>Tags</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/members" activeOnSubpath>
+                        <NavMenuItem.Link to="members" activeOnSubpath>
                             <LucideIcon.Users />
                             <NavMenuItem.Label>Members</NavMenuItem.Label>
                         </NavMenuItem.Link>
