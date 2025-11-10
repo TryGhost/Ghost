@@ -22,7 +22,7 @@ const openSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
     document.dispatchEvent(searchShortcutEvent);
 }
 
-function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
+function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
     const site = useBrowseSite();
     const title = site.data?.site.title ?? "";
     const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
@@ -60,4 +60,4 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
     );
 }
 
-export default NavHeader;
+export default AppSidebarHeader;
