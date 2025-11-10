@@ -1,12 +1,12 @@
 import {PostEditorPage, SettingsPage} from '../../../helpers/pages/admin';
 import {PostFactory, createPostFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - i18n Newsletter', () => {
     let postFactory: PostFactory;
 
     test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page.request);
+        postFactory = createPostFactory(getHttpClient(page));
     });
 
     test('changing the site language immediately translates strings in newsletters', async ({page, ghostAccountOwner}) => {

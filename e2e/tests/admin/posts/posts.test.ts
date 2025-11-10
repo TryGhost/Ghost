@@ -1,10 +1,10 @@
 import {PostFactory, createPostFactory} from '../../../data-factory';
 import {PostsPage} from '../../../helpers/pages';
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Posts', () => {
     test('lists posts', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page.request);
+        const postFactory: PostFactory = createPostFactory(getHttpClient(page));
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();

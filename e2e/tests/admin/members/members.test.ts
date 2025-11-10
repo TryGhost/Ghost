@@ -1,12 +1,12 @@
 import {MemberDetailsPage, MembersPage} from '../../../helpers/pages';
 import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {expect, getHttpClient, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Members', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
+        memberFactory = createMemberFactory(getHttpClient(page));
     });
 
     test('creates a new member with valid details', async ({page}) => {
