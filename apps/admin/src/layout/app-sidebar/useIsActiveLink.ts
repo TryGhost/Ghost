@@ -15,18 +15,11 @@ export function useIsActiveLink({ href, activeOnSubpath = false }: UseIsActiveLi
     // Normalize href: strip leading hash and any trailing fragment
     const normalizedHref = href.startsWith('#') ? href.slice(1) : href;
     const [pathWithQuery] = normalizedHref.split('#');
+    const [linkPath] = pathWithQuery.split('?');
 
     if (activeOnSubpath) {
-        // Match by first segment only; ignore query and deeper segments
-        const [linkPath] = pathWithQuery.split('?');
-        const linkBaseRoute = linkPath.split('/')[1];
-
-        if (!linkBaseRoute) {
-            return false;
-        }
-
-        // Use matchPath to check if current location starts with this base route
-        const pattern = `/${linkBaseRoute}/*`;
+        // Match any subpath under this route using wildcard pattern
+        const pattern = `${linkPath}/*`;
         return matchPath(pattern, location.pathname) !== null;
     } else {
         // Exact path + query match
