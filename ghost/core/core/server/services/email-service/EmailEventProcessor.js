@@ -211,52 +211,6 @@ class EmailEventProcessor {
             return recipientMap;
         }
 
-        // Track statistics for logging
-        let eventsWithEmailId = 0;
-        let eventsNeedingLookup = 0;
-        let eventsFromCache = 0;
-
-        // First, batch resolve providerIds to emailIds for events that don't have emailId
-        // emailId is present for emails sent by Ghost (via user-variables['email-id']),
-        // but may be missing for older emails sent before this feature was added
-        const providerIdsToResolve = new Set();
-        for (const identification of emailIdentifications) {
-            if (identification.emailId) {
-                eventsWithEmailId += 1;
-            } else if (identification.providerId) {
-                if (this.providerIdEmailIdMap[identification.providerId]) {
-                    eventsFromCache += 1;
-                } else {
-                    eventsNeedingLookup += 1;
-                    providerIdsToResolve.add(identification.providerId);
-                }
-            }
-        }
-
-        // Log statistics
-        if (emailIdentifications.length > 0) {
-            logging.info(`[EmailAnalytics] batchGetRecipients: ${emailIdentifications.length} events - ${eventsWithEmailId} with emailId, ${eventsFromCache} from cache, ${eventsNeedingLookup} need lookup`);
-        }
-
-        // Batch fetch all missing emailIds in a single query
-        if (providerIdsToResolve.size > 0) {
-            const providerIdArray = Array.from(providerIdsToResolve);
-            const lookupStart = Date.now();
-            logging.info(`[EmailAnalytics] Looking up ${providerIdsToResolve.size} providerIds in batch query`);
-            
-            const emailBatchMappings = await this.#db.knex('email_batches')
-                .select('provider_id', 'email_id')
-                .whereIn('provider_id', providerIdArray);
-
-            const lookupDuration = Date.now() - lookupStart;
-            logging.info(`[EmailAnalytics] Batch lookup completed in ${lookupDuration}ms - found ${emailBatchMappings.length}/${providerIdsToResolve.size} mappings`);
-
-            // Cache the results
-            for (const mapping of emailBatchMappings) {
-                this.providerIdEmailIdMap[mapping.provider_id] = mapping.email_id;
-            }
-        }
-
         // Build list of lookups with resolved emailIds
         const lookups = [];
         for (const identification of emailIdentifications) {
@@ -264,7 +218,7 @@ class EmailEventProcessor {
                 continue;
             }
 
-            const emailId = identification.emailId ?? this.providerIdEmailIdMap[identification.providerId];
+            const emailId = identification.emailId ?? await this.getEmailId(identification.providerId);
             if (!emailId) {
                 continue;
             }
@@ -279,47 +233,26 @@ class EmailEventProcessor {
             return recipientMap;
         }
 
-        // Process in batches to avoid very large OR queries
-        const MAX_RECIPIENT_BATCH_SIZE = 500;
-        const recipientQueryStart = Date.now();
-        let recipientQueryBatches = 0;
-        
-        for (let i = 0; i < lookups.length; i += MAX_RECIPIENT_BATCH_SIZE) {
-            const batchLookups = lookups.slice(i, i + MAX_RECIPIENT_BATCH_SIZE);
-            recipientQueryBatches += 1;
+        // Build a single query with OR conditions for all lookups
+        const recipients = await this.#db.knex('email_recipients')
+            .select('id', 'member_id', 'email_id', 'member_email')
+            .where((builder) => {
+                for (const lookup of lookups) {
+                    builder.orWhere({
+                        member_email: lookup.email,
+                        email_id: lookup.emailId
+                    });
+                }
+            });
 
-            // Build query with OR conditions for this batch
-            const batchQueryStart = Date.now();
-            const recipients = await this.#db.knex('email_recipients')
-                .select('id', 'member_id', 'email_id', 'member_email')
-                .where((builder) => {
-                    for (const lookup of batchLookups) {
-                        builder.orWhere({
-                            member_email: lookup.email,
-                            email_id: lookup.emailId
-                        });
-                    }
-                });
-            const batchQueryDuration = Date.now() - batchQueryStart;
-
-            if (batchLookups.length > 100) {
-                logging.info(`[EmailAnalytics] Recipient query batch ${recipientQueryBatches}: ${batchLookups.length} lookups, ${recipients.length} found, ${batchQueryDuration}ms`);
-            }
-
-            // Build map: "email:emailId" -> recipient info
-            for (const recipient of recipients) {
-                const key = `${recipient.member_email}:${recipient.email_id}`;
-                recipientMap.set(key, {
-                    emailRecipientId: recipient.id,
-                    memberId: recipient.member_id,
-                    emailId: recipient.email_id
-                });
-            }
-        }
-
-        const recipientQueryDuration = Date.now() - recipientQueryStart;
-        if (lookups.length > 100) {
-            logging.info(`[EmailAnalytics] Total recipient queries: ${recipientQueryBatches} batches, ${lookups.length} lookups, ${recipientMap.size} recipients found, ${recipientQueryDuration}ms`);
+        // Build map: "email:emailId" -> recipient info
+        for (const recipient of recipients) {
+            const key = `${recipient.member_email}:${recipient.email_id}`;
+            recipientMap.set(key, {
+                emailRecipientId: recipient.id,
+                memberId: recipient.member_id,
+                emailId: recipient.email_id
+            });
         }
 
         return recipientMap;
@@ -401,22 +334,15 @@ class EmailEventProcessor {
             return this.providerIdEmailIdMap[providerId];
         }
 
-        // Log individual lookups (should be rare if batchGetRecipients is used)
-        logging.warn(`[EmailAnalytics] Individual getEmailId() lookup for providerId: ${providerId?.substring(0, 50)}...`);
-        
-        const queryStart = Date.now();
         const {emailId} = await this.#db.knex('email_batches')
             .select('email_id as emailId')
             .where('provider_id', providerId)
             .first() || {};
-        const queryDuration = Date.now() - queryStart;
 
         if (!emailId) {
-            logging.warn(`[EmailAnalytics] getEmailId() lookup failed for providerId: ${providerId?.substring(0, 50)}... (${queryDuration}ms)`);
             return;
         }
 
-        logging.warn(`[EmailAnalytics] getEmailId() lookup succeeded: ${providerId?.substring(0, 50)}... -> ${emailId} (${queryDuration}ms)`);
         this.providerIdEmailIdMap[providerId] = emailId;
         return emailId;
     }
