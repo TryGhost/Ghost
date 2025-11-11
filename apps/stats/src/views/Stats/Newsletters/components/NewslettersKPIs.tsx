@@ -240,6 +240,7 @@ const NewsletterKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color={tabConfig['total-subscribers'].color}
+                        data-testid="total-subscribers-value"
                         diffDirection={subscribersDiff.direction}
                         diffValue={subscribersDiff.value}
                         label="Total subscribers"
