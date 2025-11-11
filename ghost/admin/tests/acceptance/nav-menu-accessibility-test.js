@@ -68,4 +68,76 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         expect(afterState, 'aria-expanded toggled correctly').to.equal(expectedState);
         expect(afterState, 'state changed from initial').to.not.equal(initialState);
     });
+
+    /**
+     * Tests that the Space key activates the navigation toggle button.
+     * Verifies WCAG 2.1.1 Level A requirement that buttons respond to both Enter and Space keys.
+     * 
+     * @returns {Promise<void>}
+     * @see {@link https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html}
+     */
+    it('responds to Space key activation', async function () {
+        await visit('/site');
+
+        let toggle = find('button[aria-controls="gh-nav"]');
+        expect(toggle, 'nav toggle exists').to.exist;
+
+        // Store the initial state
+        let initialState = toggle.getAttribute('aria-expanded');
+        expect(initialState, 'initial aria-expanded exists').to.exist;
+        
+        let expectedState = initialState === 'true' ? 'false' : 'true';
+
+        // Press Space on the toggle and wait for aria-expanded to change
+        await triggerKeyEvent(toggle, 'keydown', ' ');
+
+        await waitUntil(() => {
+            let t = find('button[aria-controls="gh-nav"]');
+            return t && t.getAttribute('aria-expanded') === expectedState;
+        }, {timeout: 1000});
+
+        let afterState = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
+        expect(afterState, 'aria-expanded toggled correctly with Space key').to.equal(expectedState);
+        expect(afterState, 'state changed from initial').to.not.equal(initialState);
+    });
+
+    /**
+     * Tests bidirectional keyboard toggle functionality.
+     * Verifies that keyboard users can both expand and collapse the sidebar,
+     * ensuring aria-expanded correctly returns to "false" state.
+     * 
+     * @returns {Promise<void>}
+     */
+    it('can toggle sidebar from expanded back to collapsed with keyboard', async function () {
+        await visit('/site');
+
+        let toggle = find('button[aria-controls="gh-nav"]');
+        expect(toggle, 'nav toggle exists').to.exist;
+
+        let initialState = toggle.getAttribute('aria-expanded');
+
+        // First toggle: expand (or collapse if already expanded)
+        await triggerKeyEvent(toggle, 'keydown', 'Enter');
+        
+        let firstState = initialState === 'true' ? 'false' : 'true';
+        await waitUntil(() => {
+            let t = find('button[aria-controls="gh-nav"]');
+            return t && t.getAttribute('aria-expanded') === firstState;
+        }, {timeout: 1000});
+
+        let afterFirstToggle = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
+        expect(afterFirstToggle, 'first toggle changed state').to.equal(firstState);
+
+        // Second toggle: return to initial state
+        await triggerKeyEvent(toggle, 'keydown', 'Enter');
+        
+        await waitUntil(() => {
+            let t = find('button[aria-controls="gh-nav"]');
+            return t && t.getAttribute('aria-expanded') === initialState;
+        }, {timeout: 1000});
+
+        let afterSecondToggle = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
+        expect(afterSecondToggle, 'second toggle returned to initial state').to.equal(initialState);
+        expect(afterSecondToggle, 'state toggled back correctly').to.not.equal(afterFirstToggle);
+    });
 });
