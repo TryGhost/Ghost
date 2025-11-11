@@ -18,6 +18,10 @@ module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express('admin');
 
+    const viteDevServerUrl = process.env.ADMIN_VITE_DEV_SERVER_URL;
+    const enableDevProxy = viteDevServerUrl && config.get('env') === 'development';
+    let viteProxy = null;
+
     // Admin assets
     // @NOTE: when we start working on HTTP/3 optimizations the immutable headers
     //        produced below should be split into separate 'Cache-Control' entry.
@@ -29,9 +33,35 @@ module.exports = function setupAdminApp() {
             //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
             maxAge: config.get('caching:admin:maxAge') * 1000,
             immutable: true,
-            fallthrough: false
+            fallthrough: enableDevProxy // Allow proxy to handle missing files in dev mode
         }
     ));
+
+    if (enableDevProxy) {
+        const createViteProxy = require('./middleware/vite-proxy');
+        viteProxy = createViteProxy(viteDevServerUrl);
+        
+        // Serve Ember assets with fallthrough to proxy
+        adminApp.use('/assets', serveStatic(
+            path.join(config.get('paths').adminAssets, 'assets'), {
+                maxAge: config.get('caching:admin:maxAge') * 1000,
+                immutable: true,
+                fallthrough: true 
+            }
+        ));
+
+        // Cache headers
+        adminApp.use(shared.middleware.cacheControl('private'));
+        
+        // Proxy all requests to Vite dev server when running in forward mode
+        // Handles: index pages, source files, Vite special routes (/@vite/client), etc.
+        adminApp.use(viteProxy.middleware);
+
+        // Handle WebSocket upgrade for HMR
+        if (adminApp.on) {
+            adminApp.on('upgrade', viteProxy.upgradeHandler);
+        }
+    }
 
     // Auth Frame renders a HTML page that loads some JS which then makes an API
     // request to the Admin API /users/me/ endpoint to check if the user is logged in.
@@ -69,15 +99,17 @@ module.exports = function setupAdminApp() {
     // must happen AFTER asset loading and BEFORE routing
     adminApp.use(shared.middleware.prettyUrls);
 
-    // Cache headers go last before serving the request
-    // Admin is currently set to not be cached at all
-    adminApp.use(shared.middleware.cacheControl('private'));
+    if (!enableDevProxy) {
+        // Cache headers go last before serving the request
+        // Admin is currently set to not be cached at all
+        adminApp.use(shared.middleware.cacheControl('private'));
 
-    // Special redirects for the admin (these should have their own cache-control headers)
-    adminApp.use(redirectAdminUrls);
+        // Special redirects for the admin (these should have their own cache-control headers)
+        adminApp.use(redirectAdminUrls);
 
-    // Finally, routing
-    adminApp.get('*', require('./controller'));
+        // Serve index.html from static file
+        adminApp.get('*', require('./controller'));
+    }
 
     adminApp.use(function fourOhFourMw(err, req, res, next) {
         if (err.statusCode && err.statusCode === 404) {

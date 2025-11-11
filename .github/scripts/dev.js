@@ -104,10 +104,12 @@ const COMMAND_ADMIN = {
 };
 
 const COMMAND_ADMIN_REACT = {
-    name: 'admin-react',
+    name: 'admin-forward',
     command: 'nx run @tryghost/admin:dev',
     prefixColor: 'cyan',
-    env: {}
+    env: {
+        VITE_DISABLE_EMBER_ASSETS_PROXY: 'true'
+    }
 };
 
 const COMMAND_BROWSERTESTS = {
@@ -134,6 +136,11 @@ const COMMAND_ADMINX_APPS = {
 };
 
 const ADMIN_COMMANDS = [COMMAND_ADMIN, COMMAND_ADMINX_DEPS, GHOST_APP_FLAGS.includes('forward') ? COMMAND_ADMIN_REACT : COMMAND_ADMINX_APPS];
+
+// Set environment variable for Ghost to enable Vite proxy when forward flag is present
+if (GHOST_APP_FLAGS.includes('forward')) {
+    COMMAND_GHOST.env['ADMIN_VITE_DEV_SERVER_URL'] = 'http://localhost:5173';
+}
 
 if (GHOST_APP_FLAGS.includes('ghost')) {
     commands = [...commands, COMMAND_GHOST];
