@@ -202,9 +202,10 @@ class EmailEventProcessor {
     /**
      * Batch lookup recipients for multiple events at once
      * @param {Array<{emailId?: string, providerId?: string, email: string}>} emailIdentifications
+     * @param {any} [trx] - Optional database transaction to use (if not provided, creates new transaction)
      * @returns {Promise<Map<string, EmailRecipientInformation>>} Map keyed by "email:emailId"
      */
-    async batchGetRecipients(emailIdentifications) {
+    async batchGetRecipients(emailIdentifications, trx = null) {
         const recipientMap = new Map();
 
         if (!emailIdentifications || emailIdentifications.length === 0) {
@@ -238,15 +239,15 @@ class EmailEventProcessor {
             logging.info(`[EmailAnalytics] batchGetRecipients: ${emailIdentifications.length} events - ${eventsWithEmailId} with emailId, ${eventsFromCache} from cache, ${eventsNeedingLookup} need lookup`);
         }
 
-        // Wrap all database queries in a transaction for guaranteed connection management
-        await this.#db.knex.transaction(async (trx) => {
+        // Use provided transaction or create a new one
+        const executeQueries = async (queryTrx) => {
             // Batch fetch all missing emailIds in a single query
             if (providerIdsToResolve.size > 0) {
                 const providerIdArray = Array.from(providerIdsToResolve);
                 const lookupStart = Date.now();
                 logging.info(`[EmailAnalytics] Looking up ${providerIdsToResolve.size} providerIds in batch query`);
 
-                const emailBatchMappings = await trx('email_batches')
+                const emailBatchMappings = await queryTrx('email_batches')
                     .select('provider_id', 'email_id')
                     .whereIn('provider_id', providerIdArray);
 
@@ -292,7 +293,7 @@ class EmailEventProcessor {
 
                 // Build query with OR conditions for this batch
                 const batchQueryStart = Date.now();
-                const recipients = await trx('email_recipients')
+                const recipients = await queryTrx('email_recipients')
                     .select('id', 'member_id', 'email_id', 'member_email')
                     .where((builder) => {
                         for (const lookup of batchLookups) {
@@ -323,7 +324,14 @@ class EmailEventProcessor {
             if (lookups.length > 100) {
                 logging.info(`[EmailAnalytics] Total recipient queries: ${recipientQueryBatches} batches, ${lookups.length} lookups, ${recipientMap.size} recipients found, ${recipientQueryDuration}ms`);
             }
-        }); // Transaction commits and releases connection here
+        };
+
+        // Use provided transaction or create a new one
+        if (trx) {
+            await executeQueries(trx);
+        } else {
+            await this.#db.knex.transaction(executeQueries);
+        }
 
         return recipientMap;
     }
