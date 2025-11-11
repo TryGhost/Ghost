@@ -242,6 +242,38 @@ describe("useUserPreferences", () => {
             expect(result.current.data).toBeUndefined();
         });
     });
+
+    describe("query options", () => {
+        queryTest("supports select option to transform data", async ({ server, wrapper }) => {
+            server.use(
+                http.get(USERS_API_URL, () => {
+                    return HttpResponse.json({
+                        users: [{
+                            ...mockUser,
+                            accessibility: JSON.stringify({
+                                navigation: {
+                                    expanded: { posts: false },
+                                    menu: { visible: true },
+                                },
+                                nightShift: true,
+                            }),
+                        }],
+                    });
+                })
+            );
+
+            const { result } = renderHook(() => useUserPreferences({
+                select: (data) => data.navigation,
+            }), { wrapper });
+
+            await waitForQuerySettled(result);
+
+            expect(result.current.data).toEqual({
+                expanded: { posts: false },
+                menu: { visible: true },
+            });
+        });
+    });
 });
 
 describe("useEditUserPreferences", () => {

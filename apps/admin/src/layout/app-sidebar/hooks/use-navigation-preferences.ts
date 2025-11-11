@@ -1,21 +1,10 @@
 import { useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
-import { useQuery, useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
+import { useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
 
 
 export const useNavigationPreferences = (): UseQueryResult<NavigationPreferences> => {
-    const preferencesQuery = useUserPreferences();
-
-    return useQuery({
-        queryKey: ['navigationPreferences', preferencesQuery.data],
-        queryFn: () => {
-            if (!preferencesQuery.data) {
-                throw new Error("Preferences not loaded");
-            }
-            return preferencesQuery.data.navigation;
-        },
-        enabled: !!preferencesQuery.data,
-        staleTime: Infinity,
-        cacheTime: 0,
+    return useUserPreferences({
+        select: (data) => data.navigation,
     });
 };
 
