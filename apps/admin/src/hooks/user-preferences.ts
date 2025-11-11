@@ -35,7 +35,7 @@ const PreferencesSchema = z.looseObject({
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
 
-const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
+export const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
 
 export const useUserPreferences = (): UseQueryResult<Preferences> => {
     const { data: user } = useCurrentUser();
