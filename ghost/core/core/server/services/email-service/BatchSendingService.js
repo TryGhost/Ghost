@@ -316,7 +316,8 @@ class BatchSendingService {
         logging.info(`Getting batches for email ${email.id}`);
 
         // findAll returns a bookshelf collection, we want to return a plain array to align with the createBatches method
-        const batches = await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
+        // Exclude rate_limited batches - they're handled by the retry job
+        const batches = await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\'+status:-rate_limited'});
         return batches.models;
     }
 
