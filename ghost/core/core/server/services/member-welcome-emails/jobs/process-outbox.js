@@ -93,13 +93,13 @@ if (parentPort) {
 
 async function processOutbox() {
     const db = require('../../../data/db');
-    await mailContext.ensureInitialized({db});
 
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
     let totalProcessed = 0;
     let totalFailed = 0;
+    let mailInitialized = false;
 
     while (totalProcessed + totalFailed < MAX_ENTRIES_PER_JOB) {
         const remainingCapacity = MAX_ENTRIES_PER_JOB - (totalProcessed + totalFailed);
@@ -108,6 +108,26 @@ async function processOutbox() {
         const entries = await fetchPendingEntries(db, fetchSize, jobStartISO);
         if (entries.length === 0) {
             break;
+        }
+
+        if (!mailInitialized) {
+            try {
+                await mailContext.ensureInitialized({db});
+                mailInitialized = true;
+            } catch (err) {
+                const errorMessage = err?.message ?? 'Unknown error';
+                logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Mail initialization failed: ${errorMessage}`);
+
+                const entryIds = entries.map(e => e.id);
+                await db.knex('outbox')
+                    .whereIn('id', entryIds)
+                    .update({
+                        status: OUTBOX_STATUSES.PENDING,
+                        updated_at: db.knex.raw('CURRENT_TIMESTAMP')
+                    });
+
+                return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job aborted: Mail initialization failed`);
+            }
         }
 
         const batchStartMs = Date.now();
