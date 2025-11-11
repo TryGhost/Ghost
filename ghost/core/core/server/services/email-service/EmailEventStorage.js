@@ -187,7 +187,6 @@ class EmailEventStorage {
      * @returns {Promise<{delivered: number, opened: number, failed: number}>} Count of rows updated
      */
     async flushBatchedUpdates() {
-        const flushStart = Date.now();
         const eventTypes = [
             {name: 'delivered', map: this.#pendingUpdates.delivered, column: 'delivered_at'},
             {name: 'opened', map: this.#pendingUpdates.opened, column: 'opened_at'},
@@ -204,17 +203,6 @@ class EmailEventStorage {
         }
 
         const recipientIds = Array.from(allRecipientIds);
-        
-        // Log pending update counts
-        const pendingCounts = {
-            delivered: this.#pendingUpdates.delivered.size,
-            opened: this.#pendingUpdates.opened.size,
-            failed: this.#pendingUpdates.failed.size
-        };
-        
-        if (allRecipientIds.size > 100) {
-            logging.info(`[EmailAnalytics] flushBatchedUpdates: ${allRecipientIds.size} recipients pending (delivered: ${pendingCounts.delivered}, opened: ${pendingCounts.opened}, failed: ${pendingCounts.failed})`);
-        }
 
         // Build CASE statements for each event type with parameterized queries
         const setClauses = [];
@@ -248,13 +236,11 @@ class EmailEventStorage {
         recipientIds.forEach(id => bindings.push(id));
 
         // Execute the batch update
-        const updateStart = Date.now();
         await this.#db.knex.raw(`
             UPDATE email_recipients
             SET ${setClauses.join(', ')}
             WHERE id IN (${recipientIds.map(() => '?').join(',')})
         `, bindings);
-        const updateDuration = Date.now() - updateStart;
 
         // Record metrics and collect counts
         const counts = {delivered: 0, opened: 0, failed: 0};
@@ -262,11 +248,6 @@ class EmailEventStorage {
             this.recordEventStored(type.name, type.map.size);
             counts[type.name] = type.map.size;
             type.map.clear();
-        }
-
-        const flushDuration = Date.now() - flushStart;
-        if (allRecipientIds.size > 100) {
-            logging.info(`[EmailAnalytics] flushBatchedUpdates completed: ${allRecipientIds.size} recipients updated in ${flushDuration}ms (query: ${updateDuration}ms)`);
         }
 
         return counts;

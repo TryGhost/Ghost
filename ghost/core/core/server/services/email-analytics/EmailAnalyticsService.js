@@ -321,16 +321,10 @@ module.exports = class EmailAnalyticsService {
     async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         // Store that we started fetching
-        const fetchStart = Date.now();
-        logging.info(`[EmailAnalytics] #fetchEvents: Starting fetch for job ${fetchData.jobName}, begin: ${begin}, end: ${end}, maxEvents: ${maxEvents}`);
-        
         fetchData.running = true;
         fetchData.lastStarted = new Date();
         fetchData.lastBegin = begin;
-        
-        const setTimestampStart = Date.now();
         this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
-        logging.info(`[EmailAnalytics] #fetchEvents: setJobTimestamp took ${Date.now() - setTimestampStart}ms`);
 
         // Timing metrics
         let apiPollingTimeMs = 0;
@@ -355,19 +349,12 @@ module.exports = class EmailAnalyticsService {
         const processBatch = async (events) => {
             // Even if the fetching is interrupted because of an error, we still store the last event timestamp
             const processingStart = Date.now();
-            logging.info(`[EmailAnalytics] processBatch: Starting processing of ${events.length} events`);
-            
             await this.processEventBatch(events, processingResult, fetchData);
             processingTimeMs += (Date.now() - processingStart);
             eventCount += events.length;
 
             // Flush batched email_recipients updates after each Mailgun batch
-            const flushStart = Date.now();
             await this.eventProcessor.flushBatchedUpdates();
-            const flushDuration = Date.now() - flushStart;
-            if (flushDuration > 100) {
-                logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
-            }
 
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
@@ -376,15 +363,9 @@ module.exports = class EmailAnalyticsService {
                 // We do this here because otherwise it could take a long time before the new events are visible in the stats
                 try {
                     const aggregationStart = Date.now();
-                    const memberCount = processingResult.memberIds.length;
-                    const emailCount = processingResult.emailIds.length;
-                    logging.info(`[EmailAnalytics] Starting aggregation: ${memberCount} members, ${emailCount} emails`);
-                    
                     await this.aggregateStats(processingResult, includeOpenedEvents);
                     aggregationTimeMs += (Date.now() - aggregationStart);
                     lastAggregation = Date.now();
-                    
-                    logging.info(`[EmailAnalytics] Aggregation completed in ${Date.now() - aggregationStart}ms: ${memberCount} members, ${emailCount} emails`);
                     processingResult = new EventProcessingResult();
                 } catch (err) {
                     logging.error('[EmailAnalytics] Error while aggregating stats');
@@ -466,11 +447,7 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
-        const batchStart = Date.now();
-        logging.info(`[EmailAnalytics] processEventBatch: Processing ${events.length} events`);
-        
         // Batch lookup all recipients for this batch of events
-        const recipientLookupStart = Date.now();
         const emailIdentifications = events.map(event => ({
             emailId: event.emailId,
             providerId: event.providerId,
@@ -478,11 +455,8 @@ module.exports = class EmailAnalyticsService {
         }));
 
         const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications);
-        const recipientLookupDuration = Date.now() - recipientLookupStart;
-        logging.info(`[EmailAnalytics] processEventBatch: Recipient lookup completed in ${recipientLookupDuration}ms, cache size: ${recipientCache.size}`);
 
         // Process each event with the pre-fetched recipient cache
-        const eventProcessingStart = Date.now();
         for (const event of events) {
             const batchResult = await this.processEvent(event, recipientCache);
 
@@ -493,9 +467,6 @@ module.exports = class EmailAnalyticsService {
 
             result.merge(batchResult);
         }
-        const eventProcessingDuration = Date.now() - eventProcessingStart;
-        const totalDuration = Date.now() - batchStart;
-        logging.info(`[EmailAnalytics] processEventBatch: Completed in ${totalDuration}ms (lookup: ${recipientLookupDuration}ms, processing: ${eventProcessingDuration}ms)`);
     }
 
     /**
@@ -597,23 +568,13 @@ module.exports = class EmailAnalyticsService {
      * @param {boolean} includeOpenedEvents
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
-        const emailStatsStart = Date.now();
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
-        }
-        const emailStatsDuration = Date.now() - emailStatsStart;
-        if (emailIds.length > 0) {
-            logging.info(`[EmailAnalytics] aggregateStats: Processed ${emailIds.length} email stats in ${emailStatsDuration}ms`);
         }
 
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
         const BATCH_SIZE = 100;
-        const memberBatchCount = Math.ceil(memberIds.length / BATCH_SIZE);
-        
-        if (memberIds.length > 0) {
-            logging.info(`[EmailAnalytics] aggregateStats: Processing ${memberIds.length} members in ${memberBatchCount} batches of ${BATCH_SIZE}`);
-        }
 
         for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
             const batch = memberIds.slice(i, i + BATCH_SIZE);

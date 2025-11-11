@@ -39,7 +39,6 @@ module.exports = {
      */
     async getLastEventTimestamp(jobName, events = ['delivered', 'opened', 'failed']) {
         const startDate = new Date();
-        logging.info(`[EmailAnalytics] getLastEventTimestamp: Starting for job ${jobName}, events: ${events.join(',')}`);
         
         let maxOpenedAt;
         let maxDeliveredAt;
@@ -54,7 +53,6 @@ module.exports = {
         } else {
             debug(`Job data not found for ${jobName}, using email_recipients data`);
             logging.info(`Job data not found for ${jobName}, using email_recipients data`);
-            const queryStart = Date.now();
             if (events.includes('opened')) {
                 maxOpenedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt;
             }
@@ -64,8 +62,6 @@ module.exports = {
             if (events.includes('failed')) {
                 maxFailedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt;
             }
-            const queryDuration = Date.now() - queryStart;
-            logging.info(`[EmailAnalytics] getLastEventTimestamp: Queries completed in ${queryDuration}ms`);
 
             await createJobIfNotExists(jobName);
         }
@@ -77,7 +73,6 @@ module.exports = {
 
         const lastSeenEventTimestamp = _.max([maxOpenedAt, maxDeliveredAt, maxFailedAt]);
         debug(`getLastEventTimestamp: finished in ${Date.now() - startDate}ms`);
-        logging.info(`[EmailAnalytics] getLastEventTimestamp: Completed in ${Date.now() - startDate}ms, timestamp: ${lastSeenEventTimestamp}`);
 
         return lastSeenEventTimestamp;
     },
@@ -167,7 +162,6 @@ module.exports = {
     },
 
     async aggregateEmailStats(emailId, updateOpenedCount) {
-        const queryStart = Date.now();
         const [deliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NOT NULL', [emailId]);
         const [failedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND failed_at IS NOT NULL', [emailId]);
 
@@ -181,12 +175,7 @@ module.exports = {
             updateData.opened_count = openedCount.count;
         }
 
-        const updateStart = Date.now();
         await db.knex('emails').update(updateData).where('id', emailId);
-        const queryDuration = Date.now() - queryStart;
-        const updateDuration = Date.now() - updateStart;
-        
-        logging.info(`[EmailAnalytics] aggregateEmailStats: emailId=${emailId}, counts: delivered=${updateData.delivered_count}, failed=${updateData.failed_count}, opened=${updateData.opened_count || 'N/A'}, total=${queryDuration}ms (update: ${updateDuration}ms)`);
     },
 
     /**
@@ -197,8 +186,6 @@ module.exports = {
      */
     async aggregateMemberStatsBatch(memberIds) {
         const timings = {total: Date.now(), memberCount: memberIds.length};
-        
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: Starting batch for ${memberIds.length} members`);
 
         timings.select = Date.now();
         const stats = await db.knex('email_recipients')
@@ -212,8 +199,6 @@ module.exports = {
             .whereIn('email_recipients.member_id', memberIds)
             .groupBy('email_recipients.member_id');
         timings.select = Date.now() - timings.select;
-        
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: SELECT completed in ${timings.select}ms for ${memberIds.length} members, found ${stats.length} stats`);
 
         // Perform batch update
         const statsMap = new Map(stats.map(s => [s.member_id, s]));
@@ -254,7 +239,6 @@ module.exports = {
             ...memberIds // for WHERE IN
         ];
 
-        const updateStart = Date.now();
         await db.knex.raw(`
             UPDATE members
             SET
@@ -263,12 +247,10 @@ module.exports = {
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
         `, bindings);
-        timings.update = Date.now() - updateStart;
-        
+
+        timings.update = Date.now() - timings.update;
         timings.total = Date.now() - timings.total;
         timings.overhead = timings.total - (timings.select + timings.update);
-        
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: UPDATE completed in ${timings.update}ms for ${memberIds.length} members. Total: ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms, overhead: ${timings.overhead}ms)`);
 
         return timings;
     }
