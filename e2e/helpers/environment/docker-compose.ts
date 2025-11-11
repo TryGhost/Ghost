@@ -21,7 +21,7 @@ export class DockerCompose {
     private readonly projectName: string;
     private readonly docker: Docker;
 
-    constructor(options: {composeFilePath: string; projectName: string; docker: Docker}) {
+    constructor(options: { composeFilePath: string; projectName: string; docker: Docker }) {
         this.composeFilePath = options.composeFilePath;
         this.projectName = options.projectName;
         this.docker = options.docker;
