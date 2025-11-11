@@ -1,4 +1,4 @@
-import { DEFAULT_NAVIGATION_PREFERENCES, NavigationPreferencesSchema, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
+import { NavigationPreferencesSchema, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
 import { useQuery, useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
 
 
@@ -11,7 +11,7 @@ export const useNavigationPreferences = (): UseQueryResult<NavigationPreferences
             if (!preferencesQuery.data) {
                 throw new Error("Preferences not loaded");
             }
-            return preferencesQuery.data.navigation ?? DEFAULT_NAVIGATION_PREFERENCES;
+            return preferencesQuery.data.navigation;
         },
         enabled: !!preferencesQuery.data,
         staleTime: Infinity,
@@ -25,17 +25,19 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
 
     return useMutation({
         mutationFn: async (updatedNavigationPreferences: Partial<NavigationPreferences>) => {
-            const currentNavigation = preferences?.navigation ?? DEFAULT_NAVIGATION_PREFERENCES;
+            if (!preferences?.navigation) {
+                throw new Error("Navigation preferences not loaded");
+            }
 
             const merged = {
-                ...currentNavigation,
+                ...preferences.navigation,
                 ...updatedNavigationPreferences,
                 expanded: {
-                    ...currentNavigation.expanded,
+                    ...preferences.navigation.expanded,
                     ...updatedNavigationPreferences.expanded,
                 },
                 menu: {
-                    ...currentNavigation.menu,
+                    ...preferences.navigation.menu,
                     ...updatedNavigationPreferences.menu,
                 },
             };
@@ -53,7 +55,7 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
     const { data: navigationPreferences } = useNavigationPreferences();
     const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
 
-    const expanded = navigationPreferences?.expanded[expandedKey] ?? true;
+    const expanded = navigationPreferences?.expanded[expandedKey];
 
     const setExpanded = (value: boolean) => {
         void editNavigationPreferences({
@@ -63,14 +65,14 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
         });
     };
 
-    return [expanded, setExpanded];
+    return [expanded ?? true, setExpanded];
 };
 
 export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => void] => {
     const { data: navigationPreferences } = useNavigationPreferences();
     const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
 
-    const visible = navigationPreferences?.menu.visible ?? true;
+    const visible = navigationPreferences?.menu.visible;
 
     const setVisible = (value: boolean) => {
         void editNavigationPreferences({
@@ -78,5 +80,5 @@ export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => voi
         });
     };
 
-    return [visible, setVisible];
+    return [visible ?? true, setVisible];
 };
