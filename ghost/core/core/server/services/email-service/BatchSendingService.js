@@ -472,10 +472,15 @@ class BatchSendingService {
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                // Peek at the next delivery time without consuming it yet
                 let deliveryTime = undefined;
+                let shouldConsumeDeliveryTime = false;
+
+                // Check if we should use a scheduled delivery time
                 if (deadline && deadline.getTime() > Date.now() && deliveryTimes.length > 0) {
                     const nextTime = deliveryTimes[0];
+                    // Always consume the delivery time to advance the queue, even if it's in the past
+                    shouldConsumeDeliveryTime = true;
+                    // Only use the delivery time if it's still in the future
                     if (nextTime && nextTime >= Date.now()) {
                         deliveryTime = nextTime;
                     }
@@ -486,13 +491,13 @@ class BatchSendingService {
 
                 if (result === true) {
                     succeededCount += 1;
-                    // Consume delivery time only for successfully sent batches
-                    if (deliveryTime) {
+                    // Consume delivery time for successfully sent batches
+                    if (shouldConsumeDeliveryTime) {
                         deliveryTimes.shift();
                     }
                 } else if (result === 'rate_limited') {
                     rateLimitedCount += 1;
-                    // Don't consume delivery time - rate-limited batches will retry later
+                    // Don't consume delivery time - rate-limited batches will retry later with their own schedule
                 }
                 // result === false means actual failure
                 await runNext();
