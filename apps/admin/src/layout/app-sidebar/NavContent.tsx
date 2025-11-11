@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 
 import {
     Button,
@@ -13,24 +13,15 @@ import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
-import { useEditNavigationPreferences, useNavigationPreferences } from "./hooks/use-navigation-preferences";
+import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
-    const { data: navigationPreferences } = useNavigationPreferences();
-    const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
+    const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
-
-    const postsExpanded = navigationPreferences?.expanded.posts ?? true;
-
-    const togglePostsExpanded = () => {
-        void editNavigationPreferences({
-            expanded: { posts: !navigationPreferences?.expanded.posts },
-        });
-    };
 
     return (
         <SidebarGroup {...props}>
@@ -45,7 +36,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             size="icon"
                             className="!h-[34px] absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
-                                togglePostsExpanded()
+                                setPostsExpanded(!postsExpanded)
                             }
                         >
                             <LucideIcon.ChevronRight
