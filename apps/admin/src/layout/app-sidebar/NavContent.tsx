@@ -8,11 +8,19 @@ import {
     SidebarMenu,
     SidebarMenuBadge
 } from "@tryghost/shade"
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
+import { useMemberCount } from "./hooks/useMemberCount";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+    const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useState(false);
+    const memberCount = useMemberCount();
+
+    const showTags = currentUser && canManageTags(currentUser);
+    const showMembers = currentUser && canManageMembers(currentUser);
 
     return (
         <SidebarGroup {...props}>
@@ -25,7 +33,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             aria-label="Toggle post views"
                             variant="ghost"
                             size="icon"
-                            className="!h-[34px] absolute opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
+                            className="!h-[34px] absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
                                 setPostsExpanded(!postsExpanded)
                             }
@@ -35,8 +43,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
                             />
                         </Button>
-                        <NavMenuItem.Link href="#/posts">
-                            <LucideIcon.PenLine className="group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
+                        <NavMenuItem.Link to="posts">
+                            <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
                         <a href="#/editor/post"
@@ -53,45 +61,51 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=draft">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=draft">
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=scheduled">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=scheduled">
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" href="#/posts?type=published">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=published">
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     </NavSubMenu>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link href="#/pages">
+                        <NavMenuItem.Link to="pages">
                             <LucideIcon.File />
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
-                    <NavMenuItem>
-                        <NavMenuItem.Link href="#/tags">
-                            <LucideIcon.Tag />
-                            <NavMenuItem.Label>Tags</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
+                    {showTags && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="tags">
+                                <LucideIcon.Tag />
+                                <NavMenuItem.Label>Tags</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
 
-                    <NavMenuItem>
-                        <NavMenuItem.Link href="#/members" activeOnSubpath>
-                            <LucideIcon.Users />
-                            <NavMenuItem.Label>Members</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                        <SidebarMenuBadge>24</SidebarMenuBadge>
-                    </NavMenuItem>
+                    {showMembers && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link to="members" activeOnSubpath>
+                                <LucideIcon.Users />
+                                <NavMenuItem.Label>Members</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                            {memberCount != null && (
+                                <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                            )}
+                        </NavMenuItem>
+                    )}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

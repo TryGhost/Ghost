@@ -1,5 +1,28 @@
 import {AdminPage} from '../AdminPage';
+import {BasePage} from '../../BasePage';
 import {Locator, Page} from '@playwright/test';
+
+class SettingsSection extends BasePage {
+    readonly memberActionsButton: Locator;
+
+    readonly impersonateButton: Locator;
+    readonly signOutOfAllDevices: Locator;
+    readonly deleteButton: Locator;
+    readonly confirmDeleteButton: Locator;
+    readonly cancelDeleteButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.memberActionsButton = page.getByTestId('member-actions');
+
+        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
+        this.signOutOfAllDevices = page.getByRole('button', {name: 'Sign out of all devices'});
+
+        this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
+        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
+    }
+}
 
 export class MemberDetailsPage extends AdminPage {
     readonly nameInput: Locator;
@@ -7,22 +30,17 @@ export class MemberDetailsPage extends AdminPage {
     readonly noteInput: Locator;
     readonly labelsInput: Locator;
     readonly labels: Locator;
-    readonly subscriptionToggle: Locator;
-
-    readonly memberActionsButton: Locator;
+    readonly newsletterSubscriptionToggles: Locator;
+    
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;
 
-    readonly impersonateButton: Locator;
     readonly copyLinkButton: Locator;
     readonly magicLinkInput: Locator;
 
-    readonly deleteButton: Locator;
-    readonly confirmDeleteButton: Locator;
-    readonly cancelDeleteButton: Locator;
-
     readonly confirmLeaveButton: Locator;
+    readonly settingsSection: SettingsSection;
 
     constructor(page: Page) {
         super(page);
@@ -33,21 +51,19 @@ export class MemberDetailsPage extends AdminPage {
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
         this.labelsInput = page.getByText('Labels').locator('+ div');
         this.labels = this.labelsInput.getByRole('listitem');
-        this.subscriptionToggle = page.getByTestId('member-subscription-toggle');
+        this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle');
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
         this.retryButton = page.getByRole('button', {name: 'Retry'});
-        this.memberActionsButton = page.getByTestId('member-actions');
-        this.deleteButton = page.getByRole('button', {name: 'Delete member'});
-        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
-
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
+        this.settingsSection = new SettingsSection(page);
+    }
 
-        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
-        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
+    async clickNewsletterSubscriptionToggle(index: number = 0) {
+        await this.newsletterSubscriptionToggles.nth(index).click();
     }
 
     async fillMemberDetails(name: string, email: string, note: string): Promise<void> {
@@ -56,10 +72,19 @@ export class MemberDetailsPage extends AdminPage {
         await this.noteInput.fill(note);
     }
 
+    async labelNames() {
+        return await this.labels.allInnerTexts();
+    }
+
     async addLabel(label: string): Promise<void> {
         await this.labelsInput.click();
         await this.page.keyboard.type(label);
         await this.page.keyboard.press('Tab');
+    }
+
+    async removeLabel(labelName: string): Promise<void> {
+        await this.labelsInput.click();
+        await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async removeLabels() {
@@ -70,11 +95,6 @@ export class MemberDetailsPage extends AdminPage {
             await this.labels.last().getByLabel('remove element').click();
             labelsCount = await this.labels.count();
         }
-    }
-
-    async removeLabel(labelName: string): Promise<void> {
-        await this.labelsInput.click();
-        await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async save(): Promise<void> {

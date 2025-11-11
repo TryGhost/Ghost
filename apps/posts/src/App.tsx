@@ -30,7 +30,7 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
             <PostsAppContextProvider value={appContextValue}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <PostsErrorBoundary>
-                        <ShadeApp className="shade-posts" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                        <ShadeApp className="shade-posts app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                             <Outlet />
                         </ShadeApp>
                     </PostsErrorBoundary>

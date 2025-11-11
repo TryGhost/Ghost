@@ -5,6 +5,7 @@ import {
 } from "@tryghost/shade";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import AppSidebar from "./app-sidebar";
+import { MobileNavBar } from "./app-sidebar/MobileNavBar";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -17,7 +18,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <SidebarProvider open={!!currentUser}>
             <AppSidebar />
             <SidebarInset className="bg-white">
-                <main className="flex-1 min-h-screen">{children}</main>
+                <main className="flex-1">{children}</main>
+                <MobileNavBar />
             </SidebarInset>
         </SidebarProvider>
     );
