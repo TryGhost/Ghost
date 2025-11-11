@@ -211,7 +211,8 @@ class BatchSendingService {
         );
 
         // Calculate and set retry cutoff time to ensure retries respect the original email's cutoff
-        const expectedBatchCount = Math.ceil(email.get('email_count') / 1000);
+        const batchSize = this.#sendingService.getMaximumRecipients();
+        const expectedBatchCount = Math.ceil(email.get('email_count') / batchSize);
         const minimumSecondsPerBatch = 26;
         const stopAfter = Math.max(expectedBatchCount * minimumSecondsPerBatch * 1000, this.#BEFORE_RETRY_CONFIG.maxTime);
         const retryCutOffTime = new Date(startTime + stopAfter);

@@ -332,6 +332,9 @@ class MailgunRateLimitPolicy {
     registerLimitHit({retryAfterSeconds, limitType, errorMessage}) {
         const now = new Date();
 
+        // Update windows to ensure we have current state for cooldown calculations
+        this.#updateWindows();
+
         // Use Retry-After if provided, otherwise use intelligent defaults
         let cooldownMs;
         if (retryAfterSeconds) {
