@@ -22,6 +22,7 @@ class EmailServiceWrapper {
         const BatchSendingService = require('./BatchSendingService');
         const EmailSegmenter = require('./EmailSegmenter');
         const MailgunEmailProvider = require('./MailgunEmailProvider');
+        const MailgunRateLimitPolicy = require('./MailgunRateLimitPolicy');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');
@@ -114,6 +115,12 @@ class EmailServiceWrapper {
         const emailSegmenter = new EmailSegmenter({
             membersRepository
         });
+
+        // Create rate limit policy for Mailgun
+        const rateLimitPolicy = new MailgunRateLimitPolicy({
+            config: configService
+        });
+
         const batchSendingService = new BatchSendingService({
             sendingService,
             models: {
@@ -127,6 +134,7 @@ class EmailServiceWrapper {
             emailRenderer,
             db,
             sentry,
+            rateLimitPolicy,
             debugStorageFilePath: configService.getContentPath('data')
         });
 

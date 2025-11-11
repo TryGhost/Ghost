@@ -267,4 +267,258 @@ describe('Mailgun Email Provider', function () {
             assert.equal(provider.getTargetDeliveryWindow(), 0);
         });
     });
+
+    describe('rate limit error handling', function () {
+        let mailgunClient;
+        let sendStub;
+
+        beforeEach(function () {
+            sendStub = sinon.stub();
+            mailgunClient = {
+                send: sendStub
+            };
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('detects 429 status as rate limit error', async function () {
+            const mailgunErr = new Error('Too Many Requests');
+            mailgunErr.details = 'You have exceeded your rate limit';
+            mailgunErr.status = 429;
+            mailgunErr.headers = {
+                'retry-after': '3600'
+            };
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.code).eql('BULK_EMAIL_RATE_LIMIT');
+                should(e.retryAfterSeconds).eql(3600);
+                should(e.isRateLimit).be.true();
+                should(e.statusCode).eql(429);
+            }
+        });
+
+        it('detects 402 status as rate limit error', async function () {
+            const mailgunErr = new Error('Payment Required');
+            mailgunErr.details = 'You have reached your sending quota';
+            mailgunErr.status = 402;
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.code).eql('BULK_EMAIL_RATE_LIMIT');
+                should(e.isRateLimit).be.true();
+                should(e.statusCode).eql(402);
+            }
+        });
+
+        it('detects rate limit keywords in error message', async function () {
+            const mailgunErr = new Error('Bad Request');
+            mailgunErr.details = 'Your account has exceeded the daily rate limit';
+            mailgunErr.status = 400;
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.code).eql('BULK_EMAIL_RATE_LIMIT');
+                should(e.isRateLimit).be.true();
+            }
+        });
+
+        it('parses x-ratelimit-reset header', async function () {
+            const mailgunErr = new Error('Too Many Requests');
+            mailgunErr.details = 'Rate limit exceeded';
+            mailgunErr.status = 429;
+            const resetTime = Math.floor(Date.now() / 1000) + 1800; // 30 minutes from now
+            mailgunErr.headers = {
+                'x-ratelimit-reset': resetTime.toString()
+            };
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.retryAfterSeconds).be.approximately(1800, 5);
+            }
+        });
+
+        it('determines limit type from error message - daily', async function () {
+            const mailgunErr = new Error('Rate Limit');
+            mailgunErr.details = 'Daily sending limit exceeded';
+            mailgunErr.status = 429;
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.limitType).eql('day');
+            }
+        });
+
+        it('determines limit type from error message - hourly', async function () {
+            const mailgunErr = new Error('Rate Limit');
+            mailgunErr.details = 'Hourly rate limit exceeded';
+            mailgunErr.status = 429;
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.limitType).eql('hour');
+            }
+        });
+
+        it('does not treat non-rate-limit errors as rate limits', async function () {
+            const mailgunErr = new Error('Bad Request');
+            mailgunErr.details = 'Invalid email address';
+            mailgunErr.status = 400;
+
+            sendStub.throws({
+                error: mailgunErr,
+                messageData: {}
+            });
+
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+
+            try {
+                await provider.send({
+                    subject: 'Test',
+                    html: '<html><body>Test</body></html>',
+                    plaintext: 'Test',
+                    from: 'test@example.com',
+                    replyTo: 'test@example.com',
+                    emailId: '123',
+                    recipients: [{email: 'test@example.com', replacements: []}],
+                    replacementDefinitions: []
+                }, {});
+                should.fail('Should have thrown an error');
+            } catch (e) {
+                should(e.code).eql('BULK_EMAIL_SEND_FAILED');
+                should(e.isRateLimit).be.undefined();
+            }
+        });
+    });
 });

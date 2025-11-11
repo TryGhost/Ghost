@@ -873,12 +873,14 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'pending',
-            validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
+            validations: {isIn: [['pending', 'submitting', 'submitted', 'failed', 'rate_limited']]}
         },
         member_segment: {type: 'text', maxlength: 2000, nullable: true},
         error_status_code: {type: 'integer', nullable: true, unsigned: true},
         error_message: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        scheduled_at: {type: 'dateTime', nullable: true},
+        retry_count: {type: 'integer', nullable: false, defaultTo: 0, unsigned: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     },

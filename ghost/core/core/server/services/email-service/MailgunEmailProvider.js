@@ -151,15 +151,75 @@ class MailgunEmailProvider {
             if (e.error && e.messageData) {
                 const {error, messageData} = e;
 
-                // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
-                ghostError = new errors.EmailError({
-                    statusCode: error.status,
-                    message: this.#createMailgunErrorMessage(error),
-                    errorDetails: JSON.stringify({error, messageData}),
-                    context: `Mailgun Error ${error.status}: ${error.details}`,
-                    help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
-                    code: 'BULK_EMAIL_SEND_FAILED'
-                });
+                // Check for rate limit errors (429 or specific Mailgun rate limit messages)
+                const isRateLimitError = error.status === 429 ||
+                    error.status === 402 || // Payment required (often rate limit related)
+                    (error.details && (
+                        error.details.includes('rate limit') ||
+                        error.details.includes('too many requests') ||
+                        error.details.includes('quota exceeded')
+                    ));
+
+                if (isRateLimitError) {
+                    // Parse retry-after header or estimate based on error message
+                    let retryAfterSeconds = null;
+                    let limitType = null;
+
+                    // Try to extract retry-after from error response
+                    if (error.headers && error.headers['retry-after']) {
+                        retryAfterSeconds = parseInt(error.headers['retry-after'], 10);
+                    } else if (error.headers && error.headers['x-ratelimit-reset']) {
+                        // Calculate seconds until reset time
+                        const resetTime = parseInt(error.headers['x-ratelimit-reset'], 10);
+                        retryAfterSeconds = Math.max(0, resetTime - Math.floor(Date.now() / 1000));
+                    }
+
+                    // Try to determine limit type from error message
+                    if (error.details) {
+                        if (error.details.includes('daily')) {
+                            limitType = 'day';
+                        } else if (error.details.includes('hourly') || error.details.includes('hour')) {
+                            limitType = 'hour';
+                        } else if (error.details.includes('minute')) {
+                            limitType = 'minute';
+                        }
+                    }
+
+                    debug(`rate limit hit: ${error.details}, retry after ${retryAfterSeconds}s, type: ${limitType}`);
+
+                    // Throw a specific RateLimitError that BatchSendingService can catch
+                    ghostError = new errors.EmailError({
+                        statusCode: error.status,
+                        message: this.#createMailgunErrorMessage(error),
+                        errorDetails: JSON.stringify({
+                            error,
+                            messageData,
+                            rateLimitInfo: {
+                                retryAfterSeconds,
+                                limitType,
+                                isRateLimit: true
+                            }
+                        }),
+                        context: `Mailgun Rate Limit ${error.status}: ${error.details}`,
+                        help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+                        code: 'BULK_EMAIL_RATE_LIMIT'
+                    });
+
+                    // Add rate limit specific properties
+                    ghostError.retryAfterSeconds = retryAfterSeconds;
+                    ghostError.limitType = limitType;
+                    ghostError.isRateLimit = true;
+                } else {
+                    // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
+                    ghostError = new errors.EmailError({
+                        statusCode: error.status,
+                        message: this.#createMailgunErrorMessage(error),
+                        errorDetails: JSON.stringify({error, messageData}),
+                        context: `Mailgun Error ${error.status}: ${error.details}`,
+                        help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                }
             } else {
                 ghostError = new errors.EmailError({
                     statusCode: undefined,
