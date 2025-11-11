@@ -298,4 +298,34 @@ describe("useEditUserPreferences", () => {
             ).rejects.toThrow("User is not loaded");
         });
     });
+
+    describe("deep merge behavior", () => {
+        editTest("deep merges nested objects while preserving sibling properties", async ({ setup }) => {
+            const { query, mutation } = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: false },
+                        menu: { visible: true },
+                    },
+                    nightShift: true,
+                }),
+            });
+
+            await act(async () => {
+                await mutation.current.mutateAsync({
+                    navigation: { expanded: { posts: true } },
+                });
+            });
+
+            await waitFor(() => {
+                expect(query.current.data).toEqual({
+                    navigation: {
+                        expanded: { posts: true },
+                        menu: { visible: true }, // Preserved
+                    },
+                    nightShift: true, // Preserved
+                });
+            });
+        });
+    });
 });

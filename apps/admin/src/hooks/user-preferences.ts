@@ -4,6 +4,48 @@ import { useQueryClient } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useEditUser, type User } from "@tryghost/admin-x-framework/api/users";
 
+/**
+ * Deep partial type that makes all properties optional recursively.
+ */
+type DeepPartial<T> = T extends object ? {
+    [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
+/**
+ * Deep merge utility for preferences objects.
+ * Recursively merges nested objects, with values from `source` taking precedence.
+ */
+function deepMerge<T extends Record<string, unknown>>(target: T, source: DeepPartial<T>): T {
+    const result: Record<string, unknown> = { ...target };
+
+    for (const key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+            const sourceValue = source[key];
+            const targetValue = target[key];
+
+            if (sourceValue !== undefined) {
+                if (
+                    typeof sourceValue === 'object' &&
+                    sourceValue !== null &&
+                    !Array.isArray(sourceValue) &&
+                    typeof targetValue === 'object' &&
+                    targetValue !== null &&
+                    !Array.isArray(targetValue)
+                ) {
+                    result[key] = deepMerge(
+                        targetValue as Record<string, unknown>,
+                        sourceValue as DeepPartial<Record<string, unknown>>
+                    );
+                } else {
+                    result[key] = sourceValue;
+                }
+            }
+        }
+    }
+
+    return result as T;
+}
+
 const isoDatetimeToDate = z.codec(z.iso.datetime(), z.date(), {
     decode: (isoString) => new Date(isoString),
     encode: (date) => date.toISOString(),
@@ -66,23 +108,20 @@ export const useUserPreferences = (): UseQueryResult<Preferences> => {
     });
 };
 
-export const useEditUserPreferences = (): UseMutationResult<void, Error, Partial<Preferences>, unknown> => {
+export const useEditUserPreferences = (): UseMutationResult<void, Error, DeepPartial<Preferences>, unknown> => {
     const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const { mutateAsync: editUser } = useEditUser();
 
     return useMutation({
-        mutationFn: async (updatedPreferences: Partial<Preferences>) => {
+        mutationFn: async (updatedPreferences: DeepPartial<Preferences>) => {
             if (!user) {
                 throw new Error("User is not loaded");
             }
 
-            const currentPreferences = queryClient.getQueryData<Preferences>(userPreferencesQueryKey(user)) ?? {};
+            const currentPreferences = queryClient.getQueryData<Preferences>(userPreferencesQueryKey(user)) ?? {} as Preferences;
 
-            const newPreferences: Preferences = {
-                ...currentPreferences,
-                ...updatedPreferences,
-            };
+            const newPreferences = deepMerge(currentPreferences, updatedPreferences);
 
             const encodedForStorage = PreferencesSchema.encode(newPreferences);
 

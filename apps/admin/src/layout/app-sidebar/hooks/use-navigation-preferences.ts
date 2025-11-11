@@ -1,4 +1,4 @@
-import { NavigationPreferencesSchema, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
+import { useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
 import { useQuery, useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
 
 
@@ -20,32 +20,12 @@ export const useNavigationPreferences = (): UseQueryResult<NavigationPreferences
 };
 
 export const useEditNavigationPreferences = (): UseMutationResult<void, Error, Partial<NavigationPreferences>, unknown> => {
-    const { data: preferences } = useUserPreferences();
     const { mutateAsync: editPreferences } = useEditUserPreferences();
 
     return useMutation({
         mutationFn: async (updatedNavigationPreferences: Partial<NavigationPreferences>) => {
-            if (!preferences?.navigation) {
-                throw new Error("Navigation preferences not loaded");
-            }
-
-            const merged = {
-                ...preferences.navigation,
-                ...updatedNavigationPreferences,
-                expanded: {
-                    ...preferences.navigation.expanded,
-                    ...updatedNavigationPreferences.expanded,
-                },
-                menu: {
-                    ...preferences.navigation.menu,
-                    ...updatedNavigationPreferences.menu,
-                },
-            };
-
-            const newNavigationPreferences = NavigationPreferencesSchema.parse(merged);
-
             await editPreferences({
-                navigation: newNavigationPreferences,
+                navigation: updatedNavigationPreferences,
             });
         },
     });
