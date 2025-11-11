@@ -2,6 +2,8 @@ import {
     SidebarContent,
 } from "@tryghost/shade"
 
+import WhatsNewBanner from "@/whats-new/components/whats-new-banner";
+
 import NavMain from "./NavMain";
 import NavContent from "./NavContent";
 import NavGhostPro from "./NavGhostPro";
@@ -15,7 +17,10 @@ function AppSidebarContent() {
                 <NavContent />
                 <NavGhostPro />
             </div>
-            <NavSettings className="pb-0" />
+            <div className="flex flex-col gap-2 sidebar:gap-4">
+                <WhatsNewBanner />
+                <NavSettings className="pb-0" />
+            </div>
         </SidebarContent>
     )
 }

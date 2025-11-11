@@ -1,4 +1,5 @@
 import React from "react"
+
 import {
     Avatar,
     AvatarFallback,
@@ -8,17 +9,24 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    Indicator,
     LucideIcon,
     SidebarMenuButton,
     Switch
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
+import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 
-function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
+interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
+    onOpenWhatsNew?: () => void;
+}
+
+function UserMenu(props: UserMenuProps) {
     const currentUser = useCurrentUser();
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
+    const { data: whatsNewData } = useWhatsNew();
 
     const setNightShift = (nightShift: boolean) => {
         void editPreferences({nightShift});
@@ -70,9 +78,28 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base">
+                <DropdownMenuItem
+                    className="cursor-pointer text-base"
+                    data-test-nav="whatsnew"
+                    onSelect={() => {
+                        // Workaround for Radix UI bug where opening Dialog from DropdownMenu
+                        // leaves pointer-events: none on body, freezing the UI
+                        // https://github.com/radix-ui/primitives/issues/3317
+                        queueMicrotask(() => props.onOpenWhatsNew?.());
+                    }}
+                >
                     <LucideIcon.Sparkles />
                     <span>What's new?</span>
+                    {whatsNewData?.hasNew && (
+                        <div className="flex-1 flex justify-end">
+                            <Indicator
+                                variant="success"
+                                size="sm"
+                                label="New updates available"
+                                data-test-whats-new-menu-badge
+                            />
+                        </div>
+                    )}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer text-base">
                     <LucideIcon.User />
