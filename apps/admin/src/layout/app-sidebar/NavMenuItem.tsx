@@ -44,7 +44,7 @@ function NavMenuLink({
             isActive={isActive}
             {...props}>
             <a
-                href={href}
+                href={target === '_blank' ? to : href}
                 rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
                 target={target}
                 aria-current={isActive ? 'page' : undefined}
