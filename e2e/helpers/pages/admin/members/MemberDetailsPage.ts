@@ -31,7 +31,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly labelsInput: Locator;
     readonly labels: Locator;
     readonly newsletterSubscriptionToggles: Locator;
-
+    
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;
@@ -58,7 +58,6 @@ export class MemberDetailsPage extends AdminPage {
         this.retryButton = page.getByRole('button', {name: 'Retry'});
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
-
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
     }
@@ -73,10 +72,19 @@ export class MemberDetailsPage extends AdminPage {
         await this.noteInput.fill(note);
     }
 
+    async labelNames() {
+        return await this.labels.allInnerTexts();
+    }
+
     async addLabel(label: string): Promise<void> {
         await this.labelsInput.click();
         await this.page.keyboard.type(label);
         await this.page.keyboard.press('Tab');
+    }
+
+    async removeLabel(labelName: string): Promise<void> {
+        await this.labelsInput.click();
+        await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async removeLabels() {
@@ -87,15 +95,6 @@ export class MemberDetailsPage extends AdminPage {
             await this.labels.last().getByLabel('remove element').click();
             labelsCount = await this.labels.count();
         }
-    }
-
-    async labelNames() {
-        return await this.labels.allInnerTexts();
-    }
-
-    async removeLabel(labelName: string): Promise<void> {
-        await this.labelsInput.click();
-        await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async save(): Promise<void> {

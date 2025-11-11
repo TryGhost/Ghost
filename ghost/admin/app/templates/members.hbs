@@ -52,6 +52,7 @@
                             @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                             @title="Members Actions"
                             data-test-button="members-actions"
+                            data-testid="members-actions"
                         >
                             <span>
                                 {{svg-jar "settings"}}
@@ -72,7 +73,7 @@
                             {{/if}}
                             <li class="{{if this.members.length "" "disabled"}}">
                                 {{#if this.members.length}}
-                                    <button class="mr2 {{if this.isExporting 'is-loading' ''}}" type="button" {{on "click" this.exportData}} data-test-button="export-members">
+                                    <button class="mr2 {{if this.isExporting 'is-loading' ''}}" type="button" {{on "click" this.exportData}} data-test-button="export-members" data-testid="export-members">
                                         {{#if this.showingAll}}
                                             <span>Export all members</span>
                                         {{else}}
@@ -80,7 +81,7 @@
                                         {{/if}}
                                     </button>
                                 {{else}}
-                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members">
+                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members" data-testid="export-members">
                                         <span>Export selected members (0)</span>
                                     </button>
                                 {{/if}}
@@ -88,12 +89,12 @@
                             {{#if (and this.members.length this.isFiltered)}}
                                 <li class="divider"></li>
                                 <li>
-                                    <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
+                                    <button class="mr2" data-test-button="add-label-selected" data-testid="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
                                         <span>Add label for selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
+                                    <button class="mr2" data-test-button="remove-label-selected" data-testid="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
                                         <span>Remove label from selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
