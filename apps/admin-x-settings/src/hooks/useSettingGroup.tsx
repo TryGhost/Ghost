@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ErrorMessages, OkProps, SaveHandler, SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Setting, SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {SiteData} from '@tryghost/admin-x-framework/api/site';
+import {type ErrorMessages, type OkProps, type SaveHandler, type SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {type Setting, type SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type SiteData} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 import {useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 

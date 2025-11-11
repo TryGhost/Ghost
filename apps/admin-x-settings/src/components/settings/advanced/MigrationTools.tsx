@@ -2,7 +2,7 @@ import MigrationToolsExport from './migrationtools/MigrationToolsExport';
 import MigrationToolsImport from './migrationtools/MigrationToolsImport';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import {SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {SettingGroupHeader, type Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 
 type MigrationTab = 'import' | 'export';
 
