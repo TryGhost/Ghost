@@ -63,6 +63,20 @@ module.exports = class AdapterManager {
     }
 
     /**
+     * Clear cached instances for a specific adapter type. Use when runtime config changes require fresh instances.
+     *
+     * @param {string} adapterType The adapter type to reset cache for (e.g., 'email', 'storage')
+     */
+    resetCacheFor(adapterType) {
+        if (!this.instanceCache[adapterType]) {
+            throw new errors.NotFoundError({
+                message: `Unknown adapter type ${adapterType}. Please register adapter.`
+            });
+        }
+        this.instanceCache[adapterType] = {};
+    }
+
+    /**
      * getAdapter
      *
      * @param {string} adapterName The name of the type of adapter, e.g. "storage" or "scheduling", optionally including the feature, e.g. "storage:files"
