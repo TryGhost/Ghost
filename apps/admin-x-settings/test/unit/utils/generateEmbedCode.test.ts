@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {GenerateCodeOptions, generateCode} from '../../../src/utils/generateEmbedCode';
+import {type GenerateCodeOptions, generateCode} from '../../../src/utils/generateEmbedCode';
 
 describe('generateCode', function () {
     let genOptions: GenerateCodeOptions;

@@ -1,7 +1,7 @@
-import React, {FocusEventHandler, useEffect, useState} from 'react';
+import React, {type FocusEventHandler, useEffect, useState} from 'react';
 import validator from 'validator';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
-import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {fullEmailAddress, getEmailDomain} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

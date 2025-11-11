@@ -1,9 +1,9 @@
 import React from 'react';
 import ThemeSetting from './ThemeSetting';
 import useCustomFonts from '../../../../hooks/useCustomFonts';
-import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
+import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
-import {Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 interface ThemeSettingsProps {
