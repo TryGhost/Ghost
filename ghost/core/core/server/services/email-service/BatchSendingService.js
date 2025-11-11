@@ -663,6 +663,12 @@ class BatchSendingService {
             if (err.code && err.code === 'BULK_EMAIL_RATE_LIMIT' && this.#rateLimitPolicy) {
                 logging.warn(`Rate limit hit for batch ${batch.id}: ${err.message}`);
 
+                // Record the attempted send to keep counters in sync with Mailgun
+                // Even though Mailgun rejected it, Mailgun's rate limit counters include the API call
+                if (rateLimitBatchSize !== null) {
+                    this.#rateLimitPolicy.recordSent(rateLimitBatchSize);
+                }
+
                 // Register the rate limit hit with the policy
                 const {cooldownUntil} = this.#rateLimitPolicy.registerLimitHit({
                     retryAfterSeconds: err.retryAfterSeconds,
