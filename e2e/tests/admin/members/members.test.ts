@@ -10,7 +10,7 @@ test.describe('Ghost Admin - Members', () => {
     });
 
     test('creates a new member with valid details', async ({page}) => {
-        const memberToCreate = memberFactory.build({labels: ['test'], email: 'membertocreate@ghost.org'});
+        const memberToCreate = memberFactory.build({email: 'membertocreate@ghost.org'});
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
@@ -18,7 +18,6 @@ test.describe('Ghost Admin - Members', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(memberToCreate.name, memberToCreate.email, memberToCreate.note);
-        await memberDetailsPage.addLabel(memberToCreate.labels[0]);
         await memberDetailsPage.save();
 
         await membersPage.goto();
@@ -47,7 +46,7 @@ test.describe('Ghost Admin - Members', () => {
             name: 'Original Name',
             email: 'original@example.com',
             note: 'original note',
-            labels: ['original']
+            labels: ['createdMemberLabel']
         });
 
         // Edit the member
@@ -63,12 +62,17 @@ test.describe('Ghost Admin - Members', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(editedMember.name, editedMember.email, editedMember.note);
-        await memberDetailsPage.removeLabel('original');
-        await memberDetailsPage.subscriptionToggle.click();
+        const labelNamesBefore = await memberDetailsPage.labelNames();
+        await memberDetailsPage.removeLabel('createdMemberLabel');
+        await memberDetailsPage.clickNewsletterSubscriptionToggle();
         await memberDetailsPage.save();
+        await memberDetailsPage.refresh();
+        const labelNamesAfter = await memberDetailsPage.labelNames();
 
         await membersPage.goto();
 
+        expect(labelNamesBefore).toContain('createdMemberLabel');
+        expect(labelNamesAfter).not.toContain('createdMemberLabel');
         await expect(membersPage.memberListItems).toHaveCount(1);
         await expect(membersPage.getMemberByName(editedMember.name)).toBeVisible();
         await expect(membersPage.getMemberEmail(editedMember.name)).toHaveText('edited@ghost.org');
@@ -105,9 +109,9 @@ test.describe('Ghost Admin - Members', () => {
 
         // Delete the member
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.memberActionsButton.click();
-        await memberDetailsPage.deleteButton.click();
-        await memberDetailsPage.confirmDeleteButton.click();
+        await memberDetailsPage.settingsSection.memberActionsButton.click();
+        await memberDetailsPage.settingsSection.deleteButton.click();
+        await memberDetailsPage.settingsSection.confirmDeleteButton.click();
 
         await expect(membersPage.emptyStateHeading).toBeVisible();
     });

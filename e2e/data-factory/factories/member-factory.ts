@@ -9,7 +9,7 @@ export interface Member {
     email: string;
     note: string | null;
     geolocation: string | null;
-    labels?: string[];
+    labels: string[];
     email_count: number;
     email_opened_count: number;
     email_open_rate: number | null;

@@ -18,12 +18,11 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await membersPage.getMemberByName(name).click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.memberActionsButton.click();
-        await memberDetailsPage.impersonateButton.click();
+        await memberDetailsPage.settingsSection.memberActionsButton.click();
+        await memberDetailsPage.settingsSection.impersonateButton.click();
 
         await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
         const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
-
         await memberDetailsPage.goto(magicLink);
 
         const homePage = new HomePage(page);
