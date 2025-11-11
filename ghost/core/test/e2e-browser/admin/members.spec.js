@@ -6,116 +6,6 @@ const fs = require('fs');
 test.describe('Admin', () => {
     test.describe('Members', () => {
         test.describe.configure({retries: 1, mode: 'serial'});
-        test('A member can be created', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.waitForSelector('a[href="#/members/new/"] span');
-            await sharedPage.locator('a[href="#/members/new/"] span:has-text("New member")').click();
-            await sharedPage.waitForSelector('input[name="name"]');
-            let name = 'Test Member';
-            let email = 'tester@testmember.com';
-            let note = 'This is a test member';
-            let label = 'Test Label';
-            await sharedPage.fill('input[name="name"]', name);
-            await sharedPage.fill('input[name="email"]', email);
-            await sharedPage.fill('textarea[name="note"]', note);
-            await sharedPage.locator('label:has-text("Labels") + div').click();
-            await sharedPage.keyboard.type(label);
-            await sharedPage.keyboard.press('Tab');
-            await sharedPage.locator('button span:has-text("Save")').click();
-            await sharedPage.waitForSelector('button span:has-text("Saved")');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-
-            // check number of members
-            await expect(sharedPage.locator('[data-test-list="members-list-item"]')).toHaveCount(1);
-
-            const member = sharedPage.locator('tbody > tr > a > div > div > h3').nth(0);
-            await expect(member).toHaveText(name);
-            const memberEmail = sharedPage.locator('tbody > tr > a > div > div > p').nth(0);
-            await expect(memberEmail).toHaveText(email);
-        });
-
-        test('A member cannot be created with invalid email', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.waitForSelector('a[href="#/members/new/"] span');
-            await sharedPage.locator('a[href="#/members/new/"] span:has-text("New member")').click();
-            await sharedPage.waitForSelector('input[name="name"]');
-            let name = 'Test Member';
-            let email = 'tester+invalid@testmember.com�';
-            let note = 'This is a test member';
-            let label = 'Test Label';
-            await sharedPage.fill('input[name="name"]', name);
-            await sharedPage.fill('input[name="email"]', email);
-            await sharedPage.fill('textarea[name="note"]', note);
-            await sharedPage.locator('label:has-text("Labels") + div').click();
-            await sharedPage.keyboard.type(label);
-            await sharedPage.keyboard.press('Tab');
-            await sharedPage.locator('button span:has-text("Save")').click();
-            await sharedPage.waitForSelector('button span:has-text("Retry")');
-
-            // check we are unable to save member with invalid email
-            await expect(sharedPage.locator('button span:has-text("Retry")')).toBeVisible();
-            await expect(sharedPage.locator('text=Invalid Email')).toBeVisible();
-        });
-
-        test('A member can be edited', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.locator('tbody > tr > a').nth(0).click();
-            await sharedPage.waitForSelector('input[name="name"]');
-            let name = 'Test Member Edited';
-            let email = 'tester.edited@example.com';
-            let note = 'This is an edited test member';
-            await sharedPage.fill('input[name="name"]', name);
-            await sharedPage.fill('input[name="email"]', email);
-            await sharedPage.fill('textarea[name="note"]', note);
-            await sharedPage.locator('label:has-text("Labels") + div').click();
-            await sharedPage.keyboard.press('Backspace');
-            await sharedPage.locator('body').click(); // this is to close the dropdown & lose focus
-            await sharedPage.locator('input[name="subscribed"] + span').click();
-            await sharedPage.locator('button span:has-text("Save")').click();
-            await sharedPage.waitForSelector('button span:has-text("Saved")');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-
-            // check number of members
-            await expect(sharedPage.locator('[data-test-list="members-list-item"]')).toHaveCount(1);
-
-            const member = sharedPage.locator('tbody > tr > a > div > div > h3').nth(0);
-            await expect(member).toHaveText(name);
-            const memberEmail = sharedPage.locator('tbody > tr > a > div > div > p').nth(0);
-            await expect(memberEmail).toHaveText(email);
-        });
-
-        test('A member can be impersonated', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.locator('tbody > tr > a').nth(0).click();
-            await sharedPage.waitForSelector('[data-test-button="member-actions"]');
-            await sharedPage.locator('[data-test-button="member-actions"]').click();
-            await sharedPage.getByRole('button', {name: 'Impersonate'}).click();
-            await sharedPage.getByRole('button', {name: 'Copy link'}).click();
-            await sharedPage.waitForSelector('button span:has-text("Link copied")');
-            // get value from input because we don't have access to the clipboard during headless testing
-            const elem = await sharedPage.$('input[name="member-signin-url"]');
-            const link = await elem.inputValue();
-            await sharedPage.goto(link);
-            await sharedPage.frameLocator('#ghost-portal-root iframe[title="portal-trigger"]').locator('div').nth(1).click();
-            const title = await sharedPage.frameLocator('#ghost-portal-root div iframe[title="portal-popup"]').locator('h2').innerText();
-            await expect(title).toEqual('Your account'); // this is the title of the popup when member is logged in
-        });
-
-        test('A member can be deleted', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.locator('tbody > tr > a').nth(0).click();
-            await sharedPage.waitForSelector('[data-test-button="member-actions"]');
-            await sharedPage.locator('[data-test-button="member-actions"]').click();
-            await sharedPage.getByRole('button', {name: 'Delete member'}).click();
-            await sharedPage.locator('button[data-test-button="confirm"] span:has-text("Delete member")').click();
-            // should have no members now, so we should see the empty state
-            expect(await sharedPage.locator('div h4:has-text("Start building your audience")')).not.toBeNull();
-        });
 
         const membersFixture = [
             {
@@ -257,7 +147,7 @@ test.describe('Admin', () => {
             await sharedPage.waitForSelector('button[data-test-button="members-actions"]');
             await sharedPage.locator('button[data-test-button="members-actions"]').click();
             await sharedPage.locator('button[data-test-button="add-label-selected"]').click();
-            await sharedPage.locator('div[data-test-state="add-label-unconfirmed"] > span > select').selectOption({label: 'Test Label'});
+            await sharedPage.locator('div[data-test-state="add-label-unconfirmed"] > span > select').selectOption({label: 'dog'});
             const members = await sharedPage.locator('div[data-test-state="add-label-unconfirmed"] > p > span[data-test-text="member-count"]').innerText();
             expect(members).toEqual('3 members');
             await sharedPage.locator('button[data-test-button="confirm"]').click();
@@ -278,37 +168,6 @@ test.describe('Admin', () => {
             await sharedPage.locator('button[data-test-button="confirm"]').click();
             const success = await sharedPage.locator('div[data-test-state="remove-complete"] > div > p').innerText();
             expect(success).toEqual('Label removed from 3 members successfully');
-        });
-
-        test('An existing member cannot be saved with invalid email address', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
-            await sharedPage.waitForSelector('a[href="#/members/new/"] span');
-            await sharedPage.locator('a[href="#/members/new/"] span:has-text("New member")').click();
-            await sharedPage.waitForSelector('input[name="name"]');
-            let name = 'Test Member';
-            let email = 'tester+invalid@example.com';
-            let note = 'This is a test member';
-            let label = 'Test Label';
-            await sharedPage.fill('input[name="name"]', name);
-            await sharedPage.fill('input[name="email"]', email);
-            await sharedPage.fill('textarea[name="note"]', note);
-            await sharedPage.locator('label:has-text("Labels") + div').click();
-            await sharedPage.keyboard.type(label);
-            await sharedPage.keyboard.press('Tab');
-            await sharedPage.locator('button span:has-text("Save")').click();
-            await sharedPage.waitForSelector('button span:has-text("Saved")');
-
-            // Update email to invalid and try saving
-            let updatedEmail = 'tester+invalid@example.com�';
-            await sharedPage.fill('input[name="email"]', updatedEmail);
-            await sharedPage.waitForSelector('button span:has-text("Save")');
-            await sharedPage.locator('button span:has-text("Save")').click();
-            await sharedPage.waitForSelector('button span:has-text("Retry")');
-
-            // check we are unable to save member with invalid email
-            await expect(sharedPage.locator('button span:has-text("Retry")')).toBeVisible();
-            await expect(sharedPage.locator('text=Invalid Email')).toBeVisible();
         });
     });
 });

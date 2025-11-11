@@ -21,6 +21,7 @@ export default class SessionService extends ESASessionService {
     @service upgradeStatus;
     @service whatsNew;
     @service membersUtils;
+    @service stateBridge;
     @service themeManagement;
 
     @inject config;
@@ -82,6 +83,8 @@ export default class SessionService extends ESASessionService {
         }
 
         return this.handleAuthenticationTask.perform(() => {
+            this.stateBridge.triggerEmberAuthChange();
+
             if (this.skipAuthSuccessHandler) {
                 this.skipAuthSuccessHandler = false;
                 return;
