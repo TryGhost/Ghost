@@ -1,4 +1,4 @@
-import { DEFAULT_NAVIGATION_PREFERENCES, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
+import { DEFAULT_NAVIGATION_PREFERENCES, NavigationPreferencesSchema, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
 import { useQuery, useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
 
 
@@ -27,7 +27,7 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
         mutationFn: async (updatedNavigationPreferences: Partial<NavigationPreferences>) => {
             const currentNavigation = preferences?.navigation ?? DEFAULT_NAVIGATION_PREFERENCES;
 
-            const newNavigationPreferences: NavigationPreferences = {
+            const merged = {
                 ...currentNavigation,
                 ...updatedNavigationPreferences,
                 expanded: {
@@ -39,6 +39,8 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
                     ...updatedNavigationPreferences.menu,
                 },
             };
+
+            const newNavigationPreferences = NavigationPreferencesSchema.parse(merged);
 
             await editPreferences({
                 navigation: newNavigationPreferences,
@@ -56,7 +58,6 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
     const setExpanded = (value: boolean) => {
         void editNavigationPreferences({
             expanded: {
-                ...(navigationPreferences?.expanded ?? {}),
                 [expandedKey]: value
             },
         });
