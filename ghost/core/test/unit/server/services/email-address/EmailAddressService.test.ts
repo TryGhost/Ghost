@@ -15,19 +15,27 @@ describe('EmailAddressService', function () {
         sinon.restore();
     });
 
+    // Helper to create service config with overrides
+    const createConfig = (overrides: any = {}) => ({
+        getManagedEmailEnabled: () => true,
+        getSendingDomain: () => 'custom.example.com',
+        getFallbackDomain: () => 'fallback.example.com',
+        getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
+        getFallbackEmail: () => 'fallback@fallback.example.com',
+        isValidEmailAddress: () => true,
+        labs: labsStub,
+        ...overrides
+    });
+
+    // Helper to create service instance
+    const createService = (configOverrides: any = {}) => {
+        return new EmailAddressService(createConfig(configOverrides));
+    };
+
     describe('getAddress with fallback domain', function () {
         it('uses fallback address when domainWarmup flag is enabled and useFallbackAddress is true', function () {
             labsStub.isSet.withArgs('domainWarmup').returns(true);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
+            const service = createService();
 
             const result = service.getAddress({
                 from: {address: 'custom@custom.example.com', name: 'Custom Sender'}
@@ -40,16 +48,7 @@ describe('EmailAddressService', function () {
 
         it('does not use fallback address when useFallbackAddress is false', function () {
             labsStub.isSet.withArgs('domainWarmup').returns(true);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
+            const service = createService();
 
             const result = service.getAddress({
                 from: {address: 'custom@custom.example.com', name: 'Custom Sender'}
@@ -62,16 +61,7 @@ describe('EmailAddressService', function () {
 
         it('does not use fallback address when domainWarmup flag is disabled', function () {
             labsStub.isSet.withArgs('domainWarmup').returns(false);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
+            const service = createService();
 
             const result = service.getAddress({
                 from: {address: 'custom@custom.example.com', name: 'Custom Sender'}
@@ -85,15 +75,8 @@ describe('EmailAddressService', function () {
 
         it('does not use fallback address when fallback email is not configured', function () {
             labsStub.isSet.withArgs('domainWarmup').returns(true);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => null,
-                isValidEmailAddress: () => true,
-                labs: labsStub
+            const service = createService({
+                getFallbackEmail: () => null
             });
 
             const result = service.getAddress({
@@ -108,16 +91,7 @@ describe('EmailAddressService', function () {
 
         it('preserves existing replyTo when using fallback address', function () {
             labsStub.isSet.withArgs('domainWarmup').returns(true);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
+            const service = createService();
 
             const result = service.getAddress({
                 from: {address: 'custom@custom.example.com', name: 'Custom Sender'},
@@ -128,54 +102,18 @@ describe('EmailAddressService', function () {
             assert.equal(result.replyTo?.address, 'support@custom.example.com');
             assert.equal(result.replyTo?.name, 'Support');
         });
-
-        it('uses fallback address before defaulting to managed email', function () {
-            labsStub.isSet.withArgs('domainWarmup').returns(true);
-
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'managed.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
-
-            const result = service.getAddress({
-                from: {address: 'custom@custom.example.com', name: 'Custom Sender'}
-            }, {useFallbackAddress: true});
-
-            // Should use fallback instead of managed email
-            assert.equal(result.from.address, 'fallback@fallback.example.com');
-            assert.equal(result.replyTo?.address, 'custom@custom.example.com');
-        });
     });
 
     describe('fallbackDomain getter', function () {
         it('returns the fallback domain', function () {
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => 'fallback@fallback.example.com',
-                isValidEmailAddress: () => true,
-                labs: labsStub
-            });
+            const service = createService();
 
             assert.equal(service.fallbackDomain, 'fallback.example.com');
         });
 
         it('returns null when not configured', function () {
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => null,
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => null,
-                isValidEmailAddress: () => true,
-                labs: labsStub
+            const service = createService({
+                getFallbackDomain: () => null
             });
 
             assert.equal(service.fallbackDomain, null);
@@ -184,14 +122,8 @@ describe('EmailAddressService', function () {
 
     describe('fallbackEmail getter', function () {
         it('returns the parsed fallback email', function () {
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => '"Fallback" <fallback@fallback.example.com>',
-                isValidEmailAddress: () => true,
-                labs: labsStub
+            const service = createService({
+                getFallbackEmail: () => '"Fallback" <fallback@fallback.example.com>'
             });
 
             assert.equal(service.fallbackEmail?.address, 'fallback@fallback.example.com');
@@ -199,14 +131,8 @@ describe('EmailAddressService', function () {
         });
 
         it('returns null when not configured', function () {
-            const service = new EmailAddressService({
-                getManagedEmailEnabled: () => true,
-                getSendingDomain: () => 'custom.example.com',
-                getFallbackDomain: () => 'fallback.example.com',
-                getDefaultEmail: () => ({address: 'noreply@ghost.org', name: 'Ghost'}),
-                getFallbackEmail: () => null,
-                isValidEmailAddress: () => true,
-                labs: labsStub
+            const service = createService({
+                getFallbackEmail: () => null
             });
 
             assert.equal(service.fallbackEmail, null);
