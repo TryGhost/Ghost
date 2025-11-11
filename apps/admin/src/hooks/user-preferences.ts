@@ -1,4 +1,4 @@
-import { useQuery, useMutation, type UseQueryResult, type UseMutationResult } from "@tanstack/react-query";
+import { useQuery, useMutation, type UseQueryResult, type UseMutationResult, type UseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { useQueryClient } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
@@ -82,10 +82,13 @@ export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
 
 export const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
 
-export const useUserPreferences = (): UseQueryResult<Preferences> => {
+export function useUserPreferences<TData = Preferences>(
+    options?: Omit<UseQueryOptions<Preferences, Error, TData>, 'queryKey' | 'queryFn'>
+): UseQueryResult<TData> {
     const { data: user } = useCurrentUser();
 
-    return useQuery({
+    return useQuery<Preferences, Error, TData>({
+        ...options,
         queryKey: userPreferencesQueryKey(user),
         queryFn: () => {
             if (!user) {
@@ -106,7 +109,7 @@ export const useUserPreferences = (): UseQueryResult<Preferences> => {
         // the current active entry cached indefinitely.
         cacheTime: 0,
     });
-};
+}
 
 export const useEditUserPreferences = (): UseMutationResult<void, Error, DeepPartial<Preferences>, unknown> => {
     const queryClient = useQueryClient();
