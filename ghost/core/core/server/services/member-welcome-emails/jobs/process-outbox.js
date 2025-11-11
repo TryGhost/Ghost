@@ -4,6 +4,7 @@ const MemberCreatedEvent = require('../../../../shared/events/MemberCreatedEvent
 const {OUTBOX_STATUSES} = require('../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./lib/constants');
 const processEntries = require('./lib/process-entries');
+const mailContext = require('./lib/mail-context');
 
 /**
  * Fetches pending outbox entries and sets them to processing
@@ -92,7 +93,8 @@ if (parentPort) {
 
 async function processOutbox() {
     const db = require('../../../data/db');
-    
+    await mailContext.ensureInitialized({db});
+
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 

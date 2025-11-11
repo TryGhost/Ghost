@@ -24,7 +24,7 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
-const WELCOME_EMAIL_SOURCES = ['member'];
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
 
 /**
  * @typedef {object} ITokenService
@@ -266,15 +266,6 @@ module.exports = class MemberRepository {
             options = {};
         }
 
-        if (!options.transacting) {
-            return this._Member.transaction((transacting) => {
-                return this.create(data, {
-                    ...options,
-                    transacting
-                });
-            });
-        }
-
         if (!options.batch_id) {
             // We'll use this to link related events
             options.batch_id = ObjectId().toHexString();
@@ -448,25 +439,7 @@ module.exports = class MemberRepository {
                     });
                 }
             }
-        }
-
-        // Insert into outbox if welcome emails feature is enabled and source is allowed
-        // Only self-signup members get welcome emails; excludes imports, admin-created, and system-generated members
-        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
-            await this._Outbox.add({
-                id: ObjectId().toHexString(),
-                event_type: MemberCreatedEvent.name,
-                payload: JSON.stringify({
-                    memberId: member.id,
-                    email: member.get('email'),
-                    name: member.get('name'),
-                    source,
-                    timestamp: eventData.created_at
-                }),
-                created_at: new Date()
-            }, options);
-        }
-                
+        }       
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,

@@ -2,6 +2,9 @@ const logging = require('@tryghost/logging');
 const {MAX_RETRIES, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const sendMemberWelcomeEmail = require('./send-member-welcome-email');
+const mailContext = require('./mail-context');
+
+/** @typedef {import('./mail-context').MailConfig} MailConfig */
 
 /**
  * Deletes a successfully processed outbox entry
@@ -50,7 +53,9 @@ async function processEntry(db, entry) {
     try {
         payload = JSON.parse(entry.payload);
 
-        await sendMemberWelcomeEmail(payload);
+        /** @type {MailConfig} */
+        const mailConfig = mailContext.getConfig();
+        await sendMemberWelcomeEmail(payload, mailConfig);
         await deleteProcessedEntry(db, entry.id);
 
         return {success: true};
