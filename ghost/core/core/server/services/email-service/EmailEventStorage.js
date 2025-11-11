@@ -184,10 +184,9 @@ class EmailEventStorage {
     /**
      * Flush all pending batched updates to the database
      * Uses CASE statements to update multiple recipients in a single query
-     * @param {any} [trx] - Optional database transaction to use (if not provided, creates new transaction)
      * @returns {Promise<{delivered: number, opened: number, failed: number}>} Count of rows updated
      */
-    async flushBatchedUpdates(trx = null) {
+    async flushBatchedUpdates() {
         const flushStart = Date.now();
         const eventTypes = [
             {name: 'delivered', map: this.#pendingUpdates.delivered, column: 'delivered_at'},
@@ -248,22 +247,15 @@ class EmailEventStorage {
         // Add recipientIds for WHERE IN clause
         recipientIds.forEach(id => bindings.push(id));
 
-        // Execute the batch update
+        // Execute the batch update in a brief transaction
         const updateStart = Date.now();
-        const executeUpdate = async (updateTrx) => {
-            await updateTrx.raw(`
+        await this.#db.knex.transaction(async (trx) => {
+            await trx.raw(`
                 UPDATE email_recipients
                 SET ${setClauses.join(', ')}
                 WHERE id IN (${recipientIds.map(() => '?').join(',')})
             `, bindings);
-        };
-
-        // Use provided transaction or create a new one
-        if (trx) {
-            await executeUpdate(trx);
-        } else {
-            await this.#db.knex.transaction(executeUpdate);
-        }
+        });
         const updateDuration = Date.now() - updateStart;
 
         // Record metrics and collect counts

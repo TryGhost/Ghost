@@ -1,7 +1,6 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const db = require('../../data/db');
 
 /**
  * @typedef {import('../email-service/EmailEventProcessor')} EmailEventProcessor
@@ -353,25 +352,21 @@ module.exports = class EmailAnalyticsService {
          * @returns {Promise<void>}
          */
         const processBatch = async (events) => {
-            // Wrap entire batch processing in a single transaction to minimize connection usage
-            // This ensures all database operations for this batch use one connection
             const processingStart = Date.now();
             logging.info(`[EmailAnalytics] processBatch: Starting processing of ${events.length} events`);
 
-            await db.knex.transaction(async (trx) => {
-                await this.processEventBatch(events, processingResult, fetchData, trx);
-
-                // Flush batched email_recipients updates after each Mailgun batch
-                const flushStart = Date.now();
-                await this.eventProcessor.flushBatchedUpdates(trx);
-                const flushDuration = Date.now() - flushStart;
-                if (flushDuration > 100) {
-                    logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
-                }
-            }); // Transaction commits and releases connection here
+            await this.processEventBatch(events, processingResult, fetchData);
 
             processingTimeMs += (Date.now() - processingStart);
             eventCount += events.length;
+
+            // Flush batched email_recipients updates after each Mailgun batch
+            const flushStart = Date.now();
+            await this.eventProcessor.flushBatchedUpdates();
+            const flushDuration = Date.now() - flushStart;
+            if (flushDuration > 100) {
+                logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
+            }
 
             // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
             // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
@@ -467,10 +462,9 @@ module.exports = class EmailAnalyticsService {
      * @param {any[]} events - An array of email analytics events to process.
      * @param {Object} result - The result object to merge batch processing results into.
      * @param {FetchData} fetchData - Data related to the current fetch operation.
-     * @param {any} trx - Database transaction to use for all queries
      * @returns {Promise<void>}
      */
-    async processEventBatch(events, result, fetchData, trx) {
+    async processEventBatch(events, result, fetchData) {
         const batchStart = Date.now();
         logging.info(`[EmailAnalytics] processEventBatch: Processing ${events.length} events`);
 
@@ -482,7 +476,7 @@ module.exports = class EmailAnalyticsService {
             email: event.recipientEmail
         }));
 
-        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications, trx);
+        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications);
         const recipientLookupDuration = Date.now() - recipientLookupStart;
         logging.info(`[EmailAnalytics] processEventBatch: Recipient lookup completed in ${recipientLookupDuration}ms, cache size: ${recipientCache.size}`);
 
