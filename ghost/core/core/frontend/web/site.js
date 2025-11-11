@@ -9,6 +9,7 @@ const config = require('../../shared/config');
 const storage = require('../../server/adapters/storage');
 const urlUtils = require('../../shared/url-utils');
 const sitemapHandler = require('../services/sitemap/handler');
+const serveFavicon = require('./routers/serve-favicon');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
@@ -62,7 +63,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    siteApp.use(mw.serveFavicon());
+    serveFavicon(siteApp);
 
     // Serve sitemap.xsl file
     siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
