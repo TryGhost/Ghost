@@ -246,19 +246,10 @@ class BatchSendingService {
             return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors']});
         }, {...this.#BEFORE_RETRY_CONFIG, description: `getLazyRelation post for email ${emailId}`});
 
-        // Reset batch status to pending so it can be sent
-        await this.retryDb(
-            async () => {
-                await batch.save({
-                    status: 'pending'
-                }, {patch: true, require: false, autoRefresh: false});
-            },
-            {...this.#AFTER_RETRY_CONFIG, description: `reset batch ${batchId} to pending for retry`}
-        );
-
         logging.info(`Sending rate-limited batch ${batchId} directly`);
 
         // Send only this specific batch, not the entire email
+        // sendBatch will handle the status transition from rate_limited -> submitting atomically
         const emailBodyCache = new EmailBodyCache();
         const result = await this.sendBatch({
             email,
@@ -535,9 +526,10 @@ class BatchSendingService {
 
         // Check the status of the email batch in a 'for update' transaction
         // This must happen BEFORE the rate limit check to prevent race conditions
+        // Allow 'rate_limited' status for retry flows
         const batch = await this.retryDb(
             async () => {
-                return await this.updateStatusLock(this.#models.EmailBatch, originalBatch.id, 'submitting', ['pending', 'failed']);
+                return await this.updateStatusLock(this.#models.EmailBatch, originalBatch.id, 'submitting', ['pending', 'failed', 'rate_limited']);
             },
             {...this.#getBeforeRetryConfig(email), description: `updateStatusLock batch ${originalBatch.id} -> submitting`}
         );
