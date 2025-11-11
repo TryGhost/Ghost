@@ -61,13 +61,13 @@ export const useUserPreferences = (): UseQueryResult<Preferences> => {
     });
 };
 
-export const useEditUserPreferences = (): UseMutationResult<void, Error, Preferences, unknown> => {
+export const useEditUserPreferences = (): UseMutationResult<void, Error, Partial<Preferences>, unknown> => {
     const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const { mutateAsync: editUser } = useEditUser();
 
     return useMutation({
-        mutationFn: async (updatedPreferences: Preferences) => {
+        mutationFn: async (updatedPreferences: Partial<Preferences>) => {
             if (!user) {
                 throw new Error("User is not loaded");
             }
