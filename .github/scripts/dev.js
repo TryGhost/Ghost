@@ -30,6 +30,7 @@ const availableAppFlags = {
     ghost: 'Run only Ghost',
     admin: 'Run only Admin',
     'browser-tests': 'Run browser tests',
+    forward: 'Run the new React admin shell (skips AdminX app bundling)',
     announcementBar: 'Run Announcement Bar',
     announcementbar: 'Run Announcement Bar',
     'announcement-bar': 'Run Announcement Bar',
@@ -102,6 +103,13 @@ const COMMAND_ADMIN = {
     env: {}
 };
 
+const COMMAND_ADMIN_REACT = {
+    name: 'admin-react',
+    command: 'nx run @tryghost/admin:dev',
+    prefixColor: 'cyan',
+    env: {}
+};
+
 const COMMAND_BROWSERTESTS = {
     name: 'browser-tests',
     command: `nx run ghost:test:browser${PASS_THROUGH_FLAGS ? ` -- ${PASS_THROUGH_FLAGS}`: ''}`,
@@ -111,26 +119,30 @@ const COMMAND_BROWSERTESTS = {
 
 const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
-const COMMANDS_ADMINX = [{
+const COMMAND_ADMINX_DEPS = {
     name: 'adminXDeps',
-    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade,apps/stats -- nx run \\$NX_PROJECT_NAME:build; done',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade -- nx run \\$NX_PROJECT_NAME:build; done',
     prefixColor: '#C72AF7',
     env: {}
-}, {
+};
+
+const COMMAND_ADMINX_APPS = {
     name: 'adminX',
     command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
     prefixColor: '#C72AF7',
     env: {}
-}];
+};
+
+const ADMIN_COMMANDS = [COMMAND_ADMIN, COMMAND_ADMINX_DEPS, GHOST_APP_FLAGS.includes('forward') ? COMMAND_ADMIN_REACT : COMMAND_ADMINX_APPS];
 
 if (GHOST_APP_FLAGS.includes('ghost')) {
-    commands = [COMMAND_GHOST];
+    commands = [...commands, COMMAND_GHOST];
 } else if (GHOST_APP_FLAGS.includes('admin')) {
-    commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
+    commands = [...commands, ...ADMIN_COMMANDS];
 } else if (GHOST_APP_FLAGS.includes('browser-tests')) {
     commands = [COMMAND_BROWSERTESTS];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_ADMIN, ...COMMANDS_ADMINX];
+    commands = [...commands, COMMAND_GHOST, ...ADMIN_COMMANDS];
 }
 
 if (GHOST_APP_FLAGS.includes('portal') || GHOST_APP_FLAGS.includes('all')) {
