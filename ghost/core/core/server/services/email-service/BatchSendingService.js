@@ -237,7 +237,16 @@ class BatchSendingService {
             return;
         }
 
-        // Reset batch status to pending so it can be sent again
+        // Load required relations for sending the batch
+        const newsletter = await this.retryDb(async () => {
+            return await email.getLazyRelation('newsletter', {require: true});
+        }, {...this.#BEFORE_RETRY_CONFIG, description: `getLazyRelation newsletter for email ${emailId}`});
+
+        const post = await this.retryDb(async () => {
+            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors']});
+        }, {...this.#BEFORE_RETRY_CONFIG, description: `getLazyRelation post for email ${emailId}`});
+
+        // Reset batch status to pending so it can be sent
         await this.retryDb(
             async () => {
                 await batch.save({
@@ -247,10 +256,28 @@ class BatchSendingService {
             {...this.#AFTER_RETRY_CONFIG, description: `reset batch ${batchId} to pending for retry`}
         );
 
-        logging.info(`Reset batch ${batchId} to pending, it will be picked up by the email sending process`);
+        logging.info(`Sending rate-limited batch ${batchId} directly`);
 
-        // Trigger email sending again (this will pick up the pending batch)
-        return this.scheduleEmail(email);
+        // Send only this specific batch, not the entire email
+        const emailBodyCache = new EmailBodyCache();
+        const result = await this.sendBatch({
+            email,
+            batch,
+            post,
+            newsletter,
+            emailBodyCache,
+            deliveryTime: undefined
+        });
+
+        if (result === true) {
+            logging.info(`Successfully sent rate-limited batch ${batchId}`);
+        } else if (result === 'rate_limited') {
+            logging.warn(`Batch ${batchId} was rate-limited again during retry`);
+        } else {
+            logging.error(`Failed to send rate-limited batch ${batchId}`);
+        }
+
+        return result;
     }
 
     /**
@@ -388,8 +415,7 @@ class BatchSendingService {
         const batch = await this.#models.EmailBatch.add({
             email_id: email.id,
             member_segment: segment,
-            status: 'pending',
-            member_count: members.length
+            status: 'pending'
         }, options);
 
         const recipientData = [];
