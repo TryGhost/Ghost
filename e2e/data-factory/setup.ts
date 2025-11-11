@@ -1,5 +1,6 @@
 import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 import {HttpClient} from './persistence/adapters/http-client';
+import {MemberFactory} from './factories/member-factory';
 import {PostFactory} from './factories/post-factory';
 import {TagFactory} from './factories/tag-factory';
 
@@ -26,5 +27,13 @@ export function createTagFactory(httpClient: HttpClient): TagFactory {
         'tags'
     );
     return new TagFactory(adapter);
+}
+
+export function createMemberFactory(httpClient: HttpClient): MemberFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'members'
+    );
+    return new MemberFactory(adapter);
 }
 

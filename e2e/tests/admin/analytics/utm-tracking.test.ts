@@ -7,7 +7,7 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
         test('utm components hidden', async ({page}) => {
             const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
             await analyticsWebTrafficPage.goto();
-            await expect(analyticsWebTrafficPage.campaignsDropdown).not.toBeVisible();
+            await expect(analyticsWebTrafficPage.campaignsDropdown).toBeHidden();
         });
     });
 

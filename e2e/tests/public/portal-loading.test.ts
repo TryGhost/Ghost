@@ -1,6 +1,4 @@
-import {HomePage} from '../../helpers/pages/public';
-import {SignInPage} from '../../helpers/pages/portal/SignInPage';
-import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
+import {HomePage,SignInPage, SignUpPage} from '../../helpers/pages';
 import {expect, test} from '../../helpers/playwright';
 
 test.describe('Portal Loading', () => {

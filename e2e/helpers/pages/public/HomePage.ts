@@ -12,7 +12,7 @@ export class HomePage extends PublicPage {
         this.pageUrl = '/';
         this.mainSubscribeButton = page.getByRole('button', {name: 'Subscribe'}).first();
         this.title = page.getByRole('heading', {level: 1});
-        this.accountButton = page.locator('[data-portal="account"]').first();
+        this.accountButton = page.getByRole('link', {name: 'Account'});
     }
 
     async waitUntilLoaded(): Promise<void> {

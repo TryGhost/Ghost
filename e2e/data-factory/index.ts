@@ -4,6 +4,8 @@ export {PostFactory} from './factories/post-factory';
 export type {Post} from './factories/post-factory';
 export {TagFactory} from './factories/tag-factory';
 export type {Tag} from './factories/tag-factory';
+export {MemberFactory} from './factories/member-factory';
+export type {Member} from './factories/member-factory';
 export * from './factories/user-factory';
 
 // Persistence Adapters
@@ -19,3 +21,4 @@ export {generateId, generateUuid, generateSlug} from './utils';
 // Factory Setup Helpers
 export {createPostFactory} from './setup';
 export {createTagFactory} from './setup';
+export {createMemberFactory} from './setup';
