@@ -38,3 +38,36 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
         },
     });
 };
+
+export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['expanded']): [boolean, (value: boolean) => void] => {
+    const { data: navigationPreferences } = useNavigationPreferences();
+    const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
+
+    const expanded = navigationPreferences?.expanded[expandedKey] ?? true;
+
+    const setExpanded = (value: boolean) => {
+        void editNavigationPreferences({
+            expanded: {
+                ...(navigationPreferences?.expanded ?? {}),
+                [expandedKey]: value
+            },
+        });
+    };
+
+    return [expanded, setExpanded];
+};
+
+export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => void] => {
+    const { data: navigationPreferences } = useNavigationPreferences();
+    const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
+
+    const visible = navigationPreferences?.menu.visible ?? true;
+
+    const setVisible = (value: boolean) => {
+        void editNavigationPreferences({
+            menu: { visible: value },
+        });
+    };
+
+    return [visible, setVisible];
+};
