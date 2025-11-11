@@ -1,14 +1,28 @@
-import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {find, triggerKeyEvent, visit, waitUntil} from '@ember/test-helpers';
+import {beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
+import {find, triggerKeyEvent, visit, waitUntil} from '@ember/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
+/**
+ * Acceptance test suite for navigation menu accessibility features.
+ * Tests keyboard navigation and ARIA attributes for the sidebar toggle button.
+ * 
+ * @module Acceptance Tests
+ * @submodule Nav Menu Accessibility
+ * @see {@link https://github.com/TryGhost/Ghost/issues/25054} for related issue
+ */
 describe('Acceptance: Nav Menu Accessibility', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    /**
+     * Set up test environment before each test.
+     * Creates an authenticated admin user to ensure the navigation menu is rendered.
+     * 
+     * @returns {Promise<void>}
+     */
     beforeEach(async function () {
         // ensure we have an authenticated admin user so the nav is rendered
         let role = this.server.create('role', {name: 'Administrator'});
@@ -16,6 +30,19 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         await authenticateSession();
     });
 
+    /**
+     * Tests that the navigation menu toggle button is keyboard accessible.
+     * Verifies:
+     * - Toggle button exists with proper aria-controls attribute
+     * - Button has aria-expanded attribute for screen reader support
+     * - Enter key press toggles the aria-expanded state correctly
+     * - State changes are properly reflected in the DOM
+     * 
+     * This test addresses keyboard navigation requirements for WCAG 2.1 Level AA compliance.
+     * 
+     * @returns {Promise<void>}
+     * @see {@link https://github.com/TryGhost/Ghost/issues/25054}
+     */
     it('toggle button is keyboard focusable and toggles aria-expanded', async function () {
         // visit a route that renders the primary navigation
         await visit('/site');
