@@ -200,6 +200,8 @@ class BatchSendingService {
     async retryRateLimitedBatch({emailId, batchId}) {
         logging.info(`Retrying rate-limited batch ${batchId} for email ${emailId}`);
 
+        const startTime = Date.now();
+
         // Fetch the email
         const email = await this.retryDb(
             async () => {
@@ -207,6 +209,13 @@ class BatchSendingService {
             },
             {...this.#BEFORE_RETRY_CONFIG, description: `fetch email ${emailId} for rate-limited batch retry`}
         );
+
+        // Calculate and set retry cutoff time to ensure retries respect the original email's cutoff
+        const expectedBatchCount = Math.ceil(email.get('email_count') / 1000);
+        const minimumSecondsPerBatch = 26;
+        const stopAfter = Math.max(expectedBatchCount * minimumSecondsPerBatch * 1000, this.#BEFORE_RETRY_CONFIG.maxTime);
+        const retryCutOffTime = new Date(startTime + stopAfter);
+        email._retryCutOffTime = retryCutOffTime;
 
         // Fetch the batch
         const batch = await this.retryDb(

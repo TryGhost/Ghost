@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -230,7 +229,6 @@ class MailgunRateLimitPolicy {
         }
 
         const tier = this.#currentTier;
-        const now = new Date();
 
         // If batch size exceeds the smallest rate limit, allow it to send anyway
         // Otherwise it would be stuck in infinite retry
@@ -245,8 +243,15 @@ class MailgunRateLimitPolicy {
             if (this.#state.sentInCurrentMinute >= (tier.perMinute || Infinity) ||
                 this.#state.sentInCurrentHour >= (tier.perHour || Infinity) ||
                 this.#state.sentInCurrentDay >= tier.perDay) {
-                // Wait for next window
-                const readyAt = new Date(this.#state.dayStart.getTime() + 86400000);
+                // Wait for the earliest window that will reset
+                let readyAt;
+                if (tier.perMinute && this.#state.sentInCurrentMinute >= tier.perMinute) {
+                    readyAt = new Date(this.#state.minuteStart.getTime() + 60000);
+                } else if (tier.perHour && this.#state.sentInCurrentHour >= tier.perHour) {
+                    readyAt = new Date(this.#state.hourStart.getTime() + 3600000);
+                } else {
+                    readyAt = new Date(this.#state.dayStart.getTime() + 86400000);
+                }
                 return {
                     canSend: false,
                     readyAt,
