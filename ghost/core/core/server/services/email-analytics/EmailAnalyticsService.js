@@ -321,9 +321,8 @@ module.exports = class EmailAnalyticsService {
     async #fetchEvents(fetchData, {begin, end, maxEvents = Infinity, eventTypes = null}) {
         // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
         // Store that we started fetching
-        const fetchStart = Date.now();
         logging.info(`[EmailAnalytics] #fetchEvents: Starting fetch for job ${fetchData.jobName}, begin: ${begin}, end: ${end}, maxEvents: ${maxEvents}`);
-        
+
         fetchData.running = true;
         fetchData.lastStarted = new Date();
         fetchData.lastBegin = begin;
@@ -597,9 +596,18 @@ module.exports = class EmailAnalyticsService {
      * @param {boolean} includeOpenedEvents
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
+        const BATCH_SIZE = 100;
+
+        // Batch process email stats to reduce connection usage
+        const emailBatchCount = Math.ceil(emailIds.length / BATCH_SIZE);
+        if (emailIds.length > 0) {
+            logging.info(`[EmailAnalytics] aggregateStats: Processing ${emailIds.length} emails in ${emailBatchCount} batches of ${BATCH_SIZE}`);
+        }
+
         const emailStatsStart = Date.now();
-        for (const emailId of emailIds) {
-            await this.aggregateEmailStats(emailId, includeOpenedEvents);
+        for (let i = 0; i < emailIds.length; i += BATCH_SIZE) {
+            const batch = emailIds.slice(i, i + BATCH_SIZE);
+            await this.aggregateEmailStatsBatch(batch, includeOpenedEvents);
         }
         const emailStatsDuration = Date.now() - emailStatsStart;
         if (emailIds.length > 0) {
@@ -608,9 +616,8 @@ module.exports = class EmailAnalyticsService {
 
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
-        const BATCH_SIZE = 100;
         const memberBatchCount = Math.ceil(memberIds.length / BATCH_SIZE);
-        
+
         if (memberIds.length > 0) {
             logging.info(`[EmailAnalytics] aggregateStats: Processing ${memberIds.length} members in ${memberBatchCount} batches of ${BATCH_SIZE}`);
         }
@@ -630,6 +637,16 @@ module.exports = class EmailAnalyticsService {
      */
     async aggregateEmailStats(emailId, includeOpenedEvents) {
         return this.queries.aggregateEmailStats(emailId, includeOpenedEvents);
+    }
+
+    /**
+     * Aggregate email stats for multiple email IDs in a batch.
+     * @param {string[]} emailIds - Array of email IDs to aggregate stats for.
+     * @param {boolean} includeOpenedEvents - Whether to include opened events in the stats.
+     * @returns {Promise<void>}
+     */
+    async aggregateEmailStatsBatch(emailIds, includeOpenedEvents) {
+        return this.queries.aggregateEmailStatsBatch(emailIds, includeOpenedEvents);
     }
 
     /**

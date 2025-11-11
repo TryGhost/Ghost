@@ -6,6 +6,34 @@ const {default: ObjectID} = require('bson-objectid');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 
+/**
+ * Helper to build a CASE statement for batch updates
+ * @param {string} column - Column name to update
+ * @param {string} idColumn - ID column name for CASE matching
+ * @param {Map<string, any>} valueMap - Map of id -> value to set
+ * @returns {{sql: string, bindings: any[]}} CASE SQL and parameter bindings
+ */
+function buildCaseUpdate(column, idColumn, valueMap) {
+    const cases = [];
+    const bindings = [];
+
+    for (const [id, value] of valueMap.entries()) {
+        if (value !== undefined && value !== null) {
+            cases.push(`WHEN ? THEN ?`);
+            bindings.push(id, value);
+        } else {
+            // Keep existing value - use column reference
+            cases.push(`WHEN ? THEN ${column}`);
+            bindings.push(id);
+        }
+    }
+
+    return {
+        sql: `${column} = CASE ${idColumn} ${cases.join(' ')} END`,
+        bindings
+    };
+}
+
 /** @typedef {'email-analytics-latest-opened'|'email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-scheduled'} EmailAnalyticsJobName */
 /** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
 
@@ -185,8 +213,87 @@ module.exports = {
         await db.knex('emails').update(updateData).where('id', emailId);
         const queryDuration = Date.now() - queryStart;
         const updateDuration = Date.now() - updateStart;
-        
+
         logging.info(`[EmailAnalytics] aggregateEmailStats: emailId=${emailId}, counts: delivered=${updateData.delivered_count}, failed=${updateData.failed_count}, opened=${updateData.opened_count || 'N/A'}, total=${queryDuration}ms (update: ${updateDuration}ms)`);
+    },
+
+    /**
+     * Aggregate email stats for multiple emails in a batch
+     * Processes multiple emails at once using optimized batch queries
+     * @param {string[]} emailIds - Array of email IDs to aggregate stats for
+     * @param {boolean} updateOpenedCount - Whether to update opened counts
+     * @returns {Promise<Object>} Timing information
+     */
+    async aggregateEmailStatsBatch(emailIds, updateOpenedCount) {
+        const timings = {total: Date.now(), emailCount: emailIds.length};
+
+        logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Starting batch for ${emailIds.length} emails`);
+
+        await db.knex.transaction(async (trx) => {
+            // Step 1: Query for aggregated stats from email_recipients
+            timings.select = Date.now();
+
+            const selectCols = [
+                'email_id',
+                db.knex.raw('SUM(CASE WHEN delivered_at IS NOT NULL THEN 1 ELSE 0 END) as delivered_count'),
+                db.knex.raw('SUM(CASE WHEN failed_at IS NOT NULL THEN 1 ELSE 0 END) as failed_count')
+            ];
+
+            if (updateOpenedCount) {
+                selectCols.push(db.knex.raw('SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened_count'));
+            }
+
+            const stats = await trx('email_recipients')
+                .select(...selectCols)
+                .whereIn('email_id', emailIds)
+                .groupBy('email_id');
+
+            timings.select = Date.now() - timings.select;
+            logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: SELECT completed in ${timings.select}ms, found ${stats.length}/${emailIds.length} emails with stats`);
+
+            // Step 2: Build maps of id -> value for each column
+            const deliveredMap = new Map();
+            const failedMap = new Map();
+            const openedMap = new Map();
+
+            for (const emailId of emailIds) {
+                const emailStats = stats.find(s => s.email_id === emailId);
+                deliveredMap.set(emailId, emailStats ? emailStats.delivered_count : 0);
+                failedMap.set(emailId, emailStats ? emailStats.failed_count : 0);
+                if (updateOpenedCount) {
+                    openedMap.set(emailId, emailStats ? emailStats.opened_count : 0);
+                }
+            }
+
+            // Step 3: Build CASE statements for each column
+            const deliveredCase = buildCaseUpdate('delivered_count', 'id', deliveredMap);
+            const failedCase = buildCaseUpdate('failed_count', 'id', failedMap);
+
+            const setClauses = [deliveredCase.sql, failedCase.sql];
+            const bindings = [...deliveredCase.bindings, ...failedCase.bindings];
+
+            if (updateOpenedCount) {
+                const openedCase = buildCaseUpdate('opened_count', 'id', openedMap);
+                setClauses.push(openedCase.sql);
+                bindings.push(...openedCase.bindings);
+            }
+
+            // Step 4: Execute batch update
+            bindings.push(...emailIds); // Add IDs for WHERE IN clause
+
+            timings.update = Date.now();
+            await trx.raw(`
+                UPDATE emails
+                SET ${setClauses.join(', ')}
+                WHERE id IN (${emailIds.map(() => '?').join(',')})
+            `, bindings);
+            timings.update = Date.now() - timings.update;
+        });
+
+        timings.total = Date.now() - timings.total;
+        logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Completed in ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms)`);
+
+        return timings;
     },
 
     /**
@@ -197,78 +304,87 @@ module.exports = {
      */
     async aggregateMemberStatsBatch(memberIds) {
         const timings = {total: Date.now(), memberCount: memberIds.length};
-        
+
         logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: Starting batch for ${memberIds.length} members`);
 
-        timings.select = Date.now();
-        const stats = await db.knex('email_recipients')
-            .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
-            .select(
-                'email_recipients.member_id',
-                db.knex.raw('COUNT(email_recipients.id) as email_count'),
-                db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
-                db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
-            )
-            .whereIn('email_recipients.member_id', memberIds)
-            .groupBy('email_recipients.member_id');
-        timings.select = Date.now() - timings.select;
-        
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: SELECT completed in ${timings.select}ms for ${memberIds.length} members, found ${stats.length} stats`);
+        await db.knex.transaction(async (trx) => {
+            // Step 1: Query for aggregated stats from email_recipients + emails
+            timings.select = Date.now();
 
-        // Perform batch update
-        const statsMap = new Map(stats.map(s => [s.member_id, s]));
-        timings.update = Date.now();
+            const stats = await trx('email_recipients')
+                .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
+                .select(
+                    'email_recipients.member_id',
+                    db.knex.raw('COUNT(email_recipients.id) as email_count'),
+                    db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
+                    db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
+                )
+                .whereIn('email_recipients.member_id', memberIds)
+                .groupBy('email_recipients.member_id');
 
-        const emailCountCases = [];
-        const emailOpenedCountCases = [];
-        const emailOpenRateCases = [];
-        const emailCountBindings = [];
-        const emailOpenedCountBindings = [];
-        const emailOpenRateBindings = [];
+            timings.select = Date.now() - timings.select;
+            logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: SELECT completed in ${timings.select}ms, found ${stats.length}/${memberIds.length} members with stats`);
 
-        for (const memberId of memberIds) {
-            const memberStats = statsMap.get(memberId) || {email_count: 0, email_opened_count: 0, tracked_count: 0};
-            const trackedCount = memberStats.tracked_count || 0;
+            // Step 2: Build maps of id -> value for each column
+            const emailCountMap = new Map();
+            const emailOpenedCountMap = new Map();
+            const emailOpenRateMap = new Map();
 
-            emailCountCases.push(`WHEN ? THEN ?`);
-            emailCountBindings.push(memberId, memberStats.email_count);
+            for (const memberId of memberIds) {
+                const memberStats = stats.find(s => s.member_id === memberId);
 
-            emailOpenedCountCases.push(`WHEN ? THEN ?`);
-            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
+                if (memberStats) {
+                    emailCountMap.set(memberId, memberStats.email_count);
+                    emailOpenedCountMap.set(memberId, memberStats.email_opened_count);
 
-            if (trackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
-                const openRate = Math.round((memberStats.email_opened_count / trackedCount) * 100);
-                emailOpenRateCases.push(`WHEN ? THEN ?`);
-                emailOpenRateBindings.push(memberId, openRate);
-            } else {
-                // Keep existing open rate
-                emailOpenRateCases.push(`WHEN ? THEN email_open_rate`);
-                emailOpenRateBindings.push(memberId);
+                    // Only update open rate if we have enough tracked emails
+                    const trackedCount = memberStats.tracked_count || 0;
+                    if (trackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
+                        const openRate = Math.round((memberStats.email_opened_count / trackedCount) * 100);
+                        emailOpenRateMap.set(memberId, openRate);
+                    } else {
+                        // Keep existing open rate (undefined = no update)
+                        emailOpenRateMap.set(memberId, undefined);
+                    }
+                } else {
+                    // Member has no email stats yet
+                    emailCountMap.set(memberId, 0);
+                    emailOpenedCountMap.set(memberId, 0);
+                    emailOpenRateMap.set(memberId, undefined); // Keep existing rate
+                }
             }
-        }
 
-        const bindings = [
-            ...emailCountBindings,
-            ...emailOpenedCountBindings,
-            ...emailOpenRateBindings,
-            ...memberIds // for WHERE IN
-        ];
+            // Step 3: Build CASE statements for each column
+            const emailCountCase = buildCaseUpdate('email_count', 'id', emailCountMap);
+            const emailOpenedCountCase = buildCaseUpdate('email_opened_count', 'id', emailOpenedCountMap);
+            const emailOpenRateCase = buildCaseUpdate('email_open_rate', 'id', emailOpenRateMap);
 
-        const updateStart = Date.now();
-        await db.knex.raw(`
-            UPDATE members
-            SET
-                email_count = CASE id ${emailCountCases.join(' ')} END,
-                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
-                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
-            WHERE id IN (${memberIds.map(() => '?').join(',')})
-        `, bindings);
-        timings.update = Date.now() - updateStart;
-        
+            const setClauses = [
+                emailCountCase.sql,
+                emailOpenedCountCase.sql,
+                emailOpenRateCase.sql
+            ];
+
+            const bindings = [
+                ...emailCountCase.bindings,
+                ...emailOpenedCountCase.bindings,
+                ...emailOpenRateCase.bindings
+            ];
+
+            // Step 4: Execute batch update
+            bindings.push(...memberIds); // Add IDs for WHERE IN clause
+
+            timings.update = Date.now();
+            await trx.raw(`
+                UPDATE members
+                SET ${setClauses.join(', ')}
+                WHERE id IN (${memberIds.map(() => '?').join(',')})
+            `, bindings);
+            timings.update = Date.now() - timings.update;
+        });
+
         timings.total = Date.now() - timings.total;
-        timings.overhead = timings.total - (timings.select + timings.update);
-        
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: UPDATE completed in ${timings.update}ms for ${memberIds.length} members. Total: ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms, overhead: ${timings.overhead}ms)`);
+        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: Completed in ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms)`);
 
         return timings;
     }
