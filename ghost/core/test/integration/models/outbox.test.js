@@ -58,11 +58,11 @@ describe('Outbox Model Integration', function () {
         });
 
         const updated = await models.Outbox.edit({
-            status: OUTBOX_STATUSES.SUBMITTING,
+            status: OUTBOX_STATUSES.PROCESSING,
             retry_count: 1
         }, {id: entry.id});
 
-        assert.equal(updated.get('status'), OUTBOX_STATUSES.SUBMITTING);
+        assert.equal(updated.get('status'), OUTBOX_STATUSES.PROCESSING);
         assert.equal(updated.get('retry_count'), 1);
     });
 
