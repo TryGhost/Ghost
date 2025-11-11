@@ -438,6 +438,25 @@ describe('Sending service', function () {
         });
 
         describe('fallback sending domain', function () {
+            // Shared test data to reduce boilerplate
+            const baseEmailData = {
+                post: {},
+                newsletter: {},
+                segment: null,
+                emailId: '123',
+                members: [
+                    {
+                        email: 'member@example.com',
+                        name: 'John'
+                    }
+                ]
+            };
+
+            const baseOptions = {
+                clickTrackingEnabled: true,
+                openTrackingEnabled: true
+            };
+
             it('uses fallback domain when useFallbackAddress is true and fallback is configured', async function () {
                 emailAddressService.fallbackDomain = 'fallback.example.com';
 
@@ -447,22 +466,10 @@ describe('Sending service', function () {
                     emailAddressService
                 });
 
-                const response = await sendingService.send({
-                    post: {},
-                    newsletter: {},
-                    segment: null,
-                    emailId: '123',
-                    members: [
-                        {
-                            email: 'member@example.com',
-                            name: 'John'
-                        }
-                    ]
-                }, {
-                    clickTrackingEnabled: true,
-                    openTrackingEnabled: true,
-                    useFallbackAddress: true
-                });
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: true}
+                );
 
                 assert.equal(response.id, 'provider-123');
                 sinon.assert.calledOnce(sendStub);
@@ -497,22 +504,10 @@ describe('Sending service', function () {
                     emailAddressService
                 });
 
-                const response = await sendingService.send({
-                    post: {},
-                    newsletter: {},
-                    segment: null,
-                    emailId: '123',
-                    members: [
-                        {
-                            email: 'member@example.com',
-                            name: 'John'
-                        }
-                    ]
-                }, {
-                    clickTrackingEnabled: true,
-                    openTrackingEnabled: true,
-                    useFallbackAddress: false
-                });
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: false}
+                );
 
                 assert.equal(response.id, 'provider-123');
                 sinon.assert.calledOnce(sendStub);
@@ -538,22 +533,10 @@ describe('Sending service', function () {
                     emailAddressService
                 });
 
-                const response = await sendingService.send({
-                    post: {},
-                    newsletter: {},
-                    segment: null,
-                    emailId: '123',
-                    members: [
-                        {
-                            email: 'member@example.com',
-                            name: 'John'
-                        }
-                    ]
-                }, {
-                    clickTrackingEnabled: true,
-                    openTrackingEnabled: true,
-                    useFallbackAddress: true
-                });
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: true}
+                );
 
                 assert.equal(response.id, 'provider-123');
                 sinon.assert.calledOnce(sendStub);
@@ -579,22 +562,10 @@ describe('Sending service', function () {
                     emailAddressService
                 });
 
-                const response = await sendingService.send({
-                    post: {},
-                    newsletter: {},
-                    segment: null,
-                    emailId: '123',
-                    members: [
-                        {
-                            email: 'member@example.com',
-                            name: 'John'
-                        }
-                    ]
-                }, {
-                    clickTrackingEnabled: true,
-                    openTrackingEnabled: true
-                    // useFallbackAddress not specified
-                });
+                const response = await sendingService.send(
+                    baseEmailData,
+                    baseOptions // useFallbackAddress not specified
+                );
 
                 assert.equal(response.id, 'provider-123');
                 sinon.assert.calledOnce(sendStub);
