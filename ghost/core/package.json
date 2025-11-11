@@ -102,7 +102,7 @@
     "@tryghost/kg-markdown-html-renderer": "7.1.3",
     "@tryghost/kg-mobiledoc-html-renderer": "7.1.3",
     "@tryghost/limit-service": "1.4.1",
-    "@tryghost/logging": "2.4.23",
+    "@tryghost/logging": "2.5.0",
     "@tryghost/members-csv": "2.0.3",
     "@tryghost/metrics": "1.0.38",
     "@tryghost/mw-error-handler": "1.0.7",
@@ -270,7 +270,7 @@
   },
   "resolutions": {
     "@tryghost/errors": "1.3.8",
-    "@tryghost/logging": "2.4.23",
+    "@tryghost/logging": "2.5.0",
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45"
