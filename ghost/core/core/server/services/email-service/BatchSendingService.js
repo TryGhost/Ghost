@@ -566,12 +566,16 @@ class BatchSendingService {
             if (!canSend) {
                 logging.warn(`Rate limit check failed for batch ${batch.id}: ${reason}. Ready at ${readyAt}`);
 
+                // Increment retry count to track all retry attempts
+                const retryCount = (batch.get('retry_count') || 0) + 1;
+
                 // Mark batch as rate_limited and schedule for later
                 await this.retryDb(
                     async () => {
                         await batch.save({
                             status: 'rate_limited',
                             scheduled_at: readyAt,
+                            retry_count: retryCount,
                             error_message: reason
                         }, {patch: true, require: false, autoRefresh: false});
                     },
