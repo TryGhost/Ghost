@@ -321,7 +321,7 @@ describe('Mailgun Email Provider', function () {
             }
         });
 
-        it('detects 402 status as rate limit error', async function () {
+        it('treats 402 status as billing error, not rate limit', async function () {
             const mailgunErr = new Error('Payment Required');
             mailgunErr.details = 'You have reached your sending quota';
             mailgunErr.status = 402;
@@ -349,8 +349,9 @@ describe('Mailgun Email Provider', function () {
                 }, {});
                 should.fail('Should have thrown an error');
             } catch (e) {
-                should(e.code).eql('BULK_EMAIL_RATE_LIMIT');
-                should(e.isRateLimit).be.true();
+                // 402 should be treated as a regular billing error, not a rate limit
+                should(e.code).eql('BULK_EMAIL_SEND_FAILED');
+                should(e.isRateLimit).not.be.true();
                 should(e.statusCode).eql(402);
             }
         });
