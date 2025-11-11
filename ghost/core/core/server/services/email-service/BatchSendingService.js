@@ -227,15 +227,13 @@ class BatchSendingService {
         if (scheduledAt && new Date() < new Date(scheduledAt)) {
             logging.warn(`Batch ${batchId} scheduled_at ${scheduledAt} has not passed yet, rescheduling`);
             // Reschedule for later
-            const delayMs = new Date(scheduledAt) - new Date();
-            setTimeout(() => {
-                this.#jobsService.addJob({
-                    name: 'batch-retry-after-rate-limit',
-                    job: this.retryRateLimitedBatch.bind(this),
-                    data: {emailId, batchId},
-                    offloaded: false
-                });
-            }, delayMs);
+            this.#jobsService.addJob({
+                name: 'batch-retry-after-rate-limit',
+                job: this.retryRateLimitedBatch.bind(this),
+                data: {emailId, batchId},
+                offloaded: false,
+                at: scheduledAt
+            });
             return;
         }
 
@@ -390,7 +388,8 @@ class BatchSendingService {
         const batch = await this.#models.EmailBatch.add({
             email_id: email.id,
             member_segment: segment,
-            status: 'pending'
+            status: 'pending',
+            member_count: members.length
         }, options);
 
         const recipientData = [];
@@ -438,6 +437,7 @@ class BatchSendingService {
 
         // Loop batches and send them via the EmailProvider
         let succeededCount = 0;
+        let rateLimitedCount = 0;
         const queue = batches.slice();
 
         // Bind this
@@ -453,9 +453,13 @@ class BatchSendingService {
                         batchData.deliveryTime = deliveryTime;
                     }
                 }
-                if (await this.sendBatch(batchData)) {
+                const result = await this.sendBatch(batchData);
+                if (result === true) {
                     succeededCount += 1;
+                } else if (result === 'rate_limited') {
+                    rateLimitedCount += 1;
                 }
+                // result === false means actual failure
                 await runNext();
             }
         };
@@ -463,7 +467,9 @@ class BatchSendingService {
         // Run maximum MAX_SENDING_CONCURRENCY at the same time
         await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runNext()));
 
-        if (succeededCount < batches.length) {
+        // Rate-limited batches are being retried, so don't count them as failures
+        const failedCount = batches.length - succeededCount - rateLimitedCount;
+        if (failedCount > 0) {
             if (succeededCount > 0) {
                 throw new errors.EmailError({
                     message: tpl(messages.emailErrorPartialFailure)
@@ -473,19 +479,25 @@ class BatchSendingService {
                 message: tpl(messages.emailError)
             });
         }
+
+        if (rateLimitedCount > 0) {
+            logging.info(`${rateLimitedCount} batches rate-limited and scheduled for retry`);
+        }
     }
 
     /**
      *
      * @param {{email: Email, batch: EmailBatch, post: Post, newsletter: Newsletter, emailBodyCache: EmailBodyCache, deliveryTime:(Date|undefined) }} data
-     * @returns {Promise<boolean>} True when succeeded, false when failed with an error
+     * @returns {Promise<boolean|string>} True when succeeded, false when failed, 'rate_limited' when rate limited
      */
     async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime}) {
         logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
-        // Check rate limit if policy is available
+        // @TODO: The rate limit policy is not coordinated across multiple instances.
+        // This can lead to incorrect rate limiting behavior in a scaled environment.
+        // A distributed cache like Redis would be needed for proper coordination.
         if (this.#rateLimitPolicy) {
-            const batchSize = originalBatch.get('member_count') || 0;
+            const batchSize = await this.getBatchRecipientCount(originalBatch.id);
             const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(batchSize);
 
             if (!canSend) {
@@ -514,10 +526,11 @@ class BatchSendingService {
                         emailId: email.id,
                         batchId: originalBatch.id
                     },
-                    offloaded: false
+                    offloaded: false,
+                    at: readyAt
                 });
 
-                return false;
+                return 'rate_limited';
             }
         }
 
@@ -633,12 +646,11 @@ class BatchSendingService {
                         batchId: batch.id
                     },
                     offloaded: false,
-                    // @TODO: Uncomment when jobs service supports at
-                    // at: scheduledAt
+                    at: scheduledAt
                 });
 
-                // Return false to indicate the batch should not count as a failure
-                return false;
+                // Return 'rate_limited' to indicate the batch should not count as a failure
+                return 'rate_limited';
             } else if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
                 logging.error(err);
                 if (this.#sentry) {
@@ -721,6 +733,19 @@ class BatchSendingService {
                 tiers
             };
         });
+    }
+
+    /**
+     * Get the count of recipients for a batch
+     * @param {string} batchId - ID of the email batch
+     * @returns {Promise<number>} Number of recipients in batch
+     */
+    async getBatchRecipientCount(batchId) {
+        const result = await this.#db.knex('email_recipients')
+            .where({batch_id: batchId})
+            .count('* as count')
+            .first();
+        return Number(result.count);
     }
 
     /**
