@@ -89,7 +89,8 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         let expectedState = initialState === 'true' ? 'false' : 'true';
 
         // Press Space on the toggle and wait for aria-expanded to change
-        await triggerKeyEvent(toggle, 'keydown', ' ');
+        // Using keyup to match W3C standard button behavior (Space activates on keyup)
+        await triggerKeyEvent(toggle, 'keyup', ' ');
 
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
