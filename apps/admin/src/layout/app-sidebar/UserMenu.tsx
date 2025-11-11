@@ -1,5 +1,4 @@
-import React, { useState } from "react"
-
+import React from "react"
 import {
     Avatar,
     AvatarFallback,
@@ -14,10 +13,16 @@ import {
     Switch
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 
 function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
     const currentUser = useCurrentUser();
-    const [dummyDarkMode, setDummyDarkMode] = useState(false);
+    const {data: preferences} = useUserPreferences();
+    const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
+
+    const setNightShift = (nightShift: boolean) => {
+        void editPreferences({nightShift});
+    }
 
     return (
         <DropdownMenu {...props}>
@@ -84,15 +89,16 @@ function UserMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
                     className="cursor-pointer text-base"
                     onSelect={(e) => {
                         e.preventDefault();
-                        setDummyDarkMode(!dummyDarkMode);
+                        setNightShift(!preferences?.nightShift);
                     }}
                 >
                     <LucideIcon.Moon />
                     <span className="flex-1">Dark mode</span>
                     <Switch
                         size='sm'
-                        checked={dummyDarkMode}
-                        onCheckedChange={setDummyDarkMode}
+                        checked={preferences?.nightShift ?? false}
+                        disabled={isEditingPreferences}
+                        onCheckedChange={setNightShift}
                         onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
                         tabIndex={-1}
                     />

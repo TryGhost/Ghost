@@ -11,6 +11,7 @@ const WhatsNewPreferencesSchema = z.object({
 
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional(),
+    nightShift: z.boolean().optional(),
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
