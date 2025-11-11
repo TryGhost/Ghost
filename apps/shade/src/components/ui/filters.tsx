@@ -2013,16 +2013,19 @@ export function Filters<T = unknown>({
 
                                                     return (
                                                         <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                            {groupFields.map((field) => {
+                                                            {groupFields.map((field, fieldIndex) => {
                                                                 // Handle separator - use field.key if available, or generate stable key
                                                                 if (field.type === 'separator') {
-                                                                    const sepKey = field.key || `${item.group || `group-${index}`}-separator-${field.label || Math.random()}`;
+                                                                    const sepKey = field.key ?? `${item.group ?? `group-${index}`}-separator-${fieldIndex}`;
                                                                     return <CommandSeparator key={sepKey} />;
                                                                 }
 
                                                                 // Regular field
                                                                 return (
-                                                                    <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                                    <CommandItem
+                                                                        key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
+                                                                        onSelect={() => field.key && addFilter(field.key)}
+                                                                    >
                                                                         {field.icon}
                                                                         <span>{field.label}</span>
                                                                     </CommandItem>
