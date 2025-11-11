@@ -143,7 +143,8 @@ export class MembersPage extends AdminPage {
     }
 
     async exportMembersData(): Promise<Download> {
+        const downloadPromise = this.page.waitForEvent('download');
         await this.exportMembersButton.click();
-        return await this.page.waitForEvent('download');
+        return await downloadPromise;
     }
 }
