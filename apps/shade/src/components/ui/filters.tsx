@@ -927,14 +927,6 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     const operatorLabel =
     operators.find(op => op.value === operator)?.label || context.i18n.helpers.formatOperator(operator);
 
-    // Debug logging to help identify the issue
-    if (!operators.find(op => op.value === operator)) {
-        // console.warn(
-        //     `Operator "${operator}" not found in operators for field "${field.key}" (type: ${field.type}). Available operators:`,
-        //     operators.map(op => op.value)
-        // );
-    }
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger className={filterOperatorVariants({variant: context.variant, size: context.size})}>
