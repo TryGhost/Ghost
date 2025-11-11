@@ -45,3 +45,17 @@ body.react-admin [data-navbar="navbar"] {
 body.react-admin #ember-app .gh-viewport {
     padding-bottom: 0px;
 }
+
+body.react-admin .gh-canvas-header {
+    z-index: 40;
+}
+
+body.react-admin .members-header {
+    position: relative;
+}
+
+body.react-admin [data-test-table="members"] thead,
+body.react-admin [data-test-table="members"] tr {
+    position: relative;
+    z-index: 30;
+}
