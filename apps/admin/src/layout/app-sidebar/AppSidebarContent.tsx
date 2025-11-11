@@ -1,6 +1,4 @@
 import {
-    Banner,
-    Button,
     SidebarContent,
 } from "@tryghost/shade"
 
@@ -10,9 +8,12 @@ import NavMain from "./NavMain";
 import NavContent from "./NavContent";
 import NavGhostPro from "./NavGhostPro";
 import NavSettings from "./NavSettings";
-import ghostProLogo from "@/assets/images/ghost-pro-logo.png";
+import UpgradeBanner from "./UpgradeBanner";
+import {useShowUpgradeBanner} from "@/hooks/useShowUpgradeBanner";
 
 function AppSidebarContent() {
+    const showUpgradeBanner = useShowUpgradeBanner();
+
     return (
         <SidebarContent className="px-3 pt-4 justify-between">
             <div className="flex flex-col gap-2 sidebar:gap-4">
@@ -20,6 +21,7 @@ function AppSidebarContent() {
                 <NavContent />
                 <NavGhostPro />
             </div>
+<<<<<<< HEAD
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <WhatsNewBanner />
                 <Banner variant='gradient' size='lg' className="mx-5 my-2 flex flex-col items-stretch">
@@ -32,6 +34,10 @@ function AppSidebarContent() {
                     </div>
                     <Button>Upgrade now</Button>
                 </Banner>
+=======
+            <div className="flex flex-col gap-2">
+                {showUpgradeBanner && <UpgradeBanner />}
+>>>>>>> 69e0c93015 (Restructured things)
                 <NavSettings className="pb-0" />
             </div>
         </SidebarContent>
