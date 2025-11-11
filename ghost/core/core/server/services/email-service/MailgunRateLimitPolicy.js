@@ -232,6 +232,35 @@ class MailgunRateLimitPolicy {
         const tier = this.#currentTier;
         const now = new Date();
 
+        // If batch size exceeds the smallest rate limit, allow it to send anyway
+        // Otherwise it would be stuck in infinite retry
+        const smallestLimit = Math.min(
+            tier.perMinute || Infinity,
+            tier.perHour || Infinity,
+            tier.perDay
+        );
+        if (batchSize > smallestLimit) {
+            logging.warn(`Batch size ${batchSize} exceeds smallest rate limit ${smallestLimit}. Allowing send to prevent infinite retry.`);
+            // Still check if we have any capacity at all - don't send if current window is already full
+            if (this.#state.sentInCurrentMinute >= (tier.perMinute || Infinity) ||
+                this.#state.sentInCurrentHour >= (tier.perHour || Infinity) ||
+                this.#state.sentInCurrentDay >= tier.perDay) {
+                // Wait for next window
+                const readyAt = new Date(this.#state.dayStart.getTime() + 86400000);
+                return {
+                    canSend: false,
+                    readyAt,
+                    reason: `Batch size ${batchSize} exceeds limit, waiting for fresh window`
+                };
+            }
+            // Allow oversized batch to send in fresh window
+            return {
+                canSend: true,
+                readyAt: null,
+                reason: null
+            };
+        }
+
         // Check per-minute limit
         if (tier.perMinute) {
             if (this.#state.sentInCurrentMinute + batchSize > tier.perMinute) {
