@@ -8,6 +8,8 @@ export class LoginPage extends AdminPage {
     readonly forgotButton: Locator;
     readonly passwordResetSuccessMessage: Locator;
 
+    private setupNewUserUrl = 'setup';
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/signin';
@@ -44,13 +46,20 @@ export class LoginPage extends AdminPage {
 
         while (counter < 5) {
             await this.goto();
-            const pageUrl = this.page.url();
 
-            if (!pageUrl.includes('setup')) {
+            try {
+                await this.page.waitForURL(
+                    url => !url.href.includes(this.setupNewUserUrl),
+                    {timeout: 1000}
+                );
+
                 break;
+            } catch (error) {
+                counter += 1;
+                if (counter >= 5) {
+                    throw error;
+                }
             }
-            await this.page.waitForTimeout(1000);
-            counter += 1;
         }
     }
 }
