@@ -22,6 +22,7 @@ type SidebarProps = {
     isCopied: boolean;
     setCustomColor?: React.Dispatch<React.SetStateAction<{active: boolean}>>;
     customColor?: {active: boolean};
+    handleClose: () => void;
 };
 
 const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
@@ -33,7 +34,8 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     embedScript,
     handleLayoutSelect,
     handleCopyClick,
-    isCopied}) => {
+    isCopied,
+    handleClose}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
 
     const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
@@ -123,8 +125,10 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                 </Form>
             </div>
             <StickyFooter height={74}>
-                <div className='flex w-full justify-end'>
+                <div className='flex w-full justify-end gap-6'>
+                    <Button className='border lg:hidden' label='Close' onClick={handleClose} />
                     <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                    
                 </div>
             </StickyFooter>
         </div>

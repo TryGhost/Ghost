@@ -58,7 +58,7 @@ a.gh-tag-list-posts-count:hover {
     .gh-tag-list-slug {
         display: inline-block;
         width: unset;
-        padding: 2px 0 20px 16px;
+        padding: 2px 0 20px 0;
     }
 
     .gh-tag-list-posts-count {
