@@ -1,5 +1,5 @@
-import {AdminPage} from './AdminPage';
-import {Locator, Page} from '@playwright/test';
+import { AdminPage } from './AdminPage';
+import { Locator, Page } from '@playwright/test';
 
 export class LoginPage extends AdminPage {
     readonly emailAddressField: Locator;
@@ -14,15 +14,15 @@ export class LoginPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/signin';
 
-        this.emailAddressField = page.getByRole('textbox', {name: 'Email address'});
-        this.passwordField = page.getByRole('textbox', {name: 'Password'});
-        this.signInButton = page.getByRole('button', {name: 'Sign in →'});
-        this.forgotButton = page.getByRole('button', {name: 'Forgot?'});
+        this.emailAddressField = page.getByRole('textbox', { name: 'Email address' });
+        this.passwordField = page.getByRole('textbox', { name: 'Password' });
+        this.signInButton = page.getByRole('button', { name: 'Sign in →' });
+        this.forgotButton = page.getByRole('button', { name: 'Forgot?' });
         this.passwordResetSuccessMessage = page.getByRole('status');
     };
 
     async signIn(email: string, password: string) {
-        await this.emailAddressField.waitFor({state: 'visible'});
+        await this.emailAddressField.waitFor({ state: 'visible' });
 
         await this.emailAddressField.fill(email);
         await this.passwordField.fill(password);
@@ -30,7 +30,7 @@ export class LoginPage extends AdminPage {
     }
 
     async requestPasswordReset(email: string) {
-        await this.emailAddressField.waitFor({state: 'visible'});
+        await this.emailAddressField.waitFor({ state: 'visible' });
         await this.emailAddressField.fill(email);
         await this.forgotButton.click();
     }
