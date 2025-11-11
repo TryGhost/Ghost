@@ -14,12 +14,12 @@ const WhatsNewPreferencesSchema = z.looseObject({
     lastSeenDate: isoDatetimeToDate.optional().catch(undefined),
 });
 
-const DEFAULT_NAVIGATION_PREFERENCES = {
+export const DEFAULT_NAVIGATION_PREFERENCES = {
     expanded: { posts: true },
     menu: { visible: true },
 } as const;
 
-const NavigationPreferencesSchema = z.looseObject({
+export const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
         posts: z.boolean(),
     }),
@@ -27,6 +27,8 @@ const NavigationPreferencesSchema = z.looseObject({
         visible: z.boolean(),
     }),
 });
+
+export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
