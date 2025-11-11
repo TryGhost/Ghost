@@ -14,9 +14,24 @@ const WhatsNewPreferencesSchema = z.looseObject({
     lastSeenDate: isoDatetimeToDate.optional().catch(undefined),
 });
 
+const DEFAULT_NAVIGATION_PREFERENCES = {
+    expanded: { posts: true },
+    menu: { visible: true },
+} as const;
+
+const NavigationPreferencesSchema = z.object({
+    expanded: z.object({
+        posts: z.boolean().catch(DEFAULT_NAVIGATION_PREFERENCES.expanded.posts),
+    }).catch(DEFAULT_NAVIGATION_PREFERENCES.expanded),
+    menu: z.object({
+        visible: z.boolean().catch(DEFAULT_NAVIGATION_PREFERENCES.menu.visible),
+    }).catch(DEFAULT_NAVIGATION_PREFERENCES.menu),
+}).catch(DEFAULT_NAVIGATION_PREFERENCES);
+
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
     nightShift: z.boolean().optional(),
+    navigation: NavigationPreferencesSchema,
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
