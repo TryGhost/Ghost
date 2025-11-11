@@ -1,8 +1,8 @@
 import GlobalDataProvider from './GlobalDataProvider';
-import useSearchService, {ComponentId, SearchService} from '../../utils/search';
-import {ReactNode, createContext, useContext, useState} from 'react';
+import useSearchService, {type ComponentId, type SearchService} from '../../utils/search';
+import {type ReactNode, createContext, useContext, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
-import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
+import {type ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type ThemeVariant = {
     category: string;

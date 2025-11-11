@@ -1,4 +1,4 @@
-import {SelectOptionGroup} from '@tryghost/admin-x-design-system';
+import {type SelectOptionGroup} from '@tryghost/admin-x-design-system';
 
 type CurrencyOption = {
     isoCode: string;
