@@ -153,7 +153,6 @@ class MailgunEmailProvider {
 
                 // Check for rate limit errors (429 or specific Mailgun rate limit messages)
                 const isRateLimitError = error.status === 429 ||
-                    error.status === 402 || // Payment required (often rate limit related)
                     (error.details && (
                         error.details.includes('rate limit') ||
                         error.details.includes('too many requests') ||
