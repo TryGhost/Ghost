@@ -472,19 +472,27 @@ class BatchSendingService {
         runNext = async () => {
             const batch = queue.shift();
             if (batch) {
-                const batchData = {email, batch, post, newsletter, emailBodyCache, deliveryTime: undefined};
-                // Only set a delivery time if we have a deadline and it hasn't past yet
-                if (deadline && deadline.getTime() > Date.now()) {
-                    const deliveryTime = deliveryTimes.shift();
-                    if (deliveryTime && deliveryTime >= Date.now()) {
-                        batchData.deliveryTime = deliveryTime;
+                // Peek at the next delivery time without consuming it yet
+                let deliveryTime = undefined;
+                if (deadline && deadline.getTime() > Date.now() && deliveryTimes.length > 0) {
+                    const nextTime = deliveryTimes[0];
+                    if (nextTime && nextTime >= Date.now()) {
+                        deliveryTime = nextTime;
                     }
                 }
+
+                const batchData = {email, batch, post, newsletter, emailBodyCache, deliveryTime};
                 const result = await this.sendBatch(batchData);
+
                 if (result === true) {
                     succeededCount += 1;
+                    // Consume delivery time only for successfully sent batches
+                    if (deliveryTime) {
+                        deliveryTimes.shift();
+                    }
                 } else if (result === 'rate_limited') {
                     rateLimitedCount += 1;
+                    // Don't consume delivery time - rate-limited batches will retry later
                 }
                 // result === false means actual failure
                 await runNext();
@@ -520,49 +528,8 @@ class BatchSendingService {
     async sendBatch({email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime}) {
         logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
 
-        // @TODO: The rate limit policy is not coordinated across multiple instances.
-        // This can lead to incorrect rate limiting behavior in a scaled environment.
-        // A distributed cache like Redis would be needed for proper coordination.
-        if (this.#rateLimitPolicy) {
-            const batchSize = await this.getBatchRecipientCount(originalBatch.id);
-            const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(batchSize);
-
-            if (!canSend) {
-                logging.warn(`Rate limit check failed for batch ${originalBatch.id}: ${reason}. Ready at ${readyAt}`);
-
-                // Mark batch as rate_limited and schedule for later
-                await this.retryDb(
-                    async () => {
-                        await this.#models.EmailBatch.edit({
-                            status: 'rate_limited',
-                            scheduled_at: readyAt,
-                            error_message: reason
-                        }, {id: originalBatch.id});
-                    },
-                    {...this.#AFTER_RETRY_CONFIG, description: `mark batch ${originalBatch.id} as rate_limited`}
-                );
-
-                // Schedule retry
-                const delayMs = readyAt - new Date();
-                logging.info(`Scheduling batch ${originalBatch.id} retry in ${Math.round(delayMs / 1000)}s`);
-
-                this.#jobsService.addJob({
-                    name: 'batch-retry-after-rate-limit',
-                    job: this.retryRateLimitedBatch.bind(this),
-                    data: {
-                        emailId: email.id,
-                        batchId: originalBatch.id
-                    },
-                    offloaded: false,
-                    at: readyAt
-                });
-
-                return 'rate_limited';
-            }
-        }
-
         // Check the status of the email batch in a 'for update' transaction
-
+        // This must happen BEFORE the rate limit check to prevent race conditions
         const batch = await this.retryDb(
             async () => {
                 return await this.updateStatusLock(this.#models.EmailBatch, originalBatch.id, 'submitting', ['pending', 'failed']);
@@ -572,6 +539,47 @@ class BatchSendingService {
         if (!batch) {
             logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
             return true;
+        }
+
+        // @TODO: The rate limit policy is not coordinated across multiple instances.
+        // This can lead to incorrect rate limiting behavior in a scaled environment.
+        // A distributed cache like Redis would be needed for proper coordination.
+        if (this.#rateLimitPolicy) {
+            const batchSize = await this.getBatchRecipientCount(originalBatch.id);
+            const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(batchSize);
+
+            if (!canSend) {
+                logging.warn(`Rate limit check failed for batch ${batch.id}: ${reason}. Ready at ${readyAt}`);
+
+                // Mark batch as rate_limited and schedule for later
+                await this.retryDb(
+                    async () => {
+                        await batch.save({
+                            status: 'rate_limited',
+                            scheduled_at: readyAt,
+                            error_message: reason
+                        }, {patch: true, require: false, autoRefresh: false});
+                    },
+                    {...this.#AFTER_RETRY_CONFIG, description: `mark batch ${batch.id} as rate_limited`}
+                );
+
+                // Schedule retry
+                const delayMs = readyAt - new Date();
+                logging.info(`Scheduling batch ${batch.id} retry in ${Math.round(delayMs / 1000)}s`);
+
+                this.#jobsService.addJob({
+                    name: 'batch-retry-after-rate-limit',
+                    job: this.retryRateLimitedBatch.bind(this),
+                    data: {
+                        emailId: email.id,
+                        batchId: batch.id
+                    },
+                    offloaded: false,
+                    at: readyAt
+                });
+
+                return 'rate_limited';
+            }
         }
 
         let succeeded = false;
