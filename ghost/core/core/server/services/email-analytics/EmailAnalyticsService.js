@@ -2,7 +2,41 @@ const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const db = require('../../data/db');
-const {Semaphore} = require('@tryghost/promise');
+
+/**
+ * Simple Semaphore implementation for limiting concurrent operations
+ */
+class Semaphore {
+    constructor(max) {
+        this.max = max;
+        this.current = 0;
+        this.queue = [];
+    }
+
+    get numUsed() {
+        return this.current;
+    }
+
+    acquire() {
+        return new Promise((resolve) => {
+            if (this.current < this.max) {
+                this.current++;
+                resolve();
+            } else {
+                this.queue.push(resolve);
+            }
+        });
+    }
+
+    release() {
+        if (this.queue.length > 0) {
+            const resolve = this.queue.shift();
+            resolve();
+        } else {
+            this.current--;
+        }
+    }
+}
 
 /**
  * @typedef {import('../email-service/EmailEventProcessor')} EmailEventProcessor
