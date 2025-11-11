@@ -41,15 +41,16 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 }
 
 /**
- * Marks an outbox entry as already sent when cleanup fails
+ * Marks an outbox entry as completed when cleanup fails after sending
  * @param {Object} db - Database connection
  * @param {string} entryId - ID of the entry to update
  */
-async function markEntryAlreadySent(db, entryId) {
+async function markEntryCompleted(db, entryId) {
     await db.knex('outbox')
         .where('id', entryId)
         .update({
-            message: 'already sent',
+            status: OUTBOX_STATUSES.COMPLETED,
+            message: 'Email sent, but failed to delete outbox entry',
             updated_at: db.knex.raw('CURRENT_TIMESTAMP')
         });
 }
@@ -86,7 +87,7 @@ async function processEntry(db, entry) {
         await deleteProcessedEntry(db, entry.id);
     } catch (err) {
         const cleanupError = err?.message ?? 'Unknown error';
-        await markEntryAlreadySent(db, entry.id);
+        await markEntryCompleted(db, entry.id);
 
         const email = payload?.email || 'unknown member';
         const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
