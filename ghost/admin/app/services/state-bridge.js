@@ -64,6 +64,16 @@ export default class StateBridgeService extends Service.extend(Evented) {
             this.store.pushPayload(type, response);
         }
 
+        if (dataType === 'UsersResponseType' && response.users[0]?.id === this.session.user?.id) {
+            // nightShift preference is managed by the feature service and won't auto-update when store data changes
+            try {
+                this.feature._setAdminTheme();
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Failed to set admin theme', error);
+            }
+        }
+
         if (dataType === 'SettingsResponseType') {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
