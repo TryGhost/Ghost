@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 
 import {
     SidebarFooter,
@@ -7,18 +7,26 @@ import {
     SidebarMenuItem
 } from "@tryghost/shade"
 import UserMenu from "./UserMenu";
+import WhatsNewDialog from "@/whats-new/components/whats-new-dialog";
 
 function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
+    const [isWhatsNewDialogOpen, setIsWhatsNewDialogOpen] = useState(false);
     return (
-        <SidebarFooter {...props}>
-            <SidebarGroup>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <UserMenu />
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarGroup>
-        </SidebarFooter>
+        <>
+            <SidebarFooter {...props}>
+                <SidebarGroup>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <UserMenu onOpenWhatsNew={() => setIsWhatsNewDialogOpen(true)} />
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+            </SidebarFooter>
+            <WhatsNewDialog
+                open={isWhatsNewDialogOpen}
+                onOpenChange={setIsWhatsNewDialogOpen}
+            />
+        </>
     );
 }
 
