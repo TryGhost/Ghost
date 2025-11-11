@@ -219,4 +219,55 @@ describe('AdapterManager', function () {
         const secondMailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
         should.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
     });
+
+    describe('resetCacheFor', function () {
+        it('clears cached instances for a registered adapter type', function () {
+            const pathsToAdapters = ['/path'];
+            const loadAdapterFromPath = sinon.stub();
+
+            loadAdapterFromPath.withArgs('/path/mail/custom')
+                .returns(CustomMailAdapter);
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters
+            });
+            adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+            // Get an adapter to populate cache
+            const firstAdapter = adapterManager.getAdapter('mail', 'custom');
+            should.ok(firstAdapter instanceof CustomMailAdapter);
+
+            // Clear the cache
+            adapterManager.resetCacheFor('mail');
+
+            // Get the adapter again - should be a new instance
+            const secondAdapter = adapterManager.getAdapter('mail', 'custom');
+            should.ok(secondAdapter instanceof CustomMailAdapter);
+            should.notEqual(firstAdapter, secondAdapter);
+        });
+
+        it('throws NotFoundError for unknown adapter type', function () {
+            const pathsToAdapters = ['/path'];
+            const loadAdapterFromPath = sinon.stub();
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters
+            });
+
+            // Register only 'mail' type
+            adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+            // Try to reset cache for unregistered type
+            try {
+                adapterManager.resetCacheFor('unknown-type');
+                should.fail(null, null, 'Should have thrown NotFoundError');
+            } catch (err) {
+                should.exist(err);
+                should.equal(err.errorType, 'NotFoundError');
+                should.equal(err.message, 'Unknown adapter type unknown-type. Please register adapter.');
+            }
+        });
+    });
 });
