@@ -1,6 +1,6 @@
 // Decided to have this test separately from the other email preview tests since the rate limiter would interfere with the other tests
 
-const {agentProvider, fixtureManager, mockManager, configUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 
@@ -16,8 +16,11 @@ describe('Rate limiter', function () {
         sinon.restore();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         mockManager.mockMailgun();
+        // Reset both the brute table and rate limiter instances between tests
+        await dbUtils.truncate('brute');
+        await resetRateLimits();
     });
 
     before(async function () {
@@ -41,6 +44,34 @@ describe('Rate limiter', function () {
 
         await agent
             .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
+            .body({
+                emails: ['test@ghost.org']
+            })
+            .expectStatus(429);
+
+        await allSettled();
+    });
+
+    it('enforces limit globally across all IP addresses', async function () {
+        const testEmailSpamBlock = configUtils.config.get('spam').email_preview_block;
+
+        // Send freeRetries + 1 requests from "different IPs" using X-Forwarded-For header
+        // Each request uses a different IP address to simulate an attacker rotating IPs
+        for (let i = 0; i < testEmailSpamBlock.freeRetries + 1; i += 1) {
+            await agent
+                .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
+                .header('X-Forwarded-For', `192.168.1.${i}`)
+                .body({
+                    emails: ['test@ghost.org']
+                })
+                .expectStatus(204); // All these should succeed (11 requests total)
+        }
+
+        // The next request from yet another different IP should be blocked
+        // because the global limit has been reached (when ignoreIP: true)
+        await agent
+            .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
+            .header('X-Forwarded-For', '10.0.0.1')
             .body({
                 emails: ['test@ghost.org']
             })
