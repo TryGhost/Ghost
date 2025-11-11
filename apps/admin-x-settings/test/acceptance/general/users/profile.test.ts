@@ -1,4 +1,4 @@
-import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
+import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {GroupBase, MultiValue} from 'react-select';
-import {MultiSelect, MultiSelectOption, Select, Separator, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {type GroupBase, type MultiValue} from 'react-select';
+import {MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 
