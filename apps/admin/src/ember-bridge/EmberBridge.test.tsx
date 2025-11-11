@@ -12,23 +12,26 @@ const queryTest = baseTest.extend<{
 
 type EmberEvent = keyof StateBridgeEventMap;
 type EventPayload<K extends EmberEvent> = StateBridgeEventMap[K];
-type ListenerMap = {
-    [K in EmberEvent]?: Array<(payload: EventPayload<K>) => void>;
-};
 
 function createMockStateBridge() {
-    const listeners: ListenerMap = {};
+    const listeners: Partial<Record<EmberEvent, Array<(payload: unknown) => void>>> = {};
 
     const on = vi.fn(<K extends EmberEvent>(event: K, callback: (payload: EventPayload<K>) => void) => {
-        listeners[event] = [...(listeners[event] ?? []), callback];
+        if (!listeners[event]) {
+            listeners[event] = [];
+        }
+        listeners[event].push(callback as (payload: unknown) => void);
     });
 
     const off = vi.fn(<K extends EmberEvent>(event: K, callback: (payload: EventPayload<K>) => void) => {
-        listeners[event] = (listeners[event] ?? []).filter((listener) => listener !== callback);
+        if (!listeners[event]) {
+            return;
+        }
+        listeners[event] = listeners[event].filter((listener) => listener !== callback);
     });
 
     const emit = <K extends EmberEvent>(event: K, payload: EventPayload<K>) => {
-        const eventListeners = listeners[event] as Array<(value: EventPayload<K>) => void> | undefined;
+        const eventListeners = listeners[event];
         eventListeners?.forEach((listener) => listener(payload));
     };
 
@@ -48,13 +51,14 @@ function createMockStateBridge() {
 }
 
 let useEmberDataSync: typeof import('./EmberBridge').useEmberDataSync;
+let useEmberAuthSync: typeof import('./EmberBridge').useEmberAuthSync;
 type EmberBridgeWindow = typeof window & { EmberBridge?: { state: StateBridge } };
 const windowWithBridge = window as EmberBridgeWindow;
 
 beforeEach(async () => {
     vi.resetModules();
     vi.useRealTimers();
-    ({ useEmberDataSync } = await import('./EmberBridge'));
+    ({ useEmberDataSync, useEmberAuthSync } = await import('./EmberBridge'));
     delete windowWithBridge.EmberBridge;
 });
 
@@ -136,5 +140,35 @@ describe('useEmberDataSync', () => {
         await vi.advanceTimersByTimeAsync(200);
 
         expect(mock.onSpy).not.toHaveBeenCalled();
+    });
+});
+
+describe('useEmberAuthSync', () => {
+    queryTest('invalidates all queries when auth changes', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
+        queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+        queryClient.setQueryData(['UsersResponseType', '/users'], { users: [] });
+
+        const { unmount } = renderHook(() => useEmberAuthSync(), { wrapper });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberAuthChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberAuthChange', {
+                isAuthenticated: true,
+            });
+        });
+
+        await waitFor(() => {
+            const queries = queryClient.getQueryCache().getAll();
+            expect(queries.every(q => q.state.isInvalidated)).toBe(true);
+        });
+
+        unmount();
     });
 });

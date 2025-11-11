@@ -7,6 +7,7 @@ export interface EmberBridge {
 
 export type StateBridgeEventMap = {
     emberDataChange: EmberDataChangeEvent;
+    emberAuthChange: EmberAuthChangeEvent;
 }
 
 export interface StateBridge {
@@ -28,6 +29,10 @@ export interface EmberDataChangeEvent {
     modelName: string;
     id: string;
     data: Record<string, unknown> | null;
+}
+
+export interface EmberAuthChangeEvent {
+    isAuthenticated: boolean;
 }
 
 /**
@@ -138,6 +143,31 @@ export function useEmberDataSync() {
         };
 
         return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
+    }, [queryClient]);
+
+}
+
+/**
+ * Hook to sync Ember authentication state with React Query cache.
+ *
+ * This hook listens to Ember authentication state changes and automatically
+ * invalidates the React Query cache when the user signs in.
+ *
+ * This is a temporary bridge during the Ember -> React migration and should be
+ * called once at the app level. It will be removed once the migration is complete.
+ */
+
+export function useEmberAuthSync() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
+            if (event.isAuthenticated) {
+                void queryClient.invalidateQueries();
+            }
+        };
+
+        return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
     }, [queryClient]);
 
 }

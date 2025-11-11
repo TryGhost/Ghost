@@ -158,4 +158,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
             data: response // API response data for optimistic updates
         });
     }
+
+    @action
+    triggerEmberAuthChange() {
+        this.trigger('emberAuthChange', {
+            isAuthenticated: this.session.isAuthenticated
+        });
+    }
 }
