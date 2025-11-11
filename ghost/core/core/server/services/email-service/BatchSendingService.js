@@ -482,15 +482,20 @@ class BatchSendingService {
 
                 if (result === true) {
                     succeededCount += 1;
-                    // Consume delivery time for successfully sent batches
-                    if (shouldConsumeDeliveryTime) {
-                        deliveryTimes.shift();
-                    }
                 } else if (result === 'rate_limited') {
                     rateLimitedCount += 1;
                     // Don't consume delivery time - rate-limited batches will retry later with their own schedule
+                    // Set flag to false so we don't shift the array
+                    shouldConsumeDeliveryTime = false;
                 }
-                // result === false means actual failure
+                // result === false means actual failure - still consume delivery time to keep queue aligned
+
+                // Consume delivery time for both successful and failed batches
+                // Only rate-limited batches skip consumption since they retry with their own schedule
+                if (shouldConsumeDeliveryTime) {
+                    deliveryTimes.shift();
+                }
+
                 await runNext();
             }
         };
