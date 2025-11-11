@@ -4,11 +4,7 @@ import { z } from "zod";
 import { useQueryClient } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useEditUser, type User } from "@tryghost/admin-x-framework/api/users";
-
-const isoDatetimeToDate = z.codec(z.iso.datetime(), z.date(), {
-    decode: (isoString) => new Date(isoString),
-    encode: (date) => date.toISOString(),
-});
+import { isoDatetimeToDate } from "@/schemas/primitives";
 
 const WhatsNewPreferencesSchema = z.looseObject({
     lastSeenDate: isoDatetimeToDate.optional().catch(undefined),
