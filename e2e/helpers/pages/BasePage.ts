@@ -27,6 +27,10 @@ export class BasePage {
         }
     }
 
+    async refresh() {
+        await this.page.reload();
+    }
+
     async goto(url?: string, options?: pageGotoOptions) {
         const urlToVisit = url || this.pageUrl;
         await this.page.goto(urlToVisit, options);
