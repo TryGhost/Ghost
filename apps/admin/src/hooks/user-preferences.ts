@@ -18,10 +18,10 @@ const DEFAULT_NAVIGATION_PREFERENCES = {
 const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
         posts: z.boolean(),
-    }).catch(DEFAULT_NAVIGATION_PREFERENCES.expanded),
+    }),
     menu: z.object({
         visible: z.boolean(),
-    }).catch(DEFAULT_NAVIGATION_PREFERENCES.menu),
+    }),
 });
 
 const PreferencesSchema = z.looseObject({
