@@ -1,7 +1,7 @@
 import '@tryghost/kg-unsplash-selector/dist/style.css';
 import Portal from '../../utils/portal';
 import React from 'react';
-import {DefaultHeaderTypes, PhotoType, UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';
+import {type DefaultHeaderTypes, type PhotoType, UnsplashSearchModal} from '@tryghost/kg-unsplash-selector';
 
 type UnsplashSelectorModalProps = {
     onClose: () => void;

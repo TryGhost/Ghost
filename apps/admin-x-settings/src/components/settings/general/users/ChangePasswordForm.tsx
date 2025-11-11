@@ -1,5 +1,5 @@
 import {Button, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
+import {type User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

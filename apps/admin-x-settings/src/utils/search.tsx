@@ -1,4 +1,4 @@
-import React, {ReactNode, useCallback, useEffect, useRef, useState} from 'react';
+import React, {type ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 
 export type ComponentId = string & { __brand: 'ComponentId' };
 

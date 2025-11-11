@@ -1,4 +1,4 @@
-import {SettingSection, SettingSectionProps} from '@tryghost/admin-x-design-system';
+import {SettingSection, type SettingSectionProps} from '@tryghost/admin-x-design-system';
 import {useSearch} from './providers/SettingsAppProvider';
 
 const SearchableSection: React.FC<Omit<SettingSectionProps, 'isVisible'> & {keywords: string[]}> = ({keywords, ...props}) => {
