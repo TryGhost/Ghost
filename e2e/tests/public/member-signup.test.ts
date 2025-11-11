@@ -1,4 +1,4 @@
-import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
+import {EmailClient, MailPit} from '../../helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@tryghost/e2e/helpers/pages/public';
 import {expect, test} from '../../helpers/playwright';
 import {extractMagicLink} from '../../helpers/services/email/utils';
