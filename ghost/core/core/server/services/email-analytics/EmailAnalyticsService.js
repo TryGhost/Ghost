@@ -401,7 +401,6 @@ module.exports = class EmailAnalyticsService {
 
             try {
                 const processingStart = Date.now();
-                logging.info(`[EmailAnalytics] processBatch: Starting processing of ${events.length} events (concurrent batches: ${this.#batchSemaphore.numUsed})`);
 
                 // Wrap entire batch processing in a single transaction
                 // This ensures query plan caching and faster OR queries
@@ -409,12 +408,7 @@ module.exports = class EmailAnalyticsService {
                     await this.processEventBatch(events, processingResult, fetchData, trx);
 
                     // Flush batched email_recipients updates after each Mailgun batch
-                    const flushStart = Date.now();
                     await this.eventProcessor.flushBatchedUpdates(trx);
-                    const flushDuration = Date.now() - flushStart;
-                    if (flushDuration > 100) {
-                        logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
-                    }
                 });
 
                 processingTimeMs += (Date.now() - processingStart);

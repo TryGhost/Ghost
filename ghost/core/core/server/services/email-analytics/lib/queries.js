@@ -227,9 +227,12 @@ module.exports = {
     async aggregateEmailStatsBatch(emailIds, updateOpenedCount) {
         const timings = {total: Date.now(), emailCount: emailIds.length};
 
-        logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Starting batch for ${emailIds.length} emails`);
+        if (emailIds.length > 0) {
+            logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Starting batch for ${emailIds.length} emails`);
+        }
 
         await db.knex.transaction(async (trx) => {
+
             // Step 1: Query for aggregated stats from email_recipients
             timings.select = Date.now();
 
@@ -249,7 +252,6 @@ module.exports = {
                 .groupBy('email_id');
 
             timings.select = Date.now() - timings.select;
-            logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: SELECT completed in ${timings.select}ms, found ${stats.length}/${emailIds.length} emails with stats`);
 
             // Step 2: Build maps of id -> value for each column
             const deliveredMap = new Map();
@@ -291,7 +293,9 @@ module.exports = {
         });
 
         timings.total = Date.now() - timings.total;
-        logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Completed in ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms)`);
+        if (emailIds.length > 0) {
+            logging.info(`[EmailAnalytics] aggregateEmailStatsBatch: Completed in ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms)`);
+        }
 
         return timings;
     },
@@ -305,9 +309,8 @@ module.exports = {
     async aggregateMemberStatsBatch(memberIds) {
         const timings = {total: Date.now(), memberCount: memberIds.length};
 
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: Starting batch for ${memberIds.length} members`);
-
         await db.knex.transaction(async (trx) => {
+
             // Step 1: Query for aggregated stats from email_recipients + emails
             timings.select = Date.now();
 
@@ -323,7 +326,6 @@ module.exports = {
                 .groupBy('email_recipients.member_id');
 
             timings.select = Date.now() - timings.select;
-            logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: SELECT completed in ${timings.select}ms, found ${stats.length}/${memberIds.length} members with stats`);
 
             // Step 2: Build maps of id -> value for each column
             const emailCountMap = new Map();
@@ -384,7 +386,6 @@ module.exports = {
         });
 
         timings.total = Date.now() - timings.total;
-        logging.info(`[EmailAnalytics] aggregateMemberStatsBatch: Completed in ${timings.total}ms (select: ${timings.select}ms, update: ${timings.update}ms)`);
 
         return timings;
     }
