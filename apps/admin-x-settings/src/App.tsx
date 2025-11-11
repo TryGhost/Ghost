@@ -1,11 +1,11 @@
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
-import SettingsAppProvider, {OfficialTheme, UpgradeStatusType} from './components/providers/SettingsAppProvider';
+import SettingsAppProvider, {type OfficialTheme, type UpgradeStatusType} from './components/providers/SettingsAppProvider';
 import SettingsRouter, {loadModals, modalPaths} from './components/providers/SettingsRouter';
-import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
-import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
+import {DesignSystemApp, type DesignSystemAppProps} from '@tryghost/admin-x-design-system';
+import {FrameworkProvider, type TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
-import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
+import {type ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;

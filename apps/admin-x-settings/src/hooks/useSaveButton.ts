@@ -1,4 +1,4 @@
-import {SaveHandler} from '@tryghost/admin-x-framework/hooks';
+import {type SaveHandler} from '@tryghost/admin-x-framework/hooks';
 import {useState} from 'react';
 
 export const useSaveButton = (handleSave: SaveHandler, fakeWhenUnchanged?: boolean) => {

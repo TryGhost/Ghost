@@ -1,7 +1,7 @@
-import {Config} from '@tryghost/admin-x-framework/api/config';
-import {Setting, checkStripeEnabled, getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-import {SiteData} from '@tryghost/admin-x-framework/api/site';
-import {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {type Config} from '@tryghost/admin-x-framework/api/config';
+import {type Setting, checkStripeEnabled, getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {type SiteData} from '@tryghost/admin-x-framework/api/site';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 export type portalPreviewUrlTypes = {
     settings: Setting[];

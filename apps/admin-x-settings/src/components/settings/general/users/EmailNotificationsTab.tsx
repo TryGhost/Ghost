@@ -1,6 +1,6 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
-import {User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
+import {type User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

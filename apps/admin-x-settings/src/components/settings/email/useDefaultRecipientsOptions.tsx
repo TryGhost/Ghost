@@ -1,8 +1,8 @@
-import {GroupBase, MultiValue} from 'react-select';
-import {Label} from '@tryghost/admin-x-framework/api/labels';
-import {LoadMultiSelectOptions, MultiSelectOption, debounce} from '@tryghost/admin-x-design-system';
-import {Offer} from '@tryghost/admin-x-framework/api/offers';
-import {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {type GroupBase, type MultiValue} from 'react-select';
+import {type Label} from '@tryghost/admin-x-framework/api/labels';
+import {type LoadMultiSelectOptions, type MultiSelectOption, debounce} from '@tryghost/admin-x-design-system';
+import {type Offer} from '@tryghost/admin-x-framework/api/offers';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {isObjectId} from '../../../utils/helpers';
 import {useEffect, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';

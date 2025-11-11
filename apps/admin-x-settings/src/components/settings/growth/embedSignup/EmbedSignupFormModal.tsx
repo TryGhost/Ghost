@@ -1,9 +1,9 @@
 import EmbedSignupPreview from './EmbedSignupPreview';
-import EmbedSignupSidebar, {SelectedLabelTypes} from './EmbedSignupSidebar';
+import EmbedSignupSidebar, {type SelectedLabelTypes} from './EmbedSignupSidebar';
 import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
-import {MultiValue} from 'react-select';
+import {Modal, type MultiSelectOption} from '@tryghost/admin-x-design-system';
+import {type MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';

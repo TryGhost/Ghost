@@ -1,10 +1,10 @@
 import SpinningOrb from '../../assets/videos/logo-loader.mp4';
 import SpinningOrbDark from '../../assets/videos/logo-loader-dark.mp4';
-import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {ReactNode, createContext, useContext, useEffect, useState} from 'react';
-import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {User} from '@tryghost/admin-x-framework/api/users';
+import {type Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {type ReactNode, createContext, useContext, useEffect, useState} from 'react';
+import {type Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {type User} from '@tryghost/admin-x-framework/api/users';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 
 interface GlobalData {

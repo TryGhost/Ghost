@@ -1,6 +1,6 @@
-import React, {ReactNode} from 'react';
+import React, {type ReactNode} from 'react';
 import clsx from 'clsx';
-import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
+import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
 import {TextField, URLTextField, formatUrl} from '@tryghost/admin-x-design-system';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {

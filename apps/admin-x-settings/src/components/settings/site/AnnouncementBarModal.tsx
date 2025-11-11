@@ -2,7 +2,7 @@ import AnnouncementBarPreview from './announcementBar/AnnouncementBarPreview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
+import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
 import {debounce} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';

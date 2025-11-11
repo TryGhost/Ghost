@@ -1,11 +1,11 @@
-import GlobalSettings, {GlobalSettingValues} from './designAndBranding/GlobalSettings';
+import GlobalSettings, {type GlobalSettingValues} from './designAndBranding/GlobalSettings';
 import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useQueryParams from '../../../hooks/useQueryParams';
-import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
-import {PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
+import {PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
+import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';

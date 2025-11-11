@@ -1,7 +1,7 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
-import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
+import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 

@@ -1,4 +1,4 @@
-import React, {ReactNode, useState} from 'react';
+import React, {type ReactNode, useState} from 'react';
 import clsx from 'clsx';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 

@@ -3,7 +3,7 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
-import {ReactNode, useEffect} from 'react';
+import {type ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';

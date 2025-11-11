@@ -1,5 +1,5 @@
 import {Select} from '@tryghost/admin-x-design-system';
-import {User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
+import {type User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

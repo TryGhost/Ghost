@@ -5,7 +5,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';

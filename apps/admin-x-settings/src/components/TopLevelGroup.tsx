@@ -1,5 +1,5 @@
 import React, {useEffect, useId, useState} from 'react';
-import {SettingGroup as Base, SettingGroupProps} from '@tryghost/admin-x-design-system';
+import {SettingGroup as Base, type SettingGroupProps} from '@tryghost/admin-x-design-system';
 import {createComponentId} from '../utils/search';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSection} from '../hooks/useScrollSection';

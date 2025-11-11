@@ -1,6 +1,6 @@
 import NewsletterPreviewContent from './NewsletterPreviewContent';
 import React from 'react';
-import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';

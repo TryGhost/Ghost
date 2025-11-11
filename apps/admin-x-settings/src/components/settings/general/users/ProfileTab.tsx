@@ -2,7 +2,7 @@ import ChangePasswordForm from './ChangePasswordForm';
 import RoleSelector from './RoleSelector';
 import StaffToken from './StaffToken';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
-import {UserDetailProps} from '../UserDetailModal';
+import {type UserDetailProps} from '../UserDetailModal';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

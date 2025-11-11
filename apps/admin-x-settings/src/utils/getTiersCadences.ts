@@ -1,5 +1,5 @@
-import {SelectOption} from '@tryghost/admin-x-design-system';
-import {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {type SelectOption} from '@tryghost/admin-x-design-system';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 export const getTiersCadences = (tiers: Tier[]): SelectOption[] => {
     const cadences: SelectOption[] = [];

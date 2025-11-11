@@ -1,6 +1,6 @@
 import React from 'react';
-import {Button, DragIndicator, NoValueLabel, SortableItemContainerProps, SortableList, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
-import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {Button, DragIndicator, NoValueLabel, type SortableItemContainerProps, SortableList, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
+import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
