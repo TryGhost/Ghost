@@ -30,6 +30,14 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
             const newNavigationPreferences: NavigationPreferences = {
                 ...currentNavigation,
                 ...updatedNavigationPreferences,
+                expanded: {
+                    ...currentNavigation.expanded,
+                    ...updatedNavigationPreferences.expanded,
+                },
+                menu: {
+                    ...currentNavigation.menu,
+                    ...updatedNavigationPreferences.menu,
+                },
             };
 
             await editPreferences({
