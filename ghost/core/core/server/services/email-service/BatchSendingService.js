@@ -464,16 +464,15 @@ class BatchSendingService {
             const batch = queue.shift();
             if (batch) {
                 let deliveryTime = undefined;
-                let shouldConsumeDeliveryTime = false;
+                let claimedDeliveryTime = null;
 
-                // Check if we should use a scheduled delivery time
+                // Atomically claim a delivery time by shifting immediately
+                // This prevents race conditions with concurrent batch processing
                 if (deadline && deadline.getTime() > Date.now() && deliveryTimes.length > 0) {
-                    const nextTime = deliveryTimes[0];
-                    // Always consume the delivery time to advance the queue, even if it's in the past
-                    shouldConsumeDeliveryTime = true;
+                    claimedDeliveryTime = deliveryTimes.shift();
                     // Only use the delivery time if it's still in the future
-                    if (nextTime && nextTime >= Date.now()) {
-                        deliveryTime = nextTime;
+                    if (claimedDeliveryTime && claimedDeliveryTime >= Date.now()) {
+                        deliveryTime = claimedDeliveryTime;
                     }
                 }
 
@@ -484,17 +483,13 @@ class BatchSendingService {
                     succeededCount += 1;
                 } else if (result === 'rate_limited') {
                     rateLimitedCount += 1;
-                    // Don't consume delivery time - rate-limited batches will retry later with their own schedule
-                    // Set flag to false so we don't shift the array
-                    shouldConsumeDeliveryTime = false;
+                    // Return the claimed delivery time to the front of the queue
+                    // Rate-limited batches will retry with their own schedule
+                    if (claimedDeliveryTime !== null) {
+                        deliveryTimes.unshift(claimedDeliveryTime);
+                    }
                 }
-                // result === false means actual failure - still consume delivery time to keep queue aligned
-
-                // Consume delivery time for both successful and failed batches
-                // Only rate-limited batches skip consumption since they retry with their own schedule
-                if (shouldConsumeDeliveryTime) {
-                    deliveryTimes.shift();
-                }
+                // result === false means actual failure - delivery time already consumed
 
                 await runNext();
             }
@@ -547,7 +542,12 @@ class BatchSendingService {
         // This can lead to incorrect rate limiting behavior in a scaled environment.
         // A distributed cache like Redis would be needed for proper coordination.
         if (this.#rateLimitPolicy) {
-            const batchSize = await this.getBatchRecipientCount(originalBatch.id);
+            const batchSize = await this.retryDb(
+                async () => {
+                    return await this.getBatchRecipientCount(originalBatch.id);
+                },
+                {...this.#getBeforeRetryConfig(email), description: `getBatchRecipientCount for batch ${originalBatch.id}`}
+            );
             const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(batchSize);
 
             if (!canSend) {
