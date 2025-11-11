@@ -1,7 +1,7 @@
 import { test as baseTest, describe, expect } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { useUserPreferences, useEditUserPreferences } from "./user-preferences";
+import { useUserPreferences, useEditUserPreferences, DEFAULT_NAVIGATION_PREFERENCES } from "./user-preferences";
 import { HttpResponse, http } from "msw";
 import { mockUser } from "@test-utils/factories";
 import { waitForQuerySettled } from "@test-utils/test-helpers";
@@ -28,6 +28,9 @@ const fixtures = {
     singlePreference: {
         setting: "value",
     },
+    defaults: {
+        navigation: DEFAULT_NAVIGATION_PREFERENCES,
+    }
 };
 
 // Setup functions
@@ -178,10 +181,10 @@ describe("useUserPreferences", () => {
                 accessibility: "",
             },
         ].forEach(({ scenario, accessibility }) => {
-            queryTest(`returns empty object when accessibility is ${scenario}`, async ({ setup }) => {
+            queryTest(`returns object with defaults when accessibility is ${scenario}`, async ({ setup }) => {
                 const result = await setup({ accessibility });
 
-                expect(result.current.data).toEqual({});
+                expect(result.current.data).toEqual(fixtures.defaults);
             });
         });
 
@@ -190,7 +193,10 @@ describe("useUserPreferences", () => {
                 accessibility: JSON.stringify(fixtures.existingPreferences),
             });
 
-            expect(result.current.data).toEqual(fixtures.existingPreferences);
+            expect(result.current.data).toEqual({
+                ...fixtures.defaults,
+                ...fixtures.existingPreferences,
+            });
         });
 
         queryTest("errors when invalid JSON", async ({ setup }) => {
@@ -251,9 +257,10 @@ describe("useEditUserPreferences", () => {
 
             await waitFor(() => {
                 expect(query.current.data).toEqual({
+                    ...fixtures.defaults,
                     existing: "value",
                     shared: "new",
-                    additional: "data",
+                    additional: "data"
                 });
             });
         });
@@ -266,7 +273,10 @@ describe("useEditUserPreferences", () => {
             });
 
             await waitFor(() => {
-                expect(query.current.data).toEqual(fixtures.singlePreference);
+                expect(query.current.data).toEqual({
+                    ...fixtures.defaults,
+                    ...fixtures.singlePreference,
+                });
             });
         });
 
