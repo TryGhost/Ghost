@@ -483,9 +483,10 @@ class BatchSendingService {
                     succeededCount += 1;
                 } else if (result === 'rate_limited') {
                     rateLimitedCount += 1;
-                    // Return the claimed delivery time to the front of the queue
+                    // Return the claimed delivery time to the front of the queue only if it was valid
+                    // Don't return past delivery times (deliveryTime would be undefined in that case)
                     // Rate-limited batches will retry with their own schedule
-                    if (claimedDeliveryTime !== null) {
+                    if (deliveryTime !== undefined) {
                         deliveryTimes.unshift(claimedDeliveryTime);
                     }
                 }
@@ -541,14 +542,17 @@ class BatchSendingService {
         // @TODO: The rate limit policy is not coordinated across multiple instances.
         // This can lead to incorrect rate limiting behavior in a scaled environment.
         // A distributed cache like Redis would be needed for proper coordination.
+
+        // Store batchSize for consistent accounting between acquireSlot and recordSent
+        let rateLimitBatchSize = null;
         if (this.#rateLimitPolicy) {
-            const batchSize = await this.retryDb(
+            rateLimitBatchSize = await this.retryDb(
                 async () => {
                     return await this.getBatchRecipientCount(originalBatch.id);
                 },
                 {...this.#getBeforeRetryConfig(email), description: `getBatchRecipientCount for batch ${originalBatch.id}`}
             );
-            const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(batchSize);
+            const {canSend, readyAt, reason} = this.#rateLimitPolicy.acquireSlot(rateLimitBatchSize);
 
             if (!canSend) {
                 logging.warn(`Rate limit check failed for batch ${batch.id}: ${reason}. Ready at ${readyAt}`);
@@ -622,8 +626,9 @@ class BatchSendingService {
             succeeded = true;
 
             // Record successful send with rate limit policy
-            if (this.#rateLimitPolicy) {
-                this.#rateLimitPolicy.recordSent(members.length);
+            // Use the same count that was used for acquireSlot to prevent accounting drift
+            if (this.#rateLimitPolicy && rateLimitBatchSize !== null) {
+                this.#rateLimitPolicy.recordSent(rateLimitBatchSize);
             }
 
             await this.retryDb(
