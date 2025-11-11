@@ -19,19 +19,19 @@ const DEFAULT_NAVIGATION_PREFERENCES = {
     menu: { visible: true },
 } as const;
 
-const NavigationPreferencesSchema = z.object({
+const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
-        posts: z.boolean().catch(DEFAULT_NAVIGATION_PREFERENCES.expanded.posts),
+        posts: z.boolean(),
     }).catch(DEFAULT_NAVIGATION_PREFERENCES.expanded),
     menu: z.object({
-        visible: z.boolean().catch(DEFAULT_NAVIGATION_PREFERENCES.menu.visible),
+        visible: z.boolean(),
     }).catch(DEFAULT_NAVIGATION_PREFERENCES.menu),
-}).catch(DEFAULT_NAVIGATION_PREFERENCES);
+});
 
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
     nightShift: z.boolean().optional(),
-    navigation: NavigationPreferencesSchema,
+    navigation: NavigationPreferencesSchema.optional().catch(DEFAULT_NAVIGATION_PREFERENCES),
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
@@ -65,13 +65,13 @@ export const useUserPreferences = (): UseQueryResult<Preferences> => {
     });
 };
 
-export const useEditUserPreferences = (): UseMutationResult<void, Error, Partial<Preferences>, unknown> => {
+export const useEditUserPreferences = (): UseMutationResult<void, Error, Preferences, unknown> => {
     const queryClient = useQueryClient();
     const { data: user } = useCurrentUser();
     const { mutateAsync: editUser } = useEditUser();
 
     return useMutation({
-        mutationFn: async (updatedPreferences: Partial<Preferences>) => {
+        mutationFn: async (updatedPreferences: Preferences) => {
             if (!user) {
                 throw new Error("User is not loaded");
             }
