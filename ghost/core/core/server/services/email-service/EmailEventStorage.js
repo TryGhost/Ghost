@@ -247,13 +247,15 @@ class EmailEventStorage {
         // Add recipientIds for WHERE IN clause
         recipientIds.forEach(id => bindings.push(id));
 
-        // Execute the batch update
+        // Execute the batch update within a transaction to ensure connection release
         const updateStart = Date.now();
-        await this.#db.knex.raw(`
-            UPDATE email_recipients
-            SET ${setClauses.join(', ')}
-            WHERE id IN (${recipientIds.map(() => '?').join(',')})
-        `, bindings);
+        await this.#db.knex.transaction(async (trx) => {
+            await trx.raw(`
+                UPDATE email_recipients
+                SET ${setClauses.join(', ')}
+                WHERE id IN (${recipientIds.map(() => '?').join(',')})
+            `, bindings);
+        });
         const updateDuration = Date.now() - updateStart;
 
         // Record metrics and collect counts

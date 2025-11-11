@@ -238,89 +238,92 @@ class EmailEventProcessor {
             logging.info(`[EmailAnalytics] batchGetRecipients: ${emailIdentifications.length} events - ${eventsWithEmailId} with emailId, ${eventsFromCache} from cache, ${eventsNeedingLookup} need lookup`);
         }
 
-        // Batch fetch all missing emailIds in a single query
-        if (providerIdsToResolve.size > 0) {
-            const providerIdArray = Array.from(providerIdsToResolve);
-            const lookupStart = Date.now();
-            logging.info(`[EmailAnalytics] Looking up ${providerIdsToResolve.size} providerIds in batch query`);
-            
-            const emailBatchMappings = await this.#db.knex('email_batches')
-                .select('provider_id', 'email_id')
-                .whereIn('provider_id', providerIdArray);
+        // Wrap all database queries in a transaction for guaranteed connection management
+        await this.#db.knex.transaction(async (trx) => {
+            // Batch fetch all missing emailIds in a single query
+            if (providerIdsToResolve.size > 0) {
+                const providerIdArray = Array.from(providerIdsToResolve);
+                const lookupStart = Date.now();
+                logging.info(`[EmailAnalytics] Looking up ${providerIdsToResolve.size} providerIds in batch query`);
 
-            const lookupDuration = Date.now() - lookupStart;
-            logging.info(`[EmailAnalytics] Batch lookup completed in ${lookupDuration}ms - found ${emailBatchMappings.length}/${providerIdsToResolve.size} mappings`);
+                const emailBatchMappings = await trx('email_batches')
+                    .select('provider_id', 'email_id')
+                    .whereIn('provider_id', providerIdArray);
 
-            // Cache the results
-            for (const mapping of emailBatchMappings) {
-                this.providerIdEmailIdMap[mapping.provider_id] = mapping.email_id;
-            }
-        }
+                const lookupDuration = Date.now() - lookupStart;
+                logging.info(`[EmailAnalytics] Batch lookup completed in ${lookupDuration}ms - found ${emailBatchMappings.length}/${providerIdsToResolve.size} mappings`);
 
-        // Build list of lookups with resolved emailIds
-        const lookups = [];
-        for (const identification of emailIdentifications) {
-            if (!identification.emailId && !identification.providerId) {
-                continue;
+                // Cache the results
+                for (const mapping of emailBatchMappings) {
+                    this.providerIdEmailIdMap[mapping.provider_id] = mapping.email_id;
+                }
             }
 
-            const emailId = identification.emailId ?? this.providerIdEmailIdMap[identification.providerId];
-            if (!emailId) {
-                continue;
-            }
+            // Build list of lookups with resolved emailIds
+            const lookups = [];
+            for (const identification of emailIdentifications) {
+                if (!identification.emailId && !identification.providerId) {
+                    continue;
+                }
 
-            lookups.push({
-                email: identification.email,
-                emailId: emailId
-            });
-        }
+                const emailId = identification.emailId ?? this.providerIdEmailIdMap[identification.providerId];
+                if (!emailId) {
+                    continue;
+                }
 
-        if (lookups.length === 0) {
-            return recipientMap;
-        }
-
-        // Process in batches to avoid very large OR queries
-        const MAX_RECIPIENT_BATCH_SIZE = 500;
-        const recipientQueryStart = Date.now();
-        let recipientQueryBatches = 0;
-        
-        for (let i = 0; i < lookups.length; i += MAX_RECIPIENT_BATCH_SIZE) {
-            const batchLookups = lookups.slice(i, i + MAX_RECIPIENT_BATCH_SIZE);
-            recipientQueryBatches += 1;
-
-            // Build query with OR conditions for this batch
-            const batchQueryStart = Date.now();
-            const recipients = await this.#db.knex('email_recipients')
-                .select('id', 'member_id', 'email_id', 'member_email')
-                .where((builder) => {
-                    for (const lookup of batchLookups) {
-                        builder.orWhere({
-                            member_email: lookup.email,
-                            email_id: lookup.emailId
-                        });
-                    }
-                });
-            const batchQueryDuration = Date.now() - batchQueryStart;
-
-            if (batchLookups.length > 100) {
-                logging.info(`[EmailAnalytics] Recipient query batch ${recipientQueryBatches}: ${batchLookups.length} lookups, ${recipients.length} found, ${batchQueryDuration}ms`);
-            }
-
-            // Build map: "email:emailId" -> recipient info
-            for (const recipient of recipients) {
-                const key = `${recipient.member_email}:${recipient.email_id}`;
-                recipientMap.set(key, {
-                    emailRecipientId: recipient.id,
-                    memberId: recipient.member_id,
-                    emailId: recipient.email_id
+                lookups.push({
+                    email: identification.email,
+                    emailId: emailId
                 });
             }
-        }
 
-        const recipientQueryDuration = Date.now() - recipientQueryStart;
-        if (lookups.length > 100) {
-            logging.info(`[EmailAnalytics] Total recipient queries: ${recipientQueryBatches} batches, ${lookups.length} lookups, ${recipientMap.size} recipients found, ${recipientQueryDuration}ms`);
-        }
+            if (lookups.length === 0) {
+                return;
+            }
+
+            // Process in batches to avoid very large OR queries
+            const MAX_RECIPIENT_BATCH_SIZE = 500;
+            const recipientQueryStart = Date.now();
+            let recipientQueryBatches = 0;
+
+            for (let i = 0; i < lookups.length; i += MAX_RECIPIENT_BATCH_SIZE) {
+                const batchLookups = lookups.slice(i, i + MAX_RECIPIENT_BATCH_SIZE);
+                recipientQueryBatches += 1;
+
+                // Build query with OR conditions for this batch
+                const batchQueryStart = Date.now();
+                const recipients = await trx('email_recipients')
+                    .select('id', 'member_id', 'email_id', 'member_email')
+                    .where((builder) => {
+                        for (const lookup of batchLookups) {
+                            builder.orWhere({
+                                member_email: lookup.email,
+                                email_id: lookup.emailId
+                            });
+                        }
+                    });
+                const batchQueryDuration = Date.now() - batchQueryStart;
+
+                if (batchLookups.length > 100) {
+                    logging.info(`[EmailAnalytics] Recipient query batch ${recipientQueryBatches}: ${batchLookups.length} lookups, ${recipients.length} found, ${batchQueryDuration}ms`);
+                }
+
+                // Build map: "email:emailId" -> recipient info
+                for (const recipient of recipients) {
+                    const key = `${recipient.member_email}:${recipient.email_id}`;
+                    recipientMap.set(key, {
+                        emailRecipientId: recipient.id,
+                        memberId: recipient.member_id,
+                        emailId: recipient.email_id
+                    });
+                }
+            }
+
+            const recipientQueryDuration = Date.now() - recipientQueryStart;
+            if (lookups.length > 100) {
+                logging.info(`[EmailAnalytics] Total recipient queries: ${recipientQueryBatches} batches, ${lookups.length} lookups, ${recipientMap.size} recipients found, ${recipientQueryDuration}ms`);
+            }
+        }); // Transaction commits and releases connection here
 
         return recipientMap;
     }
