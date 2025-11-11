@@ -6,6 +6,8 @@ import {
     SidebarHeader
 } from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 
 const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
 const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
@@ -22,10 +24,12 @@ const openSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
     document.dispatchEvent(searchShortcutEvent);
 }
 
-function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
+function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
+    const { data: currentUser } = useCurrentUser();
     const site = useBrowseSite();
     const title = site.data?.site.title ?? "";
     const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
+    const showSearch = currentUser && !isContributorUser(currentUser);
 
     return (
         <SidebarHeader {...props}>
@@ -44,20 +48,22 @@ function NavHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
                         </div>
                     </div>
                 </div>
-                <Button
-                    variant="outline"
-                    className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 h-[38px]"
-                    onClick={openSearchModal}
-                >
-                    <div className="flex items-center gap-2">
-                        <LucideIcon.Search className="text-muted-foreground" />
-                        Search site
-                    </div>
-                    <Kbd className="text-gray-500 bg-transparent">{searchShortcut}</Kbd>
-                </Button>
+                {showSearch && (
+                    <Button
+                        variant="outline"
+                        className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 h-[38px]"
+                        onClick={openSearchModal}
+                    >
+                        <div className="flex items-center gap-2">
+                            <LucideIcon.Search className="text-muted-foreground" />
+                            Search site
+                        </div>
+                        <Kbd className="text-gray-500 bg-transparent">{searchShortcut}</Kbd>
+                    </Button>
+                )}
             </div>
         </SidebarHeader>
     );
 }
 
-export default NavHeader;
+export default AppSidebarHeader;
