@@ -13,6 +13,7 @@ import {
     CommandShortcut
 } from './command';
 import {
+    Calculator,
     Calendar,
     CreditCard,
     Mail,
@@ -78,33 +79,6 @@ export const Default: Story = {
         </Command>
     )
 };
-
-// Calculator icon component
-const Calculator = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        fill="none"
-        height="24"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        width="24"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <rect height="20" rx="2" width="16" x="4" y="2" />
-        <line x1="8" x2="16" y1="6" y2="6" />
-        <line x1="16" x2="16" y1="14" y2="18" />
-        <path d="M16 10h.01" />
-        <path d="M12 10h.01" />
-        <path d="M8 10h.01" />
-        <path d="M12 14h.01" />
-        <path d="M8 14h.01" />
-        <path d="M12 18h.01" />
-        <path d="M8 18h.01" />
-    </svg>
-);
 
 export const WithGroups: Story = {
     render: () => (
