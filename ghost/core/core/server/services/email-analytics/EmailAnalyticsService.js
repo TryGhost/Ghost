@@ -1,6 +1,8 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const db = require('../../data/db');
+const {Semaphore} = require('@tryghost/promise');
 
 /**
  * @typedef {import('../email-service/EmailEventProcessor')} EmailEventProcessor
@@ -97,6 +99,11 @@ module.exports = class EmailAnalyticsService {
     };
 
     /**
+     * @type {Semaphore}
+     */
+    #batchSemaphore;
+
+    /**
      * @param {object} dependencies
      * @param {object} dependencies.config
      * @param {object} dependencies.settings
@@ -114,6 +121,9 @@ module.exports = class EmailAnalyticsService {
         this.providers = providers;
         this.domainEvents = domainEvents;
         this.prometheusClient = prometheusClient;
+
+        // Limit concurrent batch processing to 3 to avoid connection pool exhaustion
+        this.#batchSemaphore = new Semaphore(3);
 
         if (prometheusClient) {
             // @ts-expect-error
@@ -352,49 +362,61 @@ module.exports = class EmailAnalyticsService {
          * @returns {Promise<void>}
          */
         const processBatch = async (events) => {
-            const processingStart = Date.now();
-            logging.info(`[EmailAnalytics] processBatch: Starting processing of ${events.length} events`);
+            // Acquire semaphore to limit concurrent batch processing
+            await this.#batchSemaphore.acquire();
 
-            await this.processEventBatch(events, processingResult, fetchData);
+            try {
+                const processingStart = Date.now();
+                logging.info(`[EmailAnalytics] processBatch: Starting processing of ${events.length} events (concurrent batches: ${this.#batchSemaphore.numUsed})`);
 
-            processingTimeMs += (Date.now() - processingStart);
-            eventCount += events.length;
+                // Wrap entire batch processing in a single transaction
+                // This ensures query plan caching and faster OR queries
+                await db.knex.transaction(async (trx) => {
+                    await this.processEventBatch(events, processingResult, fetchData, trx);
 
-            // Flush batched email_recipients updates after each Mailgun batch
-            const flushStart = Date.now();
-            await this.eventProcessor.flushBatchedUpdates();
-            const flushDuration = Date.now() - flushStart;
-            if (flushDuration > 100) {
-                logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
-            }
-
-            // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
-            // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
-            if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
-                // Aggregate and clear the processingResult
-                // We do this here because otherwise it could take a long time before the new events are visible in the stats
-                try {
-                    const aggregationStart = Date.now();
-                    const memberCount = processingResult.memberIds.length;
-                    const emailCount = processingResult.emailIds.length;
-                    logging.info(`[EmailAnalytics] Starting aggregation: ${memberCount} members, ${emailCount} emails`);
-                    
-                    await this.aggregateStats(processingResult, includeOpenedEvents);
-                    aggregationTimeMs += (Date.now() - aggregationStart);
-                    lastAggregation = Date.now();
-                    
-                    logging.info(`[EmailAnalytics] Aggregation completed in ${Date.now() - aggregationStart}ms: ${memberCount} members, ${emailCount} emails`);
-                    processingResult = new EventProcessingResult();
-                } catch (err) {
-                    logging.error('[EmailAnalytics] Error while aggregating stats');
-                    logging.error(err);
-                }
-            }
-
-            if (fetchData.canceled) {
-                throw new errors.InternalServerError({
-                    message: 'Fetching canceled'
+                    // Flush batched email_recipients updates after each Mailgun batch
+                    const flushStart = Date.now();
+                    await this.eventProcessor.flushBatchedUpdates(trx);
+                    const flushDuration = Date.now() - flushStart;
+                    if (flushDuration > 100) {
+                        logging.info(`[EmailAnalytics] processBatch: flushBatchedUpdates took ${flushDuration}ms`);
+                    }
                 });
+
+                processingTimeMs += (Date.now() - processingStart);
+                eventCount += events.length;
+
+                // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
+                // Otherwise we need to loop a lot of members afterwards, and this takes too long without updating the stat counts in between
+                if ((Date.now() - lastAggregation > 5 * 60 * 1000 || processingResult.memberIds.length > 5000) && eventCount > 0) {
+                    // Aggregate and clear the processingResult
+                    // We do this here because otherwise it could take a long time before the new events are visible in the stats
+                    try {
+                        const aggregationStart = Date.now();
+                        const memberCount = processingResult.memberIds.length;
+                        const emailCount = processingResult.emailIds.length;
+                        logging.info(`[EmailAnalytics] Starting aggregation: ${memberCount} members, ${emailCount} emails`);
+
+                        await this.aggregateStats(processingResult, includeOpenedEvents);
+                        aggregationTimeMs += (Date.now() - aggregationStart);
+                        lastAggregation = Date.now();
+
+                        logging.info(`[EmailAnalytics] Aggregation completed in ${Date.now() - aggregationStart}ms: ${memberCount} members, ${emailCount} emails`);
+                        processingResult = new EventProcessingResult();
+                    } catch (err) {
+                        logging.error('[EmailAnalytics] Error while aggregating stats');
+                        logging.error(err);
+                    }
+                }
+
+                if (fetchData.canceled) {
+                    throw new errors.InternalServerError({
+                        message: 'Fetching canceled'
+                    });
+                }
+            } finally {
+                // Always release the semaphore
+                this.#batchSemaphore.release();
             }
         };
 
@@ -462,9 +484,10 @@ module.exports = class EmailAnalyticsService {
      * @param {any[]} events - An array of email analytics events to process.
      * @param {Object} result - The result object to merge batch processing results into.
      * @param {FetchData} fetchData - Data related to the current fetch operation.
+     * @param {any} trx - Database transaction to use for all queries
      * @returns {Promise<void>}
      */
-    async processEventBatch(events, result, fetchData) {
+    async processEventBatch(events, result, fetchData, trx) {
         const batchStart = Date.now();
         logging.info(`[EmailAnalytics] processEventBatch: Processing ${events.length} events`);
 
@@ -476,7 +499,7 @@ module.exports = class EmailAnalyticsService {
             email: event.recipientEmail
         }));
 
-        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications);
+        const recipientCache = await this.eventProcessor.batchGetRecipients(emailIdentifications, trx);
         const recipientLookupDuration = Date.now() - recipientLookupStart;
         logging.info(`[EmailAnalytics] processEventBatch: Recipient lookup completed in ${recipientLookupDuration}ms, cache size: ${recipientCache.size}`);
 

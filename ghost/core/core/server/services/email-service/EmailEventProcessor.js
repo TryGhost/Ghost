@@ -202,9 +202,10 @@ class EmailEventProcessor {
     /**
      * Batch lookup recipients for multiple events at once
      * @param {Array<{emailId?: string, providerId?: string, email: string}>} emailIdentifications
+     * @param {any} [trx] - Optional database transaction to use
      * @returns {Promise<Map<string, EmailRecipientInformation>>} Map keyed by "email:emailId"
      */
-    async batchGetRecipients(emailIdentifications) {
+    async batchGetRecipients(emailIdentifications, trx = null) {
         const recipientMap = new Map();
 
         if (!emailIdentifications || emailIdentifications.length === 0) {
@@ -238,13 +239,16 @@ class EmailEventProcessor {
             logging.info(`[EmailAnalytics] batchGetRecipients: ${emailIdentifications.length} events - ${eventsWithEmailId} with emailId, ${eventsFromCache} from cache, ${eventsNeedingLookup} need lookup`);
         }
 
+        // Use transaction if provided for query plan caching
+        const queryKnex = trx || this.#db.knex;
+
         // Batch fetch all missing emailIds in a single query
         if (providerIdsToResolve.size > 0) {
             const providerIdArray = Array.from(providerIdsToResolve);
             const lookupStart = Date.now();
             logging.info(`[EmailAnalytics] Looking up ${providerIdsToResolve.size} providerIds in batch query`);
 
-            const emailBatchMappings = await this.#db.knex('email_batches')
+            const emailBatchMappings = await queryKnex('email_batches')
                 .select('provider_id', 'email_id')
                 .whereIn('provider_id', providerIdArray);
 
@@ -290,7 +294,7 @@ class EmailEventProcessor {
 
             // Build query with OR conditions for this batch
             const batchQueryStart = Date.now();
-            const recipients = await this.#db.knex('email_recipients')
+            const recipients = await queryKnex('email_recipients')
                 .select('id', 'member_id', 'email_id', 'member_email')
                 .where((builder) => {
                     for (const lookup of batchLookups) {
