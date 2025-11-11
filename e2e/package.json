@@ -23,11 +23,13 @@
     "build"
   ],
   "devDependencies": {
+    "@eslint/js": "9.18.0",
     "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.55.1",
     "@tryghost/debug": "0.1.35",
     "@tryghost/logging": "2.4.23",
     "@types/dockerode": "3.3.44",
+    "typescript-eslint": "8.46.1",
     "c8": "10.1.3",
     "dockerode": "4.0.9",
     "dotenv": "16.6.1",

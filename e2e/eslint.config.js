@@ -1,18 +1,28 @@
+import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
 import playwrightPlugin from 'eslint-plugin-playwright';
-import tsParser from '@typescript-eslint/parser';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config([
     // Ignore patterns
     {
-        ignores: ['build/**']
+        ignores: [
+            'build/**',
+            'data/**',
+            'playwright/**',
+            'playwright-report/**',
+            'test-results/**'
+        ]
     },
 
     // Base config for all TypeScript files
     {
         files: ['**/*.ts', '**/*.mjs'],
+        extends: [
+            eslint.configs.recommended,
+            tseslint.configs.recommended
+        ],
         languageOptions: {
-            parser: tsParser,
             parserOptions: {
                 ecmaVersion: 2020,
                 sourceType: 'module'
@@ -67,4 +77,4 @@ export default [
             ...playwrightPlugin.configs.recommended.rules
         }
     }
-];
+]);
