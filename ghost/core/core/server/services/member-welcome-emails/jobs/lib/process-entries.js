@@ -4,8 +4,6 @@ const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const sendMemberWelcomeEmail = require('./send-member-welcome-email');
 const mailContext = require('./mail-context');
 
-/** @typedef {import('./mail-context').MailConfig} MailConfig */
-
 /**
  * Deletes a successfully processed outbox entry
  * @param {Object} db - Database connection
@@ -43,6 +41,20 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 }
 
 /**
+ * Marks an outbox entry as already sent when cleanup fails
+ * @param {Object} db - Database connection
+ * @param {string} entryId - ID of the entry to update
+ */
+async function markEntryAlreadySent(db, entryId) {
+    await db.knex('outbox')
+        .where('id', entryId)
+        .update({
+            message: 'already sent',
+            updated_at: db.knex.raw('CURRENT_TIMESTAMP')
+        });
+}
+
+/**
 * Processes a single outbox entry by sending welcome email and managing retry logic
 * @param {Object} db - Database connection
 * @param {Object} entry - Outbox entry to process
@@ -50,25 +62,38 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 */
 async function processEntry(db, entry) {
     let payload;
+
     try {
         payload = JSON.parse(entry.payload);
-
-        /** @type {MailConfig} */
         const mailConfig = mailContext.getConfig();
         await sendMemberWelcomeEmail(payload, mailConfig);
-        await deleteProcessedEntry(db, entry.id);
-
-        return {success: true};
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
 
-        const email = payload?.email || 'unknown member';
-        const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
-        logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${errorMessage}`);
+        if (!payload) {
+            logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to parse payload for entry ${entry.id}: ${errorMessage}`);
+        } else {
+            const email = payload?.email || 'unknown member';
+            const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
+            logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Failed to send to ${memberInfo}: ${errorMessage}`);
+        }
 
         return {success: false};
     }
+
+    try {
+        await deleteProcessedEntry(db, entry.id);
+    } catch (err) {
+        const cleanupError = err?.message ?? 'Unknown error';
+        await markEntryAlreadySent(db, entry.id);
+
+        const email = payload?.email || 'unknown member';
+        const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
+        logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sent to ${memberInfo} but failed to delete outbox entry ${entry.id}: ${cleanupError}`);
+    }
+
+    return {success: true};
 }
 
 /**
