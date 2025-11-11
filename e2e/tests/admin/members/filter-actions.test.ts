@@ -52,7 +52,7 @@ test.describe('Ghost Admin - Member Filter Actions', () => {
         await expect(membersPage.memberListItems).toHaveCount(2);
 
         await membersPage.membersActionsButton.click();
-        await membersPage.settingsSection.addLabelOnSelectedMembers('dog');
+        await membersPage.settingsSection.addLabelToSelectedMembers('dog');
 
         await expect(membersPage.settingsSection.getSuccessMessage()).toContainText('Label added to 2 members successfully');
         await membersPage.settingsSection.closeModalButton.click();
@@ -67,7 +67,7 @@ test.describe('Ghost Admin - Member Filter Actions', () => {
         await expect(membersPage.memberListItems).toHaveCount(2);
 
         await membersPage.membersActionsButton.click();
-        await membersPage.settingsSection.removeLabelOnSelectedMembers('old');
+        await membersPage.settingsSection.removeLabelFromSelectedMembers('old');
 
         await expect(membersPage.settingsSection.getSuccessMessage()).toContainText('Label removed from 2 members successfully');
     });

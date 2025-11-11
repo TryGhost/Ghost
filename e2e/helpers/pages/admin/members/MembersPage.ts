@@ -65,7 +65,7 @@ class SettingsSection extends BasePage {
         this.labelRemoved = page.getByTestId('remove-label-complete');
     }
 
-    async addLabelOnSelectedMembers(labelName: string): Promise<void> {
+    async addLabelToSelectedMembers(labelName: string): Promise<void> {
         await this.addLabelForSelectedMembersButton.click();
         await this.selectLabel.waitFor({state: 'visible'});
         await this.selectLabel.selectOption({label: labelName});
@@ -74,7 +74,7 @@ class SettingsSection extends BasePage {
         await this.labelAdded.waitFor({state: 'visible'});
     }
 
-    async removeLabelOnSelectedMembers(labelName: string): Promise<void> {
+    async removeLabelFromSelectedMembers(labelName: string): Promise<void> {
         await this.removeLabelForSelectedMembersButton.click();
         await this.selectLabel.selectOption({label: labelName});
 
