@@ -19,6 +19,7 @@ export * from './components/ui/flag';
 export * from './components/ui/form';
 export * from './components/ui/gh-chart';
 export * from './components/ui/hover-card';
+export * from './components/ui/indicator';
 export * from './components/ui/input';
 export * from './components/ui/input-group';
 export * from './components/ui/kbd';
