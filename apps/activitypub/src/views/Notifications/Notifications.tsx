@@ -5,19 +5,18 @@ import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import APAvatar from '@components/global/APAvatar';
 import Error from '@components/layout/Error';
 import FeedItemStats from '@components/feed/FeedItemStats';
-import NotificationItem from './components/NotificationItem';
-import Separator from '@components/global/Separator';
-
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
+import NotificationItem from './components/NotificationItem';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
+import Separator from '@components/global/Separator';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
 interface NotificationGroup {
@@ -33,19 +32,42 @@ interface NotificationGroupDescriptionProps {
     group: NotificationGroup;
 }
 
+/**
+ * Calculate a time bucket for grouping notifications
+ * Groups notifications into time windows
+ */
+function getTimeBucket(timestamp: string): string {
+    const TIME_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const date = new Date(timestamp);
+    const timeMs = date.getTime();
+    const bucketStart = Math.floor(timeMs / TIME_WINDOW_MS) * TIME_WINDOW_MS;
+    return bucketStart.toString();
+}
+
 function groupNotifications(notifications: Notification[]): NotificationGroup[] {
     const groups: {
         [key: string]: NotificationGroup
     } = {};
 
+    let lastType: string | null = null;
+    let sequenceCounter = 0;
+
     notifications.forEach((notification) => {
+        // Increment sequence counter when we encounter a different type
+        // This preserves chronological order by preventing grouping across type boundaries
+        if (notification.type !== lastType) {
+            sequenceCounter += 1;
+            lastType = notification.type;
+        }
+
         let groupKey = '';
+        const timeBucket = `_${getTimeBucket(notification.createdAt)}`;
+        const sequence = `_seq${sequenceCounter}`;
 
         switch (notification.type) {
         case 'like':
             if (notification.post?.id) {
-                // Group likes by the target object
-                groupKey = `like_${notification.post.id}`;
+                groupKey = `like_${notification.post.id}${timeBucket}${sequence}`;
             }
             break;
         case 'reply':
@@ -54,13 +76,11 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
             break;
         case 'repost':
             if (notification.post?.id) {
-                // Group reposts by the target object
-                groupKey = `repost_${notification.post.id}`;
+                groupKey = `repost_${notification.post.id}${timeBucket}${sequence}`;
             }
             break;
         case 'follow':
-            // Group follows that are next to each other in the array
-            groupKey = `follow_${notification.type}`;
+            groupKey = `follow_${timeBucket}${sequence}`;
             break;
         case 'mention':
             // Don't group mentions
@@ -94,7 +114,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorClass = 'cursor-pointer font-semibold hover:underline text-black dark:text-white';
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const actorText = (
         <>
@@ -138,7 +158,7 @@ const ProfileLinkedContent: React.FC<{
     stripTags?: string[];
 }> = ({content, className, stripTags = []}) => {
     const contentRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     useEffect(() => {
         const element = contentRef.current;
@@ -179,7 +199,7 @@ const ProfileLinkedContent: React.FC<{
 
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const toggleOpen = (groupId: string) => {
         setOpenStates(prev => ({

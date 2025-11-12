@@ -106,7 +106,11 @@ module.exports = class MailgunClient {
 
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
-            const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
+
+            // Use overriden domain if specified in message
+            const mailDomain = message.domainOverride ? message.domainOverride : mailgunConfig.domain;
+
+            const response = await mailgunInstance.messages.create(mailDomain, messageData);
             metrics.metric('mailgun-send-mail', {
                 value: Date.now() - startTime,
                 statusCode: 200
@@ -213,7 +217,10 @@ module.exports = class MailgunClient {
             const totalDuration = overallEndTime - overallStartTime;
             const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
 
-            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            // Only log if we actually processed batches
+            if (batchCount > 0) {
+                logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            }
         } catch (error) {
             logging.error(error);
             throw error;

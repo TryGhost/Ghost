@@ -1,6 +1,6 @@
 import {Factory} from '../factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateUuid, generateSlug} from '../utils';
+import {generateId, generateSlug, generateUuid} from '../utils';
 
 export interface Post {
     id: string;
@@ -12,7 +12,7 @@ export interface Post {
     html: string;
     comment_id: string;
     plaintext: string;
-    feature_image: string;
+    feature_image: string | null;
     featured: boolean;
     type: string;
     status: 'draft' | 'published' | 'scheduled';
@@ -50,7 +50,7 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             html: `<p>${content}</p>`,
             comment_id: generateId(),
             plaintext: content,
-            feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
+            feature_image: null,
             featured: faker.datatype.boolean(),
             type: 'post',
             status: 'draft',

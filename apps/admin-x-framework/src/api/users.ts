@@ -50,6 +50,10 @@ export interface UsersResponseType {
     users: User[];
 }
 
+export interface UpdateUserRequestBody {
+    users: Array<User>;
+}
+
 interface UpdatePasswordOptions {
     newPassword: string;
     confirmNewPassword: string;
@@ -166,6 +170,10 @@ export function isEditorUser(user: User) {
     return isAnyEditor;
 }
 
+export function isSuperEditorUser(user: User) {
+    return user.roles.some(role => role.name === 'Super Editor');
+}
+
 export function isAuthorUser(user: User) {
     return user.roles.some(role => role.name === 'Author');
 }
@@ -180,6 +188,16 @@ export function isAuthorOrContributor(user: User) {
 
 export function canAccessSettings(user: User) {
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function canManageMembers(user: User) {
+    // Owner, Admin, or Super Editor can manage members
+    return isOwnerUser(user) || isAdminUser(user) || isSuperEditorUser(user);
+}
+
+export function canManageTags(user: User) {
+    // Admin or Editor can manage tags
+    return isAdminUser(user) || isEditorUser(user);
 }
 
 export function hasAdminAccess(user: User) {

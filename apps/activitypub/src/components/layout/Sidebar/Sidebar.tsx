@@ -6,6 +6,7 @@ import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
 import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
+import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useLocation} from '@tryghost/admin-x-framework';
@@ -22,15 +23,16 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const [searchQuery, setSearchQuery] = React.useState('');
     const {data: currentUser} = useCurrentUser();
     const location = useLocation();
+    const basePath = useAppBasePath();
     const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
     const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
 
     // Reset count when on notifications page
     React.useEffect(() => {
-        if (location.pathname === '/notifications' && notificationsCount && notificationsCount > 0) {
+        if (location.pathname === `${basePath}/notifications` && notificationsCount && notificationsCount > 0) {
             resetNotificationsCount.mutate();
         }
-    }, [location.pathname, notificationsCount, resetNotificationsCount]);
+    }, [location.pathname, basePath, notificationsCount, resetNotificationsCount]);
 
     const handleNotificationsClick = React.useCallback(() => {
         if (notificationsCount && notificationsCount > 0) {
@@ -46,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>
                         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                            <DialogTrigger className='w-full'>
+                            <DialogTrigger className='mt-0.5 w-full'>
                                 <SearchInput />
                             </DialogTrigger>
                             <DialogContent>
@@ -64,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             Notes
                         </SidebarMenuLink>
                         <SidebarMenuLink
-                            count={location.pathname !== '/notifications' ? notificationsCount : undefined}
+                            count={location.pathname !== `${basePath}/notifications` ? notificationsCount : undefined}
                             to='/notifications'
                             onClick={handleNotificationsClick}
                         >

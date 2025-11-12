@@ -39,7 +39,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../.docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
+      - ../docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
     environment:
       - ANALYTICS_PROXY_TARGET=analytics:3000
     healthcheck:
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   analytics:
-    image: ghost/traffic-analytics:1
+    image: ghost/traffic-analytics:1.0.20
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
@@ -64,10 +64,11 @@ services:
       interval: 1s
       retries: 120
     volumes:
-      - ../.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - ../docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
+      - TINYBIRD_WAIT=true
     depends_on:
       tinybird-local:
         condition: service_healthy
@@ -89,7 +90,7 @@ services:
   tb-cli:
     build:
       context: ../
-      dockerfile: .docker/tb-cli/Dockerfile
+      dockerfile: docker/tb-cli/Dockerfile
     working_dir: /home/tinybird
     environment:
       - TB_HOST=http://tinybird-local:7181
@@ -101,8 +102,8 @@ services:
       tinybird-local:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
     ports:
       - "1026:1025" # SMTP server

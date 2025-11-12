@@ -247,11 +247,11 @@ class EmailRenderer {
         return locale;
     }
 
-    getFromAddress(post, newsletter) {
+    getFromAddress(post, newsletter, useFallbackAddress = false) {
         // Clean from address to ensure DMARC alignment
         const addresses = this.#emailAddressService.getAddress({
             from: this.#getRawFromAddress(post, newsletter)
-        });
+        }, {useFallbackAddress});
 
         return EmailAddressParser.stringify(addresses.from);
     }
@@ -1183,7 +1183,7 @@ class EmailRenderer {
         ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
 
         const commentUrl = new URL(postUrl);
-        commentUrl.hash = '#ghost-comments';
+        commentUrl.hash = '#ghost-comments-root';
 
         const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
 

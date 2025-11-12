@@ -1,4 +1,4 @@
-import {Page, Response, Request} from '@playwright/test';
+import {Page, Request, Response} from '@playwright/test';
 
 export class PageHttpLogger {
     private page: Page;

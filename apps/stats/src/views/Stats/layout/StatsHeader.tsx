@@ -18,12 +18,19 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false
     });
+    const normalizedPath = location.pathname.endsWith('/') ? location.pathname : `${location.pathname}/`;
 
     return (
         <>
             <header className='z-40 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-                <div className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'>
-                    <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
+                <div
+                    className='relative flex w-full items-center justify-between gap-5 px-8 pb-0 pt-8'
+                    data-header='header'
+                >
+                    <H1
+                        className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'
+                        data-header='header-title'
+                    >
                         Analytics
                     </H1>
                     {appSettings?.analytics.webAnalytics && (
@@ -58,30 +65,30 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                 </div>
             </header>
             <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
-                <PageMenu defaultValue={location.pathname} responsive>
-                    <PageMenuItem value="/" onClick={() => {
-                        navigate('/');
+                <PageMenu defaultValue={normalizedPath} responsive>
+                    <PageMenuItem value="/analytics/" onClick={() => {
+                        navigate('/analytics/');
                     }}>Overview</PageMenuItem>
 
                     {appSettings?.analytics.webAnalytics &&
-                        <PageMenuItem value="/web/" onClick={() => {
-                            navigate('/web/');
+                        <PageMenuItem value="/analytics/web/" onClick={() => {
+                            navigate('/analytics/web/');
                         }}>Web traffic</PageMenuItem>
                     }
 
                     {appSettings?.newslettersEnabled &&
-                        <PageMenuItem value="/newsletters/" onClick={() => {
-                            navigate('/newsletters/');
+                        <PageMenuItem value="/analytics/newsletters/" onClick={() => {
+                            navigate('/analytics/newsletters/');
                         }}>Newsletters</PageMenuItem>
                     }
 
-                    <PageMenuItem value="/growth/" onClick={() => {
-                        navigate('/growth/');
+                    <PageMenuItem value="/analytics/growth/" onClick={() => {
+                        navigate('/analytics/growth/');
                     }}>Growth</PageMenuItem>
 
                     {appSettings?.analytics.webAnalytics && (
-                        <PageMenuItem value="/locations/" onClick={() => {
-                            navigate('/locations/');
+                        <PageMenuItem value="/analytics/locations/" onClick={() => {
+                            navigate('/analytics/locations/');
                         }}>Locations</PageMenuItem>
                     )}
                 </PageMenu>

@@ -3,7 +3,7 @@ import DesignModal from './DesignModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {LimitModal} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCheckThemeLimitError} from '../../../hooks/useCheckThemeLimitError';
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {

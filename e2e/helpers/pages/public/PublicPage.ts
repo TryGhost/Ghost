@@ -1,5 +1,5 @@
-import {Page, Locator, Response} from '@playwright/test';
 import {BasePage, pageGotoOptions} from '../BasePage';
+import {Locator, Page, Response} from '@playwright/test';
 
 declare global {
     interface Window {
@@ -85,12 +85,8 @@ export class PublicPage extends BasePage {
 
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
-        await super.goto(url, options);
-    }
-
-    async gotoAndWaitForPageHit(url?: string, options?: pageGotoOptions): Promise<void> {
         const pageHitPromise = this.pageHitRequestPromise();
-        await this.goto(url, options);
+        await super.goto(url, options);
         await pageHitPromise;
     }
 

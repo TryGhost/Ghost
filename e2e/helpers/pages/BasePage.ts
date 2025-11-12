@@ -1,6 +1,6 @@
-import {appConfig} from '../utils/app-config';
-import {PageHttpLogger} from './PageHttpLogger';
 import {Locator, Page} from '@playwright/test';
+import {PageHttpLogger} from './PageHttpLogger';
+import {appConfig} from '../utils/app-config';
 
 export interface pageGotoOptions {
     referer?: string;
@@ -25,6 +25,10 @@ export class BasePage {
             this.logger = new PageHttpLogger(page);
             this.logger.setup();
         }
+    }
+
+    async refresh() {
+        await this.page.reload();
     }
 
     async goto(url?: string, options?: pageGotoOptions) {

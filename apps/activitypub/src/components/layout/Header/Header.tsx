@@ -1,8 +1,10 @@
-import BackButton from '@src/components/global/BackButton';
 import React from 'react';
-import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
-import {useBaseRoute, useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
+import {useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
+
+import BackButton from '@src/components/global/BackButton';
+import useActiveRoute from '@src/hooks/use-active-route';
+import {useCurrentPage} from '@src/hooks/use-current-page';
 
 interface HeaderTitleProps {
     title: string;
@@ -15,12 +17,14 @@ interface MobileMenuButtonProps {
 
 interface HeaderProps {
     onToggleMobileSidebar: () => void;
+    showBorder?: boolean;
 }
 
 const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
     if (backIcon) {
         return <BackButton className='-ml-2' />;
     }
+
     return (
         <H1 className='max-md:text-[2.4rem]'>{title}</H1>
     );
@@ -38,19 +42,19 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({onToggleMobileSideba
     );
 };
 
-const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
+const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar, showBorder = true}) => {
     const {canGoBack} = useNavigationStack();
-    const baseRoute = useBaseRoute();
+    const currentPage = useCurrentPage();
     const routeHasParams = useRouteHasParams();
     const activeRoute = useActiveRoute();
 
     // Logic for special pages
     let onlyBackButton = false;
-    if (baseRoute === 'profile') {
+    if (currentPage === 'profile') {
         onlyBackButton = true;
     }
 
-    if (baseRoute === 'notes' && canGoBack) {
+    if (currentPage === 'notes' && canGoBack) {
         onlyBackButton = true;
     }
 
@@ -66,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar}) => {
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>
-                    <div className='relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] max-md:h-[68px] before:dark:border-gray-950'>
+                    <div className={`relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] before:dark:border-gray-950' : ''}`}>
                         <HeaderTitle
                             backIcon={backActive}
                             title={activeRoute?.pageTitle || ''}

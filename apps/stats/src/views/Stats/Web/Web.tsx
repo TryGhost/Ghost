@@ -7,7 +7,7 @@ import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
-import {Card, CardContent, UtmCampaignType, UtmTabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {CampaignType, Card, CardContent, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -51,8 +51,8 @@ const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
-    const [selectedTab, setSelectedTab] = useState<UtmTabType>('sources');
-    const [selectedCampaign, setSelectedCampaign] = useState<UtmCampaignType>('');
+    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
     
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
@@ -95,7 +95,7 @@ const Web: React.FC = () => {
     });
 
     // Map campaign types to endpoints
-    const campaignEndpointMap: Record<UtmCampaignType, string> = {
+    const campaignEndpointMap: Record<CampaignType, string> = {
         '': '',
         'UTM sources': 'api_top_utm_sources',
         'UTM mediums': 'api_top_utm_mediums',
@@ -123,7 +123,7 @@ const Web: React.FC = () => {
             }
             
             // Map UTM field names to the generic key name
-            const utmKeyMap: Record<UtmCampaignType, string> = {
+            const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
                 'UTM sources': 'utm_source',
                 'UTM mediums': 'utm_medium',
