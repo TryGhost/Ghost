@@ -2,6 +2,7 @@ import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelec
 import DateRangeSelect from '../components/DateRangeSelect';
 import React, {useState} from 'react';
 import SourcesCard from './components/SourcesCard';
+import StatsFilter from '../components/StatsFilter';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
@@ -169,6 +170,7 @@ const Web: React.FC = () => {
                 <AudienceSelect />
                 <DateRangeSelect />
             </StatsHeader>
+            <StatsFilter />
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
