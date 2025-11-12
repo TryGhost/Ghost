@@ -11,6 +11,33 @@ type EmailRecord = {
     get(field: string): unknown;
 };
 
+type WarmupScalingTable = {
+    base: {
+        limit: number;
+        value: number;
+    },
+    thresholds: {
+        limit: number;
+        scale: number;
+    }[];
+    defaultScale: number;
+}
+
+const WARMUP_SCALING_TABLE: WarmupScalingTable = {
+    base: {
+        limit: 100,
+        value: 200
+    },
+    thresholds: [{
+        limit: 100_000,
+        scale: 2
+    }, {
+        limit: 400_000,
+        scale: 1.5
+    }],
+    defaultScale: 1.25
+};
+
 export class DomainWarmingService {
     #emailModel: EmailModel;
     #labs: LabsService;
@@ -63,14 +90,16 @@ export class DomainWarmingService {
      * @returns The limit for sending from the warming sending domain for the next email
      */
     #getTargetLimit(lastCount: number): number {
-        if (lastCount <= 100) {
-            return 200;
-        } else if (lastCount <= 100_000) {
-            return lastCount * 2;
-        } else if (lastCount <= 400_000) {
-            return Math.ceil(lastCount * 1.5);
-        } else {
-            return Math.ceil(lastCount * 1.25);
+        if (lastCount <= WARMUP_SCALING_TABLE.base.limit) {
+            return WARMUP_SCALING_TABLE.base.value;
         }
+
+        for (const threshold of WARMUP_SCALING_TABLE.thresholds.sort((a, b) => a.limit - b.limit)) {
+            if (lastCount <= threshold.limit) {
+                return Math.ceil(lastCount * threshold.scale);
+            }
+        }
+
+        return Math.ceil(lastCount * WARMUP_SCALING_TABLE.defaultScale);
     }
 }
