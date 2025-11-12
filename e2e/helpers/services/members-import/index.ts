@@ -1,1 +1,1 @@
-export * from './MembersImportService';
+export * from './members-import-service';
