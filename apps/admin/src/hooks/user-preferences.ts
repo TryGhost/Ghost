@@ -24,8 +24,6 @@ export const NavigationPreferencesSchema = z.looseObject({
     }),
 });
 
-export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
-
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
     nightShift: z.boolean().optional(),
@@ -34,11 +32,12 @@ const PreferencesSchema = z.looseObject({
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
+export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 
-export const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
+const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
 
 export function useUserPreferences<TData = Preferences>(
-    options?: Omit<UseQueryOptions<Preferences, Error, TData>, 'queryKey' | 'queryFn'>
+    options?: Omit<UseQueryOptions<Preferences, Error, TData>, 'queryKey' | 'queryFn' | 'staleTime' | 'cacheTime'>
 ): UseQueryResult<TData> {
     const { data: user } = useCurrentUser();
 
