@@ -5,7 +5,7 @@ type Props = {
     isFirst: boolean,
     isPaid: boolean
 };
-const CtaBox: React.FC<Props> = ({isFirst, isPaid}) => {
+const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
     const {accentColor, publication, member, t, commentCount} = useAppContext();
 
     const buttonStyle = {
@@ -49,4 +49,4 @@ const CtaBox: React.FC<Props> = ({isFirst, isPaid}) => {
     );
 };
 
-export default CtaBox;
+export default CTABox;

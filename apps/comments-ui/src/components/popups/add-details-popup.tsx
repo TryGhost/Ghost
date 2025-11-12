@@ -80,7 +80,7 @@ const AddDetailsPopup = (props: Props) => {
                     appear
                 >
                     <div className="flex flex-row items-center justify-start gap-3 pr-4">
-                        <div className="size-10 rounded-full  border-2 border-white bg-cover bg-no-repeat" style={{backgroundImage: `url(${profile.avatar})`}} />
+                        <div className="size-10 rounded-full border-2 border-white bg-cover bg-no-repeat" style={{backgroundImage: `url(${profile.avatar})`}} />
                         <div className="flex flex-col items-start justify-center">
                             <div className="font-sans text-base font-semibold tracking-tight text-white">
                                 {profile.name}

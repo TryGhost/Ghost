@@ -1,5 +1,5 @@
 import AddDetailsPopup from './components/popups/add-details-popup';
-import CtaPopup from './components/popups/cta-popup';
+import CTAPopup from './components/popups/cta-popup';
 import DeletePopup from './components/popups/delete-popup';
 import React from 'react';
 import ReportPopup from './components/popups/report-popup';
@@ -10,7 +10,7 @@ import ReportPopup from './components/popups/report-popup';
 export const Pages = {
     addDetailsPopup: AddDetailsPopup,
     reportPopup: ReportPopup,
-    ctaPopup: CtaPopup,
+    ctaPopup: CTAPopup,
     deletePopup: DeletePopup
 };
 export type PageName = keyof typeof Pages;

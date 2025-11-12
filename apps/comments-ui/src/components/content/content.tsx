@@ -1,6 +1,6 @@
+import CTABox from './cta-box';
 import Comment from './comment';
 import ContentTitle from './content-title';
-import CtaBox from './cta-box';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
@@ -44,7 +44,7 @@ const Content = () => {
                     <MainForm commentsCount={comments.length} />
                 ) : (
                     <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
-                        <CtaBox isFirst={isFirst} isPaid={isPaidOnly} />
+                        <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
                     </section>
                 )}
             </div>
