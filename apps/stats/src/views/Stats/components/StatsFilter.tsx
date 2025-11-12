@@ -281,9 +281,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         type: 'multiselect',
                         icon: <LucideIcon.Users />,
                         options: [
-                            {value: 'undefined', label: 'Public visitors'},
-                            {value: 'free', label: 'Free members'},
-                            {value: 'paid', label: 'Paid members'}
+                            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>},
+                            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>},
+                            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>}
                         ]
                     },
                     {
