@@ -20,13 +20,13 @@ export const useEditNavigationPreferences = (): UseMutationResult<void, Error, P
     });
 };
 
-export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['expanded']): [boolean, (value: boolean) => void] => {
+export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['expanded']): [boolean, (value: boolean) => Promise<void>] => {
     const { data: navigationPreferences } = useNavigationPreferences();
     const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
 
     const expanded = navigationPreferences?.expanded[expandedKey];
 
-    const setExpanded = (value: boolean) => {
+    const setExpanded = async (value: boolean) => {
         return editNavigationPreferences({
             expanded: {
                 [expandedKey]: value
@@ -37,13 +37,13 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
     return [expanded ?? true, setExpanded];
 };
 
-export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => void] => {
+export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => Promise<void>] => {
     const { data: navigationPreferences } = useNavigationPreferences();
     const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
 
     const visible = navigationPreferences?.menu.visible;
 
-    const setVisible = (value: boolean) => {
+    const setVisible = async (value: boolean) => {
         return editNavigationPreferences({
             menu: { visible: value },
         });
