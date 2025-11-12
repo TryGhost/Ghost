@@ -188,7 +188,13 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     if (isLoading) {
         return (
-            <Skeleton containerClassName='block pt-2 space-y-2' count={5} maxWidth={75} randomize />
+            <TableBody>
+                <TableRow className='last:border-none'>
+                    <TableCell className='border-none py-2' colSpan={1}>
+                        <Skeleton containerClassName='space-y-2' count={5} maxWidth={75} randomize />
+                    </TableCell>
+                </TableRow>
+            </TableBody>
         );
     }
 
