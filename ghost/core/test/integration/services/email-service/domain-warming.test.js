@@ -274,7 +274,12 @@ describe('Domain Warming Integration Tests', function () {
         });
 
         it('handles maximum limit scenarios', async function () {
-            await createMembers(800, 'maxlimit'); // 800 to avoid SQLite limits
+            if (process.env.NODE_ENV !== 'testing-mysql') {
+                // This test fails on SQLite because of its small parameter limit
+                return this.skip();
+            }
+
+            await createMembers(800, 'maxlimit');
 
             let previousCsdCount = 0;
 
