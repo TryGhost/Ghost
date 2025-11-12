@@ -27,7 +27,7 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
     const expanded = navigationPreferences?.expanded[expandedKey];
 
     const setExpanded = (value: boolean) => {
-        void editNavigationPreferences({
+        return editNavigationPreferences({
             expanded: {
                 [expandedKey]: value
             },
@@ -44,7 +44,7 @@ export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => voi
     const visible = navigationPreferences?.menu.visible;
 
     const setVisible = (value: boolean) => {
-        void editNavigationPreferences({
+        return editNavigationPreferences({
             menu: { visible: value },
         });
     };
