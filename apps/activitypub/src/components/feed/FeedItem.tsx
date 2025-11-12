@@ -424,7 +424,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
                             {repostIcon}
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <ProfilePreviewHoverCard actor={actor} isCurrentUser={isActorCurrentUser}>
+                                <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={isActorCurrentUser}>
                                     <span className='truncate break-anywhere hover:underline' onClick={(e) => {
                                         handleProfileClick(actor, navigate, e);
                                     }}>{actor.name}</span>
@@ -703,7 +703,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         </ProfilePreviewHoverCard>
                                         {(type === 'Announce') &&
                                             <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'>{repostIcon}
-                                                <ProfilePreviewHoverCard actor={actor} isCurrentUser={isActorCurrentUser}>
+                                                <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={isActorCurrentUser}>
                                                     <span className='line-clamp-1 hover:underline' onClick={(e) => {
                                                         handleProfileClick(actor, navigate, e);
                                                     }}>{actor.name}</span>
