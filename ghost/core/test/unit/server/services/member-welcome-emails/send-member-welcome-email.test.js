@@ -40,7 +40,7 @@ describe('Member Welcome Emails - send-member-welcome-email', function () {
 
         const payload = {name: 'Jamie', email: 'jamie@example.com'};
 
-        await sendMemberWelcomeEmail(payload, mailConfig);
+        await sendMemberWelcomeEmail({payload, mailConfig});
 
         sinon.assert.calledOnce(loggingStub.info);
         sinon.assert.calledWith(renderHtmlStub, {

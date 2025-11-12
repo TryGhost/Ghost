@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const emailAddressService = require('../../../email-address');
 const mail = require('../../../mail');
 
@@ -8,13 +7,7 @@ const mail = require('../../../mail');
  * @property {{title: string, url: string, accentColor: string}} siteSettings
  */
 
-/** @type {{initialized: boolean, config: MailConfig | null}} */
-const MAIL_STATE = {
-    initialized: false,
-    config: null
-};
-
-async function loadSiteSettings(db) {
+async function loadSiteSettings({db}) {
     const settings = await db.knex('settings')
         .whereIn('key', ['title', 'accent_color', 'url'])
         .select('key', 'value');
@@ -26,21 +19,19 @@ async function loadSiteSettings(db) {
 }
 
 /**
+ * Initializes mail configuration by fetching site settings and creating mailer.
+ *
  * @param {Object} options
- * @param {import('../../../../data/db')} options.db
+ * @param {import('../../../../data/db')} options.db - Database connection
  * @returns {Promise<MailConfig>}
  */
-async function ensureInitialized({db}) {
-    if (MAIL_STATE.initialized && MAIL_STATE.config) {
-        return MAIL_STATE.config;
-    }
-
+async function getMailConfig({db}) {
     emailAddressService.init();
     const mailer = new mail.GhostMailer();
 
-    const settingsMap = await loadSiteSettings(db);
+    const settingsMap = await loadSiteSettings({db});
 
-    MAIL_STATE.config = {
+    return {
         mailer,
         siteSettings: {
             title: settingsMap.title || 'Ghost',
@@ -48,26 +39,6 @@ async function ensureInitialized({db}) {
             accentColor: settingsMap.accent_color || '#15212A'
         }
     };
-
-    MAIL_STATE.initialized = true;
-
-    return MAIL_STATE.config;
 }
 
-/**
- * @returns {MailConfig}
- */
-function getConfig() {
-    if (!MAIL_STATE.initialized || !MAIL_STATE.config) {
-        throw new errors.IncorrectUsageError({
-            message: 'Mail context has not been initialized'
-        });
-    }
-
-    return MAIL_STATE.config;
-}
-
-module.exports = {
-    ensureInitialized,
-    getConfig
-};
+module.exports = getMailConfig;

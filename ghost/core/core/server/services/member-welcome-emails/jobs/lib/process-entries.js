@@ -2,14 +2,14 @@ const logging = require('@tryghost/logging');
 const {MAX_RETRIES, MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const sendMemberWelcomeEmail = require('./send-member-welcome-email');
-const mailContext = require('./mail-context');
 
 /**
  * Deletes a successfully processed outbox entry
- * @param {Object} db - Database connection
- * @param {string} entryId - ID of the entry to delete
+ * @param {Object} options
+ * @param {Object} options.db - Database connection
+ * @param {string} options.entryId - ID of the entry to delete
  */
-async function deleteProcessedEntry(db, entryId) {
+async function deleteProcessedEntry({db, entryId}) {
     await db.knex('outbox')
         .where('id', entryId)
         .delete();
@@ -42,10 +42,11 @@ async function updateFailedEntry({db, entryId, retryCount, errorMessage}) {
 
 /**
  * Marks an outbox entry as completed when cleanup fails after sending
- * @param {Object} db - Database connection
- * @param {string} entryId - ID of the entry to update
+ * @param {Object} options
+ * @param {Object} options.db - Database connection
+ * @param {string} options.entryId - ID of the entry to update
  */
-async function markEntryCompleted(db, entryId) {
+async function markEntryCompleted({db, entryId}) {
     await db.knex('outbox')
         .where('id', entryId)
         .update({
@@ -57,17 +58,18 @@ async function markEntryCompleted(db, entryId) {
 
 /**
 * Processes a single outbox entry by sending welcome email and managing retry logic
-* @param {Object} db - Database connection
-* @param {Object} entry - Outbox entry to process
+* @param {Object} options
+* @param {Object} options.db - Database connection
+* @param {Object} options.entry - Outbox entry to process
+* @param {import('./get-mail-config').MailConfig} options.mailConfig - Mail configuration
 * @returns {Promise<Object>} Result object with success boolean
 */
-async function processEntry(db, entry) {
+async function processEntry({db, entry, mailConfig}) {
     let payload;
 
     try {
         payload = JSON.parse(entry.payload);
-        const mailConfig = mailContext.getConfig();
-        await sendMemberWelcomeEmail(payload, mailConfig);
+        await sendMemberWelcomeEmail({payload, mailConfig});
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
@@ -84,10 +86,10 @@ async function processEntry(db, entry) {
     }
 
     try {
-        await deleteProcessedEntry(db, entry.id);
+        await deleteProcessedEntry({db, entryId: entry.id});
     } catch (err) {
         const cleanupError = err?.message ?? 'Unknown error';
-        await markEntryCompleted(db, entry.id);
+        await markEntryCompleted({db, entryId: entry.id});
 
         const email = payload?.email || 'unknown member';
         const memberInfo = payload?.name ? `${payload.name} (${email})` : email;
@@ -99,16 +101,18 @@ async function processEntry(db, entry) {
 
 /**
 * Processes all entries in a batch sequentially
-* @param {Object} db - Database connection
-* @param {Array} entries - Array of outbox entries to process
+* @param {Object} options
+* @param {Object} options.db - Database connection
+* @param {Array} options.entries - Array of outbox entries to process
+* @param {import('./get-mail-config').MailConfig} options.mailConfig - Mail configuration
 * @returns {Promise<Object>} Object with processed and failed counts
 */
-async function processEntries(db, entries) {
+async function processEntries({db, entries, mailConfig}) {
     let processed = 0;
     let failed = 0;
 
     for (const entry of entries) {
-        const result = await processEntry(db, entry);
+        const result = await processEntry({db, entry, mailConfig});
         if (result.success) {
             processed += 1;
         } else {
