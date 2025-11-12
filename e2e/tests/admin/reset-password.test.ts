@@ -1,5 +1,5 @@
 import {AnalyticsOverviewPage, LoginPage, PasswordResetPage, SettingsPage} from '../../helpers/pages/admin';
-import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
+import {EmailClient, MailPit} from '../../helpers/services/email/mail-pit';
 import {Page} from '@playwright/test';
 import {expect, test} from '../../helpers/playwright';
 import {extractPasswordResetLink} from '../../helpers/services/email/utils';

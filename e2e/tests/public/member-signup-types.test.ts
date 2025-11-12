@@ -1,4 +1,4 @@
-import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
+import {EmailClient, MailPit} from '../../helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {MemberDetailsPage, MembersPage} from '../../helpers/pages/admin';
 import {Page} from '@playwright/test';
