@@ -218,6 +218,7 @@ describe("useUserPreferences", () => {
             // Should not error - catches and returns undefined for invalid fields
             expect(result.current.isError).toBe(false);
             expect(result.current.data).toEqual({
+                ...fixtures.defaults,
                 whatsNew: {
                     lastSeenDate: undefined,
                 },
@@ -292,7 +293,7 @@ describe("useEditUserPreferences", () => {
                     ...fixtures.defaults,
                     existing: "value",
                     shared: "new",
-                    additional: "data"
+                    additional: "data",
                 });
             });
         });
