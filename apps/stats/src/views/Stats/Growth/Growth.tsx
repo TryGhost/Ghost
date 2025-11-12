@@ -1,21 +1,21 @@
 import DateRangeSelect from '../components/DateRangeSelect';
 import GrowthKPIs from './components/GrowthKPIs';
 import GrowthSources from './components/GrowthSources';
-import React, { useMemo, useState } from 'react';
+import React, {useMemo, useState} from 'react';
 import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber } from '@tryghost/shade';
-import { CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription } from '@src/utils/content-helpers';
-import { getClickHandler } from '@src/utils/url-helpers';
-import { getPeriodText } from '@src/utils/chart-helpers';
-import { useAppContext } from '@src/App';
-import { useGlobalData } from '@src/providers/GlobalDataProvider';
-import { useGrowthStats } from '@src/hooks/useGrowthStats';
-import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
-import { useTopPostsStatsWithRange } from '@src/hooks/useTopPostsStatsWithRange';
-import type { TopPostStatItem } from '@tryghost/admin-x-framework/api/stats';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
+import {getClickHandler} from '@src/utils/url-helpers';
+import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/App';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGrowthStats} from '@src/hooks/useGrowthStats';
+import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
+import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
+import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
 
 // Type for unified content data that combines top content with growth metrics
 interface UnifiedGrowthContentData {
@@ -39,21 +39,21 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const { range, site } = useGlobalData();
+    const {range, site} = useGlobalData();
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const [searchParams] = useSearchParams();
-    const { appSettings } = useAppContext();
+    const {appSettings} = useAppContext();
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
-    const { isLoading, chartData, totals, currencySymbol, subscriptionData } = useGrowthStats(range);
+    const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
     // Get growth data with post_type filtering - only call when not on Sources tab
-    const { data: topPostsData, isLoading: isTopPostsLoading } = useTopPostsStatsWithRange(
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsStatsWithRange(
         range,
         sortBy as TopPostsOrder,
         selectedContentType as 'posts' | 'pages' | 'posts_and_pages'
@@ -204,7 +204,7 @@ const Growth: React.FC = () => {
                                                 <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <EmptyIndicator
                                                         actions={
-                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', { crossApp: true })}>
+                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
                                                                 Open settings
                                                             </Button>
                                                         }
