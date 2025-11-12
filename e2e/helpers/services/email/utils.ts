@@ -1,5 +1,5 @@
 import baseDebug from '@tryghost/debug';
-import {EmailMessageDetailed} from './MailPit';
+import {EmailMessageDetailed} from './mail-pit';
 
 const debug = baseDebug('e2e:helpers:utils:email');
 
