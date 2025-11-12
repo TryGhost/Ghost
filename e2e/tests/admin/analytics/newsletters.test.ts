@@ -38,23 +38,17 @@ test.describe('Ghost Admin - Newsletters', () => {
             {
                 email: 'backdated-member@example.com',
                 name: 'Backdated Test Member',
-                created_at: sixtyDaysAgo.toISOString(),
-                subscribed_to_emails: true,
-                labels: ['test-import', 'analytics']
+                created_at: sixtyDaysAgo.toISOString()
             },
             {
                 email: 'another-backdated-member@example.com',
                 name: 'Another Backdated Test Member',
-                created_at: tenDaysAgo.toISOString(),
-                subscribed_to_emails: true,
-                labels: ['test-import', 'analytics']
+                created_at: tenDaysAgo.toISOString()
             },
             {
                 email: 'yet-another-backdated-member@example.com',
                 name: 'Yet Another Backdated Test Member',
-                created_at: yesterday.toISOString(),
-                subscribed_to_emails: true,
-                labels: ['test-import', 'analytics']
+                created_at: yesterday.toISOString()
             }
         ];
         await membersService.importMembers(members);
