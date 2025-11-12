@@ -1,15 +1,25 @@
 import {AdminPage} from '../admin-page';
 import {Locator, Page} from '@playwright/test';
 
+class TotalSubscribersTab {
+    public readonly tab: Locator;
+    public readonly value: Locator;
+    public readonly diff: Locator;
+
+    constructor(page: Page) {
+        this.tab = page.getByRole('tab', {name: 'Total subscribers'});
+        this.value = page.getByTestId('total-subscribers-value');
+        this.diff = page.getByTestId('total-subscribers-value-diff');
+    }
+}
+
 export class AnalyticsNewslettersPage extends AdminPage {
     public readonly newslettersCard: Locator;
-    public readonly totalSubscribersTab: Locator;
     public readonly averageOpenRateTab: Locator;
     public readonly averageClickRateTab: Locator;
 
     public readonly topNewslettersCard: Locator;
-    public readonly totalSubscribersValue: Locator;
-    public readonly totalSubscribersDiff: Locator;
+    public readonly totalSubscribers: TotalSubscribersTab;
 
     constructor(page: Page) {
         super(page);
@@ -21,8 +31,6 @@ export class AnalyticsNewslettersPage extends AdminPage {
 
         this.averageOpenRateTab = page.getByRole('tab', {name: 'Avg. open rate'});
         this.averageClickRateTab = page.getByRole('tab', {name: 'Avg. click rate'});
-        this.totalSubscribersTab = page.getByRole('tab', {name: 'Total subscribers'});
-        this.totalSubscribersValue = page.getByTestId('total-subscribers-value');
-        this.totalSubscribersDiff = page.getByTestId('total-subscribers-value-diff');
+        this.totalSubscribers = new TotalSubscribersTab(page);
     }
 }

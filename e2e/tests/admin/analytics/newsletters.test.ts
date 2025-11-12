@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Newsletters', () => {
 
         await page.reload();
         await expect(newslettersPage.newslettersCard).toBeVisible();
-        await expect(newslettersPage.totalSubscribersValue).toContainText('3');
-        await expect(newslettersPage.totalSubscribersDiff).toContainText('+200%');
+        await expect(newslettersPage.totalSubscribers.value).toContainText('3');
+        await expect(newslettersPage.totalSubscribers.diff).toContainText('+200%');
     });
 });
