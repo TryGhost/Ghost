@@ -389,6 +389,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
                (object.attributedTo as {id: string}).id === actor.id))
         : object.authored;
 
+    const isActorCurrentUser = type === 'Announce' ? (object.reposted ?? false) : object.authored;
+
     const handleFollow = () => {
         if (authorHandle) {
             followMutation.mutate(authorHandle);
@@ -422,9 +424,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
                             {repostIcon}
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                    handleProfileClick(actor, navigate, e);
-                                }}>{actor.name}</span>
+                                <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={isActorCurrentUser}>
+                                    <span className='truncate break-anywhere hover:underline' onClick={(e) => {
+                                        handleProfileClick(actor, navigate, e);
+                                    }}>{actor.name}</span>
+                                </ProfilePreviewHoverCard>
                                 reposted
                             </div>
                         </div>}
@@ -544,12 +548,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     <div data-object-id={object.id}>
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
-                                {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
-                                    <div>{repostIcon}</div>
-                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-anywhere hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                        handleProfileClick(actor, navigate, e);
-                                    }}>{actor.name}</span> reposted</span>
-                                </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
                                         <APAvatar author={author} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
@@ -703,9 +701,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 </span>
                                             </div>
                                         </ProfilePreviewHoverCard>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'>{repostIcon}<span className='line-clamp-1 hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                            handleProfileClick(actor, navigate, e);
-                                        }}>{actor.name}</span> reposted</span>}
+                                        {(type === 'Announce') &&
+                                            <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'>{repostIcon}
+                                                <ProfilePreviewHoverCard actor={actor} align='center' isCurrentUser={isActorCurrentUser}>
+                                                    <span className='line-clamp-1 hover:underline' onClick={(e) => {
+                                                        handleProfileClick(actor, navigate, e);
+                                                    }}>{actor.name}</span>
+                                                </ProfilePreviewHoverCard> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
                                     <Skeleton className='w-24' />
