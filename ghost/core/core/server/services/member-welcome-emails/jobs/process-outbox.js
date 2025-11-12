@@ -55,12 +55,12 @@ function sendMessage(message) {
     }
 }
 
+let inlineExecution = false;
+
 /**
  * Completes the job and exits the worker
  * @param {string} message - Final completion message
  */
-let inlineExecution = false;
-
 function completeJob(message) {
     sendMessage(message);
     if (parentPort) {

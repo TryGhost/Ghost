@@ -34,7 +34,7 @@ Object {
       "webmentions": true,
       "welcomeEmails": true,
     },
-    "mail": "stub",
+    "mail": "",
     "mailgunIsConfigured": false,
     "security": Object {
       "staffDeviceVerification": false,
