@@ -2,10 +2,10 @@ import {AnalyticsNewslettersPage} from '../../../helpers/pages/admin';
 import {MembersImportService} from '../../../helpers/services/members-import';
 import {expect, test} from '../../../helpers/playwright';
 
-function subtractDaysFromCurrentDate(days: number): Date {
+function getDateDaysAgo(days: number): string {
     const date = new Date();
     date.setDate(date.getDate() - days);
-    return date;
+    return date.toISOString();
 }
 
 test.describe('Ghost Admin - Newsletters', () => {
@@ -39,17 +39,17 @@ test.describe('Ghost Admin - Newsletters', () => {
             {
                 email: 'sixty-days-ago@example.com',
                 name: 'Sixty Days Ago',
-                created_at: subtractDaysFromCurrentDate(60).toISOString()
+                created_at: getDateDaysAgo(60)
             },
             {
                 email: 'ten-days-ago@example.com',
                 name: 'Ten Days Ago',
-                created_at: subtractDaysFromCurrentDate(10).toISOString()
+                created_at: getDateDaysAgo(10)
             },
             {
                 email: 'yesterday@example.com',
                 name: 'Yesterday',
-                created_at: subtractDaysFromCurrentDate(1).toISOString()
+                created_at: getDateDaysAgo(1)
             }
         ];
         await membersService.import(members);
