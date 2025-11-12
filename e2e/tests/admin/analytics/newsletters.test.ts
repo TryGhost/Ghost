@@ -1,6 +1,6 @@
 import {AnalyticsNewslettersPage} from '../../../helpers/pages/admin';
-import {expect, test} from '../../../helpers/playwright';
 import {MembersImportService} from '../../../helpers/services/members';
+import {expect, test} from '../../../helpers/playwright';
 
 test.describe('Ghost Admin - Newsletters', () => {
     let newslettersPage: AnalyticsNewslettersPage;

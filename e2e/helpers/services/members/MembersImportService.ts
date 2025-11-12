@@ -1,7 +1,7 @@
-import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
-import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import path from 'path';
+import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
 
 export interface MemberImportData {
     email: string;
@@ -151,7 +151,7 @@ export class MembersImportService {
         ];
 
         // Generate CSV rows
-        const rows = members.map(member => {
+        const rows = members.map((member) => {
             const labelString = member.labels ? member.labels.join(',') : '';
 
             return [
@@ -264,7 +264,9 @@ export class MembersImportService {
             }
 
             // Wait before next poll
-            await new Promise(resolve => setTimeout(resolve, interval));
+            await new Promise((resolve) => {
+                setTimeout(resolve, interval);
+            });
         }
 
         // Timeout reached
