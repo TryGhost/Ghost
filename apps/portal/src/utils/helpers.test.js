@@ -1,4 +1,4 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from './helpers';
+import {allowCompMemberUpgrade, hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -45,6 +45,31 @@ describe('Helpers - ', () => {
         test('returns false for free member', () => {
             const value = isPaidMember({member: FixtureMember.free});
             expect(value).toBe(false);
+        });
+    });
+
+    describe('allowCompMemberUpgrade -', () => {
+        [
+            {
+                name: 'complimentary member with subscription expiry',
+                member: FixtureMember.complimentaryWithSubscription,
+                expected: true
+            },
+            {
+                name: 'complimentary member without subscription',
+                member: FixtureMember.complimentary,
+                expected: true
+            },
+            {
+                name: 'free member',
+                member: FixtureMember.free,
+                expected: false
+            }
+        ].forEach(({name, member, expected}) => {
+            test(`returns ${expected} for ${name}`, () => {
+                const value = allowCompMemberUpgrade({member});
+                expect(value).toBe(expected);
+            });
         });
     });
 
