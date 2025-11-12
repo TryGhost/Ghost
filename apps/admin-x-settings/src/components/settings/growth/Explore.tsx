@@ -4,7 +4,7 @@ import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {abbreviateNumber} from '@tryghost/shade';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/GlobalDataProvider';

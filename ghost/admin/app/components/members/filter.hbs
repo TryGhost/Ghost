@@ -3,6 +3,7 @@
     <dd.Trigger
         class="gh-btn gh-btn-icon gh-btn-action-icon"
         data-test-button="members-filter-actions"
+        data-testid="members-filter-actions"
     >
         <span class="{{if @isFiltered "gh-btn-label-green"}}" {{did-update this.parseDefaultFilters @parseFilterParamCounter}}>
             {{svg-jar "filter"}}
@@ -36,6 +37,7 @@
                                             @groupLabelPath="group"
                                             @update={{fn this.setFilterType filter}}
                                             data-test-select="members-filter"
+                                            data-testid="members-filter"
                                         />
                                         {{svg-jar "arrow-down-small"}}
                                     </span>
@@ -92,7 +94,9 @@
                 </button>
                 <button
                     class="gh-btn gh-btn-primary"
-                    data-test-button="members-apply-filter" type="button" {{on "click" (fn this.applyFiltersPressed dd)}} {{on "keyup" this.handleSubmitKeyup}}
+                    data-test-button="members-apply-filter"
+                    data-testid="members-apply-filter"
+                    type="button" {{on "click" (fn this.applyFiltersPressed dd)}} {{on "keyup" this.handleSubmitKeyup}}
                     disabled={{this.isLoading}}
                 >
                     <span>Apply filters</span>

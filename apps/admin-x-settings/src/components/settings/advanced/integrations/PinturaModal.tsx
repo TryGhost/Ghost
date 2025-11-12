@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
 import {Button, Form, Modal, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

@@ -2,7 +2,7 @@ import {Breadcrumbs} from '@tryghost/admin-x-design-system';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {type Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
 import {TextField} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';

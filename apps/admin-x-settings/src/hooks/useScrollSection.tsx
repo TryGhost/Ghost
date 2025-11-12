@@ -1,4 +1,4 @@
-import {ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 
 interface ScrollSectionContextData {
     updateSection: (id: string, element: HTMLDivElement) => void;

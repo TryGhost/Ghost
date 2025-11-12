@@ -1,4 +1,4 @@
-import {HomePage} from '@tryghost/e2e/helpers/pages';
+import {HomePage} from '../../helpers/pages';
 import {expect, test} from '../../helpers/playwright';
 
 test.describe('Ghost Public - Homepage', () => {
