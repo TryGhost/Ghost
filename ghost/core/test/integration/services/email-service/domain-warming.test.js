@@ -263,14 +263,14 @@ describe('Domain Warming Integration Tests', function () {
             const csdCount = email.get('csd_email_count');
 
             assert.ok(totalCount > 0, 'Should have sent to some members');
-            assert.ok(csdCount === null || csdCount === 0 || csdCount === totalCount,
-                `CSD count should be null, 0, or equal total when disabled (got ${csdCount})`);
+            assert.ok(csdCount === null, `CSD count should be null`);
 
             const batches = await models.EmailBatch.findAll({filter: `email_id:'${email.id}'`});
             const fallbackValues = batches.models.map(b => b.get('fallback_sending_domain'));
             const uniqueValues = [...new Set(fallbackValues)];
 
             assert.equal(uniqueValues.length, 1, 'All batches should use same domain when warmup disabled');
+            assert.equal(uniqueValues[0], false, 'All batches should use primary domain when warmup disabled');
         });
 
         it('handles maximum limit scenarios', async function () {

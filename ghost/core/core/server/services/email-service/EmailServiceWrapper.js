@@ -22,7 +22,7 @@ class EmailServiceWrapper {
         const BatchSendingService = require('./BatchSendingService');
         const EmailSegmenter = require('./EmailSegmenter');
         const MailgunEmailProvider = require('./MailgunEmailProvider');
-        const DomainWarmingService = require('./DomainWarmingService');
+        const {DomainWarmingService} = require('./DomainWarmingService');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');

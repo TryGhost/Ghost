@@ -5,7 +5,7 @@
  * @typedef {object} Email
  * @typedef {object} LimitService
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
- * @typedef {import ('./DomainWarmingService')} DomainWarmingService
+ * @typedef {import ('./DomainWarmingService').DomainWarmingService} DomainWarmingService
  */
 
 const BatchSendingService = require('./BatchSendingService');
@@ -128,7 +128,7 @@ class EmailService {
 
         const csdEmailCount = this.#domainWarmingService.isEnabled()
             ? await this.#domainWarmingService.getWarmupLimit(emailCount)
-            : undefined;
+            : undefined; // Undefined here means domain warming was not used -- distinct from 0
 
         const email = await this.#models.Email.add({
             post_id: post.id,

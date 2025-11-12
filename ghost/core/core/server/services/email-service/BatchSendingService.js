@@ -15,7 +15,7 @@ const MAX_SENDING_CONCURRENCY = 2;
  * @typedef {import('./SendingService')} SendingService
  * @typedef {import('./EmailSegmenter')} EmailSegmenter
  * @typedef {import('./EmailRenderer')} EmailRenderer
- * @typedef {import('./DomainWarmingService')} DomainWarmingService
+ * @typedef {import('./DomainWarmingService').DomainWarmingService} DomainWarmingService
  * @typedef {import('./EmailRenderer').MemberLike} MemberLike
  * @typedef {object} JobsService
  * @typedef {object} Email
@@ -342,7 +342,6 @@ class BatchSendingService {
     }
 
     /**
-     * @private
      * Creates a batch with retry logic and adds it to the batches array
      * @param {object} params
      * @param {Email} params.email

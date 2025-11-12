@@ -1,11 +1,15 @@
-const {createModelClass} = require('./utils');
-const DomainWarmingService = require('../../../../../core/server/services/email-service/DomainWarmingService');
-const sinon = require('sinon');
-const assert = require('assert/strict');
+import {createModelClass} from './utils';
+import {DomainWarmingService} from '../../../../../core/server/services/email-service/DomainWarmingService';
+import sinon from 'sinon';
+import assert from 'assert/strict';
 
 describe('Domain Warming Service', function () {
-    let labs;
-    let Email;
+    let labs: {
+        isSet: sinon.SinonStub;
+    };
+    let Email: ReturnType<typeof createModelClass> | {
+        findOne: sinon.SinonStub | (() => Promise<any>);
+    };
 
     beforeEach(function () {
         labs = {
