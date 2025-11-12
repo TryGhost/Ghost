@@ -188,7 +188,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     if (isLoading) {
         return (
-            <SkeletonTable lines={5} />
+            <SkeletonTable className='pt-2' lines={5} />
         );
     }
 
