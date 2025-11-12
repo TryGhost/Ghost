@@ -59,15 +59,19 @@ function sendMessage(message) {
  * Completes the job and exits the worker
  * @param {string} message - Final completion message
  */
+let inlineExecution = false;
+
 function completeJob(message) {
     sendMessage(message);
     if (parentPort) {
         parentPort.postMessage('done');
-    } else {
+    } else if (!inlineExecution) {
         setTimeout(() => {
             process.exit(0);
         }, 1000);
     }
+
+    return message;
 }
 
 /**
@@ -77,7 +81,7 @@ function cancel() {
     sendMessage(MESSAGES.CANCELLED);
     if (parentPort) {
         parentPort.postMessage('cancelled');
-    } else {
+    } else if (!inlineExecution) {
         setTimeout(() => {
             process.exit(0);
         }, 1000);
@@ -92,7 +96,8 @@ if (parentPort) {
     });
 }
 
-async function processOutbox() {
+async function processOutbox({inline = false} = {}) {
+    inlineExecution = inline;
     const db = require('../../../data/db');
 
     const jobStartMs = Date.now();
@@ -136,7 +141,11 @@ async function processOutbox() {
         return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} ${MESSAGES.NO_ENTRIES}`);
     }
 
-    completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
+    return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
 }
 
-processOutbox();
+if (!module.parent) {
+    processOutbox();
+}
+
+module.exports = processOutbox;

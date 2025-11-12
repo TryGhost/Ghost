@@ -94,5 +94,8 @@
         "defaultSettings": "test/utils/fixtures/default-settings.json",
         "urlCache": "test/utils/fixtures/urls"
     },
+    "mail": {
+        "transport": "stub"
+    },
     "memberWelcomeEmailTestInbox": "test-inbox@example.com"
 }
