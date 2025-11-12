@@ -108,6 +108,8 @@ function StatsFilter({...props}: Omit<React.ComponentProps<typeof Filters>, 'fil
 
     return (
         <Filters
+            addButtonIcon={filters.length ? <LucideIcon.Plus /> : <LucideIcon.ListFilter />}
+            addButtonText={filters.length ? 'Add filter' : 'Filter'}
             className='mb-6 mt-0.5 [&>button]:order-last'
             fields={groupedFields}
             filters={filters}
