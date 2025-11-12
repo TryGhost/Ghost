@@ -78,7 +78,7 @@
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
-    "nwsapi": "2.2.12"
+    "nwsapi": "2.2.22"
   },
   "lint-staged": {
     "*.js": "eslint"
