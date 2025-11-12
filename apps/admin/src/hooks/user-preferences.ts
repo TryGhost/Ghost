@@ -81,8 +81,9 @@ export const useEditUserPreferences = (): UseMutationResult<void, Error, DeepPar
                 throw new Error("User is not loaded");
             }
 
-            const currentPreferences = queryClient.getQueryData<Preferences>(userPreferencesQueryKey(user)) ?? {} as Preferences;
+            const currentPreferences = queryClient.getQueryData<Preferences>(userPreferencesQueryKey(user)) ?? PreferencesSchema.parse({});
 
+            // TODO: use zod to validate?
             const newPreferences = deepMerge(currentPreferences, updatedPreferences);
 
             const encodedForStorage = PreferencesSchema.encode(newPreferences);
