@@ -150,9 +150,13 @@ module.exports = class MembersCSVImporter {
                 // Members created in the future will not appear in admin members list
                 // Refs https://github.com/TryGhost/Team/issues/2793
                 const createdAt = moment(row.created_at).isAfter(moment()) ? moment().toDate() : row.created_at;
+
+                // Trim whitespace from name and convert to null if empty
+                const memberName = row.name && row.name.trim() ? row.name.trim() : null;
+
                 const memberValues = {
                     email: row.email,
-                    name: row.name,
+                    name: memberName,
                     note: row.note,
                     subscribed: row.subscribed,
                     created_at: createdAt,
@@ -179,7 +183,8 @@ module.exports = class MembersCSVImporter {
                     }
 
                     // Don't overwrite name or note if they are blank in the file
-                    if (!row.name) {
+                    // Use the processed memberName instead of raw row.name
+                    if (!memberName) {
                         memberValues.name = existingMember.name;
                     }
                     if (!row.note) {
