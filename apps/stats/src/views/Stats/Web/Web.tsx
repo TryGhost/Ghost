@@ -206,6 +206,7 @@ const Web: React.FC = () => {
             </StatsHeader>
             <StatsFilter
                 filters={utmFilters}
+                utmTrackingEnabled={utmTrackingEnabled}
                 onChange={setUtmFilters}
             />
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
