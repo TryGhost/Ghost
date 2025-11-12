@@ -10,6 +10,7 @@ import type { RawChangelogResponse, RawChangelogEntry } from "./use-changelog";
 import { serverFixture } from "@test-utils/fixtures/msw";
 import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
 import type { SetupServer } from "msw/node";
+import { DEFAULT_NAVIGATION_PREFERENCES } from "@/hooks/user-preferences";
 
 // Constants
 const USERS_API_URL = "/ghost/api/admin/users/me/";
@@ -60,6 +61,9 @@ const fixtures = {
         withLastSeen: (date: string) => ({
             whatsNew: { lastSeenDate: date },
         }),
+        defaults: {
+            navigation: DEFAULT_NAVIGATION_PREFERENCES,
+        }
     },
 };
 
