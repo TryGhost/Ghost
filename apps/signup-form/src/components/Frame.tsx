@@ -107,14 +107,14 @@ type TailwindFrameProps = ResizableFrameProps & {
 /**
  * Loads all the CSS styles inside an iFrame.
  */
-const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
-    const head = (
-        <>
-            <style dangerouslySetInnerHTML={{__html: styles}} />
-            <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
-        </>
-    );
+const head = (
+    <>
+        <style dangerouslySetInnerHTML={{__html: styles}} />
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
+    </>
+);
 
+const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
     return (
         <IFrame head={head} style={style} title={title} onResize={onResize}>
             {children}
