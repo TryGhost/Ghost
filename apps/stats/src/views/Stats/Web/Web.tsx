@@ -1,4 +1,3 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
 import React, {useMemo, useState} from 'react';
 import SourcesCard from './components/SourcesCard';
@@ -12,6 +11,7 @@ import {CampaignType, Card, CardContent, Filter, TabType, formatDuration, format
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface SourcesData {
@@ -201,7 +201,7 @@ const Web: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <AudienceSelect />
+                {/* <AudienceSelect /> */}
                 <DateRangeSelect />
             </StatsHeader>
             <StatsFilter

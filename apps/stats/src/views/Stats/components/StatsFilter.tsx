@@ -1,14 +1,22 @@
-import React, {useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './AudienceSelect';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
-interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields'> {
+interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
     utmTrackingEnabled?: boolean;
+    onChange?: (filters: Filter[]) => void;
 }
+
+// Audience bit values matching AudienceSelect
+const AUDIENCE_BITS = {
+    PUBLIC: 1 << 0, // 1
+    FREE: 1 << 1, // 2
+    PAID: 1 << 2 // 4
+};
 
 interface UtmOption {
     utm_source?: string;
@@ -64,7 +72,90 @@ const useUtmOptionsForField = (fieldKey: string, enabled: boolean) => {
     return {options, loading};
 };
 
-function StatsFilter({filters, utmTrackingEnabled = false, ...props}: StatsFilterProps) {
+function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
+    const {audience, setAudience} = useGlobalData();
+
+    // Check if all audiences are selected (default state)
+    const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+    const isDefaultAudience = audience === ALL_AUDIENCES;
+
+    // Only sync global audience to filter if:
+    // 1. The audience filter already exists (user has interacted with it), OR
+    // 2. The global audience is NOT the default "all" state
+    // This prevents showing the filter by default when all audiences are selected
+    useEffect(() => {
+        const audienceFilter = filters.find(f => f.field === 'audience');
+
+        // Don't create the filter if it doesn't exist and we're in default "all" state
+        if (!audienceFilter && isDefaultAudience) {
+            return;
+        }
+
+        const currentValues = audienceFilter?.values || [];
+
+        // Convert global audience bitmask to filter values
+        const expectedValues: string[] = [];
+        if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
+            expectedValues.push('undefined');
+        }
+        if ((audience & AUDIENCE_BITS.FREE) !== 0) {
+            expectedValues.push('free');
+        }
+        if ((audience & AUDIENCE_BITS.PAID) !== 0) {
+            expectedValues.push('paid');
+        }
+
+        // Only update if values have changed
+        const valuesChanged = expectedValues.length !== currentValues.length ||
+            !expectedValues.every(v => currentValues.includes(v));
+
+        if (valuesChanged && onChange) {
+            const otherFilters = filters.filter(f => f.field !== 'audience');
+            if (expectedValues.length > 0) {
+                // Keep existing audience filter id if it exists, otherwise create new one
+                onChange([
+                    ...otherFilters,
+                    {
+                        id: audienceFilter?.id || `audience-${Date.now()}`,
+                        field: 'audience',
+                        operator: 'is',
+                        values: expectedValues
+                    }
+                ]);
+            } else {
+                onChange(otherFilters);
+            }
+        }
+    }, [audience, filters, onChange, isDefaultAudience]);
+
+    // Handle filter changes - update global audience when audience filter changes
+    const handleFilterChange = useCallback((newFilters: Filter[]) => {
+        const audienceFilter = newFilters.find(f => f.field === 'audience');
+        const values = audienceFilter?.values || [];
+
+        // Convert filter values to bitmask
+        let newAudience = 0;
+        if (values.includes('undefined')) {
+            newAudience |= AUDIENCE_BITS.PUBLIC;
+        }
+        if (values.includes('free')) {
+            newAudience |= AUDIENCE_BITS.FREE;
+        }
+        if (values.includes('paid')) {
+            newAudience |= AUDIENCE_BITS.PAID;
+        }
+
+        // Update global audience if it changed
+        if (newAudience !== audience) {
+            setAudience(newAudience);
+        }
+
+        // Pass through to parent onChange
+        if (onChange) {
+            onChange(newFilters);
+        }
+    }, [audience, setAudience, onChange]);
+
     // Fetch options for all UTM fields when UTM tracking is enabled
     // This is needed so options are available in the dropdown
     const {options: sourceOptions} = useUtmOptionsForField('utm_source', utmTrackingEnabled);
@@ -148,7 +239,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, ...props}: StatsFilte
                         type: 'multiselect',
                         icon: <LucideIcon.Users />,
                         options: [
-                            {value: 'public', label: 'Public visitors'},
+                            {value: 'undefined', label: 'Public visitors'},
                             {value: 'free', label: 'Free members'},
                             {value: 'paid', label: 'Paid members'}
                         ]
@@ -192,6 +283,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, ...props}: StatsFilte
             fields={groupedFields}
             filters={filters}
             showSearchInput={false}
+            onChange={handleFilterChange}
             {...props}
         />
     );
