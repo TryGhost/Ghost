@@ -16,8 +16,12 @@ const privatePattern = new RegExp('^\\/private\\/');
 
 const homePattern = new RegExp('^\\/$');
 
+const config = require('../../../../core/shared/config');
+
 function setResponseContext(req, res, data) {
-    const pageParam = req.params && req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+    const pageParam = config.get('pagination:pageParameter');
+    const pageParamValue = req.params && req.params[pageParam] !== undefined
+        ? parseInt(req.params[pageParam], 10) : 1;
 
     res.locals = res.locals || {};
     res.locals.context = [];
@@ -29,7 +33,7 @@ function setResponseContext(req, res, data) {
     }
 
     // Paged context - special rule
-    if (!isNaN(pageParam) && pageParam > 1) {
+    if (!isNaN(pageParamValue) && pageParamValue > 1) {
         res.locals.context.push('paged');
     }
 
