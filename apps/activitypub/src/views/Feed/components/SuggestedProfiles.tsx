@@ -2,7 +2,7 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {Account} from '@src/api/activitypub';
-import {Button, H4, LucideIcon, Separator, Skeleton} from '@tryghost/shade';
+import {Button, H4, LucideIcon, Separator, Skeleton, abbreviateNumber} from '@tryghost/shade';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
@@ -165,7 +165,7 @@ const SuggestedProfiles: React.FC = () => {
                                         {isLoadingSuggestedProfiles ? (
                                             <Skeleton className='h-4 w-20' />
                                         ) : (
-                                            `${profile?.followerCount || 0} ${(profile?.followerCount || 0) === 1 ? 'follower' : 'followers'}`
+                                            `${abbreviateNumber(profile?.followerCount || 0)} ${(profile?.followerCount || 0) === 1 ? 'follower' : 'followers'}`
                                         )}
                                     </span>
 
