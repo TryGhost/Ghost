@@ -53,7 +53,7 @@ const Web: React.FC = () => {
     const {appSettings} = useAppContext();
     const [selectedTab, setSelectedTab] = useState<TabType>('sources');
     const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
-    
+
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
 
@@ -121,7 +121,7 @@ const Web: React.FC = () => {
             if (!utmData) {
                 return null;
             }
-            
+
             // Map UTM field names to the generic key name
             const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
@@ -131,12 +131,12 @@ const Web: React.FC = () => {
                 'UTM contents': 'utm_content',
                 'UTM terms': 'utm_term'
             };
-            
+
             const utmKey = utmKeyMap[selectedCampaign];
             if (!utmKey) {
                 return utmData;
             }
-            
+
             // Transform the data to use 'source' as the key, omitting the original utm_* field
             return utmData.map((item: SourcesData) => {
                 const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
@@ -146,7 +146,7 @@ const Web: React.FC = () => {
                 };
             });
         }
-        
+
         // Default to regular sources data
         return sourcesData;
     }, [sourcesData, utmData, selectedTab, selectedCampaign]);
