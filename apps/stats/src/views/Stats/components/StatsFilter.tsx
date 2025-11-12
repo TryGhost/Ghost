@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './AudienceSelect';
@@ -75,6 +75,9 @@ const useUtmOptionsForField = (fieldKey: string, enabled: boolean) => {
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
     const {audience, setAudience} = useGlobalData();
 
+    // Track if we're currently handling a filter change to prevent loops
+    const isHandlingChange = useRef(false);
+
     // Check if all audiences are selected (default state)
     const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
     const isDefaultAudience = audience === ALL_AUDIENCES;
@@ -84,10 +87,21 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // 2. The global audience is NOT the default "all" state
     // This prevents showing the filter by default when all audiences are selected
     useEffect(() => {
+        // Don't sync if we're in the middle of handling a filter change
+        if (isHandlingChange.current) {
+            return;
+        }
+
         const audienceFilter = filters.find(f => f.field === 'audience');
 
         // Don't create the filter if it doesn't exist and we're in default "all" state
         if (!audienceFilter && isDefaultAudience) {
+            return;
+        }
+
+        // Don't sync if there's no audience filter - this prevents creating it
+        // when other filters change
+        if (!audienceFilter) {
             return;
         }
 
@@ -116,7 +130,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 onChange([
                     ...otherFilters,
                     {
-                        id: audienceFilter?.id || `audience-${Date.now()}`,
+                        id: audienceFilter.id,
                         field: 'audience',
                         operator: 'is',
                         values: expectedValues
@@ -126,35 +140,63 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 onChange(otherFilters);
             }
         }
-    }, [audience, filters, onChange, isDefaultAudience]);
+    }, [audience, isDefaultAudience, filters, onChange]);
 
     // Handle filter changes - update global audience when audience filter changes
     const handleFilterChange = useCallback((newFilters: Filter[]) => {
+        // Set flag to prevent the useEffect from running during this change
+        isHandlingChange.current = true;
+
+        const oldAudienceFilter = filters.find(f => f.field === 'audience');
         const audienceFilter = newFilters.find(f => f.field === 'audience');
         const values = audienceFilter?.values || [];
 
-        // Convert filter values to bitmask
-        let newAudience = 0;
-        if (values.includes('undefined')) {
-            newAudience |= AUDIENCE_BITS.PUBLIC;
-        }
-        if (values.includes('free')) {
-            newAudience |= AUDIENCE_BITS.FREE;
-        }
-        if (values.includes('paid')) {
-            newAudience |= AUDIENCE_BITS.PAID;
+        // If audience filter was removed, reset to default (all audiences)
+        if (oldAudienceFilter && !audienceFilter) {
+            setAudience(ALL_AUDIENCES);
+            if (onChange) {
+                onChange(newFilters);
+            }
+            // Reset flag after a short delay to allow the change to propagate
+            setTimeout(() => {
+                isHandlingChange.current = false;
+            }, 0);
+            return;
         }
 
-        // Update global audience if it changed
-        if (newAudience !== audience) {
-            setAudience(newAudience);
+        // Only update audience if the audience filter actually changed
+        const audienceChanged = oldAudienceFilter !== audienceFilter ||
+            JSON.stringify(oldAudienceFilter?.values) !== JSON.stringify(values);
+
+        if (audienceChanged && audienceFilter) {
+            // Convert filter values to bitmask
+            let newAudience = 0;
+            if (values.includes('undefined')) {
+                newAudience |= AUDIENCE_BITS.PUBLIC;
+            }
+            if (values.includes('free')) {
+                newAudience |= AUDIENCE_BITS.FREE;
+            }
+            if (values.includes('paid')) {
+                newAudience |= AUDIENCE_BITS.PAID;
+            }
+
+            // Update global audience if it changed
+            if (newAudience !== audience) {
+                setAudience(newAudience);
+            }
         }
 
         // Pass through to parent onChange
         if (onChange) {
             onChange(newFilters);
         }
-    }, [audience, setAudience, onChange]);
+
+        // Reset flag after a short delay to allow the change to propagate
+        setTimeout(() => {
+            isHandlingChange.current = false;
+        }, 0);
+    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES]);
 
     // Fetch options for all UTM fields when UTM tracking is enabled
     // This is needed so options are available in the dropdown
