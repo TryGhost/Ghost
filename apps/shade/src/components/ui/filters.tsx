@@ -233,7 +233,7 @@ const filterInputVariants = cva(
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                md: 'h-9 px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
+                md: 'h-[34px] px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 sm: 'h-8 px-1.5 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
@@ -260,7 +260,7 @@ const filterRemoveButtonVariants = cva(
             },
             size: {
                 lg: 'size-10 [&_svg:not([class*=size-])]:size-4',
-                md: 'size-9 [&_svg:not([class*=size-])]:size-3.5',
+                md: 'size-[34px] [&_svg:not([class*=size-])]:size-3.5',
                 sm: 'size-8 [&_svg:not([class*=size-])]:size-3'
             },
             cursorPointer: {
@@ -326,7 +326,7 @@ const filterOperatorVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
-                md: 'gap-1.25 h-9 px-3 text-sm',
+                md: 'h-[34px] gap-0.5 px-3 text-sm',
                 sm: 'h-8 gap-1 px-2.5 text-xs'
             },
             cursorPointer: {
@@ -355,8 +355,8 @@ const filterFieldLabelVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-9 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
-                sm: 'gap-1.25 h-8 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
                 md: 'rounded-s-md',
@@ -380,8 +380,8 @@ const filterFieldValueVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-9 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
-                sm: 'gap-1.25 h-8 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
                 true: 'cursor-pointer has-[[data-slot=switch]]:cursor-default',
@@ -404,7 +404,7 @@ const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center 
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-9 px-3 text-sm',
+            md: 'h-[34px] px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -422,7 +422,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-9 px-3 text-sm',
+            md: 'h-[34px] px-3 text-sm',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -450,7 +450,7 @@ const filtersContainerVariants = cva('flex flex-wrap items-center', {
     }
 });
 
-const filterItemVariants = cva('flex items-center shadow-xs shadow-black/5', {
+const filterItemVariants = cva('flex items-center', {
     variants: {
         variant: {
             solid: 'gap-px',
@@ -1133,7 +1133,7 @@ function SelectOptionsPopover<T = unknown>({
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-9 text-sm"
+                            className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={setSearchInput}
@@ -1554,7 +1554,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-9 text-sm"
+                            className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={setSearchInput}
@@ -1993,7 +1993,7 @@ export function Filters<T = unknown>({
                                 ) : (
                                 // Show field selection
                                     <>
-                                        {showSearchInput && <CommandInput className="h-9" placeholder={mergedI18n.searchFields} />}
+                                        {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
                                         <CommandList>
                                             <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                             {fields.map((item, index) => {
