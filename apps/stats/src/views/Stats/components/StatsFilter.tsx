@@ -108,7 +108,7 @@ function StatsFilter({...props}: Omit<React.ComponentProps<typeof Filters>, 'fil
 
     return (
         <Filters
-            className='mb-6 mt-0.5'
+            className='mb-6 mt-0.5 [&>button]:order-last'
             fields={groupedFields}
             filters={filters}
             showSearchInput={false}
