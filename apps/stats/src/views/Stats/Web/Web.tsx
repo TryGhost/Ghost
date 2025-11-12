@@ -1,12 +1,12 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
-import React, {useState, useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import SourcesCard from './components/SourcesCard';
+import StatsFilter from '../components/StatsFilter';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopContent from './components/TopContent';
-import UtmFilterSelect, {UtmActiveFilters} from '../components/UtmFilterSelect';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
 import {CampaignType, Card, CardContent, Filter, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
@@ -49,7 +49,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 // Empty object constant to use as stable reference when no UTM filters
-const EMPTY_UTM_PARAMS: Record<string, string> = {};
+// const EMPTY_UTM_PARAMS: Record<string, string> = {};
 
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
@@ -156,7 +156,7 @@ const Web: React.FC = () => {
             if (!utmData) {
                 return null;
             }
-            
+
             // Map UTM field names to the generic key name
             const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
@@ -166,12 +166,12 @@ const Web: React.FC = () => {
                 'UTM contents': 'utm_content',
                 'UTM terms': 'utm_term'
             };
-            
+
             const utmKey = utmKeyMap[selectedCampaign];
             if (!utmKey) {
                 return utmData;
             }
-            
+
             // Transform the data to use 'source' as the key, omitting the original utm_* field
             return utmData.map((item: SourcesData) => {
                 const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
@@ -181,7 +181,7 @@ const Web: React.FC = () => {
                 };
             });
         }
-        
+
         // Default to regular sources data
         return sourcesData;
     }, [sourcesData, utmData, selectedTab, selectedCampaign]);
@@ -203,16 +203,9 @@ const Web: React.FC = () => {
             <StatsHeader>
                 <AudienceSelect />
                 <DateRangeSelect />
-                <UtmFilterSelect
-                    filters={utmFilters}
-                    showOnlyButton={true}
-                    utmTrackingEnabled={utmTrackingEnabled}
-                    onChange={setUtmFilters}
-                />
             </StatsHeader>
-            <UtmActiveFilters
+            <StatsFilter
                 filters={utmFilters}
-                utmTrackingEnabled={utmTrackingEnabled}
                 onChange={setUtmFilters}
             />
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
