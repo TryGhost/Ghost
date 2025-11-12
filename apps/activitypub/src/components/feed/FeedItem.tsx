@@ -389,7 +389,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                (object.attributedTo as {id: string}).id === actor.id))
         : object.authored;
 
-    const isActorCurrentUser = actor.authored ?? false;
+    const isActorCurrentUser = type === 'Announce' ? (object.reposted ?? false) : object.authored;
 
     const handleFollow = () => {
         if (authorHandle) {
