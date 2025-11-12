@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
 import SourceIcon from '../../components/SourceIcon';
-import {Button, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
+import {Button, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -188,7 +188,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     if (isLoading) {
         return (
-            <SkeletonTable className='pt-2' lines={5} />
+            <Skeleton containerClassName='block pt-2 space-y-2' count={5} maxWidth={75} randomize />
         );
     }
 

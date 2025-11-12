@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -197,7 +197,7 @@ const Growth: React.FC = () => {
                                 :
                                 <TableBody>
                                     {isTableLoading ? (
-                                        <SkeletonTable className='pt-2' lines={5} />
+                                        <Skeleton containerClassName='block pt-2 space-y-2' count={5} maxWidth={75} randomize />
                                     ) : (
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
