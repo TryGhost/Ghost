@@ -283,19 +283,19 @@ const filterRemoveButtonVariants = cva(
 
 const filterAddButtonVariants = cva(
     [
-        'inline-flex shrink-0 items-center justify-center text-foreground shadow-xs shadow-black/5 transition',
-        '[&_svg:not([role=img]):not([class*=text-]):not([class*=opacity-])]:opacity-60'
+        'inline-flex shrink-0 items-center justify-center text-foreground transition',
+        '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]'
     ],
     {
         variants: {
             variant: {
                 solid: 'border border-input hover:bg-secondary/60',
-                outline: 'border border-border hover:bg-secondary'
+                outline: 'border border-border hover:bg-accent'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-9 gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
-                sm: 'gap-1.25 h-8 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
+                md: 'h-[34px] gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
                 md: 'rounded-md',
@@ -345,7 +345,7 @@ const filterOperatorVariants = cva(
 const filterFieldLabelVariants = cva(
     [
         'flex shrink-0 items-center gap-1.5 px-1.5 py-1 text-foreground',
-        '[&_svg:not([class*=opacity-])]:opacity-60 [&_svg:not([class*=size-])]:size-3.5'
+        '[&_svg:not([class*=size-])]:size-4'
     ],
     {
         variants: {
@@ -733,6 +733,8 @@ export interface FilterFieldConfig<T = unknown> {
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
+    // Hide the operator dropdown and only show the operator as text
+    hideOperatorSelect?: boolean;
     // Controlled values support for this field
     value?: T[];
     onValueChange?: (values: T[]) => void;
@@ -926,6 +928,15 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // Find the operator label, with fallback to formatted operator name
     const operatorLabel =
     operators.find(op => op.value === operator)?.label || context.i18n.helpers.formatOperator(operator);
+
+    // If hideOperatorSelect is true, just render the operator as plain text
+    if (field.hideOperatorSelect) {
+        return (
+            <div className="flex items-center border-x px-3 text-sm text-muted-foreground">
+                {operatorLabel}
+            </div>
+        );
+    }
 
     return (
         <DropdownMenu>
@@ -1733,6 +1744,7 @@ interface FiltersProps<T = unknown> {
     trigger?: React.ReactNode;
     allowMultiple?: boolean;
     popoverContentClassName?: string;
+    popoverAlign?: 'start' | 'center' | 'end';
 }
 
 export function Filters<T = unknown>({
@@ -1753,7 +1765,8 @@ export function Filters<T = unknown>({
     cursorPointer = true,
     trigger,
     allowMultiple = true,
-    popoverContentClassName
+    popoverContentClassName,
+    popoverAlign = 'start'
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldForOptions, setSelectedFieldForOptions] = useState<FilterFieldConfig<T> | null>(null);
@@ -1961,7 +1974,7 @@ export function Filters<T = unknown>({
                                 </button>
                             )}
                         </PopoverTrigger>
-                        <PopoverContent align="start" className={cn('w-[200px] p-0', popoverContentClassName)}>
+                        <PopoverContent align={popoverAlign} className={cn('w-[200px] p-0', popoverContentClassName)}>
                             <Command>
                                 {selectedFieldForOptions ? (
                                 // Show original select/multiselect rendering without back button
