@@ -31,12 +31,13 @@ const createBatchCounter = (customHandler) => {
 };
 
 describe('MailgunClient', function () {
-    let config, settings;
+    let config, settings, labs;
 
     beforeEach(function () {
         // options objects that can be stubbed or spied
         config = {get() {}};
         settings = {get() {}};
+        labs = {isSet() {}};
     });
 
     afterEach(function () {
@@ -54,7 +55,7 @@ describe('MailgunClient', function () {
             batchSize: 1000
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert(typeof mailgunClient.getBatchSize() === 'number');
     });
 
@@ -70,7 +71,7 @@ describe('MailgunClient', function () {
             targetDeliveryWindow: 300
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.getTargetDeliveryWindow(), 300);
     });
 
@@ -85,7 +86,7 @@ describe('MailgunClient', function () {
             batchSize: 1000
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
     });
 
@@ -100,7 +101,7 @@ describe('MailgunClient', function () {
             batchSize: 1000,
             targetDeliveryWindow: 'invalid'
         });
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
     });
 
@@ -115,7 +116,7 @@ describe('MailgunClient', function () {
             batchSize: 1000,
             targetDeliveryWindow: -3000
         });
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.getTargetDeliveryWindow(), 0);
     });
 
@@ -130,7 +131,7 @@ describe('MailgunClient', function () {
             batchSize: 1000
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.isConfigured(), true);
     });
 
@@ -140,12 +141,12 @@ describe('MailgunClient', function () {
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
         settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.isConfigured(), true);
     });
 
     it('cannot configure Mailgun if config/settings missing', function () {
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         assert.equal(mailgunClient.isConfigured(), false);
     });
 
@@ -162,7 +163,7 @@ describe('MailgunClient', function () {
                 'Content-Type': 'application/json'
             });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
 
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
@@ -212,7 +213,7 @@ describe('MailgunClient', function () {
                 'Content-Type': 'application/json'
             });
 
-        const mailgunClient = new MailgunClient({config, settings});
+        const mailgunClient = new MailgunClient({config, settings, labs});
         await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
 
         assert.equal(configApiMock.isDone(), true);
@@ -221,7 +222,7 @@ describe('MailgunClient', function () {
 
     describe('send()', function () {
         it('does not send if not configured', async function () {
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send({}, {}, []);
 
             assert.equal(response, null);
@@ -271,7 +272,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -306,7 +307,7 @@ describe('MailgunClient', function () {
                 }
             };
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
 
             await assert.rejects(mailgunClient.send(message, recipientData, []));
         });
@@ -350,7 +351,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -395,7 +396,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -440,7 +441,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -485,7 +486,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -530,7 +531,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -575,7 +576,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -620,7 +621,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -665,7 +666,7 @@ describe('MailgunClient', function () {
                     'Content-Type': 'application/json'
                 });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const response = await mailgunClient.send(message, recipientData, []);
             assert(response.id === 'message-id');
             assert(sendMock.isDone());
@@ -675,7 +676,7 @@ describe('MailgunClient', function () {
     describe('fetchEvents()', function () {
         it('does not fetch if not configured', async function () {
             const counter = createBatchCounter();
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
             assert.equal(counter.events, 0);
             assert.equal(counter.batches, 0);
@@ -716,7 +717,7 @@ describe('MailgunClient', function () {
 
             const counter = createBatchCounter();
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(firstPageMock.isDone(), true);
@@ -763,7 +764,7 @@ describe('MailgunClient', function () {
 
             const maxEvents = 3;
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
 
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, {maxEvents});
             assert.equal(counter.batches, 2);
@@ -809,7 +810,7 @@ describe('MailgunClient', function () {
 
             const maxEvents = 3;
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
 
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, {maxEvents});
             assert.equal(counter.batches, 1);
@@ -855,7 +856,7 @@ describe('MailgunClient', function () {
                 throw new Error('test error');
             });
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
 
             await assert.rejects(mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler), /test error/);
             assert.equal(counter.batches, 1);
@@ -899,7 +900,7 @@ describe('MailgunClient', function () {
 
             const batchHandler = sinon.spy();
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, batchHandler);
 
             assert.equal(firstPageMock.isDone(), true);
@@ -926,7 +927,7 @@ describe('MailgunClient', function () {
                 }
             };
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const result = mailgunClient.normalizeEvent(event);
 
             assert.deepEqual(result, {
@@ -988,7 +989,7 @@ describe('MailgunClient', function () {
                 timestamp: 1614275662
             };
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const result = mailgunClient.normalizeEvent(event);
 
             assert.deepEqual(result, {
@@ -1060,7 +1061,7 @@ describe('MailgunClient', function () {
                 timestamp: 1614275662
             };
 
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             const result = mailgunClient.normalizeEvent(event);
 
             assert.deepEqual(result, {
@@ -1096,10 +1097,9 @@ describe('MailgunClient', function () {
             });
             configStub.withArgs('hostSettings:managedEmail:fallbackDomain').returns(fallbackDomain);
 
-            // Stub the labs module that's required inside the method
-            const labs = require('../../../../../core/shared/labs');
+            // Stub the labs object that's passed to the constructor
             labsStub = sinon.stub(labs, 'isSet');
-            labsStub.withArgs('domainWarming').returns(domainWarmingEnabled);
+            labsStub.withArgs('domainWarmup').returns(domainWarmingEnabled);
 
             return configStub;
         };
@@ -1117,7 +1117,7 @@ describe('MailgunClient', function () {
             nock('https://api.mailgun.net').get('/v3/fallback.com/events/all-2-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
 
             const counter = createBatchCounter();
-            const mailgunClient = new MailgunClient({config, settings});
+            const mailgunClient = new MailgunClient({config, settings, labs});
             await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(primaryMock.isDone(), true);
@@ -1134,7 +1134,7 @@ describe('MailgunClient', function () {
             const fallbackMock = nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
 
             const counter = createBatchCounter();
-            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+            await new MailgunClient({config, settings, labs}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(primaryMock.isDone(), true);
             assert.equal(fallbackMock.isDone(), false);
@@ -1148,7 +1148,7 @@ describe('MailgunClient', function () {
             nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
 
             const counter = createBatchCounter();
-            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+            await new MailgunClient({config, settings, labs}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(primaryMock.isDone(), true);
             assert.equal(counter.events, 4);
@@ -1161,7 +1161,7 @@ describe('MailgunClient', function () {
             nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
 
             const counter = createBatchCounter();
-            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+            await new MailgunClient({config, settings, labs}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(primaryMock.isDone(), true);
             assert.equal(counter.events, 4);
@@ -1174,7 +1174,7 @@ describe('MailgunClient', function () {
             const fallbackMock = nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
 
             await assert.rejects(
-                new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, () => {})
+                new MailgunClient({config, settings, labs}).fetchEvents(MAILGUN_OPTIONS, () => {})
             );
 
             assert.equal(fallbackMock.isDone(), false);
@@ -1190,7 +1190,7 @@ describe('MailgunClient', function () {
             nock('https://api.mailgun.net').get('/v3/fallback.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
 
             const counter = createBatchCounter();
-            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+            await new MailgunClient({config, settings, labs}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
             assert.equal(counter.batches, 3);
             assert(counter.events >= 8);
