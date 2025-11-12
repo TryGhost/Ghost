@@ -2,6 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
+import {assert} from 'console';
 
 export interface MemberImportData {
     email: string;
@@ -70,39 +71,34 @@ export class MembersImportService {
      * @param options Import configuration options
      * @returns Import response with stats and import label
      */
-    async importMembers(
+    async import(
         members: MemberImportData[],
         options: ImportMembersOptions = {}
     ): Promise<MemberImportResponse> {
         const {
             pollingTimeout = 30000,
             pollingInterval = 500,
-            labels = [],
-            cleanupCSV = true
+            labels = []
         } = options;
-
-        // Get initial member count
         const initialCount = await this.getMemberCount();
-
-        // Generate CSV file
         const csvPath = await this.generateCSVFile(members);
 
         try {
-            // Upload CSV
-            const importResponse = await this.uploadCSV(csvPath, labels);
+            const {response: importResponse, statusCode} = await this.uploadCSV(csvPath, labels);
 
-            // Poll for import completion
-            await this.waitForImportCompletion(
-                initialCount,
-                members.length,
-                pollingTimeout,
-                pollingInterval
-            );
-
+            // Ghost returns 202 for background imports, 201 for immediate imports
+            const shouldPollForCompletion = statusCode === 202;
+            if (shouldPollForCompletion) {
+                await this.waitForImportCompletion(
+                    initialCount,
+                    members.length,
+                    pollingTimeout,
+                    pollingInterval
+                );
+            }
             return importResponse;
         } finally {
-            // Cleanup CSV file if requested
-            if (cleanupCSV && fs.existsSync(csvPath)) {
+            if (fs.existsSync(csvPath)) {
                 fs.unlinkSync(csvPath);
             }
         }
@@ -114,20 +110,11 @@ export class MembersImportService {
      * @returns Path to generated CSV file
      */
     private async generateCSVFile(members: MemberImportData[]): Promise<string> {
-        if (members.length === 0) {
-            throw new Error('Cannot generate CSV: members array is empty');
-        }
-
-        // Generate CSV content
+        assert(members.length > 0, 'Member array must not be empty to generate CSV');
         const csvContent = this.generateCSV(members);
-
-        // Create temporary file
         const tmpDir = os.tmpdir();
         const csvPath = path.join(tmpDir, `members-import-${Date.now()}.csv`);
-
-        // Write CSV to file
         fs.writeFileSync(csvPath, csvContent, 'utf-8');
-
         return csvPath;
     }
 
@@ -137,7 +124,6 @@ export class MembersImportService {
      * @returns CSV string content
      */
     private generateCSV(members: MemberImportData[]): string {
-        // Define CSV headers
         const headers = [
             'email',
             'name',
@@ -150,10 +136,8 @@ export class MembersImportService {
             'tiers'
         ];
 
-        // Generate CSV rows
         const rows = members.map((member) => {
             const labelString = member.labels ? member.labels.join(',') : '';
-
             return [
                 this.escapeCSVField(member.email),
                 this.escapeCSVField(member.name || ''),
@@ -180,12 +164,9 @@ export class MembersImportService {
         if (!value) {
             return '';
         }
-
-        // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
         if (value.includes(',') || value.includes('"') || value.includes('\n')) {
             return `"${value.replace(/"/g, '""')}"`;
         }
-
         return value;
     }
 
@@ -193,13 +174,12 @@ export class MembersImportService {
      * Upload CSV file to members import endpoint
      * @param csvPath Path to CSV file
      * @param labels Additional labels to apply
-     * @returns Import response
+     * @returns Import response with status code
      */
     private async uploadCSV(
         csvPath: string,
         labels: string[] = []
-    ): Promise<MemberImportResponse> {
-        // Read CSV file
+    ): Promise<{response: MemberImportResponse; statusCode: number}> {
         const csvBuffer = fs.readFileSync(csvPath);
 
         // Prepare multipart form data
@@ -215,13 +195,15 @@ export class MembersImportService {
                 })
             }
         });
-
         if (!response.ok()) {
             const errorText = await response.text();
             throw new Error(`Failed to upload members CSV: ${response.status()} - ${errorText}`);
         }
 
-        return await response.json() as MemberImportResponse;
+        const statusCode = response.status();
+        const data = await response.json() as MemberImportResponse;
+
+        return {response: data, statusCode};
     }
 
     /**
@@ -262,8 +244,7 @@ export class MembersImportService {
                 // Import completed successfully
                 return;
             }
-
-            // Wait before next poll
+            
             await new Promise((resolve) => {
                 setTimeout(resolve, interval);
             });

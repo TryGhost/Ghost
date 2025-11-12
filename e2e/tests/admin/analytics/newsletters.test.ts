@@ -1,6 +1,12 @@
 import {AnalyticsNewslettersPage} from '../../../helpers/pages/admin';
-import {MembersImportService} from '../../../helpers/services/members';
+import {MembersImportService} from '../../../helpers/services/members-import';
 import {expect, test} from '../../../helpers/playwright';
+
+function subtractDaysFromCurrentDate(days: number): Date {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date;
+}
 
 test.describe('Ghost Admin - Newsletters', () => {
     let newslettersPage: AnalyticsNewslettersPage;
@@ -26,32 +32,27 @@ test.describe('Ghost Admin - Newsletters', () => {
         await expect(newslettersPage.topNewslettersCard).toContainText('newsletters in the last 30 days');
     });
 
-    test('percent change calculation', async ({page}) => {
-        // Create members import service
+    test('total subscribers percent change calculation', async ({page}) => {
         const membersService = new MembersImportService(page.request);
-        const now = new Date();
-        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
-        const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
         const members = [
             {
-                email: 'backdated-member@example.com',
-                name: 'Backdated Test Member',
-                created_at: sixtyDaysAgo.toISOString()
+                email: 'sixty-days-ago@example.com',
+                name: 'Sixty Days Ago',
+                created_at: subtractDaysFromCurrentDate(60).toISOString()
             },
             {
-                email: 'another-backdated-member@example.com',
-                name: 'Another Backdated Test Member',
-                created_at: tenDaysAgo.toISOString()
+                email: 'ten-days-ago@example.com',
+                name: 'Ten Days Ago',
+                created_at: subtractDaysFromCurrentDate(10).toISOString()
             },
             {
-                email: 'yet-another-backdated-member@example.com',
-                name: 'Yet Another Backdated Test Member',
-                created_at: yesterday.toISOString()
+                email: 'yesterday@example.com',
+                name: 'Yesterday',
+                created_at: subtractDaysFromCurrentDate(1).toISOString()
             }
         ];
-        await membersService.importMembers(members);
+        await membersService.import(members);
 
         await page.reload();
         await expect(newslettersPage.newslettersCard).toBeVisible();
