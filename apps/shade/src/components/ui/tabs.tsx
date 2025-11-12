@@ -187,6 +187,7 @@ interface KpiTabValueProps {
     diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
     className?: string;
+    'data-testid'?: string;
 }
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({
@@ -196,7 +197,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     value,
     diffDirection,
     diffValue,
-    className
+    className,
+    'data-testid': testId
 }) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
@@ -214,12 +216,12 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                 {label}
             </div>
             <div className='flex flex-col items-start gap-2 xl:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]'>
+                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
                     {value}
                 </div>
                 {diffDirection && diffDirection !== 'hidden' &&
                     <>
-                        <div className={diffContainerClassName}>
+                        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
                             <span className='font-medium leading-none'>{diffValue}</span>
                             {diffDirection === 'up' &&
                                 <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
