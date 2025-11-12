@@ -935,10 +935,6 @@ export default class App extends React.Component {
             page = member ? 'accountHome' : loggedOutPage;
         }
 
-        if (page === 'accountPlan' && isComplimentaryMember({member}) && !allowCompMemberUpgrade({member})) {
-            page = 'accountHome';
-        }
-
         return getActivePage({page});
     }
 
