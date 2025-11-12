@@ -29,6 +29,7 @@ Object {
       "superEditors": true,
       "tagsX": true,
       "themeErrorsNotification": true,
+      "themeTranslation": true,
       "urlCache": true,
       "utmTracking": true,
       "webmentions": true,
