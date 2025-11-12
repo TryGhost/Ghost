@@ -63,6 +63,7 @@ describe('Process Outbox Job', function () {
 
         const entriesAfterJob = await models.Outbox.findAll();
         assert.equal(entriesAfterJob.length, 0);
+        assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
     });
 
     it('does nothing when there are no pending entries', async function () {
@@ -73,6 +74,7 @@ describe('Process Outbox Job', function () {
 
         const entriesAfterJob = await models.Outbox.findAll();
         assert.equal(entriesAfterJob.length, 0);
+        assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
     });
 
     it('processes multiple entries in a batch', async function () {
@@ -113,6 +115,7 @@ describe('Process Outbox Job', function () {
 
         const entriesAfterJob = await models.Outbox.findAll();
         assert.equal(entriesAfterJob.length, 0);
+        assert.equal(mailService.GhostMailer.prototype.send.callCount, 3);
     });
 
     it('ignores entries that are not pending', async function () {
@@ -143,5 +146,6 @@ describe('Process Outbox Job', function () {
 
         const entriesAfterJob = await models.Outbox.findAll();
         assert.equal(entriesAfterJob.length, 2);
+        assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
     });
 });
