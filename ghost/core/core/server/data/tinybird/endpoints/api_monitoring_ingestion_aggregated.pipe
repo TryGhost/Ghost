@@ -27,17 +27,22 @@ SQL >
 
 NODE ingestion_metrics
 SQL >
+    %
     SELECT 
+        {% if defined(site_uuid) %}
         site_uuid,
+        {% end %}
         count() as total_events,
-        avg(latency_ms) as avg_latency_ms,
-        quantile(0.5)(latency_ms) as p50_latency_ms,
-        quantile(0.95)(latency_ms) as p95_latency_ms,
-        min(latency_ms) as min_latency_ms,
-        max(latency_ms) as max_latency_ms
+        round(avg(latency_ms)) as avg_latency_ms,
+        round(quantile(0.5)(latency_ms)) as p50_latency_ms,
+        round(quantile(0.95)(latency_ms)) as p95_latency_ms,
+        round(min(latency_ms)) as min_latency_ms,
+        round(max(latency_ms)) as max_latency_ms
     FROM ingestion_latency
+    {% if defined(site_uuid) %}
     GROUP BY site_uuid
     ORDER BY site_uuid
+    {% end %}
 
 TYPE ENDPOINT
 
