@@ -1,6 +1,3 @@
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
 import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
 import {assert} from 'console';
 
@@ -53,7 +50,6 @@ export interface ImportMembersOptions {
     pollingTimeout?: number; // milliseconds, default 30000
     pollingInterval?: number; // milliseconds, default 500
     labels?: string[]; // Additional labels to apply to imported members
-    cleanupCSV?: boolean; // Auto-delete generated CSV file, default true
 }
 
 export class MembersImportService {
@@ -81,41 +77,32 @@ export class MembersImportService {
             labels = []
         } = options;
         const initialCount = await this.getMemberCount();
-        const csvPath = await this.generateCSVFile(members);
+        const csvBuffer = this.generateCSVBuffer(members);
 
-        try {
-            const {response: importResponse, statusCode} = await this.uploadCSV(csvPath, labels);
+        const {response: importResponse, statusCode} = await this.uploadCSV(csvBuffer, labels);
 
-            // Ghost returns 202 for background imports, 201 for immediate imports
-            const shouldPollForCompletion = statusCode === 202;
-            if (shouldPollForCompletion) {
-                await this.waitForImportCompletion(
-                    initialCount,
-                    members.length,
-                    pollingTimeout,
-                    pollingInterval
-                );
-            }
-            return importResponse;
-        } finally {
-            if (fs.existsSync(csvPath)) {
-                fs.unlinkSync(csvPath);
-            }
+        // Ghost returns 202 for background imports, 201 for immediate imports
+        const shouldPollForCompletion = statusCode === 202;
+        if (shouldPollForCompletion) {
+            await this.waitForImportCompletion(
+                initialCount,
+                members.length,
+                pollingTimeout,
+                pollingInterval
+            );
         }
+        return importResponse;
     }
 
     /**
-     * Generate a CSV file from member data
+     * Generate a CSV buffer from member data
      * @param members Array of member data
-     * @returns Path to generated CSV file
+     * @returns Buffer containing CSV content
      */
-    private async generateCSVFile(members: MemberImportData[]): Promise<string> {
+    private generateCSVBuffer(members: MemberImportData[]): Buffer {
         assert(members.length > 0, 'Member array must not be empty to generate CSV');
         const csvContent = this.generateCSV(members);
-        const tmpDir = os.tmpdir();
-        const csvPath = path.join(tmpDir, `members-import-${Date.now()}.csv`);
-        fs.writeFileSync(csvPath, csvContent, 'utf-8');
-        return csvPath;
+        return Buffer.from(csvContent, 'utf-8');
     }
 
     /**
@@ -171,22 +158,20 @@ export class MembersImportService {
     }
 
     /**
-     * Upload CSV file to members import endpoint
-     * @param csvPath Path to CSV file
+     * Upload CSV buffer to members import endpoint
+     * @param csvBuffer Buffer containing CSV data
      * @param labels Additional labels to apply
      * @returns Import response with status code
      */
     private async uploadCSV(
-        csvPath: string,
+        csvBuffer: Buffer,
         labels: string[] = []
     ): Promise<{response: MemberImportResponse; statusCode: number}> {
-        const csvBuffer = fs.readFileSync(csvPath);
-
         // Prepare multipart form data
         const response = await this.request.post(`${this.adminEndpoint}/members/upload/`, {
             multipart: {
                 membersfile: {
-                    name: path.basename(csvPath),
+                    name: `members-import-${Date.now()}.csv`,
                     mimeType: 'text/csv',
                     buffer: csvBuffer
                 },
