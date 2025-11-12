@@ -6,14 +6,11 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const emailAddressService = require('../../../core/server/services/email-address');
 const mailService = require('../../../core/server/services/mail');
-const config = require('../../../core/shared/config');
 
 const JOB_NAME = 'process-outbox-test';
 const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/member-welcome-emails/jobs/process-outbox.js');
 const runProcessOutbox = require(JOB_PATH);
-const originalConfigGet = config.get;
 
 describe('Process Outbox Job', function () {
     let jobService;
@@ -24,15 +21,7 @@ describe('Process Outbox Job', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(emailAddressService, 'init').returns();
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        sinon.stub(config, 'get').callsFake(function (key, ...rest) {
-            if (key === 'memberWelcomeEmailTestInbox') {
-                return 'test@example.com';
-            }
-
-            return originalConfigGet.call(this, key, ...rest);
-        });
     });
 
     afterEach(async function () {

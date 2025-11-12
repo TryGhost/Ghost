@@ -55,17 +55,17 @@ function sendMessage(message) {
     }
 }
 
-let inlineExecution = false;
-
 /**
  * Completes the job and exits the worker
  * @param {string} message - Final completion message
+ * @param {boolean} [inline=false] - If true, prevents process exit for inline execution
+ * @returns {string} The completion message
  */
-function completeJob(message) {
+function completeJob(message, inline = false) {
     sendMessage(message);
     if (parentPort) {
         parentPort.postMessage('done');
-    } else if (!inlineExecution) {
+    } else if (!inline) {
         setTimeout(() => {
             process.exit(0);
         }, 1000);
@@ -76,12 +76,13 @@ function completeJob(message) {
 
 /**
  * Cancels the job and exits the worker
+ * @param {boolean} [inline=false] - If true, prevents process exit for inline execution
  */
-function cancel() {
+function cancel(inline = false) {
     sendMessage(MESSAGES.CANCELLED);
     if (parentPort) {
         parentPort.postMessage('cancelled');
-    } else if (!inlineExecution) {
+    } else if (!inline) {
         setTimeout(() => {
             process.exit(0);
         }, 1000);
@@ -96,8 +97,13 @@ if (parentPort) {
     });
 }
 
+/**
+ * Processes pending outbox entries for member welcome emails
+ * @param {Object} [options={}] - Processing options
+ * @param {boolean} [options.inline=false] - If true, prevents process exit for inline execution
+ * @returns {Promise<string>} Completion message with processing statistics
+ */
 async function processOutbox({inline = false} = {}) {
-    inlineExecution = inline;
     const db = require('../../../data/db');
 
     const jobStartMs = Date.now();
@@ -109,7 +115,7 @@ async function processOutbox({inline = false} = {}) {
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         logging.error(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Mail initialization failed: ${errorMessage}`);
-        return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job aborted: Mail initialization failed`);
+        return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job aborted: Mail initialization failed`, inline);
     }
 
     let totalProcessed = 0;
@@ -138,13 +144,13 @@ async function processOutbox({inline = false} = {}) {
     const durationMs = Date.now() - jobStartMs;
 
     if (totalProcessed + totalFailed === 0) {
-        return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} ${MESSAGES.NO_ENTRIES}`);
+        return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} ${MESSAGES.NO_ENTRIES}`, inline);
     }
 
-    return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`);
+    return completeJob(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Job complete: Processed ${totalProcessed} outbox entries, ${totalFailed} failed in ${(durationMs / 1000).toFixed(2)}s`, inline);
 }
 
-if (!module.parent) {
+if (require.main === module) {
     processOutbox();
 }
 
