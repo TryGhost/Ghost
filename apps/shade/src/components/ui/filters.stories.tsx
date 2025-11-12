@@ -656,3 +656,24 @@ export const SolidAllSizes: Story = {
         }
     }
 };
+
+// Add button positioned at the end
+export const AddButtonAtEnd: Story = {
+    render: () => (
+        <FilterDemo
+            className="[&>button]:order-last"
+            fields={basicFields}
+            initialFilters={[
+                createFilter('text', 'contains', ['example']),
+                createFilter('email', 'contains', ['@example.com'])
+            ]}
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Add button positioned at the end (right side) of the filter list using CSS order property. This is achieved with the className prop: `className="[&>button]:order-last"`'
+            }
+        }
+    }
+};
