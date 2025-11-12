@@ -19,8 +19,8 @@ export interface SearchService {
     isOnlyVisibleComponent: (id: ComponentId) => boolean;
 }
 
-const useSearchService = () => {
-    const [filter, setFilter] = useState('');
+const useSearchService = (initialFilter?: string) => {
+    const [filter, setFilter] = useState(initialFilter || '');
     const [noResult, setNoResult] = useState(false);
     const registeredComponents = useRef<Map<ComponentId, string[]>>(new Map());
     const [visibleComponents, setVisibleComponents] = useState<Set<ComponentId>>(new Set());

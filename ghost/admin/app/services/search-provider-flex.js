@@ -1,7 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {SEARCHABLES, createSearchResult, processSearchableResponse, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -83,7 +83,11 @@ export default class SearchProviderFlexService extends Service {
         try {
             const response = await this.ajax.request(url, {data: query});
 
-            response[pluralize(searchable.model)].forEach((item) => {
+            // Use centralized function to process the response
+            const processedItems = processSearchableResponse(searchable, response);
+
+            // Add items to the index
+            processedItems.forEach((item) => {
                 this.indexes[searchable.model].add(item);
             });
         } catch (error) {

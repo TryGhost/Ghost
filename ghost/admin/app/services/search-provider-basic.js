@@ -1,6 +1,6 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {SEARCHABLES, createSearchResult, processSearchableResponse, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -63,7 +63,11 @@ export default class SearchProviderBasicService extends Service {
         try {
             const response = await this.ajax.request(url, {data: query});
 
-            const items = response[pluralize(searchable.model)].map(
+            // Use centralized function to process the response
+            const processedItems = processSearchableResponse(searchable, response);
+
+            // Convert to search results
+            const items = processedItems.map(
                 item => createSearchResult(searchable, item)
             );
 

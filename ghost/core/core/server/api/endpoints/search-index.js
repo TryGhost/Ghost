@@ -1,6 +1,7 @@
 const models = require('../../models');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const postsService = getPostServiceInstance();
+const {flattenSettingsIndex} = require('../../../shared/settings-search-index');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -77,6 +78,42 @@ const controller = {
             };
 
             return models.User.findPage(options);
+        }
+    },
+    fetchSettings: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'settings',
+            method: 'browse'
+        },
+        query() {
+            // Return the flattened settings index
+            // This doesn't need database access as it's static configuration
+            const settings = flattenSettingsIndex();
+
+            // Transform to match the expected format for search results
+            const transformedSettings = settings.map(setting => ({
+                id: setting.id,
+                url: `/settings/${setting.path}`,
+                title: setting.title,
+                path: setting.path,
+                section: setting.section,
+                keywords: setting.keywords
+            }));
+
+            return {
+                data: transformedSettings,
+                meta: {
+                    pagination: {
+                        page: 1,
+                        limit: transformedSettings.length,
+                        pages: 1,
+                        total: transformedSettings.length
+                    }
+                }
+            };
         }
     }
 };
