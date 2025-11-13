@@ -27,6 +27,11 @@ interface UtmOption {
     visits: number;
 }
 
+interface SourceOption {
+    source?: string;
+    visits?: number;
+}
+
 // Hook to fetch UTM options from Tinybird - only fetches when the field is actively used
 const useUtmOptionsForField = (fieldKey: string, enabled: boolean) => {
     const {statsConfig, range, audience} = useGlobalData();
@@ -64,10 +69,100 @@ const useUtmOptionsForField = (fieldKey: string, enabled: boolean) => {
         }
 
         return (data as unknown as UtmOption[]).map((item: UtmOption) => ({
-            label: `${item[fieldKey as keyof UtmOption] || '(not set)'} (${item.visits.toLocaleString()})`,
+            label: String(item[fieldKey as keyof UtmOption] || '(not set)'),
             value: String(item[fieldKey as keyof UtmOption] || '(not set)')
         }));
     }, [data, fieldKey]);
+
+    return {options, loading};
+};
+
+// Hook to fetch posts/pages options from Tinybird
+const usePostOptions = () => {
+    const {statsConfig, range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const params = {
+        site_uuid: statsConfig?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience),
+        limit: '100'
+    };
+
+    const {data, loading} = useTinybirdQuery({
+        endpoint: 'api_top_pages',
+        statsConfig,
+        params,
+        enabled: !!statsConfig?.id
+    });
+
+    interface PostOption {
+        post_uuid?: string;
+        pathname?: string;
+        visits?: number;
+    }
+
+    const options = useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        // Get unique posts by post_uuid, preferring entries with non-empty post_uuid
+        const postMap = new Map<string, PostOption>();
+        
+        (data as unknown as PostOption[]).forEach((item: PostOption) => {
+            const uuid = item.post_uuid || '';
+            // Only include items with a valid post_uuid (not empty string)
+            if (uuid && uuid !== 'undefined') {
+                // Keep the entry with the most visits if there are duplicates
+                if (!postMap.has(uuid) || (item.visits || 0) > (postMap.get(uuid)?.visits || 0)) {
+                    postMap.set(uuid, item);
+                }
+            }
+        });
+
+        return Array.from(postMap.values()).map((item: PostOption) => ({
+            label: item.pathname || '(Unknown)',
+            value: item.post_uuid || ''
+        }));
+    }, [data]);
+
+    return {options, loading};
+};
+
+// Hook to fetch source options from Tinybird
+const useSourceOptions = () => {
+    const {statsConfig, range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const params = {
+        site_uuid: statsConfig?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience),
+        limit: '50'
+    };
+
+    const {data, loading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig,
+        params,
+        enabled: !!statsConfig?.id
+    });
+
+    const options = useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        return (data as unknown as SourceOption[]).map((item: SourceOption) => ({
+            label: String(item.source || '(not set)'),
+            value: String(item.source || '(not set)')
+        }));
+    }, [data]);
 
     return {options, loading};
 };
@@ -200,11 +295,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     // Fetch options for all UTM fields when UTM tracking is enabled
     // This is needed so options are available in the dropdown
-    const {options: sourceOptions} = useUtmOptionsForField('utm_source', utmTrackingEnabled);
+    const {options: utmSourceOptions} = useUtmOptionsForField('utm_source', utmTrackingEnabled);
     const {options: mediumOptions} = useUtmOptionsForField('utm_medium', utmTrackingEnabled);
     const {options: campaignOptions} = useUtmOptionsForField('utm_campaign', utmTrackingEnabled);
     const {options: contentOptions} = useUtmOptionsForField('utm_content', utmTrackingEnabled);
     const {options: termOptions} = useUtmOptionsForField('utm_term', utmTrackingEnabled);
+
+    // Fetch options for posts and sources
+    const {options: postOptions} = usePostOptions();
+    const {options: sourceOptions} = useSourceOptions();
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -222,7 +321,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 placeholder: 'Select source',
                 operators: supportedOperators,
                 defaultOperator: 'is',
-                options: sourceOptions,
+                options: utmSourceOptions,
                 searchable: true
             },
             {
@@ -291,22 +390,16 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         label: 'Post or page',
                         type: 'select',
                         icon: <LucideIcon.File />,
-                        options: [
-                            {value: 'one', label: 'A Designer\'s Dual Apple Studio Display Workspace in Canada'},
-                            {value: 'two', label: 'Small and Cosy Apple Setup in Denmark'},
-                            {value: 'three', label: 'Minimal & Functional White Desk Setup in Italy'}
-                        ]
+                        options: postOptions,
+                        searchable: true
                     },
                     {
                         key: 'source',
                         label: 'Source',
                         type: 'select',
                         icon: <LucideIcon.Globe />,
-                        options: [
-                            {value: 'one', label: 'Google'},
-                            {value: 'two', label: 'Facebook'},
-                            {value: 'three', label: 'Twitter'}
-                        ]
+                        options: sourceOptions,
+                        searchable: true
                     }
                 ]
             },
@@ -315,7 +408,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, sourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators]);
+    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, sourceOptions]);
 
     return (
         <Filters
