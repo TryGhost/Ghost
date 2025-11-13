@@ -8,7 +8,7 @@ SQL >
         toDate(inserted_at) as date,
         site_uuid,
         inserted_at,
-        toDateTime64(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_timestamp,
+        parseDateTimeBestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_timestamp,
         dateDiff('millisecond', received_timestamp, inserted_at) as latency_ms
     FROM analytics_events
     WHERE 
