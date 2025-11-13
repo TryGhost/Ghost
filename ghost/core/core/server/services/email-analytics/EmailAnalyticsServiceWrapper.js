@@ -16,6 +16,7 @@ class EmailAnalyticsServiceWrapper {
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
+        const labs = require('../../../shared/labs');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
         const membersService = require('../members');
@@ -49,7 +50,7 @@ class EmailAnalyticsServiceWrapper {
             settings,
             eventProcessor,
             providers: [
-                new MailgunProvider({config, settings})
+                new MailgunProvider({config, settings, labs})
             ],
             queries,
             domainEvents,
