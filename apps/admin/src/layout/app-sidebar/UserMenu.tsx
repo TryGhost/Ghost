@@ -44,7 +44,7 @@ function UserMenu(props: UserMenuProps) {
                 >
                 <Avatar>
                     {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                    <AvatarFallback className="text-gray-800 hover:text-black">
+                    <AvatarFallback className="text-foreground-muted hover:text-foreground">
                         <LucideIcon.User />
                     </AvatarFallback>
                 </Avatar>
@@ -66,15 +66,15 @@ function UserMenu(props: UserMenuProps) {
                     <div className="flex items-center gap-3">
                         <Avatar>
                             {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                            <AvatarFallback className="text-gray-800 hover:text-black">
+                            <AvatarFallback className="text-foreground-muted hover:text-foreground">
                                 <LucideIcon.User />
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="text-base font-semibold text-gray-900">
+                            <span className="text-base font-semibold text-foreground">
                                 {currentUser.data?.name}
                             </span>
-                            <span className="text-xs text-gray-700 -mt-px">
+                            <span className="text-xs text-foreground-muted -mt-px">
                                 {currentUser.data?.email}
                             </span>
                         </div>
