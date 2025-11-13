@@ -1,4 +1,5 @@
 TOKEN "monitoring" READ
+TOKEN "axis" READ
 
 NODE ingestion_latency
 SQL >
