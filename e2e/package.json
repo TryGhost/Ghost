@@ -23,7 +23,7 @@
     "build"
   ],
   "devDependencies": {
-    "@eslint/js": "9.18.0",
+    "@eslint/js": "9.37.0",
     "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.55.1",
     "@tryghost/debug": "0.1.35",
