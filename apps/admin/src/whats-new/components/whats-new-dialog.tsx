@@ -30,7 +30,7 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                 aria-labelledby="whats-new-modal-title"
             >
                 <DialogHeader>
-                    <DialogTitle id="whats-new-modal-title" data-test-modal-title>
+                    <DialogTitle id="whats-new-modal-title" data-test-modal-title className="text-2xl tracking-tighter">
                         What's new?
                     </DialogTitle>
                 </DialogHeader>
@@ -41,7 +41,7 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                     </div>
                 ) : (
                     <>
-                        <section className="flex-1 overflow-y-auto space-y-4 -mx-6 px-6" data-test-entries>
+                        <section className="flex-1 overflow-y-auto space-y-2 -mx-6 px-6" data-test-entries>
                             {changelog.entries.map((entry) => (
                                 <ChangelogEntry key={entry.slug} entry={entry} />
                             ))}

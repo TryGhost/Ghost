@@ -17,7 +17,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <SidebarProvider open={!!currentUser}>
             <AppSidebar />
-            <SidebarInset className="bg-white">
+            <SidebarInset className="bg-background">
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>

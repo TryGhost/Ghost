@@ -43,7 +43,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                                 className="w-full h-full rounded-md object-cover"
                                 />
                         </div>
-                        <div className="font-semibold text-[15px] text-black overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="font-semibold text-[15px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                             {title}
                         </div>
                     </div>
@@ -51,14 +51,14 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 {showSearch && (
                     <Button
                         variant="outline"
-                        className="flex items-center justify-between text-gray-500 hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 h-[38px]"
+                        className="flex items-center justify-between text-muted-foreground hover:text-gray-700 hover:bg-background text-base [&_svg]:stroke-2 pr-2 shadow-xs hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-800 h-[38px] dark:bg-gray-950"
                         onClick={openSearchModal}
                     >
                         <div className="flex items-center gap-2">
                             <LucideIcon.Search className="text-muted-foreground" />
                             Search site
                         </div>
-                        <Kbd className="text-gray-500 bg-transparent">{searchShortcut}</Kbd>
+                        <Kbd className="text-gray-500 bg-transparent shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
                     </Button>
                 )}
             </div>
