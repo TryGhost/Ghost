@@ -22,6 +22,7 @@ class EmailServiceWrapper {
         const BatchSendingService = require('./BatchSendingService');
         const EmailSegmenter = require('./EmailSegmenter');
         const MailgunEmailProvider = require('./MailgunEmailProvider');
+        const {DomainWarmingService} = require('./DomainWarmingService');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');
@@ -114,6 +115,12 @@ class EmailServiceWrapper {
         const emailSegmenter = new EmailSegmenter({
             membersRepository
         });
+
+        const domainWarmingService = new DomainWarmingService({
+            models: {Email},
+            labs
+        });
+
         const batchSendingService = new BatchSendingService({
             sendingService,
             models: {
@@ -125,6 +132,7 @@ class EmailServiceWrapper {
             jobsService,
             emailSegmenter,
             emailRenderer,
+            domainWarmingService,
             db,
             sentry,
             debugStorageFilePath: configService.getContentPath('data')
@@ -144,7 +152,8 @@ class EmailServiceWrapper {
             limitService,
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
-            emailAnalyticsJobs
+            emailAnalyticsJobs,
+            domainWarmingService
         });
 
         this.controller = new EmailController(this.service, {
