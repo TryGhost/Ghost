@@ -17,6 +17,7 @@ import {
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
+import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 
 interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
     onOpenWhatsNew?: () => void;
@@ -27,6 +28,7 @@ function UserMenu(props: UserMenuProps) {
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
     const { data: whatsNewData } = useWhatsNew();
+    const { showUpgradeBanner } = useUpgradeStatus();
 
     const setNightShift = (nightShift: boolean) => {
         void editPreferences({nightShift});
@@ -57,7 +59,7 @@ function UserMenu(props: UserMenuProps) {
             <DropdownMenuContent
                 align="end"
                 sideOffset={10}
-                className="w-full min-w-[240px] sidebar:min-w-[260px]"
+                className={`w-full min-w-[240px] sidebar:min-w-[260px] ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
             >
                 <div className="p-3">
                     <div className="flex items-center gap-3">

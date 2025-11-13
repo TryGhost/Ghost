@@ -1,7 +1,7 @@
 import React from "react"
 
 import {
-    Sidebar,
+    Sidebar
 } from "@tryghost/shade"
 
 import AppSidebarHeader from "./AppSidebarHeader";

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export interface EmberBridge {
@@ -8,6 +8,7 @@ export interface EmberBridge {
 export type StateBridgeEventMap = {
     emberDataChange: EmberDataChangeEvent;
     emberAuthChange: EmberAuthChangeEvent;
+    subscriptionChange: SubscriptionState;
 }
 
 export interface StateBridge {
@@ -33,6 +34,13 @@ export interface EmberDataChangeEvent {
 
 export interface EmberAuthChangeEvent {
     isAuthenticated: boolean;
+}
+
+export interface SubscriptionState {
+    subscription: {
+        isActiveTrial: boolean;
+        trial_end: string | null;
+    };
 }
 
 /**
@@ -170,4 +178,18 @@ export function useEmberAuthSync() {
         return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
     }, [queryClient]);
 
+}
+
+export function useSubscriptionStatus() {
+    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
+
+    useEffect(() => {
+        const handleSubscriptionChange = (payload: SubscriptionState) => {
+            setSubscriptionStatus(payload);
+        };
+
+        return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
+    }, []);
+
+    return subscriptionStatus;
 }
