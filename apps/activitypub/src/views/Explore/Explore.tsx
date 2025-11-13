@@ -24,6 +24,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
     const currentAccountQuery = useAccountForUser('index', 'me');
     const {data: currentUser} = currentAccountQuery;
     const isCurrentUser = profile.handle === currentUser?.handle;
+    const {isEnabled} = useFeatureFlags();
 
     const onFollow = () => {
         update(profile.id, {
@@ -94,14 +95,15 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                             className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[460px] break-anywhere'
                         />
                     }
-                    {!isLoading ?
-                        <div className='mt-2 flex items-center gap-1 text-sm text-gray-700 dark:text-gray-600'>
-                            <LucideIcon.UserRound size={14} strokeWidth={1.5} />
-                            {formatFollowNumber(profile.followerCount)} followers
-                        </div>
-                        :
-                        <Skeleton className='w-24' />
-                    }
+                    {!isEnabled('explore-topic') && (
+                        !isLoading ?
+                            <div className='mt-2 flex items-center gap-1 text-sm text-gray-700 dark:text-gray-600'>
+                                <LucideIcon.UserRound size={14} strokeWidth={1.5} />
+                                {formatFollowNumber(profile.followerCount)} followers
+                            </div>
+                            :
+                            <Skeleton className='w-24' />
+                    )}
                 </div>
             </div>
         </div>
@@ -131,7 +133,6 @@ const Explore: React.FC = () => {
         followingCount: 0,
         followedByMe: false
     }));
-
 
     const profiles = shouldUseLegacy
         ? (exploreProfilesData?.pages.flatMap(page => Object.values(page.results).flatMap(category => category.sites)
@@ -177,7 +178,7 @@ const Explore: React.FC = () => {
             <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
                 {isLoadingExploreProfiles ? (
                     <div>
-                        {emptyProfiles.map((profile) => (
+                        {emptyProfiles.map(profile => (
                             <div key={profile.id} className='mx-auto w-full max-w-[640px]'>
                                 <ExploreProfile
                                     isLoading={isLoadingExploreProfiles}
