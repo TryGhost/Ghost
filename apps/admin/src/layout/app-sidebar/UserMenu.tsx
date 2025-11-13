@@ -44,7 +44,7 @@ function UserMenu(props: UserMenuProps) {
                 >
                 <Avatar>
                     {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                    <AvatarFallback className="text-foreground hover:text-black">
+                    <AvatarFallback className="text-foreground-muted hover:text-foreground">
                         <LucideIcon.User />
                     </AvatarFallback>
                 </Avatar>
@@ -66,7 +66,7 @@ function UserMenu(props: UserMenuProps) {
                     <div className="flex items-center gap-3">
                         <Avatar>
                             {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                            <AvatarFallback className="text-foreground-muted hover:text-black">
+                            <AvatarFallback className="text-foreground-muted hover:text-foreground">
                                 <LucideIcon.User />
                             </AvatarFallback>
                         </Avatar>
