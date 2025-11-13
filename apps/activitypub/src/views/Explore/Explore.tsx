@@ -2,11 +2,13 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
+import TopicFilter, {type Topic} from '@src/components/TopicFilter';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {formatFollowNumber} from '@src/utils/content-formatters';
-import {useAccountForUser, useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useExploreProfilesForUser, useExploreProfilesForUserByTopic} from '@hooks/use-activity-pub-queries';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
@@ -89,7 +91,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         profile.bio &&
                         <div
                             dangerouslySetInnerHTML={{__html: profile.bio}}
-                            className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[500px] break-anywhere'
+                            className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[460px] break-anywhere'
                         />
                     }
                     {!isLoading ?
@@ -108,7 +110,15 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
 
 const Explore: React.FC = () => {
     const {isExplainerClosed, setExplainerClosed} = useOnboardingStatus();
-    const {exploreProfilesQuery, updateExploreProfile} = useExploreProfilesForUser('index');
+    const {isEnabled} = useFeatureFlags();
+    const isTopicFilteringEnabled = isEnabled('explore-topic');
+    const [topic, setTopic] = useState<Topic>('top');
+
+    const topicBasedQuery = useExploreProfilesForUserByTopic('index', topic);
+    const legacyQuery = useExploreProfilesForUser('index');
+
+    const shouldUseLegacy = !isTopicFilteringEnabled;
+    const {exploreProfilesQuery, updateExploreProfile} = shouldUseLegacy ? legacyQuery : topicBasedQuery;
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
     const emptyProfiles = Array(10).fill({
@@ -122,20 +132,12 @@ const Explore: React.FC = () => {
         followedByMe: false
     });
 
-    // Merge all pages of results
-    const allProfiles = exploreProfilesData?.pages.reduce((acc, page) => {
-        Object.entries(page.results).forEach(([key, category]) => {
-            if (!acc[key]) {
-                acc[key] = category;
-            } else {
-                // Only add profiles that haven't been seen before
-                const existingProfileIds = new Set(acc[key].sites.map(p => p.id));
-                const newProfiles = category.sites.filter(profile => !existingProfileIds.has(profile.id));
-                acc[key].sites = [...acc[key].sites, ...newProfiles];
-            }
-        });
-        return acc;
-    }, {} as Record<string, { categoryName: string; sites: Account[] }>) || {};
+
+    const profiles = shouldUseLegacy
+        ? (exploreProfilesData?.pages.flatMap(page =>
+            Object.values(page.results).flatMap(category => category.sites)
+        ) || [])
+        : (exploreProfilesData?.pages.flatMap(page => page.accounts) || []);
 
     useEffect(() => {
         const node = document.querySelector('.load-more-trigger');
@@ -170,43 +172,37 @@ const Explore: React.FC = () => {
                     <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
+            {isTopicFilteringEnabled && (
+                <TopicFilter currentTopic={topic} excludeTopics={['following']} onTopicChange={setTopic} />
+            )}
             <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
-                {
-                    isLoadingExploreProfiles ? (
-                        <div>
-                            {emptyProfiles.map(profile => (
-                                <div key={profile.id} className='mx-auto w-full max-w-[640px]'>
+                {isLoadingExploreProfiles ? (
+                    <div>
+                        {emptyProfiles.map((profile, index) => (
+                            <div key={`skeleton-${index}`} className='mx-auto w-full max-w-[640px]'>
+                                <ExploreProfile
+                                    isLoading={isLoadingExploreProfiles}
+                                    profile={profile}
+                                    update={() => {}}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className='mx-auto flex w-full max-w-[640px] flex-col items-center'>
+                        <div className='w-full'>
+                            {profiles.map(profile => (
+                                <React.Fragment key={profile.id}>
                                     <ExploreProfile
-                                        isLoading={isLoadingExploreProfiles}
+                                        isLoading={false}
                                         profile={profile}
-                                        update={() => {}}
+                                        update={updateExploreProfile}
                                     />
-                                </div>
+                                </React.Fragment>
                             ))}
                         </div>
-                    ) : (
-                        Object.entries(allProfiles).map(([category, data]) => (
-                            <div key={category} className='mx-auto flex w-full max-w-[640px] flex-col items-center'>
-                                {category !== 'uncategorized' &&
-                                    <H4 className='w-full border-b border-gray-200 pb-2 text-xs font-medium uppercase tracking-wider text-gray-800 dark:border-gray-900'>
-                                        {data.categoryName}
-                                    </H4>
-                                }
-                                <div className='w-full'>
-                                    {data.sites.map(profile => (
-                                        <React.Fragment key={profile.id}>
-                                            <ExploreProfile
-                                                isLoading={false}
-                                                profile={profile}
-                                                update={updateExploreProfile}
-                                            />
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            </div>
-                        ))
-                    )
-                }
+                    </div>
+                )}
                 <div className='load-more-trigger h-4 w-full' />
                 {isFetchingNextPage && (
                     <div className='flex justify-center'>
