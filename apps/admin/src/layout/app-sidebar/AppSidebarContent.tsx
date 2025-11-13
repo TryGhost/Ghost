@@ -9,10 +9,10 @@ import NavContent from "./NavContent";
 import NavGhostPro from "./NavGhostPro";
 import NavSettings from "./NavSettings";
 import UpgradeBanner from "./UpgradeBanner";
-import {useShowUpgradeBanner} from "@/hooks/useShowUpgradeBanner";
+import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 
 function AppSidebarContent() {
-    const showUpgradeBanner = useShowUpgradeBanner();
+    const { showUpgradeBanner, trialDaysRemaining } = useUpgradeStatus();
 
     return (
         <SidebarContent className="px-3 pt-4 justify-between">
@@ -21,23 +21,9 @@ function AppSidebarContent() {
                 <NavContent />
                 <NavGhostPro />
             </div>
-<<<<<<< HEAD
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <WhatsNewBanner />
-                <Banner variant='gradient' size='lg' className="mx-5 my-2 flex flex-col items-stretch">
-                    <div>
-                        <img src={ghostProLogo} alt="Ghost Pro" className="max-h-[33px]" />
-                    </div>
-                    <div className="text-base mt-3 font-semibold">Unlock every feature</div>
-                    <div className="mt-2 text-gray-700 text-sm mb-4">
-                        Choose a plan to access the full power of Ghost right away, you have <span className="font-semibold text-black">3 days</span> free trial remaining.
-                    </div>
-                    <Button>Upgrade now</Button>
-                </Banner>
-=======
-            <div className="flex flex-col gap-2">
-                {showUpgradeBanner && <UpgradeBanner />}
->>>>>>> 69e0c93015 (Restructured things)
+                {showUpgradeBanner && <UpgradeBanner trialDaysRemaining={trialDaysRemaining} />}
                 <NavSettings className="pb-0" />
             </div>
         </SidebarContent>

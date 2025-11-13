@@ -175,4 +175,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
             isAuthenticated: this.session.isAuthenticated
         });
     }
+
+    @action
+    triggerSubscriptionChange(data) {
+        this.trigger('subscriptionChange', {
+            ...data
+        });
+    }
 }

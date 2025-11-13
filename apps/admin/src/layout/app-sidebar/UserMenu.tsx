@@ -16,11 +16,8 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
-<<<<<<< HEAD
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
-=======
-import { useShowUpgradeBanner } from "@/hooks/useShowUpgradeBanner";
->>>>>>> 69e0c93015 (Restructured things)
+import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 
 interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
     onOpenWhatsNew?: () => void;
@@ -30,11 +27,8 @@ function UserMenu(props: UserMenuProps) {
     const currentUser = useCurrentUser();
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
-<<<<<<< HEAD
     const { data: whatsNewData } = useWhatsNew();
-=======
-    const showUpgradeBanner = useShowUpgradeBanner();
->>>>>>> 69e0c93015 (Restructured things)
+    const { showUpgradeBanner } = useUpgradeStatus();
 
     const setNightShift = (nightShift: boolean) => {
         void editPreferences({nightShift});
