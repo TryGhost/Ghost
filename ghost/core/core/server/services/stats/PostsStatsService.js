@@ -406,13 +406,13 @@ class PostsStatsService {
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id');
                 })
                 .where('mce.attribution_id', postId)
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .where('msce.id', null);
 
             const paidMembers = await this.knex('members_subscription_created_events as msce')
                 .countDistinct('msce.member_id as paid_members')
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             const mrr = await this.knex('members_subscription_created_events as msce')
                 .sum('mpse.mrr_delta as mrr')
@@ -421,7 +421,7 @@ class PostsStatsService {
                     this.andOn('mpse.member_id', '=', 'msce.member_id');
                 })
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             return {
                 data: [
@@ -1414,9 +1414,9 @@ class PostsStatsService {
                 .leftJoin('members_subscription_created_events as msce', function () {
                     this.on('mce.member_id', '=', 'msce.member_id')
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id')
-                        .andOnVal('msce.attribution_type', '=', 'post');
+                        .andOnIn('msce.attribution_type', ['post', 'page']);
                 })
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .whereIn('mce.attribution_id', postIds)
                 .whereNull('msce.id')
                 .groupBy('mce.attribution_id');
@@ -1429,7 +1429,7 @@ class PostsStatsService {
             let paidMembersQuery = this.knex('members_subscription_created_events as msce')
                 .select('msce.attribution_id as post_id')
                 .countDistinct('msce.member_id as paid_members')
-                .where('msce.attribution_type', 'post')
+                .whereIn('msce.attribution_type', ['post', 'page'])
                 .whereIn('msce.attribution_id', postIds)
                 .groupBy('msce.attribution_id');
 
