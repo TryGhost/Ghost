@@ -1,7 +1,7 @@
 import { test as baseTest, describe, expect } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { useUserPreferences, useEditUserPreferences } from "./user-preferences";
+import { useUserPreferences, useEditUserPreferences, DEFAULT_NAVIGATION_PREFERENCES } from "./user-preferences";
 import { HttpResponse, http } from "msw";
 import { mockUser } from "@test-utils/factories";
 import { waitForQuerySettled } from "@test-utils/test-helpers";
@@ -28,6 +28,9 @@ const fixtures = {
     singlePreference: {
         setting: "value",
     },
+    defaults: {
+        navigation: DEFAULT_NAVIGATION_PREFERENCES,
+    }
 };
 
 // Setup functions
@@ -178,10 +181,10 @@ describe("useUserPreferences", () => {
                 accessibility: "",
             },
         ].forEach(({ scenario, accessibility }) => {
-            queryTest(`returns empty object when accessibility is ${scenario}`, async ({ setup }) => {
+            queryTest(`returns object with defaults when accessibility is ${scenario}`, async ({ setup }) => {
                 const result = await setup({ accessibility });
 
-                expect(result.current.data).toEqual({});
+                expect(result.current.data).toEqual(fixtures.defaults);
             });
         });
 
@@ -190,7 +193,10 @@ describe("useUserPreferences", () => {
                 accessibility: JSON.stringify(fixtures.existingPreferences),
             });
 
-            expect(result.current.data).toEqual(fixtures.existingPreferences);
+            expect(result.current.data).toEqual({
+                ...fixtures.defaults,
+                ...fixtures.existingPreferences,
+            });
         });
 
         queryTest("errors when invalid JSON", async ({ setup }) => {
@@ -212,6 +218,7 @@ describe("useUserPreferences", () => {
             // Should not error - catches and returns undefined for invalid fields
             expect(result.current.isError).toBe(false);
             expect(result.current.data).toEqual({
+                ...fixtures.defaults,
                 whatsNew: {
                     lastSeenDate: undefined,
                 },
@@ -236,6 +243,38 @@ describe("useUserPreferences", () => {
             expect(result.current.data).toBeUndefined();
         });
     });
+
+    describe("query options", () => {
+        queryTest("supports select option to transform data", async ({ server, wrapper }) => {
+            server.use(
+                http.get(USERS_API_URL, () => {
+                    return HttpResponse.json({
+                        users: [{
+                            ...mockUser,
+                            accessibility: JSON.stringify({
+                                navigation: {
+                                    expanded: { posts: false },
+                                    menu: { visible: true },
+                                },
+                                nightShift: true,
+                            }),
+                        }],
+                    });
+                })
+            );
+
+            const { result } = renderHook(() => useUserPreferences({
+                select: (data) => data.navigation,
+            }), { wrapper });
+
+            await waitForQuerySettled(result);
+
+            expect(result.current.data).toEqual({
+                expanded: { posts: false },
+                menu: { visible: true },
+            });
+        });
+    });
 });
 
 describe("useEditUserPreferences", () => {
@@ -251,6 +290,7 @@ describe("useEditUserPreferences", () => {
 
             await waitFor(() => {
                 expect(query.current.data).toEqual({
+                    ...fixtures.defaults,
                     existing: "value",
                     shared: "new",
                     additional: "data",
@@ -266,7 +306,10 @@ describe("useEditUserPreferences", () => {
             });
 
             await waitFor(() => {
-                expect(query.current.data).toEqual(fixtures.singlePreference);
+                expect(query.current.data).toEqual({
+                    ...fixtures.defaults,
+                    ...fixtures.singlePreference,
+                });
             });
         });
 
@@ -286,6 +329,36 @@ describe("useEditUserPreferences", () => {
                     await result.current.mutateAsync(fixtures.singlePreference);
                 })
             ).rejects.toThrow("User is not loaded");
+        });
+    });
+
+    describe("deep merge behavior", () => {
+        editTest("deep merges nested objects while preserving sibling properties", async ({ setup }) => {
+            const { query, mutation } = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: false },
+                        menu: { visible: true },
+                    },
+                    nightShift: true,
+                }),
+            });
+
+            await act(async () => {
+                await mutation.current.mutateAsync({
+                    navigation: { expanded: { posts: true } },
+                });
+            });
+
+            await waitFor(() => {
+                expect(query.current.data).toEqual({
+                    navigation: {
+                        expanded: { posts: true },
+                        menu: { visible: true }, // Preserved
+                    },
+                    nightShift: true, // Preserved
+                });
+            });
         });
     });
 });
