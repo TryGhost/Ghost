@@ -137,6 +137,73 @@ describe('PostsStatsService', function () {
         await _createPaidConversionEvent(conversionPostId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
     }
 
+    // Helper functions for page attribution (attribution_type: 'page')
+    async function _createFreeSignupEventForPage(pageId, memberId, referrerSource, createdAt = new Date()) {
+        eventIdCounter += 1;
+        const eventId = `free_event_${eventIdCounter}`;
+        await db('members_created_events').insert({
+            id: eventId,
+            member_id: memberId,
+            attribution_id: pageId,
+            attribution_type: 'page',
+            attribution_url: `/${pageId.replace('page', 'page-')}/`,
+            referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
+            created_at: moment(createdAt).utc().toISOString(),
+            source: 'member'
+        });
+    }
+
+    async function _createPaidConversionEventForPage(pageId, memberId, subscriptionId, mrr, referrerSource, createdAt = new Date()) {
+        eventIdCounter += 1;
+        const subCreatedEventId = `sub_created_${eventIdCounter}`;
+        const paidEventId = `paid_event_${eventIdCounter}`;
+
+        await db('members_subscription_created_events').insert({
+            id: subCreatedEventId,
+            member_id: memberId,
+            subscription_id: subscriptionId,
+            attribution_id: pageId,
+            attribution_type: 'page',
+            attribution_url: `/${pageId.replace('page', 'page-')}/`,
+            referrer_source: referrerSource,
+            referrer_url: referrerSource ? `https://${referrerSource}` : null,
+            created_at: moment(createdAt).utc().toISOString()
+        });
+
+        await db('members_paid_subscription_events').insert({
+            id: paidEventId,
+            member_id: memberId,
+            subscription_id: subscriptionId,
+            mrr_delta: mrr,
+            created_at: moment(createdAt).utc().toISOString()
+        });
+    }
+
+    async function _createFreeSignupForPage(pageId, referrerSource, memberId = null) {
+        memberIdCounter += 1;
+        const finalMemberId = memberId || `member_${memberIdCounter}`;
+        await _createFreeSignupEventForPage(pageId, finalMemberId, referrerSource);
+    }
+
+    async function _createPaidSignupForPage(pageId, mrr, referrerSource, memberId = null, subscriptionId = null) {
+        memberIdCounter += 1;
+        const finalMemberId = memberId || `member_${memberIdCounter}`;
+        subscriptionIdCounter += 1;
+        const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
+        await _createFreeSignupEventForPage(pageId, finalMemberId, referrerSource);
+        await _createPaidConversionEventForPage(pageId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
+    }
+
+    async function _createPaidConversionForPage(signupPageId, conversionPageId, mrr, referrerSource, memberId = null, subscriptionId = null) {
+        memberIdCounter += 1;
+        const finalMemberId = memberId || `member_${memberIdCounter}`;
+        subscriptionIdCounter += 1;
+        const finalSubscriptionId = subscriptionId || `sub_${subscriptionIdCounter}`;
+        await _createFreeSignupEventForPage(signupPageId, finalMemberId, referrerSource);
+        await _createPaidConversionEventForPage(conversionPageId, finalMemberId, finalSubscriptionId, mrr, referrerSource);
+    }
+
     async function _createRedirect(postId, redirectId = null) {
         const finalRedirectId = redirectId || `redirect_${postId}`;
         await db('redirects').insert({
@@ -687,6 +754,20 @@ describe('PostsStatsService', function () {
 
             const expectedResults = [
                 {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('returns growth stats for a page', async function () {
+            await _createFreeSignupForPage('page1', 'referrer_1');
+            await _createPaidSignupForPage('page1', 500, 'referrer_1');
+            await _createPaidConversionForPage('page1', 'page2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('page1');
+
+            const expectedResults = [
+                {post_id: 'page1', free_members: 2, paid_members: 1, mrr: 500}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
