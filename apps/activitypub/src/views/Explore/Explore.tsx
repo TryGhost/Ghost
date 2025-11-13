@@ -121,8 +121,8 @@ const Explore: React.FC = () => {
     const {exploreProfilesQuery, updateExploreProfile} = shouldUseLegacy ? legacyQuery : topicBasedQuery;
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
-    const emptyProfiles = Array(10).fill({
-        id: '',
+    const emptyProfiles = Array(10).fill(null).map((_, i) => ({
+        id: `skeleton-${i}`,
         name: '',
         handle: '',
         avatarUrl: '',
@@ -130,12 +130,11 @@ const Explore: React.FC = () => {
         followerCount: 0,
         followingCount: 0,
         followedByMe: false
-    });
+    }));
 
 
     const profiles = shouldUseLegacy
-        ? (exploreProfilesData?.pages.flatMap(page =>
-            Object.values(page.results).flatMap(category => category.sites)
+        ? (exploreProfilesData?.pages.flatMap(page => Object.values(page.results).flatMap(category => category.sites)
         ) || [])
         : (exploreProfilesData?.pages.flatMap(page => page.accounts) || []);
 
@@ -178,8 +177,8 @@ const Explore: React.FC = () => {
             <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
                 {isLoadingExploreProfiles ? (
                     <div>
-                        {emptyProfiles.map((profile, index) => (
-                            <div key={`skeleton-${index}`} className='mx-auto w-full max-w-[640px]'>
+                        {emptyProfiles.map((profile) => (
+                            <div key={profile.id} className='mx-auto w-full max-w-[640px]'>
                                 <ExploreProfile
                                     isLoading={isLoadingExploreProfiles}
                                     profile={profile}
