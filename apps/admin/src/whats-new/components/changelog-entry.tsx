@@ -19,7 +19,7 @@ function formatPublishedDate(date: Date): string {
 function ChangelogEntry({ entry }: ChangelogEntryProps) {
     return (
         <a
-            className="flex items-start gap-6 p-2 -mx-2 rounded-md hover:bg-gray-50 transition-colors"
+            className="flex items-start gap-6 p-2 -mx-2 rounded-md hover:bg-muted/80 transition-colors"
             data-test-entry
             href={entry.url}
             rel="noopener noreferrer"
@@ -34,7 +34,7 @@ function ChangelogEntry({ entry }: ChangelogEntryProps) {
                 />
             )}
             <div className="flex flex-col gap-2 min-w-0 flex-1">
-                <h2 className="text-[17px] font-semibold text-gray-900 mt-1.5" data-test-entry-title>
+                <h2 className="text-[17px] font-semibold text-foreground mt-1.5" data-test-entry-title>
                     {entry.title}
                 </h2>
                 <p className="text-sm text-gray-700 leading-[1.45] line-clamp-2" data-test-entry-excerpt>
