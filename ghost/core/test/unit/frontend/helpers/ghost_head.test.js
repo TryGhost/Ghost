@@ -1402,6 +1402,22 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
         });
 
+        it('removes double slashes from endpoint with subdirectory URL', async function () {
+            configUtils.set('url', 'http://example.com/blog/');
+            configUtils.set('tinybird:tracker:endpoint', 'http://example.com/blog//.ghost/analytics/api/v1/page_hit');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="http:\/\/example\.com\/blog\/\.ghost\/analytics\/api\/v1\/page_hit"/);
+            rendered.should.not.match(/data-host="http:\/\/example\.com\/blog\/\/\.ghost\/analytics\/api\/v1\/page_hit"/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {

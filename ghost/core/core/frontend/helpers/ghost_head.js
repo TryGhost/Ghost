@@ -164,9 +164,24 @@ function getTinybirdTrackerScript(dataRoot) {
     const localConfig = config.get('tinybird:tracker:local');
     const localEnabled = localConfig?.enabled ?? false;
 
-    const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
+    let endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
     const token = localEnabled ? localConfig.token : statsConfig.token;
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
+
+    if (endpoint) {
+        try {
+            const url = new URL(endpoint);
+            // Remove multiple consecutive slashes (e.g., // or ///) and replace with a single slash
+            // This prevents URLs like example.com/blog//.ghost/analytics becoming example.com/blog/.ghost/analytics
+            url.pathname = url.pathname.replace(/\/{2,}/g, '/');
+            endpoint = url.toString();
+        } catch (e) {
+            // Fallback for invalid URLs: match a non-colon character followed by a slash, then one or more slashes
+            // Replace with just the first slash (preserving protocol like https://)
+            // Pattern breakdown: ([^:]\/) captures a non-colon char + slash, \/+ matches additional slashes
+            endpoint = endpoint.replace(/([^:]\/)\/+/g, '$1');
+        }
+    }
 
     const tbParams = _.map({
         site_uuid: settingsCache.get('site_uuid'),

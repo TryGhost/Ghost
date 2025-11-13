@@ -1794,6 +1794,58 @@ Object {
 }
 `;
 
+exports[`{{ghost_head}} helper includes tinybird tracker script when config is set removes double slashes from endpoint with subdirectory URL 1 1`] = `
+Object {
+  "rendered": "<meta name=\\"description\\" content=\\"site description\\">
+    <link rel=\\"canonical\\" href=\\"http://example.com/blog/\\">
+    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
+    
+    <meta property=\\"og:site_name\\" content=\\"Ghost\\">
+    <meta property=\\"og:type\\" content=\\"website\\">
+    <meta property=\\"og:title\\" content=\\"Ghost\\">
+    <meta property=\\"og:description\\" content=\\"site description\\">
+    <meta property=\\"og:url\\" content=\\"http://example.com/blog/\\">
+    <meta property=\\"og:image\\" content=\\"http://example.com/blog/content/images/site-cover.png\\">
+    <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
+    <meta name=\\"twitter:title\\" content=\\"Ghost\\">
+    <meta name=\\"twitter:description\\" content=\\"site description\\">
+    <meta name=\\"twitter:url\\" content=\\"http://example.com/blog/\\">
+    <meta name=\\"twitter:image\\" content=\\"http://example.com/blog/content/images/site-cover.png\\">
+    
+    <script type=\\"application/ld+json\\">
+{
+    \\"@context\\": \\"https://schema.org\\",
+    \\"@type\\": \\"WebSite\\",
+    \\"publisher\\": {
+        \\"@type\\": \\"Organization\\",
+        \\"name\\": \\"Ghost\\",
+        \\"url\\": \\"http://example.com/blog/\\",
+        \\"logo\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://example.com/blog/favicon.ico\\"
+        }
+    },
+    \\"url\\": \\"http://example.com/blog/\\",
+    \\"name\\": \\"Ghost\\",
+    \\"image\\": {
+        \\"@type\\": \\"ImageObject\\",
+        \\"url\\": \\"/content/images/site-cover.png\\"
+    },
+    \\"mainEntityOfPage\\": \\"http://example.com/blog/\\",
+    \\"description\\": \\"site description\\"
+}
+    </script>
+
+    <meta name=\\"generator\\" content=\\"Ghost 4.3\\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://example.com/blog/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://example.com/blog/webmentions/receive/\\" rel=\\"webmention\\">
+    <script defer src=\\"/blog/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"http://example.com/blog/.ghost/analytics/api/v1/page_hit\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"77f09c60-5a34-4b4c-a3f6-e1b1d78f7412\\" tb_post_uuid=\\"undefined\\" tb_post_type=\\"null\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+}
+`;
+
 exports[`{{ghost_head}} helper includes tinybird tracker script when config is set sets both tb_member_x variables and tb_post_uuid on logged in post page 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
