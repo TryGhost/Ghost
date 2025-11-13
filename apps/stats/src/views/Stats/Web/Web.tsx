@@ -1,16 +1,17 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import SourcesCard from './components/SourcesCard';
+import StatsFilter from '../components/StatsFilter';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
-import {CampaignType, Card, CardContent, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {CampaignType, Card, CardContent, Filter, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getAudienceQueryParam} from '../components/AudienceSelect';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface SourcesData {
@@ -47,13 +48,17 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
+// Empty object constant to use as stable reference when no UTM filters
+// const EMPTY_UTM_PARAMS: Record<string, string> = {};
+
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
     const [selectedTab, setSelectedTab] = useState<TabType>('sources');
     const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
-    
+    const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
+
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
 
@@ -61,14 +66,44 @@ const Web: React.FC = () => {
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
 
-    // Prepare query parameters
-    const params = {
+    // Convert UTM filters to query parameters
+    // Note: Currently only 'is' operator is supported by Tinybird pipes
+    // Use a stable reference for the dependency to avoid unnecessary recalculations
+    const utmFilterParamsKey = useMemo(() => {
+        // Create a stable key based only on filters with actual non-empty values
+        return utmFilters
+            .filter(f => f.values && f.values.length > 0 && f.values[0] !== '' && f.values[0] !== null && f.values[0] !== undefined)
+            .map(f => `${f.field}:${f.values![0]}`)
+            .sort()
+            .join('|');
+    }, [utmFilters]);
+
+    const utmFilterParams = useMemo(() => {
+        const filterParams: Record<string, string> = {};
+
+        utmFilters.forEach((filter) => {
+            const fieldKey = filter.field;
+            const values = filter.values;
+
+            // Only handle 'is' operator with exact match and non-empty values
+            if (values && values.length > 0 && values[0] !== '' && values[0] !== null && values[0] !== undefined) {
+                const value = String(values[0]);
+                filterParams[fieldKey] = value;
+            }
+        });
+
+        return filterParams;
+    }, [utmFilterParamsKey]); // Depend on the key, not the full filters array
+
+    // Prepare query parameters - memoized to prevent unnecessary refetches
+    const params = useMemo(() => ({
         site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
+        member_status: getAudienceQueryParam(audience),
+        ...utmFilterParams
+    }), [statsConfig?.id, startDate, endDate, timezone, audience, utmFilterParams]);
 
     const queryParams: Record<string, string> = {
         date_from: formatQueryDate(startDate),
@@ -121,7 +156,7 @@ const Web: React.FC = () => {
             if (!utmData) {
                 return null;
             }
-            
+
             // Map UTM field names to the generic key name
             const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
@@ -131,12 +166,12 @@ const Web: React.FC = () => {
                 'UTM contents': 'utm_content',
                 'UTM terms': 'utm_term'
             };
-            
+
             const utmKey = utmKeyMap[selectedCampaign];
             if (!utmKey) {
                 return utmData;
             }
-            
+
             // Transform the data to use 'source' as the key, omitting the original utm_* field
             return utmData.map((item: SourcesData) => {
                 const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
@@ -146,7 +181,7 @@ const Web: React.FC = () => {
                 };
             });
         }
-        
+
         // Default to regular sources data
         return sourcesData;
     }, [sourcesData, utmData, selectedTab, selectedCampaign]);
@@ -166,9 +201,14 @@ const Web: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <AudienceSelect />
+                {/* <AudienceSelect /> */}
                 <DateRangeSelect />
             </StatsHeader>
+            <StatsFilter
+                filters={utmFilters}
+                utmTrackingEnabled={utmTrackingEnabled}
+                onChange={setUtmFilters}
+            />
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
@@ -183,6 +223,7 @@ const Web: React.FC = () => {
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}
+                        utmFilterParams={utmFilterParams}
                     />
                     <SourcesCard
                         data={displayData as SourcesData[] | null}
