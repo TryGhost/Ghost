@@ -66,10 +66,10 @@ const Web: React.FC = () => {
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
 
-    // Convert UTM filters to query parameters
+    // Convert all filters to query parameters
     // Note: Currently only 'is' operator is supported by Tinybird pipes
     // Use a stable reference for the dependency to avoid unnecessary recalculations
-    const utmFilterParamsKey = useMemo(() => {
+    const filterParamsKey = useMemo(() => {
         // Create a stable key based only on filters with actual non-empty values
         return utmFilters
             .filter(f => f.values && f.values.length > 0 && f.values[0] !== '' && f.values[0] !== null && f.values[0] !== undefined)
@@ -78,8 +78,8 @@ const Web: React.FC = () => {
             .join('|');
     }, [utmFilters]);
 
-    const utmFilterParams = useMemo(() => {
-        const filterParams: Record<string, string> = {};
+    const filterParams = useMemo(() => {
+        const params: Record<string, string> = {};
 
         utmFilters.forEach((filter) => {
             const fieldKey = filter.field;
@@ -88,12 +88,23 @@ const Web: React.FC = () => {
             // Only handle 'is' operator with exact match and non-empty values
             if (values && values.length > 0 && values[0] !== '' && values[0] !== null && values[0] !== undefined) {
                 const value = String(values[0]);
-                filterParams[fieldKey] = value;
+                
+                // Map filter field names to Tinybird parameter names
+                // UTM fields map directly, but post and source need mapping
+                if (fieldKey === 'post') {
+                    params.post_uuid = value;
+                } else if (fieldKey === 'source') {
+                    params.source = value;
+                } else {
+                    // UTM fields and other fields map directly
+                    params[fieldKey] = value;
+                }
             }
         });
 
-        return filterParams;
-    }, [utmFilterParamsKey]); // Depend on the key, not the full filters array
+        return params;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterParamsKey]); // Depend on the key, not the full filters array
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
@@ -102,8 +113,8 @@ const Web: React.FC = () => {
         date_to: formatQueryDate(endDate),
         timezone: timezone,
         member_status: getAudienceQueryParam(audience),
-        ...utmFilterParams
-    }), [statsConfig?.id, startDate, endDate, timezone, audience, utmFilterParams]);
+        ...filterParams
+    }), [statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
 
     const queryParams: Record<string, string> = {
         date_from: formatQueryDate(startDate),
@@ -140,11 +151,32 @@ const Web: React.FC = () => {
     };
 
     // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
+    // When viewing a UTM tab, exclude that specific UTM field from filters so we can see all values
     const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
+    const utmKeyMap: Record<CampaignType, string> = {
+        '': '',
+        'UTM sources': 'utm_source',
+        'UTM mediums': 'utm_medium',
+        'UTM campaigns': 'utm_campaign',
+        'UTM contents': 'utm_content',
+        'UTM terms': 'utm_term'
+    };
+    const currentUtmKey = selectedCampaign ? utmKeyMap[selectedCampaign] : '';
+    
+    // Create params without the current UTM field filter when viewing that tab
+    const utmParams = useMemo(() => {
+        if (!currentUtmKey) {
+            return params;
+        }
+        const restParams: Record<string, string> = {...params};
+        delete restParams[currentUtmKey];
+        return restParams;
+    }, [params, currentUtmKey]);
+    
     const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
         endpoint: campaignEndpoint,
         statsConfig,
-        params,
+        params: utmParams,
         enabled: utmTrackingEnabled && selectedTab === 'campaigns' && !!selectedCampaign
     });
 
@@ -156,16 +188,6 @@ const Web: React.FC = () => {
             if (!utmData) {
                 return null;
             }
-
-            // Map UTM field names to the generic key name
-            const utmKeyMap: Record<CampaignType, string> = {
-                '': '',
-                'UTM sources': 'utm_source',
-                'UTM mediums': 'utm_medium',
-                'UTM campaigns': 'utm_campaign',
-                'UTM contents': 'utm_content',
-                'UTM terms': 'utm_term'
-            };
 
             const utmKey = utmKeyMap[selectedCampaign];
             if (!utmKey) {
@@ -184,7 +206,8 @@ const Web: React.FC = () => {
 
         // Default to regular sources data
         return sourcesData;
-    }, [sourcesData, utmData, selectedTab, selectedCampaign]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sourcesData, utmData, selectedTab, selectedCampaign]); // utmKeyMap is stable, doesn't need to be in deps
 
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
@@ -223,7 +246,7 @@ const Web: React.FC = () => {
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}
-                        utmFilterParams={utmFilterParams}
+                        utmFilterParams={filterParams}
                     />
                     <SourcesCard
                         data={displayData as SourcesData[] | null}
