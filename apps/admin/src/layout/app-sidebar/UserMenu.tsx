@@ -14,6 +14,7 @@ import {
     SidebarMenuButton,
     Switch
 } from "@tryghost/shade"
+import { Link } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
@@ -103,9 +104,11 @@ function UserMenu(props: UserMenuProps) {
                         </div>
                     )}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-base">
-                    <LucideIcon.User />
-                    <span>Your profile</span>
+                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                    <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+                        <LucideIcon.User />
+                        <span>Your profile</span>
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
