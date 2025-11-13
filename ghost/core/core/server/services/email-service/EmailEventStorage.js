@@ -7,6 +7,7 @@ class EmailEventStorage {
     #models;
     #emailSuppressionList;
     #prometheusClient;
+    #pendingUpdates;
 
     constructor({db, models, membersRepository, emailSuppressionList, prometheusClient}) {
         this.#db = db;
@@ -14,6 +15,13 @@ class EmailEventStorage {
         this.#membersRepository = membersRepository;
         this.#emailSuppressionList = emailSuppressionList;
         this.#prometheusClient = prometheusClient;
+
+        // Accumulate events for batch processing
+        this.#pendingUpdates = {
+            delivered: new Map(), // recipientId -> timestamp
+            opened: new Map(),
+            failed: new Map()
+        };
 
         if (this.#prometheusClient) {
             this.#prometheusClient.registerCounter({
@@ -25,38 +33,28 @@ class EmailEventStorage {
     }
 
     async handleDelivered(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if delivered_at is null
-        const rowCount = await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('delivered_at')
-            .update({
-                delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
-        this.recordEventStored('delivered', rowCount);
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.delivered.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.delivered.set(event.emailRecipientId, event.timestamp);
+        }
     }
 
     async handleOpened(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if opened_at is null
-        const rowCount = await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('opened_at')
-            .update({
-                opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
-        this.recordEventStored('opened', rowCount);
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.opened.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.opened.set(event.emailRecipientId, event.timestamp);
+        }
     }
 
     async handlePermanentFailed(event) {
-        // To properly handle events that are received out of order (this happens because of polling)
-        // only set if failed_at is null
-        await this.#db.knex('email_recipients')
-            .where('id', '=', event.emailRecipientId)
-            .whereNull('failed_at')
-            .update({
-                failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
-            });
+        // Accumulate for batch processing - keep newest timestamp if duplicate
+        const existing = this.#pendingUpdates.failed.get(event.emailRecipientId);
+        if (!existing || event.timestamp > existing) {
+            this.#pendingUpdates.failed.set(event.emailRecipientId, event.timestamp);
+        }
+        // Still need to save failure record immediately (separate table)
         await this.saveFailure('permanent', event);
     }
 
@@ -181,6 +179,102 @@ class EmailEventStorage {
         } catch (err) {
             logging.error('Error recording email analytics event stored', err);
         }
+    }
+
+    /**
+     * Flush all pending batched updates to the database
+     * Uses CASE statements to update multiple recipients in a single query
+     * @returns {Promise<{delivered: number, opened: number, failed: number}>} Count of rows updated
+     */
+    async flushBatchedUpdates() {
+        const eventTypes = [
+            {name: 'delivered', map: this.#pendingUpdates.delivered, column: 'delivered_at'},
+            {name: 'opened', map: this.#pendingUpdates.opened, column: 'opened_at'},
+            {name: 'failed', map: this.#pendingUpdates.failed, column: 'failed_at'}
+        ];
+
+        // Collect all unique recipient IDs that need updating
+        const allRecipientIds = new Set(
+            eventTypes.flatMap(type => Array.from(type.map.keys()))
+        );
+
+        if (allRecipientIds.size === 0) {
+            return {delivered: 0, opened: 0, failed: 0};
+        }
+
+        const recipientIds = Array.from(allRecipientIds);
+
+        // Build CASE statements for each event type with parameterized queries
+        const setClauses = [];
+        const bindings = [];
+
+        for (const {map, column} of eventTypes) {
+            const cases = [];
+            const caseBindings = [];
+
+            for (const recipientId of recipientIds) {
+                const timestamp = map.get(recipientId);
+                if (timestamp) {
+                    const formattedTime = moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss');
+                    cases.push(`WHEN ? THEN ?`);
+                    caseBindings.push(recipientId, formattedTime);
+                }
+            }
+
+            if (cases.length > 0) {
+                // Only update if current value is NULL (handles out-of-order events)
+                setClauses.push(`${column} = CASE WHEN ${column} IS NULL THEN CASE id ${cases.join(' ')} ELSE ${column} END ELSE ${column} END`);
+                bindings.push(...caseBindings);
+            }
+        }
+
+        if (setClauses.length === 0) {
+            return {delivered: 0, opened: 0, failed: 0};
+        }
+
+        // Add recipientIds for WHERE IN clause
+        recipientIds.forEach(id => bindings.push(id));
+
+        // Execute the batch update
+        await this.#db.knex.raw(`
+            UPDATE email_recipients
+            SET ${setClauses.join(', ')}
+            WHERE id IN (${recipientIds.map(() => '?').join(',')})
+        `, bindings);
+
+        // Record metrics and collect counts
+        const counts = {delivered: 0, opened: 0, failed: 0};
+        for (const type of eventTypes) {
+            this.recordEventStored(type.name, type.map.size);
+            counts[type.name] = type.map.size;
+            type.map.clear();
+        }
+
+        return counts;
+    }
+
+    /**
+     * Get the count of pending updates waiting to be flushed
+     * @returns {{delivered: number, opened: number, failed: number, total: number}}
+     */
+    getPendingUpdateCount() {
+        const delivered = this.#pendingUpdates.delivered.size;
+        const opened = this.#pendingUpdates.opened.size;
+        const failed = this.#pendingUpdates.failed.size;
+
+        // Count unique recipients across all types
+        const allRecipientIds = new Set([
+            ...this.#pendingUpdates.delivered.keys(),
+            ...this.#pendingUpdates.opened.keys(),
+            ...this.#pendingUpdates.failed.keys()
+        ]);
+
+        return {
+            delivered,
+            opened,
+            failed,
+            total: allRecipientIds.size
+        };
     }
 }
 
