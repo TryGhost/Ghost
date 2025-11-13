@@ -220,6 +220,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
+    "@aws-sdk/client-ses": "3.709.0",
     "@tryghost/html-to-mobiledoc": "3.2.8",
     "sqlite3": "5.1.7"
   },

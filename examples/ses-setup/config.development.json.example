@@ -1,0 +1,15 @@
+{
+    "enableDeveloperExperiments": true,
+    "adapters": {
+        "email": {
+            "active": "ses",
+            "ses": {
+                "region": "us-west-2",
+                "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                "secretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                "fromEmail": "newsletter@yourdomain.com",
+                "configurationSet": "ses-analytics"
+            }
+        }
+    }
+}
