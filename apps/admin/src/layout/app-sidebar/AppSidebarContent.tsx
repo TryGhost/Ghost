@@ -22,8 +22,7 @@ function AppSidebarContent() {
                 <NavGhostPro />
             </div>
             <div className="flex flex-col gap-2 sidebar:gap-4">
-                <WhatsNewBanner />
-                {showUpgradeBanner && <UpgradeBanner trialDaysRemaining={trialDaysRemaining} />}
+                {showUpgradeBanner ? <UpgradeBanner trialDaysRemaining={trialDaysRemaining} /> : <WhatsNewBanner />}
                 <NavSettings className="pb-0" />
             </div>
         </SidebarContent>
