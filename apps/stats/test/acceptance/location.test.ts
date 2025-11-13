@@ -1,4 +1,4 @@
-import LocationsTab from './pages/LocationsTab.ts';
+import LocationsTab from './pages/locations-tab.ts';
 import {addAnalyticsEvent, statsConfig} from '../utils/tinybird-helpers.ts';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
