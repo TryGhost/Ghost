@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -53,7 +53,7 @@ const Growth: React.FC = () => {
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
     // Get growth data with post_type filtering - only call when not on Sources tab
-    const {data: topPostsData} = useTopPostsStatsWithRange(
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsStatsWithRange(
         range,
         sortBy as TopPostsOrder,
         selectedContentType as 'posts' | 'pages' | 'posts_and_pages'
@@ -120,6 +120,7 @@ const Growth: React.FC = () => {
     }, [topPostsData, sortBy]);
 
     const isPageLoading = isLoading;
+    const isTableLoading = isLoading || isTopPostsLoading;
 
     return (
         <StatsLayout>
@@ -139,74 +140,70 @@ const Growth: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                {isPageLoading ?
-                    <Card className='min-h-[460px]'>
-                        <CardHeader>
-                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <SkeletonTable lines={5} />
-                        </CardContent>
-                    </Card>
-                    :
-                    <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-content-card'>
-                        <CardHeader>
-                            <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
-                            <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
-                                        <TableHead className='min-w-[320px] pl-0'>
-                                            <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
-                                                setSelectedContentType(value as ContentType);
-                                            }}>
-                                                <TabsList>
-                                                    <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
-                                                    <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
-                                                    <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
-                                                    <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
-                                                </TabsList>
-                                            </Tabs>
-                                        </TableHead>
-                                        <TableHead className='w-[140px] text-right'>
-                                            {appSettings?.paidMembersEnabled ?
-                                                <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
+                <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
+                    <CardHeader>
+                        <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
+                        <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className='[&>th]:h-auto [&>th]:pb-2 [&>th]:pt-0'>
+                                    <TableHead className='min-w-[320px] pl-0'>
+                                        <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
+                                            setSelectedContentType(value as ContentType);
+                                        }}>
+                                            <TabsList>
+                                                <TabsTrigger value={CONTENT_TYPES.POSTS_AND_PAGES}>Posts & pages</TabsTrigger>
+                                                <TabsTrigger value={CONTENT_TYPES.POSTS}>Posts</TabsTrigger>
+                                                <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
+                                                <TabsTrigger value={CONTENT_TYPES.SOURCES}>Sources</TabsTrigger>
+                                            </TabsList>
+                                        </Tabs>
+                                    </TableHead>
+                                    <TableHead className='w-[140px] text-right'>
+                                        {appSettings?.paidMembersEnabled ?
+                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
                                                 Free members
-                                                </SortButton>
-                                                :
-                                                <>Free members</>
-                                            }
-                                        </TableHead>
-                                        {appSettings?.paidMembersEnabled &&
+                                            </SortButton>
+                                            :
+                                            <>Free members</>
+                                        }
+                                    </TableHead>
+                                    {appSettings?.paidMembersEnabled &&
                                         <>
                                             <TableHead className='w-[140px] text-right'>
                                                 <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
-                                                Paid members
+                                                    Paid members
                                                 </SortButton>
                                             </TableHead>
                                             <TableHead className='w-[140px] text-right'>
                                                 <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                                                MRR impact
+                                                    MRR impact
                                                 </SortButton>
                                             </TableHead>
                                         </>
-                                        }
-                                    </TableRow>
-                                </TableHeader>
-                                {selectedContentType === CONTENT_TYPES.SOURCES ?
-                                    <GrowthSources
-                                        limit={20}
-                                        range={range}
-                                        setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
-                                        showViewAll={true}
-                                        sortBy={sortBy as SourcesOrder}
-                                    />
-                                    :
-                                    <TableBody>
-                                        {!appSettings?.analytics.membersTrackSources ? (
+                                    }
+                                </TableRow>
+                            </TableHeader>
+                            {selectedContentType === CONTENT_TYPES.SOURCES ?
+                                <GrowthSources
+                                    limit={20}
+                                    range={range}
+                                    setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
+                                    showViewAll={true}
+                                    sortBy={sortBy as SourcesOrder}
+                                />
+                                :
+                                <TableBody>
+                                    {isTableLoading ? (
+                                        <TableRow className='last:border-none'>
+                                            <TableCell className='border-none py-2' colSpan={1}>
+                                                <Skeleton containerClassName='space-y-2' count={5} maxWidth={75} randomize />
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
                                                 <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
                                                     <EmptyIndicator
@@ -250,14 +247,14 @@ const Growth: React.FC = () => {
                                                         {(post.free_members > 0 && '+')}{formatNumber(post.free_members)}
                                                     </TableCell>
                                                     {appSettings?.paidMembersEnabled &&
-                                                    <>
-                                                        <TableCell className='text-right font-mono text-sm'>
-                                                            {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
-                                                        </TableCell>
-                                                        <TableCell className='text-right font-mono text-sm'>
-                                                            {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
-                                                        </TableCell>
-                                                    </>
+                                                        <>
+                                                            <TableCell className='text-right font-mono text-sm'>
+                                                                {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
+                                                            </TableCell>
+                                                            <TableCell className='text-right font-mono text-sm'>
+                                                                {(post.mrr > 0 && '+')}{currencySymbol}{centsToDollars(post.mrr).toFixed(0)}
+                                                            </TableCell>
+                                                        </>
                                                     }
                                                 </TableRow>
                                             ))
@@ -272,13 +269,13 @@ const Growth: React.FC = () => {
                                                     </EmptyIndicator>
                                                 </TableCell>
                                             </TableRow>
-                                        )}
-                                    </TableBody>
-                                }
-                            </Table>
-                        </CardContent>
-                    </Card>
-                }
+                                        )
+                                    )}
+                                </TableBody>
+                            }
+                        </Table>
+                    </CardContent>
+                </Card>
             </StatsView>
         </StatsLayout>
     );
