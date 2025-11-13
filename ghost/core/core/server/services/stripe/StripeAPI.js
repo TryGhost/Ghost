@@ -409,6 +409,9 @@ module.exports = class StripeAPI {
      * @returns {Promise<IWebhookEndpoint>}
      */
     async createWebhookEndpoint(url, events) {
+        const logging = require('@tryghost/logging');
+        logging.info(`[Stripe Webhook] StripeAPI.createWebhookEndpoint() called - url: ${url}, events_count: ${events?.length || 0}, _stripe_configured: ${!!this._stripe}`);
+        
         debug(`createWebhook(${url})`);
         try {
             await this._rateLimitBucket.throttle();
@@ -417,9 +420,11 @@ module.exports = class StripeAPI {
                 enabled_events: events,
                 api_version: STRIPE_API_VERSION
             });
+            logging.info(`[Stripe Webhook] createWebhookEndpoint() - webhook created in Stripe - webhook_id: ${webhook.id}, has_secret: ${!!webhook.secret}, url: ${webhook.url}`);
             debug(`createWebhook(${url}) -> Success`);
             return webhook;
         } catch (err) {
+            logging.error(`[Stripe Webhook] createWebhookEndpoint() failed - url: ${url}, error: ${err.message}, type: ${err.type || 'none'}, code: ${err.code || 'none'}`, err);
             debug(`createWebhook(${url}) -> ${err.type}`);
             throw err;
         }
@@ -433,13 +438,18 @@ module.exports = class StripeAPI {
      * @returns {Promise<void>}
      */
     async deleteWebhookEndpoint(id) {
+        const logging = require('@tryghost/logging');
+        logging.info(`[Stripe Webhook] StripeAPI.deleteWebhookEndpoint() called - webhook_id: ${id}, _stripe_configured: ${!!this._stripe}`);
+        
         debug(`deleteWebhook(${id})`);
         try {
             await this._rateLimitBucket.throttle();
             await this._stripe.webhookEndpoints.del(id);
+            logging.info(`[Stripe Webhook] deleteWebhookEndpoint() - webhook deleted from Stripe - webhook_id: ${id}`);
             debug(`deleteWebhook(${id}) -> Success`);
             return;
         } catch (err) {
+            logging.error(`[Stripe Webhook] deleteWebhookEndpoint() failed - webhook_id: ${id}, error: ${err.message}, type: ${err.type || 'none'}, code: ${err.code || 'none'}`, err);
             debug(`deleteWebhook(${id}) -> ${err.type}`);
             throw err;
         }
@@ -455,6 +465,9 @@ module.exports = class StripeAPI {
      * @returns {Promise<IWebhookEndpoint>}
      */
     async updateWebhookEndpoint(id, url, events) {
+        const logging = require('@tryghost/logging');
+        logging.info(`[Stripe Webhook] StripeAPI.updateWebhookEndpoint() called - webhook_id: ${id}, url: ${url}, events_count: ${events?.length || 0}, _stripe_configured: ${!!this._stripe}`);
+        
         debug(`updateWebhook(${id}, ${url})`);
         try {
             await this._rateLimitBucket.throttle();
@@ -463,11 +476,14 @@ module.exports = class StripeAPI {
                 enabled_events: events
             });
             if (webhook.api_version !== STRIPE_API_VERSION) {
+                logging.error(`[Stripe Webhook] updateWebhookEndpoint() - API version mismatch - webhook_id: ${id}, expected_version: ${STRIPE_API_VERSION}, actual_version: ${webhook.api_version}`);
                 throw new VersionMismatchError({message: 'Webhook has incorrect api_version'});
             }
+            logging.info(`[Stripe Webhook] updateWebhookEndpoint() - webhook updated in Stripe - webhook_id: ${id}, url: ${webhook.url}`);
             debug(`updateWebhook(${id}, ${url}) -> Success`);
             return webhook;
         } catch (err) {
+            logging.error(`[Stripe Webhook] updateWebhookEndpoint() failed - webhook_id: ${id}, url: ${url}, error: ${err.message}, type: ${err.type || 'none'}, code: ${err.code || 'none'}`, err);
             debug(`updateWebhook(${id}, ${url}) -> ${err.type}`);
             throw err;
         }
