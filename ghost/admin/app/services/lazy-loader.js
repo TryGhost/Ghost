@@ -79,7 +79,18 @@ export default class LazyLoaderService extends Service {
                 link.title = key;
             }
 
-            document.querySelector('head').appendChild(link);
+            // Try to insert lazy loaded styles after the first set of links in
+            // the head to ensure any styles related to Ember are loaded before
+            // the React admin shell. 
+            let existingLink = document.querySelector('head link[rel="stylesheet"]:first-of-type');
+            if (existingLink) {
+                while (existingLink.nextElementSibling && existingLink.nextElementSibling.tagName === 'LINK') {
+                    existingLink = existingLink.nextElementSibling;
+                }
+                existingLink.insertAdjacentElement('afterend', link);
+            } else {
+                document.querySelector('head').appendChild(link);
+            }
         });
     }
 }
