@@ -196,8 +196,8 @@ export function canManageMembers(user: User) {
 }
 
 export function canManageTags(user: User) {
-    // Admin or Editor can manage tags
-    return isAdminUser(user) || isEditorUser(user);
+    // Owner, Admin or Editor can manage tags
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 
 export function hasAdminAccess(user: User) {
