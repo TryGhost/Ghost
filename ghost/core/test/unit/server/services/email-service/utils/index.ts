@@ -1,11 +1,30 @@
-const ObjectId = require('bson-objectid').default;
-const sinon = require('sinon');
+import ObjectId from 'bson-objectid';
+import sinon from 'sinon';
 
-const createModel = (propertiesAndRelations) => {
+interface ModelProperties {
+    id?: string;
+    loaded?: string[];
+    [key: string]: any;
+}
+
+interface TestModel {
+    id: string | null;
+    // eslint-disable-next-line no-unused-vars
+    getLazyRelation: (relation: string) => Promise<any>;
+    // eslint-disable-next-line no-unused-vars
+    related: (relation: string) => any;
+    // eslint-disable-next-line no-unused-vars
+    get: (property: string) => any;
+    // eslint-disable-next-line no-unused-vars
+    save: (properties: ModelProperties) => Promise<void>;
+    toJSON: () => any;
+}
+
+const createModel = (propertiesAndRelations: ModelProperties): TestModel => {
     const id = propertiesAndRelations.id ?? ObjectId().toHexString();
     return {
         id,
-        getLazyRelation: (relation) => {
+        getLazyRelation: (relation: string) => {
             propertiesAndRelations.loaded = propertiesAndRelations.loaded ?? [];
             if (!propertiesAndRelations.loaded.includes(relation)) {
                 propertiesAndRelations.loaded.push(relation);
@@ -14,23 +33,23 @@ const createModel = (propertiesAndRelations) => {
                 return Promise.resolve({
                     models: propertiesAndRelations[relation],
                     toJSON: () => {
-                        return propertiesAndRelations[relation].map(m => m.toJSON());
+                        return propertiesAndRelations[relation].map((m: TestModel) => m.toJSON());
                     }
                 });
             }
             return Promise.resolve(propertiesAndRelations[relation]);
         },
-        related: (relation) => {
+        related: (relation: string) => {
             if (!Object.keys(propertiesAndRelations).includes('loaded')) {
                 throw new Error(`Model.related('${relation}'): When creating a test model via createModel you must include 'loaded' to specify which relations are already loaded and useable via Model.related.`);
             }
-            if (!propertiesAndRelations.loaded.includes(relation)) {
+            if (!propertiesAndRelations.loaded!.includes(relation)) {
                 //throw new Error(`Model.related('${relation}') was used on a test model that didn't explicitly loaded that relation.`);
             }
             if (Array.isArray(propertiesAndRelations[relation])) {
                 const arr = [...propertiesAndRelations[relation]];
-                arr.toJSON = () => {
-                    return arr.map(m => m.toJSON());
+                (arr as any).toJSON = () => {
+                    return arr.map((m: TestModel) => m.toJSON());
                 };
                 return arr;
             }
@@ -46,10 +65,10 @@ const createModel = (propertiesAndRelations) => {
 
             return propertiesAndRelations[relation];
         },
-        get: (property) => {
+        get: (property: string) => {
             return propertiesAndRelations[property];
         },
-        save: (properties) => {
+        save: (properties: ModelProperties) => {
             Object.assign(propertiesAndRelations, properties);
             return Promise.resolve();
         },
@@ -62,15 +81,21 @@ const createModel = (propertiesAndRelations) => {
     };
 };
 
-const createModelClass = (options = {}) => {
+interface ModelClassOptions {
+    findOne?: any;
+    findAll?: any[];
+    [key: string]: any;
+}
+
+const createModelClass = (options: ModelClassOptions = {}) => {
     return {
         ...options,
         options,
-        add: async (properties) => {
+        add: async (properties: any) => {
             return Promise.resolve(createModel(properties));
         },
-        findOne: async (data, o) => {
-            if (options.findOne === null && o.require) {
+        findOne: async (data: any, o?: {require?: boolean}) => {
+            if (options.findOne === null && o?.require) {
                 return Promise.reject(new Error('NotFound'));
             }
             if (options.findOne === null) {
@@ -80,7 +105,7 @@ const createModelClass = (options = {}) => {
                 createModel({...options.findOne, ...data})
             );
         },
-        findAll: async (data) => {
+        findAll: async (data: any) => {
             const models = (options.findAll ?? []).map(f => createModel({...f, ...data}));
             return Promise.resolve({
                 models,
@@ -89,7 +114,7 @@ const createModelClass = (options = {}) => {
                 length: models.length
             });
         },
-        findPage: async (data) => {
+        findPage: async (data: any) => {
             const all = options.findAll ?? [];
             const limit = data.limit ?? 15;
             const page = data.page ?? 1;
@@ -100,7 +125,7 @@ const createModelClass = (options = {}) => {
             const pageData = all.slice(start, end);
             return Promise.resolve(
                 {
-                    data: pageData.map(f => createModel({...f, ...data})),
+                    data: pageData.map((f: any) => createModel({...f, ...data})),
                     meta: {
                         page,
                         limit
@@ -108,7 +133,8 @@ const createModelClass = (options = {}) => {
                 }
             );
         },
-        transaction: async (callback) => {
+        // eslint-disable-next-line no-unused-vars
+        transaction: async (callback: (transacting: any) => Promise<any>) => {
             const transacting = {transacting: 'transacting'};
             return await callback(transacting);
         },
@@ -121,9 +147,14 @@ const createModelClass = (options = {}) => {
     };
 };
 
-const createDb = ({first, all} = {}) => {
+interface DbOptions {
+    first?: any;
+    all?: any[];
+}
+
+const createDb = ({first, all}: DbOptions = {}) => {
     let a = all;
-    const db = {
+    const db: any = {
         knex: function () {
             return this;
         },
@@ -136,8 +167,8 @@ const createDb = ({first, all} = {}) => {
         select: function () {
             return this;
         },
-        limit: function (n) {
-            a = all.slice(0, n);
+        limit: function (n: number) {
+            a = all?.slice(0, n);
             return this;
         },
         update: sinon.stub().resolves(),
@@ -150,7 +181,8 @@ const createDb = ({first, all} = {}) => {
         first: () => {
             return Promise.resolve(first);
         },
-        then: function (resolve) {
+        // eslint-disable-next-line no-unused-vars
+        then: function (resolve: (value: any) => void) {
             resolve(a);
         },
         transacting: function () {
@@ -163,7 +195,13 @@ const createDb = ({first, all} = {}) => {
     return db;
 };
 
-const createPrometheusClient = ({registerCounterStub, getMetricStub, incStub} = {}) => {
+interface PrometheusClientOptions {
+    registerCounterStub?: sinon.SinonStub;
+    getMetricStub?: sinon.SinonStub;
+    incStub?: sinon.SinonStub;
+}
+
+const createPrometheusClient = ({registerCounterStub, getMetricStub, incStub}: PrometheusClientOptions = {}) => {
     return {
         registerCounter: registerCounterStub ?? sinon.stub(),
         getMetric: getMetricStub ?? sinon.stub().returns({
@@ -172,13 +210,13 @@ const createPrometheusClient = ({registerCounterStub, getMetricStub, incStub} = 
     };
 };
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 };
 
-module.exports = {
+export {
     createModel,
     createModelClass,
     createDb,
