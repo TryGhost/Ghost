@@ -3,6 +3,7 @@ const StripeAPI = require('./StripeAPI');
 const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
 const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
 const InvoiceEventService = require('./services/webhook/InvoiceEventService');
@@ -130,6 +131,8 @@ module.exports = class StripeService {
     }
 
     async disconnect() {
+        logging.info('[Stripe Webhook] StripeService.disconnect() called');
+        
         await this.models.Product.forge().query().update({
             monthly_price_id: null,
             yearly_price_id: null
@@ -140,11 +143,15 @@ module.exports = class StripeService {
         await this.models.Offer.forge().query().update({
             stripe_coupon_id: null
         });
+        
+        logging.info('[Stripe Webhook] disconnect() - calling webhookManager.stop()');
         await this.webhookManager.stop();
 
+        logging.info('[Stripe Webhook] disconnect() - configuring API to null');
         this.api.configure(null);
 
         DomainEvents.dispatch(StripeLiveDisabledEvent.create({message: 'Stripe Live Mode Disabled'}));
+        logging.info('[Stripe Webhook] disconnect() completed');
     }
 
     /**
@@ -152,6 +159,8 @@ module.exports = class StripeService {
      * @param {IStripeServiceConfig} config
      */
     async configure(config) {
+        logging.info(`[Stripe Webhook] StripeService.configure() called - has_secretKey: ${!!config?.secretKey}, has_publicKey: ${!!config?.publicKey}, has_webhookSecret: ${!!config?.webhookSecret}, webhookHandlerUrl: ${config?.webhookHandlerUrl || 'null'}, testEnv: ${config?.testEnv || false}`);
+        
         this.api.configure({
             secretKey: config.secretKey,
             publicKey: config.publicKey,
@@ -165,11 +174,16 @@ module.exports = class StripeService {
             checkoutSetupSessionCancelUrl: config.checkoutSetupSessionCancelUrl,
             testEnv: config.testEnv
         });
+        logging.info('[Stripe Webhook] configure() - Stripe API configured');
 
+        logging.info('[Stripe Webhook] configure() - configuring webhook manager');
         await this.webhookManager.configure({
             webhookSecret: config.webhookSecret,
             webhookHandlerUrl: config.webhookHandlerUrl
         });
+        
+        logging.info('[Stripe Webhook] configure() - starting webhook manager');
         await this.webhookManager.start();
+        logging.info('[Stripe Webhook] configure() completed successfully');
     }
 };

@@ -14,12 +14,17 @@ const staffService = require('../staff');
 const labs = require('../../../shared/labs');
 
 async function configureApi() {
+    logging.info('[Stripe Webhook] configureApi() called');
     const cfg = getConfig({settingsHelpers, config, urlUtils});
     if (cfg) {
+        logging.info(`[Stripe Webhook] configureApi() - config retrieved, configuring Stripe - has_secretKey: ${!!cfg.secretKey}, has_publicKey: ${!!cfg.publicKey}, has_webhookSecret: ${!!cfg.webhookSecret}, webhookHandlerUrl: ${cfg.webhookHandlerUrl || 'null'}`);
         // @NOTE: to not start test mode when running playwright suite
         cfg.testEnv = process.env.NODE_ENV.startsWith('test') && process.env.NODE_ENV !== 'testing-browser';
         await module.exports.configure(cfg);
+        logging.info('[Stripe Webhook] configureApi() - Stripe configured successfully');
         return true;
+    } else {
+        logging.info('[Stripe Webhook] configureApi() - no config available (Stripe not configured)');
     }
     return false;
 }
@@ -44,12 +49,17 @@ module.exports = new StripeService({
     ]),
     StripeWebhook: {
         async get() {
+            const webhook_id = settings.get('members_stripe_webhook_id');
+            const secret = settings.get('members_stripe_webhook_secret');
+            logging.info(`[Stripe Webhook] StripeWebhook.get() called - webhook_id: ${webhook_id || 'null'}, has_secret: ${!!secret}`);
             return {
-                webhook_id: settings.get('members_stripe_webhook_id'),
-                secret: settings.get('members_stripe_webhook_secret')
+                webhook_id,
+                secret
             };
         },
         async save(data) {
+            const setting_to_null = data.webhook_id === null || data.secret === null;
+            logging.info(`[Stripe Webhook] StripeWebhook.save() called - webhook_id: ${data.webhook_id || 'null'}, has_secret: ${!!data.secret}, setting_to_null: ${setting_to_null}`);
             await models.Settings.edit([{
                 key: 'members_stripe_webhook_id',
                 value: data.webhook_id
@@ -57,6 +67,7 @@ module.exports = new StripeService({
                 key: 'members_stripe_webhook_secret',
                 value: data.secret
             }]);
+            logging.info(`[Stripe Webhook] StripeWebhook.save() - settings saved - webhook_id: ${data.webhook_id || 'null'}, has_secret: ${!!data.secret}`);
         }
     },
     donationService,
