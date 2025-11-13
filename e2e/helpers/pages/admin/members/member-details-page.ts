@@ -31,7 +31,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly labelsInput: Locator;
     readonly labels: Locator;
     readonly newsletterSubscriptionToggles: Locator;
-    
+
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;

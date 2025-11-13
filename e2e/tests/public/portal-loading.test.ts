@@ -1,5 +1,5 @@
-import {HomePage,SignInPage, SignUpPage} from '../../helpers/pages';
-import {expect, test} from '../../helpers/playwright';
+import {HomePage,SignInPage, SignUpPage} from '@helpers/pages';
+import {expect, test} from '@helpers/playwright';
 
 test.describe('Portal Loading', () => {
     test.describe('opened Portal', function () {

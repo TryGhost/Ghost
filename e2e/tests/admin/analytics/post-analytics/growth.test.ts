@@ -3,8 +3,8 @@ import {
     MembersPage,
     PostAnalyticsGrowthPage,
     PostAnalyticsPage
-} from '../../../../helpers/pages/admin';
-import {expect, test} from '../../../../helpers/playwright';
+} from '@admin-pages';
+import {expect, test} from '@helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
     test.beforeEach(async ({page}) => {

@@ -1,6 +1,6 @@
-import {PostEditorPage, SettingsPage} from '../../../helpers/pages/admin';
-import {PostFactory, createPostFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {PostEditorPage, SettingsPage} from '@admin-pages';
+import {PostFactory, createPostFactory} from '@data-factory';
+import {expect, test} from '@helpers/playwright';
 
 test.describe('Ghost Admin - i18n Newsletter', () => {
     let postFactory: PostFactory;

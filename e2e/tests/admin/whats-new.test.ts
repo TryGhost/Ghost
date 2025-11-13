@@ -1,5 +1,5 @@
-import {WhatsNewBanner, WhatsNewMenu} from '../../helpers/pages/admin/whats-new';
-import {expect, test} from '../../helpers/playwright/fixture';
+import {WhatsNewBanner, WhatsNewMenu} from '@admin-pages/whats-new/index';
+import {expect, test} from '@helpers/playwright/fixture';
 import type {Page} from '@playwright/test';
 
 interface ChangelogEntry {

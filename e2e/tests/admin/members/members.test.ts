@@ -1,6 +1,6 @@
-import {MemberDetailsPage, MembersPage} from '../../../helpers/pages';
-import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {MemberDetailsPage, MembersPage} from '@helpers/pages';
+import {MemberFactory, createMemberFactory} from '@data-factory';
+import {expect, test} from '@helpers/playwright';
 
 test.describe('Ghost Admin - Members', () => {
     let memberFactory: MemberFactory;

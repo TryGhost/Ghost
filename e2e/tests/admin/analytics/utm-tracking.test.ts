@@ -1,6 +1,6 @@
-import {AnalyticsWebTrafficPage} from '../../../helpers/pages/admin';
-import {HomePage} from '../../../helpers/pages/public';
-import {expect, test, withIsolatedPage} from '../../../helpers/playwright';
+import {AnalyticsWebTrafficPage} from '@admin-pages';
+import {HomePage} from '@public-pages';
+import {expect, test, withIsolatedPage} from '@helpers/playwright';
 
 test.describe('Ghost Admin - Analytics UTM Tracking', () => {
     test.describe('utmTracking flag disabled', () => {
