@@ -3,7 +3,8 @@ const ghostBookshelf = require('./base');
 const OUTBOX_STATUSES = {
     PENDING: 'pending',
     PROCESSING: 'processing',
-    FAILED: 'failed'
+    FAILED: 'failed',
+    COMPLETED: 'completed'
 };
 
 const Outbox = ghostBookshelf.Model.extend({

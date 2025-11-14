@@ -12,6 +12,7 @@ describe('Unit: models/outbox', function () {
             assert.equal(OUTBOX_STATUSES.PENDING, 'pending');
             assert.equal(OUTBOX_STATUSES.PROCESSING, 'processing');
             assert.equal(OUTBOX_STATUSES.FAILED, 'failed');
+            assert.equal(OUTBOX_STATUSES.COMPLETED, 'completed');
         });
     });
 
