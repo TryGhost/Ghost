@@ -1,5 +1,6 @@
 import React from 'react';
 import SourceIcon from '../../components/SourceIcon';
+import {centsToDollars} from '../Growth';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/providers/PostsAppContext';
@@ -37,8 +38,6 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                 </TableHeader>
                 <TableBody>
                     {data?.map((row) => {
-                        const centsToDollars = (value: number) => Math.round(value / 100);
-
                         return (
                             <TableRow key={row.source} className='last:border-none'>
                                 <TableCell>
