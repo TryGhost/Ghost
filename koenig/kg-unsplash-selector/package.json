@@ -40,7 +40,7 @@
     "@typescript-eslint/parser": "7.18.0",
     "@vitejs/plugin-react": "4.7.0",
     "@vitest/coverage-v8": "1.6.1",
-    "autoprefixer": "10.4.21",
+    "autoprefixer": "10.4.22",
     "concurrently": "9.2.1",
     "eslint": "8.57.1",
     "eslint-plugin-react-hooks": "4.6.2",
