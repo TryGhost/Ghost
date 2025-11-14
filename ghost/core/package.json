@@ -66,6 +66,7 @@
     "cli": "^1.27.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.864.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
@@ -161,7 +162,7 @@
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
-    "gscan": "5.2.0",
+    "gscan": "5.2.1",
     "handlebars": "4.7.8",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
