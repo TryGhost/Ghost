@@ -4,6 +4,7 @@
     --mainmenu-color-active: var(--black);
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 320px;
+    --mainmenu-collapsed-width: 60px;
 }
 
 /* Utils */
@@ -112,15 +113,16 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     position: absolute;
     top: 0;
     left: 0;
-    transform: translateX(-320px);
-    width: 320px;
+    transform: translateX(calc(-1 * (var(--mainmenu-width) - var(--mainmenu-collapsed-width))));
+    width: var(--mainmenu-width);
     background-color: var(--white);
     height: 100%;
     z-index: 9999;
 }
 
-.gh-nav-hidden:hover {
-    transform: translateX(0px);
+.gh-nav-hidden:hover,
+.gh-nav-hidden:focus-within {
+    transform: translateX(0);
     box-shadow: 100px 0px 80px 0px rgba(0, 0, 0, 0.02), 41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.01), 22.34px 0px 17.869px 0px rgba(0, 0, 0, 0.01), 12.52px 0px 10.017px 0px rgba(0, 0, 0, 0.01), 6.65px 0px 5.32px 0px rgba(0, 0, 0, 0.01), 2.77px 0px 2.214px 0px rgba(0, 0, 0, 0.01);
 }
 
@@ -138,10 +140,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-nav-hidden .gh-toggle-nav-menu {
-    width: 60px;
+    width: var(--mainmenu-collapsed-width);
     max-height: 400px;
     top: 50%;
-    right: -60px;
+    right: calc(var(--mainmenu-collapsed-width) * -1);
     transform: translateY(-50%);
 }
 
@@ -159,7 +161,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     justify-content: center;
 }
 
-.gh-nav-hidden:hover .gh-btn-toggle-menu {
+.gh-nav-hidden:hover .gh-btn-toggle-menu,
+.gh-nav-hidden:focus-within .gh-btn-toggle-menu {
     transform: translateX(-22px);
 }
 
@@ -919,8 +922,16 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     width: 42px;
     background: var(--black);
     border-radius: 999px;
+    border: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
     cursor: pointer;
     transition: all ease-in-out 0.3s;
+}
+
+.nightshift-toggle:hover {
+    background: var(--mainmenu-color-hover-bg);
 }
 
 .nightshift-toggle .thumb {
@@ -968,6 +979,103 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 .nightshift-toggle .sun svg circle,
 .nightshift-toggle .moon svg path {
     stroke-width: 2.0px;
+}
+
+/* Keyboard navigation focus indicators for accessibility (WCAG 2.1) */
+/* Provides visible focus indication for keyboard-only users */
+/* Use :focus-visible primarily, but include :focus fallback for wider support */
+/* Matches mouse hover effect exactly - no outline, just background change */
+.nightshift-toggle:focus-visible,
+.nightshift-toggle:focus {
+    background: var(--mainmenu-color-hover-bg);
+    outline: none;
+    border-radius: 999px;
+}
+
+/* Search button in header */
+.gh-nav-menu .gh-nav-btn-search:focus-visible,
+.gh-nav-menu .gh-nav-btn-search:focus {
+    background: var(--mainmenu-color-hover-bg);
+    color: var(--darkgrey);
+    opacity: 1;
+    outline: none;
+}
+
+/* Toggle sidebar hamburger button - matches hover animation */
+.gh-toggle-nav-menu .gh-btn-toggle-menu:focus-visible,
+.gh-toggle-nav-menu .gh-btn-toggle-menu:focus {
+    background: var(--mainmenu-color-hover-bg);
+    color: var(--darkgrey);
+    opacity: 1;
+    outline: none;
+    border-radius: 3px;
+}
+
+/* Hamburger icon animation on focus (matches hover effect) */
+.gh-btn-toggle-menu:focus-visible .segment-1,
+.gh-btn-toggle-menu:focus .segment-1 {
+    transform: rotate(45deg) translateY(2px) scaleY(1.2);
+}
+
+.gh-btn-toggle-menu:focus-visible .segment-2,
+.gh-btn-toggle-menu:focus .segment-2 {
+    transform: rotate(-45deg) translateY(-2px) scaleY(1.2);
+}
+
+/* When sidebar is hidden */
+.gh-nav-hidden .gh-btn-toggle-menu:focus-visible .segment-1,
+.gh-nav-hidden .gh-btn-toggle-menu:focus .segment-1 {
+    transform: rotate(-45deg) translateY(2px) scaleY(1.2) translateX(0);
+}
+
+.gh-nav-hidden .gh-btn-toggle-menu:focus-visible .segment-2,
+.gh-nav-hidden .gh-btn-toggle-menu:focus .segment-2 {
+    transform: rotate(45deg) translateY(-2px) scaleY(1.2) translateX(0);
+}
+
+/* External "open site" icon button */
+.gh-nav-list .gh-secondary-action:focus-visible,
+.gh-nav-list .gh-secondary-action:focus {
+    background: none;
+    color: var(--darkgrey);
+    opacity: 1;
+    outline: none;
+    border-radius: 3px;
+}
+
+.gh-nav-list .gh-secondary-action:focus-visible span,
+.gh-nav-list .gh-secondary-action:focus span {
+    background: var(--mainmenu-color-hover-bg);
+}
+
+.gh-nav-list .gh-secondary-action.icon-only:focus-visible span,
+.gh-nav-list .gh-secondary-action.icon-only:focus span {
+    background: none;
+}
+
+/* Custom post types expander - matches hover effect with icon color change */
+.gh-nav-button-expand:focus-visible,
+.gh-nav-button-expand:focus {
+    background: var(--mainmenu-color-hover-bg);
+    color: var(--darkgrey);
+    opacity: 1;
+    outline: none;
+    border-radius: 3px;
+}
+
+/* Icon color change on focus (matches hover effect) */
+.gh-nav-button-expand:focus-visible svg path,
+.gh-nav-button-expand:focus svg path {
+    stroke: color-mod(var(--darkgrey) l(-5%));
+}
+
+/* User avatar dropdown trigger (actual focusable element) */
+/* Uses --whitegrey to match hover state (slightly darker than mainmenu-color-hover-bg) */
+.gh-nav-bottom .ember-basic-dropdown-trigger:focus-visible,
+.gh-nav-bottom .ember-basic-dropdown-trigger:focus {
+    background: var(--whitegrey);
+    outline: none;
+    border-radius: 999px;
 }
 
 /* Tablet/mid sizes
@@ -2473,6 +2581,7 @@ section.gh-ds h2 {
     margin: 5px 0 0;
     color: var(--darkgrey);
     display: -webkit-box;
+    line-clamp: 3;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
