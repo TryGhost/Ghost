@@ -120,9 +120,13 @@ export class EmailAddressService {
         if (this.#labs.isSet('domainWarmup') && options.useFallbackAddress) {
             const fallbackEmail = this.fallbackEmail;
             if (fallbackEmail) {
+                if (!fallbackEmail.name) {
+                    fallbackEmail.name = preferred.from.name || this.defaultFromEmail.name;
+                }
+
                 return {
                     from: fallbackEmail,
-                    replyTo: preferred.replyTo || preferred.from
+                    replyTo: preferred.replyTo || preferred.from || this.defaultFromEmail
                 };
             } else {
                 logging.error('[EmailAddresses] Fallback email address is not configured, cannot use fallback address for sending email.');
