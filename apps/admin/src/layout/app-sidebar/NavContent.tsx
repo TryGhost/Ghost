@@ -14,6 +14,7 @@ import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
+import { NavCustomViews } from "./NavCustomViews";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -78,6 +79,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
+
+                        <NavCustomViews />
                     </NavSubMenu>
 
                     <NavMenuItem>
