@@ -17,17 +17,20 @@ module.exports = {
         }
     },
     rules: {
-        // sort multiple import lines into alphabetical groups
+        // Sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         // TODO: fix + remove this
         '@typescript-eslint/no-explicit-any': 'warn',
 
-        // suppress errors for missing 'import React' in JSX files, as we don't need it
+        // Suppress errors for missing 'import React' in JSX files, as we don't need it
         'react/react-in-jsx-scope': 'off',
-        // ignore prop-types for now
+        // Ignore prop-types for now
         'react/prop-types': 'off',
 
         // custom react rules

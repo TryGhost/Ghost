@@ -1,4 +1,4 @@
-import {AddComment, Comment, LabsContextType} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../app-context';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
