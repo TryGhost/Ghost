@@ -1506,11 +1506,11 @@ Onboarding checklist: Share publication modal */
 /* ---------------------------------
 Publish flow: Share modal */
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post) {
     background: var(--lightgrey-l1)!important;
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post, .copy-link, .copy-preview-link):hover {
     background: var(--lightgrey-l2)!important;
 }
 
