@@ -138,7 +138,7 @@ export function RouterProvider({
  * used to determine if the navigate should be handled by the custom router, ie.
  * if we need to navigate outside of the current app in Ghost.
  */
-interface NavigateOptions extends ReactRouterNavigateOptions {
+export interface NavigateOptions extends ReactRouterNavigateOptions {
     crossApp?: boolean;
 }
 

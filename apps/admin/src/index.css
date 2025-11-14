@@ -1,1 +1,61 @@
 @import "@tryghost/shade/styles.css";
+
+/* Ensure the Ember app renders in the correct position */
+body.react-admin #ember-app {
+    width: 100%;
+    height: 100%;
+}
+
+body.react-admin #ember-app .gh-app {
+    position: static;
+}
+
+
+/* Hide the nav menu and tab bar on mobile when running in React admin shell */
+body.react-admin #ember-app .gh-nav,
+body.react-admin #ember-app .gh-mobile-nav-bar {
+    display: none;
+}
+
+/* Temporary overrides until Ember transition is finished */
+body.react-admin .gh-canvas-header {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
+    padding-top: 0px;
+    margin-top: -4px;
+}
+
+body.react-admin .gh-canvas-title,
+body.react-admin [data-header="header-title"] {
+    font-size: 25px;
+}
+
+body.react-admin [data-header="header"] {
+    padding-top: 24px;
+}
+
+body.react-admin [data-navbar="navbar"] {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+body.react-admin #ember-app .gh-viewport {
+    padding-bottom: 0px;
+}
+
+body.react-admin .gh-canvas-header {
+    z-index: 40;
+}
+
+body.react-admin .members-header {
+    position: relative;
+}
+
+body.react-admin [data-test-table="members"] thead,
+body.react-admin [data-test-table="members"] tr {
+    position: relative;
+    z-index: 30;
+}

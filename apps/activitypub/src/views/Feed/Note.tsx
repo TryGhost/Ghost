@@ -13,7 +13,8 @@ import {LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
-import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 const FeedItemDivider: React.FC = () => (
@@ -32,7 +33,7 @@ const Note = () => {
     const postRef = useRef<HTMLDivElement>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const {
         threadParents,

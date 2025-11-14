@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
-import {OfficialTheme, ThemeVariant} from '../../../providers/SettingsAppProvider';
-import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
+import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
+import {type OfficialTheme, type ThemeVariant} from '../../../providers/SettingsAppProvider';
+import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
 

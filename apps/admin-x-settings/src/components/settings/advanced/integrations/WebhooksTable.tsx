@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './WebhookModal';
 import {Button, ConfirmationModal, Table, TableCell, TableHead, TableRow, showToast} from '@tryghost/admin-x-design-system';
-import {Integration} from '@tryghost/admin-x-framework/api/integrations';
+import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
 import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

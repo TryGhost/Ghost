@@ -170,7 +170,7 @@ module.exports = {
 
     previewEmailLimiter(req, res, next) {
         return spamPrevention.emailPreviewBlock().getMiddleware({
-            ignoreIP: false,
+            ignoreIP: true,
             key(_req, _res, _next) {
                 return _next('preview_email_blocked');
             }

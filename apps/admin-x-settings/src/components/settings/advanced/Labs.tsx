@@ -3,7 +3,7 @@ import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import PrivateFeatures from './labs/PrivateFeatures';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, SettingGroupHeader, type Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useAutoExpandable} from '../../../hooks/useAutoExpandable';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 

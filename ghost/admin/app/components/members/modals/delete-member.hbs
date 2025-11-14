@@ -36,6 +36,7 @@
             class="gh-btn"
             {{on "click" (fn @close false)}}
             data-test-button="cancel"
+            data-testid="cancel-delete-member"
         >
             <span>Cancel</span>
         </button>
@@ -45,6 +46,7 @@
             @task={{this.deleteMemberTask}}
             @class="gh-btn gh-btn-red gh-btn-icon"
             data-test-button="confirm"
+            data-testid="confirm-delete-member"
         />
     </div>
 </div>

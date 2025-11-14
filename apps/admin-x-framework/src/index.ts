@@ -4,7 +4,7 @@ export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 
 // App Context
 export type {AppSettings, BaseAppProps, AppContextType, AppProviderProps} from './providers/AppProvider';
-export {AppProvider, useAppContext} from './providers/AppProvider';
+export {AppContext, AppProvider, useAppContext} from './providers/AppProvider';
 
 // Hooks
 export {useActiveVisitors} from './hooks/useActiveVisitors';
@@ -34,10 +34,10 @@ export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './
 
 // Routing
 export type {RouteObject} from 'react-router';
-export type {RouterProviderProps} from './providers/RouterProvider';
+export type {RouterProviderProps, NavigateOptions} from './providers/RouterProvider';
 export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/RouterProvider';
 export {useNavigationStack} from './providers/NavigationStackProvider';
-export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes} from 'react-router';
+export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';
 
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';

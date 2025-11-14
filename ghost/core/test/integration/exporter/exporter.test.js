@@ -68,6 +68,7 @@ describe('Exporter', function () {
                 'newsletters',
                 'offers',
                 'offer_redemptions',
+                'outbox',
                 'permissions',
                 'permissions_roles',
                 'permissions_users',
@@ -123,7 +124,8 @@ describe('Exporter', function () {
                 'members_email_change_events',
                 'members_status_events',
                 'members_paid_subscription_events',
-                'members_subscribe_events'
+                'members_subscribe_events',
+                'outbox'
             ];
 
             excludedTables.forEach((tableName) => {

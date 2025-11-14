@@ -13,6 +13,7 @@ export default class GhBillingIframe extends Component {
     @service limit;
     @service notifications;
     @service session;
+    @service stateBridge;
 
     @inject config;
 
@@ -117,6 +118,8 @@ export default class GhBillingIframe extends Component {
 
         // Reload the limit service to ensure all admin pages can enforce limits
         this.limit.reload();
+
+        this.stateBridge.triggerSubscriptionChange(data);
 
         // Invalidate React Query cache for config data in admin-x-settings
         if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {

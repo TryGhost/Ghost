@@ -5,10 +5,9 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Heading, Icon, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'react-hot-toast';
@@ -26,7 +25,7 @@ const Start: React.FC<{onNext?: () => void}> = ({onNext}) => {
         <div>
             <div className='flex items-center justify-between'>
                 <Heading level={3}>Getting paid</Heading>
-                <StripeVerified />
+                <Icon name='stripe-verified' />
             </div>
             <div className='mb-7 mt-6'>
                 Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a className='underline' href="https://stripe.com" rel="noopener noreferrer" target="_blank">sign up here</a>.

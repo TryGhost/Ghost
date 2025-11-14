@@ -1,0 +1,77 @@
+
+- name: default_date_range
+  description: Test default behavior without date parameters (last 7 days)
+  parameters: ''
+  expected_result: |
+    {"total_events":0,"avg_latency_ms":null,"p50_latency_ms":null,"p95_latency_ms":null,"min_latency_ms":0,"max_latency_ms":0}
+
+- name: specific_date_range
+  description: Test with specific start and end dates
+  parameters: start_date=2100-01-01&end_date=2100-01-07
+  expected_result: |
+    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: single_day_range
+  description: Test with single day date range
+  parameters: start_date=2100-01-01&end_date=2100-01-01
+  expected_result: |
+    {"total_events":3,"avg_latency_ms":217,"p50_latency_ms":100,"p95_latency_ms":460,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: filtered_by_site_uuid
+  description: Test filtering by specific site UUID
+  parameters: site_uuid=mock_site_uuid&start_date=2100-01-01&end_date=2100-01-07
+  expected_result: |
+    {"site_uuid":"mock_site_uuid","total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: start_date_only
+  description: Test with only start date specified
+  parameters: start_date=2100-01-01
+  expected_result: |
+    {"total_events":0,"avg_latency_ms":null,"p50_latency_ms":null,"p95_latency_ms":null,"min_latency_ms":0,"max_latency_ms":0}
+
+- name: end_date_only
+  description: Test with only end date specified
+  parameters: end_date=2100-01-07
+  expected_result: |
+    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: future_date_range
+  description: Test with future dates that should return no data
+  parameters: start_date=2200-01-01&end_date=2200-01-07
+  expected_result: |
+    {"total_events":0,"avg_latency_ms":null,"p50_latency_ms":null,"p95_latency_ms":null,"min_latency_ms":0,"max_latency_ms":0}
+
+- name: wide_date_range
+  description: Test with wide date range spanning multiple months
+  parameters: start_date=2099-12-01&end_date=2100-02-28
+  expected_result: |
+    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: site_and_date_combination
+  description: Test combination of site filtering with specific dates
+  parameters: site_uuid=mock_site_uuid&start_date=2100-01-03&end_date=2100-01-05
+  expected_result: |
+    {"site_uuid":"mock_site_uuid","total_events":3,"avg_latency_ms":250,"p50_latency_ms":150,"p95_latency_ms":465,"min_latency_ms":100,"max_latency_ms":500}
+
+- name: no_site_uuid
+  description: Test aggregation without site UUID grouping
+  parameters: start_date=2100-01-01&end_date=2100-01-07
+  expected_result: |
+    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+
+- name: non_existent_site
+  description: Test with non-existent site UUID
+  parameters: site_uuid=non_existent_site&start_date=2100-01-01&end_date=2100-01-07
+  expected_result: ''
+
+- name: partial_date_range
+  description: Test with partial date range covering middle days
+  parameters: start_date=2100-01-03&end_date=2100-01-05
+  expected_result: |
+    {"total_events":3,"avg_latency_ms":250,"p50_latency_ms":150,"p95_latency_ms":465,"min_latency_ms":100,"max_latency_ms":500}
+
+- name: single_event_day
+  description: Test with date range containing single event
+  parameters: start_date=2100-01-02&end_date=2100-01-02
+  expected_result: |
+    {"total_events":1,"avg_latency_ms":200,"p50_latency_ms":200,"p95_latency_ms":200,"min_latency_ms":200,"max_latency_ms":200}

@@ -112,4 +112,41 @@ describe('{{split}} helper in inline mode', function () {
         const expected = 'helloworldletsgooo';
         shouldCompileToExpected(templateString, hash, expected);
     });
+    it('does not return empty strings with a leading separator', function () {
+        const templateString = '{{#foreach (split ",hello,world" separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hello<br>world';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split ",hello,world" separator=","}}{{this.length}}{{/split}}';
+        const secondExpected = '2'; // "hello", "world"
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
+    it('does not return empty strings with a trailing separator', function () {
+        const templateString = '{{#foreach (split "hello,world," separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';
+        const expected = 'hello<br>world';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split "hello,world," separator=","}}{{this.length}}{{/split}}';
+        const secondExpected = '2'; // "hello", "world"
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
+    it('can be used to cleanly remove a suffix from a string', function () {
+        const templateString = '{{#foreach (split "my-string-is-too-long" separator="-long")}}|{{this}}|{{/foreach}}';
+        const expected = '|my-string-is-too|';
+        shouldCompileToExpected(templateString, {}, expected);
+    });
+    it('does not make extra elements in the middle if the separator is repeated', function () {
+        const templateString = '{{#foreach (split "hello---world" separator="-")}}|{{this}}|{{/foreach}}';
+        const expected = '|hello||world|';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split "hello---world" separator="-"}}{{this.length}}{{/split}}';
+        const secondExpected = '2';
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
+    it('returns an empty array if the string is only separators', function () {
+        const templateString = '{{#foreach (split "---" separator="-")}}|{{this}}|{{/foreach}}';
+        const expected = '';
+        shouldCompileToExpected(templateString, {}, expected);
+        const secondTemplateString = '{{#split "---" separator="-"}}{{this.length}}{{/split}}';
+        const secondExpected = '0';
+        shouldCompileToExpected(secondTemplateString, {}, secondExpected);
+    });
 });

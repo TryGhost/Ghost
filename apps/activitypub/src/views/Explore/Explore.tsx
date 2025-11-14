@@ -7,7 +7,7 @@ import {type Account} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {formatFollowNumber} from '@src/utils/content-formatters';
 import {useAccountForUser, useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
 interface ExploreProfileProps {
@@ -37,7 +37,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
         });
     };
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <div

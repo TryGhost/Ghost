@@ -3,7 +3,7 @@ import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
 import {Form, Modal, Select, TextField} from '@tryghost/admin-x-design-system';
-import {Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
+import {type Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface WebhookModalProps {

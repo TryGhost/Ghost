@@ -5,7 +5,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 import {toast} from 'sonner';
 import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
 
@@ -74,7 +74,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
     let containerClass = `shrink-0 items-center justify-center rounded-full relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
     let imageClass = 'z-10 object-cover rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const followMutation = useFollowMutationForUser(
         'index',

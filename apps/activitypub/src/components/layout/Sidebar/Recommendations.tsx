@@ -4,11 +4,12 @@ import ActivityItem from '@components/activities/ActivityItem';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
-import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {useNavigationStack} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = isLoadingSuggested ? Array(3).fill(null) : (suggestedData || []);

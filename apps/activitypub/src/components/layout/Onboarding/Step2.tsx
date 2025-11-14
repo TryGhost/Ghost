@@ -5,7 +5,7 @@ import apDashedLinesDark from '@assets/images/onboarding/ap-dashed-lines-dark.pn
 import flipboardAvatar from '@assets/images/onboarding/avatar-flipboard.png';
 import vergeAvatar from '@assets/images/onboarding/avatar-verge.png';
 import {Avatar, AvatarFallback, AvatarImage, Button, LucideIcon, Separator} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const Reply: React.FC<{
     avatarNo: number,
@@ -65,7 +65,7 @@ const Reaction: React.FC<{
 };
 
 const Step2: React.FC = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <div className='relative flex size-full max-h-screen flex-col gap-4 overflow-hidden px-14'>

@@ -17,7 +17,12 @@
   "exports": {
     ".": {
       "import": "./dist/admin-x-settings.js",
-      "require": "./dist/admin-x-settings.umd.cjs"
+      "require": "./dist/admin-x-settings.umd.cjs",
+      "types": "./src/index.tsx"
+    },
+    "./src/*": {
+      "import": "./src/*.tsx",
+      "require": "./src/*.tsx"
     }
   },
   "private": true,

@@ -116,5 +116,21 @@ describe('Public-config Service', function () {
 
             assert.equal(configProperties.stats, undefined);
         });
+
+        it('should return emailAnalytics as boolean from nested config structure', function () {
+            // Default config has emailAnalytics.enabled = true
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.emailAnalytics, true);
+            assert.equal(typeof configProperties.emailAnalytics, 'boolean');
+        });
+
+        it('should return false for emailAnalytics when disabled', function () {
+            configUtils.set('emailAnalytics:enabled', false);
+
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.emailAnalytics, false);
+        });
     });
 });

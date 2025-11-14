@@ -1,0 +1,49 @@
+TOKEN "monitoring" READ
+TOKEN "axis" READ
+
+NODE ingestion_latency
+SQL >
+    %
+    SELECT 
+        site_uuid,
+        inserted_at,
+        parseDateTimeBestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_timestamp,
+        dateDiff('millisecond', received_timestamp, inserted_at) as latency_ms
+    FROM analytics_events
+    WHERE 
+        JSONExtractString(payload, 'meta', 'received_timestamp') != ''
+        {% if defined(start_date) %}
+            AND toDate(inserted_at) >= {{ Date(start_date, description="Start date for filtering", required=False) }}
+        {% else %}
+            AND toDate(inserted_at) >= today() - 7
+        {% end %}
+        {% if defined(end_date) %}
+            AND toDate(inserted_at) <= {{ Date(end_date, description="End date for filtering", required=False) }}
+        {% else %}
+            AND toDate(inserted_at) <= today()
+        {% end %}
+        {% if defined(site_uuid) %}
+            AND site_uuid = {{ String(site_uuid, description="Site UUID to filter on", required=False) }}
+        {% end %}
+
+NODE ingestion_metrics
+SQL >
+    %
+    SELECT 
+        {% if defined(site_uuid) %}
+        site_uuid,
+        {% end %}
+        count() as total_events,
+        round(avg(latency_ms)) as avg_latency_ms,
+        round(quantile(0.5)(latency_ms)) as p50_latency_ms,
+        round(quantile(0.95)(latency_ms)) as p95_latency_ms,
+        round(min(latency_ms)) as min_latency_ms,
+        round(max(latency_ms)) as max_latency_ms
+    FROM ingestion_latency
+    {% if defined(site_uuid) %}
+    GROUP BY site_uuid
+    ORDER BY site_uuid
+    {% end %}
+
+TYPE ENDPOINT
+

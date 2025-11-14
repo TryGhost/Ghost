@@ -2,8 +2,6 @@ import APIKeys from './APIKeys';
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
-import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
-import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {resolveAsset} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
@@ -79,7 +77,7 @@ const ZapierModal = NiceModal.create(() => {
                         href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
                         rel='noopener noreferrer'
                         target='_blank'>
-                        View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
+                        View more Ghost integrations powered by <span><Icon className='relative top-[-2px] inline-block' name='zapier-logo' size={24} /></span>
                     </a>
                     <Button color='black' label='Close' onClick={() => {
                         modal.remove();
@@ -107,7 +105,7 @@ const ZapierModal = NiceModal.create(() => {
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
-                icon={<ZapierIcon className='size-14' />}
+                icon={<Icon name='zapier' size={56} />}
                 title='Zapier'
             />
 

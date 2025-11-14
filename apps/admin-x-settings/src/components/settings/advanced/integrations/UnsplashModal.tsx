@@ -1,8 +1,7 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Modal, Toggle} from '@tryghost/admin-x-design-system';
-import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -58,7 +57,7 @@ const UnsplashModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Beautiful, free photos'
-                icon={<Icon className='size-12' />}
+                icon={<Icon name='unsplash' size={48} />}
                 title='Unsplash'
             />
             <div className='mt-7'>

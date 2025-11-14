@@ -39,7 +39,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../.docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
+      - ../docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
     environment:
       - ANALYTICS_PROXY_TARGET=analytics:3000
     healthcheck:
@@ -64,7 +64,7 @@ services:
       interval: 1s
       retries: 120
     volumes:
-      - ../.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - ../docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
@@ -90,7 +90,7 @@ services:
   tb-cli:
     build:
       context: ../
-      dockerfile: .docker/tb-cli/Dockerfile
+      dockerfile: docker/tb-cli/Dockerfile
     working_dir: /home/tinybird
     environment:
       - TB_HOST=http://tinybird-local:7181

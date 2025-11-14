@@ -23,7 +23,7 @@ import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -683,7 +683,7 @@ export const Reader: React.FC<ReaderProps> = ({
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
 
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     // Save scroll position when navigating away
     useEffect(() => {

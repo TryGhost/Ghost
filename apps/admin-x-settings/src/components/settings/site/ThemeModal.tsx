@@ -1,14 +1,14 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
-import InvalidThemeModal, {FatalErrors} from './theme/InvalidThemeModal';
-import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
+import InvalidThemeModal, {type FatalErrors} from './theme/InvalidThemeModal';
+import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
-import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
+import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {OfficialTheme} from '../../providers/SettingsAppProvider';
+import {type OfficialTheme} from '../../providers/SettingsAppProvider';
 import {useCheckThemeLimitError} from '../../../hooks/useCheckThemeLimitError';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';

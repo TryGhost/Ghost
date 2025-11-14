@@ -1,1 +1,4 @@
-<AdminX::Settings />
+{{! The settings page has been migrated to the new React admin shell }}
+{{#unless (feature "inAdminForward")}}
+    <AdminX::Settings />
+{{/unless}}

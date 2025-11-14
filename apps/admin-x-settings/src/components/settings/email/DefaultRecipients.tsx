@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {MultiValue} from 'react-select';
+import {MultiSelect, type MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {type MultiValue} from 'react-select';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 type RefipientValueArgs = {

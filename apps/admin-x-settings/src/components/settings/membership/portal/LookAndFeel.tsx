@@ -2,34 +2,29 @@ import React, {useState} from 'react';
 import clsx from 'clsx';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
-import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
-import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
-import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
-import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {Setting, SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const defaultButtonIcons = [
     {
-        Component: PortalIcon1,
+        icon: 'portal-icon-1',
         value: 'icon-1'
     },
     {
-        Component: PortalIcon2,
+        icon: 'portal-icon-2',
         value: 'icon-2'
     },
     {
-        Component: PortalIcon3,
+        icon: 'portal-icon-3',
         value: 'icon-3'
     },
     {
-        Component: PortalIcon4,
+        icon: 'portal-icon-4',
         value: 'icon-4'
     },
     {
-        Component: PortalIcon5,
+        icon: 'portal-icon-5',
         value: 'icon-5'
     }
 ];
@@ -91,9 +86,9 @@ const LookAndFeel: React.FC<{
                 <Heading level={6} grey>Icon</Heading>
                 <div className='flex justify-between'>
 
-                    {defaultButtonIcons.map(icon => (
-                        <button className={clsx('border p-3', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
-                            <icon.Component className={`size-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
+                    {defaultButtonIcons.map(iconConfig => (
+                        <button key={iconConfig.value} className={clsx('border p-3', currentIcon === iconConfig.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', iconConfig.value)}>
+                            <Icon className={`size-5 ${currentIcon === iconConfig.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} name={iconConfig.icon} />
                         </button>
                     ))}
                     <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>

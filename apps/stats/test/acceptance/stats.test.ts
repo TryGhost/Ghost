@@ -1,4 +1,4 @@
-import OverviewTab from './pages/OverviewTab.ts';
+import OverviewTab from './pages/overview-tab.ts';
 import {
     createMockRequests,
     mockApi

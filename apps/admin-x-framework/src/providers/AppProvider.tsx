@@ -34,7 +34,7 @@ export interface AppProviderProps {
     children: ReactNode;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<AppProviderProps> = ({
     appSettings,

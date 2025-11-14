@@ -1,8 +1,7 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Form, Icon, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -76,7 +75,7 @@ const FirstpromoterModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Launch your own member referral program'
-                icon={<Icon className='-mt-2 size-14' />}
+                icon={<Icon className='-mt-2' name='firstpromoter' size={56} />}
                 title='FirstPromoter'
             />
             <div className='mt-7'>

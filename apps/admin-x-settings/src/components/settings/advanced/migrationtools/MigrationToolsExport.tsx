@@ -34,9 +34,9 @@ const MigrationToolsExport: React.FC = () => {
     };
 
     return (
-        <div className='flex flex-wrap items-center gap-4 pt-4'>
-            <Button className='!h-9 !font-semibold' color='grey' icon='export' iconColorClass='!h-4 !w-auto' label='Export content & settings' onClick={() => downloadAllContent()} />
-            <Button className='!h-9 !font-semibold' color='grey' icon='baseline-chart' iconColorClass='!h-4 !w-auto' label='Export post analytics' onClick={exportPosts} />
+        <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
+            <Button className='!h-9 !font-semibold' color='grey' icon='export' iconColorClass='!h-4 !w-auto' label='Content & settings' onClick={() => downloadAllContent()} />
+            <Button className='!h-9 !font-semibold' color='grey' icon='baseline-chart' iconColorClass='!h-4 !w-auto' label='Post analytics' onClick={exportPosts} />
         </div>
     );
 };

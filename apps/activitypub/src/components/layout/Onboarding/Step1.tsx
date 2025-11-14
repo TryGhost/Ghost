@@ -5,12 +5,12 @@ import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, H3, LucideIcon, Skeleton} from '@tryghost/shade';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 const Step1: React.FC = () => {
     const {data: account} = useAccountForUser('index', 'me');
     const {data: {users, meta} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const [copied, setCopied] = useState(false);
 
     const firstThreeUsers = users.slice(0, 3);

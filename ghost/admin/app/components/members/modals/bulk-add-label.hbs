@@ -5,7 +5,7 @@
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     {{#if this.hasRun}}
-        <div class="gh-content-box pa" data-test-state="add-complete">
+        <div class="gh-content-box pa" data-test-state="add-complete" data-testid="add-label-complete">
             {{#if this.error}}
                 <div class="flex items-center">
                     {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
@@ -18,7 +18,7 @@
             {{else}}
                 <div class="flex items-center">
                     {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
-                    <p class="ma0 pa0">
+                    <p class="ma0 pa0" data-testid="label-success-message">
                         Label added to
                         <span class="fw6" data-test-text="add-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
                         successfully
@@ -46,6 +46,7 @@
                         <GhMemberSingleLabelInput
                             @onChange={{this.setLabel}}
                             @triggerId="label-input"
+                            data-testid="label-select"
                         />
                         <p class="mt2 ml1">
                             Will be added to the currently selected <span class="fw6" data-test-text="member-count">{{gh-pluralize countFetcher.count "member"}}</span>
@@ -60,7 +61,7 @@
 
     <div class="modal-footer">
         {{#if this.hasRun}}
-            <button class="gh-btn gh-btn-black" data-test-button="close-modal" type="button" {{on "click" @close}}>
+            <button class="gh-btn gh-btn-black" data-test-button="close-modal" data-testid="close-modal" type="button" {{on "click" @close}}>
                 <span>Close</span>
             </button>
         {{else}}
@@ -75,6 +76,7 @@
                 @task={{this.addLabelTask}}
                 @class="gh-btn gh-btn-green gh-btn-icon"
                 data-test-button="confirm"
+                data-testid="confirm"
             />
         {{/if}}
     </div>

@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, LimitModal, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useCheckThemeLimitError} from '../../../hooks/useCheckThemeLimitError';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 

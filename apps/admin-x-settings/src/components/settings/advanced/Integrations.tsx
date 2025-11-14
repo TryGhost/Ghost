@@ -4,12 +4,7 @@ import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
-import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
-import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
-import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
+import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -104,7 +99,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 detail='Automation for your apps'
                 disabled={zapierDisabled}
-                icon={<ZapierIcon className='size-8' />}
+                icon={<Icon name='zapier' size={32} />}
                 testId='zapier-integration'
                 title='Zapier' />
 
@@ -114,7 +109,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
-                icon={<SlackIcon className='size-8' />}
+                icon={<Icon name='slack' size={32} />}
                 testId='slack-integration'
                 title='Slack' />
 
@@ -124,7 +119,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={unsplashEnabled}
                 detail='Beautiful, free photos'
-                icon={<UnsplashIcon className='size-8' />}
+                icon={<Icon name='unsplash' size={32} />}
                 testId='unsplash-integration'
                 title='Unsplash' />
 
@@ -134,7 +129,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={firstPromoterEnabled}
                 detail='Launch your member referral program'
-                icon={<FirstPromoterIcon className='size-8' />}
+                icon={<Icon name='firstpromoter' size={32} />}
                 testId='firstpromoter-integration'
                 title='FirstPromoter' />
 
@@ -144,7 +139,7 @@ const BuiltInIntegrations: React.FC = () => {
                 }}
                 active={pinturaEditor.isEnabled}
                 detail='Advanced image editing'
-                icon={<PinturaIcon className='size-8' />}
+                icon={<Icon name='pintura' size={32} />}
                 testId='pintura-integration'
                 title='Pintura' />
         </List>

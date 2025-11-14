@@ -1,4 +1,5 @@
 TOKEN "stats_page" READ
+TOKEN "axis" READ
 
 NODE _top_devices_0
 SQL >

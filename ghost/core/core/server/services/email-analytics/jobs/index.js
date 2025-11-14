@@ -10,7 +10,7 @@ module.exports = {
     async scheduleRecurringJobs(skipEmailCheck = false) {
         if (
             !hasScheduled &&
-            config.get('emailAnalytics') &&
+            config.get('emailAnalytics:enabled') &&
             config.get('backgroundJobs:emailAnalytics') &&
             !process.env.NODE_ENV.startsWith('test')
         ) {

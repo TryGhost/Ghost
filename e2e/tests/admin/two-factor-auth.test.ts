@@ -1,5 +1,5 @@
 import {AnalyticsOverviewPage, LoginPage, LoginVerifyPage} from '../../helpers/pages/admin';
-import {EmailClient, EmailMessage,MailPit} from '../../helpers/services/email/MailPit';
+import {EmailClient, EmailMessage,MailPit} from '../../helpers/services/email/mail-pit';
 import {expect, test} from '../../helpers/playwright';
 
 test.describe('Two-Factor authentication', () => {

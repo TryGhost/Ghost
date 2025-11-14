@@ -1,4 +1,4 @@
-import {UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {InvalidateOptions, InvalidateQueryFilters, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {usePagination} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import useHandleError from '../../hooks/useHandleError';
@@ -150,7 +150,10 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string; };
+    invalidateQueries?: { dataType: string; } | { 
+        filters?: InvalidateQueryFilters<unknown>,
+        options?: InvalidateOptions,
+    };
     updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
@@ -184,9 +187,11 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
     const {onUpdate, onInvalidate, onDelete} = useFramework();
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
-        if (invalidateQueries) {
+        if (invalidateQueries && 'dataType' in invalidateQueries) {
             queryClient.invalidateQueries([invalidateQueries.dataType]);
             onInvalidate(invalidateQueries.dataType);
+        } else if (invalidateQueries) {
+            queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
         }
 
         if (updateQueries) {

@@ -1,1 +1,1 @@
-export {default} from './Web';
+export {default} from './web';

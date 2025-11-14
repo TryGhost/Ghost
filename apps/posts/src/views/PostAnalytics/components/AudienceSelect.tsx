@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
-import {useAppContext} from '@src/App';
+import {useAppContext} from '@src/providers/PostsAppContext';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 const AUDIENCE_BITS = {

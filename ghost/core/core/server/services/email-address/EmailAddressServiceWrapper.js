@@ -24,8 +24,14 @@ class EmailAddressServiceWrapper {
             getSendingDomain: () => {
                 return config.get('hostSettings:managedEmail:sendingDomain') || null;
             },
+            getFallbackDomain: () => {
+                return config.get('hostSettings:managedEmail:fallbackDomain') || null;
+            },
             getDefaultEmail: () => {
                 return settingsHelpers.getDefaultEmail();
+            },
+            getFallbackEmail: () => {
+                return config.get('hostSettings:managedEmail:fallbackAddress') || null;
             },
             isValidEmailAddress: (emailAddress) => {
                 return validator.isEmail(emailAddress);

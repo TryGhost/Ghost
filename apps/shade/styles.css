@@ -43,7 +43,7 @@
         --primary-foreground: 0 0% 100%;
         --secondary: 204 14% 93%;
         --secondary-foreground: 216 11% 9%;
-        --accent: 240 11% 98%;
+        --accent: 200 12% 96%;
         --accent-foreground: 216 11% 9%;
         --destructive: 354 92% 50%;
         --destructive-foreground: 0 0% 100%;
@@ -69,10 +69,11 @@
         --sidebar-foreground: 216 11% 9%;
         --sidebar-primary: 216 11% 9%;
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 200 12% 93%;
+        --sidebar-accent: 204 14% 93%;
         --sidebar-accent-foreground: 216 11% 9%;
-        --sidebar-border: 210 13% 94%;
+        --sidebar-border: 200 12% 96%;
         --sidebar-ring: 215 13% 63%;
+        --mobile-navbar-height: 64px;
     }
 
     .dark {
@@ -101,13 +102,13 @@
         --chart-4: 201 82% 90%;
         --chart-5: 201 87% 94%;
         --chart-gray: 210 13% 55%;
-        --sidebar-background: 216 11% 9%;
+        --sidebar-background: 216 11% 6%;
         --sidebar-foreground: 200 12% 96%;
         --sidebar-primary: 210 11% 25%;
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 210 11% 25%;
+        --sidebar-accent: 210 11% 17%;
         --sidebar-accent-foreground: 200 12% 96%;
-        --sidebar-border: 210 11% 25%;
+        --sidebar-border: 210 11% 15%;
         --sidebar-ring: 210 13% 55%;
     }
 
@@ -144,7 +145,9 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     letter-spacing: unset;
+}
 
+.shade.app-container {
     height: 100vh;
     width: 100%;
     overflow-x: hidden;
@@ -152,8 +155,8 @@
 }
 
 @media (max-width: 800px) {
-    .shade {
-        height: calc(100vh - 55px);
+    body:not(.react-admin) .shade {
+        height: calc(100vh - var(--mobile-navbar-height));
     }
 }
 

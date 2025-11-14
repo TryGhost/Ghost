@@ -1,6 +1,6 @@
 import React from 'react';
 import trackEvent from '../../../../utils/analytics';
-import {ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
+import {type ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
 import {Toggle} from '@tryghost/admin-x-design-system';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

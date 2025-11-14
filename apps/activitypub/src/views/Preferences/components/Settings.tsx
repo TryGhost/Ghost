@@ -2,7 +2,8 @@ import EditProfile from './EditProfile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
-import {Link, useNavigate} from '@tryghost/admin-x-framework';
+import {Link} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface SettingsProps {
     account?: Account;
@@ -11,7 +12,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     return (
         <div className={`flex flex-col ${className}`}>

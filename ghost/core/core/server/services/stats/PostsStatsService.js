@@ -406,13 +406,13 @@ class PostsStatsService {
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id');
                 })
                 .where('mce.attribution_id', postId)
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .where('msce.id', null);
 
             const paidMembers = await this.knex('members_subscription_created_events as msce')
                 .countDistinct('msce.member_id as paid_members')
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             const mrr = await this.knex('members_subscription_created_events as msce')
                 .sum('mpse.mrr_delta as mrr')
@@ -421,7 +421,7 @@ class PostsStatsService {
                     this.andOn('mpse.member_id', '=', 'msce.member_id');
                 })
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             return {
                 data: [
@@ -936,6 +936,9 @@ class PostsStatsService {
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
+            const timezone = options.timezone || 'UTC';
+            const {dateFrom, dateTo} = getDateBoundaries(options);
+
             // Run both queries in parallel for better performance
             const [totalResult, rawDeltas] = await Promise.all([
                 // Get total subscriber count (optimized query - avoid JOIN)
@@ -948,7 +951,7 @@ class PostsStatsService {
                             .whereRaw('m.id = mn.member_id')
                             .where('m.email_disabled', 1);
                     }),
-                
+
                 // Get daily deltas (optimized query)
                 this._getNewsletterSubscriberDeltas(newsletterId, options)
             ]);
@@ -959,7 +962,7 @@ class PostsStatsService {
             // Transform raw database results (daily changes) to cumulative values
             const values = [];
             let cumulativeTotal = 0;
-            
+
             // First pass: collect all daily changes from database
             const dailyChanges = [];
             for (const row of rawDeltas) {
@@ -974,11 +977,12 @@ class PostsStatsService {
                     });
                 }
             }
-            
+
             // Calculate the starting point by working backwards from the current total
             const totalChange = dailyChanges.reduce((sum, item) => sum + item.change, 0);
             cumulativeTotal = total - totalChange;
-            
+            const startingTotal = cumulativeTotal;
+
             // Second pass: build cumulative values from daily changes
             for (const dayData of dailyChanges) {
                 cumulativeTotal += dayData.change;
@@ -988,10 +992,20 @@ class PostsStatsService {
                 });
             }
 
+            // Fill in missing dates to ensure the frontend has a complete time series
+            // This is critical for percent change calculations which need consecutive days
+            const completeValues = this._fillMissingDates(
+                values,
+                dateFrom ? dateFrom.split('T')[0] : null,
+                dateTo ? dateTo.split('T')[0] : null,
+                timezone,
+                startingTotal
+            );
+
             return {
                 data: [{
                     total,
-                    values
+                    values: completeValues
                 }]
             };
         } catch (error) {
@@ -1016,7 +1030,7 @@ class PostsStatsService {
      */
     async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
         const {dateFrom, dateTo} = getDateBoundaries(options);
-        
+
         // Build optimized deltas query - avoid expensive JOIN
         let deltasQuery = this.knex('members_subscribe_events as mse')
             .select(
@@ -1037,6 +1051,61 @@ class PostsStatsService {
         applyDateFilter(deltasQuery, dateFrom, dateTo, 'mse.created_at');
 
         return await deltasQuery;
+    }
+
+    /**
+     * Fill missing dates in a time series with carried-forward values
+     * @private
+     * @param {Array<{date: string, value: number}>} values - Sparse array of values with dates
+     * @param {string|null} startDate - Start date in YYYY-MM-DD format (ISO)
+     * @param {string|null} endDate - End date in YYYY-MM-DD format (ISO)
+     * @param {string} timezone - Timezone for date interpretation
+     * @param {number} startingValue - The value to use before the first event (default: 0)
+     * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
+     */
+    _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
+        const moment = require('moment-timezone');
+
+        // If no date range provided, return as-is
+        if (!startDate || !endDate) {
+            return values || [];
+        }
+
+        // Determine the date range
+        const rangeStart = moment.tz(startDate, timezone).startOf('day');
+        const rangeEnd = moment.tz(endDate, timezone).startOf('day');
+
+        // Create a map of existing dates for quick lookup
+        const valuesByDate = new Map();
+        if (values && values.length > 0) {
+            values.forEach((item) => {
+                const dateKey = moment.tz(item.date, timezone).startOf('day').format('YYYY-MM-DD');
+                valuesByDate.set(dateKey, item.value);
+            });
+        }
+
+        // Build complete time series with all dates
+        const completeValues = [];
+        let lastValue = startingValue; // Use provided starting value
+        let currentDate = rangeStart.clone();
+
+        while (currentDate.isSameOrBefore(rangeEnd)) {
+            const dateKey = currentDate.format('YYYY-MM-DD');
+
+            if (valuesByDate.has(dateKey)) {
+                // Date has an event - use the calculated value
+                lastValue = valuesByDate.get(dateKey);
+            }
+            // Always add the date (either with event value or carried-forward value)
+            completeValues.push({
+                date: dateKey,
+                value: lastValue
+            });
+
+            currentDate.add(1, 'day');
+        }
+
+        return completeValues;
     }
 
     /**
@@ -1345,9 +1414,9 @@ class PostsStatsService {
                 .leftJoin('members_subscription_created_events as msce', function () {
                     this.on('mce.member_id', '=', 'msce.member_id')
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id')
-                        .andOnVal('msce.attribution_type', '=', 'post');
+                        .andOnIn('msce.attribution_type', ['post', 'page']);
                 })
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .whereIn('mce.attribution_id', postIds)
                 .whereNull('msce.id')
                 .groupBy('mce.attribution_id');
@@ -1360,7 +1429,7 @@ class PostsStatsService {
             let paidMembersQuery = this.knex('members_subscription_created_events as msce')
                 .select('msce.attribution_id as post_id')
                 .countDistinct('msce.member_id as paid_members')
-                .where('msce.attribution_type', 'post')
+                .whereIn('msce.attribution_type', ['post', 'page'])
                 .whereIn('msce.attribution_id', postIds)
                 .groupBy('msce.attribution_id');
 

@@ -1,12 +1,12 @@
 import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, {type ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useQueryParams from '../../../hooks/useQueryParams';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
-import {Newsletter, NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
+import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
+import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';

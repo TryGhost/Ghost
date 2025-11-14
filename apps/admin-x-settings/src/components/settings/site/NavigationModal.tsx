@@ -1,6 +1,6 @@
 import NavigationEditForm from './navigation/NavigationEditForm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
+import useNavigationEditor, {type NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Modal, TabView} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';

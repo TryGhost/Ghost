@@ -125,3 +125,46 @@
     {"source":"wilted-tick.com","visits":1}
     {"source":"duckduckgo.com","visits":1}
     {"source":"my-ghost-site.com","visits":1}
+
+- name: Filtered by utm_source - google
+  description: Filtered by utm_source - google
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google
+  expected_result: |
+    {"source":"","visits":1}
+    {"source":"petty-queen.com","visits":1}
+    {"source":"my-ghost-site.com","visits":1}
+
+- name: Filtered by utm_medium - social
+  description: Filtered by utm_medium - social
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_medium=social
+  expected_result: |
+    {"source":"","visits":1}
+    {"source":"bing.com","visits":1}
+    {"source":"google.com","visits":1}
+    {"source":"wilted-tick.com","visits":1}
+    {"source":"duckduckgo.com","visits":1}
+
+- name: Filtered by utm_campaign - brand_awareness
+  description: Filtered by utm_campaign - brand_awareness
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_campaign=brand_awareness
+  expected_result: |
+    {"source":"","visits":2}
+
+- name: Filtered by utm_term - discount
+  description: Filtered by utm_term - discount
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_term=discount
+  expected_result: |
+    {"source":"","visits":1}
+
+- name: Filtered by utm_content - post_123
+  description: Filtered by utm_content - post_123
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_content=post_123
+  expected_result: |
+    {"source":"","visits":1}
+
+- name: Test with multiple UTM filters combined
+  description: Test with multiple UTM filters combined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&utm_source=google&utm_medium=cpc
+  expected_result: |
+    {"source":"petty-queen.com","visits":1}
+    {"source":"my-ghost-site.com","visits":1}

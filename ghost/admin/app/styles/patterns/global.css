@@ -633,14 +633,14 @@ input[type="image"] {
 .show {
     display: block;
 }
-.ember-application .show {
+.gh-app .show {
     display: block !important;
 }
 
 .hidden {
     display: none;
 }
-.ember-application .hidden {
+.gh-app .hidden {
     visibility: hidden !important;
     display: none !important;
 }

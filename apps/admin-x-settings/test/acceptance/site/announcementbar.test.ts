@@ -1,4 +1,4 @@
-import {ElementHandle, expect, test} from '@playwright/test';
+import {type ElementHandle, expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Announcement Bar', async () => {

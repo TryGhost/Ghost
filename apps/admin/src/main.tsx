@@ -2,18 +2,18 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
-import {
-    FrameworkProvider,
-    RouterProvider,
-    AppProvider,
-} from "@tryghost/admin-x-framework";
+import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
 import { ShadeApp } from "@tryghost/shade";
 
 import { routes } from "./routes.tsx";
+import { navigateTo } from "./utils/navigation";
+import { AppProvider } from "./providers/AppProvider";
 
 const framework = {
     ghostVersion: "",
-    externalNavigate: () => {},
+    externalNavigate: (link: { route: string; isExternal: boolean }) => {
+        navigateTo(link.route);
+    },
     unsplashConfig: {
         Authorization: "",
         "Accept-Version": "",
@@ -22,16 +22,22 @@ const framework = {
         "X-Unsplash-Cache": true,
     },
     sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
+    onUpdate: (dataType: string, response: unknown) => {
+        window.EmberBridge?.state.onUpdate(dataType, response);
+    },
+    onInvalidate: (dataType: string) => {
+        window.EmberBridge?.state.onInvalidate(dataType);
+    },
+    onDelete: (dataType: string, id: string) => {
+        window.EmberBridge?.state.onDelete(dataType, id);
+    },
 };
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <AppProvider>
-            <FrameworkProvider {...framework}>
-                <RouterProvider prefix={"/"} routes={routes}>
+        <FrameworkProvider {...framework}>
+            <RouterProvider prefix={"/"} routes={routes}>
+                <AppProvider>
                     <ShadeApp
                         className="shade-admin"
                         darkMode={false}
@@ -39,8 +45,8 @@ createRoot(document.getElementById("root")!).render(
                     >
                         <App />
                     </ShadeApp>
-                </RouterProvider>
-            </FrameworkProvider>
-        </AppProvider>
+                </AppProvider>
+            </RouterProvider>
+        </FrameworkProvider>
     </StrictMode>
 );

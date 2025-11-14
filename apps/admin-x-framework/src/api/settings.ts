@@ -46,6 +46,17 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
             ...newData,
             settings: newData.settings
         })
+    },
+    // Whenever we update the settings, we want to make sure we invalidate all
+    // other queries to ensure any ripple effects are reflected in the UI. The
+    // updated settings themselves will have been returned in the settings
+    // response, so we don't need to refetch them.
+    invalidateQueries: {
+        filters: {
+            predicate(query) {
+                return query.queryKey[0] !== dataType;
+            }
+        }
     }
 });
 

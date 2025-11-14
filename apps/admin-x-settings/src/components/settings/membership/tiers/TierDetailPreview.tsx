@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
-import {TierFormState} from './TierDetailModal';
+import {type TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
 

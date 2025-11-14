@@ -2,6 +2,8 @@ import * as React from 'react';
 import {Button, ButtonProps, cn, formatNumber} from '@tryghost/shade';
 import {Link, resetScrollPosition, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
 
+import {useAppBasePath} from '@src/hooks/use-app-base-path';
+
 interface SidebarButtonProps extends ButtonProps {
     to?: string;
     children: React.ReactNode;
@@ -12,10 +14,19 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
     ({to, children, count, ...props}, ref) => {
         const location = useLocation();
         const {resetStack} = useNavigationStack();
+        const basePath = useAppBasePath();
+
+        // Build full path by prepending base path to absolute paths
+        // Following the same pattern as useNavigateWithBasePath
+        const fullPath = to && to.startsWith('/') ? `${basePath}${to}` : to;
+        const isActive = fullPath && (
+            location.pathname === fullPath ||
+            location.pathname.startsWith(`${fullPath}/`)
+        );
 
         const linkClass = cn(
             'justify-start text-md font-medium text-gray-800 dark:hover:bg-gray-925/70 dark:text-gray-500 h-9 [&_svg]:size-[18px]',
-            (to && (location.pathname === to || location.pathname.startsWith(`${to}/`))) && 'bg-gray-100 dark:bg-gray-925/70 dark:text-white text-black font-semibold'
+            isActive && 'bg-gray-100 dark:bg-gray-925/70 dark:text-white text-black font-semibold'
         );
 
         const badge = count && count > 0 ? (
@@ -26,12 +37,12 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
             </span>
         ) : null;
 
-        if (to) {
+        if (fullPath) {
             return (
                 <Button className={linkClass} variant='ghost' asChild>
-                    <Link to={to} onClick={() => {
+                    <Link to={fullPath} onClick={() => {
                         resetStack();
-                        resetScrollPosition(to);
+                        resetScrollPosition(fullPath);
                     }}>
                         {children}
                         {badge}

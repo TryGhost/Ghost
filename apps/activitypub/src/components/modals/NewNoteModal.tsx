@@ -9,7 +9,7 @@ import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
 import {toast} from 'sonner';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     children?: ReactNode;
@@ -40,7 +40,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const [showAltInput, setShowAltInput] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
 
     const MAX_CONTENT_LENGTH = 500;
 
@@ -349,7 +349,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                 <FormPrimitive.Control asChild>
                                     <input
                                         ref={imageInputRef}
-                                        accept="image/jpeg,image/png,image/webp"
+                                        accept="image/jpeg,image/png,image/webp,image/gif"
                                         className='hidden'
                                         type="file"
                                         onChange={handleImageChange}
