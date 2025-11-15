@@ -343,4 +343,24 @@ describe('Portal Data links:', () => {
             expect(helpPageTitle).toBeInTheDocument();
         });
     });
+
+    describe('PoweredBy Component', () => {
+        test('renders powered by link in portal popup', async () => {
+            window.location.hash = '#/portal/signup';
+            const {popupFrame} = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.free
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            
+            const poweredByLink = within(popupFrame.contentDocument).getByRole('link', {name: /powered by ghost/i});
+            expect(poweredByLink).toBeInTheDocument();
+            expect(poweredByLink).toHaveAttribute('href', 'https://ghost.org');
+            expect(poweredByLink).toHaveAttribute('target', '_blank');
+            expect(poweredByLink).toHaveAttribute('rel', 'noopener noreferrer');
+            // Verify no onClick handler exists
+            expect(poweredByLink.onclick).toBeNull();
+        });
+    });
 });
