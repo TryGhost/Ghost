@@ -1,10 +1,11 @@
 import React from 'react';
 import {Button} from '@tryghost/shade';
 
-export type Topic = 'following' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
+export type Topic = 'following' | 'top' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
 
 const TOPICS: {value: Topic; label: string}[] = [
     {value: 'following', label: 'Following'},
+    {value: 'top', label: 'Featured'},
     {value: 'technology', label: 'Technology'},
     {value: 'business', label: 'Business'},
     {value: 'news', label: 'News'},
@@ -34,15 +35,18 @@ const TOPICS: {value: Topic; label: string}[] = [
 interface TopicFilterProps {
     currentTopic: Topic;
     onTopicChange: (topic: Topic) => void;
+    excludeTopics?: Topic[];
 }
 
-const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange}) => {
+const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, excludeTopics = []}) => {
+    const filteredTopics = TOPICS.filter(({value}) => !excludeTopics.includes(value));
+
     return (
         <div className="relative w-full">
             <div
                 className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-                {TOPICS.map(({value, label}) => (
+                {filteredTopics.map(({value, label}) => (
                     <Button
                         key={value}
                         className="h-8 snap-start rounded-full px-3.5 text-sm"

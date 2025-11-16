@@ -194,6 +194,11 @@ export interface PaginatedPostsResponse {
     next: string | null;
 }
 
+export interface PaginatedAccountsResponse {
+    accounts: Account[];
+    next: string | null;
+}
+
 export type ApiError = {
     message: string;
     statusCode: number;
@@ -455,6 +460,11 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts(endpoint, next);
     }
 
+    async getExploreProfiles(topic: string, next?: string): Promise<PaginatedAccountsResponse> {
+        const endpoint = `.ghost/activitypub/v1/profiles/discover/${topic}`;
+        return this.getPaginatedAccounts(endpoint, next);
+    }
+
     async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}`, next);
     }
@@ -484,6 +494,31 @@ export class ActivityPubAPI {
 
         return {
             posts,
+            next: nextPage
+        };
+    }
+
+    private async getPaginatedAccounts(endpoint: string, next?: string): Promise<PaginatedAccountsResponse> {
+        const url = new URL(endpoint, this.apiUrl);
+
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null || !('accounts' in json)) {
+            return {
+                accounts: [],
+                next: null
+            };
+        }
+
+        const accounts = Array.isArray(json.accounts) ? json.accounts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            accounts,
             next: nextPage
         };
     }
