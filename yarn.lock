@@ -9203,10 +9203,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.19", "@tryghost/logging@2.4.23", "@tryghost/logging@^2.4.23", "@tryghost/logging@^2.4.7":
-  version "2.4.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.23.tgz#a2351b55c0d413e3f06ee41cbcfe7bbdff785972"
-  integrity sha512-xmindrXwW0zKvuxdTNkyK3TM1exPvgkqqSRXOdf8G1SDZpuvemWGlrllAFQuj2J/K4dy9CWcYl9GpM1wYaG1CQ==
+"@tryghost/logging@2.4.19", "@tryghost/logging@2.4.23", "@tryghost/logging@2.5.0-rc.0", "@tryghost/logging@^2.4.23", "@tryghost/logging@^2.4.7":
+  version "2.5.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.5.0-rc.0.tgz#a7d8d347ecf3a2663cf85b9d4dc8019e935fcac7"
+  integrity sha512-lxTjUg2a2twyGuPuIn8YmvBWLD+I8nF8gncZ1wOrxzjjbNI5EM5A4045u6q8kqRfdJiq7yzzZ9kZwYGb8gwuNg==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch" "^3.0.24"
