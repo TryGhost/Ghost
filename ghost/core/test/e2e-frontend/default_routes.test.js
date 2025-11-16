@@ -349,7 +349,8 @@ describe('Default Frontend routing', function () {
                 'Disallow: /email/\n' +
                 'Disallow: /members/api/comments/counts/\n' +
                 'Disallow: /r/\n' +
-                'Disallow: /webmentions/receive/\n'
+                'Disallow: /webmentions/receive/\n' +
+                'Disallow: /.ghost/analytics/api/\n'
             );
         });
 
