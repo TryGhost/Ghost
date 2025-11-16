@@ -128,10 +128,12 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         configureServer(server) {
             if (!siteUrl) return;
 
+            const disableEmberAssetsProxy = process.env.VITE_DISABLE_EMBER_ASSETS_PROXY === 'true';
+
             server.config.server.proxy = {
                 ...server.config.server.proxy,
                 ...createAdminApiProxy(siteUrl),
-                ...createEmberAssetsProxy(siteUrl),
+                ...(disableEmberAssetsProxy ? {} : createEmberAssetsProxy(siteUrl)),
             };
         },
 
