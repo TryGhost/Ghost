@@ -10,6 +10,7 @@ import type { RawChangelogResponse, RawChangelogEntry } from "./use-changelog";
 import { serverFixture } from "@test-utils/fixtures/msw";
 import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
 import type { SetupServer } from "msw/node";
+import { DEFAULT_NAVIGATION_PREFERENCES } from "@/hooks/user-preferences";
 
 // Constants
 const USERS_API_URL = "/ghost/api/admin/users/me/";
@@ -32,10 +33,10 @@ type SetupMutationTest = (options?: SetupMutationOptions) => ReturnType<typeof s
 
 // Test fixtures
 const dates = {
-    past: "2025-01-01T00:00:00Z",
-    recent: "2025-01-10T00:00:00Z",
-    current: "2025-01-15T10:00:00Z",
-    future: "2025-01-20T10:00:00Z",
+    past: "2025-01-01T00:00:00.000+00:00",
+    recent: "2025-01-10T00:00:00.000+00:00",
+    current: "2025-01-15T10:00:00.000+00:00",
+    future: "2025-01-20T10:00:00.000+00:00",
 };
 
 const fixtures = {
@@ -60,6 +61,9 @@ const fixtures = {
         withLastSeen: (date: string) => ({
             whatsNew: { lastSeenDate: date },
         }),
+        defaults: {
+            navigation: DEFAULT_NAVIGATION_PREFERENCES,
+        }
     },
 };
 

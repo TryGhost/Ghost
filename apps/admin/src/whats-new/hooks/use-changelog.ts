@@ -1,13 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { isoDatetimeToDate } from "@/schemas/primitives";
+
 const ChangelogEntrySchema = z
     .looseObject({
         slug: z.string(),
         title: z.string(),
         custom_excerpt: z.string(),
         url: z.string().url(),
-        published_at: z.string().datetime(),
+        published_at: isoDatetimeToDate,
         featured: z.stringbool(),
         feature_image: z.string().url().optional(),
         html: z.string().optional(),
@@ -17,7 +19,7 @@ const ChangelogEntrySchema = z
         title: data.title,
         customExcerpt: data.custom_excerpt,
         url: data.url,
-        publishedAt: new Date(data.published_at),
+        publishedAt: data.published_at,
         featured: data.featured,
         featureImage: data.feature_image,
         html: data.html,

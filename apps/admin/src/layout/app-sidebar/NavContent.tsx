@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 
 import {
     Button,
@@ -13,10 +13,12 @@ import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
+import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
+import { NavCustomViews } from "./NavCustomViews";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
-    const [postsExpanded, setPostsExpanded] = useState(false);
+    const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
 
     const showTags = currentUser && canManageTags(currentUser);
@@ -33,9 +35,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             aria-label="Toggle post views"
                             variant="ghost"
                             size="icon"
-                            className="!h-[34px] absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-gray-800 hover:text-gray-black hover:bg-transparent"
+                            className="!h-[34px] absolute sidebar:opacity-0 group-hover/menu-item:opacity-100 focus-visible:opacity-100 transition-all left-3 top-0 p-0 h-9 w-auto text-sidebar-accent-foreground hover:text-gray-black hover:bg-transparent"
                             onClick={() =>
-                                setPostsExpanded(!postsExpanded)
+                                void setPostsExpanded(!postsExpanded)
                             }
                         >
                             <LucideIcon.ChevronRight
@@ -49,7 +51,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.Link>
                         <a href="#/editor/post"
                             aria-label="Create new post"
-                            className="flex items-center justify-center absolute hover:bg-gray-200 transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-black"
+                            className="flex items-center justify-center absolute hover:bg-sidebar-accent transition-all rounded-full right-0 top-0 p-0 size-8 text-gray-700 hover:text-sidebar-accent-foreground"
                         >
                             <LucideIcon.Plus
                                 size={20}
@@ -77,6 +79,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
+
+                        <NavCustomViews />
                     </NavSubMenu>
 
                     <NavMenuItem>
