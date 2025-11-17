@@ -55,7 +55,6 @@ SQL >
                 and (post_type != 'post' or post_type is null)
             {% end %}
         {% end %}
-        -- UTM filters are applied in filtered_sessions pipe at the session level (mv_session_data)
     group by post_uuid, pathname
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
