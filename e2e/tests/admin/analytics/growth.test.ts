@@ -1,5 +1,5 @@
-import {AnalyticsGrowthPage} from '@admin-pages';
-import {expect, test} from '@helpers/playwright';
+import {AnalyticsGrowthPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Growth', () => {
     let growthPage: AnalyticsGrowthPage;

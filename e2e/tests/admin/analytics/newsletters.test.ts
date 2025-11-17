@@ -1,6 +1,6 @@
-import {AnalyticsNewslettersPage} from '@admin-pages';
-import {MembersImportService} from '@helpers/services/members-import';
-import {expect, test} from '@helpers/playwright';
+import {AnalyticsNewslettersPage} from '@/admin-pages';
+import {MembersImportService} from '@/helpers/services/members-import';
+import {expect, test} from '@/helpers/playwright';
 
 function getDateDaysAgo(days: number): string {
     const date = new Date();

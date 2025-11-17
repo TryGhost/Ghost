@@ -1,4 +1,4 @@
-import {AdminPage} from '../../admin-page';
+import {AdminPage} from '@/helpers/pages/admin/admin-page';
 import {Locator, Page} from '@playwright/test';
 
 class GrowthSection extends AdminPage {

@@ -1,5 +1,5 @@
-import {HomePage} from '@public-pages';
-import {expect, test} from '@helpers/playwright';
+import {HomePage} from '@/public-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Public - Homepage', () => {
     test('loads correctly', async ({page}) => {

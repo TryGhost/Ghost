@@ -1,5 +1,5 @@
-import {AdminPage} from '../admin-page';
-import {BasePage} from '../../base-page';
+import {AdminPage} from '@/helpers/pages/admin/admin-page';
+import {BasePage} from '@/helpers/pages/base-page';
 import {Locator, Page} from '@playwright/test';
 
 class SettingsSection extends BasePage {

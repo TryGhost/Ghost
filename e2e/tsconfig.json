@@ -29,11 +29,11 @@
     "moduleResolution": "bundler",                       /* Specify how TypeScript looks up a file from a given module specifier. */
     "baseUrl": "./",                                     /* Specify the base directory to resolve non-relative module names. */
     "paths": {
-        "@admin-pages": ["./helpers/pages/admin/index"],
-        "@public-pages": ["./helpers/pages/public/index"],
-        "@portal-pages": ["./helpers/pages/portal/index"],
-        "@helpers/*": ["./helpers/*"],
-        "@data-factory": ["./data-factory/index.ts"]
+        "@/admin-pages": ["./helpers/pages/admin/index"],
+        "@/public-pages": ["./helpers/pages/public/index"],
+        "@/portal-pages": ["./helpers/pages/portal/index"],
+        "@/helpers/*": ["./helpers/*"],
+        "@/data-factory": ["./data-factory/index.ts"]
     },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

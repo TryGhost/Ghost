@@ -1,8 +1,8 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '../constants';
-import {DockerCompose} from '../docker-compose';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
+import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {TinybirdManager} from './tinybird-manager';
 import type {Container, ContainerCreateOptions} from 'dockerode';
 

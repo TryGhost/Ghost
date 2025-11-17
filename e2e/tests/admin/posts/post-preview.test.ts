@@ -1,6 +1,6 @@
-import {PostEditorPage} from '@admin-pages';
-import {PostFactory, createPostFactory} from '@data-factory';
-import {expect, test} from '@helpers/playwright';
+import {PostEditorPage} from '@/admin-pages';
+import {PostFactory, createPostFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Post Preview Modal', () => {
     let postFactory: PostFactory;
