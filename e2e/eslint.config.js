@@ -2,6 +2,7 @@ import eslint from '@eslint/js';
 import ghostPlugin from 'eslint-plugin-ghost';
 import playwrightPlugin from 'eslint-plugin-playwright';
 import tseslint from 'typescript-eslint';
+import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 
 export default tseslint.config([
     // Ignore patterns
@@ -30,7 +31,8 @@ export default tseslint.config([
         },
         plugins: {
             ghost: ghostPlugin,
-            playwright: playwrightPlugin
+            playwright: playwrightPlugin,
+            'no-relative-import-paths': noRelativeImportPaths,
         },
         rules: {
             // Manually include rules from plugin:ghost/ts and plugin:ghost/ts-test
@@ -44,6 +46,11 @@ export default tseslint.config([
 
             // Enforce kebab-case (lowercase with hyphens) for all filenames
             'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
+            'no-relative-import-paths/no-relative-import-paths': [
+                'error',
+                { allowSameFolder: true, rootDir: './', prefix: '@' },
+            ],
 
             // Disable all mocha rules from ghost plugin since this package uses playwright instead
             ...Object.fromEntries(
