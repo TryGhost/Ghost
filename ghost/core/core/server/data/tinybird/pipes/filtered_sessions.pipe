@@ -1,3 +1,5 @@
+TOKEN "axis" READ
+
 NODE query_filters
 DESCRIPTION >
     Get sessions that match the filter criteria

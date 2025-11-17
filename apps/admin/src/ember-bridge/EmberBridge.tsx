@@ -1,16 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export interface EmberBridge {
     state: StateBridge;
 }
 
+export type StateBridgeEventMap = {
+    emberDataChange: EmberDataChangeEvent;
+    emberAuthChange: EmberAuthChangeEvent;
+    subscriptionChange: SubscriptionState;
+}
+
 export interface StateBridge {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
-    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => void;
-    off: (event: string, callback: (event: EmberDataChangeEvent) => void) => void;
+    on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
+    off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
 }
 
 declare global {
@@ -24,6 +30,17 @@ export interface EmberDataChangeEvent {
     modelName: string;
     id: string;
     data: Record<string, unknown> | null;
+}
+
+export interface EmberAuthChangeEvent {
+    isAuthenticated: boolean;
+}
+
+export interface SubscriptionState {
+    subscription: {
+        isActiveTrial: boolean;
+        trial_end: string | null;
+    };
 }
 
 /**
@@ -47,6 +64,61 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'webhook': 'WebhooksResponseType'
 };
 
+let stateBridgePromise: Promise<StateBridge | undefined> | null = null;
+
+/**
+ * Gets the StateBridge, waiting for EmberBridge to load if necessary.
+ *
+ * This polls indefinitely because we may lazy-load Ember in the future
+ * once more of the app is migrated to React.
+ *
+ * @returns Promise that resolves when StateBridge is available
+ */
+function getStateBridge(): Promise<StateBridge | undefined> {
+    if (typeof window === 'undefined') {
+        return Promise.resolve(undefined);
+    }
+
+    if (window.EmberBridge?.state) {
+        return Promise.resolve(window.EmberBridge.state);
+    }
+
+    if (!stateBridgePromise) {
+        stateBridgePromise = new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (window.EmberBridge?.state) {
+                    clearInterval(interval);
+                    resolve(window.EmberBridge.state);
+                }
+            }, 100);
+        });
+    }
+
+    return stateBridgePromise;
+}
+
+function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
+    event: K,
+    handler: (event: StateBridgeEventMap[K]) => void
+): () => void {
+    let unsubscribe: (() => void) | null = null;
+    let isMounted = true;
+
+    void getStateBridge().then((stateBridge) => {
+        if (!stateBridge || !isMounted) {
+            return;
+        }
+
+        stateBridge.on(event, handler);
+        unsubscribe = () => stateBridge.off(event, handler);
+    });
+
+    return () => {
+        isMounted = false;
+        unsubscribe?.();
+    };
+}
+
 /**
  * Hook to sync Ember Data store changes with React Query cache.
  *
@@ -60,9 +132,7 @@ export function useEmberDataSync() {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        let isSubscribed = false;
-
-        const handler = (event: EmberDataChangeEvent) => {
+        const handleEmberDataChange = (event: EmberDataChangeEvent) => {
             const { modelName } = event;
             const reactDataType = EMBER_TO_REACT_TYPE_MAPPING[modelName];
 
@@ -80,20 +150,46 @@ export function useEmberDataSync() {
             });
         };
 
-        // Poll for EmberBridge availability since it's created after React shell renders
-        const pollInterval = setInterval(() => {
-            if (window.EmberBridge?.state) {
-                clearInterval(pollInterval);
-                window.EmberBridge.state.on('emberDataChange', handler);
-                isSubscribed = true;
-            }
-        }, 100);
+        return onEmberStateBridgeEvent('emberDataChange', handleEmberDataChange);
+    }, [queryClient]);
 
-        return () => {
-            clearInterval(pollInterval);
-            if (isSubscribed && window.EmberBridge?.state) {
-                window.EmberBridge.state.off('emberDataChange', handler);
+}
+
+/**
+ * Hook to sync Ember authentication state with React Query cache.
+ *
+ * This hook listens to Ember authentication state changes and automatically
+ * invalidates the React Query cache when the user signs in.
+ *
+ * This is a temporary bridge during the Ember -> React migration and should be
+ * called once at the app level. It will be removed once the migration is complete.
+ */
+
+export function useEmberAuthSync() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        const handleEmberAuthChange = (event: EmberAuthChangeEvent) => {
+            if (event.isAuthenticated) {
+                void queryClient.invalidateQueries();
             }
         };
+
+        return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
     }, [queryClient]);
+
+}
+
+export function useSubscriptionStatus() {
+    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionState | null>(null);
+
+    useEffect(() => {
+        const handleSubscriptionChange = (payload: SubscriptionState) => {
+            setSubscriptionStatus(payload);
+        };
+
+        return onEmberStateBridgeEvent('subscriptionChange', handleSubscriptionChange);
+    }, []);
+
+    return subscriptionStatus;
 }

@@ -189,7 +189,9 @@ const createDb = ({first, all}: DbOptions = {}) => {
             return this;
         }
     };
-    db.knex.raw = sinon.stub().resolves();
+    db.knex.raw = function () {
+        return this;
+    };
     return db;
 };
 

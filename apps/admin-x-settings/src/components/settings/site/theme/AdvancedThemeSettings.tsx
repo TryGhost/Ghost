@@ -1,10 +1,10 @@
-import InvalidThemeModal, {FatalErrors} from './InvalidThemeModal';
+import InvalidThemeModal, {type FatalErrors} from './InvalidThemeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/useCustomFonts';
-import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 

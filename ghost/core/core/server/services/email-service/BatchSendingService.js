@@ -430,7 +430,7 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
         const deadline = this.getDeliveryDeadline(email);
-        
+
         if (deadline) {
             logging.info(`Delivery deadline for email ${email.id} is ${deadline}`);
         }
@@ -530,6 +530,7 @@ class BatchSendingService {
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),
+                    useFallbackAddress: batch.get('fallback_sending_domain'),
                     deliveryTime,
                     emailBodyCache
                 });
@@ -730,7 +731,7 @@ class BatchSendingService {
     /**
      * Returns the sending deadline for an email
      * Based on the email.created_at timestamp and the configured target delivery window
-     * @param {*} email 
+     * @param {*} email
      * @returns Date | undefined
      */
     getDeliveryDeadline(email) {

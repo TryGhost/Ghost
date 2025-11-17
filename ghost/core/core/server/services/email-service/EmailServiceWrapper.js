@@ -57,7 +57,7 @@ class EmailServiceWrapper {
 
         // Mailgun client instance for email provider
         const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache
+            config: configService, settings: settingsCache, labs
         });
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
@@ -108,7 +108,8 @@ class EmailServiceWrapper {
 
         const sendingService = new SendingService({
             emailProvider: mailgunEmailProvider,
-            emailRenderer
+            emailRenderer,
+            emailAddressService: emailAddressService.service
         });
 
         const emailSegmenter = new EmailSegmenter({
