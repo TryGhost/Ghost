@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -53,10 +53,22 @@
     ],
     "rules": {
       "react/prop-types": "off",
-      "ghost/filenames/match-regex": ["error", "^[a-z0-9.-]+$", false],
-      "ghost/sort-imports-es6-autofix/sort-imports-es6": ["error", {
-          "memberSyntaxSortOrder": ["none", "all", "single", "multiple"]
-      }]
+      "ghost/filenames/match-regex": [
+        "error",
+        "^[a-z0-9.-]+$",
+        false
+      ],
+      "ghost/sort-imports-es6-autofix/sort-imports-es6": [
+        "error",
+        {
+          "memberSyntaxSortOrder": [
+            "none",
+            "all",
+            "single",
+            "multiple"
+          ]
+        }
+      ]
     },
     "settings": {
       "react": {
