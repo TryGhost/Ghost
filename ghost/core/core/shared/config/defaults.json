@@ -302,5 +302,5 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "memberWelcomeEmailTestInbox": ""
+    "memberWelcomeEmailTestInbox" : ""
 }

@@ -1,4 +1,4 @@
-import App from './app';
+import App from '../../src/app';
 import React from 'react';
 import nock from 'nock';
 import {render} from '@testing-library/react';
