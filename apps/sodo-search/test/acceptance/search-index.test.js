@@ -1,4 +1,4 @@
-import SearchIndex, {tokenizeCjkByCodePoint} from './search-index';
+import SearchIndex, {tokenizeCjkByCodePoint} from '../../src/search-index';
 import nock from 'nock';
 
 describe('search index', function () {
@@ -72,7 +72,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/tags/barcelona-tag/'
                 }]
             });
-        
+
         await searchIndex.init();
 
         let searchResults = searchIndex.search('Barcelo');
@@ -155,7 +155,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/tags/barcelona-tag/'
                 }]
             });
-        
+
         await searchIndex.init();
 
         let searchResults = searchIndex.search('المثابرة');
@@ -237,7 +237,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/tags/barcelona-tag/'
                 }]
             });
-            
+
         await searchIndex.init();
 
         let searchResults = searchIndex.search('Regisztrálj');
@@ -247,7 +247,7 @@ describe('search index', function () {
         // search without accents (for a term with them)
         searchResults = searchIndex.search('Regisztralj');
         expect(searchResults.posts.length).toEqual(1);
-        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');      
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');
 
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.posts.length).toEqual(0);
@@ -299,7 +299,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/tags/khdshvt/'
                 }]
             });
-            
+
         await searchIndex.init();
 
         let searchResults = searchIndex.search('ניו יורק');
@@ -312,7 +312,7 @@ describe('search index', function () {
         searchResults = searchIndex.search('קונסקט');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/khdshvt-nyv-yvrq/');
-        
+
         // check that stemming doesn't happen from the wrong end of the word also.
         searchResults = searchIndex.search('קטורר');
         expect(searchResults.posts.length).toEqual(0);
@@ -320,7 +320,7 @@ describe('search index', function () {
         searchResults = searchIndex.search('סופר');
         expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/svpr/');
-         
+
         searchResults = searchIndex.search('חדשות');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].title).toEqual('חדשות ניו יורק');
@@ -390,7 +390,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/tags/barcelona-tag/'
                 }]
             });
-            
+
         await searchIndex.init();
 
         // # doesn't matter

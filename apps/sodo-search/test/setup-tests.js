@@ -1,7 +1,7 @@
+import matchers from '@testing-library/jest-dom/matchers';
 import {afterEach, expect} from 'vitest';
 import {cleanup} from '@testing-library/react';
 import {fetch} from 'cross-fetch';
-import matchers from '@testing-library/jest-dom/matchers';
 
 // TODO: remove this once we're switched `jest` to `vi` in code
 // eslint-disable-next-line no-undef
