@@ -15,7 +15,7 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         const membersPage = new MembersPage(page);
 
         await membersPage.goto();
-        await membersPage.getMemberByName(name).click();
+        await membersPage.getMemberByName(name!).click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.settingsSection.memberActionsButton.click();

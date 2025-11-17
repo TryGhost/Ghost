@@ -1,4 +1,4 @@
-import {WhatsNewBanner, WhatsNewMenu} from '@admin-pages/whats-new/index';
+import {WhatsNewBanner, WhatsNewMenu} from '@admin-pages';
 import {expect, test} from '@helpers/playwright/fixture';
 import type {Page} from '@playwright/test';
 
