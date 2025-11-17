@@ -74,12 +74,17 @@ describe('PostsStatsService', function () {
     async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
+
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_created_events').insert({
             id: eventId,
             member_id: memberId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: moment(createdAt).utc().toISOString(),
@@ -92,13 +97,17 @@ describe('PostsStatsService', function () {
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
 
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_subscription_created_events').insert({
             id: subCreatedEventId,
             member_id: memberId,
             subscription_id: subscriptionId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: moment(createdAt).utc().toISOString()
@@ -113,10 +122,10 @@ describe('PostsStatsService', function () {
         });
     }
 
-    async function _createFreeSignup(postId, referrerSource,memberId = null) {
+    async function _createFreeSignup(postId, referrerSource, memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
     }
 
     async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
@@ -687,6 +696,20 @@ describe('PostsStatsService', function () {
 
             const expectedResults = [
                 {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('returns growth stats for a page', async function () {
+            await _createFreeSignup('page1', 'referrer_1');
+            await _createPaidSignup('page1', 500, 'referrer_1');
+            await _createPaidConversion('page1', 'page2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('page1');
+
+            const expectedResults = [
+                {post_id: 'page1', free_members: 2, paid_members: 1, mrr: 500}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
