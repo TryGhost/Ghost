@@ -52,7 +52,8 @@
       "ghost"
     ],
     "rules": {
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "ghost/filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
     },
     "settings": {
       "react": {

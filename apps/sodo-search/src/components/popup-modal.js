@@ -1,5 +1,5 @@
-import Frame from './Frame';
-import AppContext from '../AppContext';
+import Frame from './frame';
+import AppContext from '../app-context';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/clear.svg';
 import {ReactComponent as CircleAnimated} from '../icons/circle-anim.svg';
