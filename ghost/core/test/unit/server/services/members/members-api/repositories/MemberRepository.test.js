@@ -467,7 +467,6 @@ describe('MemberRepository', function () {
         let Outbox;
         let MemberStatusEvent;
         let MemberSubscribeEvent;
-        let labsService;
         let newslettersService;
         const oldNodeEnv = process.env.NODE_ENV;
 
