@@ -1,4 +1,4 @@
-import App from './App';
+import App from './app';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {ROOT_DIV_ID} from './utils/constants';

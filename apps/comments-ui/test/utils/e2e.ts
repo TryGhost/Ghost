@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
 import {Locator, Page} from '@playwright/test';
-import {MockedApi} from './MockedApi';
+import {MockedApi} from './mocked-api';
 import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';

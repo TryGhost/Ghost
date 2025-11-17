@@ -1,4 +1,4 @@
-import {Comment, Member, TranslationFunction} from '../AppContext';
+import {Comment, Member, TranslationFunction} from '../app-context';
 
 export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
