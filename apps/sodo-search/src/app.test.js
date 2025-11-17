@@ -1,7 +1,7 @@
-import {render} from '@testing-library/react';
 import App from './app';
 import React from 'react';
 import nock from 'nock';
+import {render} from '@testing-library/react';
 
 test('renders Sodo Search app component', () => {
     nock('http://localhost:3000/ghost/api/content')

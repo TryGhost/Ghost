@@ -53,7 +53,10 @@
     ],
     "rules": {
       "react/prop-types": "off",
-      "ghost/filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
+      "ghost/filenames/match-regex": ["error", "^[a-z0-9.-]+$", false],
+      "ghost/sort-imports-es6-autofix/sort-imports-es6": ["error", {
+          "memberSyntaxSortOrder": ["none", "all", "single", "multiple"]
+      }]
     },
     "settings": {
       "react": {
