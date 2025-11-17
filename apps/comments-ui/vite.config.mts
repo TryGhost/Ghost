@@ -59,7 +59,7 @@ export default (function viteConfig() {
         test: {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
-            setupFiles: './src/setupTests.ts',
+            setupFiles: './src/setup-tests.ts',
             include: ['src/**/*.test.jsx', 'src/**/*.test.js', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
