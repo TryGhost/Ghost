@@ -3,7 +3,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const labs = require('../../../core/shared/labs');
+const config = require('../../../core/shared/config');
 const sinon = require('sinon');
 
 describe('Member Welcome Emails Integration', function () {
@@ -27,7 +27,13 @@ describe('Member Welcome Emails Integration', function () {
 
     describe('Member creation with welcome emails enabled', function () {
         it('creates outbox entry when member source is "member"', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            const originalGet = config.get.bind(config);
+            sinon.stub(config, 'get').callsFake((key) => {
+                if (key === 'memberWelcomeEmailTestInbox') {
+                    return 'test-inbox@example.com';
+                }
+                return originalGet(key);
+            });
 
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
@@ -50,8 +56,14 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when welcome emails feature is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(false);
+        it('does NOT create outbox entry when config is not set', async function () {
+            const originalGet = config.get.bind(config);
+            sinon.stub(config, 'get').callsFake((key) => {
+                if (key === 'memberWelcomeEmailTestInbox') {
+                    return undefined;
+                }
+                return originalGet(key);
+            });
 
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
@@ -66,7 +78,13 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is imported', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            const originalGet = config.get.bind(config);
+            sinon.stub(config, 'get').callsFake((key) => {
+                if (key === 'memberWelcomeEmailTestInbox') {
+                    return 'test-inbox@example.com';
+                }
+                return originalGet(key);
+            });
 
             await membersService.api.members.create({
                 email: 'imported@example.com',
@@ -81,7 +99,13 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is created by admin', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            const originalGet = config.get.bind(config);
+            sinon.stub(config, 'get').callsFake((key) => {
+                if (key === 'memberWelcomeEmailTestInbox') {
+                    return 'test-inbox@example.com';
+                }
+                return originalGet(key);
+            });
 
             await membersService.api.members.create({
                 email: 'admin-created@example.com',
@@ -96,7 +120,13 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates outbox entry with correct timestamp', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            const originalGet = config.get.bind(config);
+            sinon.stub(config, 'get').callsFake((key) => {
+                if (key === 'memberWelcomeEmailTestInbox') {
+                    return 'test-inbox@example.com';
+                }
+                return originalGet(key);
+            });
 
             const beforeCreation = new Date(Date.now() - 1000);
             
