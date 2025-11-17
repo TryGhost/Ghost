@@ -4,6 +4,7 @@ import {
     type AccountSearchResult,
     ActivityPubAPI,
     ActivityPubCollectionResponse,
+    type ExploreAccount,
     type GetAccountFollowsResponse,
     type Notification,
     type Post,
@@ -2621,10 +2622,10 @@ export function useExploreProfilesForUserByTopic(handle: string, topic: string) 
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            const response = await api.getExploreProfiles(topic, pageParam);
+            const response = await api.getExploreAccounts(topic, pageParam);
 
             // Cache account data for follow mutations
-            response.accounts.forEach((account: Account) => {
+            response.accounts.forEach((account: ExploreAccount) => {
                 queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
             });
 
