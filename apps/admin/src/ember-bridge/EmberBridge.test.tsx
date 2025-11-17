@@ -13,7 +13,7 @@ const queryTest = baseTest.extend<{
 type EmberEvent = keyof StateBridgeEventMap;
 type EventPayload<K extends EmberEvent> = StateBridgeEventMap[K];
 
-function createMockStateBridge() {
+function createMockStateBridge(sidebarVisible = true) {
     const listeners: Partial<Record<EmberEvent, Array<(payload: unknown) => void>>> = {};
 
     const on = vi.fn(<K extends EmberEvent>(event: K, callback: (payload: EventPayload<K>) => void) => {
@@ -41,6 +41,7 @@ function createMockStateBridge() {
         onDelete: vi.fn(),
         on: on as StateBridge['on'],
         off: off as StateBridge['off'],
+        sidebarVisible,
     };
 
     return {
@@ -52,13 +53,14 @@ function createMockStateBridge() {
 
 let useEmberDataSync: typeof import('./EmberBridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./EmberBridge').useEmberAuthSync;
+let useSidebarVisibility: typeof import('./EmberBridge').useSidebarVisibility;
 type EmberBridgeWindow = typeof window & { EmberBridge?: { state: StateBridge } };
 const windowWithBridge = window as EmberBridgeWindow;
 
 beforeEach(async () => {
     vi.resetModules();
     vi.useRealTimers();
-    ({ useEmberDataSync, useEmberAuthSync } = await import('./EmberBridge'));
+    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility } = await import('./EmberBridge'));
     delete windowWithBridge.EmberBridge;
 });
 
@@ -170,5 +172,100 @@ describe('useEmberAuthSync', () => {
         });
 
         unmount();
+    });
+});
+
+describe('useSidebarVisibility', () => {
+    baseTest('returns true when EmberBridge is not available', () => {
+        const { result } = renderHook(() => useSidebarVisibility());
+
+        expect(result.current).toBe(true);
+    });
+
+    baseTest('reads sidebar visibility from Ember state', () => {
+        const mock = createMockStateBridge(false);
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        const { result } = renderHook(() => useSidebarVisibility());
+
+        expect(result.current).toBe(false);
+    });
+
+    baseTest('updates when Ember emits sidebarVisibilityChange event', async () => {
+        const mock = createMockStateBridge(true);
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        const { result } = renderHook(() => useSidebarVisibility());
+
+        expect(result.current).toBe(true);
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('sidebarVisibilityChange', expect.any(Function));
+        });
+
+        // Update the mock state and emit event
+        mock.stateBridge.sidebarVisible = false;
+        act(() => {
+            mock.emit('sidebarVisibilityChange', { isVisible: false });
+        });
+
+        await waitFor(() => {
+            expect(result.current).toBe(false);
+        });
+    });
+
+    baseTest('updates from false to true', async () => {
+        const mock = createMockStateBridge(false);
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        const { result } = renderHook(() => useSidebarVisibility());
+
+        expect(result.current).toBe(false);
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('sidebarVisibilityChange', expect.any(Function));
+        });
+
+        // Update the mock state and emit event
+        mock.stateBridge.sidebarVisible = true;
+        act(() => {
+            mock.emit('sidebarVisibilityChange', { isVisible: true });
+        });
+
+        await waitFor(() => {
+            expect(result.current).toBe(true); 
+        });
+    });
+
+    baseTest('reads latest Ember state on each render', () => {
+        const mock = createMockStateBridge(true);
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        const { result, rerender } = renderHook(() => useSidebarVisibility());
+
+        expect(result.current).toBe(true);
+
+        // Change Ember state without emitting event
+        mock.stateBridge.sidebarVisible = false;
+
+        // Force a re-render
+        rerender();
+
+        // Should read the new state from Ember
+        expect(result.current).toBe(false);
+    });
+
+    baseTest('does not subscribe if unmounted before bridge becomes available', async () => {
+        vi.useFakeTimers();
+        const mock = createMockStateBridge(true);
+
+        const { unmount } = renderHook(() => useSidebarVisibility());
+        unmount();
+
+        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(mock.onSpy).not.toHaveBeenCalled();
     });
 });
