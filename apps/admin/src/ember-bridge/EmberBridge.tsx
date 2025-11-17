@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export interface EmberBridge {
@@ -9,6 +9,7 @@ export type StateBridgeEventMap = {
     emberDataChange: EmberDataChangeEvent;
     emberAuthChange: EmberAuthChangeEvent;
     subscriptionChange: SubscriptionState;
+    sidebarVisibilityChange: SidebarVisibilityChangeEvent;
 }
 
 export interface StateBridge {
@@ -17,6 +18,7 @@ export interface StateBridge {
     onDelete: (dataType: string, id: string) => void;
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
+    sidebarVisible: boolean;
 }
 
 declare global {
@@ -41,6 +43,10 @@ export interface SubscriptionState {
         isActiveTrial: boolean;
         trial_end: string | null;
     };
+}
+
+export interface SidebarVisibilityChangeEvent {
+    isVisible: boolean;
 }
 
 /**
@@ -192,4 +198,31 @@ export function useSubscriptionStatus() {
     }, []);
 
     return subscriptionStatus;
+}
+
+// External store for sidebar visibility state
+function subscribeSidebarVisibility(callback: () => void): () => void {
+    return onEmberStateBridgeEvent('sidebarVisibilityChange', callback);
+}
+
+function getSidebarVisibility(): boolean {
+    // Always read from Ember as the source of truth
+    return window.EmberBridge?.state.sidebarVisible ?? true;
+}
+
+/**
+ * Hook to sync sidebar visibility state from Ember.
+ * 
+ * This hook uses useSyncExternalStore to listen to sidebar visibility changes
+ * triggered by Ember routes (e.g., hiding the sidebar when entering the editor).
+ * 
+ * This is a temporary bridge during the Ember -> React migration and should be
+ * removed once the editor is ported to React.
+ */
+export function useSidebarVisibility(): boolean {
+    return useSyncExternalStore(
+        subscribeSidebarVisibility,
+        getSidebarVisibility,
+        getSidebarVisibility // Server snapshot (same as client for now)
+    );
 }

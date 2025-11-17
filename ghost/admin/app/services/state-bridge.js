@@ -24,6 +24,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service settings;
     @service store;
     @service themeManagement;
+    @service ui;
 
     @inject config;
 
@@ -181,5 +182,17 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('subscriptionChange', {
             ...data
         });
+    }
+
+    @action
+    setSidebarVisible(isVisible) {
+        this.trigger('sidebarVisibilityChange', {
+            isVisible
+        });
+    }
+
+    get sidebarVisible() {
+        // Sidebar is visible when NOT in fullscreen mode
+        return !this.ui.isFullScreen;
     }
 }
