@@ -1,8 +1,8 @@
-import IFrame from './IFrame';
+import IFrame from './iframe';
 import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
 import {isMinimal} from '../utils/helpers';
-import {useAppContext} from '../AppContext';
+import {useAppContext} from '../app-context';
 
 type FrameProps = {
     children: React.ReactNode
