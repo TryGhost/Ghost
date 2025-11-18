@@ -30994,7 +30994,7 @@ sinon@^9.0.0:
     nise "^4.0.4"
     supports-color "^7.1.0"
 
-sirv@^3.0.1:
+sirv@3.0.2, sirv@^3.0.1:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/sirv/-/sirv-3.0.2.tgz#f775fccf10e22a40832684848d636346f41cd970"
   integrity sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==
