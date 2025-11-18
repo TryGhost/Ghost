@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import {FormView} from './FormView';
+import {FormView} from './form-view';
 
 const meta = {
     title: 'Form View',

@@ -1,6 +1,6 @@
 import React from 'react';
-import {SuccessView} from './SuccessView';
-import {useAppContext} from '../../AppContext';
+import {SuccessView} from './success-view';
+import {useAppContext} from '../../app-context';
 
 type SuccessPageProps = {
     email: string;

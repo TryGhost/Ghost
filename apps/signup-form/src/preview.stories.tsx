@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
-import {AppContextProvider, SignupFormOptions} from './AppContext';
-import {ContentBox} from './components/ContentBox';
+import {AppContextProvider, SignupFormOptions} from './app-context';
+import {ContentBox} from './components/content-box';
 import {userEvent, within} from '@storybook/testing-library';
 import type {Meta, StoryObj} from '@storybook/react';
 
