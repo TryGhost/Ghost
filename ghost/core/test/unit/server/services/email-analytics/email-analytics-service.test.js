@@ -1,6 +1,7 @@
 require('should');
 
 const sinon = require('sinon');
+const configUtils = require('../../../../utils/configUtils');
 
 const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
 const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
@@ -276,53 +277,68 @@ describe('EmailAnalyticsService', function () {
     });
 
     describe('processEventBatch', function () {
-        describe('with functional processor', function () {
-            let eventProcessor;
-            beforeEach(function () {
-                eventProcessor = {};
-                eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
+        // Run all processEventBatch tests with both batching modes
+        [true, false].forEach((batchProcessing) => {
+            const modeLabel = batchProcessing ? 'batching enabled' : 'batching disabled';
+
+            describe(`with ${modeLabel}`, function () {
+                beforeEach(function () {
+                    configUtils.set('emailAnalytics:batchProcessing', batchProcessing);
                 });
-                eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
+
+                afterEach(function () {
+                    configUtils.restore();
                 });
-                eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
-                });
-                eventProcessor.handleTemporaryFailed = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
-                });
-                eventProcessor.handleUnsubscribed = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
-                });
-                eventProcessor.handleComplained = sinon.stub().callsFake(({emailId}) => {
-                    return {
-                        emailId,
-                        emailRecipientId: emailId,
-                        memberId: 1
-                    };
-                });
-            });
+
+                describe('with functional processor', function () {
+                    let eventProcessor;
+                    beforeEach(function () {
+                        eventProcessor = {};
+                        eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
+                        eventProcessor.flushBatchedUpdates = sinon.stub().resolves();
+                        eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                        eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                        eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                        eventProcessor.handleTemporaryFailed = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                        eventProcessor.handleUnsubscribed = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                        eventProcessor.handleComplained = sinon.stub().callsFake(({emailId}) => {
+                            return {
+                                emailId,
+                                emailRecipientId: emailId,
+                                memberId: 1
+                            };
+                        });
+                    });
 
             it('uses passed-in event processor', async function () {
                 const service = new EmailAnalyticsService({
@@ -564,6 +580,8 @@ describe('EmailAnalyticsService', function () {
             let eventProcessor;
             beforeEach(function () {
                 eventProcessor = {};
+                eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
+                eventProcessor.flushBatchedUpdates = sinon.stub().resolves();
                 eventProcessor.handleDelivered = sinon.stub().returns(null);
                 eventProcessor.handleOpened = sinon.stub().returns(null);
                 eventProcessor.handlePermanentFailed = sinon.stub().returns(null);
@@ -688,36 +706,115 @@ describe('EmailAnalyticsService', function () {
                 }));
             });
         });
+
+        it(`verifies batch methods called correctly in ${modeLabel} mode`, async function () {
+            const eventProcessor = {
+                batchGetRecipients: sinon.stub().resolves(new Map()),
+                flushBatchedUpdates: sinon.stub().resolves(),
+                handleDelivered: sinon.stub().resolves({emailId: 1, emailRecipientId: 1, memberId: 1})
+            };
+
+            const service = new EmailAnalyticsService({eventProcessor});
+            const result = new EventProcessingResult();
+            const fetchData = {};
+
+            await service.processEventBatch([{
+                type: 'delivered',
+                emailId: 1,
+                timestamp: new Date(1)
+            }], result, fetchData);
+
+            if (batchProcessing) {
+                // In batched mode, should call batchGetRecipients and flushBatchedUpdates
+                eventProcessor.batchGetRecipients.calledOnce.should.be.true();
+                eventProcessor.flushBatchedUpdates.calledOnce.should.be.true();
+            } else {
+                // In sequential mode, should not call batch methods
+                eventProcessor.batchGetRecipients.called.should.be.false();
+                eventProcessor.flushBatchedUpdates.called.should.be.false();
+            }
+        });
+    });
+});
     });
 
     describe('processEvent', function () {
     });
 
     describe('aggregateStats', function () {
-        let service;
+        describe('with batching enabled', function () {
+            let service;
 
-        beforeEach(function () {
-            service = new EmailAnalyticsService({
-                queries: {
-                    aggregateEmailStats: sinon.spy(),
-                    aggregateMemberStats: sinon.spy()
-                }
+            beforeEach(function () {
+                configUtils.set('emailAnalytics:batchProcessing', true);
+                service = new EmailAnalyticsService({
+                    queries: {
+                        aggregateEmailStats: sinon.spy(),
+                        aggregateMemberStats: sinon.spy(),
+                        aggregateMemberStatsBatch: sinon.spy()
+                    }
+                });
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            it('calls batched query for member stats', async function () {
+                await service.aggregateStats({
+                    emailIds: ['e-1', 'e-2'],
+                    memberIds: ['m-1', 'm-2']
+                });
+
+                service.queries.aggregateEmailStats.calledTwice.should.be.true();
+                service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
+                service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
+
+                // In batched mode, aggregateMemberStatsBatch should be called
+                service.queries.aggregateMemberStatsBatch.calledOnce.should.be.true();
+                service.queries.aggregateMemberStatsBatch.calledWith(['m-1', 'm-2']).should.be.true();
+
+                // Sequential method should not be called
+                service.queries.aggregateMemberStats.called.should.be.false();
             });
         });
 
-        it('calls appropriate query for each email id and member id', async function () {
-            await service.aggregateStats({
-                emailIds: ['e-1', 'e-2'],
-                memberIds: ['m-1', 'm-2']
+        describe('with batching disabled', function () {
+            let service;
+
+            beforeEach(function () {
+                configUtils.set('emailAnalytics:batchProcessing', false);
+                service = new EmailAnalyticsService({
+                    queries: {
+                        aggregateEmailStats: sinon.spy(),
+                        aggregateMemberStats: sinon.spy(),
+                        aggregateMemberStatsBatch: sinon.spy()
+                    }
+                });
             });
 
-            service.queries.aggregateEmailStats.calledTwice.should.be.true();
-            service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
-            service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
+            afterEach(function () {
+                configUtils.restore();
+            });
 
-            service.queries.aggregateMemberStats.calledTwice.should.be.true();
-            service.queries.aggregateMemberStats.calledWith('m-1').should.be.true();
-            service.queries.aggregateMemberStats.calledWith('m-2').should.be.true();
+            it('calls sequential query for member stats', async function () {
+                await service.aggregateStats({
+                    emailIds: ['e-1', 'e-2'],
+                    memberIds: ['m-1', 'm-2']
+                });
+
+                service.queries.aggregateEmailStats.calledTwice.should.be.true();
+                service.queries.aggregateEmailStats.calledWith('e-1').should.be.true();
+                service.queries.aggregateEmailStats.calledWith('e-2').should.be.true();
+
+                // In sequential mode, aggregateMemberStats should be called for each member
+                service.queries.aggregateMemberStats.calledTwice.should.be.true();
+                service.queries.aggregateMemberStats.calledWith('m-1').should.be.true();
+                service.queries.aggregateMemberStats.calledWith('m-2').should.be.true();
+
+                // Batch method should not be called
+                service.queries.aggregateMemberStatsBatch.called.should.be.false();
+            });
         });
     });
 
