@@ -38,6 +38,8 @@ SQL >
       on qf.session_id = sd.session_id
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(date_from) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
+        {% if defined(date_to) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
         {% if defined(utm_source) %} and utm_source = {{ String(utm_source, description="UTM source to filter on", required=False) }} {% end %}
         {% if defined(utm_medium) %} and utm_medium = {{ String(utm_medium, description="UTM medium to filter on", required=False) }} {% end %}
