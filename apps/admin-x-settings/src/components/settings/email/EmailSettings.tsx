@@ -11,13 +11,16 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun', 'tips', 'donations', 'one time', 'payment']
+    mailgun: [] as string[]
 };
 
 const EmailSettings: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+
+    if (newslettersEnabled !== 'disabled' && !config.mailgunIsConfigured) {
+        searchKeywords.mailgun = ['mailgun', 'emails', 'newsletters'];
+    }
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
