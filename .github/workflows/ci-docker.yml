@@ -295,7 +295,6 @@ jobs:
         shardIndex: [1, 2]
         shardTotal: [2]
         shell: [ember, react]
-    continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
