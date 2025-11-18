@@ -3,8 +3,8 @@ import {
     PostAnalyticsGrowthPage,
     PostAnalyticsPage,
     PostAnalyticsWebTrafficPage
-} from '../../../../helpers/pages/admin';
-import {expect, test} from '../../../../helpers/playwright';
+} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
     test.beforeEach(async ({page}) => {

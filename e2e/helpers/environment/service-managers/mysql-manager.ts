@@ -1,6 +1,6 @@
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DockerCompose} from '../docker-compose';
+import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {PassThrough} from 'stream';
 import type {Container} from 'dockerode';
 

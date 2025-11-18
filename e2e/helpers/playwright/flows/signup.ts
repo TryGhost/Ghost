@@ -1,6 +1,6 @@
 import {Page} from '@playwright/test';
-import {PublicPage} from '../../pages/public';
-import {SignUpPage, SignUpSuccessPage} from '../../pages/portal';
+import {PublicPage} from '@/public-pages';
+import {SignUpPage, SignUpSuccessPage} from '@/portal-pages';
 import {faker} from '@faker-js/faker';
 
 export async function signupViaPortal(page: Page): Promise<{emailAddress: string; name: string}> {

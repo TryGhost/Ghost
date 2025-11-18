@@ -1,4 +1,4 @@
-import {Factory} from '../factory';
+import {Factory} from '@/data-factory';
 
 export interface User {
     name: string;

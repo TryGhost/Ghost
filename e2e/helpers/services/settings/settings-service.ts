@@ -1,4 +1,4 @@
-import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
+import {HttpClient as APIRequest} from '@/data-factory';
 
 export interface Setting {
     key: string;

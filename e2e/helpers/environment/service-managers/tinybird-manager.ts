@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import path from 'path';
-import {DockerCompose} from '../docker-compose';
-import {ensureDir} from '../../utils';
+import {DockerCompose} from '@/helpers/environment/docker-compose';
+import {ensureDir} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
 

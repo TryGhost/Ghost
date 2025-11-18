@@ -1,6 +1,6 @@
-import {Factory} from '../factory';
+import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateSlug} from '../utils';
+import {generateId, generateSlug} from '@/data-factory';
 
 export interface Tag {
     id: string;

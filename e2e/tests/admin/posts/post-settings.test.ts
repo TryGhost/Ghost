@@ -1,6 +1,6 @@
-import {PostEditorPage, PostsPage} from '../../../helpers/pages';
-import {PostFactory, createPostFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {PostEditorPage, PostsPage} from '@/helpers/pages';
+import {PostFactory, createPostFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post - Settings', () => {
     test('shows correct publisher date format', async ({page}) => {

@@ -1,6 +1,6 @@
-import {PostFactory, createPostFactory} from '../../../data-factory';
-import {PostsPage} from '../../../helpers/pages';
-import {expect, test} from '../../../helpers/playwright';
+import {PostFactory, createPostFactory} from '@/data-factory';
+import {PostsPage} from '@/helpers/pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Posts', () => {
     test('lists posts', async ({page}) => {

@@ -1,6 +1,6 @@
-import {Factory} from '../factory';
+import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateUuid} from '../utils';
+import {generateId, generateUuid} from '@/data-factory';
 
 export interface Member {
     id: string;
