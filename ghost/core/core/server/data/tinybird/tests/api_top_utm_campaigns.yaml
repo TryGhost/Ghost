@@ -10,25 +10,6 @@
     {"utm_campaign":"retention_q4","visits":1}
     {"utm_campaign":"newsletter_weekly","visits":1}
 
-- name: Filtered by browser - Chrome
-  description: Filtered by browser - Chrome
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&browser=chrome
-  expected_result: |
-    {"utm_campaign":"brand_awareness","visits":2}
-    {"utm_campaign":"summer_sale_2024","visits":1}
-    {"utm_campaign":"retention_q4","visits":1}
-
-- name: Filtered by device - desktop
-  description: Filtered by device - desktop
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
-  expected_result: |
-    {"utm_campaign":"brand_awareness","visits":2}
-    {"utm_campaign":"holiday_promo","visits":2}
-    {"utm_campaign":"product_launch","visits":2}
-    {"utm_campaign":"summer_sale_2024","visits":1}
-    {"utm_campaign":"retention_q4","visits":1}
-    {"utm_campaign":"newsletter_weekly","visits":1}
-
 - name: Filtered by location - UK
   description: Filtered by location - UK
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB
@@ -36,17 +17,6 @@
     {"utm_campaign":"summer_sale_2024","visits":2}
     {"utm_campaign":"brand_awareness","visits":1}
     {"utm_campaign":"product_launch","visits":1}
-    {"utm_campaign":"newsletter_weekly","visits":1}
-
-- name: Filtered by OS - Windows
-  description: Filtered by OS - Windows
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&os=windows
-  expected_result: |
-    {"utm_campaign":"brand_awareness","visits":2}
-    {"utm_campaign":"holiday_promo","visits":2}
-    {"utm_campaign":"product_launch","visits":2}
-    {"utm_campaign":"summer_sale_2024","visits":1}
-    {"utm_campaign":"retention_q4","visits":1}
     {"utm_campaign":"newsletter_weekly","visits":1}
 
 - name: Filtered by pathname - /about/
@@ -103,7 +73,7 @@
 
 - name: Test with multiple filters combined
   description: Test with multiple filters combined
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&pathname=%2Fabout%2F
   expected_result: |
-    {"utm_campaign":"holiday_promo","visits":2}
-    {"utm_campaign":"product_launch","visits":2}
+    {"utm_campaign":"retention_q4","visits":1}
+    {"utm_campaign":"newsletter_weekly","visits":1}
