@@ -82,9 +82,7 @@
 
 - name: Test with multiple filters combined
   description: Test with multiple filters combined
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&pathname=%2Fabout%2F
   expected_result: |
-    {"utm_source":"linkedin","visits":1}
-    {"utm_source":"twitter","visits":1}
-    {"utm_source":"google","visits":1}
-    {"utm_source":"reddit","visits":1}
+    {"utm_source":"instagram","visits":1}
+    {"utm_source":"newsletter","visits":1}

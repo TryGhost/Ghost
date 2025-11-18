@@ -75,8 +75,7 @@
 
 - name: Test with multiple filters combined
   description: Test with multiple filters combined
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&pathname=%2Fabout%2F
   expected_result: |
-    {"utm_content":"sponsored_post","visits":1}
-    {"utm_content":"tweet_456","visits":1}
-    {"utm_content":"search_ad","visits":1}
+    {"utm_content":"story_789","visits":1}
+    {"utm_content":"header_link","visits":1}
