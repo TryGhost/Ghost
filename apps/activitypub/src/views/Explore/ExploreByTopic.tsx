@@ -24,13 +24,13 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
     const isCurrentUser = profile.handle === currentUser?.handle;
 
     const onFollow = () => {
-        update(profile.apId, {
+        update(profile.id, {
             followedByMe: true
         });
     };
 
     const onUnfollow = () => {
-        update(profile.apId, {
+        update(profile.id, {
             followedByMe: false
         });
     };
@@ -103,7 +103,7 @@ const ExploreByTopic: React.FC = () => {
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
     const emptyProfiles = Array(10).fill(null).map((_, i) => ({
-        apId: `skeleton-${i}`,
+        id: `skeleton-${i}`,
         name: '',
         handle: '',
         avatarUrl: '',
@@ -152,7 +152,7 @@ const ExploreByTopic: React.FC = () => {
                 {isLoadingExploreProfiles ? (
                     <div>
                         {emptyProfiles.map(profile => (
-                            <div key={profile.apId} className='mx-auto w-full max-w-[640px]'>
+                            <div key={profile.id} className='mx-auto w-full max-w-[640px]'>
                                 <ExploreProfile
                                     isLoading={isLoadingExploreProfiles}
                                     profile={profile}
@@ -165,7 +165,7 @@ const ExploreByTopic: React.FC = () => {
                     <div className='mx-auto flex w-full max-w-[640px] flex-col items-center'>
                         <div className='w-full'>
                             {profiles.map(profile => (
-                                <React.Fragment key={profile.apId}>
+                                <React.Fragment key={profile.id}>
                                     <ExploreProfile
                                         isLoading={false}
                                         profile={profile}

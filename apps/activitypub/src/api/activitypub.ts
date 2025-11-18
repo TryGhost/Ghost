@@ -36,7 +36,7 @@ export type AccountSearchResult = Pick<
 
 export type ExploreAccount = Pick<
     Account,
-    'apId' | 'name' | 'handle' | 'avatarUrl' | 'bio' | 'url' | 'followedByMe'
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'bio' | 'url' | 'followedByMe'
 >;
 
 export interface SearchResults {
