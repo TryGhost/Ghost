@@ -125,11 +125,11 @@ class AnalyticsEventGenerator {
         ];
 
         this.utmMediums = [
-            {value: 'cpc', weight: 30},      // Paid search
-            {value: 'social', weight: 25},    // Social media
-            {value: 'email', weight: 20},     // Email campaigns
-            {value: 'organic', weight: 15},   // Organic search
-            {value: 'referral', weight: 10}   // Referral traffic
+            {value: 'cpc', weight: 30}, // Paid search
+            {value: 'social', weight: 25}, // Social media
+            {value: 'email', weight: 20}, // Email campaigns
+            {value: 'organic', weight: 15}, // Organic search
+            {value: 'referral', weight: 10} // Referral traffic
         ];
 
         this.utmCampaigns = [
