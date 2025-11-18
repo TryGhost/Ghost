@@ -508,31 +508,6 @@ export class ActivityPubAPI {
         };
     }
 
-    private async getPaginatedAccounts(endpoint: string, next?: string): Promise<PaginatedAccountsResponse> {
-        const url = new URL(endpoint, this.apiUrl);
-
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null || !('accounts' in json)) {
-            return {
-                accounts: [],
-                next: null
-            };
-        }
-
-        const accounts = Array.isArray(json.accounts) ? json.accounts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            accounts,
-            next: nextPage
-        };
-    }
-
     async getNotifications(next?: string): Promise<GetNotificationsResponse> {
         const url = new URL('.ghost/activitypub/v1/notifications', this.apiUrl);
         if (next) {
