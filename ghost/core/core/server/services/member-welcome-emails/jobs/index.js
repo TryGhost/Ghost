@@ -1,6 +1,6 @@
 const path = require('path');
 const jobsService = require('../../jobs');
-const labs = require('../../../../shared/labs');
+const config = require('../../../../shared/config');
 
 let hasScheduled = {
     processOutbox: false
@@ -8,7 +8,7 @@ let hasScheduled = {
 
 module.exports = {
     async scheduleMemberWelcomeEmailJob() {
-        if (!labs.isSet('welcomeEmails')) {
+        if (!config.get('memberWelcomeEmailTestInbox')) {
             return false;
         }
 

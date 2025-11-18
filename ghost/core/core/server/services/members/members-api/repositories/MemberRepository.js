@@ -8,6 +8,7 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
+const config = require('../../../../../shared/config');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -337,7 +338,7 @@ module.exports = class MemberRepository {
 
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
-        if (this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
+        if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source)) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
