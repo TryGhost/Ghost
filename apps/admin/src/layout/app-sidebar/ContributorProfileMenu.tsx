@@ -9,71 +9,69 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    Indicator,
     LucideIcon,
-    SidebarMenuButton,
     Switch
 } from "@tryghost/shade"
 import { Link } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
-import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
-import { useUpgradeStatus } from "./hooks/use-upgrade-status";
+import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 
-interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
-    onOpenWhatsNew?: () => void;
-}
-
-function UserMenu(props: UserMenuProps) {
+/**
+ * Floating profile menu for contributor users
+ * Positioned in top-right corner, minimal menu with essential actions only
+ * 
+ * Mirrors Ember behavior where contributors have a simplified menu with:
+ * - Posts (navigate to posts list)
+ * - View site (open site in new tab)
+ * - Your profile (navigate to profile settings)
+ * - Dark mode toggle
+ * - Sign out
+ * 
+ * Contributors do not have access to:
+ * - What's new
+ * - Help center / Resources & guides
+ * - Settings navigation
+ */
+function ContributorProfileMenu() {
     const currentUser = useCurrentUser();
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
-    const { data: whatsNewData } = useWhatsNew();
-    const { showUpgradeBanner } = useUpgradeStatus();
+    const site = useBrowseSite();
+    const siteUrl = site.data?.site.url ?? "";
 
     const setNightShift = (nightShift: boolean) => {
         void editPreferences({nightShift});
     }
 
     return (
-        <DropdownMenu {...props}>
-            <DropdownMenuTrigger asChild className="focus-visible:ring-0">
-                <SidebarMenuButton
-                    size="lg"
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                    aria-label="User menu"
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button 
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label="Open user menu"
                 >
-                <div className="relative">
                     <Avatar>
                         {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
                         <AvatarFallback className="text-foreground-muted hover:text-foreground">
                             <LucideIcon.User />
                         </AvatarFallback>
                     </Avatar>
-                    {whatsNewData?.hasNew && (
-                        <span className="absolute -top-0.5 -right-0.5">
-                            <Indicator
-                                variant="success"
-                                size="sm"
-                                label="New updates available"
-                                data-test-whats-new-avatar-badge
-                            />
+                    <div className="flex flex-col text-left">
+                        <span className="text-base font-semibold text-foreground">
+                            {currentUser.data?.name}
                         </span>
-                    )}
-                </div>
-                <div className="grid flex-1 text-left text-base leading-tight">
-                    <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                    <span className="text-muted-foreground truncate text-xs -mt-px">
-                        {currentUser.data?.email}
-                    </span>
-                </div>
-                <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" data-test-nav="arrow-down" />
-                </SidebarMenuButton>
+                        <span className="text-xs text-foreground-muted -mt-px">
+                            {currentUser.data?.email}
+                        </span>
+                    </div>
+                    <LucideIcon.ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
                 sideOffset={10}
-                className={`w-full min-w-[240px] sidebar:min-w-[260px] ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+                className="w-full min-w-[240px]"
             >
                 <div className="p-3">
                     <div className="flex items-center gap-3">
@@ -94,41 +92,24 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    className="cursor-pointer text-base"
-                    data-test-nav="whatsnew"
-                    onSelect={() => {
-                        // Workaround for Radix UI bug where opening Dialog from DropdownMenu
-                        // leaves pointer-events: none on body, freezing the UI
-                        // https://github.com/radix-ui/primitives/issues/3317
-                        queueMicrotask(() => props.onOpenWhatsNew?.());
-                    }}
-                >
-                    <LucideIcon.Sparkles />
-                    <span>What’s new?</span>
-                    {whatsNewData?.hasNew && (
-                        <div className="flex-1 flex justify-end">
-                            <Indicator
-                                variant="success"
-                                size="sm"
-                                label="New updates available"
-                                data-test-whats-new-menu-badge
-                            />
-                        </div>
-                    )}
+                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                    <Link to="/">
+                        <LucideIcon.FileText />
+                        <span>Posts</span>
+                    </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                    <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+                        <LucideIcon.ExternalLink />
+                        <span>View site</span>
+                    </a>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
                     <Link to={`/settings/staff/${currentUser.data?.slug}`}>
                         <LucideIcon.User />
                         <span>Your profile</span>
                     </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
-                        <LucideIcon.Book />
-                        Resources & guides
-                    </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className="cursor-pointer text-base"
@@ -166,4 +147,4 @@ function UserMenu(props: UserMenuProps) {
     );
 }
 
-export default UserMenu;
+export default ContributorProfileMenu;
