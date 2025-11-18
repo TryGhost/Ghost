@@ -23,7 +23,7 @@ SQL >
             )
         {% end %}
         {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
-        {% if defined (post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
+        {% if defined(post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
 
 NODE sessions_filtered_by_session_attributes
 DESCRIPTION >
