@@ -4,6 +4,7 @@ import {
     type AccountSearchResult,
     ActivityPubAPI,
     ActivityPubCollectionResponse,
+    type ExploreAccount,
     type GetAccountFollowsResponse,
     type Notification,
     type Post,
@@ -2595,6 +2596,66 @@ export function useExploreProfilesForUser(handle: string) {
                 return {
                     ...page,
                     results: updatedResults
+                };
+            });
+
+            return {
+                ...current,
+                pages: updatedPages
+            };
+        });
+    };
+
+    return {
+        exploreProfilesQuery,
+        updateExploreProfile
+    };
+}
+
+export function useExploreProfilesForUserByTopic(handle: string, topic: string) {
+    const queryClient = useQueryClient();
+    const queryKey = [...QUERY_KEYS.exploreProfiles(handle), topic];
+
+    const exploreProfilesQuery = useInfiniteQuery({
+        queryKey,
+        staleTime: 60 * 60 * 1000,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            const response = await api.getExploreAccounts(topic, pageParam);
+
+            // Cache account data for follow mutations
+            response.accounts.forEach((account: ExploreAccount) => {
+                queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+            });
+
+            return {
+                accounts: response.accounts,
+                next: response.next
+            };
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateExploreProfile = (id: string, updated: Partial<Account>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: Array<{accounts: Account[]}>} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            const updatedPages = current.pages.map((page) => {
+                const updatedAccounts = page.accounts.map((profile) => {
+                    if (profile.id === id) {
+                        return {...profile, ...updated};
+                    }
+                    return profile;
+                });
+
+                return {
+                    ...page,
+                    accounts: updatedAccounts
                 };
             });
 
