@@ -1,4 +1,4 @@
-import {AdminPage} from '@/helpers/pages/admin/admin-page';
+import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
 export class TagDetailsPage extends AdminPage {
@@ -20,7 +20,7 @@ export class TagDetailsPage extends AdminPage {
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.saveButtonSuccess = page.getByRole('button', {name: 'Saved'});
         this.deleteButton = page.getByRole('button', {name: 'Delete tag'});
-        
+
         this.backLink = page.locator('[data-test-link="tags-back"]');
         this.navMenuItem = page.locator('[data-test-nav="tags"]');
     }

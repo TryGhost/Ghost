@@ -3,9 +3,8 @@ import {HomePage, PublicPage} from '@/public-pages';
 import {MemberDetailsPage, MembersPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
 import {PostFactory, createPostFactory} from '@/data-factory';
-import {expect, test} from '@/helpers/playwright';
+import {expect, signupViaPortal, test} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
-import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 
 test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;

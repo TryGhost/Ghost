@@ -1,4 +1,4 @@
-import {BasePage} from '@/helpers/pages/base-page';
+import {BasePage} from '@/helpers/pages';
 import {IntegrationsSection, LabsSection, PublicationSection} from './sections';
 import {Locator, Page} from '@playwright/test';
 import {StaffSection} from './sections/staff-section';
