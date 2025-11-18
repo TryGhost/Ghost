@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const labs = require('../../../../core/shared/labs');
+const configUtils = require('../../../utils/configUtils');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
@@ -93,6 +94,10 @@ describe('Domain Warming Integration Tests', function () {
             }
             return false;
         });
+
+        // Set required config values for domain warming
+        configUtils.set('hostSettings:managedEmail:fallbackDomain', 'fallback.example.com');
+        configUtils.set('hostSettings:managedEmail:fallbackAddress', 'noreply@fallback.example.com');
     });
 
     afterEach(async function () {
@@ -105,6 +110,7 @@ describe('Domain Warming Integration Tests', function () {
             labsStub = null;
         }
         mockManager.restore();
+        await configUtils.restore();
         await jobManager.allSettled();
 
         // Clean up test data to ensure test isolation
