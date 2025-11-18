@@ -161,7 +161,7 @@ const Explore: React.FC = () => {
     return (
         <Layout>
             {!isExplainerClosed &&
-                <div className='relative mt-6 flex items-start gap-1 rounded-md bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] p-4 pr-10 dark:from-[#CFB0FF20] dark:to-[#B6E8FF20]'>
+                <div className={`relative mb-6 flex items-start gap-1 rounded-md bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] p-4 pr-10 dark:from-[#CFB0FF20] dark:to-[#B6E8FF20] ${!isTopicFilteringEnabled ? 'mt-6' : ''}`}>
                     <div className='min-w-[46px]'>
                         <LucideIcon.Sprout className='text-purple' size={46} strokeWidth={0.75} />
                     </div>
