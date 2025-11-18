@@ -28,6 +28,7 @@
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
+    "dev:forward": "yarn nx run-many -t dev -p ghost @tryghost/admin",
     "dev": "node .github/scripts/dev.js",
     "dev:tinybird": "node .github/scripts/dev-with-tinybird.js --tinybird",
     "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn && yarn nx reset",

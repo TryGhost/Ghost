@@ -9,6 +9,7 @@
     "types": "types/index.d.ts",
     "sideEffects": false,
     "scripts": {
+        "dev": "vite build --watch",
         "build": "tsc -p tsconfig.declaration.json && vite build",
         "prepare": "yarn build",
         "test": "yarn test:unit",
@@ -92,11 +93,6 @@
     "nx": {
         "targets": {
             "build": {
-                "dependsOn": [
-                    "^build"
-                ]
-            },
-            "dev": {
                 "dependsOn": [
                     "^build"
                 ]
