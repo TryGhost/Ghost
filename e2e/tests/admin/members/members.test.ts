@@ -1,6 +1,6 @@
-import {MemberDetailsPage, MembersPage} from '../../../helpers/pages';
-import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {MemberDetailsPage, MembersPage} from '@/helpers/pages';
+import {MemberFactory, createMemberFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members', () => {
     let memberFactory: MemberFactory;
@@ -17,13 +17,13 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(memberToCreate.name, memberToCreate.email, memberToCreate.note);
+        await memberDetailsPage.fillMemberDetails(memberToCreate.name!, memberToCreate.email, memberToCreate.note!);
         await memberDetailsPage.save();
 
         await membersPage.goto();
 
         await expect(membersPage.memberListItems).toHaveCount(1);
-        await expect(membersPage.getMemberEmail(memberToCreate.name)).toHaveText('membertocreate@ghost.org');
+        await expect(membersPage.getMemberEmail(memberToCreate.name!)).toHaveText('membertocreate@ghost.org');
     });
 
     test('cannot create a member with invalid email', async ({page}) => {
@@ -34,7 +34,7 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(memberToCreate.name, memberToCreate.email, memberToCreate.note);
+        await memberDetailsPage.fillMemberDetails(memberToCreate.name!, memberToCreate.email, memberToCreate.note!);
         await memberDetailsPage.saveButton.click();
 
         await expect(memberDetailsPage.retryButton).toBeVisible();
@@ -52,7 +52,7 @@ test.describe('Ghost Admin - Members', () => {
         // Edit the member
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.getMemberByName(memberToEdit.name).click();
+        await membersPage.getMemberByName(memberToEdit.name!).click();
 
         const editedMember = memberFactory.build({
             name: 'Test Member Edited',
@@ -61,7 +61,7 @@ test.describe('Ghost Admin - Members', () => {
         });
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(editedMember.name, editedMember.email, editedMember.note);
+        await memberDetailsPage.fillMemberDetails(editedMember.name!, editedMember.email, editedMember.note!);
         const labelNamesBefore = await memberDetailsPage.labelNames();
         await memberDetailsPage.removeLabel('createdMemberLabel');
         await memberDetailsPage.clickNewsletterSubscriptionToggle();
@@ -74,8 +74,8 @@ test.describe('Ghost Admin - Members', () => {
         expect(labelNamesBefore).toContain('createdMemberLabel');
         expect(labelNamesAfter).not.toContain('createdMemberLabel');
         await expect(membersPage.memberListItems).toHaveCount(1);
-        await expect(membersPage.getMemberByName(editedMember.name)).toBeVisible();
-        await expect(membersPage.getMemberEmail(editedMember.name)).toHaveText('edited@ghost.org');
+        await expect(membersPage.getMemberByName(editedMember.name!)).toBeVisible();
+        await expect(membersPage.getMemberEmail(editedMember.name!)).toHaveText('edited@ghost.org');
     });
 
     test('cannot update an existing member with invalid email', async ({page}) => {
@@ -86,7 +86,7 @@ test.describe('Ghost Admin - Members', () => {
         await membersPage.newMemberButton.click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(name, email, note);
+        await memberDetailsPage.fillMemberDetails(name!, email, note!);
         await memberDetailsPage.save();
 
         await memberDetailsPage.emailInput.fill('invalid-email-address');
@@ -105,7 +105,7 @@ test.describe('Ghost Admin - Members', () => {
 
         const membersPage = new MembersPage(page);
         await membersPage.goto();
-        await membersPage.getMemberByName(name).click();
+        await membersPage.getMemberByName(name!).click();
 
         // Delete the member
         const memberDetailsPage = new MemberDetailsPage(page);

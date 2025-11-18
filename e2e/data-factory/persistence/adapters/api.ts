@@ -1,5 +1,5 @@
 import {HttpClient} from './http-client';
-import {PersistenceAdapter} from '../adapter';
+import {PersistenceAdapter} from '@/data-factory';
 
 interface ApiAdapterOptions<TRequest = unknown, TResponse = unknown> {
     httpClient: HttpClient;

@@ -1,5 +1,5 @@
-import {AdminPage} from '../admin-page';
-import {BasePage} from '../../base-page';
+import {AdminPage} from '@/admin-pages';
+import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
 class SettingsSection extends BasePage {
@@ -31,7 +31,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly labelsInput: Locator;
     readonly labels: Locator;
     readonly newsletterSubscriptionToggles: Locator;
-    
+
     readonly saveButton: Locator;
     readonly savedButton: Locator;
     readonly retryButton: Locator;

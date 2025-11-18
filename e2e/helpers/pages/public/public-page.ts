@@ -1,4 +1,4 @@
-import {BasePage, pageGotoOptions} from '../base-page';
+import {BasePage, pageGotoOptions} from '@/helpers/pages';
 import {Locator, Page, Response} from '@playwright/test';
 
 declare global {

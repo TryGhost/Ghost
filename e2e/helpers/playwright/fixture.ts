@@ -1,11 +1,11 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage} from '../pages/admin';
+import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment';
-import {SettingsService} from '../services/settings/settings-service';
+import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
-import {loginToGetAuthenticatedSession} from '../../helpers/playwright/flows/login';
-import {setupUser} from '../utils';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
+import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
 export interface User {
