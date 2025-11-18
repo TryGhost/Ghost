@@ -72,13 +72,9 @@
 
 - name: Test with multiple filters combined
   description: Test with multiple filters combined
-  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com&pathname=%2Fabout%2F
   expected_result: |
-    {"source":"google.com","visits":1}
-    {"source":"search.yahoo.com","visits":1}
-    {"source":"wilted-tick.com","visits":1}
-    {"source":"duckduckgo.com","visits":1}
-    {"source":"my-ghost-site.com","visits":1}
+    {"source":"bing.com","visits":2}
 
 - name: Filtered by utm_source - google
   description: Filtered by utm_source - google
