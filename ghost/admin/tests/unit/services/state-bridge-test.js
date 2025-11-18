@@ -22,7 +22,7 @@ const buildMockModelCollection = (models) => {
 describe('Unit: Service: state-bridge', function () {
     setupTest();
 
-    let service, store, config, settings, membersUtils, themeManagement;
+    let service, store, config, settings, membersUtils, themeManagement, ui;
 
     beforeEach(function () {
         service = this.owner.lookup('service:state-bridge');
@@ -31,6 +31,7 @@ describe('Unit: Service: state-bridge', function () {
         settings = this.owner.lookup('service:settings');
         membersUtils = this.owner.lookup('service:members-utils');
         themeManagement = this.owner.lookup('service:theme-management');
+        ui = this.owner.lookup('service:ui');
 
         // Set up basic spies
         sinon.spy(store, 'pushPayload');
@@ -430,6 +431,84 @@ describe('Unit: Service: state-bridge', function () {
             expect(handler.firstCall.args[0].operation).to.equal('create');
             expect(handler.secondCall.args[0].operation).to.equal('update');
             expect(handler.thirdCall.args[0].operation).to.equal('delete');
+        });
+    });
+
+    describe('#setSidebarVisible', function () {
+        it('triggers sidebarVisibilityChange event with correct parameters', function () {
+            const handler = sinon.spy();
+
+            service.on('sidebarVisibilityChange', handler);
+
+            service.setSidebarVisible(false);
+
+            expect(handler.calledOnce).to.be.true;
+            expect(handler.firstCall.args[0]).to.deep.equal({
+                isVisible: false
+            });
+        });
+
+        it('triggers event when setting sidebar to visible', function () {
+            const handler = sinon.spy();
+
+            service.on('sidebarVisibilityChange', handler);
+
+            service.setSidebarVisible(true);
+
+            expect(handler.calledOnce).to.be.true;
+            expect(handler.firstCall.args[0]).to.deep.equal({
+                isVisible: true
+            });
+        });
+
+        it('allows multiple handlers to be registered', function () {
+            const handler1 = sinon.spy();
+            const handler2 = sinon.spy();
+
+            service.on('sidebarVisibilityChange', handler1);
+            service.on('sidebarVisibilityChange', handler2);
+
+            service.setSidebarVisible(false);
+
+            expect(handler1.calledOnce).to.be.true;
+            expect(handler2.calledOnce).to.be.true;
+            expect(handler1.firstCall.args[0]).to.deep.equal(handler2.firstCall.args[0]);
+        });
+
+        it('handlers can be removed with off', function () {
+            const handler = sinon.spy();
+
+            service.on('sidebarVisibilityChange', handler);
+            service.off('sidebarVisibilityChange', handler);
+
+            service.setSidebarVisible(false);
+
+            expect(handler.called).to.be.false;
+        });
+    });
+
+    describe('#sidebarVisible', function () {
+        it('returns true when ui.isFullScreen is false', function () {
+            ui.set('isFullScreen', false);
+
+            expect(service.sidebarVisible).to.be.true;
+        });
+
+        it('returns false when ui.isFullScreen is true', function () {
+            ui.set('isFullScreen', true);
+
+            expect(service.sidebarVisible).to.be.false;
+        });
+
+        it('reflects changes to ui.isFullScreen', function () {
+            ui.set('isFullScreen', false);
+            expect(service.sidebarVisible).to.be.true;
+
+            ui.set('isFullScreen', true);
+            expect(service.sidebarVisible).to.be.false;
+
+            ui.set('isFullScreen', false);
+            expect(service.sidebarVisible).to.be.true;
         });
     });
 });
