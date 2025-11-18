@@ -47,10 +47,16 @@ export default tseslint.config([
             // Enforce kebab-case (lowercase with hyphens) for all filenames
             'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
 
+            // Apply no-relative-import-paths rule
             'no-relative-import-paths/no-relative-import-paths': [
                 'error',
                 { allowSameFolder: true, rootDir: './', prefix: '@' },
             ],
+
+            // Restrict imports to specific directories
+            'no-restricted-imports': ['error', {
+                patterns: ['@/helpers/pages/*']
+            }],
 
             // Disable all mocha rules from ghost plugin since this package uses playwright instead
             ...Object.fromEntries(

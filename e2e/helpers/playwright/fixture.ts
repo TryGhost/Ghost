@@ -1,5 +1,5 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage} from '@/helpers/pages/admin';
+import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
