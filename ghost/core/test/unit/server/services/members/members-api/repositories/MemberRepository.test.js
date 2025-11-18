@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/MemberRepository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
+const config = require('../../../../../../../core/shared/config');
 
 const mockOfferRedemption = {
     add: sinon.stub(),
@@ -466,7 +467,6 @@ describe('MemberRepository', function () {
         let Outbox;
         let MemberStatusEvent;
         let MemberSubscribeEvent;
-        let labsService;
         let newslettersService;
         const oldNodeEnv = process.env.NODE_ENV;
 
@@ -527,16 +527,13 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry for allowed source', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
             const repo = new MemberRepository({
                 Member,
                 Outbox,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
                 newslettersService,
                 OfferRedemption: mockOfferRedemption
             });
@@ -554,17 +551,14 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when welcomeEmails lab flag is disabled', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(false)
-            };
+        it('does NOT create outbox entry when config is not set', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
 
             const repo = new MemberRepository({
                 Member,
                 Outbox,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
                 newslettersService,
                 OfferRedemption: mockOfferRedemption
             });
@@ -575,16 +569,13 @@ describe('MemberRepository', function () {
         });
 
         it('does not create outbox entry for disallowed sources', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
             const repo = new MemberRepository({
                 Member,
                 Outbox,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
                 newslettersService,
                 OfferRedemption: mockOfferRedemption
             });
@@ -603,16 +594,13 @@ describe('MemberRepository', function () {
         });
 
         it('includes timestamp in outbox payload', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
             const repo = new MemberRepository({
                 Member,
                 Outbox,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
                 newslettersService,
                 OfferRedemption: mockOfferRedemption
             });
@@ -625,16 +613,13 @@ describe('MemberRepository', function () {
         });
 
         it('passes transaction to outbox entry creation', async function () {
-            labsService = {
-                isSet: sinon.stub().withArgs('welcomeEmails').returns(true)
-            };
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
             const repo = new MemberRepository({
                 Member,
                 Outbox,
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
-                labsService,
                 newslettersService,
                 OfferRedemption: mockOfferRedemption
             });
