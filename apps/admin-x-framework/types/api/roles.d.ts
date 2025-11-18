@@ -17,3 +17,4 @@ export declare const useBrowseRoles: ({ searchParams, ...query }?: import("@tans
 }) => Omit<import("@tanstack/react-query").UseQueryResult<RolesResponseType>, "data"> & {
     data: RolesResponseType | undefined;
 };
+//# sourceMappingURL=roles.d.ts.map
