@@ -1,4 +1,4 @@
-import {transformPortalAnchorToRelative} from '../../utils/transform-portal-anchor-to-relative';
+import {transformPortalAnchorToRelative} from '../../src/utils/transform-portal-anchor-to-relative';
 
 // NOTE: window.location.origin = http://localhost:3000
 

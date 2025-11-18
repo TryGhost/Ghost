@@ -1,7 +1,7 @@
-import App from '../App.js';
-import {appRender, fireEvent, within, waitFor} from '../utils/test-utils';
-import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
-import setupGhostApi from '../utils/api.js';
+import App from '../src/App.js';
+import {appRender, fireEvent, within, waitFor} from '../src/utils/test-utils';
+import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember} from '../src/utils/test-fixtures';
+import setupGhostApi from '../src/utils/api.js';
 import userEvent from '@testing-library/user-event';
 
 const setup = async ({site, member = null, newsletters}, loggedOut = false) => {

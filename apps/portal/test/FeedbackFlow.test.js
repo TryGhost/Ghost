@@ -1,7 +1,7 @@
-import App from '../App.js';
-import {appRender, fireEvent, waitFor, within} from '../utils/test-utils';
-import setupGhostApi from '../utils/api.js';
-import {getMemberData, getPostsData, getSiteData} from '../utils/fixtures-generator.js';
+import App from '../src/App.js';
+import {appRender, fireEvent, waitFor, within} from '../src/utils/test-utils';
+import setupGhostApi from '../src/utils/api.js';
+import {getMemberData, getPostsData, getSiteData} from '../src/utils/fixtures-generator.js';
 
 const siteData = getSiteData();
 const memberData = getMemberData();
@@ -56,9 +56,9 @@ describe('Feedback Submission Flow', () => {
                 });
 
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup();
-                
+
                 expect(popupFrame).toBeInTheDocument();
-                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);    
+                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
 
                 within(popupIframeDocument).getByText('Thanks for the feedback!');
                 within(popupIframeDocument).getByText('Your input helps shape what gets published.');
@@ -72,7 +72,7 @@ describe('Feedback Submission Flow', () => {
                 const {ghostApi, popupFrame, popupIframeDocument} = await setup();
 
                 expect(popupFrame).toBeInTheDocument();
-                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);    
+                expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
                 within(popupIframeDocument).getByText('Thanks for the feedback!');
                 within(popupIframeDocument).getByText('Your input helps shape what gets published.');
             });
@@ -96,7 +96,7 @@ describe('Feedback Submission Flow', () => {
                 fireEvent.click(submitBtn);
 
                 expect(ghostApi.feedback.add).toHaveBeenCalledTimes(1);
-                
+
                 // the re-render loop is slow to get to the final state
                 await waitFor(() => {
                     within(popupIframeDocument).getByText('Thanks for the feedback!');

@@ -1,9 +1,9 @@
-import App from '../App';
-import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtures';
-import {fireEvent, appRender, within} from '../utils/test-utils';
-import setupGhostApi from '../utils/api';
-import * as helpers from '../utils/helpers';
-import {formSubmitHandler, planClickHandler} from '../data-attributes';
+import App from '../src/App';
+import {site as FixturesSite, member as FixtureMember} from '../src/utils/test-fixtures';
+import {fireEvent, appRender, within} from '../src/utils/test-utils';
+import setupGhostApi from '../src/utils/api';
+import * as helpers from '../src/utils/helpers';
+import {formSubmitHandler, planClickHandler} from '../src/data-attributes';
 import {vi} from 'vitest';
 
 // Mock data

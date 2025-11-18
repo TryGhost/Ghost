@@ -1,7 +1,7 @@
-import App from '../App.js';
-import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
-import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
-import setupGhostApi from '../utils/api.js';
+import App from '../src/App.js';
+import {fireEvent, appRender, within, waitFor} from '../src/utils/test-utils';
+import {offer as FixtureOffer, site as FixtureSite} from '../src/utils/test-fixtures';
+import setupGhostApi from '../src/utils/api.js';
 
 // Simple deep clone function
 const deepClone = obj => JSON.parse(JSON.stringify(obj));

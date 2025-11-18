@@ -1,4 +1,4 @@
-import ActionHandler from '../actions';
+import ActionHandler from '../src/actions';
 import {vi} from 'vitest';
 
 describe('startSigninOTCFromCustomForm action', () => {

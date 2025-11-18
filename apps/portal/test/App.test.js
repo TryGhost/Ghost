@@ -1,11 +1,11 @@
-import App from '../App';
-import setupGhostApi from '../utils/api';
-import {appRender} from '../utils/test-utils';
-import {site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
-import i18n from '../utils/i18n';
+import App from '../src/App';
+import setupGhostApi from '../src/utils/api';
+import {appRender} from '../src/utils/test-utils';
+import {site as FixtureSite, member as FixtureMember} from '../src/utils/test-fixtures';
+import i18n from '../src/utils/i18n';
 import {vi} from 'vitest';
 
-vi.mock('../utils/i18n', () => ({
+vi.mock('../src/utils/i18n', () => ({
     default: {
         changeLanguage: vi.fn(),
         dir: vi.fn(),

@@ -1,7 +1,7 @@
-import App from '../App.js';
-import {fireEvent, appRender, within} from '../utils/test-utils';
-import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
-import setupGhostApi from '../utils/api.js';
+import App from '../src/App.js';
+import {fireEvent, appRender, within} from '../src/utils/test-utils';
+import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from '../src/utils/test-fixtures';
+import setupGhostApi from '../src/utils/api.js';
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});

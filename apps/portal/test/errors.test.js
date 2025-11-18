@@ -1,4 +1,4 @@
-import {HumanReadableError, chooseBestErrorMessage} from '../utils/errors';
+import {HumanReadableError, chooseBestErrorMessage} from '../src/utils/errors';
 import {vi} from 'vitest';
 
 vi.mock('@tryghost/i18n', () => {
