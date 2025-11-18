@@ -14,6 +14,9 @@ SQL >
         on fs.session_id = h.session_id
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
+        -- pathname and post_uuid are included here to filter the result set to specific pages,
+        -- not just to qualify sessions. filtered_sessions finds sessions that visited these pages,
+        -- but we only want to show stats for THESE pages, not all pages those sessions visited.
         {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
         {% if defined(post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
         {% if defined(post_type) %}
