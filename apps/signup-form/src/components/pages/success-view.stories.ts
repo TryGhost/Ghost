@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import {SuccessView} from './SuccessView';
+import {SuccessView} from './success-view';
 
 const meta = {
     title: 'Success View',
