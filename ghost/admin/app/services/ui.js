@@ -43,12 +43,23 @@ export default class UiService extends Service {
     @service feature;
     @service router;
     @service settings;
+    @service('state-bridge') stateBridge;
 
     @inject config;
 
-    @tracked isFullScreen = false;
+    @tracked _isFullScreen = false;
     @tracked mainClass = '';
     @tracked showMobileMenu = false;
+
+    get isFullScreen() {
+        return this._isFullScreen;
+    }
+
+    set isFullScreen(value) {
+        this._isFullScreen = value;
+        // Trigger sidebar visibility event whenever fullscreen mode changes
+        this.stateBridge.setSidebarVisible(!value);
+    }
 
     get backgroundColor() {
         // hardcoded background colors because
