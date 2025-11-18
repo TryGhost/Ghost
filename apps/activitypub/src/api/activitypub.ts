@@ -34,6 +34,11 @@ export type AccountSearchResult = Pick<
     'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount' | 'blockedByMe' | 'domainBlockedByMe'
 >;
 
+export type ExploreAccount = Pick<
+    Account,
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'bio' | 'url' | 'followedByMe'
+>;
+
 export interface SearchResults {
     accounts: AccountSearchResult[];
 }
@@ -191,6 +196,16 @@ export interface Post {
 
 export interface PaginatedPostsResponse {
     posts: Post[];
+    next: string | null;
+}
+
+export interface PaginatedAccountsResponse {
+    accounts: Account[];
+    next: string | null;
+}
+
+export interface PaginatedExploreAccountsResponse {
+    accounts: ExploreAccount[];
     next: string | null;
 }
 
@@ -455,6 +470,11 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts(endpoint, next);
     }
 
+    async getExploreAccounts(topic: string, next?: string): Promise<PaginatedExploreAccountsResponse> {
+        const endpoint = `.ghost/activitypub/v1/explore/${topic}`;
+        return this.getPaginatedExploreAccounts(endpoint, next);
+    }
+
     async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}`, next);
     }
@@ -594,6 +614,31 @@ export class ActivityPubAPI {
 
         return {
             domains,
+            next: nextPage
+        };
+    }
+
+    private async getPaginatedExploreAccounts(endpoint: string, next?: string): Promise<PaginatedExploreAccountsResponse> {
+        const url = new URL(endpoint, this.apiUrl);
+
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null || !('accounts' in json)) {
+            return {
+                accounts: [],
+                next: null
+            };
+        }
+
+        const accounts = Array.isArray(json.accounts) ? json.accounts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            accounts,
             next: nextPage
         };
     }

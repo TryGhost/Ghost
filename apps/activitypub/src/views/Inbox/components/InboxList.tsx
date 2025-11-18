@@ -72,7 +72,7 @@ const InboxList:React.FC<InboxListProps> = ({
 
     return (
         <Layout>
-            <TopicFilter currentTopic={currentTopic} onTopicChange={onTopicChange} />
+            <TopicFilter currentTopic={currentTopic} excludeTopics={['top']} onTopicChange={onTopicChange} />
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
