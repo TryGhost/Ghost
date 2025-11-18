@@ -13,7 +13,26 @@ Uses an **Ember Bridge** system for smooth migration:
 
 ```bash
 # Start development server
-yarn dev 
+yarn dev
 ```
 
 **Prerequisites:** Ghost and the existing Ember admin must be running on `localhost:2368` for API proxying.
+
+## Building for Production
+
+```bash
+# Build production bundle
+yarn workspace @tryghost/admin vite build
+```
+
+This outputs to `apps/admin/dist/`.
+
+## Serving the React Admin
+
+To serve the built React admin instead of the Ember admin, set the `USE_REACT_SHELL` environment variable:
+
+```bash
+USE_REACT_SHELL=true yarn dev
+```
+
+This configures Ghost to serve `apps/admin/dist/index.html` at `/ghost/` instead of the Ember admin.

@@ -37,6 +37,7 @@ COPY package.json yarn.lock ./
 RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.lock.md5
 
 # Copy all package.json files
+COPY apps/admin/package.json apps/admin/package.json
 COPY apps/stats/package.json apps/stats/package.json
 COPY apps/activitypub/package.json apps/activitypub/package.json
 COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/package.json
@@ -168,6 +169,25 @@ COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activityp
 RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 
 # --------------------
+# Admin React Builder
+# --------------------
+FROM development-base AS admin-react-builder
+WORKDIR /home/ghost
+COPY apps/admin apps/admin
+COPY ghost/core/core/frontend/src/cards ghost/core/core/frontend/src/cards
+# React admin needs full dependencies for workspace linking
+COPY --from=shade-builder /home/ghost/apps/shade apps/shade
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system apps/admin-x-design-system
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework apps/admin-x-framework
+COPY --from=posts-builder /home/ghost/apps/posts apps/posts
+COPY --from=stats-builder /home/ghost/apps/stats apps/stats
+COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings apps/admin-x-settings
+COPY --from=activitypub-builder /home/ghost/apps/activitypub apps/activitypub
+# React admin needs the built Ember admin (vite-ember-assets plugin reads it at build time)
+COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
+RUN cd apps/admin && yarn vite build
+
+# --------------------
 # Ghost Assets Builder
 # --------------------
 FROM development-base AS ghost-assets-builder
@@ -194,5 +214,8 @@ COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps
 COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
+# Ensure clean copy of React admin dist (remove any existing files first)
+RUN rm -rf apps/admin/dist
+COPY --from=admin-react-builder /home/ghost/apps/admin/dist apps/admin/dist
 
 CMD ["yarn", "dev"]

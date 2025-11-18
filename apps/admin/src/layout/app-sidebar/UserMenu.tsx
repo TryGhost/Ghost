@@ -41,13 +41,24 @@ function UserMenu(props: UserMenuProps) {
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    data-test-nav="arrow-down"
                 >
-                <Avatar>
-                    {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                    <AvatarFallback className="text-foreground-muted hover:text-foreground">
-                        <LucideIcon.User />
-                    </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                    <Avatar>
+                        {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
+                        <AvatarFallback className="text-foreground-muted hover:text-foreground">
+                            <LucideIcon.User />
+                        </AvatarFallback>
+                    </Avatar>
+                    {whatsNewData?.hasNew && (
+                        <Indicator
+                            variant="success"
+                            size="sm"
+                            className="absolute -top-0.5 -right-0.5"
+                            data-test-whats-new-avatar-badge
+                        />
+                    )}
+                </div>
                 <div className="grid flex-1 text-left text-base leading-tight">
                     <span className="truncate font-semibold">{currentUser.data?.name}</span>
                     <span className="text-muted-foreground truncate text-xs -mt-px">

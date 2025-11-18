@@ -23,8 +23,10 @@ module.exports = function setupAdminApp() {
     //        produced below should be split into separate 'Cache-Control' entry.
     //        For reference see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#validation_2
 
+    const adminAssetsPath = path.join(config.getAdminAssetsPath(), 'assets');
+
     adminApp.use('/assets', serveStatic(
-        path.join(config.get('paths').adminAssets, 'assets'), {
+        adminAssetsPath, {
             // @NOTE: the maxAge config passed below are in milliseconds and the config
             //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
             maxAge: config.get('caching:admin:maxAge') * 1000,
