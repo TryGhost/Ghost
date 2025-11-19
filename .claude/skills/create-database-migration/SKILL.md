@@ -12,4 +12,6 @@ description: This skill includes instructions for creating new database migratio
 3. The above command will create a new directory in `ghost/core/core/server/data/migrations/versions` if needed, and create the empty migration file with the appropriate name.
 4. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/core/server/data/migrations/utils/*`.
 5. Update the schema definition file in `ghost/core/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
-6. Test the migration: `yarn knex-migrator migrate --v {version directory} --force`
+6. Test the migration manually: `yarn knex-migrator migrate --v {version directory} --force`
+7. Run the unit tests for ghost/core: `cd ghost/core && yarn test:unit`
+8. Update the integrity tests with the updated hash, and iterate on the unit tests until they pass.
