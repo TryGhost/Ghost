@@ -4,6 +4,7 @@ import logging from '@tryghost/logging';
 import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
 import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {TinybirdManager} from './tinybird-manager';
+import {appConfig} from '@/helpers/utils';
 import type {Container, ContainerCreateOptions} from 'dockerode';
 
 const debug = baseDebug('e2e:GhostManager');
@@ -71,7 +72,8 @@ export class GhostManager {
                 mail__options__port: `${MAILPIT.PORT}`,
                 mail__options__secure: 'false',
                 // other services configuration
-                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`
+                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
+                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
