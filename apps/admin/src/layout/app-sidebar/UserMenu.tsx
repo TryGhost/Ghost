@@ -42,19 +42,31 @@ function UserMenu(props: UserMenuProps) {
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                <Avatar>
-                    {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                    <AvatarFallback className="text-foreground-muted hover:text-foreground">
-                        <LucideIcon.User />
-                    </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                    <Avatar>
+                        {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
+                        <AvatarFallback className="text-foreground-muted hover:text-foreground">
+                            <LucideIcon.User />
+                        </AvatarFallback>
+                    </Avatar>
+                    {whatsNewData?.hasNew && (
+                        <span className="absolute -top-0.5 -right-0.5">
+                            <Indicator
+                                variant="success"
+                                size="sm"
+                                label="New updates available"
+                                data-test-whats-new-avatar-badge
+                            />
+                        </span>
+                    )}
+                </div>
                 <div className="grid flex-1 text-left text-base leading-tight">
                     <span className="truncate font-semibold">{currentUser.data?.name}</span>
                     <span className="text-muted-foreground truncate text-xs -mt-px">
                         {currentUser.data?.email}
                     </span>
                 </div>
-                <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" />
+                <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-grey-700" data-test-nav="arrow-down" />
                 </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -92,7 +104,7 @@ function UserMenu(props: UserMenuProps) {
                     }}
                 >
                     <LucideIcon.Sparkles />
-                    <span>What's new?</span>
+                    <span>What’s new?</span>
                     {whatsNewData?.hasNew && (
                         <div className="flex-1 flex justify-end">
                             <Indicator

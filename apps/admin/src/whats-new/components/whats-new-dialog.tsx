@@ -31,7 +31,7 @@ function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
             >
                 <DialogHeader>
                     <DialogTitle id="whats-new-modal-title" data-test-modal-title className="text-2xl tracking-tighter">
-                        What's new?
+                        What’s new?
                     </DialogTitle>
                 </DialogHeader>
 

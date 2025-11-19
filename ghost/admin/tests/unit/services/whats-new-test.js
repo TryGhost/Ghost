@@ -84,12 +84,12 @@ describe('Unit: Service: whats-new', function () {
         newFeaturedEntry: [{
             title: 'Featured Update',
             published_at: '2024-01-15T12:00:00.000+00:00',
-            featured: true
+            featured: 'true'
         }],
         newNonFeaturedEntry: [{
             title: 'Regular Update',
             published_at: '2024-01-15T12:00:00.000+00:00',
-            featured: false
+            featured: 'false'
         }],
         oldEntry: [{
             title: 'Old Update',
@@ -98,7 +98,7 @@ describe('Unit: Service: whats-new', function () {
         oldFeaturedEntry: [{
             title: 'Old Featured Update',
             published_at: '2018-12-01T12:00:00.000+00:00',
-            featured: true
+            featured: 'true'
         }],
         multipleEntries: [
             {
@@ -148,7 +148,7 @@ describe('Unit: Service: whats-new', function () {
                     title: 'Test Update',
                     published_at: '2024-01-15T12:00:00.000+00:00',
                     url: 'https://ghost.org/changelog/test',
-                    featured: true
+                    featured: 'true'
                 }]
             });
 
