@@ -138,7 +138,7 @@ class SendingService {
         return await this.#emailProvider.send({
             subject: this.#emailRenderer.getSubject(post, isTestEmail),
             from: this.#emailRenderer.getFromAddress(post, newsletter, !!options.useFallbackAddress),
-            replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
+            replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter, !!options.useFallbackAddress) ?? undefined,
             html: emailBody.html,
             plaintext: emailBody.plaintext,
             recipients,
