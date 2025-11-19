@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button} from '@tryghost/shade';
 
 export type Topic = 'following' | 'top' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
@@ -41,6 +41,13 @@ interface TopicFilterProps {
 const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, excludeTopics = []}) => {
     const filteredTopics = TOPICS.filter(({value}) => !excludeTopics.includes(value));
     const selectedButtonRef = useRef<HTMLButtonElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [showGradient, setShowGradient] = useState(true);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const {scrollLeft, scrollWidth, clientWidth} = e.currentTarget;
+        setShowGradient(scrollLeft + clientWidth < scrollWidth - 1);
+    };
 
     useEffect(() => {
         if (selectedButtonRef.current) {
@@ -55,7 +62,9 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, e
     return (
         <div className="relative w-full">
             <div
+                ref={scrollContainerRef}
                 className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                onScroll={handleScroll}
             >
                 {filteredTopics.map(({value, label}) => (
                     <Button
@@ -69,7 +78,9 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, e
                     </Button>
                 ))}
             </div>
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent dark:from-black" />
+            {showGradient && (
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent dark:from-black" />
+            )}
         </div>
     );
 };
