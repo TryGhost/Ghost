@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Button} from '@tryghost/shade';
 
 export type Topic = 'following' | 'top' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
@@ -40,6 +40,17 @@ interface TopicFilterProps {
 
 const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, excludeTopics = []}) => {
     const filteredTopics = TOPICS.filter(({value}) => !excludeTopics.includes(value));
+    const selectedButtonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (selectedButtonRef.current) {
+            selectedButtonRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }, [currentTopic]);
 
     return (
         <div className="relative w-full">
@@ -49,6 +60,7 @@ const TopicFilter: React.FC<TopicFilterProps> = ({currentTopic, onTopicChange, e
                 {filteredTopics.map(({value, label}) => (
                     <Button
                         key={value}
+                        ref={currentTopic === value ? selectedButtonRef : null}
                         className="h-8 snap-start rounded-full px-3.5 text-sm"
                         variant={currentTopic === value ? 'default' : 'secondary'}
                         onClick={() => onTopicChange(value)}
