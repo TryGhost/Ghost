@@ -73,7 +73,9 @@ export class GhostManager {
                 mail__options__secure: 'false',
                 // other services configuration
                 portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
-                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox
+                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox,
+                // Use React admin shell if specified
+                ...(process.env.USE_REACT_SHELL === 'true' ? {USE_REACT_SHELL: 'true'} : {})
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
