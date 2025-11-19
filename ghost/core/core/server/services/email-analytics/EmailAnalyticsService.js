@@ -1,7 +1,6 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const config = require('../../../shared/config');
 
 /**
  * @typedef {import('../email-service/EmailEventProcessor')} EmailEventProcessor
@@ -438,7 +437,7 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
             // Batched mode: pre-fetch all recipients, then process events using cache
@@ -577,7 +576,7 @@ module.exports = class EmailAnalyticsService {
      * @param {boolean} includeOpenedEvents
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
-        const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
+        const useBatchProcessing = this.config.get('emailAnalytics:batchProcessing');
 
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
