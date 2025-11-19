@@ -5,6 +5,7 @@ import EmailSettings from './settings/email/EmailSettings';
 import GeneralSettings from './settings/general/GeneralSettings';
 import GrowthSettings from './settings/growth/GrowthSettings';
 import MembershipSettings from './settings/membership/MembershipSettings';
+import MemberWelcomeEmailsSettings from './settings/membership/MemberWelcomeEmailsSettings';
 import SiteSettings from './settings/site/SiteSettings';
 
 const Settings: React.FC = () => {
@@ -15,6 +16,7 @@ const Settings: React.FC = () => {
                 <SiteSettings />
                 <MembershipSettings />
                 <EmailSettings />
+                <MemberWelcomeEmailsSettings />
                 <GrowthSettings />
                 <AdvancedSettings />
             </div>

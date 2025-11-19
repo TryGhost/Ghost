@@ -76,6 +76,7 @@ const EDITABLE_SETTINGS = [
     'heading_font',
     'blocked_email_domains',
     'require_email_mfa',
+    'member_welcome_emails_enabled',
     'social_web',
     'explore_ping',
     'explore_ping_growth'
