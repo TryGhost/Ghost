@@ -5,7 +5,7 @@ export type Topic = 'following' | 'top' | 'technology' | 'business' | 'news' | '
 
 const TOPICS: {value: Topic; label: string}[] = [
     {value: 'following', label: 'Following'},
-    {value: 'top', label: 'Featured'},
+    {value: 'top', label: 'Top'},
     {value: 'technology', label: 'Technology'},
     {value: 'business', label: 'Business'},
     {value: 'news', label: 'News'},
