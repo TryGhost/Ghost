@@ -247,6 +247,12 @@ class EmailRenderer {
         return locale;
     }
 
+    /**
+     * @param {Post} post
+     * @param {Newsletter} newsletter
+     * @param {boolean} [useFallbackAddress]
+     * @returns {string|null}
+     */
     getFromAddress(post, newsletter, useFallbackAddress = false) {
         // Clean from address to ensure DMARC alignment
         const addresses = this.#emailAddressService.getAddress({
@@ -259,9 +265,10 @@ class EmailRenderer {
     /**
      * @param {Post} post
      * @param {Newsletter} newsletter
+     * @param {boolean} [useFallbackAddress]
      * @returns {string|null}
      */
-    getReplyToAddress(post, newsletter) {
+    getReplyToAddress(post, newsletter, useFallbackAddress = false) {
         const replyToAddress = newsletter.get('sender_reply_to');
 
         if (replyToAddress === 'support') {
@@ -269,13 +276,13 @@ class EmailRenderer {
         }
 
         if (replyToAddress === 'newsletter' && !this.#emailAddressService.managedEmailEnabled) {
-            return this.getFromAddress(post, newsletter);
+            return this.getFromAddress(post, newsletter, useFallbackAddress);
         }
 
         const addresses = this.#emailAddressService.getAddress({
             from: this.#getRawFromAddress(post, newsletter),
             replyTo: replyToAddress === 'newsletter' ? undefined : {address: replyToAddress}
-        });
+        }, {useFallbackAddress});
 
         if (addresses.replyTo) {
             return EmailAddressParser.stringify(addresses.replyTo);
