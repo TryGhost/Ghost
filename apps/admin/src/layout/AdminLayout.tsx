@@ -22,11 +22,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     // Contributors get a floating profile menu instead of the full sidebar
     if (isContributor) {
         return (
-            <div className="flex flex-col h-screen bg-background">
-                <div className="flex items-center justify-end p-4 border-b border-border">
+            <div className="relative h-screen bg-background">
+                <main className="h-full overflow-auto">{children}</main>
+                <div className="fixed bottom-6 left-6 z-50">
                     <ContributorProfileMenu />
                 </div>
-                <main className="flex-1 overflow-auto">{children}</main>
             </div>
         );
     }

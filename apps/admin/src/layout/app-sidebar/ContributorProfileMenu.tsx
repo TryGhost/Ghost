@@ -48,30 +48,22 @@ function ContributorProfileMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button 
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     aria-label="Open user menu"
                 >
-                    <Avatar>
+                    <Avatar className="w-12 h-12">
                         {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                        <AvatarFallback className="text-foreground-muted hover:text-foreground">
+                        <AvatarFallback className="text-foreground-muted hover:text-foreground bg-muted">
                             <LucideIcon.User />
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col text-left">
-                        <span className="text-base font-semibold text-foreground">
-                            {currentUser.data?.name}
-                        </span>
-                        <span className="text-xs text-foreground-muted -mt-px">
-                            {currentUser.data?.email}
-                        </span>
-                    </div>
-                    <LucideIcon.ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                align="end"
+                align="start"
+                side="top"
                 sideOffset={10}
-                className="w-full min-w-[240px]"
+                className="w-full min-w-[240px] mb-2"
             >
                 <div className="p-3">
                     <div className="flex items-center gap-3">
