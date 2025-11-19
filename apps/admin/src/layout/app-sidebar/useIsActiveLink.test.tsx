@@ -95,8 +95,8 @@ describe("useIsActiveLink", () => {
     });
 
     describe("query parameter handling", () => {
-        test("returns false when target has no query params but current location has query params", () => {
-            // This is the key fix: main "Posts" link should not be active when viewing "Drafts"
+        test("returns true for parent link as fallback when current location has query params", () => {
+            // Parent link serves as fallback when query params don't match any submenu item
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
                 search: "?type=draft",
@@ -119,7 +119,7 @@ describe("useIsActiveLink", () => {
                 useIsActiveLink({ path: "posts" })
             );
 
-            expect(result.current).toBe(false);
+            expect(result.current).toBe(true);
         });
 
         test("returns true when query parameters match exactly", () => {
@@ -174,10 +174,11 @@ describe("useIsActiveLink", () => {
             expect(result.current).toBe(false);
         });
 
-        test("returns true when target query params are subset of current params", () => {
+        test("returns false when current has extra params (not exact match)", () => {
+            // Changed: Now requires EXACT match, not subset
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
-                search: "?type=draft&sort=created_at",
+                search: "?type=draft&tag=news",
                 hash: "",
                 state: null,
                 key: "default",
@@ -197,13 +198,13 @@ describe("useIsActiveLink", () => {
                 useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(result.current).toBe(true);
+            expect(result.current).toBe(false);
         });
 
-        test("returns false when target query param is missing in current location", () => {
+        test("returns true when all params match regardless of order", () => {
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
-                search: "?sort=created_at",
+                search: "?tag=news&type=draft",
                 hash: "",
                 state: null,
                 key: "default",
@@ -220,7 +221,33 @@ describe("useIsActiveLink", () => {
             });
 
             const { result } = renderHook(() =>
-                useIsActiveLink({ path: "posts?type=draft" })
+                useIsActiveLink({ path: "posts?type=draft&tag=news" })
+            );
+
+            expect(result.current).toBe(true);
+        });
+
+        test("returns false when target has extra param not in current", () => {
+            mockUseLocation.mockReturnValue({
+                pathname: "/posts",
+                search: "?type=draft",
+                hash: "",
+                state: null,
+                key: "default",
+            });
+            mockUseMatch.mockReturnValue({
+                params: {},
+                pathname: "/posts",
+                pathnameBase: "/posts",
+                pattern: {
+                    path: "/posts",
+                    caseSensitive: false,
+                    end: true,
+                },
+            });
+
+            const { result } = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft&tag=news" })
             );
 
             expect(result.current).toBe(false);
@@ -271,8 +298,8 @@ describe("useIsActiveLink", () => {
             expect(result.current).toBe(false);
         });
 
-        test("activeOnSubpath does not interfere with query param matching", () => {
-            // When activeOnSubpath is true, query params should still be checked
+        test("activeOnSubpath still matches when query params present (parent fallback)", () => {
+            // Parent link with activeOnSubpath serves as fallback even with query params
             mockUseLocation.mockReturnValue({
                 pathname: "/members",
                 search: "?filter=paid",
@@ -295,13 +322,14 @@ describe("useIsActiveLink", () => {
                 useIsActiveLink({ path: "members", activeOnSubpath: true })
             );
 
-            // Should be false because target has no query params but current location does
-            expect(result.current).toBe(false);
+            // Parent link is active as fallback
+            expect(result.current).toBe(true);
         });
     });
 
     describe("real-world scenarios", () => {
-        test("Posts menu: main link not active when viewing Drafts", () => {
+        test("Posts menu: both main link and Drafts link active when viewing Drafts (parent as fallback)", () => {
+            // In the UI, we rely on CSS to show only the submenu item as active when both match
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
                 search: "?type=draft",
@@ -327,14 +355,80 @@ describe("useIsActiveLink", () => {
                 useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(mainPostsLink.result.current).toBe(false);
+            expect(mainPostsLink.result.current).toBe(true); // Parent also active as fallback
+            expect(draftsLink.result.current).toBe(true); // Submenu item matches exactly
+        });
+
+        test("Posts menu: only Drafts link active (not custom view with more params)", () => {
+            // Custom view with draft+tag should NOT match the simple draft view
+            mockUseLocation.mockReturnValue({
+                pathname: "/posts",
+                search: "?type=draft",
+                hash: "",
+                state: null,
+                key: "default",
+            });
+            mockUseMatch.mockReturnValue({
+                params: {},
+                pathname: "/posts",
+                pathnameBase: "/posts",
+                pattern: {
+                    path: "/posts",
+                    caseSensitive: false,
+                    end: true,
+                },
+            });
+
+            const draftsLink = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft" })
+            );
+            const customViewLink = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft&tag=news" })
+            );
+
             expect(draftsLink.result.current).toBe(true);
+            expect(customViewLink.result.current).toBe(false); // Exact match required
         });
 
-        test("Posts menu: main link not active when viewing Scheduled", () => {
+        test("Posts menu: custom view matches when all params present", () => {
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
-                search: "?type=scheduled",
+                search: "?type=draft&tag=news",
+                hash: "",
+                state: null,
+                key: "default",
+            });
+            mockUseMatch.mockReturnValue({
+                params: {},
+                pathname: "/posts",
+                pathnameBase: "/posts",
+                pattern: {
+                    path: "/posts",
+                    caseSensitive: false,
+                    end: true,
+                },
+            });
+
+            const draftsLink = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft" })
+            );
+            const customViewLink = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft&tag=news" })
+            );
+            const mainLink = renderHook(() =>
+                useIsActiveLink({ path: "posts" })
+            );
+
+            expect(draftsLink.result.current).toBe(false); // Not exact match
+            expect(customViewLink.result.current).toBe(true); // Exact match
+            expect(mainLink.result.current).toBe(true); // Parent also active as fallback
+        });
+
+        test("Posts menu: main link active as fallback when params don't match any submenu", () => {
+            // If user adds a filter that doesn't match any submenu item, parent should be active
+            mockUseLocation.mockReturnValue({
+                pathname: "/posts",
+                search: "?author=john&status=sent",
                 hash: "",
                 state: null,
                 key: "default",
@@ -353,42 +447,12 @@ describe("useIsActiveLink", () => {
             const mainPostsLink = renderHook(() =>
                 useIsActiveLink({ path: "posts" })
             );
-            const scheduledLink = renderHook(() =>
-                useIsActiveLink({ path: "posts?type=scheduled" })
+            const draftsLink = renderHook(() =>
+                useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(mainPostsLink.result.current).toBe(false);
-            expect(scheduledLink.result.current).toBe(true);
-        });
-
-        test("Posts menu: main link not active when viewing Published", () => {
-            mockUseLocation.mockReturnValue({
-                pathname: "/posts",
-                search: "?type=published",
-                hash: "",
-                state: null,
-                key: "default",
-            });
-            mockUseMatch.mockReturnValue({
-                params: {},
-                pathname: "/posts",
-                pathnameBase: "/posts",
-                pattern: {
-                    path: "/posts",
-                    caseSensitive: false,
-                    end: true,
-                },
-            });
-
-            const mainPostsLink = renderHook(() =>
-                useIsActiveLink({ path: "posts" })
-            );
-            const publishedLink = renderHook(() =>
-                useIsActiveLink({ path: "posts?type=published" })
-            );
-
-            expect(mainPostsLink.result.current).toBe(false);
-            expect(publishedLink.result.current).toBe(true);
+            expect(mainPostsLink.result.current).toBe(true); // Active as fallback
+            expect(draftsLink.result.current).toBe(false); // Doesn't match
         });
 
         test("Posts menu: main link IS active when viewing all posts (no query params)", () => {
