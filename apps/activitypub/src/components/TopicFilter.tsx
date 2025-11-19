@@ -1,12 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button} from '@tryghost/shade';
 
-export type Topic = 'following' | 'top' | 'technology' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
+export type Topic = 'following' | 'top' | 'tech' | 'business' | 'news' | 'culture' | 'art' | 'travel' | 'education' | 'finance' | 'entertainment' | 'productivity' | 'literature' | 'personal' | 'programming' | 'design' | 'sport' | 'faith-spirituality' | 'science' | 'crypto' | 'food-drink' | 'music' | 'nature-outdoors' | 'climate' | 'history' | 'gear-gadgets';
 
 const TOPICS: {value: Topic; label: string}[] = [
     {value: 'following', label: 'Following'},
     {value: 'top', label: 'Top'},
-    {value: 'technology', label: 'Technology'},
+    {value: 'tech', label: 'Technology'},
     {value: 'business', label: 'Business'},
     {value: 'news', label: 'News'},
     {value: 'culture', label: 'Culture'},
