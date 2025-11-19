@@ -43,6 +43,14 @@ const features: Feature[] = [{
     title: 'Welcome Emails',
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
+}, {
+    title: 'New Admin Experience',
+    description: 'Try the new React-based admin interface. Only available on ghost.io',
+    flag: 'adminForward'
+}, {
+    title: 'Domain Warmup',
+    description: 'Enable custom sending domain warmup for gradual email volume increases',
+    flag: 'domainWarmup'
 }];
 
 const AlphaFeatures: React.FC = () => {

@@ -98,8 +98,8 @@ export function ghostBackendProxyPlugin(): Plugin {
         name: "ghost-backend-proxy",
 
         async configResolved(config) {
-            // Only resolve backend URL for dev/preview, not for builds
-            if (config.command !== 'serve') return;
+            // Only resolve backend URL for dev/preview, not for builds or tests
+            if (config.command !== 'serve' || config.mode === 'test') return;
 
             try {
                 // We expect this to succeed immediately, but if the backend
@@ -126,6 +126,8 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         },
 
         configureServer(server) {
+            if (!siteUrl) return;
+
             server.config.server.proxy = {
                 ...server.config.server.proxy,
                 ...createAdminApiProxy(siteUrl),
@@ -134,6 +136,8 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         },
 
         configurePreviewServer(server) {
+            if (!siteUrl) return;
+
             server.config.preview.proxy = {
                 ...server.config.preview.proxy,
                 ...createAdminApiProxy(siteUrl),

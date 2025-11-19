@@ -1,3 +1,4 @@
+import Evented from '@ember/object/evented';
 import Service, {inject as service} from '@ember/service';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -16,7 +17,7 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
 };
 
-export default class StateBridgeService extends Service {
+export default class StateBridgeService extends Service.extend(Evented) {
     @service feature;
     @service membersUtils;
     @service session;
@@ -67,7 +68,11 @@ export default class StateBridgeService extends Service {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
 
-            this.settings.reload();
+            // TODO: Reloading settings does not trigger a re-fetch of the
+            // feature flags. We should maybe find a better way to do this.
+            this.settings.reload().then(() => {
+                this.feature.fetch();
+            });
         }
 
         if (dataType === 'TiersResponseType') {
@@ -134,5 +139,23 @@ export default class StateBridgeService extends Service {
         if (record) {
             record.unloadRecord();
         }
+    }
+
+    /* Ember -> React -------------------------------------------------------
+
+    When Ember Data store records are updated, created, or deleted via the
+    adapter (after successful API calls), we notify React to invalidate/update
+    its TanStack Query cache.
+
+    */
+
+    @action
+    triggerEmberDataChange(operation, modelName, id, response) {
+        this.trigger('emberDataChange', {
+            operation, // 'update' | 'create' | 'delete'
+            modelName, // e.g., 'post', 'user', 'setting'
+            id,
+            data: response // API response data for optimistic updates
+        });
     }
 }

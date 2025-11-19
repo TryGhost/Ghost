@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "1.0.23",
+  "version": "1.0.29",
   "license": "MIT",
   "repository": {
     "type": "git",
