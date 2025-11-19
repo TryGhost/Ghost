@@ -189,12 +189,12 @@ const ExploreByTopic: React.FC = () => {
                                 </React.Fragment>
                             ))}
                         </div>
-                    </div>
-                )}
-                <div className='load-more-trigger h-4 w-full' />
-                {isFetchingNextPage && (
-                    <div className='flex justify-center'>
-                        <LoadingIndicator size='sm' />
+                        <div className='load-more-trigger h-4 w-full' />
+                        {isFetchingNextPage && (
+                            <div className='flex w-full justify-center mt-2'>
+                                <LoadingIndicator size='sm' />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
