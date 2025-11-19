@@ -21,7 +21,7 @@
                 <dropdown.Trigger class="outline-0 pointer">
                     <div class="flex-auto flex items-center">
                         <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
-                            {{#if (and this.whatsNew.hasNew (not this.whatsNew.hasNewFeatured))}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                            {{#if (and this.whatsNew.hasNew (not this.whatsNew.hasNewFeatured))}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account" data-test-whats-new-avatar-badge aria-hidden="true"></span>{{/if}}
                         </div>
                         {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey" data-test-nav="arrow-down"}}
                     </div>
@@ -51,11 +51,11 @@
                             </li>
                             <li class="divider" role="separator"></li>
                         {{else}}
-                            <li>
-                                <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" this.openWhatsNew}}>
+                            <li role="none">
+                                <button class="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" this.openWhatsNew}}>
                                     What’s new?
                                     {{#if this.whatsNew.hasNew}}
-                                        <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
+                                        <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100" data-test-whats-new-menu-badge aria-hidden="true"></span></div>
                                     {{/if}}
                                 </button>
                             </li>

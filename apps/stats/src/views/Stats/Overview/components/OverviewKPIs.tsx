@@ -164,10 +164,10 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     diffDirection='empty'
                     formattedValue={kpiValues.visits}
                     iconName='Globe'
-                    linkto='/web/'
+                    linkto='/analytics/web/'
                     title='Unique visitors'
                     onClick={() => {
-                        navigate('/web/');
+                        navigate('/analytics/web/');
                     }}
                 >
                     <GhAreaChart
@@ -214,11 +214,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     diffValue={growthTotals.percentChanges.total}
                     formattedValue={formatNumber(growthTotals.totalMembers)}
                     iconName='User'
-                    linkto='/growth/'
+                    linkto='/analytics/growth/'
                     title='Members'
                     trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
                     onClick={() => {
-                        navigate('/growth/?tab=total-members');
+                        navigate('/analytics/growth/?tab=total-members');
                     }}
                 >
                     <GhAreaChart
@@ -241,11 +241,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     diffValue={growthTotals.percentChanges.mrr}
                     formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
                     iconName='Coins'
-                    linkto='/growth/'
+                    linkto='/analytics/growth/'
                     title='MRR'
                     trendingFromValue={`${currencySymbol}${formatNumber(mrrChartData[0].value)}`}
                     onClick={() => {
-                        navigate('/growth/?tab=mrr');
+                        navigate('/analytics/growth/?tab=mrr');
                     }}
                 >
                     <GhAreaChart
