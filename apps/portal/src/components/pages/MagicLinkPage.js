@@ -83,7 +83,8 @@ export default class MagicLinkPage extends React.Component {
         this.state = {
             [OTC_FIELD_NAME]: '',
             errors: {},
-            isFocused: false
+            isFocused: false,
+            statusMessage: ''
         };
     }
 
@@ -133,10 +134,10 @@ export default class MagicLinkPage extends React.Component {
         });
 
         return (
-            <section className='gh-portal-inbox-notification'>
+            <section className='gh-portal-inbox-notification' aria-labelledby='magic-link-title'>
                 <header className='gh-portal-header'>
-                    <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' />
-                    <h2 className='gh-portal-main-title'>{popupTitle}</h2>
+                    <EnvelopeIcon className='gh-portal-icon gh-portal-icon-envelope' aria-hidden='true' />
+                    <h2 className='gh-portal-main-title' id='magic-link-title'>{popupTitle}</h2>
                 </header>
                 <p>{popupDescription}</p>
             </section>
@@ -190,7 +191,8 @@ export default class MagicLinkPage extends React.Component {
             return {
                 errors: {
                     [OTC_FIELD_NAME]: code ? '' : missingCodeError
-                }
+                },
+                statusMessage: code ? t('Verifying your code...') : ''
             };
         }, () => {
             const {otc, errors} = this.state;
@@ -218,6 +220,20 @@ export default class MagicLinkPage extends React.Component {
             this.setState({
                 [fieldName]: value
             });
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const {action, actionErrorMessage} = this.context;
+        const prevAction = prevProps ? this.context.action : null;
+        
+        // Update status message for screen readers based on action changes
+        if (action !== prevAction) {
+            if (action === 'verifyOTC:running') {
+                this.setState({statusMessage: t('Verifying your code...')});
+            } else if (action === 'verifyOTC:failed' && actionErrorMessage) {
+                this.setState({statusMessage: actionErrorMessage});
+            }
         }
     }
 
@@ -253,13 +269,15 @@ export default class MagicLinkPage extends React.Component {
                             autoCapitalize="off"
                             autoFocus={true}
                             aria-label={t('Code')}
+                            aria-describedby={error ? 'otc-error' : undefined}
+                            aria-invalid={error ? 'true' : 'false'}
                             onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                             onFocus={() => this.setState({isFocused: true})}
                             onBlur={() => this.setState({isFocused: false})}
                         />
                     </div>
                     {error &&
-                        <div className="gh-portal-otp-error">
+                        <div className="gh-portal-otp-error" id="otc-error" role="alert" aria-live="polite">
                             {error}
                         </div>
                     }
@@ -274,6 +292,7 @@ export default class MagicLinkPage extends React.Component {
                         isRunning={isRunning}
                         retry={isError}
                         disabled={isRunning}
+                        aria-live="polite"
                     />
                 </footer>
             </form>
@@ -287,6 +306,16 @@ export default class MagicLinkPage extends React.Component {
         return (
             <div className='gh-portal-content'>
                 <CloseButton />
+                {/* Hidden live region for screen reader announcements */}
+                <div 
+                    role="status" 
+                    aria-live="polite" 
+                    aria-atomic="true"
+                    className="sr-only"
+                    style={{position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden'}}
+                >
+                    {this.state.statusMessage}
+                </div>
                 {this.renderFormHeader()}
                 {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
             </div>

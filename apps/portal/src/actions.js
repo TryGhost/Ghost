@@ -149,6 +149,9 @@ async function verifyOTC({data, api}) {
         const response = await api.member.verifyOTC({...data, integrityToken});
 
         if (response.redirectUrl) {
+            // Brief delay to allow screen readers to announce success before redirect
+            // This ensures screen reader users get feedback that verification succeeded
+            await new Promise(resolve => setTimeout(resolve, 100));
             return window.location.assign(response.redirectUrl);
         } else {
             return {

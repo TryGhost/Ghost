@@ -174,12 +174,19 @@ class NotificationContent extends React.Component {
         const {className = ''} = this.state;
         const statusClass = status ? `  ${status}` : ' neutral';
         const slideClass = className ? ` ${className}` : '';
+        const ariaRole = status === 'error' ? 'alert' : 'status';
         return (
             <div className='gh-portal-notification-wrapper'>
-                <div className={`gh-portal-notification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
-                    {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
+                <div 
+                    className={`gh-portal-notification${statusClass}${slideClass}`} 
+                    onAnimationEnd={e => this.onAnimationEnd(e)}
+                    role={ariaRole}
+                    aria-live="polite"
+                    aria-atomic="true"
+                >
+                    {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' aria-hidden='true'/> : <CheckmarkIcon className='gh-portal-notification-icon success' aria-hidden='true'/>)}
                     <NotificationText type={type} status={status} context={this.context} />
-                    <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={e => this.onNotificationClose(e)} />
+                    <CloseIcon className='gh-portal-notification-closeicon' aria-label='Close notification' role='button' tabIndex={0} onClick={e => this.onNotificationClose(e)} />
                 </div>
             </div>
         );

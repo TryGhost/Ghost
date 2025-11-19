@@ -469,7 +469,11 @@ describe('OTC Integration Flow', () => {
         });
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
-        expect(locationAssignMock).toHaveBeenCalledWith('https://example.com/welcome');
+        
+        // Wait for the redirect after the brief accessibility delay
+        await waitFor(() => {
+            expect(locationAssignMock).toHaveBeenCalledWith('https://example.com/welcome');
+        });
         expect(locationAssignMock).toHaveBeenCalledTimes(1);
     });
 
