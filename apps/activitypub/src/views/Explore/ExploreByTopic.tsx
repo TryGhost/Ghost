@@ -2,13 +2,14 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import TopicFilter, {type Topic} from '@src/components/TopicFilter';
 import {type Account, type ExploreAccount} from '@src/api/activitypub';
 import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {useAccountForUser, useExploreProfilesForUserByTopic} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
+import {useParams} from '@tryghost/admin-x-framework';
 
 interface ExploreProfileProps {
     profile: ExploreAccount;
@@ -98,7 +99,11 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
 
 const ExploreByTopic: React.FC = () => {
     const {isExplainerClosed, setExplainerClosed} = useOnboardingStatus();
-    const [topic, setTopic] = useState<Topic>('top');
+    const params = useParams<{topic?: string}>();
+    const navigate = useNavigateWithBasePath();
+
+    const topic: Topic = (params.topic as Topic) || 'top';
+
     const {exploreProfilesQuery, updateExploreProfile} = useExploreProfilesForUserByTopic('index', topic);
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
@@ -147,7 +152,17 @@ const ExploreByTopic: React.FC = () => {
                     <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
-            <TopicFilter currentTopic={topic} excludeTopics={['following']} onTopicChange={setTopic} />
+            <TopicFilter
+                currentTopic={topic}
+                excludeTopics={['following']}
+                onTopicChange={(newTopic) => {
+                    if (newTopic === 'top') {
+                        navigate('/explore', {replace: true});
+                    } else {
+                        navigate(`/explore/${newTopic}`, {replace: true});
+                    }
+                }}
+            />
             <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
                 {isLoadingExploreProfiles ? (
                     <div>
@@ -188,4 +203,3 @@ const ExploreByTopic: React.FC = () => {
 };
 
 export default ExploreByTopic;
-

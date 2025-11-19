@@ -73,6 +73,11 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Explore'
             },
             {
+                path: 'explore/:topic',
+                element: <Explore />,
+                pageTitle: 'Explore'
+            },
+            {
                 path: 'profile',
                 element: <Profile />,
                 pageTitle: 'Profile'
