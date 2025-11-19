@@ -6,6 +6,16 @@ const configUtils = require('../../../../utils/configUtils');
 const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
 const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
 
+/**
+ * Create a mock config object that reads from configUtils
+ * This allows tests to use configUtils.set() while production code uses this.config.get()
+ */
+function createMockConfig() {
+    return {
+        get: key => configUtils.config.get(key)
+    };
+}
+
 describe('EmailAnalyticsService', function () {
     let clock;
 
@@ -46,6 +56,7 @@ describe('EmailAnalyticsService', function () {
     describe('getLastNonOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -57,6 +68,7 @@ describe('EmailAnalyticsService', function () {
 
         it('returns the fallback if nothing is found', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -70,6 +82,7 @@ describe('EmailAnalyticsService', function () {
     describe('getLastSeenOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -81,6 +94,7 @@ describe('EmailAnalyticsService', function () {
 
         it('returns the fallback if nothing is found', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -99,6 +113,7 @@ describe('EmailAnalyticsService', function () {
             it('fetches only opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -116,6 +131,7 @@ describe('EmailAnalyticsService', function () {
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -134,6 +150,7 @@ describe('EmailAnalyticsService', function () {
             it('fetches only non-opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -151,6 +168,7 @@ describe('EmailAnalyticsService', function () {
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -175,6 +193,7 @@ describe('EmailAnalyticsService', function () {
                 setJobTimestampStub = sinon.stub().resolves();
                 setJobStatusStub = sinon.stub().resolves();
                 service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: setJobTimestampStub,
                         setJobStatus: setJobStatusStub
@@ -237,6 +256,7 @@ describe('EmailAnalyticsService', function () {
 
             it('resets fetchScheduledData when no events are fetched', async function () {
                 service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
@@ -261,6 +281,7 @@ describe('EmailAnalyticsService', function () {
             it('fetches missing events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves(),
@@ -342,6 +363,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('uses passed-in event processor', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -379,6 +401,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles opened', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -408,6 +431,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles delivered', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -437,6 +461,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles failed (permanent)', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -465,6 +490,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles failed (temporary)', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -493,6 +519,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles unsubscribed', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -522,6 +549,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('handles complained', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -551,6 +579,7 @@ describe('EmailAnalyticsService', function () {
 
                     it(`doens't handle other event types`, async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -592,6 +621,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('delivered returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -611,6 +641,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('opened returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -630,6 +661,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('failed (permanent) returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -650,6 +682,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('failed (temporary) returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -670,6 +703,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('unsubscribed returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -689,6 +723,7 @@ describe('EmailAnalyticsService', function () {
 
                     it('complained returns unprocessable', async function () {
                         const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
                             eventProcessor
                         });
 
@@ -714,7 +749,10 @@ describe('EmailAnalyticsService', function () {
                         handleDelivered: sinon.stub().resolves({emailId: 1, emailRecipientId: 1, memberId: 1})
                     };
 
-                    const service = new EmailAnalyticsService({eventProcessor});
+                    const service = new EmailAnalyticsService({
+                        config: createMockConfig(),
+                        eventProcessor
+                    });
                     const result = new EventProcessingResult();
                     const fetchData = {};
 
@@ -748,6 +786,7 @@ describe('EmailAnalyticsService', function () {
             beforeEach(function () {
                 configUtils.set('emailAnalytics:batchProcessing', true);
                 service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         aggregateEmailStats: sinon.spy(),
                         aggregateMemberStats: sinon.spy(),
@@ -785,6 +824,7 @@ describe('EmailAnalyticsService', function () {
             beforeEach(function () {
                 configUtils.set('emailAnalytics:batchProcessing', false);
                 service = new EmailAnalyticsService({
+                    config: createMockConfig(),
                     queries: {
                         aggregateEmailStats: sinon.spy(),
                         aggregateMemberStats: sinon.spy(),
@@ -821,6 +861,7 @@ describe('EmailAnalyticsService', function () {
     describe('aggregateEmailStats', function () {
         it('returns the query result', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     aggregateEmailStats: sinon.stub().resolves()
                 }
@@ -836,6 +877,7 @@ describe('EmailAnalyticsService', function () {
     describe('aggregateMemberStats', function () {
         it('returns the query result', async function () {
             const service = new EmailAnalyticsService({
+                config: createMockConfig(),
                 queries: {
                     aggregateMemberStats: sinon.stub().resolves()
                 }
