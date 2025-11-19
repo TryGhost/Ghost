@@ -1607,7 +1607,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/enable`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/enable`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                     },
@@ -1636,7 +1636,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/disable`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/disable`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                     },
@@ -1665,7 +1665,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/confirm-handle`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
                     response: JSONResponse({
                         handle: 'foo@bar.baz'
                     })
@@ -1693,7 +1693,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/confirm-handle`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1719,7 +1719,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/confirm-handle`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
                     response: JSONResponse({
                         foo: 'bar'
                     })
@@ -1747,7 +1747,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/confirm-handle`]: {
+                [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/confirm-handle`]: {
                     response: JSONResponse({
                         handle: ['foo@bar.baz']
                     })
