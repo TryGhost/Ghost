@@ -3,7 +3,9 @@
         <section class="error-details">
             <section class="error-message">
                 <h1 class="error-code">{{this.model.code}}</h1>
-                <span>|</span>
+                {{#if this.model.code}}
+                    <span>|</span>
+                {{/if}}
                 <h2 class="error-description">
                     {{or (get this.model.payload.errors "0.message") this.model.message}}
                 </h2>

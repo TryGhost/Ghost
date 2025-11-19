@@ -7,6 +7,7 @@
     justify-content: center;
     align-items: center;
     user-select: text;
+    height: 100svh;
 }
 
 .error-details {

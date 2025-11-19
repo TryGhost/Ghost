@@ -4,7 +4,9 @@
         <section class="error-details">
             <section class="error-message">
                 <h1 class="error-code">{{this.code}}</h1>
-                <span>|</span>
+                {{#if this.code}}
+                    <span>|</span>
+                {{/if}}
                 <h2 class="error-description">
                     {{this.message}}
                 </h2>
