@@ -1,6 +1,6 @@
-import App from '../src/App';
-import {site as FixtureSite, member as FixtureMember} from '../src/utils/test-fixtures';
-import {appRender, within} from '../src/utils/test-utils';
+import App from '../src/app';
+import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
+import {appRender, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import {fireEvent} from '@testing-library/react';
 

@@ -82,7 +82,7 @@ export default defineConfig((config) => {
         test: {
             globals: true,
             environment: 'jsdom',
-            setupFiles: './src/setupTests.js',
+            setupFiles: './test/setup-tests.js',
             testTimeout: 10000,
             coverage: {
                 reporter: ['cobertura', 'text-summary', 'html']

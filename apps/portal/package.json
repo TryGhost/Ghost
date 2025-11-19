@@ -25,7 +25,7 @@
     "test:watch": "vitest",
     "test:ci": "yarn test --coverage",
     "test:unit": "yarn test:ci",
-    "lint": "eslint src --ext .js --cache",
+    "lint": "eslint src test --ext .js --cache",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "yarn build"
@@ -61,7 +61,12 @@
       "i18next"
     ],
     "rules": {
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "ghost/filenames/match-regex": [
+        "error",
+        "^[a-z0-9.-]+$",
+        false
+      ]
     },
     "settings": {
       "react": {
