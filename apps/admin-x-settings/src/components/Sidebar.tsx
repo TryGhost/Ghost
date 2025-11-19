@@ -10,6 +10,7 @@ import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSetti
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSettings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
+import {searchKeywords as memberWelcomeEmailsSearchKeywords} from './settings/membership/MemberWelcomeEmailsSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
 
 import {useGlobalData} from './providers/GlobalDataProvider';
@@ -184,12 +185,13 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu, ...Object.values(memberWelcomeEmailsSearchKeywords).flat()])} title="Membership">
                     <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                    <NavItem icon='email-check' keywords={memberWelcomeEmailsSearchKeywords.welcomeEmails} navid='member-welcome-emails' title="Member welcome emails" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 {/* Growth */}
