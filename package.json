@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/image-transform",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/SDK.git",
