@@ -328,8 +328,7 @@ describe("useIsActiveLink", () => {
     });
 
     describe("real-world scenarios", () => {
-        test("Posts menu: both main link and Drafts link active when viewing Drafts (parent as fallback)", () => {
-            // In the UI, we rely on CSS to show only the submenu item as active when both match
+        test("Posts menu: only Drafts link active when viewing Drafts (parent NOT active)", () => {
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
                 search: "?type=draft",
@@ -348,14 +347,20 @@ describe("useIsActiveLink", () => {
                 },
             });
 
+            const childPaths = [
+                'posts?type=draft',
+                'posts?type=scheduled',
+                'posts?type=published'
+            ];
+
             const mainPostsLink = renderHook(() =>
-                useIsActiveLink({ path: "posts" })
+                useIsActiveLink({ path: "posts", childPaths })
             );
             const draftsLink = renderHook(() =>
                 useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(mainPostsLink.result.current).toBe(true); // Parent also active as fallback
+            expect(mainPostsLink.result.current).toBe(false); // Parent NOT active when child matches
             expect(draftsLink.result.current).toBe(true); // Submenu item matches exactly
         });
 
@@ -390,7 +395,7 @@ describe("useIsActiveLink", () => {
             expect(customViewLink.result.current).toBe(false); // Exact match required
         });
 
-        test("Posts menu: custom view matches when all params present", () => {
+        test("Posts menu: only custom view active when all params present", () => {
             mockUseLocation.mockReturnValue({
                 pathname: "/posts",
                 search: "?type=draft&tag=news",
@@ -409,6 +414,13 @@ describe("useIsActiveLink", () => {
                 },
             });
 
+            const childPaths = [
+                'posts?type=draft',
+                'posts?type=scheduled',
+                'posts?type=published',
+                'posts?type=draft&tag=news' // Custom view
+            ];
+
             const draftsLink = renderHook(() =>
                 useIsActiveLink({ path: "posts?type=draft" })
             );
@@ -416,12 +428,12 @@ describe("useIsActiveLink", () => {
                 useIsActiveLink({ path: "posts?type=draft&tag=news" })
             );
             const mainLink = renderHook(() =>
-                useIsActiveLink({ path: "posts" })
+                useIsActiveLink({ path: "posts", childPaths })
             );
 
             expect(draftsLink.result.current).toBe(false); // Not exact match
             expect(customViewLink.result.current).toBe(true); // Exact match
-            expect(mainLink.result.current).toBe(true); // Parent also active as fallback
+            expect(mainLink.result.current).toBe(false); // Parent NOT active when child matches
         });
 
         test("Posts menu: main link active as fallback when params don't match any submenu", () => {
@@ -444,14 +456,20 @@ describe("useIsActiveLink", () => {
                 },
             });
 
+            const childPaths = [
+                'posts?type=draft',
+                'posts?type=scheduled',
+                'posts?type=published'
+            ];
+
             const mainPostsLink = renderHook(() =>
-                useIsActiveLink({ path: "posts" })
+                useIsActiveLink({ path: "posts", childPaths })
             );
             const draftsLink = renderHook(() =>
                 useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(mainPostsLink.result.current).toBe(true); // Active as fallback
+            expect(mainPostsLink.result.current).toBe(true); // Active as fallback (no child matches)
             expect(draftsLink.result.current).toBe(false); // Doesn't match
         });
 
@@ -474,15 +492,21 @@ describe("useIsActiveLink", () => {
                 },
             });
 
+            const childPaths = [
+                'posts?type=draft',
+                'posts?type=scheduled',
+                'posts?type=published'
+            ];
+
             const mainPostsLink = renderHook(() =>
-                useIsActiveLink({ path: "posts" })
+                useIsActiveLink({ path: "posts", childPaths })
             );
             const draftsLink = renderHook(() =>
                 useIsActiveLink({ path: "posts?type=draft" })
             );
 
-            expect(mainPostsLink.result.current).toBe(true);
-            expect(draftsLink.result.current).toBe(false);
+            expect(mainPostsLink.result.current).toBe(true); // Active when no query params
+            expect(draftsLink.result.current).toBe(false); // No match without query params
         });
 
         test("Members menu: main link active on subpaths with activeOnSubpath", () => {

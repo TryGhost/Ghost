@@ -3,6 +3,11 @@ import { useLocation, useMatch } from "@tryghost/admin-x-framework";
 interface UseIsActiveLinkOptions {
     path?: string;
     activeOnSubpath?: boolean;
+    /**
+     * Array of child paths to check. If any child path is active (exact match),
+     * this link will not be considered active (used for parent links with submenus).
+     */
+    childPaths?: string[];
 }
 
 /**
@@ -12,18 +17,18 @@ interface UseIsActiveLinkOptions {
  * - Links WITH query params: Requires EXACT match of all query parameters (order-independent)
  *   Example: "posts?type=draft" only matches "posts?type=draft", not "posts?type=draft&tag=news"
  * 
- * - Links WITHOUT query params (parent links): Always match their pathname as a fallback
- *   This allows parent links to be highlighted when:
- *   - Navigating to the base path with no filters
- *   - Applying filters that don't match any specific submenu item
+ * - Links WITHOUT query params (parent links): Match when pathname matches, BUT:
+ *   - If childPaths provided and any child is exactly active, parent is NOT active
+ *   - Otherwise, parent is active as a fallback
  * 
- * Example scenario:
- * 1. Click "Drafts" (posts?type=draft): Both "Posts" and "Drafts" are active
- * 2. Add filter to get (posts?type=draft&author=john): Only "Posts" is active (fallback)
- * 3. Click custom view (posts?type=draft&tag=news): Both "Posts" and custom view are active
+ * Example scenario with childPaths:
+ * 1. Navigate to "posts" (no params): Only "Posts" parent is active
+ * 2. Click "Drafts" (posts?type=draft): Only "Drafts" submenu is active (parent suppressed)
+ * 3. Add filter (posts?type=draft&author=john): Only "Posts" parent is active (no child matches, fallback)
+ * 4. Click custom view (posts?type=draft&tag=news): Only custom view is active (parent suppressed)
  * 
- * Note: When both parent and submenu are active, CSS styling ensures only the submenu 
- * appears highlighted due to its visual prominence and indentation.
+ * This prevents both parent and child from being highlighted simultaneously while maintaining
+ * fallback behavior when filters don't match any defined submenu item.
  */
 
 /**
@@ -49,7 +54,7 @@ function areSearchParamsEqual(params1: URLSearchParams, params2: URLSearchParams
     return true;
 }
 
-export function useIsActiveLink({ path, activeOnSubpath = false }: UseIsActiveLinkOptions): boolean {
+export function useIsActiveLink({ path, activeOnSubpath = false, childPaths = [] }: UseIsActiveLinkOptions): boolean {
     const location = useLocation();
 
     // Split path into pathname and search params
@@ -77,9 +82,24 @@ export function useIsActiveLink({ path, activeOnSubpath = false }: UseIsActiveLi
     }
 
     // Parent link without query params:
-    // - Match if there are no query params in current location (exact match)
-    // - Also match if there ARE query params (fallback when no submenu item matches)
-    // This allows the parent to be highlighted when navigating with filters
-    // that don't correspond to any specific submenu item
+    // Check if any child path is currently active (exact match)
+    if (childPaths.length > 0) {
+        const currentParams = new URLSearchParams(location.search);
+        
+        for (const childPath of childPaths) {
+            const [, childSearch] = childPath.split('?');
+            
+            // Check if the child has exact query param match
+            if (childSearch) {
+                const childParams = new URLSearchParams(childSearch);
+                if (areSearchParamsEqual(childParams, currentParams)) {
+                    // A child is active, so parent should not be active
+                    return false;
+                }
+            }
+        }
+    }
+
+    // Match when pathname matches (either no query params, or query params but no child matches)
     return true;
 }
