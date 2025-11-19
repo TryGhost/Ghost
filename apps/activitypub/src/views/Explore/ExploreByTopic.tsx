@@ -191,7 +191,7 @@ const ExploreByTopic: React.FC = () => {
                         </div>
                         <div className='load-more-trigger h-4 w-full' />
                         {isFetchingNextPage && (
-                            <div className='flex w-full justify-center mt-2'>
+                            <div className='mt-2 flex w-full justify-center'>
                                 <LoadingIndicator size='sm' />
                             </div>
                         )}
