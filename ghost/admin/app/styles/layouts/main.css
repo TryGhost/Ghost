@@ -113,7 +113,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     position: absolute;
     top: 0;
     left: 0;
-    transform: translateX(calc(-1 * (var(--mainmenu-width) - var(--mainmenu-collapsed-width))));
+    transform: translateX(calc(-1 * var(--mainmenu-width)));
     width: var(--mainmenu-width);
     background-color: var(--white);
     height: 100%;
@@ -148,7 +148,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-nav:hover .gh-toggle-nav-menu,
-.gh-nav-hidden .gh-toggle-nav-menu {
+.gh-nav-hidden .gh-toggle-nav-menu,
+.gh-toggle-nav-menu:focus-within {
     opacity: 1;
 }
 
@@ -928,10 +929,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     appearance: none;
     cursor: pointer;
     transition: all ease-in-out 0.3s;
-}
-
-.nightshift-toggle:hover {
-    background: var(--mainmenu-color-hover-bg);
 }
 
 .nightshift-toggle .thumb {
