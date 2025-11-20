@@ -24,7 +24,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         return (
             <div className="relative h-screen bg-background">
                 <main className="h-full overflow-auto">{children}</main>
-                <div className="fixed bottom-6 left-6 z-50">
+                <div className="fixed bottom-3.5 left-3.5 lg:bottom-8 lg:left-8 z-20">
                     <ContributorProfileMenu />
                 </div>
             </div>

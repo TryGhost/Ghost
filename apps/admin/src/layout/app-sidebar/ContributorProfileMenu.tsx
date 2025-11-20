@@ -20,14 +20,14 @@ import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 /**
  * Floating profile menu for contributor users
  * Positioned in top-right corner, minimal menu with essential actions only
- * 
+ *
  * Mirrors Ember behavior where contributors have a simplified menu with:
  * - Posts (navigate to posts list)
  * - View site (open site in new tab)
  * - Your profile (navigate to profile settings)
  * - Dark mode toggle
  * - Sign out
- * 
+ *
  * Contributors do not have access to:
  * - What's new
  * - Help center / Resources & guides
@@ -47,13 +47,13 @@ function ContributorProfileMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button 
-                    className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                <button
+                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
                     aria-label="Open user menu"
                 >
-                    <Avatar className="w-12 h-12">
+                    <Avatar className="w-11 h-11">
                         {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                        <AvatarFallback className="text-foreground-muted hover:text-foreground bg-muted">
+                        <AvatarFallback className="text-foreground-muted hover:text-foreground bg-background dark:bg-muted">
                             <LucideIcon.User />
                         </AvatarFallback>
                     </Avatar>
