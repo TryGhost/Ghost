@@ -14,7 +14,7 @@ module.exports = {
 
         if (!hasScheduled.processOutbox && !process.env.NODE_ENV.startsWith('test')) {
             jobsService.addJob({
-                at: '0 */5 * * * *',
+                at: '30 * * * * *',
                 job: path.resolve(__dirname, 'process-outbox.js'),
                 name: 'process-member-welcome-emails'
             });
