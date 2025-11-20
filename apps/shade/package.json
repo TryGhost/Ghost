@@ -93,7 +93,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "1.1.1",
-        "lucide-react": "^0.553.0",
+        "lucide-react": "^0.554.0",
         "moment-timezone": "^0.5.48",
         "next-themes": "0.4.6",
         "react": "18.3.1",
