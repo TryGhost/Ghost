@@ -8,20 +8,22 @@ let hasScheduled = {
 
 module.exports = {
     async scheduleMemberWelcomeEmailJob() {
-        if (!config.get('memberWelcomeEmailTestInbox')) {
+        const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
+        const testEmailSentInstantly = config.get('memberWelcomeEmailSendInstantly') === 'true';
+        const alreadySetScheduledProcessing = hasScheduled.processOutbox;
+
+        if (testInboxDisabled || alreadySetScheduledProcessing) {
             return false;
         }
-        const cronInterval = config.get('memberWelcomeEmailCronInterval') || '*/5 * * * *';
 
-        if (!hasScheduled.processOutbox && !process.env.NODE_ENV.startsWith('test')) {
-            jobsService.addJob({
-                at: `0 ${cronInterval}`,
-                job: path.resolve(__dirname, 'process-outbox.js'),
-                name: 'process-member-welcome-emails'
-            });
+        hasScheduled.processOutbox = true;
+        const cronSchedule = testEmailSentInstantly ? '*/3 * * * * *' : '0 */5 * * * *';
 
-            hasScheduled.processOutbox = true;
-        }
+        jobsService.addJob({
+            at: cronSchedule,
+            job: path.resolve(__dirname, 'process-outbox.js'),
+            name: 'process-member-welcome-emails'
+        });
 
         return hasScheduled.processOutbox;
     }

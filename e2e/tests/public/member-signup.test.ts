@@ -7,10 +7,7 @@ import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
-
-    test.use({config: {
-        memberWelcomeEmailCronInterval: '* * * * * *'
-    }});
+    test.use({config: {memberWelcomeEmailSendInstantly: 'true'}});
 
     test.beforeEach(async () => {
         emailClient = new MailPit();
