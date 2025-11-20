@@ -73,7 +73,11 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                 <Toggle
                     checked={user.milestone_notifications}
                     direction='rtl'
-                    hint={`Occasional summaries of your audience ${hasStripeEnabled ? '& revenue' : ''} growth`}
+                    hint={hasStripeEnabled ?
+                        'Occasional summaries of your audience & revenue growth'
+                        :
+                        'Occasional summaries of your audience growth'
+                    }
                     label='Milestones'
                     onChange={(e) => {
                         setUserData?.({...user, milestone_notifications: e.target.checked});
