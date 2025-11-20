@@ -1,10 +1,41 @@
 import NiceModal from '@ebay/nice-modal-react';
+import {useEffect, useRef, useState} from 'react';
+
 import {Button, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const WelcomeEmailModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
+    const {data: currentUser} = useCurrentUser();
+    const [showTestDropdown, setShowTestDropdown] = useState(false);
+    const [testEmail, setTestEmail] = useState(currentUser?.email || '');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Update test email when current user data loads
+    useEffect(() => {
+        if (currentUser?.email) {
+            setTestEmail(currentUser.email);
+        }
+    }, [currentUser?.email]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowTestDropdown(false);
+            }
+        };
+
+        if (showTestDropdown) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showTestDropdown]);
 
     return (
         <Modal
@@ -26,12 +57,39 @@ const WelcomeEmailModal = NiceModal.create(() => {
                     <div className='mb-2 flex items-center justify-between'>
                         <h3 className='font-semibold'>Free members welcome email</h3>
                         <div className='flex items-center gap-2'>
-                            <Button
-                                className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white'
-                                color="clear"
-                                icon='send'
-                                label="Test"
-                            />
+                            <div ref={dropdownRef} className='relative'>
+                                <Button
+                                    className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white'
+                                    color="clear"
+                                    icon='send'
+                                    label="Test"
+                                    onClick={() => setShowTestDropdown(!showTestDropdown)}
+                                />
+                                {showTestDropdown && (
+                                    <div className='absolute right-0 top-full z-10 mt-2 w-[260px] rounded border border-grey-200 bg-white p-4 shadow-lg'>
+                                        <div className='mb-3'>
+                                            <label className='mb-2 block text-sm font-semibold'>Send test email</label>
+                                            <TextField
+                                                className='!h-[36px]'
+                                                placeholder='you@yoursite.com'
+                                                value={testEmail}
+                                                onChange={e => setTestEmail(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className='flex justify-end'>
+                                            <Button
+                                                className='w-full'
+                                                color="black"
+                                                label="Send"
+                                                onClick={() => {
+                                                    // Handle send test email logic here
+                                                    setShowTestDropdown(false);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                             <Button
                                 color="black"
                                 label="Save"
