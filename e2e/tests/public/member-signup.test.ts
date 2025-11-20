@@ -14,7 +14,7 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     async function retrieveLatestEmailMessage(emailAddress: string, timeoutMs: number = 10000) {
-        const messages = await emailClient.searchByRecipient(emailAddress,{timeoutMs: timeoutMs});
+        const messages = await emailClient.searchByRecipient(emailAddress, {timeoutMs: timeoutMs});
         return await emailClient.getMessageDetailed(messages[0]);
     }
 

@@ -8,16 +8,17 @@ let hasScheduled = {
 
 module.exports = {
     async scheduleMemberWelcomeEmailJob() {
+        const configValue = config.get('memberWelcomeEmailSendInstantly');
+        const testEmailSendInstantly = configValue === true || configValue === 'true';
         const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
-        const testEmailSentInstantly = config.get('memberWelcomeEmailSendInstantly') === 'true';
-        const alreadySetScheduledProcessing = hasScheduled.processOutbox;
+        const alreadyScheduledProcessing = hasScheduled.processOutbox;
 
-        if (testInboxDisabled || alreadySetScheduledProcessing) {
+        if (testInboxDisabled || alreadyScheduledProcessing) {
             return false;
         }
 
         hasScheduled.processOutbox = true;
-        const cronSchedule = testEmailSentInstantly ? '*/3 * * * * *' : '0 */5 * * * *';
+        const cronSchedule = testEmailSendInstantly ? '*/3 * * * * *' : '0 */5 * * * *';
 
         jobsService.addJob({
             at: cronSchedule,
