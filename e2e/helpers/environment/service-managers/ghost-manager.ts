@@ -24,6 +24,7 @@ export interface GhostStartConfig {
     workingDir?: string;
     command?: string[];
     portalUrl?: string;
+    config?: unknown;
 }
 
 export class GhostManager {
@@ -75,7 +76,8 @@ export class GhostManager {
                 portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
                 // Use React admin shell if specified
                 ...(process.env.USE_REACT_SHELL === 'true' ? {USE_REACT_SHELL: 'true'} : {}),
-                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox
+                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox,
+                ...(config.config ? config.config : {})
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
@@ -122,8 +124,8 @@ export class GhostManager {
         }
     }
 
-    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
-        const container = await this.createAndStart({instanceId, siteUuid, portalUrl});
+    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string, config?: object): Promise<GhostInstance> {
+        const container = await this.createAndStart({instanceId, siteUuid, portalUrl, config});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports[`${GHOST_DEFAULTS.PORT}/tcp`][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);

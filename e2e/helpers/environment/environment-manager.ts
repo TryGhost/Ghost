@@ -71,13 +71,13 @@ export class EnvironmentManager {
     /**
      * Setup that executes on each test start
      */
-    public async perTestSetup(): Promise<GhostInstance> {
+    public async perTestSetup(options: {config?: object} = {}): Promise<GhostInstance> {
         try {
             const {siteUuid, instanceId} = this.uniqueTestDetails();
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
             const portalUrl = await this.portal.getUrl();
 
-            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl);
+            return await this.ghost.createAndStartInstance(instanceId, siteUuid, portalUrl, options.config);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);

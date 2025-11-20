@@ -8,6 +8,10 @@ import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
 
+    test.use({config: {
+        memberWelcomeEmailCronInterval: '* * * * * *'
+    }});
+
     test.beforeEach(async () => {
         emailClient = new MailPit();
     });
@@ -45,10 +49,7 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     test('received welcome email', async ({page}) => {
-        // 5 minutes threshold for email delivery
-        const maxEmailWaitTimeMs = 300000;
         const emailInbox = appConfig.memberWelcomeEmailTestInbox;
-        test.setTimeout(maxEmailWaitTimeMs);
 
         const homePage = new HomePage(page);
         await homePage.goto();
@@ -62,7 +63,7 @@ test.describe('Ghost Public - Member Signup', () => {
         await publicPage.goto(magicLink);
         await homePage.waitUntilLoaded();
 
-        latestMessage = await retrieveLatestEmailMessage(emailInbox, maxEmailWaitTimeMs);
+        latestMessage = await retrieveLatestEmailMessage(emailInbox);
 
         expect(latestMessage.From.Name).toContain('Ghost');
         expect(latestMessage.From.Address).toContain('test@example.com');
