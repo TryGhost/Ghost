@@ -1,6 +1,6 @@
 ---
 name: Create database migration
-description: This skill includes instructions for creating new database migrations in Ghost's codebase. It should be used whenever creating a new database migration in ghost/core.
+description: Create a database migration to add a table, add columns to an existing table, add a setting, or otherwise change the schema of Ghost's MySQL database.
 ---
 
 # Create Database Migration
@@ -15,3 +15,9 @@ description: This skill includes instructions for creating new database migratio
 6. Test the migration manually: `yarn knex-migrator migrate --v {version directory} --force`
 7. Run the unit tests for ghost/core: `cd ghost/core && yarn test:unit`
 8. Update the integrity tests with the updated hash, and iterate on the unit tests until they pass.
+
+## Examples
+See [examples.md](examples.md) for example migrations.
+
+## Rules
+See [rules.md](rules.md) for rules that should always be followed when creating database migrations.
