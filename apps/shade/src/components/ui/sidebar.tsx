@@ -233,7 +233,7 @@ const Sidebar = React.forwardRef<
                 />
                 <div
                     className={cn(
-                        'fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] md:flex',
+                        'fixed inset-y-0 top-[var(--sidebar-height-adjustment,0)] z-10 hidden h-[calc(100svh_-_var(--sidebar-height-adjustment,0))] w-[--sidebar-width] md:flex',
                         side === 'left'
                             ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
                             : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
