@@ -1,9 +1,11 @@
 import FakeLogo from '../../../assets/images/explore-default-logo.png';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
+import WelcomeEmailModal from './memberEmails/WelcomeEmailModal';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@src/components/providers/GlobalDataProvider';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const DummyEmail: React.FC<{
     sender: string,
@@ -36,10 +38,13 @@ const DummyEmail: React.FC<{
                 </div>
             </div>
             <Button
-                className='rounded-md border border-grey-200 hover:shadow-xs'
+                className='rounded-md border border-grey-200 font-semibold hover:shadow-xs'
                 color='white'
                 icon='pen'
                 label='Edit'
+                onClick={() => {
+                    NiceModal.show(WelcomeEmailModal);
+                }}
             />
         </div>
     );
