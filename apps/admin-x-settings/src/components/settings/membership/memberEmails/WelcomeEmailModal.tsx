@@ -117,7 +117,7 @@ const WelcomeEmailModal = NiceModal.create(() => {
                         </div>
                     </div>
                 </div>
-                <div className='px-10 py-5 font-serif text-lg [&_a]:underline [&_p]:mb-5'>
+                <div className='px-10 py-5 text-lg tracking-[-0.01em] [&_a]:underline [&_p]:mb-5'>
                     <p className='font-bold'>Welcome! It’s great to have you here.</p>
                     <p>You’ll start getting updates right in your inbox. You can also log in any time to read the full archive or catch up on new posts as they go live.</p>
                     <p>A quick heads-up:</p>
