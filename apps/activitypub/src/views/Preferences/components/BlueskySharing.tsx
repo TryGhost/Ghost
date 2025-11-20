@@ -1,7 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import EditProfile from '@src/views/Preferences/components/EditProfile';
 import Layout from '@src/components/layout';
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -22,17 +22,22 @@ import {AlertDialog,
     LucideIcon,
     buttonVariants} from '@tryghost/shade';
 import {toast} from 'sonner';
-import {useAccountForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useConfirmBlueskyHandleMutationForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
+
+const CONFIRMATION_INTERVAL = 5000;
+const MAX_CONFIRMATION_RETRIES = 12;
 
 const BlueskySharing: React.FC = () => {
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(() => account?.blueskyEnabled && !account?.blueskyHandleConfirmed);
     const [copied, setCopied] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [handleConfirmed, setHandleConfirmed] = useState(false);
+    const retryCountRef = useRef(0);
     const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
     const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
-    const enabled = account?.blueskyEnabled ?? false;
+    const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
 
     const handleCopy = async () => {
         setCopied(true);
@@ -47,9 +52,9 @@ const BlueskySharing: React.FC = () => {
             setLoading(true);
             try {
                 await enableBlueskyMutation.mutateAsync();
-                toast.success('Bluesky sharing enabled');
-            } finally {
+            } catch (error) {
                 setLoading(false);
+                toast.error('Something went wrong, please try again.');
             }
         }
     };
@@ -64,6 +69,62 @@ const BlueskySharing: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const confirmHandle = useCallback(() => {
+        confirmBlueskyHandleMutation.mutateAsync().then((handle) => {
+            if (handle) {
+                setHandleConfirmed(true);
+            }
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty deps - mutations are stable in practice
+
+    useEffect(() => {
+        if (!account?.blueskyEnabled) {
+            setHandleConfirmed(false);
+            setLoading(false);
+            retryCountRef.current = 0;
+
+            return;
+        }
+
+        if (account?.blueskyHandleConfirmed) {
+            setHandleConfirmed(true);
+            setLoading(false);
+
+            // Only show toast on first confirmation
+            if (retryCountRef.current > 0) {
+                toast.success('Bluesky sharing enabled');
+            }
+            retryCountRef.current = 0;
+
+            return;
+        }
+
+        setHandleConfirmed(false);
+        setLoading(true);
+        retryCountRef.current = 0;
+
+        const confirmHandleInterval = setInterval(async () => {
+            retryCountRef.current += 1;
+
+            if (retryCountRef.current > MAX_CONFIRMATION_RETRIES) {
+                clearInterval(confirmHandleInterval);
+
+                toast.error('Something went wrong, please try again.');
+
+                await disableBlueskyMutation.mutateAsync();
+                setLoading(false);
+
+                return;
+            }
+
+            confirmHandle();
+        }, CONFIRMATION_INTERVAL);
+
+        return () => clearInterval(confirmHandleInterval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [account?.blueskyEnabled, account?.blueskyHandleConfirmed, confirmHandle]); // disableBlueskyMutation is stable
 
     if (isLoadingAccount) {
         return (
@@ -80,18 +141,20 @@ const BlueskySharing: React.FC = () => {
         );
     }
 
+    const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed;
+
     return (
         <Layout>
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {enabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                    {showAsEnabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
                         <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
                         <span className='group-hover:hidden'>Enabled</span>
                         <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
                     </Button>}
                 </div>
-                {!enabled ?
+                {!showAsEnabled ?
                     <div className='mt-3 flex flex-col gap-5'>
                         <p className='text-base'>{!account?.avatarUrl ?
                             'Add a profile image to connect to Bluesky. Profile pictures help prevent spam.' :
@@ -111,54 +174,64 @@ const BlueskySharing: React.FC = () => {
                                 </DialogContent>
                             </Dialog>
                         ) : (
-                            <Button className='h-10 text-base' disabled={loading} variant='secondary' onClick={handleEnable}>
-                                {!loading ?
-                                    <><svg height="32" role="img" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
-                                        Enable Bluesky sharing</> :
-                                    <LoadingIndicator size='sm' />
-                                }
-                            </Button>
+                            <>
+                                <Button className='h-10 text-base' disabled={loading} variant='secondary' onClick={handleEnable}>
+                                    {!loading ?
+                                        <><svg height="32" role="img" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
+                                            Enable Bluesky sharing</> :
+                                        <div className='flex items-center gap-2'>
+                                            <LoadingIndicator size='sm' />
+                                            <span>Enabling Bluesky sharing...</span>
+                                        </div>
+                                    }
+                                </Button>
+                                {loading && (
+                                    <p className='-mt-2 text-center text-sm text-gray-700 dark:text-gray-600'>You can leave this page and come back to check the status.</p>
+                                )}
+                            </>
                         )}
                     </div> :
                     <>
                         <p className='mt-2 pr-32 text-base'>Your social web profile is now connected to Bluesky, via <a className="text-purple hover:text-purple-600" href="https://fed.brid.gy" rel="noreferrer" target="_blank">Bridgy Fed</a>. Posts are automatically synced after a short delay to complete activation.</p>
-                        <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
-                            <div className='relative'>
-                                <APAvatar
-                                    author={
-                                        {
-                                            icon: {
-                                                url: account?.avatarUrl || ''
-                                            },
-                                            name: account?.name || '',
-                                            handle: account?.handle || ''
+                        {handleConfirmed && (
+                            <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
+                                <div className='relative'>
+                                    <APAvatar
+                                        author={
+                                            {
+                                                icon: {
+                                                    url: account?.avatarUrl || ''
+                                                },
+                                                name: account?.name || '',
+                                                handle: account?.handle || ''
+                                            }
                                         }
-                                    }
-                                    size='md'
-                                />
-                                <div className='absolute bottom-0 right-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs'>
-                                    <svg height="14" role="img" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
+                                        size='md'
+                                    />
+                                    <div className='absolute bottom-0 right-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs'>
+                                        <svg height="14" role="img" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z" fill="#0385FF" strokeWidth="1"></path></svg>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='flex grow flex-col items-center'>
-                                <H3>{account?.name || ''}</H3>
-                                <div className='flex items-center gap-1 text-gray-800'>
-                                    <span className='text-lg font-medium'>{account?.blueskyHandle}</span>
-                                    <Button className='size-6 p-0 hover:opacity-80' title='Copy handle' variant='link' onClick={handleCopy}>
-                                        {!copied ?
-                                            <LucideIcon.Copy size={16} /> :
-                                            <LucideIcon.Check size={16} />
-                                        }
-                                    </Button>
+                                <div className='flex grow flex-col items-center'>
+                                    <H3>{account?.name || ''}</H3>
+                                    <div className='flex items-center gap-1 text-gray-800'>
+                                        <span className='text-lg font-medium'>{account?.blueskyHandle}</span>
+                                        <Button className='size-6 p-0 hover:opacity-80' title='Copy handle' variant='link' onClick={handleCopy}>
+                                            {!copied ?
+                                                <LucideIcon.Copy size={16} /> :
+                                                <LucideIcon.Check size={16} />
+                                            }
+                                        </Button>
+                                    </div>
                                 </div>
+                                <Button className='mt-2 w-full' size='lg' variant='secondary' asChild>
+                                    <a href={`https://bsky.app/profile/${account?.blueskyHandle?.replace(/^@/, '')}`} rel='noreferrer' target='_blank'>
+                                            Open profile
+                                        <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
+                                    </a>
+                                </Button>
                             </div>
-                            <Button className='mt-2 w-full' size='lg' variant='secondary' asChild>
-                                <a href={`https://bsky.app/profile/${account?.blueskyHandle?.replace(/^@/, '')}`} rel='noreferrer' target='_blank'>
-                                        Open profile
-                                    <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
-                                </a>
-                            </Button>
-                        </div>
+                        )}
                     </>
                 }
             </div>
