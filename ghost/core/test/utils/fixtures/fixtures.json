@@ -517,6 +517,31 @@
                     "object_type": "label"
                 },
                 {
+                    "name": "Browse automated emails",
+                    "action_type": "browse",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Read automated emails",
+                    "action_type": "read",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Edit automated emails",
+                    "action_type": "edit",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Add automated emails",
+                    "action_type": "add",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Delete automated emails",
+                    "action_type": "destroy",
+                    "object_type": "automated_email"
+                },
+                {
                     "name": "Read member signin urls",
                     "action_type": "read",
                     "object_type": "member_signin_url"
@@ -1019,6 +1044,7 @@
                     "member": "all",
                     "product": "all",
                     "label": "all",
+                    "automated_email": "all",
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
@@ -1068,6 +1094,7 @@
                     "member": "all",
                     "member_signin_url": "read",
                     "label": "all",
+                    "automated_email": "all",
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",

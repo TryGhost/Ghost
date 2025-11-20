@@ -1,0 +1,174 @@
+const tpl = require('@tryghost/tpl');
+const errors = require('@tryghost/errors');
+const models = require('../../models');
+
+const messages = {
+    automatedEmailNotFound: 'Automated email not found.',
+    invalidStatus: 'Status must be one of: inactive, active',
+    invalidLexical: 'Lexical must be a valid JSON string',
+    invalidName: 'Name must be "member-welcome-email"'
+};
+
+const ALLOWED_STATUSES = ['inactive', 'active'];
+const ALLOWED_NAMES = ['member-welcome-email'];
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
+    docName: 'automated_emails',
+
+    browse: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'filter',
+            'fields',
+            'limit',
+            'order',
+            'page'
+        ],
+        permissions: true,
+        query(frame) {
+            return models.AutomatedEmail.findPage(frame.options);
+        }
+    },
+
+    read: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'filter',
+            'fields'
+        ],
+        data: [
+            'id'
+        ],
+        permissions: true,
+        async query(frame) {
+            const model = await models.AutomatedEmail.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.automatedEmailNotFound)
+                });
+            }
+
+            return model;
+        }
+    },
+
+    add: {
+        statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: true,
+        async query(frame) {
+            const data = frame.data.automated_emails[0];
+
+            // Validate status
+            if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.invalidStatus)
+                });
+            }
+
+            // Validate name
+            if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.invalidName)
+                });
+            }
+
+            // Validate lexical is valid JSON
+            if (data.lexical) {
+                try {
+                    JSON.parse(data.lexical);
+                } catch (e) {
+                    throw new errors.ValidationError({
+                        message: tpl(messages.invalidLexical)
+                    });
+                }
+            }
+
+            return models.AutomatedEmail.add(data, frame.options);
+        }
+    },
+
+    edit: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const data = frame.data.automated_emails[0];
+
+            // Validate status
+            if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.invalidStatus)
+                });
+            }
+
+            // Validate name
+            if (data.name && !ALLOWED_NAMES.includes(data.name)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.invalidName)
+                });
+            }
+
+            // Validate lexical is valid JSON
+            if (data.lexical) {
+                try {
+                    JSON.parse(data.lexical);
+                } catch (e) {
+                    throw new errors.ValidationError({
+                        message: tpl(messages.invalidLexical)
+                    });
+                }
+            }
+
+            const model = await models.AutomatedEmail.edit(data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.automatedEmailNotFound)
+                });
+            }
+
+            return model;
+        }
+    },
+
+    destroy: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        query(frame) {
+            return models.AutomatedEmail.destroy({...frame.options, require: true});
+        }
+    }
+};
+
+module.exports = controller;
