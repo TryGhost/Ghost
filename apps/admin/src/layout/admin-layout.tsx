@@ -22,7 +22,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     // Contributors get a floating profile menu instead of the full sidebar
     if (isContributor) {
         return (
-            <div className="relative h-screen bg-background">
+            <div className="relative h-full bg-background">
                 <main className="h-full overflow-auto">{children}</main>
                 <div className="fixed bottom-3.5 left-3.5 lg:bottom-8 lg:left-8 z-20">
                     <ContributorUserMenu />
@@ -34,7 +34,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <SidebarProvider open={!!currentUser && sidebarVisible}>
             <AppSidebar />
-            <SidebarInset className="bg-background">
+            <SidebarInset className="bg-background overflow-y-scroll max-h-[calc(100%-var(--mobile-navbar-height))] sidebar:max-h-full">
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>
