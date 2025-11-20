@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { z } from 'zod';
 import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { NavMenuItem } from './NavMenuItem';
+import { Submenu } from './Submenu';
 
 const customViewSchema = z.object({
     name: z.string(),
@@ -69,19 +70,16 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
     return (
         <>
             {customViews.map((view, index) => (
-                <NavMenuItem key={`${view.name}-${view.color}-${index}`}>
-                    <NavMenuItem.Link 
-                        className="pl-9" 
-                        to={`${route}?${buildQueryString(view.filter)}`}
-                        isSubmenuItem
-                    >
-                        <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
-                        <span 
-                            className="size-2 rounded-full shrink-0 mx-0.5" 
-                            style={{ backgroundColor: getColorHex(view.color) }}
-                        />
-                    </NavMenuItem.Link>
-                </NavMenuItem>
+                <Submenu.Item 
+                    key={`${view.name}-${view.color}-${index}`}
+                    to={`${route}?${buildQueryString(view.filter)}`}
+                >
+                    <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
+                    <span 
+                        className="size-2 rounded-full shrink-0 mx-0.5" 
+                        style={{ backgroundColor: getColorHex(view.color) }}
+                    />
+                </Submenu.Item>
             ))}
         </>
     );

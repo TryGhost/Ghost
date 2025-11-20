@@ -15,22 +15,31 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
     );
 }
 
-type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
+type NavMenuLinkBaseProps = {
     to?: string
     target?: string
     rel?: string
     activeOnSubpath?: boolean
+};
+
+type NavMenuLinkInternalProps = {
     /**
      * If true, this link will not show as active when any submenu child is active.
-     * Used for parent links with submenus.
+     * Used internally by Submenu for parent links.
+     * @internal
      */
     suppressWhenChildActive?: boolean
     /**
      * If true, this link will register itself as an active child in the submenu context.
-     * Used for submenu items to suppress parent highlighting.
+     * Used internally by Submenu.Item for child links.
+     * @internal
      */
     isSubmenuItem?: boolean
 };
+
+type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & 
+    NavMenuLinkBaseProps & 
+    NavMenuLinkInternalProps;
 function NavMenuLink({
     to,
     target,
