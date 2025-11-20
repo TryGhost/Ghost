@@ -1,22 +1,19 @@
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
-import SettingsAppProvider, {type OfficialTheme, type UpgradeStatusType} from './components/providers/SettingsAppProvider';
+import SettingsAppProvider, {type UpgradeStatusType} from './components/providers/SettingsAppProvider';
 import SettingsRouter, {loadModals, modalPaths} from './components/providers/SettingsRouter';
 import {DesignSystemApp, type DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import {FrameworkProvider, type TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
-import {type ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     designSystem: DesignSystemAppProps;
-    officialThemes: OfficialTheme[];
-    zapierTemplates: ZapierTemplate[];
     upgradeStatus?: UpgradeStatusType;
 }
 
-export function App({designSystem, officialThemes, zapierTemplates, upgradeStatus}: AppProps) {
+export function App({designSystem, upgradeStatus}: AppProps) {
     return (
-        <SettingsAppProvider officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates}>
+        <SettingsAppProvider upgradeStatus={upgradeStatus}>
             {/* NOTE: we need to have an extra NiceModal.Provider here because the one inside DesignSystemApp
                 is loaded too late for possible modals in RoutingProvider, and it's quite hard to change it at
                 this point */}
@@ -32,10 +29,10 @@ export function App({designSystem, officialThemes, zapierTemplates, upgradeStatu
     );
 }
 
-export function StandaloneApp({framework, designSystem, officialThemes, zapierTemplates, upgradeStatus}: AppProps & {framework: TopLevelFrameworkProps}) {
+export function StandaloneApp({framework, designSystem, upgradeStatus}: AppProps & {framework: TopLevelFrameworkProps}) {
     return (
         <FrameworkProvider {...framework}>
-            <App designSystem={designSystem} officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} />
+            <App designSystem={designSystem} upgradeStatus={upgradeStatus} />
         </FrameworkProvider>
     );
 }
