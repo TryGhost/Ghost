@@ -6,6 +6,7 @@ import SearchableSection from '../../SearchableSection';
 import SpamFilters from '../advanced/SpamFilters';
 import Tiers from './Tiers';
 import TipsAndDonations from '../growth/TipsAndDonations';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -21,6 +22,7 @@ const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
     const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
+    const hasWelcomeEmails = useFeatureFlag('welcomeEmails');
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
@@ -28,7 +30,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            <MemberEmails keywords={searchKeywords.portal} />
+            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.portal} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
