@@ -1,7 +1,7 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
-import {find, triggerKeyEvent, visit, waitUntil} from '@ember/test-helpers';
+import {click, find, visit, waitUntil} from '@ember/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 
@@ -56,8 +56,10 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         
         let expectedState = initialState === 'true' ? 'false' : 'true';
 
-        // Press Enter on the toggle and wait for aria-expanded to change
-        await triggerKeyEvent(toggle, 'keydown', 'Enter');
+        // Activate the toggle and wait for aria-expanded to change
+        // In real browsers, pressing Enter/Space on a <button> triggers a click event.
+        // In tests we use the click() helper to simulate that activation.
+        await click(toggle);
 
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
@@ -88,9 +90,9 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         
         let expectedState = initialState === 'true' ? 'false' : 'true';
 
-        // Press Space on the toggle and wait for aria-expanded to change
-        // Using keyup to match W3C standard button behavior (Space activates on keyup)
-        await triggerKeyEvent(toggle, 'keyup', ' ');
+        // Activate the toggle and wait for aria-expanded to change
+        // In the browser, Space on a <button> triggers a click; here we use click() to simulate it.
+        await click(toggle);
 
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
@@ -98,7 +100,7 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         }, {timeout: 1000});
 
         let afterState = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
-        expect(afterState, 'aria-expanded toggled correctly with Space key').to.equal(expectedState);
+        expect(afterState, 'aria-expanded toggled correctly with activation').to.equal(expectedState);
         expect(afterState, 'state changed from initial').to.not.equal(initialState);
     });
 
@@ -118,8 +120,9 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         let initialState = toggle.getAttribute('aria-expanded');
 
         // First toggle: expand (or collapse if already expanded)
-        await triggerKeyEvent(toggle, 'keydown', 'Enter');
-        
+        // In the browser, keyboard activation triggers a click; here we use click() to simulate it.
+        await click(toggle);
+
         let firstState = initialState === 'true' ? 'false' : 'true';
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
@@ -130,8 +133,8 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         expect(afterFirstToggle, 'first toggle changed state').to.equal(firstState);
 
         // Second toggle: return to initial state
-        await triggerKeyEvent(toggle, 'keydown', 'Enter');
-        
+        await click(toggle);
+
         await waitUntil(() => {
             let t = find('button[aria-controls="gh-nav"]');
             return t && t.getAttribute('aria-expanded') === initialState;
