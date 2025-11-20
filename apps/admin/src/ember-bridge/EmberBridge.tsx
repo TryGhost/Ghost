@@ -80,37 +80,32 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'webhook': 'WebhooksResponseType'
 };
 
-let stateBridgePromise: Promise<StateBridge | undefined> | null = null;
-
 /**
  * Gets the StateBridge, waiting for EmberBridge to load if necessary.
  *
  * This polls indefinitely because we may lazy-load Ember in the future
  * once more of the app is migrated to React.
  *
- * @returns Promise that resolves when StateBridge is available
+ * @returns Function to unsubscribe from the StateBridge polling
  */
-function getStateBridge(): Promise<StateBridge | undefined> {
+function waitForStateBridge(onReady: (stateBridge: StateBridge) => void): () => void {
     if (typeof window === 'undefined') {
-        return Promise.resolve(undefined);
+        return () => {};
     }
 
     if (window.EmberBridge?.state) {
-        return Promise.resolve(window.EmberBridge.state);
+        onReady(window.EmberBridge.state);
+        return () => {};
     }
 
-    if (!stateBridgePromise) {
-        stateBridgePromise = new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (window.EmberBridge?.state) {
-                    clearInterval(interval);
-                    resolve(window.EmberBridge.state);
-                }
-            }, 100);
-        });
-    }
+    const interval = setInterval(() => {
+        if (window.EmberBridge?.state) {
+            clearInterval(interval);
+            onReady(window.EmberBridge.state);
+        }
+    }, 100);
 
-    return stateBridgePromise;
+    return () => clearInterval(interval);
 }
 
 function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
@@ -120,17 +115,17 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
     let unsubscribe: (() => void) | null = null;
     let isMounted = true;
 
-    void getStateBridge().then((stateBridge) => {
-        if (!stateBridge || !isMounted) {
+    const stopPolling = waitForStateBridge((stateBridge) => {
+        if (!isMounted) {
             return;
         }
-
         stateBridge.on(event, handler);
         unsubscribe = () => stateBridge.off(event, handler);
     });
 
     return () => {
         isMounted = false;
+        stopPolling();
         unsubscribe?.();
     };
 }
@@ -222,10 +217,10 @@ function getSidebarVisibility(): boolean {
 
 /**
  * Hook to sync sidebar visibility state from Ember.
- * 
+ *
  * This hook uses useSyncExternalStore to listen to sidebar visibility changes
  * triggered by Ember routes (e.g., hiding the sidebar when entering the editor).
- * 
+ *
  * This is a temporary bridge during the Ember -> React migration and should be
  * removed once the editor is ported to React.
  */
