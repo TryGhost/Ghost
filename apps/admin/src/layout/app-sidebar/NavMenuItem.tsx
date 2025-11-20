@@ -5,6 +5,7 @@ import {
     useSidebar
 } from '@tryghost/shade';
 import { useIsActiveLink } from './useIsActiveLink';
+import { useSubmenuHasActiveChild, useRegisterActiveChild } from './SubmenuContext';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
@@ -19,19 +20,37 @@ type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
     target?: string
     rel?: string
     activeOnSubpath?: boolean
-    childPaths?: string[]
+    /**
+     * If true, this link will not show as active when any submenu child is active.
+     * Used for parent links with submenus.
+     */
+    suppressWhenChildActive?: boolean
+    /**
+     * If true, this link will register itself as an active child in the submenu context.
+     * Used for submenu items to suppress parent highlighting.
+     */
+    isSubmenuItem?: boolean
 };
 function NavMenuLink({
     to,
     target,
     rel,
     activeOnSubpath = false,
-    childPaths,
+    suppressWhenChildActive = false,
+    isSubmenuItem = false,
     children,
     ...props
 }: NavMenuLinkProps) {
     const href = `#/${to}`;
-    const isActive = useIsActiveLink({ path: to, activeOnSubpath, childPaths });
+    const linkIsActive = useIsActiveLink({ path: to, activeOnSubpath });
+    const hasActiveChild = useSubmenuHasActiveChild();
+    
+    // Determine final active state
+    const isActive = suppressWhenChildActive && hasActiveChild ? false : linkIsActive;
+    
+    // Register this link as active child if it's a submenu item
+    useRegisterActiveChild(isSubmenuItem && linkIsActive);
+    
     const { isMobile, setOpenMobile } = useSidebar();
 
     const handleClick = () => {

@@ -4,10 +4,10 @@ interface UseIsActiveLinkOptions {
     path?: string;
     activeOnSubpath?: boolean;
     /**
-     * Array of child paths to check. If any child path is active (exact match),
-     * this link will not be considered active (used for parent links with submenus).
+     * For parent links with submenus: if true, suppress active state when a child is active.
+     * Used with SubmenuContext to avoid parent/child both being highlighted.
      */
-    childPaths?: string[];
+    suppressWhenChildActive?: boolean;
 }
 
 /**
@@ -17,18 +17,13 @@ interface UseIsActiveLinkOptions {
  * - Links WITH query params: Requires EXACT match of all query parameters (order-independent)
  *   Example: "posts?type=draft" only matches "posts?type=draft", not "posts?type=draft&tag=news"
  * 
- * - Links WITHOUT query params (parent links): Match when pathname matches, BUT:
- *   - If childPaths provided and any child is exactly active, parent is NOT active
- *   - Otherwise, parent is active as a fallback
+ * - Links WITHOUT query params (parent links): Match their pathname
+ *   - Use suppressWhenChildActive with SubmenuContext to prevent parent/child both being active
  * 
- * Example scenario with childPaths:
+ * Example with SubmenuProvider:
  * 1. Navigate to "posts" (no params): Only "Posts" parent is active
- * 2. Click "Drafts" (posts?type=draft): Only "Drafts" submenu is active (parent suppressed)
- * 3. Add filter (posts?type=draft&author=john): Only "Posts" parent is active (no child matches, fallback)
- * 4. Click custom view (posts?type=draft&tag=news): Only custom view is active (parent suppressed)
- * 
- * This prevents both parent and child from being highlighted simultaneously while maintaining
- * fallback behavior when filters don't match any defined submenu item.
+ * 2. Click "Drafts" (posts?type=draft): Only "Drafts" is active (parent suppressed by context)
+ * 3. Add filter (posts?author=john): Only "Posts" is active (no child matches, so not suppressed)
  */
 
 /**
@@ -54,7 +49,7 @@ function areSearchParamsEqual(params1: URLSearchParams, params2: URLSearchParams
     return true;
 }
 
-export function useIsActiveLink({ path, activeOnSubpath = false, childPaths = [] }: UseIsActiveLinkOptions): boolean {
+export function useIsActiveLink({ path, activeOnSubpath = false }: UseIsActiveLinkOptions): boolean {
     const location = useLocation();
 
     // Split path into pathname and search params
@@ -81,25 +76,6 @@ export function useIsActiveLink({ path, activeOnSubpath = false, childPaths = []
         return areSearchParamsEqual(targetParams, currentParams);
     }
 
-    // Parent link without query params:
-    // Check if any child path is currently active (exact match)
-    if (childPaths.length > 0) {
-        const currentParams = new URLSearchParams(location.search);
-        
-        for (const childPath of childPaths) {
-            const [, childSearch] = childPath.split('?');
-            
-            // Check if the child has exact query param match
-            if (childSearch) {
-                const childParams = new URLSearchParams(childSearch);
-                if (areSearchParamsEqual(childParams, currentParams)) {
-                    // A child is active, so parent should not be active
-                    return false;
-                }
-            }
-        }
-    }
-
-    // Match when pathname matches (either no query params, or query params but no child matches)
+    // Parent link without query params: match when pathname matches
     return true;
 }

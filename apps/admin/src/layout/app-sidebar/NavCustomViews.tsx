@@ -73,6 +73,7 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
                     <NavMenuItem.Link 
                         className="pl-9" 
                         to={`${route}?${buildQueryString(view.filter)}`}
+                        isSubmenuItem
                     >
                         <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
                         <span 

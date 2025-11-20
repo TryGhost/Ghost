@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React from "react"
 
 import {
     Button,
@@ -15,26 +15,14 @@ import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./NavCustomViews";
-import { useCustomViewPaths } from "./useCustomViewPaths";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
-    const customViewPaths = useCustomViewPaths('posts');
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
-
-    // Collect all child paths for the Posts menu (static + custom views)
-    const postsChildPaths = useMemo(() => {
-        return [
-            'posts?type=draft',
-            'posts?type=scheduled',
-            'posts?type=published',
-            ...customViewPaths
-        ];
-    }, [customViewPaths]);
 
     return (
         <SidebarGroup {...props}>
@@ -57,7 +45,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
                             />
                         </Button>
-                        <NavMenuItem.Link to="posts" childPaths={postsChildPaths}>
+                        <NavMenuItem.Link to="posts" suppressWhenChildActive>
                             <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
@@ -75,19 +63,19 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=draft">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=draft" isSubmenuItem>
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=scheduled">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=scheduled" isSubmenuItem>
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=published">
+                            <NavMenuItem.Link className="pl-9" to="posts?type=published" isSubmenuItem>
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
