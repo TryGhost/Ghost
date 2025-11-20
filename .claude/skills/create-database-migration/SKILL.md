@@ -13,8 +13,9 @@ description: Create a database migration to add a table, add columns to an exist
 4. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/core/server/data/migrations/utils/*`.
 5. Update the schema definition file in `ghost/core/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
 6. Test the migration manually: `yarn knex-migrator migrate --v {version directory} --force`
-7. Run the unit tests for ghost/core: `cd ghost/core && yarn test:unit`
-8. Update the integrity tests with the updated hash, and iterate on the unit tests until they pass.
+7. If adding or dropping a table, update `ghost/core/core/server/data/exporter/table-lists.js` as appropriate.
+8. Run the schema integrity test, and update the hash: `yarn test:single test/unit/server/data/schema/integrity.test.js`
+9. Run unit tests in Ghost core, and iterate until they pass: `cd ghost/core && yarn test:unit`
 
 ## Examples
 See [examples.md](examples.md) for example migrations.
