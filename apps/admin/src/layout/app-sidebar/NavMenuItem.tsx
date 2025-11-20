@@ -5,7 +5,6 @@ import {
     useSidebar
 } from '@tryghost/shade';
 import { useIsActiveLink } from './useIsActiveLink';
-import { useSubmenuHasActiveChild, useRegisterActiveChild } from './SubmenuContext';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (
@@ -15,50 +14,31 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
     );
 }
 
-type NavMenuLinkBaseProps = {
+type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
     to?: string
     target?: string
     rel?: string
     activeOnSubpath?: boolean
+    /**
+     * Optionally override the active state (useful with submenu hooks)
+     */
+    isActive?: boolean
 };
 
-type NavMenuLinkInternalProps = {
-    /**
-     * If true, this link will not show as active when any submenu child is active.
-     * Used internally by Submenu for parent links.
-     * @internal
-     */
-    suppressWhenChildActive?: boolean
-    /**
-     * If true, this link will register itself as an active child in the submenu context.
-     * Used internally by Submenu.Item for child links.
-     * @internal
-     */
-    isSubmenuItem?: boolean
-};
-
-type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & 
-    NavMenuLinkBaseProps & 
-    NavMenuLinkInternalProps;
 function NavMenuLink({
     to,
     target,
     rel,
     activeOnSubpath = false,
-    suppressWhenChildActive = false,
-    isSubmenuItem = false,
+    isActive: isActiveProp,
     children,
     ...props
 }: NavMenuLinkProps) {
     const href = `#/${to}`;
-    const linkIsActive = useIsActiveLink({ path: to, activeOnSubpath });
-    const hasActiveChild = useSubmenuHasActiveChild();
+    const computedActive = useIsActiveLink({ path: to, activeOnSubpath });
     
-    // Determine final active state
-    const isActive = suppressWhenChildActive && hasActiveChild ? false : linkIsActive;
-    
-    // Register this link as active child if it's a submenu item
-    useRegisterActiveChild(isSubmenuItem && linkIsActive);
+    // Use prop if provided, otherwise compute from route
+    const isActive = isActiveProp !== undefined ? isActiveProp : computedActive;
     
     const { isMobile, setOpenMobile } = useSidebar();
 

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { z } from 'zod';
 import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { NavMenuItem } from './NavMenuItem';
-import { Submenu } from './Submenu';
+import { useSubmenuItem } from './Submenu';
 
 const customViewSchema = z.object({
     name: z.string(),
@@ -12,15 +12,6 @@ const customViewSchema = z.object({
     filter: z.record(z.string(), z.string().nullable())
 });
 const customViewsArraySchema = z.array(customViewSchema);
-type CustomView = z.infer<typeof customViewSchema>;
-
-function buildQueryString(filter: CustomView['filter']): string {
-    const params = new URLSearchParams(
-        Object.entries(filter)
-            .filter((entry): entry is [string, string] => entry[1] != null)
-    );
-    return params.toString();
-}
 
 function getColorHex(color: string): string {
     const colorMap: Record<string, string> = {
@@ -70,18 +61,37 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
     return (
         <>
             {customViews.map((view, index) => (
-                <Submenu.Item 
+                <CustomViewItem 
                     key={`${view.name}-${view.color}-${index}`}
-                    to={`${route}?${buildQueryString(view.filter)}`}
-                >
-                    <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
-                    <span 
-                        className="size-2 rounded-full shrink-0 mx-0.5" 
-                        style={{ backgroundColor: getColorHex(view.color) }}
-                    />
-                </Submenu.Item>
+                    route={route}
+                    view={view}
+                />
             ))}
         </>
     );
 }
 
+function CustomViewItem({ route, view }: { route: string; view: z.infer<typeof customViewSchema> }) {
+    const to = `${route}?${buildQueryString(view.filter)}`;
+    const { isActive } = useSubmenuItem(to);
+
+    return (
+        <NavMenuItem>
+            <NavMenuItem.Link className="pl-9" to={to} isActive={isActive}>
+                <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
+                <span 
+                    className="size-2 rounded-full shrink-0 mx-0.5" 
+                    style={{ backgroundColor: getColorHex(view.color) }}
+                />
+            </NavMenuItem.Link>
+        </NavMenuItem>
+    );
+}
+
+function buildQueryString(filter: z.infer<typeof customViewSchema>['filter']): string {
+    const params = new URLSearchParams(
+        Object.entries(filter)
+            .filter((entry): entry is [string, string] => entry[1] != null)
+    );
+    return params.toString();
+}
