@@ -4,7 +4,7 @@ const testUtils = require('../../utils');
 const _ = require('lodash');
 
 const ghostVersion = require('@tryghost/version');
-const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
+const { exportedBodyLatest } = require('../../utils/fixtures/export/body-generator');
 
 // Stuff we are testing
 const exporter = require('../../../core/server/data/exporter');
@@ -24,6 +24,7 @@ describe('Exporter', function () {
             const tables = [
                 'actions',
                 'api_keys',
+                'automated_emails',
                 'benefits',
                 'brute',
                 'collections',
@@ -145,10 +146,10 @@ describe('Exporter', function () {
             ];
 
             excludedSettings.forEach((settingKey) => {
-                should.not.exist(_.find(exportData.data.settings, {key: settingKey}));
+                should.not.exist(_.find(exportData.data.settings, { key: settingKey }));
             });
 
-            should.not.exist(_.find(exportData.data.settings, {key: 'permalinks'}));
+            should.not.exist(_.find(exportData.data.settings, { key: 'permalinks' }));
 
             // should not export sqlite data
             should.not.exist(exportData.data.sqlite_sequence);
