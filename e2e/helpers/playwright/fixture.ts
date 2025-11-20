@@ -17,6 +17,7 @@ export interface User {
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
+    config?: object;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -64,11 +65,12 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define labs as an option that can be set per test or describe block
+    config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
-    ghostInstance: async ({ }, use, testInfo: TestInfo) => {
+    ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.perTestSetup();
+        const ghostInstance = await environmentManager.perTestSetup({config});
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance

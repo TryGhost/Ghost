@@ -11,10 +11,11 @@ module.exports = {
         if (!config.get('memberWelcomeEmailTestInbox')) {
             return false;
         }
+        const cronInterval = config.get('memberWelcomeEmailCronInterval') || '*/5 * * * *';
 
         if (!hasScheduled.processOutbox && !process.env.NODE_ENV.startsWith('test')) {
             jobsService.addJob({
-                at: '0 */5 * * * *',
+                at: `0 ${cronInterval}`,
                 job: path.resolve(__dirname, 'process-outbox.js'),
                 name: 'process-member-welcome-emails'
             });
