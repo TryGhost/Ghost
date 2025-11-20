@@ -35,15 +35,15 @@ describe('Acceptance: Nav Menu Accessibility', function () {
      * Verifies:
      * - Toggle button exists with proper aria-controls attribute
      * - Button has aria-expanded attribute for screen reader support
-     * - Enter key press toggles the aria-expanded state correctly
+     * - Activation (via Enter/Space triggering click) toggles the aria-expanded state correctly
      * - State changes are properly reflected in the DOM
-     * 
+     *
      * This test addresses keyboard navigation requirements for WCAG 2.1 Level AA compliance.
-     * 
+     *
      * @returns {Promise<void>}
      * @see {@link https://github.com/TryGhost/Ghost/issues/25054}
      */
-    it('toggle button is keyboard focusable and toggles aria-expanded', async function () {
+    it('toggle button responds to activation and toggles aria-expanded', async function () {
         // visit a route that renders the primary navigation
         await visit('/site');
 
@@ -53,12 +53,10 @@ describe('Acceptance: Nav Menu Accessibility', function () {
         // Store the initial state
         let initialState = toggle.getAttribute('aria-expanded');
         expect(initialState, 'initial aria-expanded exists').to.exist;
-        
+
         let expectedState = initialState === 'true' ? 'false' : 'true';
 
-        // Activate the toggle and wait for aria-expanded to change
-        // In real browsers, pressing Enter/Space on a <button> triggers a click event.
-        // In tests we use the click() helper to simulate that activation.
+        // Activate toggle; browsers trigger click for Enter/Space on buttons
         await click(toggle);
 
         await waitUntil(() => {
@@ -68,39 +66,6 @@ describe('Acceptance: Nav Menu Accessibility', function () {
 
         let afterState = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
         expect(afterState, 'aria-expanded toggled correctly').to.equal(expectedState);
-        expect(afterState, 'state changed from initial').to.not.equal(initialState);
-    });
-
-    /**
-     * Tests that the Space key activates the navigation toggle button.
-     * Verifies WCAG 2.1.1 Level A requirement that buttons respond to both Enter and Space keys.
-     * 
-     * @returns {Promise<void>}
-     * @see {@link https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html}
-     */
-    it('responds to Space key activation', async function () {
-        await visit('/site');
-
-        let toggle = find('button[aria-controls="gh-nav"]');
-        expect(toggle, 'nav toggle exists').to.exist;
-
-        // Store the initial state
-        let initialState = toggle.getAttribute('aria-expanded');
-        expect(initialState, 'initial aria-expanded exists').to.exist;
-        
-        let expectedState = initialState === 'true' ? 'false' : 'true';
-
-        // Activate the toggle and wait for aria-expanded to change
-        // In the browser, Space on a <button> triggers a click; here we use click() to simulate it.
-        await click(toggle);
-
-        await waitUntil(() => {
-            let t = find('button[aria-controls="gh-nav"]');
-            return t && t.getAttribute('aria-expanded') === expectedState;
-        }, {timeout: 1000});
-
-        let afterState = find('button[aria-controls="gh-nav"]').getAttribute('aria-expanded');
-        expect(afterState, 'aria-expanded toggled correctly with activation').to.equal(expectedState);
         expect(afterState, 'state changed from initial').to.not.equal(initialState);
     });
 
