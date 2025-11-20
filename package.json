@@ -96,7 +96,7 @@
     "inquirer": "8.2.7",
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
-    "nx": "20.8.0",
+    "nx": "22.0.4",
     "patch-package": "8.0.1",
     "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",
