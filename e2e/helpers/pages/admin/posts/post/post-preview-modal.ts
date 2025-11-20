@@ -18,6 +18,7 @@ export class PostPreviewModal {
     readonly webTabButton: Locator;
     readonly emailTabButton: Locator;
     readonly emailPreviewBody: Locator;
+    private readonly emailPreviewFrameBody: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -31,6 +32,12 @@ export class PostPreviewModal {
         this.webTabButton = this.modal.getByRole('button', {name: 'Web'});
         this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
         this.emailPreviewBody = this.emailPreviewFrame.getByTestId('email-preview-body');
+        this.emailPreviewFrameBody = this.emailPreviewFrame.locator('body');
+    }
+
+    async switchToEmailTab(): Promise<void> {
+        await this.emailTabButton.click();
+        await this.emailPreviewFrameBody.waitFor({state: 'attached'});
     }
 
     async content(): Promise<string | null> {
