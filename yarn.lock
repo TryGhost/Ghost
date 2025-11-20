@@ -8938,7 +8938,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.3.6", "@tryghost/errors@1.3.8", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.7", "@tryghost/errors@^1.3.8":
+"@tryghost/errors@1.3.6", "@tryghost/errors@1.3.8", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.8":
   version "1.3.8"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.3.8.tgz#d4212b52e876360b4fa8e303ae13ef86f3e95846"
   integrity sha512-2+4ExAAWM0rFWC7FlzxQMzIvIEQKt/vQLxLyqJqCmAcJa4i2uqUPJHqd/X5BBRuSTuftgca7EAo7adESbHEkZw==
@@ -9050,14 +9050,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-5.1.1.tgz#de490aa9847294ee7de70be816ce21e6b8737f1b"
   integrity sha512-VeQOz36U6J+ZNcgiDSJI+qu7MO2ORN8YtDsZoFxhH/EilCHAGWBURgv2qfx3AP4ScI4KCx+cBjt6gm+u1aYI5A==
 
-"@tryghost/kg-default-cards@10.1.5":
-  version "10.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.1.5.tgz#cd1e98b54ff95d559b620ba88fc49c43fa66c86c"
-  integrity sha512-S4hnyluGJYaXRkoT8Z3cMuHt2XiA/AO3yYVjYDxBZ+5n3iwlomuMwwqa1sK4I8Yt3MwpdGC0By5tx0xD6vKTTA==
+"@tryghost/kg-default-cards@10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.2.0.tgz#1510c109eec308b285c6901d62f078a88258aed6"
+  integrity sha512-Ci4aFtAanAcaGEGqqFVQIDZHrVvdryfy2mAfAR7OB034ImAOcpURgB6OTHvTu7xdna1yutSVMz2kS1ACOSzNIg==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "7.1.3"
-    "@tryghost/string" "0.2.16"
-    "@tryghost/url-utils" "4.4.13"
+    "@tryghost/kg-markdown-html-renderer" "7.1.4"
+    "@tryghost/string" "0.2.17"
+    "@tryghost/url-utils" "4.5.0"
     handlebars "^4.7.6"
     juice "^10.0.0"
     lodash "^4.17.21"
@@ -9154,6 +9154,21 @@
     markdown-it-sup "^2.0.0"
     semver "^7.7.0"
 
+"@tryghost/kg-markdown-html-renderer@7.1.4":
+  version "7.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-7.1.4.tgz#9c0a2e1539e436e64c52fd50ac128c1e9ae94b0f"
+  integrity sha512-+xWKhIe2Rqoq7fdjSdPbgL3Zowxd78lGbPcqdCcXhU8va4nvMX5WkEp/E5Mxociul4SzJCd3hYEtvInD91TcDA==
+  dependencies:
+    "@tryghost/kg-utils" "1.0.33"
+    markdown-it "^14.0.0"
+    markdown-it-footnote "^4.0.0"
+    markdown-it-image-lazy-loading "^2.0.0"
+    markdown-it-lazy-headers "^0.1.3"
+    markdown-it-mark "^4.0.0"
+    markdown-it-sub "^2.0.0"
+    markdown-it-sup "^2.0.0"
+    semver "^7.7.0"
+
 "@tryghost/kg-mobiledoc-html-renderer@7.1.3":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-7.1.3.tgz#297c9a1a04125994d373cf551c5fd9d6d10e5959"
@@ -9186,6 +9201,13 @@
   version "1.0.32"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.32.tgz#e121b90fd42bd1730c0c32e36171ab619b6e331b"
   integrity sha512-fS25Qm4mORKhfXi267Qb+Oyn55vMLT+U05uPB1ql3OQurzBfm6oA3iJAFeSpfrbmV8MtyQ/DOOWRvZamb3DCRg==
+  dependencies:
+    semver "^7.7.0"
+
+"@tryghost/kg-utils@1.0.33":
+  version "1.0.33"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.33.tgz#b35360b8a20c21ba2cba39e4ece478334b119bc9"
+  integrity sha512-FSvwfMALDcTTSVv1NtOy5we+vQb7EEVBDqSr3kLJh9ajW+boU7Yf04srir6fPpgnu96okH39E+/g+f565UYDfw==
   dependencies:
     semver "^7.7.0"
 
@@ -9409,13 +9431,6 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/string@0.2.16":
-  version "0.2.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.2.16.tgz#eaf7e14d9f4c00dfdc4b7e648e366d65e3c9f8cb"
-  integrity sha512-WbshTmmJQViKeRVMFXw3pnIzloMUrloyhCbiV0Tfe4E7dkQ1jvZFvMGCttqZYMSSNsU9dhmBVMpT1HcX+EpifQ==
-  dependencies:
-    unidecode "^0.1.8"
-
 "@tryghost/string@0.2.17":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.2.17.tgz#c5c548865100a4a0ff7cfe854eb49f1bd90e268f"
@@ -9435,23 +9450,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/url-utils@4.4.13":
-  version "4.4.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.13.tgz#763a3ab391680e490e04c47cc5543d58418bf4cf"
-  integrity sha512-OOR1Tkg5ixS1vXfHcohtBvm/JMf3yJa/wi8NoMrlLj4oxf2OZNsXtswtCljF+FsvNC6PduccM3OI900ULoTsDg==
-  dependencies:
-    cheerio "^0.22.0"
-    lodash "^4.17.21"
-    moment "^2.27.0"
-    moment-timezone "^0.5.31"
-    remark "^11.0.2"
-    remark-footnotes "^1.0.0"
-    unist-util-visit "^2.0.0"
-
-"@tryghost/url-utils@4.4.15":
-  version "4.4.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.15.tgz#2f2e82442d7c978f2bb06a3dd1c2626152fbe40d"
-  integrity sha512-6onW6XWDpqBmuFstDiUeq5783RXnBBkBQiqCvT9+WAMnYApYtw1oX0mWda9FGym+kT0gOW7DtwCvseXS/wtNzw==
+"@tryghost/url-utils@4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.5.0.tgz#b4b95303b003f5a6ffe1bc17c037f91b1cb61033"
+  integrity sha512-U5uXE26GWLJwZdE9LxonADDfG4+Dw5gzOSJ0Y4x0SdufA7sbIdVrQoPFUeupp4kDNBf0BiTABogx1ZmTEnBlyw==
   dependencies:
     cheerio "^0.22.0"
     lodash "^4.17.21"
@@ -26504,7 +26506,7 @@ numbered@^1.1.0:
   resolved "https://registry.yarnpkg.com/numbered/-/numbered-1.1.0.tgz#9fcd79564c73a84b9574e8370c3d8e58fe3c133c"
   integrity sha512-pv/ue2Odr7IfYOO0byC1KgBI10wo5YDauLhxY6/saNzAdAs0r1SotGCPzzCLNPL0xtrAwWRialLu23AAu9xO1g==
 
-nwsapi@2.2.12, nwsapi@^2.2.0, nwsapi@^2.2.10, nwsapi@^2.2.12:
+nwsapi@^2.2.0, nwsapi@^2.2.10, nwsapi@^2.2.12:
   version "2.2.12"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.12.tgz#fb6af5c0ec35b27b4581eb3bbad34ec9e5c696f8"
   integrity sha512-qXDmcVlZV4XRtKFzddidpfVP4oMSGhga+xdMc25mv8kaLUHtgzCDhUxkrN8exkGdTlLNaXj7CV3GtON7zuGZ+w==
