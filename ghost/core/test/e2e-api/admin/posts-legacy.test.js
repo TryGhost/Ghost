@@ -1501,9 +1501,9 @@ describe('Posts API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(422)
-            .expect((res) => {
-                res.body.errors[0].message.should.eql('Validation error, cannot edit post.');
-                res.body.errors[0].context.should.eql('Scheduling an email requires a newsletter reference.');
+            .expect((result) => {
+                result.body.errors[0].message.should.eql('Validation error, cannot edit post.');
+                result.body.errors[0].context.should.eql('Scheduling an email requires a newsletter reference.');
             });
     });
 
