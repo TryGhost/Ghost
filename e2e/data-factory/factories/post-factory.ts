@@ -1,6 +1,6 @@
-import {Factory} from '../factory';
+import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateUuid, generateSlug} from '../utils';
+import {generateId, generateSlug, generateUuid} from '@/data-factory';
 
 export interface Post {
     id: string;

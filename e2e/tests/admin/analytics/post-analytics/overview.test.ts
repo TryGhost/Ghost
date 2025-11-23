@@ -1,10 +1,10 @@
-import {test, expect} from '../../../../helpers/playwright';
 import {
     AnalyticsOverviewPage,
-    PostAnalyticsPage,
     PostAnalyticsGrowthPage,
+    PostAnalyticsPage,
     PostAnalyticsWebTrafficPage
-} from '../../../../helpers/pages/admin';
+} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
     test.beforeEach(async ({page}) => {

@@ -1,13 +1,22 @@
 import path from 'path';
+import {fileURLToPath} from 'url';
 
-export const COMPOSE_FILE_PATH = path.resolve(__dirname, '../../compose.yml');
-export const COMPOSE_PROJECT = 'ghost-e2e';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// if not specified this would be the tag of the Ghost project, built at root of the repository
-export const DEFAULT_GHOST_IMAGE = process.env.GHOST_IMAGE_TAG || 'ghost-monorepo';
-export const DEFAULT_WORKDIR = '/home/ghost/ghost/core';
+export const CONFIG_DIR = path.resolve(__dirname, '../../data/state');
 
-export const GHOST_PORT = 2368;
+export const DOCKER_COMPOSE_CONFIG = {
+    FILE_PATH: path.resolve(__dirname, '../../compose.yml'),
+    PROJECT: 'ghost-e2e'
+};
+
+export const GHOST_DEFAULTS = {
+    // if not specified this would be the tag of the Ghost project, built at root of the repository
+    IMAGE: process.env.GHOST_IMAGE_TAG || 'ghost-monorepo',
+    PORT: 2368,
+    WORKDIR: '/home/ghost/ghost/core'
+};
 
 export const MYSQL = {
     HOST: 'mysql',
@@ -16,11 +25,18 @@ export const MYSQL = {
     PASSWORD: 'root'
 };
 
-export const TB = {
+export const TINYBIRD = {
     LOCAL_HOST: 'tinybird-local',
     PORT: 7181,
-    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird'
+    CLI_ENV_PATH: '/mnt/shared-config/.env.tinybird',
+    CONFIG_DIR: CONFIG_DIR
 };
 
-export const STATE_DIR = path.resolve(__dirname, '../../data/state');
+export const PORTAL = {
+    PORT: 4175
+};
+
+export const MAILPIT = {
+    PORT: 1025
+};
 

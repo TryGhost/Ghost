@@ -1,5 +1,5 @@
-import {test, expect} from '../../../helpers/playwright';
-import {TagsPage, TagEditorPage, NewTagsPage} from '../../../helpers/pages/admin';
+import {NewTagsPage, TagEditorPage, TagsPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags Editor', () => {
     test('can add tags', async ({page}) => {
@@ -75,7 +75,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await expect(tagEditor.deleteModal).toBeVisible();
         await tagEditor.confirmDelete();
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
+        await expect(tagEditor.deleteModal).toBeHidden();
         await expect(page).toHaveURL(tagsPage.pageUrl);
         await expect(tagsPage.tagListRow).toHaveCount(1);
     });
@@ -93,9 +93,9 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
         await tagEditor.confirmDelete();
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
+        await expect(tagEditor.deleteModal).toBeHidden();
         await expect(page).toHaveURL(tagsPage.pageUrl);
-        await expect(tagsPage.getTagLinkByName('News')).not.toBeVisible();
+        await expect(tagsPage.getTagLinkByName('News')).toBeHidden();
     });
 
     test('can load tag via slug in url', async ({page}) => {

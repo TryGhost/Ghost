@@ -4,8 +4,6 @@ add|ember-template-lint|no-passed-in-event-handlers|5|4|5|4|3a763e253744b070633b
 add|ember-template-lint|no-invalid-interactive|1|103|1|103|534029ab0ba1b74eff4a2f31c8b4dd9f1460316a|1746489600000|||app/components/gh-context-menu.hbs
 add|ember-template-lint|no-invalid-interactive|5|53|5|53|9647ef6afba919b2af04fe551b0fdf0fb63be849|1746489600000|||app/components/gh-context-menu.hbs
 add|ember-template-lint|no-action|5|18|5|18|0c80a75b2a80d404755333991c266c81c97c9cda|1746489600000|||app/components/gh-date-time-picker.hbs
-add|ember-template-lint|require-input-label|11|16|11|16|36ecd3af7ac0e4bbafbf933cc20ff9f3ff8f0947|1746489600000|||app/components/gh-date-time-picker.hbs
-add|ember-template-lint|require-input-label|29|8|29|8|334a3ea0fb16fabf58967294e125af8437504bdb|1746489600000|||app/components/gh-date-time-picker.hbs
 add|ember-template-lint|no-action|9|19|9|19|d12bcf1144bfb2fe70e7ab0f66836f1c6207a589|1746489600000|||app/components/gh-editor.hbs
 add|ember-template-lint|no-action|10|20|10|20|16d94650de2ffbe8ee3f2ce3ba5ca97a6304b739|1746489600000|||app/components/gh-editor.hbs
 add|ember-template-lint|no-action|11|17|11|17|30d64b1bf8990e2f84c52665690739fcc726e9f7|1746489600000|||app/components/gh-editor.hbs
@@ -190,3 +188,4 @@ remove|ember-template-lint|no-invalid-interactive|74|30|74|30|ffabb36d3b9e207aba
 remove|ember-template-lint|no-unknown-arguments-for-builtin-components|76|32|76|32|571c3d774ed33480f528b54b323b23bfd7148eee|1749427200000|||app/components/gh-nav-menu/main.hbs
 remove|ember-template-lint|no-action|6|108|6|108|ccc38f66549f9baedaa3b9943ae6634ea8f99e69|1746489600000|||app/templates/tags.hbs
 remove|ember-template-lint|no-action|7|110|7|110|c3819ce2b6989e8596be570ed0c9fb82b5012521|1746489600000|||app/templates/tags.hbs
+remove|ember-template-lint|require-valid-alt-text|4|12|4|12|8369d1b06deac93e8c8e05444670c15182aea434|1746489600000|||app/templates/application-error.hbs

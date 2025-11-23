@@ -1,11 +1,10 @@
-import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
-import {HomePage, PublicPage} from '../../helpers/pages/public';
-import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
-import {signupViaPortal} from '../../helpers/playwright/flows/signup';
-import {extractMagicLink} from '../../helpers/services/email/utils';
-import {createPostFactory, PostFactory} from '../../data-factory';
+import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
+import {HomePage, PublicPage} from '@/public-pages';
+import {MemberDetailsPage, MembersPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
+import {PostFactory, createPostFactory} from '@/data-factory';
+import {expect, signupViaPortal, test} from '@/helpers/playwright';
+import {extractMagicLink} from '@/helpers/services/email/utils';
 
 test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;

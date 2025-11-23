@@ -8,10 +8,12 @@ import {Account} from '@src/api/activitypub';
 import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount, abbreviateNumber} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
+import {openLinksInNewTab, stripHtml} from '@src/utils/content-formatters';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import type {ProfileTab} from '../Profile';
 
 const noop = () => {};
@@ -40,10 +42,10 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 }) => {
     const params = useParams<{handle?: string; tab?: string}>();
     const location = useLocation();
-    const navigate = useNavigate();
+    const navigate = useNavigateWithBasePath();
     const {canGoBack} = useNavigationStack();
 
-    const basePath = params.handle ? `/profile/${params.handle}` : '/profile';
+    const profilePath = params.handle ? `/profile/${params.handle}` : '/profile';
     const likesEnabled = !params.handle;
 
     const tabSlug = params.handle
@@ -137,16 +139,16 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         }
 
         if (!allowedTabs.includes(tabSlug as ProfileTab)) {
-            navigate(basePath, {replace: true});
+            navigate(profilePath, {replace: true});
         }
-    }, [allowedTabs, basePath, navigate, tabSlug]);
+    }, [allowedTabs, profilePath, navigate, tabSlug]);
 
     const createTabPath = (tab: ProfileTab) => {
         if (tab === 'posts') {
-            return basePath;
+            return profilePath;
         }
 
-        return `${basePath}/${tab}`;
+        return `${profilePath}/${tab}`;
     };
 
     const handleTabChange = (tab: ProfileTab) => {
@@ -268,7 +270,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                             </div>
                             {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content relative text-[1.5rem] break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
-                                    <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
+                                    <div dangerouslySetInnerHTML={{__html: openLinksInNewTab(stripHtml(account?.bio ?? '', ['a', 'br']))}} /> :
                                     <>
                                         <Skeleton />
                                         <Skeleton className='w-full max-w-48' />

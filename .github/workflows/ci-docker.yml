@@ -182,7 +182,7 @@ jobs:
         id: build
         with:
           context: .
-          file: .docker/Dockerfile
+          file: Dockerfile
           push: ${{ steps.strategy.outputs.should-push }}
           load: ${{ steps.strategy.outputs.should-load }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -286,7 +286,7 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   test_e2e:
-    name: E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [build, setup]
     strategy:
@@ -294,6 +294,8 @@ jobs:
       matrix:
         shardIndex: [1, 2]
         shardTotal: [2]
+        shell: [ember, react]
+    continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -307,7 +309,7 @@ jobs:
         id: build
         with:
           context: .
-          file: .docker/tb-cli/Dockerfile
+          file: docker/tb-cli/Dockerfile
           push: false
           load: true
           tags: ghost-tb-cli
@@ -342,13 +344,14 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+          USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.shell }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -356,7 +359,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shardIndex }}
+          name: test-results-${{ matrix.shell }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 

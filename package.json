@@ -39,6 +39,7 @@
     "reset:data:analytics": "cd ghost/core/core/server/data/tinybird/scripts && node reset-data-tinybird.js",
     "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost",
     "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up --attach=ghost --force-recreate --no-log-prefix",
+    "docker:dev:object-storage": "docker compose -f compose.yml -f compose.object-storage.yml --profile object-storage up --attach=ghost --force-recreate --no-log-prefix",
     "docker:dev:analytics": "docker compose --profile analytics up -d --wait",
     "docker:dev:analytics:stop": "docker compose --profile analytics down",
     "docker:dev:analytics:logs": "docker compose --profile analytics logs -f",
@@ -74,10 +75,11 @@
   },
   "resolutions": {
     "@tryghost/errors": "^1.3.7",
-    "@tryghost/logging": "2.4.23",
+    "@tryghost/logging": "2.5.0",
     "jackspeak": "2.3.6",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "moment-timezone": "0.5.45",
+    "nwsapi": "2.2.12"
   },
   "lint-staged": {
     "*.js": "eslint"
@@ -94,7 +96,7 @@
     "inquirer": "8.2.7",
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
-    "nx": "20.8.0",
+    "nx": "22.0.4",
     "patch-package": "8.0.1",
     "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",

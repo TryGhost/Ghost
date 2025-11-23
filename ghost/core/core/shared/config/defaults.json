@@ -216,7 +216,17 @@
     "stripeDirect": false,
     "enableStripePromoCodes": false,
     "enableTipsAndDonations": true,
-    "emailAnalytics": true,
+    "emailAnalytics": {
+        "enabled": true,
+        "batchProcessing": false,
+        "metrics": {
+            "openThroughput": {
+                "enabled": false,
+                "threshold": 500
+            }
+        },
+        "openedJobLagWarningMinutes": 30
+    },
     "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {
         "emailAnalytics": true,
@@ -292,5 +302,6 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false
+    "disableJSBackups": false,
+    "memberWelcomeEmailTestInbox": ""
 }

@@ -7,12 +7,14 @@ const errors = require('@tryghost/errors');
 module.exports = class MailgunClient {
     #config;
     #settings;
+    #labs;
 
     static DEFAULT_BATCH_SIZE = 1000;
 
-    constructor({config, settings}) {
+    constructor({config, settings, labs}) {
         this.#config = config;
         this.#settings = settings;
+        this.#labs = labs;
     }
 
     /**
@@ -69,7 +71,8 @@ module.exports = class MailgunClient {
                 text: messageContent.plaintext,
                 'recipient-variables': JSON.stringify(recipientData),
                 'h:Sender': message.from,
-                'h:Auto-Submitted': 'auto-generated'
+                'h:Auto-Submitted': 'auto-generated',
+                'h:X-Auto-Response-Suppress': 'OOF, AutoReply'
             };
 
             // Do we have a custom List-Unsubscribe header set?
@@ -106,7 +109,11 @@ module.exports = class MailgunClient {
 
             const mailgunConfig = this.#getConfig();
             startTime = Date.now();
-            const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
+
+            // Use overriden domain if specified in message
+            const mailDomain = message.domainOverride ? message.domainOverride : mailgunConfig.domain;
+
+            const response = await mailgunInstance.messages.create(mailDomain, messageData);
             metrics.metric('mailgun-send-mail', {
                 value: Date.now() - startTime,
                 statusCode: 200
@@ -126,14 +133,14 @@ module.exports = class MailgunClient {
     }
 
     /**
-     * @param {import('mailgun.js').default} mailgunInstance
-     * @param {Object} mailgunConfig
+     * @param {import('mailgun.js').Interfaces.IMailgunClient} mailgunInstance
+     * @param {string} domain - The Mailgun domain to fetch events from
      * @param {Object} mailgunOptions
      */
-    async getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions) {
+    async getEventsFromMailgun(mailgunInstance, domain, mailgunOptions) {
         const startTime = Date.now();
         try {
-            const page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
+            const page = await mailgunInstance.events.get(domain, mailgunOptions);
             metrics.metric('mailgun-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
@@ -153,7 +160,7 @@ module.exports = class MailgunClient {
      * @param {Object} mailgunOptions
      * @param {Function} batchHandler
      * @param {Object} options
-     * @param {Number} options.maxEvents Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+     * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
      * @returns {Promise<void>}
      */
     async fetchEvents(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
@@ -163,8 +170,54 @@ module.exports = class MailgunClient {
             return;
         }
 
-        debug(`[MailgunClient fetchEvents]: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
+        if (!mailgunConfig) {
+            logging.warn(`Mailgun is not configured`);
+            return;
+        }
+
+        // Determine which domains to fetch from
+        const domains = this.#getDomainsToFetch(mailgunConfig);
+
+        // Fetch events from each domain
+        for (const domain of domains) {
+            await this.#fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {maxEvents});
+        }
+    }
+
+    /**
+     * Get list of domains to fetch events from
+     * Returns primary domain, and fallback domain if domain warming is enabled
+     * @param {Object} mailgunConfig
+     * @returns {string[]}
+     */
+    #getDomainsToFetch(mailgunConfig) {
+        const domains = [mailgunConfig.domain];
+
+        // Check if domain warming is enabled
+        if (this.#labs.isSet('domainWarmup')) {
+            const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
+            if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
+                domains.push(fallbackDomain);
+                logging.info(`[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`);
+            }
+        }
+
+        return domains;
+    }
+
+    /**
+     * Fetches events from a specific Mailgun domain
+     * @param {string} domain - The domain to fetch from
+     * @param {import('mailgun.js').Interfaces.IMailgunClient} mailgunInstance
+     * @param {Object} mailgunOptions
+     * @param {Function} batchHandler
+     * @param {Object} options
+     * @param {Number} options.maxEvents
+     * @returns {Promise<void>}
+     */
+    async #fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {maxEvents}) {
+        debug(`[MailgunClient fetchEventsFromDomain]: starting fetching from domain ${domain}`);
         const startDate = new Date();
         const overallStartTime = Date.now();
 
@@ -172,12 +225,12 @@ module.exports = class MailgunClient {
         let totalBatchTime = 0;
 
         try {
-            let page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, mailgunOptions);
+            let page = await this.getEventsFromMailgun(mailgunInstance, domain, mailgunOptions);
 
             // By limiting the processed events to ones created before this job started we cancel early ready for the next job run.
             // Avoids chance of events being missed in long job runs due to mailgun's eventual-consistency creating events outside of our 30min sliding re-check window
             let events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-            debug(`[MailgunClient fetchEvents]: finished fetching first page with ${events.length} events`);
+            debug(`[MailgunClient fetchEventsFromDomain ${domain}]: finished fetching first page with ${events.length} events`);
 
             let eventCount = 0;
             const beginTimestamp = mailgunOptions.begin ? Math.ceil(mailgunOptions.begin * 1000) : undefined; // ceil here if we have rounding errors
@@ -198,23 +251,24 @@ module.exports = class MailgunClient {
                 }
 
                 const nextPageId = page.pages.next.page;
-                debug(`[MailgunClient fetchEvents]: starting fetching next page ${nextPageId}`);
-                page = await this.getEventsFromMailgun(mailgunInstance, mailgunConfig, {
+                debug(`[MailgunClient fetchEventsFromDomain ${domain}]: starting fetching next page ${nextPageId}`);
+                page = await this.getEventsFromMailgun(mailgunInstance, domain, {
                     page: nextPageId,
                     ...mailgunOptions
                 });
 
                 // We need to cap events at the time we started fetching them (see comment above)
                 events = (page?.items?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= startDate);
-                debug(`[MailgunClient fetchEvents]: finished fetching next page with ${events.length} events`);
+                debug(`[MailgunClient fetchEventsFromDomain ${domain}]: finished fetching next page with ${events.length} events`);
             }
 
             const overallEndTime = Date.now();
             const totalDuration = overallEndTime - overallStartTime;
             const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
 
-            logging.info(`[MailgunClient fetchEvents]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
+            logging.info(`[MailgunClient fetchEventsFromDomain ${domain}]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`);
         } catch (error) {
+            logging.error(`[MailgunClient fetchEventsFromDomain ${domain}]: Error fetching events`);
             logging.error(error);
             throw error;
         }
@@ -306,7 +360,7 @@ module.exports = class MailgunClient {
      * Note: if the credentials are not configure, this method returns `null` and it is down to the
      * consumer to act upon this/log this out
      *
-     * @returns {import('mailgun.js')|null} the Mailgun client instance
+     * @returns {import('mailgun.js').Interfaces.IMailgunClient|null} the Mailgun client instance
      */
     getInstance() {
         const mailgunConfig = this.#getConfig();
@@ -315,7 +369,7 @@ module.exports = class MailgunClient {
         }
 
         const formData = require('form-data');
-        const Mailgun = require('mailgun.js');
+        const Mailgun = require('mailgun.js').default;
 
         const baseUrl = new URL(mailgunConfig.baseUrl);
         const mailgun = new Mailgun(formData);

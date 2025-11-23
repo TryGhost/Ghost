@@ -4,6 +4,7 @@ import {
     type AccountSearchResult,
     ActivityPubAPI,
     ActivityPubCollectionResponse,
+    type ExploreAccount,
     type GetAccountFollowsResponse,
     type Notification,
     type Post,
@@ -85,7 +86,7 @@ const QUERY_KEYS = {
     },
     feed: ['feed'],
     inbox: ['inbox'],
-    globalFeed: ['global_feed'],
+    discoveryFeed: ['discovery_feed'],
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
     notifications: (handle: string) => ['notifications', handle],
@@ -98,7 +99,7 @@ function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.globalFeed,
+        QUERY_KEYS.discoveryFeed,
         QUERY_KEYS.postsLikedByAccount,
         QUERY_KEYS.profilePosts(null)
     ];
@@ -168,7 +169,7 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.globalFeed,
+        QUERY_KEYS.discoveryFeed,
         QUERY_KEYS.profilePosts('index')
     ];
 
@@ -496,7 +497,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.globalFeed,
+        QUERY_KEYS.discoveryFeed,
         QUERY_KEYS.profilePosts('index'),
         QUERY_KEYS.postsLikedByAccount
     ];
@@ -748,7 +749,7 @@ export function useBlockMutationForUser(handle: string) {
             );
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
-            queryClient.invalidateQueries({queryKey: QUERY_KEYS.globalFeed});
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.discoveryFeed});
         },
         onError(error: {message: string, statusCode: number}) {
             if (error.statusCode === 429) {
@@ -794,7 +795,7 @@ function updateRepostCache(queryClient: QueryClient, id: string, reposted: boole
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.globalFeed,
+        QUERY_KEYS.discoveryFeed,
         QUERY_KEYS.profilePosts(null)
     ];
 
@@ -1724,18 +1725,18 @@ export function useInboxForUser(options: {enabled: boolean}) {
     return {inboxQuery, updateInboxActivity};
 }
 
-export function useGlobalFeedForUser(options: {enabled: boolean}) {
-    const queryKey = QUERY_KEYS.globalFeed;
+export function useDiscoveryFeedForUser(options: {enabled: boolean; topic: string}) {
+    const queryKey = [...QUERY_KEYS.discoveryFeed, options.topic];
     const queryClient = useQueryClient();
 
-    const globalFeedQuery = useInfiniteQuery({
+    const discoveryFeedQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
         staleTime: 20 * 1000, // 20s
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getGlobalFeed(pageParam).then((response) => {
+            return api.getDiscoveryFeed(options.topic, pageParam).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next
@@ -1747,7 +1748,7 @@ export function useGlobalFeedForUser(options: {enabled: boolean}) {
         }
     });
 
-    const updateGlobalFeedActivity = (id: string, updated: Partial<Activity>) => {
+    const updateDiscoveryFeedActivity = (id: string, updated: Partial<Activity>) => {
         updateActivityInPaginatedCollection(
             queryClient,
             queryKey,
@@ -1757,7 +1758,7 @@ export function useGlobalFeedForUser(options: {enabled: boolean}) {
         );
     };
 
-    return {globalFeedQuery, updateGlobalFeedActivity};
+    return {discoveryFeedQuery, updateDiscoveryFeedActivity};
 }
 
 export function usePostsByAccount(profileHandle: string, options: {enabled: boolean}) {
@@ -1968,6 +1969,7 @@ export function useDeleteMutationForUser(handle: string) {
             const wasLiked = [
                 QUERY_KEYS.feed,
                 QUERY_KEYS.inbox,
+                QUERY_KEYS.discoveryFeed,
                 QUERY_KEYS.profilePosts('index'),
                 QUERY_KEYS.postsLikedByAccount
             ].some((key) => {
@@ -2610,6 +2612,66 @@ export function useExploreProfilesForUser(handle: string) {
     };
 }
 
+export function useExploreProfilesForUserByTopic(handle: string, topic: string) {
+    const queryClient = useQueryClient();
+    const queryKey = [...QUERY_KEYS.exploreProfiles(handle), topic];
+
+    const exploreProfilesQuery = useInfiniteQuery({
+        queryKey,
+        staleTime: 60 * 60 * 1000,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            const response = await api.getExploreAccounts(topic, pageParam);
+
+            // Cache account data for follow mutations
+            response.accounts.forEach((account: ExploreAccount) => {
+                queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+            });
+
+            return {
+                accounts: response.accounts,
+                next: response.next
+            };
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateExploreProfile = (id: string, updated: Partial<Account>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: Array<{accounts: Account[]}>} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            const updatedPages = current.pages.map((page) => {
+                const updatedAccounts = page.accounts.map((profile) => {
+                    if (profile.id === id) {
+                        return {...profile, ...updated};
+                    }
+                    return profile;
+                });
+
+                return {
+                    ...page,
+                    accounts: updatedAccounts
+                };
+            });
+
+            return {
+                ...current,
+                pages: updatedPages
+            };
+        });
+    };
+
+    return {
+        exploreProfilesQuery,
+        updateExploreProfile
+    };
+}
+
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
@@ -2660,18 +2722,23 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-function updateAccountBlueskyCache(queryClient: QueryClient, blueskyHandle: string | null) {
+type BlueskyDetails = {
+    blueskyEnabled: boolean;
+    blueskyHandleConfirmed: boolean;
+    blueskyHandle: string | null;
+}
+
+function updateAccountBlueskyCache(queryClient: QueryClient, blueskyDetails: BlueskyDetails) {
     const profileQueryKey = QUERY_KEYS.account('index');
 
-    queryClient.setQueryData(profileQueryKey, (currentProfile?: {blueskyEnabled: boolean, blueskyHandle: string | null}) => {
+    queryClient.setQueryData(profileQueryKey, (currentProfile?: BlueskyDetails) => {
         if (!currentProfile) {
             return currentProfile;
         }
 
         return {
             ...currentProfile,
-            blueskyEnabled: blueskyHandle !== null,
-            blueskyHandle
+            ...blueskyDetails
         };
     });
 }
@@ -2686,8 +2753,12 @@ export function useEnableBlueskyMutationForUser(handle: string) {
 
             return api.enableBluesky();
         },
-        onSuccess(blueskyHandle: string) {
-            updateAccountBlueskyCache(queryClient, blueskyHandle);
+        onSuccess() {
+            updateAccountBlueskyCache(queryClient, {
+                blueskyEnabled: true,
+                blueskyHandleConfirmed: false,
+                blueskyHandle: null
+            });
 
             // Invalidate the following query as enabling bluesky will cause
             // the account to follow the brid.gy account (and we want this to
@@ -2715,13 +2786,48 @@ export function useDisableBlueskyMutationForUser(handle: string) {
             return api.disableBluesky();
         },
         onSuccess() {
-            updateAccountBlueskyCache(queryClient, null);
+            updateAccountBlueskyCache(queryClient, {
+                blueskyEnabled: false,
+                blueskyHandleConfirmed: false,
+                blueskyHandle: null
+            });
 
             // Invalidate the following query as disabling bluesky will cause
             // the account to unfollow the brid.gy account (and we want this to
             // be reflected in the UI)
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEYS.accountFollows('index', 'following')
+            });
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+        }
+    });
+}
+
+export function useConfirmBlueskyHandleMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.confirmBlueskyHandle();
+        },
+        onSuccess(blueskyHandle: string) {
+            // If the bluesky handle is empty then the handle was not confirmed
+            // so we don't need to update the cache
+            if (blueskyHandle === '') {
+                return;
+            }
+
+            updateAccountBlueskyCache(queryClient, {
+                blueskyEnabled: true,
+                blueskyHandleConfirmed: true,
+                blueskyHandle: blueskyHandle
             });
         },
         onError(error: {message: string, statusCode: number}) {

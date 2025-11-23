@@ -1,13 +1,13 @@
-import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
-import {AnalyticsWebTrafficPage} from '../../../helpers/pages/admin';
-import {HomePage} from '../../../helpers/pages/public';
+import {AnalyticsWebTrafficPage} from '@/admin-pages';
+import {HomePage} from '@/public-pages';
+import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Analytics UTM Tracking', () => {
     test.describe('utmTracking flag disabled', () => {
         test('utm components hidden', async ({page}) => {
             const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
             await analyticsWebTrafficPage.goto();
-            await expect(analyticsWebTrafficPage.campaignsDropdown).not.toBeVisible();
+            await expect(analyticsWebTrafficPage.campaignsDropdown).toBeHidden();
         });
     });
 

@@ -1,10 +1,10 @@
-import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
 import {
+    AnalyticsGrowthPage,
     AnalyticsOverviewPage,
-    AnalyticsWebTrafficPage,
-    AnalyticsGrowthPage
-} from '../../../helpers/pages/admin';
-import {HomePage} from '../../../helpers/pages/public';
+    AnalyticsWebTrafficPage
+} from '@/admin-pages';
+import {HomePage} from '@/public-pages';
+import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Analytics Overview', () => {
     test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {

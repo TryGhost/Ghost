@@ -12,9 +12,9 @@ import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
 import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
-import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
+import {Navigate, Outlet, RouteObject} from '@tryghost/admin-x-framework';
 
-export const APP_ROUTE_PREFIX = '/activitypub';
+const basePath = import.meta.env.VITE_TEST ? '' : 'activitypub';
 
 export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
@@ -24,9 +24,11 @@ export type CustomRouteObject = RouteObject & {
 
 export const routes: CustomRouteObject[] = [
     {
-        // Root route configuration
-        path: '',
+        // Root route that defines the app's base path
+        path: basePath,
+        element: <Outlet />,
         errorElement: <Error />, // This will catch all errors in child routes
+        handle: 'activitypub-basepath',
         children: [
             {
                 index: true,
@@ -67,6 +69,11 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: 'explore',
+                element: <Explore />,
+                pageTitle: 'Explore'
+            },
+            {
+                path: 'explore/:topic',
                 element: <Explore />,
                 pageTitle: 'Explore'
             },

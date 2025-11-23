@@ -1,5 +1,5 @@
-import {UserFactory, User} from '../../data-factory/factories/user-factory';
 import baseDebug from '@tryghost/debug';
+import {User, UserFactory} from '@/data-factory';
 
 const debug = baseDebug('e2e:helpers:utils:setup-user');
 

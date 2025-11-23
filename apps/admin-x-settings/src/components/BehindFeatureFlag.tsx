@@ -1,4 +1,4 @@
-import React, {ReactNode} from 'react';
+import React, {type ReactNode} from 'react';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 
 type BehindFeatureFlagProps = {
