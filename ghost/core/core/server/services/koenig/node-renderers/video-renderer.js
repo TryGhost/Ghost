@@ -25,7 +25,7 @@ function renderVideoNode(node, options = {}) {
 function cardTemplate({node, cardClasses}) {
     const width = node.width;
     const height = node.height;
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
+    const posterSpacerSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg==`;
     const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const hideControlsClass = node.loop ? ' kg-video-hide' : '';
@@ -94,9 +94,8 @@ function emailCardTemplate({node, options, cardClasses}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const emailTemplateMaxWidth = 600;
     const aspectRatio = node.width / node.height;
-    const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
     const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`;
+    const posterSpacerSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg==`;
     const outlookCircleLeft = Math.round((emailTemplateMaxWidth / 2) - 39);
     const outlookCircleTop = Math.round((emailSpacerHeight / 2) - 39);
     const outlookPlayLeft = Math.round((emailTemplateMaxWidth / 2) - 11);
