@@ -144,7 +144,7 @@
         {{/if}}
     </div>
 
-    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
+    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger data-testid="settings-menu-toggle">
         {{#if this.showSettingsMenu}}
             <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
         {{else}}

@@ -2,6 +2,7 @@ const path = require('path');
 const config = require('../../../shared/config');
 const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
+const AASA_PATH = '/.well-known/apple-app-site-association';
 
 function isDeniedFile(file) {
     const deniedFileTypes = ['.hbs', '.md', '.json', '.lock', '.log'];
@@ -54,7 +55,7 @@ function isAllowedFile(file) {
     return allowedFiles.includes(base) || (normalizedFilePath.startsWith(allowedPath) && !alwaysDeny.includes(ext));
 }
 
-function forwardToExpressStatic(req, res, next) {
+function forwardToExpressStatic(req, res, next, options = {}) {
     if (!themeEngine.getActive()) {
         return next();
     }
@@ -73,17 +74,24 @@ function forwardToExpressStatic(req, res, next) {
     ];
     const fallthrough = fallthroughFiles.includes(req.path) ? true : false;
 
-    express.static(themeEngine.getActive().path, {
+    express.static(themeEngine.getActive().path, Object.assign({
         // @NOTE: the maxAge config passed below are in milliseconds and the config
         //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
         maxAge: config.get('caching:theme:maxAge') * 1000,
         fallthrough
-    }
-    )(req, res, next);
+    }, options))(req, res, next);
 }
 
 function staticTheme() {
     return function denyStatic(req, res, next) {
+        if (req.path === AASA_PATH) {
+            return forwardToExpressStatic(req, res, next, {
+                setHeaders(response) {
+                    response.setHeader('Content-Type', 'application/json');
+                }
+            });
+        }
+
         if (!path.extname(req.path)) {
             return next();
         }

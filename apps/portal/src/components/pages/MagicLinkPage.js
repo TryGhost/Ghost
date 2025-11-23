@@ -222,24 +222,25 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, labs, otcRef} = this.context;
+        const {action, actionErrorMessage, otcRef} = this.context;
         const errors = this.state.errors || {};
 
-        if (!labs?.membersSigninOTC || !otcRef) {
+        if (!otcRef) {
             return null;
         }
 
-        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
         const isError = (action === 'verifyOTC:failed');
+
+        const error = (isError && actionErrorMessage) ? actionErrorMessage : errors.otc;
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 <section className='gh-portal-section gh-portal-otp'>
-                    <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${errors.otc && 'error'}`}>
+                    <div className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}>
                         <input
                             id={`input-${OTC_FIELD_NAME}`}
-                            className={`gh-portal-input ${this.state.otc && 'entry'} ${errors.otc && 'error'}`}
+                            className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
                             placeholder='––––––'
                             name={OTC_FIELD_NAME}
                             type="text"
@@ -257,9 +258,9 @@ export default class MagicLinkPage extends React.Component {
                             onBlur={() => this.setState({isFocused: false})}
                         />
                     </div>
-                    {errors.otc &&
+                    {error &&
                         <div className="gh-portal-otp-error">
-                            {errors.otc}
+                            {error}
                         </div>
                     }
                 </section>
@@ -280,8 +281,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     render() {
-        const {labs, otcRef} = this.context;
-        const showOTCForm = labs?.membersSigninOTC && otcRef;
+        const {otcRef} = this.context;
+        const showOTCForm = !!otcRef;
 
         return (
             <div className='gh-portal-content'>

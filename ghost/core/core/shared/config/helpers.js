@@ -65,25 +65,6 @@ const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 };
 
 /**
- * @callback getStaticUrlPrefixFn
- * @param {'images'|'media'|'files'} type
- * @returns {string}
- */
-function getStaticUrlPrefix(type) {
-    switch (type) {
-    case 'images':
-        return 'content/images';
-    case 'media':
-        return 'content/media';
-    case 'files':
-        return 'content/files';
-    default:
-        // eslint-disable-next-line ghost/ghost-custom/no-native-error
-        throw new Error('getStaticUrlPrefix was called with: ' + type);
-    }
-}
-
-/**
  * @callback getContentPathFn
  * @param {string} type - the type of context you want the path for
  * @returns {string}
@@ -117,15 +98,26 @@ const getContentPath = function getContentPath(type) {
 };
 
 /**
+ * Get the path to admin assets, switching between Ember and React admin based on USE_REACT_SHELL env var
+ * @returns {string}
+ */
+const getAdminAssetsPath = function getAdminAssetsPath() {
+    const useReactShell = process.env.USE_REACT_SHELL === 'true';
+    if (useReactShell) {
+        return path.join(this.get('paths:appRoot'), '../../apps/admin/dist');
+    }
+    return this.get('paths:adminAssets');
+};
+
+/**
  * @typedef ConfigHelpers
  * @property {isPrivacyDisabledFn} isPrivacyDisabled
  * @property {getContentPathFn} getContentPath
- * @property {getStaticUrlPrefixFn} getStaticUrlPrefix
  */
 module.exports.bindAll = (nconf) => {
     nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = getContentPath.bind(nconf);
+    nconf.getAdminAssetsPath = getAdminAssetsPath.bind(nconf);
     nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
     nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
-    nconf.getStaticUrlPrefix = getStaticUrlPrefix.bind(nconf);
 };

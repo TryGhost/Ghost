@@ -6,7 +6,7 @@ const OTC_ERROR_REGEX = /Enter code/i;
 
 const setupTest = (options = {}) => {
     const {
-        labs = {membersSigninOTC: false},
+        labs = {},
         otcRef = null,
         action = 'init:success',
         ...contextOverrides
@@ -33,7 +33,7 @@ const setupTest = (options = {}) => {
 // Helper for OTC-enabled tests
 const setupOTCTest = (options = {}) => {
     return setupTest({
-        labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
+        labs: {},
         otcRef: 'test-otc-ref',
         ...options
     });
@@ -77,7 +77,7 @@ describe('MagicLinkPage', () => {
     });
 
     describe('OTC form conditional rendering', () => {
-        test('renders OTC form when lab flag enabled and otcRef exists', () => {
+        test('renders OTC form when otcRef exists', () => {
             const utils = setupOTCTest();
 
             expect(utils.getByLabelText(OTC_LABEL_REGEX)).toBeInTheDocument();
@@ -86,9 +86,7 @@ describe('MagicLinkPage', () => {
 
         test('does not render OTC form when conditions not met', () => {
             const scenarios = [
-                {labs: {membersSigninOTC: false}, otcRef: 'test-ref'},
-                {labs: {membersSigninOTC: true, membersSigninOTCAlpha: true}, otcRef: null},
-                {labs: {membersSigninOTC: false}, otcRef: null}
+                {labs: {}, otcRef: null}
             ];
 
             scenarios.forEach(({labs, otcRef}) => {
@@ -313,9 +311,9 @@ describe('MagicLinkPage', () => {
     });
 
     describe('OTC flow edge cases', () => {
-        test('does not render form without otcRef even with lab flag', () => {
+        test('does not render form without otcRef', () => {
             const utils = setupTest({
-                labs: {membersSigninOTC: true, membersSigninOTCAlpha: true},
+                labs: {},
                 otcRef: null
             });
 
@@ -373,6 +371,83 @@ describe('MagicLinkPage', () => {
                 otc: '123456',
                 otcRef: 'test-otc-ref',
                 redirect: undefined
+            });
+        });
+    });
+
+    describe('OTC verification error handling', () => {
+        test('displays actionErrorMessage message on failed verification', () => {
+            const utils = setupOTCTest({
+                action: 'verifyOTC:failed',
+                actionErrorMessage: 'Invalid verification code'
+            });
+
+            expect(utils.getByText('Invalid verification code')).toBeInTheDocument();
+        });
+
+        test('actionErrorMessage takes precedence over validation errors', () => {
+            const utils = setupOTCTest({
+                action: 'verifyOTC:failed',
+                actionErrorMessage: 'Server error message'
+            });
+
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
+            fireEvent.click(submitButton); // triggers validation
+
+            // Should show server error, not validation error
+            expect(utils.getByText('Server error message')).toBeInTheDocument();
+            expect(utils.queryByText(OTC_ERROR_REGEX)).not.toBeInTheDocument();
+        });
+
+        test('applies error styling when actionErrorMessage is present', () => {
+            const utils = setupOTCTest({
+                action: 'verifyOTC:failed',
+                actionErrorMessage: 'Invalid code'
+            });
+
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
+            const container = otcInput.parentElement;
+
+            expect(container).toHaveClass('error');
+            expect(otcInput).toHaveClass('error');
+        });
+
+        test('does not show actionErrorMessage when action is not failed', () => {
+            const utils = setupOTCTest({
+                action: 'verifyOTC:success',
+                actionErrorMessage: 'This should not appear'
+            });
+
+            expect(utils.queryByText('This should not appear')).not.toBeInTheDocument();
+        });
+
+        test('handles empty actionErrorMessage gracefully', () => {
+            const utils = setupOTCTest({
+                action: 'verifyOTC:failed',
+                actionErrorMessage: '' // empty string
+            });
+
+            // Should not crash, and validation error should show if triggered
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
+            fireEvent.click(submitButton);
+
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
+        });
+
+        test('allows retry after actionErrorMessage is displayed', () => {
+            const {mockDoActionFn, ...utils} = setupOTCTest({
+                action: 'verifyOTC:failed',
+                actionErrorMessage: 'Invalid code'
+            });
+
+            expect(utils.getByText('Invalid code')).toBeInTheDocument();
+
+            // User corrects code and retries
+            fillAndSubmitOTC(utils, '654321');
+
+            expect(mockDoActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '654321',
+                otcRef: 'test-otc-ref'
             });
         });
     });

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
-import i18n, {t} from './utils/i18n';
+import {t} from './utils/i18n';
 
 function displayErrorIfElementExists(errorEl, message) {
     if (errorEl) {
@@ -16,7 +16,7 @@ function handleError(error, form, errorEl) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException}
+    {event, form, errorEl, siteUrl, submitHandler, doAction, captureException}
 ) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
@@ -47,7 +47,7 @@ export async function formSubmitHandler(
         emailType = form.dataset.membersForm;
     }
 
-    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true' && labs?.membersSigninOTC;
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true';
 
     form.classList.add('loading');
     const urlHistory = getUrlHistory();
@@ -107,10 +107,10 @@ export async function formSubmitHandler(
                         email: (email || '').trim(),
                         otcRef
                     });
-                } catch (actionError) {
+                } catch (e) {
                     // eslint-disable-next-line no-console
-                    console.error(actionError);
-                    captureException?.(actionError);
+                    console.error(e);
+                    captureException?.(e);
                 }
             }
         } else {
@@ -125,8 +125,6 @@ export async function formSubmitHandler(
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    i18n.changeLanguage(site.locale || 'en');
-
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -210,8 +208,6 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
     if (!siteUrl) {
         return;
     }
-
-    i18n.changeLanguage(site.locale || 'en');
 
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {

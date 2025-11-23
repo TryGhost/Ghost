@@ -109,7 +109,7 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
+const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
@@ -279,13 +279,6 @@ async function handleStripe() {
         process.exit(0);
     }
     debug('at least one command provided');
-
-    debug('resetting nx');
-    process.env.NX_DISABLE_DB = "true";
-    await exec("yarn nx reset --onlyDaemon");
-    debug('nx reset');
-    await exec("yarn nx daemon --start");
-    debug('nx daemon started');
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 

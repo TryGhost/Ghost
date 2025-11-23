@@ -1,10 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const MagicLink = require('../../../../../../core/server/services/lib/magic-link/MagicLink');
-const crypto = require('crypto');
 
 const sandbox = sinon.createSandbox();
-const secret = crypto.randomBytes(64);
 
 describe('MagicLink', function () {
     let mockSingleUseTokenProvider;
@@ -22,9 +20,6 @@ describe('MagicLink', function () {
             config: {
                 get: sandbox.stub().resolves()
             },
-            labsService: {
-                isSet: sandbox.stub().returns(false)
-            },
             ...overrides
         };
     }
@@ -32,6 +27,7 @@ describe('MagicLink', function () {
     beforeEach(function () {
         mockSingleUseTokenProvider = {
             create: sandbox.stub().resolves('mock-token'),
+            validate: sandbox.stub().resolves({test: 'test-token-data'}),
             getRefByToken: sandbox.stub().resolves('test-token-ref-123'),
             deriveOTC: sandbox.stub().returns('654321')
         };
@@ -47,7 +43,7 @@ describe('MagicLink', function () {
 
     describe('#sendMagicLink', function () {
         it('Throws when passed comma separated emails', async function () {
-            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'one@email.com,two@email.com',
@@ -62,7 +58,7 @@ describe('MagicLink', function () {
         });
 
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
-            const options = buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -96,30 +92,18 @@ describe('MagicLink', function () {
     });
 
     describe('#getDataFromToken', function () {
-        it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
-            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
+        it('Returns the user data from tokenProvider.validate', async function () {
+            const service = new MagicLink(buildOptions());
 
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                }
-            };
+            const data = await service.getDataFromToken({});
 
-            const {token} = await service.sendMagicLink(args);
-            const data = await service.getDataFromToken(token);
-
-            assert.deepEqual(data.id, args.tokenData.id);
+            assert.deepEqual(data, {test: 'test-token-data'});
         });
     });
 
-    describe('#sendMagicLink with labsService', function () {
-        it('should not return otcRef when labsService is provided and flag is enabled but includeOTC is not set', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
+    describe('#sendMagicLink with OTC', function () {
+        it('should not return otcRef when includeOTC is not set', async function () {
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'test@example.com',
@@ -128,45 +112,6 @@ describe('MagicLink', function () {
                 }
             };
 
-            const result = await service.sendMagicLink(args);
-
-            assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-        });
-
-        it('should not return otcRef when labsService flag is disabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            const result = await service.sendMagicLink(args);
-
-            assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-        });
-
-        it('should not return otcRef when labsService is not provided', async function () {
-            const service = new MagicLink(buildOptions({labsService: undefined}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            // Should not throw any errors
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
@@ -177,11 +122,7 @@ describe('MagicLink', function () {
             // No getRefByToken method
             delete mockSingleUseTokenProvider.getRefByToken;
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -201,11 +142,7 @@ describe('MagicLink', function () {
         it('should return otcRef as null when getRefByToken resolves to null', async function () {
             mockSingleUseTokenProvider.getRefByToken.resolves(null);
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
+            const service = new MagicLink(buildOptions());
 
             const args = {
                 email: 'test@example.com',
@@ -223,12 +160,8 @@ describe('MagicLink', function () {
             assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
         });
 
-        it('should include OTC when includeOTC is true and labs flag is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+        it('should include OTC when includeOTC is true', async function () {
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -252,12 +185,8 @@ describe('MagicLink', function () {
             assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
         });
 
-        it('should not include OTC when includeOTC is false even if labs flag is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+        it('should not include OTC when includeOTC is false', async function () {
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -280,34 +209,8 @@ describe('MagicLink', function () {
             assert(options.getSubject.firstCall.calledWithExactly('signin', null));
         });
 
-        it('should not include OTC when includeOTC is true but labs flag is disabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
-            };
-
-            const service = new MagicLink(buildOptions({labsService}));
-
-            const args = {
-                email: 'test@example.com',
-                tokenData: {
-                    id: '420'
-                },
-                includeOTC: true
-            };
-
-            const result = await service.sendMagicLink(args);
-
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert.equal(result.otcRef, null);
-        });
-
         it('should pass OTC to email content functions when OTC is enabled', async function () {
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {
@@ -333,11 +236,7 @@ describe('MagicLink', function () {
         it('should not include OTC when tokenProvider lacks deriveOTC method', async function () {
             delete mockSingleUseTokenProvider.deriveOTC;
 
-            const labsService = {
-                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
-            };
-
-            const options = buildOptions({labsService});
+            const options = buildOptions();
             const service = new MagicLink(options);
 
             const args = {

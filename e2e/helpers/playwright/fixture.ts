@@ -1,24 +1,28 @@
-import {Page, test as base, TestInfo, Browser} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
-import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
-import {SettingsService} from '../services/settings/SettingsService';
-import {appConfig, setupUser} from '../utils';
 import baseDebug from '@tryghost/debug';
+import {AnalyticsOverviewPage} from '@/admin-pages';
+import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
+import {faker} from '@faker-js/faker';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
+import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+export interface User {
+    name: string;
+    email: string;
+    password: string;
+}
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
-}
-
-async function loginToGetAuthenticatedSession(page: Page) {
-    const loginPage = new LoginPage(page);
-    await loginPage.waitForLoginPageAfterUserCreated();
-    await loginPage.signIn(appConfig.auth.email, appConfig.auth.password);
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.header.waitFor({state: 'visible'});
-    debug('Authentication completed for Ghost instance');
+    ghostAccountOwner: User;
+    pageWithAuthenticatedUser: {
+        page: Page;
+        context: BrowserContext;
+        ghostAccountOwner: User
+    };
 }
 
 async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
@@ -27,7 +31,7 @@ async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) 
 
     debug('Updating labs settings:', labsFlags);
     const settingsService = new SettingsService(page.request);
-    await settingsService.updateSettings(labsFlags);
+    await settingsService.updateLabsSettings(labsFlags);
 
     // Reload the page to ensure the new labs settings take effect in the UI
     await page.reload();
@@ -35,11 +39,8 @@ async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) 
     debug('Labs settings applied and page reloaded');
 }
 
-async function setupNewAuthenticatedPage(browser: Browser, baseURL: string) {
+async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
     debug('Setting up authenticated page for Ghost instance:', baseURL);
-
-    // Create user in this Ghost instance
-    await setupUser(baseURL, {email: appConfig.auth.email, password: appConfig.auth.password});
 
     // Create browser context with correct baseURL and extra HTTP headers
     const context = await browser.newContext({
@@ -50,9 +51,10 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string) {
     });
     const page = await context.newPage();
 
-    await loginToGetAuthenticatedSession(page);
+    await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+    debug('Authentication completed for Ghost instance');
 
-    return {page, context};
+    return {page, context, ghostAccountOwner};
 }
 
 /**
@@ -66,33 +68,49 @@ export const test = base.extend<GhostInstanceFixture>({
     ghostInstance: async ({ }, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.setupGhostInstance();
+        const ghostInstance = await environmentManager.perTestSetup();
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
         });
         await use(ghostInstance);
         debug('Tearing down Ghost instance for test:', testInfo.title);
-        await environmentManager.teardownGhostInstance(ghostInstance);
+        await environmentManager.perTestTeardown(ghostInstance);
         debug('Teardown completed for test:', testInfo.title);
     },
     baseURL: async ({ghostInstance}, use) => {
         await use(ghostInstance.baseUrl);
     },
-    page: async ({browser, baseURL, labs}, use) => {
+    // Intermediate fixture that sets up the page and returns all setup data
+    pageWithAuthenticatedUser: async ({browser, baseURL}, use) => {
         if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
 
-        const {page, context} = await setupNewAuthenticatedPage(browser, baseURL);
+        // Create user in this Ghost instance
+        const ghostAccountOwner: User = {
+            name: 'Test User',
+            email: `test${faker.string.uuid()}@ghost.org`,
+            password: 'test@123@test'
+        };
+        await setupUser(baseURL, ghostAccountOwner);
 
+        const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
+        await use(pageWithAuthenticatedUser);
+        await pageWithAuthenticatedUser.context.close();
+    },
+    // Extract the created user from pageWithAuthenticatedUser
+    ghostAccountOwner: async ({pageWithAuthenticatedUser}, use) => {
+        await use(pageWithAuthenticatedUser.ghostAccountOwner);
+    },
+    // Extract the page from pageWithAuthenticatedUser and apply labs settings
+    page: async ({pageWithAuthenticatedUser, labs}, use) => {
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
-            await setupLabSettings(page, labs);
+            await setupLabSettings(pageWithAuthenticatedUser.page, labs);
         }
 
-        await use(page);
-        await context.close();
+        await use(pageWithAuthenticatedUser.page);
     }
 });
 

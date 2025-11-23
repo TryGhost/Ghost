@@ -85,7 +85,7 @@ class MagicLink {
         const url = this.getSigninURL(token, type, options.referrer);
 
         let otc = null;
-        if (this.labsService?.isSet('membersSigninOTC') && options.includeOTC) {
+        if (options.includeOTC) {
             try {
                 otc = await this.getOTCFromToken(token);
             } catch (err) {
@@ -106,7 +106,7 @@ class MagicLink {
         // this if we've successfully generated an OTC to avoid clients showing
         // a token input field when the email doesn't contain an OTC
         let otcRef = null;
-        if (this.labsService?.isSet('membersSigninOTC') && otc) {
+        if (otc) {
             try {
                 otcRef = await this.getRefFromToken(token);
             } catch (err) {
@@ -243,4 +243,3 @@ function defaultGetSubject(type, otc) {
 }
 
 module.exports = MagicLink;
-module.exports.JWTTokenProvider = require('./JWTTokenProvider');

@@ -629,11 +629,18 @@ input[type="image"] {
     position: relative;
 }
 
+
 .show {
+    display: block;
+}
+.gh-app .show {
     display: block !important;
 }
 
 .hidden {
+    display: none;
+}
+.gh-app .hidden {
     visibility: hidden !important;
     display: none !important;
 }
