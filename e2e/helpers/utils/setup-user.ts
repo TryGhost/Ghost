@@ -1,7 +1,5 @@
-import {appConfig} from './app-config';
-import {UserFactory, User} from '../../data-factory/factories/user-factory';
-import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
+import {User, UserFactory} from '@/data-factory';
 
 const debug = baseDebug('e2e:helpers:utils:setup-user');
 
@@ -59,15 +57,4 @@ export class GhostUserSetup {
 export async function setupUser(baseGhostUrl: string, user: Partial<User> = {}): Promise<void> {
     const ghostUserSetup = new GhostUserSetup(baseGhostUrl);
     await ghostUserSetup.setup(user);
-}
-
-export default setupUser;
-
-// Execute only when run directly
-if (require.main === module) {
-    setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password})
-        .catch((error) => {
-            logging.error('Ghost user setup failed:', error.message);
-            process.exit(1);
-        });
 }

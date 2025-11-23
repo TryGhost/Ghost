@@ -3,11 +3,6 @@ import React from 'react';
 import UniversalImportModal from './UniversalImportModal';
 import clsx from 'clsx';
 import {Icon} from '@tryghost/admin-x-design-system';
-import {ReactComponent as MailchimpIcon} from '../../../../assets/icons/mailchimp.svg';
-import {ReactComponent as MediumIcon} from '../../../../assets/icons/medium.svg';
-import {ReactComponent as SquarespaceIcon} from '../../../../assets/icons/squarespace.svg';
-import {ReactComponent as SubstackIcon} from '../../../../assets/icons/substack.svg';
-import {ReactComponent as WordPressIcon} from '../../../../assets/icons/wordpress.svg';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const ImportButton: React.FC<{
@@ -45,42 +40,42 @@ const MigrationToolsImport: React.FC = () => {
         <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
             <ImportButton
                 icon={
-                    <SubstackIcon className='h-[18px] w-auto' />
+                    <Icon className='w-auto' name='substack' size={18} />
                 }
                 title='Substack'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/substack'})}
             />
             <ImportButton
                 icon={
-                    <WordPressIcon className='h-[18px] w-auto' />
+                    <Icon className='w-auto' name='wordpress' size={18} />
                 }
                 title='WordPress'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/wordpress'})}
             />
             <ImportButton
                 icon={
-                    <SquarespaceIcon className='h-[18px] w-auto' />
+                    <Icon className='w-auto' name='squarespace' size={18} />
                 }
                 title='Squarespace'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/squarespace'})}
             />
             <ImportButton
                 icon={
-                    <MediumIcon className='h-[18px] w-auto dark:invert' />
+                    <Icon className='w-auto dark:invert' name='medium' size={18} />
                 }
                 title='Medium'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/medium'})}
             />
             <ImportButton
                 icon={
-                    <MailchimpIcon className='h-5 w-auto' />
+                    <Icon className='w-auto' name='mailchimp' size={20} />
                 }
                 title='Mailchimp'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/mailchimp'})}
             />
             <ImportButton
                 icon={
-                    <Icon className='h-4 w-auto' name='import' />
+                    <Icon className='w-auto' name='import' size={16} />
                 }
                 title='Universal import'
                 onClick={handleImportContent}

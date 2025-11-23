@@ -5,7 +5,7 @@ export default class AdminXActivityPub extends AdminXComponent {
     @service upgradeStatus;
     @service settings;
 
-    static packageName = '@tryghost/admin-x-activitypub';
+    static packageName = '@tryghost/activitypub';
 
     additionalProps = () => ({
         activityPubEnabled: this.settings.socialWebEnabled

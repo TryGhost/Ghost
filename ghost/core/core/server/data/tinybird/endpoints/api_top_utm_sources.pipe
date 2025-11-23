@@ -1,4 +1,5 @@
-TOKEN "stats_page" READ
+TOKEN "stats_page" READ 
+TOKEN "axis" READ
 
 NODE top_utm_sources
 SQL >

@@ -6,7 +6,7 @@ import Web from './views/Stats/Web';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from './hooks/withFeatureFlag';
 
-export const APP_ROUTE_PREFIX = '/analytics';
+export const APP_ROUTE_PREFIX = '/';
 
 // Wrap all components with feature flag protection
 //  e.g.
@@ -14,24 +14,28 @@ export const APP_ROUTE_PREFIX = '/analytics';
 
 export const routes: RouteObject[] = [
     {
-        path: '/',
-        index: true,
-        element: <Overview />
-    },
-    {
-        path: '/web/',
-        element: <Web />
-    },
-    {
-        path: '/locations/',
-        element: <Locations />
-    },
-    {
-        path: '/growth/',
-        element: <Growth />
-    },
-    {
-        path: '/newsletters/',
-        element: <Newsletters />
+        path: 'analytics',
+        children: [
+            {
+                index: true,
+                element: <Overview />
+            },
+            {
+                path: 'web',
+                element: <Web />
+            },
+            {
+                path: 'locations',
+                element: <Locations />
+            },
+            {
+                path: 'growth',
+                element: <Growth />
+            },
+            {
+                path: 'newsletters',
+                element: <Newsletters />
+            }
+        ]
     }
 ];

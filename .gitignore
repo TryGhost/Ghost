@@ -125,7 +125,7 @@ test/functional/*.png
 /ghost/core/core/frontend/public/ghost-stats.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!.docker/caddy/Caddyfile
+!docker/caddy/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
@@ -199,3 +199,5 @@ yalc.lock
 /e2e/playwright
 /e2e/data
 .env.tinybird
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

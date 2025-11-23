@@ -6,22 +6,22 @@ import {fireEvent} from '@testing-library/react';
 
 const setup = async ({site, member = null, showPopup = true}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    ghostApi.init = jest.fn(() => {
+    ghostApi.init = vi.fn(() => {
         return Promise.resolve({
             site,
             member
         });
     });
 
-    ghostApi.member.sendMagicLink = jest.fn(() => {
+    ghostApi.member.sendMagicLink = vi.fn(() => {
         return Promise.resolve('success');
     });
 
-    ghostApi.member.getIntegrityToken = jest.fn(() => {
+    ghostApi.member.getIntegrityToken = vi.fn(() => {
         return Promise.resolve('testtoken');
     });
 
-    ghostApi.member.checkoutPlan = jest.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(() => {
         return Promise.resolve();
     });
 
@@ -42,7 +42,7 @@ const setup = async ({site, member = null, showPopup = true}) => {
 describe('Portal Data links:', () => {
     beforeEach(() => {
         // Mock global fetch
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
             if (url.includes('send-magic-link')) {
                 return Promise.resolve({
                     ok: true,
@@ -74,7 +74,7 @@ describe('Portal Data links:', () => {
 
         // Mock global Stripe
         window.Stripe = () => {};
-        jest.spyOn(window, 'Stripe').mockImplementation(() => {
+        vi.spyOn(window, 'Stripe').mockImplementation(() => {
             return {
                 redirectToCheckout: () => {
                     return Promise.resolve({});
@@ -83,13 +83,13 @@ describe('Portal Data links:', () => {
         });
 
         // Mock window.location
-        let locationMock = jest.fn();
+        let locationMock = vi.fn();
         delete window.location;
         window.location = {assign: locationMock};
         window.location.href = (new URL('https://portal.localhost')).href;
     });
     afterEach(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
         window.location.hash = '';
     });
     describe('#/portal', () => {

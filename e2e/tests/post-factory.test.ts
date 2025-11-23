@@ -1,6 +1,6 @@
-import {test, expect} from '../helpers/playwright';
-import {createPostFactory} from '../data-factory';
-import type {PostFactory} from '../data-factory';
+import {createPostFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
+import type {PostFactory} from '@/data-factory';
 
 test.describe('Post Factory API Integration', () => {
     let postFactory: PostFactory;

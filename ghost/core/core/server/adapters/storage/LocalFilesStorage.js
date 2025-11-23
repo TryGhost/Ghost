@@ -1,6 +1,7 @@
 // # Local File System Storage module
 // The (default) module for storing media, using the local file system
 const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
 const LocalStorageBase = require('./LocalStorageBase');
 
 const messages = {
@@ -14,7 +15,7 @@ class LocalFilesStorage extends LocalStorageBase {
         super({
             storagePath: config.getContentPath('files'),
             siteUrl: config.getSiteUrl(),
-            staticFileURLPrefix: config.getStaticUrlPrefix('files'),
+            staticFileURLPrefix: urlUtils.STATIC_FILES_URL_PREFIX,
             errorMessages: messages
         });
     }

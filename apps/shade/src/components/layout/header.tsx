@@ -11,7 +11,10 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
 interface HeaderAboveProps extends PropsWithChildrenAndClassName {}
 function HeaderAbove({className, children}: HeaderAboveProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:above]', className)}>
+        <div
+            className={cn('flex items-center gap-2 [grid-area:above]', className)}
+            data-header='header-above'
+        >
             {children}
         </div>
     );
@@ -25,6 +28,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
                 'text-2xl leading-[1.2em] lg:text-3xl [grid-area:title]',
                 className
             )}
+            data-header='header-title'
         >
             {children}
         </H1>
@@ -34,7 +38,22 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
 interface HeaderMetaProps extends PropsWithChildrenAndClassName {}
 function HeaderMeta({className, children}: HeaderMetaProps) {
     return (
-        <div className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}>
+        <div
+            className={cn('flex items-center justify-start text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}
+            data-header='header-meta'
+        >
+            {children}
+        </div>
+    );
+}
+
+interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
+function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
+    return (
+        <div
+            className={cn('flex items-center gap-2', className)}
+            data-header='header-action-group'
+        >
             {children}
         </div>
     );
@@ -43,15 +62,22 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
 interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
 function HeaderActions({className, children}: HeaderActionsProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:actions] sm:justify-self-end self-start', className)}>
+        <div
+            className={cn('flex items-center gap-4 [grid-area:actions] sm:justify-self-end self-start', className)}
+            data-header='header-actions'
+        >
             {children}
         </div>
     );
 }
+
 interface HeaderNavProps extends PropsWithChildrenAndClassName {}
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
-        <div className={cn('flex items-center gap-2 [grid-area:nav] self-start mt-2 lg:mt-0.5', className)}>
+        <div
+            className={cn('flex items-center gap-2 [grid-area:nav] self-start mt-2 lg:mt-0.5', className)}
+            data-header='header-nav'
+        >
             {children}
         </div>
     );
@@ -71,7 +97,10 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
 function Header({className, children, variant}: HeaderProps) {
     return (
-        <header className={cn(headerVariants({variant, className}))}>
+        <header
+            className={cn(headerVariants({variant, className}))}
+            data-header='header'
+        >
             {children}
         </header>
     );
@@ -80,6 +109,7 @@ function Header({className, children, variant}: HeaderProps) {
 Header.Above = HeaderAbove;
 Header.Title = HeaderTitle;
 Header.Actions = HeaderActions;
+Header.ActionGroup = HeaderActionGroup;
 Header.Nav = HeaderNav;
 Header.Meta = HeaderMeta;
 

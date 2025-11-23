@@ -1,5 +1,5 @@
-import {test, expect} from '../../../helpers/playwright';
-import {AnalyticsLocationsPage} from '../../../helpers/pages/admin';
+import {AnalyticsLocationsPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Locations', () => {
     test('empty sources card', async ({page}) => {

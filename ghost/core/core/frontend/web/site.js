@@ -9,6 +9,7 @@ const config = require('../../shared/config');
 const storage = require('../../server/adapters/storage');
 const urlUtils = require('../../shared/url-utils');
 const sitemapHandler = require('../services/sitemap/handler');
+const serveFavicon = require('./routers/serve-favicon');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
@@ -22,8 +23,8 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
-const STATIC_MEDIA_URL_PREFIX = `/${config.getStaticUrlPrefix('media')}`;
-const STATIC_FILES_URL_PREFIX = `/${config.getStaticUrlPrefix('files')}`;
+const STATIC_MEDIA_URL_PREFIX = `/${urlUtils.STATIC_MEDIA_URL_PREFIX}`;
+const STATIC_FILES_URL_PREFIX = `/${urlUtils.STATIC_FILES_URL_PREFIX}`;
 
 let router;
 
@@ -62,7 +63,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    siteApp.use(mw.serveFavicon());
+    serveFavicon(siteApp);
 
     // Serve sitemap.xsl file
     siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));

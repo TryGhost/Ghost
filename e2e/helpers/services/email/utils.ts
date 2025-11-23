@@ -1,12 +1,13 @@
 import baseDebug from '@tryghost/debug';
+import {EmailMessageDetailed} from './mail-pit';
 
 const debug = baseDebug('e2e:helpers:utils:email');
 
-// Look for magic link pattern in the email body
+// Look for magic link pattern in the email message body
 // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
-export function extractMagicLink(body: string): string {
+export function extractMagicLink(emailMessageBody: string): string {
     const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
-    const matches = body.match(magicLinkRegex);
+    const matches = emailMessageBody.match(magicLinkRegex);
 
     if (matches && matches.length > 0) {
         const magicLink = matches[0];
@@ -25,4 +26,15 @@ export function extractMagicLink(body: string): string {
     }
 
     throw new Error('No magic link found in email');
+}
+
+export function extractPasswordResetLink(message: EmailMessageDetailed): string {
+    const html = message.HTML || '';
+    const match = html.match(/href="([^"]*\/ghost\/reset\/[^"]+)"/);
+
+    if (!match) {
+        throw new Error(`No reset URL found in email HTML`);
+    }
+
+    return match[1];
 }

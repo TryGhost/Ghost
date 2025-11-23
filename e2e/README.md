@@ -15,16 +15,13 @@ From the repository root:
 # Install dependencies
 yarn
 
-# Build Docker images
-yarn docker:build
-
 # Run the e2e tests
 yarn test:e2e
 ```
 
 ### Running Specific Tests
 
-Within `e2e` folder, run one of the following commands: 
+Within `e2e` folder, run one of the following commands:
 
 ```bash
 # All tests
@@ -39,6 +36,18 @@ yarn test --grep "homepage"
 # With browser visible (for debugging)
 yarn test --debug
 ```
+
+### Testing with React Admin Shell
+
+To run e2e tests against the new React admin shell instead of the Ember admin:
+
+From the repository root:
+
+```bash
+USE_REACT_SHELL=true yarn test:e2e
+```
+
+This builds the React admin (`apps/admin`) and configures Ghost to serve it at `/ghost/` instead of the Ember admin.
 
 ## Tests Development
 

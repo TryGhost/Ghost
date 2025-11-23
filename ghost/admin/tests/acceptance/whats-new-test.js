@@ -73,35 +73,35 @@ describe('Acceptance: What\'s new', function () {
             custom_excerpt: 'This is an exciting new feature',
             published_at: '2024-01-15T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/new-feature',
-            featured: true
+            featured: 'true'
         },
         old: {
             title: 'Old Update',
             custom_excerpt: 'This is old',
             published_at: '2018-12-01T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/old-feature',
-            featured: true
+            featured: 'true'
         },
         newNonFeatured: {
             title: 'Non-Featured Update',
             custom_excerpt: 'This is not featured',
             published_at: '2024-01-15T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/regular-feature',
-            featured: false
+            featured: 'false'
         },
         newRegular: {
             title: 'New Update',
             custom_excerpt: 'New feature',
             published_at: '2024-01-15T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/new',
-            featured: false
+            featured: 'false'
         },
         latest: {
             title: 'Latest Update',
             custom_excerpt: 'Latest feature',
             published_at: '2024-01-15T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/latest',
-            featured: true,
+            featured: 'true',
             feature_image: 'https://ghost.org/image1.jpg'
         },
         previous: {
@@ -109,14 +109,14 @@ describe('Acceptance: What\'s new', function () {
             custom_excerpt: 'Previous feature',
             published_at: '2024-01-10T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/previous',
-            featured: false
+            featured: 'false'
         },
         latestNonFeatured: {
             title: 'Latest Update',
             custom_excerpt: 'Latest feature',
             published_at: '2024-01-15T12:00:00.000+00:00',
             url: 'https://ghost.org/changelog/latest',
-            featured: false
+            featured: 'false'
         }
     };
 

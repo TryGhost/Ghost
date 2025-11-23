@@ -8,7 +8,6 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {camelize} from '@ember/string';
 import {inject} from 'ghost-admin/decorators/inject';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -122,19 +121,6 @@ const fetchComponent = function (packageName) {
     return {read};
 };
 
-const emberDataTypeMapping = {
-    IntegrationsResponseType: {type: 'integration'},
-    InvitesResponseType: {type: 'invite'},
-    OffersResponseType: {type: 'offer'},
-    NewslettersResponseType: {type: 'newsletter'},
-    RecommendationResponseType: {type: 'recommendation'},
-    SettingsResponseType: {type: 'setting', singleton: true},
-    ThemesResponseType: {type: 'theme'},
-    TiersResponseType: {type: 'tier'},
-    UsersResponseType: {type: 'user'},
-    CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
-};
-
 // Abstract class which AdminX components should inherit from
 export default class AdminXComponent extends Component {
     @service ajax;
@@ -146,6 +132,7 @@ export default class AdminXComponent extends Component {
     @service router;
     @service membersUtils;
     @service themeManagement;
+    @service stateBridge;
 
     @inject config;
 
@@ -162,102 +149,6 @@ export default class AdminXComponent extends Component {
 
         // don't rethrow, app should attempt to gracefully recover
     }
-
-    onUpdate = (dataType, response) => {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
-            return;
-        }
-
-        const {type, singleton} = emberDataTypeMapping[dataType];
-
-        if (singleton) {
-            // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
-            this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
-                this.store,
-                this.store.modelFor(type),
-                response,
-                null,
-                'queryRecord'
-            ));
-        } else {
-            this.store.pushPayload(type, response);
-        }
-
-        if (dataType === 'SettingsResponseType') {
-            // Blog title is based on settings, but the one stored in config is used instead in various places
-            this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
-
-            this.settings.reload();
-        }
-
-        if (dataType === 'TiersResponseType') {
-            // membersUtils has local state which needs to be updated
-            this.membersUtils.reload();
-        }
-
-        if (dataType === 'ThemesResponseType') {
-            const activated = response.themes.find(theme => theme.active);
-
-            if (activated) {
-                const previouslyActive = this.store.peekAll('theme').find(theme => theme.active && theme.name !== activated.name);
-                previouslyActive?.set('active', false);
-
-                const newlyActive = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
-                newlyActive?.set('active', true);
-                this.themeManagement.activeTheme = newlyActive;
-            }
-        }
-    };
-
-    onInvalidate = (dataType) => {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
-            return;
-        }
-
-        const {type, singleton} = emberDataTypeMapping[dataType];
-
-        if (singleton) {
-            // eslint-disable-next-line no-console
-            console.warn(`An AdminX mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
-            return;
-        }
-
-        run(() => this.store.unloadAll(type));
-
-        if (dataType === 'TiersResponseType') {
-            // membersUtils has local state which needs to be updated
-            this.membersUtils.reload();
-        }
-    };
-
-    onDelete = (dataType, id) => {
-        if (!(dataType in emberDataTypeMapping)) {
-            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
-        }
-
-        // Skip processing if mapping is explicitly set to null
-        if (emberDataTypeMapping[dataType] === null) {
-            return;
-        }
-
-        const {type} = emberDataTypeMapping[dataType];
-
-        const record = this.store.peekRecord(type, id);
-
-        if (record) {
-            record.unloadRecord();
-        }
-    };
 
     externalNavigate = ({route, models = []}) => {
         if (!route.startsWith('/')) {
@@ -301,13 +192,13 @@ export default class AdminXComponent extends Component {
                     <Suspense fallback={fallback}>
                         <this.AdminXApp
                             framework={{
-                                ghostVersion: config.APP.version,
+                                ghostVersion: this.feature.inAdminForward ? '' : config.APP.version,
                                 externalNavigate: this.externalNavigate,
                                 unsplashConfig: defaultUnsplashHeaders,
                                 sentryDSN: this.config.sentry_dsn ?? null,
-                                onUpdate: this.onUpdate,
-                                onInvalidate: this.onInvalidate,
-                                onDelete: this.onDelete
+                                onUpdate: this.stateBridge.onUpdate,
+                                onInvalidate: this.stateBridge.onInvalidate,
+                                onDelete: this.stateBridge.onDelete
                             }}
                             designSystem={{
                                 fetchKoenigLexical: fetchKoenigLexical,

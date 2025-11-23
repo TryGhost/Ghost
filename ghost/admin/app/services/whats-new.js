@@ -46,7 +46,7 @@ export default Service.extend({
         }
 
         let [latestEntry] = this.entries;
-        return latestEntry.featured;
+        return latestEntry.featured === 'true';
     }),
 
     seen: action(function () {

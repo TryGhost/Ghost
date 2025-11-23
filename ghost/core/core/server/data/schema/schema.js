@@ -1,7 +1,7 @@
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
  * New/Updated column maxlengths should meet these guidlines
- * 
+ *
  * Small strings = length 50
  * Medium strings = length 191
  * Large strings = length 2000 (use soft limits via validation for 191-2000)
@@ -838,6 +838,7 @@ module.exports = {
         error: {type: 'string', maxlength: 2000, nullable: true},
         error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        csd_email_count: {type: 'integer', nullable: true, unsigned: true},
         delivered_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         opened_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         failed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
@@ -866,6 +867,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email_id: {type: 'string', maxlength: 24, nullable: false, references: 'emails.id'},
         provider_id: {type: 'string', maxlength: 255, nullable: true},
+        fallback_sending_domain: {type: 'boolean', nullable: false, defaultTo: false},
         status: {
             type: 'string',
             maxlength: 50,
@@ -925,7 +927,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         first_used_at: {type: 'dateTime', nullable: true},
-        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        otc_used_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     snippets: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1114,5 +1117,19 @@ module.exports = {
         recommendation_id: {type: 'string', maxlength: 24, nullable: false, references: 'recommendations.id', unique: false, cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', unique: false, setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    outbox: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        event_type: {type: 'string', maxlength: 50, nullable: false},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending'},
+        payload: {type: 'text', maxlength: 65535, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        retry_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        last_retry_at: {type: 'dateTime', nullable: true},
+        message: {type: 'string', maxlength: 2000, nullable: true},
+        '@@INDEXES@@': [
+            ['event_type', 'status', 'created_at']
+        ]
     }
 };

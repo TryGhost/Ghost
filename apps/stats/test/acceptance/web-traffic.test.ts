@@ -1,4 +1,4 @@
-import WebTrafficTab from './pages/WebTrafficTab.ts';
+import WebTrafficTab from './pages/web-traffic-tab.ts';
 import {addAnalyticsEvent, statsConfig} from '../utils/tinybird-helpers.ts';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';

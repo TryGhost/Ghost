@@ -17,6 +17,7 @@ const messages = {
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
 const EmailAddressParser = require('../email-address/EmailAddressParser');
+const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -129,6 +130,15 @@ module.exports = class GhostMailer {
         }
 
         const messageToSend = createMessage(message);
+        if (this.state.usingMailgun) {
+            const tags = this.getTags();
+            if (tags.length > 0) {
+                messageToSend['o:tag'] = tags;
+            }
+            if (settingsCache.get('email_track_opens')) {
+                messageToSend['o:tracking-opens'] = true;
+            }
+        }
 
         const response = await this.sendMail(messageToSend);
 
@@ -183,5 +193,16 @@ module.exports = class GhostMailer {
         }
 
         return tpl(messages.messageSent);
+    }
+
+    getTags() {
+        const tagList = [...DEFAULT_TAGS];
+
+        const siteId = config.get('hostSettings:siteId');
+        if (siteId) {
+            tagList.push(`blog-${siteId}`);
+        }
+
+        return tagList;
     }
 };

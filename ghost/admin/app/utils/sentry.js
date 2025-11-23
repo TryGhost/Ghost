@@ -135,11 +135,6 @@ export function beforeSend(event, hint) {
             delete event.tags.ajax_url;
         }
 
-        // Do not report posthog-js errors to Sentry
-        if (originalException?.stack?.includes('/posthog-js/')) {
-            return null;
-        }
-
         return event;
     } catch (error) {
         console.error('Error in beforeSend:', error); // eslint-disable-line no-console
