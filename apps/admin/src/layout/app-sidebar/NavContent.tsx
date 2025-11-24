@@ -15,11 +15,13 @@ import NavSubMenu from "./NavSubMenu";
 import { useMemberCount } from "./hooks/useMemberCount";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./NavCustomViews";
+import { useEmberRouting } from "@/ember-bridge";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
+    const routing = useEmberRouting();
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -45,7 +47,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
                             />
                         </Button>
-                        <NavMenuItem.Link to="posts">
+                        <NavMenuItem.Link 
+                            to={routing.getRouteUrl('posts')}
+                            isActive={routing.isRouteActive('posts')}
+                        >
                             <LucideIcon.PenLine className="opacity-0 sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 pointer-events-none transition-all" />
                             <NavMenuItem.Label>Posts</NavMenuItem.Label>
                         </NavMenuItem.Link>
@@ -63,19 +68,31 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=draft">
+                            <NavMenuItem.Link 
+                                className="pl-9" 
+                                to="posts?type=draft"
+                                isActive={routing.isRouteActive('posts', {type: 'draft'})}
+                            >
                                 <NavMenuItem.Label>Drafts</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=scheduled">
+                            <NavMenuItem.Link 
+                                className="pl-9" 
+                                to="posts?type=scheduled"
+                                isActive={routing.isRouteActive('posts', {type: 'scheduled'})}
+                            >
                                 <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link className="pl-9" to="posts?type=published">
+                            <NavMenuItem.Link 
+                                className="pl-9" 
+                                to="posts?type=published"
+                                isActive={routing.isRouteActive('posts', {type: 'published'})}
+                            >
                                 <NavMenuItem.Label>Published</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
@@ -84,7 +101,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavSubMenu>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link to="pages">
+                        <NavMenuItem.Link 
+                            to={routing.getRouteUrl('pages')}
+                            isActive={routing.isRouteActive('pages')}
+                        >
                             <LucideIcon.File />
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>
                         </NavMenuItem.Link>
@@ -92,7 +112,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     {showTags && (
                         <NavMenuItem>
-                            <NavMenuItem.Link to="tags">
+                            <NavMenuItem.Link 
+                                to="tags"
+                                isActive={routing.isRouteActive(['tags', 'tag', 'tag.new'])}
+                            >
                                 <LucideIcon.Tag />
                                 <NavMenuItem.Label>Tags</NavMenuItem.Label>
                             </NavMenuItem.Link>
@@ -101,7 +124,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     {showMembers && (
                         <NavMenuItem>
-                            <NavMenuItem.Link to="members" activeOnSubpath>
+                            <NavMenuItem.Link 
+                                to={routing.getRouteUrl('members')}
+                                isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
+                            >
                                 <LucideIcon.Users />
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>

@@ -42,6 +42,8 @@ function createMockStateBridge(sidebarVisible = true) {
         on: on as StateBridge['on'],
         off: off as StateBridge['off'],
         sidebarVisible,
+        getRouteUrl: vi.fn(),
+        isRouteActive: vi.fn(),
     };
 
     return {
@@ -51,21 +53,26 @@ function createMockStateBridge(sidebarVisible = true) {
     };
 }
 
+declare global {
+    interface Window {
+        EmberBridge?: { state: StateBridge };
+    }
+}
+
 let useEmberDataSync: typeof import('./EmberBridge').useEmberDataSync;
 let useEmberAuthSync: typeof import('./EmberBridge').useEmberAuthSync;
 let useSidebarVisibility: typeof import('./EmberBridge').useSidebarVisibility;
-type EmberBridgeWindow = typeof window & { EmberBridge?: { state: StateBridge } };
-const windowWithBridge = window as EmberBridgeWindow;
+let useEmberRouting: typeof import('./EmberBridge').useEmberRouting;
 
 beforeEach(async () => {
     vi.resetModules();
     vi.useRealTimers();
-    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility } = await import('./EmberBridge'));
-    delete windowWithBridge.EmberBridge;
+    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility, useEmberRouting } = await import('./EmberBridge'));
+    delete window.EmberBridge;
 });
 
 afterEach(() => {
-    delete windowWithBridge.EmberBridge;
+    delete window.EmberBridge;
     vi.clearAllTimers();
     vi.useRealTimers();
 });
@@ -73,7 +80,7 @@ afterEach(() => {
 describe('useEmberDataSync', () => {
     queryTest('invalidates queries for mapped Ember models', async ({ queryClient, wrapper }) => {
         const mock = createMockStateBridge();
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
         queryClient.setQueryData(['PostsResponseType', '/posts/123'], { posts: [{ id: '123' }] });
@@ -109,7 +116,7 @@ describe('useEmberDataSync', () => {
 
     queryTest('ignores unmapped Ember models', async ({ queryClient, wrapper }) => {
         const mock = createMockStateBridge();
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
         const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
         renderHook(() => useEmberDataSync(), { wrapper });
@@ -137,7 +144,7 @@ describe('useEmberDataSync', () => {
         const { unmount } = renderHook(() => useEmberDataSync(), { wrapper });
         unmount();
 
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         await vi.advanceTimersByTimeAsync(200);
 
@@ -148,7 +155,7 @@ describe('useEmberDataSync', () => {
 describe('useEmberAuthSync', () => {
     queryTest('invalidates all queries when auth changes', async ({ queryClient, wrapper }) => {
         const mock = createMockStateBridge();
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
         queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
@@ -184,7 +191,7 @@ describe('useSidebarVisibility', () => {
 
     baseTest('reads sidebar visibility from Ember state', () => {
         const mock = createMockStateBridge(false);
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         const { result } = renderHook(() => useSidebarVisibility());
 
@@ -193,7 +200,7 @@ describe('useSidebarVisibility', () => {
 
     baseTest('updates when Ember emits sidebarVisibilityChange event', async () => {
         const mock = createMockStateBridge(true);
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         const { result } = renderHook(() => useSidebarVisibility());
 
@@ -216,7 +223,7 @@ describe('useSidebarVisibility', () => {
 
     baseTest('updates from false to true', async () => {
         const mock = createMockStateBridge(false);
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         const { result } = renderHook(() => useSidebarVisibility());
 
@@ -239,7 +246,7 @@ describe('useSidebarVisibility', () => {
 
     baseTest('reads latest Ember state on each render', () => {
         const mock = createMockStateBridge(true);
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         const { result, rerender } = renderHook(() => useSidebarVisibility());
 
@@ -262,10 +269,96 @@ describe('useSidebarVisibility', () => {
         const { unmount } = renderHook(() => useSidebarVisibility());
         unmount();
 
-        windowWithBridge.EmberBridge = { state: mock.stateBridge };
+        window.EmberBridge = { state: mock.stateBridge };
 
         await vi.advanceTimersByTimeAsync(200);
 
         expect(mock.onSpy).not.toHaveBeenCalled();
     });
 });
+
+describe('useEmberRouting', () => {
+    baseTest('returns default no-op routing when EmberBridge is not available', () => {
+        const { result } = renderHook(() => useEmberRouting());
+
+        // Should return default routing with no-op functions
+        expect(result.current).toHaveProperty('getRouteUrl');
+        expect(result.current).toHaveProperty('isRouteActive');
+        
+        // Default getRouteUrl just returns the route name
+        expect(result.current.getRouteUrl('posts')).toBe('posts');
+        
+        // Default isRouteActive always returns false
+        expect(result.current.isRouteActive('posts')).toBe(false);
+    });
+
+    baseTest('returns bridge routing methods when bridge is available', () => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        const { result } = renderHook(() => useEmberRouting());
+
+        expect(result.current).toHaveProperty('getRouteUrl');
+        expect(result.current).toHaveProperty('isRouteActive');
+        
+        // Should be using bridge methods, not defaults
+        expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
+        expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    });
+
+    baseTest('switches to bridge methods when bridge becomes available', async () => {
+        vi.useFakeTimers();
+        
+        const { result } = renderHook(() => useEmberRouting());
+        
+        // Initially using default routing
+        expect(result.current.getRouteUrl('posts')).toBe('posts');
+        expect(result.current.isRouteActive('posts')).toBe(false);
+
+        // Bridge becomes available
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        // Wait for the subscription interval to fire
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(150);
+        });
+
+        // Now should be using bridge methods
+        expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
+        expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    });
+
+    baseTest('re-renders when route changes', async () => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        let renderCount = 0;
+        const { result } = renderHook(() => {
+            renderCount++;
+            return useEmberRouting();
+        });
+
+        // Initial render
+        expect(renderCount).toBe(1);
+        expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('routeChange', expect.any(Function));
+        });
+
+        // Trigger route change
+        act(() => {
+            mock.emit('routeChange', {
+                routeName: 'posts',
+                queryParams: {}
+            });
+        });
+
+        // Should have re-rendered
+        await waitFor(() => {
+            expect(renderCount).toBe(2);
+        });
+    });
+});
+
