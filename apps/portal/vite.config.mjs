@@ -37,7 +37,7 @@ export default defineConfig((config) => {
         ],
         esbuild: {
             loader: 'jsx',
-            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/],
+            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/, /test\/.*\.jsx?$/],
             exclude: []
         },
         optimizeDeps: {
@@ -82,7 +82,7 @@ export default defineConfig((config) => {
         test: {
             globals: true,
             environment: 'jsdom',
-            setupFiles: './src/setupTests.js',
+            setupFiles: './test/setup-tests.js',
             testTimeout: 10000,
             coverage: {
                 reporter: ['cobertura', 'text-summary', 'html']
