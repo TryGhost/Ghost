@@ -451,7 +451,7 @@ module.exports = class EmailAnalyticsService {
         // Small trick: if reached the end of new events, we are going to keep
         // fetching the same events because 'begin' won't change
         // So if we didn't have errors while fetching, and total events < maxEvents, increase lastEventTimestamp with one second
-        if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
+        if (!error && eventCount > 0 && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
             // set the data on the db so we can store it for fetching after reboot
             await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
