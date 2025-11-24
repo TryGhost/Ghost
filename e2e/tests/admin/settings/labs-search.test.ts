@@ -13,5 +13,8 @@ test.describe('Ghost Admin - settings search - labs auto-open', () => {
 
         await expect(settingsPage.labsSection.section).toBeVisible();
         await expect(settingsPage.labsSection.closeButton).toBeVisible();
+
+        await settingsPage.searchByInput('returnNoResultsInSearch');
+        await expect(settingsPage.labsSection.section).toBeHidden();
     });
 });

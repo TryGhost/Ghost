@@ -13,14 +13,16 @@ export class SettingsPage extends BasePage {
     readonly staffSection: StaffSection;
 
     readonly staffSectionButton: Locator;
+    readonly sidebar: Locator;
 
     constructor(page: Page) {
         super(page, '/ghost/#/settings');
 
+        this.sidebar = page.getByTestId('sidebar');
         this.searchInput = page.locator('input[placeholder="Search settings"]');
         this.searchClearButton = page.locator('button[aria-label="close"]').first();
 
-        this.staffSectionButton = page.getByTestId('sidebar').getByText('Staff');
+        this.staffSectionButton = this.sidebar.getByText('Staff');
 
         this.publicationSection = new PublicationSection(page);
         this.labsSection = new LabsSection(page);
@@ -30,11 +32,10 @@ export class SettingsPage extends BasePage {
 
     async searchByInput(text: string) {
         await this.searchInput.fill(text);
-        await this.page.waitForTimeout(300);
     }
 
     async goto() {
         await super.goto();
-        await this.page.waitForSelector('h5', {timeout: 10000});
+        await this.sidebar.waitFor({state: 'visible'});
     }
 }

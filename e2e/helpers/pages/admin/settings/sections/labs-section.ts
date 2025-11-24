@@ -15,7 +15,7 @@ export class LabsSection extends BasePage {
     constructor(page: Page) {
         super(page, '/ghost/#/settings/labs');
 
-        this.section = page.getByTestId('labs');
+        this.section = page.getByTestId('sidebar').getByText('Labs');
         this.heading = page.getByRole('heading', {level: 5, name: 'Labs'});
         this.content = this.section.locator('[role="tabpanel"]');
 
