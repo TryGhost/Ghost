@@ -6,7 +6,6 @@ import {
     AvatarImage,
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     Indicator,
@@ -14,11 +13,12 @@ import {
     SidebarMenuButton,
     Switch
 } from "@tryghost/shade"
-import { Link } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
+import { UserMenuItem } from "./UserMenuItem";
+import { Link } from "@tryghost/admin-x-framework";
 
 interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
     onOpenWhatsNew?: () => void;
@@ -94,9 +94,9 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    className="cursor-pointer text-base"
+                <UserMenuItem
                     data-test-nav="whatsnew"
+                    asChild={false}
                     onSelect={() => {
                         // Workaround for Radix UI bug where opening Dialog from DropdownMenu
                         // leaves pointer-events: none on body, freezing the UI
@@ -105,7 +105,7 @@ function UserMenu(props: UserMenuProps) {
                     }}
                 >
                     <LucideIcon.Sparkles />
-                    <span>What’s new?</span>
+                    <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
                     {whatsNewData?.hasNew && (
                         <div className="flex-1 flex justify-end">
                             <Indicator
@@ -113,32 +113,36 @@ function UserMenu(props: UserMenuProps) {
                                 size="sm"
                                 label="New updates available"
                                 data-test-whats-new-menu-badge
-                            />
+                                />
                         </div>
                     )}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                </UserMenuItem>
+                <UserMenuItem>
                     <Link to={`/settings/staff/${currentUser.data?.slug}`}>
                         <LucideIcon.User />
-                        <span>Your profile</span>
+                        <UserMenuItem.Label>Your profile</UserMenuItem.Label>
                     </Link>
-                </DropdownMenuItem>
+                </UserMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
+                <UserMenuItem>
+                    <a
+                        href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         <LucideIcon.Book />
-                        Resources & guides
+                        <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
                     </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    className="cursor-pointer text-base"
+                </UserMenuItem>
+                <UserMenuItem
+                    asChild={false}
                     onSelect={(e: Event) => {
                         e.preventDefault();
                         setNightShift(!preferences?.nightShift);
                     }}
                 >
                     <LucideIcon.Moon />
-                    <span className="flex-1">Dark mode</span>
+                    <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
                     <Switch
                         size='sm'
                         checked={preferences?.nightShift ?? false}
@@ -147,20 +151,23 @@ function UserMenu(props: UserMenuProps) {
                         onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
                         tabIndex={-1}
                     />
-                </DropdownMenuItem>
+                </UserMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" onClick={() => {
-                    fetch("/ghost/api/admin/session", {
-                        method: "DELETE",
-                    }).then(() => {
-                        window.location.href = "/ghost";
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                }}>
+                <UserMenuItem
+                    asChild={false}
+                    onClick={() => {
+                        fetch("/ghost/api/admin/session", {
+                            method: "DELETE",
+                        }).then(() => {
+                            window.location.href = "/ghost";
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                    }}
+                >
                     <LucideIcon.LogOut />
-                    <span>Sign out</span>
-                </DropdownMenuItem>
+                    <UserMenuItem.Label>Sign out</UserMenuItem.Label>
+                </UserMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
