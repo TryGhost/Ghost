@@ -33,7 +33,7 @@ import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
  * - Help center / Resources & guides
  * - Settings navigation
  */
-function ContributorProfileMenu() {
+function ContributorUserMenu() {
     const currentUser = useCurrentUser();
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
@@ -139,4 +139,4 @@ function ContributorProfileMenu() {
     );
 }
 
-export default ContributorProfileMenu;
+export default ContributorUserMenu;

@@ -8,7 +8,7 @@ import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { useSidebarVisibility } from "@/ember-bridge/EmberBridge";
 import AppSidebar from "./app-sidebar";
 import { MobileNavBar } from "./app-sidebar/MobileNavBar";
-import ContributorProfileMenu from "./app-sidebar/ContributorProfileMenu";
+import ContributorUserMenu from "./app-sidebar/ContributorUserMenu";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -25,7 +25,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="relative h-screen bg-background">
                 <main className="h-full overflow-auto">{children}</main>
                 <div className="fixed bottom-3.5 left-3.5 lg:bottom-8 lg:left-8 z-20">
-                    <ContributorProfileMenu />
+                    <ContributorUserMenu />
                 </div>
             </div>
         );
