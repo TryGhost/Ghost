@@ -26,7 +26,7 @@ export default defineConfig({
     },
     build: {
         commonjsOptions: {
-            include: [/ghost\//, /node_modules/],
+            include: [/ghost\/i18n/, /node_modules/],
         },
     },
     test: {

@@ -24,11 +24,12 @@ class PortalSection extends BasePage {
 
     async waitForScript(): Promise<void> {
         await this.portalScript.waitFor({
-            state: 'attached',
-            timeout: 10000
+            state: 'attached'
         });
 
-        await this.page.waitForTimeout(500);
+        await this.portalRoot.waitFor({
+            state: 'attached'
+        });
     }
 
     async waitForIFrame(): Promise<void> {
@@ -61,7 +62,7 @@ export class PublicPage extends BasePage {
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
 
-    private readonly portal: PortalSection;
+    protected readonly portal: PortalSection;
 
     constructor(page: Page) {
         super(page, '/');
