@@ -9,8 +9,7 @@ const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 
 const JOB_NAME = 'process-outbox-test';
-const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/member-welcome-emails/jobs/process-outbox.js');
-const runProcessOutbox = require(JOB_PATH);
+const runProcessOutbox = require('../../../core/server/services/member-welcome-emails/jobs/lib/process-outbox-main');
 
 describe('Process Outbox Job', function () {
     let jobService;
@@ -37,7 +36,7 @@ describe('Process Outbox Job', function () {
     async function scheduleInlineJob() {
         await jobService.addJob({
             name: JOB_NAME,
-            job: () => runProcessOutbox({inline: true}),
+            job: () => runProcessOutbox(),
             offloaded: false
         });
 
