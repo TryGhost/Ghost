@@ -48,28 +48,36 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                         setUserData?.({...user, free_member_signup_notification: e.target.checked});
                     }}
                 />
-                <Toggle
-                    checked={user.paid_subscription_started_notification}
-                    direction='rtl'
-                    hint='Every time a member starts a new paid subscription'
-                    label='New paid members'
-                    onChange={(e) => {
-                        setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
-                    }}
-                />
-                <Toggle
-                    checked={user.paid_subscription_canceled_notification}
-                    direction='rtl'
-                    hint='Every time a member cancels their paid subscription'
-                    label='Paid member cancellations'
-                    onChange={(e) => {
-                        setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
-                    }}
-                />
+                {hasStripeEnabled &&
+                <>
+                    <Toggle
+                        checked={user.paid_subscription_started_notification}
+                        direction='rtl'
+                        hint='Every time a member starts a new paid subscription'
+                        label='New paid members'
+                        onChange={(e) => {
+                            setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
+                        }}
+                    />
+                    <Toggle
+                        checked={user.paid_subscription_canceled_notification}
+                        direction='rtl'
+                        hint='Every time a member cancels their paid subscription'
+                        label='Paid member cancellations'
+                        onChange={(e) => {
+                            setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
+                        }}
+                    />
+                </>
+                }
                 <Toggle
                     checked={user.milestone_notifications}
                     direction='rtl'
-                    hint='Occasional summaries of your audience & revenue growth'
+                    hint={hasStripeEnabled ?
+                        'Occasional summaries of your audience & revenue growth'
+                        :
+                        'Occasional summaries of your audience growth'
+                    }
                     label='Milestones'
                     onChange={(e) => {
                         setUserData?.({...user, milestone_notifications: e.target.checked});
