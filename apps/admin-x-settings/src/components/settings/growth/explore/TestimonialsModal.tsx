@@ -83,11 +83,13 @@ const TestimonialsModal = NiceModal.create(() => {
     const migratedFromOptions: Array<{value: string; label: string;}> = [
         {value: 'none', label: 'None - This is a new site'},
         {value: 'substack', label: 'Substack'},
-        {value: 'beehiiv', label: 'Beehiiv'},
-        {value: 'wordpress', label: 'Wordpress'},
+        {value: 'beehiiv', label: 'BeeHiiv'},
+        {value: 'wordpress', label: 'WordPress'},
         {value: 'newspack', label: 'Newspack'},
         {value: 'medium', label: 'Medium'},
         {value: 'squarespace', label: 'Squarespace'},
+        {value: 'wix', label: 'Wix'},
+        {value: 'patreon', label: 'Patreon'},
         {value: 'memberful', label: 'Memberful'},
         {value: 'other', label: 'Other'}
     ];
