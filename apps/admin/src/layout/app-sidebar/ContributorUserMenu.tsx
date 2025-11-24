@@ -1,12 +1,8 @@
 import React from "react"
 
 import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     LucideIcon,
@@ -16,6 +12,9 @@ import { Link } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
+import { UserMenuAvatar } from "./UserMenuAvatar";
+import { UserMenuHeader } from "./UserMenuHeader";
+import { UserMenuItem } from "./UserMenuItem";
 
 /**
  * Floating profile menu for contributor users
@@ -51,12 +50,7 @@ function ContributorUserMenu() {
                     className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
                     aria-label="Open user menu"
                 >
-                    <Avatar className="w-11 h-11">
-                        {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                        <AvatarFallback className="text-foreground-muted hover:text-foreground bg-background dark:bg-muted">
-                            <LucideIcon.User />
-                        </AvatarFallback>
-                    </Avatar>
+                    <UserMenuAvatar className="w-11 h-11" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -65,45 +59,34 @@ function ContributorUserMenu() {
                 sideOffset={10}
                 className="w-full min-w-[240px] mb-2"
             >
-                <div className="p-3">
-                    <div className="flex items-center gap-3">
-                        <Avatar>
-                            {currentUser.data?.profile_image && <AvatarImage src={currentUser.data?.profile_image} />}
-                            <AvatarFallback className="text-foreground-muted hover:text-foreground">
-                                <LucideIcon.User />
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                            <span className="text-base font-semibold text-foreground">
-                                {currentUser.data?.name}
-                            </span>
-                            <span className="text-xs text-foreground-muted -mt-px">
-                                {currentUser.data?.email}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                <UserMenuHeader
+                    name={currentUser.data?.name}
+                    email={currentUser.data?.email}
+                >
+                    <UserMenuAvatar />
+                </UserMenuHeader>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                <UserMenuItem>
                     <Link to="/">
                         <LucideIcon.FileText />
-                        <span>Posts</span>
+                        <UserMenuItem.Label>Posts</UserMenuItem.Label>
                     </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                </UserMenuItem>
+                <UserMenuItem>
                     <a href={siteUrl} target="_blank" rel="noopener noreferrer">
                         <LucideIcon.ExternalLink />
-                        <span>View site</span>
+                        <UserMenuItem.Label>View site</UserMenuItem.Label>
                     </a>
-                </DropdownMenuItem>
+                </UserMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" asChild>
+                <UserMenuItem>
                     <Link to={`/settings/staff/${currentUser.data?.slug}`}>
                         <LucideIcon.User />
-                        <span>Your profile</span>
+                        <UserMenuItem.Label>Your profile</UserMenuItem.Label>
                     </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                </UserMenuItem>
+                <UserMenuItem
+                    asChild={false}
                     className="cursor-pointer text-base"
                     onSelect={(e: Event) => {
                         e.preventDefault();
@@ -111,7 +94,7 @@ function ContributorUserMenu() {
                     }}
                 >
                     <LucideIcon.Moon />
-                    <span className="flex-1">Dark mode</span>
+                    <UserMenuItem.Label>Dark mode</UserMenuItem.Label>
                     <Switch
                         size='sm'
                         checked={preferences?.nightShift ?? false}
@@ -120,20 +103,23 @@ function ContributorUserMenu() {
                         onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
                         tabIndex={-1}
                     />
-                </DropdownMenuItem>
+                </UserMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-base" onClick={() => {
-                    fetch("/ghost/api/admin/session", {
-                        method: "DELETE",
-                    }).then(() => {
-                        window.location.href = "/ghost";
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                }}>
+                <UserMenuItem
+                    asChild={false}
+                    className="cursor-pointer text-base" onClick={() => {
+                        fetch("/ghost/api/admin/session", {
+                            method: "DELETE",
+                        }).then(() => {
+                            window.location.href = "/ghost";
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                    }}
+                >
                     <LucideIcon.LogOut />
-                    <span>Sign out</span>
-                </DropdownMenuItem>
+                    <UserMenuItem.Label>Sign out</UserMenuItem.Label>
+                </UserMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
