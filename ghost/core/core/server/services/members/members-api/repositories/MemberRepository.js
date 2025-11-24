@@ -25,7 +25,7 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
-const WELCOME_EMAIL_SOURCES = ['member'];
+const WELCOME_EMAIL_SOURCES = ['member', 'api'];
 
 /**
  * @typedef {object} ITokenService
