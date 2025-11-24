@@ -1,5 +1,5 @@
-import {generateAccountPlanFixture, getSiteData, getProductsData} from '../../utils/fixtures-generator';
-import {render, fireEvent} from '../../utils/test-utils';
+import {generateAccountPlanFixture, getMemberData, getSiteData, getProductsData} from '../../utils/fixtures-generator';
+import {render, fireEvent, getByTestId} from '../../utils/test-utils';
 import AccountPlanPage from './AccountPlanPage';
 
 const setup = (overrides) => {
@@ -83,5 +83,17 @@ describe('Account Plan Page', () => {
 
         const confirmCancelButton = queryByRole('button', {name: 'Confirm cancellation'});
         expect(confirmCancelButton).toBeInTheDocument();
+    });
+
+    describe('when plans are not available', () => {
+        test('renders an informative message', () => {
+            customSetup({
+                site: getSiteData({products: []}),
+                member: getMemberData({paid: false})
+            });
+    
+            const message = getByTestId(document.body, 'accountplans-unavailable-text');
+            expect(message).toBeInTheDocument();
+        });
     });
 });

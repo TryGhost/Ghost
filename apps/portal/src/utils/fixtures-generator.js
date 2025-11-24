@@ -439,10 +439,12 @@ export const member = {
     })
 };
 export function generateAccountPlanFixture() {
-    const products = getProductsData({numOfProducts: 3});
+    const products = getProductsData({numOfProducts: 1});
+    const portalProducts = products.map(p => p.id);
     return {
         site: getSiteData({
-            portalProducts: [products[1]]
+            products,
+            portalProducts
         }),
         member: member.paid
     };
