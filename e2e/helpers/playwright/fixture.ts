@@ -81,8 +81,8 @@ export const test = base.extend<GhostInstanceFixture>({
     baseURL: async ({ghostInstance}, use) => {
         await use(ghostInstance.baseUrl);
     },
-    // Intermediate fixture that sets up the page and returns all setup data
-    pageWithAuthenticatedUser: async ({browser, baseURL}, use) => {
+    // Create user credentials only (no authentication)
+    ghostAccountOwner: async ({baseURL}, use) => {
         if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
@@ -94,14 +94,17 @@ export const test = base.extend<GhostInstanceFixture>({
             password: 'test@123@test'
         };
         await setupUser(baseURL, ghostAccountOwner);
+        await use(ghostAccountOwner);
+    },
+    // Intermediate fixture that sets up the page and returns all setup data
+    pageWithAuthenticatedUser: async ({browser, baseURL, ghostAccountOwner}, use) => {
+        if (!baseURL) {
+            throw new Error('baseURL is not defined');
+        }
 
         const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
-    },
-    // Extract the created user from pageWithAuthenticatedUser
-    ghostAccountOwner: async ({pageWithAuthenticatedUser}, use) => {
-        await use(pageWithAuthenticatedUser.ghostAccountOwner);
     },
     // Extract the page from pageWithAuthenticatedUser and apply labs settings
     page: async ({pageWithAuthenticatedUser, labs}, use) => {

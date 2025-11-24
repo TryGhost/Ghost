@@ -71,7 +71,8 @@ module.exports = class MailgunClient {
                 text: messageContent.plaintext,
                 'recipient-variables': JSON.stringify(recipientData),
                 'h:Sender': message.from,
-                'h:Auto-Submitted': 'auto-generated'
+                'h:Auto-Submitted': 'auto-generated',
+                'h:X-Auto-Response-Suppress': 'OOF, AutoReply'
             };
 
             // Do we have a custom List-Unsubscribe header set?

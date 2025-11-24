@@ -3,8 +3,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const labs = require('../../../core/shared/labs');
-const sinon = require('sinon');
+const configUtils = require('../../utils/configUtils');
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
@@ -22,12 +21,12 @@ describe('Member Welcome Emails Integration', function () {
     afterEach(async function () {
         await db.knex('outbox').del();
         await db.knex('members').del();
-        sinon.restore();
+        await configUtils.restore();
     });
 
     describe('Member creation with welcome emails enabled', function () {
         it('creates outbox entry when member source is "member"', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
@@ -50,9 +49,9 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when welcome emails feature is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(false);
-
+        it('does NOT create outbox entry when config is not set', async function () {
+            configUtils.set('memberWelcomeEmailTestInbox', '');
+            
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
                 name: 'No Welcome Member'
@@ -66,7 +65,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is imported', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             await membersService.api.members.create({
                 email: 'imported@example.com',
@@ -81,7 +80,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is created by admin', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             await membersService.api.members.create({
                 email: 'admin-created@example.com',
@@ -96,7 +95,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates outbox entry with correct timestamp', async function () {
-            sinon.stub(labs, 'isSet').withArgs('welcomeEmails').returns(true);
+            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             const beforeCreation = new Date(Date.now() - 1000);
             
