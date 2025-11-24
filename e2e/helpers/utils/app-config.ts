@@ -9,6 +9,5 @@ export const appConfig = {
     auth: {
         storageFile: 'playwright/.auth/user.json'
     },
-    debugLogs: process.env.E2E_DEBUG_LOGS === 'true' || process.env.E2E_DEBUG_LOGS === '1',
-    memberWelcomeEmailTestInbox: 'igor+test-inbox@ghost.org'
+    debugLogs: process.env.E2E_DEBUG_LOGS === 'true' || process.env.E2E_DEBUG_LOGS === '1'
 };

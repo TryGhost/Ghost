@@ -4,7 +4,6 @@ import logging from '@tryghost/logging';
 import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
 import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {TinybirdManager} from './tinybird-manager';
-import {appConfig} from '@/helpers/utils';
 import type {Container, ContainerCreateOptions} from 'dockerode';
 
 const debug = baseDebug('e2e:GhostManager');
@@ -76,7 +75,6 @@ export class GhostManager {
                 portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
                 // Use React admin shell if specified
                 ...(process.env.USE_REACT_SHELL === 'true' ? {USE_REACT_SHELL: 'true'} : {}),
-                memberWelcomeEmailTestInbox: appConfig.memberWelcomeEmailTestInbox,
                 ...(config.config ? config.config : {})
             } as Record<string, string>;
 
@@ -124,7 +122,7 @@ export class GhostManager {
         }
     }
 
-    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string, config?: object): Promise<GhostInstance> {
+    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string, config?: unknown): Promise<GhostInstance> {
         const container = await this.createAndStart({instanceId, siteUuid, portalUrl, config});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports[`${GHOST_DEFAULTS.PORT}/tcp`][0].HostPort, 10);

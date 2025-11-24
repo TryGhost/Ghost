@@ -14,10 +14,15 @@ export interface User {
     password: string;
 }
 
+export interface GhostConfig {
+    memberWelcomeEmailSendInstantly: string;
+    memberWelcomeEmailTestInbox: string;
+}
+
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
-    config?: object;
+    config?: GhostConfig;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;

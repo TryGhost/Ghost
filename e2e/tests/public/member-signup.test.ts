@@ -1,13 +1,16 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
-import {appConfig} from '@/helpers/utils';
 import {expect, test} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
-    test.use({config: {memberWelcomeEmailSendInstantly: 'true'}});
+
+    test.use({config: {
+        memberWelcomeEmailSendInstantly: 'true',
+        memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+    }});
 
     test.beforeEach(async () => {
         emailClient = new MailPit();
@@ -37,7 +40,6 @@ test.describe('Ghost Public - Member Signup', () => {
     test('received complete the signup email', async ({page}) => {
         await new HomePage(page).goto();
         const {emailAddress} = await signupViaPortal(page);
-
         const latestMessage = await retrieveLatestEmailMessage(emailAddress);
         expect(latestMessage.Subject.toLowerCase()).toContain('complete');
 
@@ -45,9 +47,8 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(emailTextBody).toContain('complete the signup process');
     });
 
-    test('received welcome email', async ({page}) => {
-        const emailInbox = appConfig.memberWelcomeEmailTestInbox;
-
+    test('received welcome email', async ({page, config}) => {
+        const emailInbox = config!.memberWelcomeEmailTestInbox;
         const homePage = new HomePage(page);
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);

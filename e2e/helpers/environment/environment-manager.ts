@@ -71,7 +71,7 @@ export class EnvironmentManager {
     /**
      * Setup that executes on each test start
      */
-    public async perTestSetup(options: {config?: object} = {}): Promise<GhostInstance> {
+    public async perTestSetup(options: {config?: unknown} = {}): Promise<GhostInstance> {
         try {
             const {siteUuid, instanceId} = this.uniqueTestDetails();
             await this.mysql.setupTestDatabase(instanceId, siteUuid);
