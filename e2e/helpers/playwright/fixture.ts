@@ -14,9 +14,15 @@ export interface User {
     password: string;
 }
 
+export interface GhostConfig {
+    memberWelcomeEmailSendInstantly: string;
+    memberWelcomeEmailTestInbox: string;
+}
+
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
+    config?: GhostConfig;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -60,15 +66,23 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
 /**
  * Playwright fixture that provides a unique Ghost instance for each test
  * Each instance gets its own database, runs on a unique port, and includes authentication
+ *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
+ * and Ghost config via config settings like:
+ *
+ *  test.use({config: {
+ *      memberWelcomeEmailSendInstantly: 'true',
+ *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+ *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define labs as an option that can be set per test or describe block
+    config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
-    ghostInstance: async ({ }, use, testInfo: TestInfo) => {
+    ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.perTestSetup();
+        const ghostInstance = await environmentManager.perTestSetup({config});
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
