@@ -50,7 +50,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     const navigate = useNavigateWithBasePath();
 
     return (
-        <ProfilePreviewHoverCard actor={account as unknown as ActorProperties} isCurrentUser={isCurrentUser}>
+        <ProfilePreviewHoverCard actor={account as unknown as ActorProperties} align='center' isCurrentUser={isCurrentUser} side='left'>
             <div>
                 <ActivityItem
                     key={account.id}
@@ -102,7 +102,7 @@ const SearchResults: React.FC<SearchResultsProps & {
     }
 
     return (
-        <div className='mt-[-7px]'>
+        <div className='mt-[-14px] pb-2'>
             {results.map(account => (
                 <AccountSearchResultItem
                     key={account.id}
@@ -122,16 +122,17 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
-    // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [debouncedQuery] = useDebounce(query, 300);
-    const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
+    const shouldSearch = query.length >= 2;
+    const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', shouldSearch ? debouncedQuery : '');
     const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.accounts || [];
-    const showLoading = isFetching && query.length > 0;
-    const showNoResults = !isFetching && isFetched && results.length === 0 && query.length > 0 && debouncedQuery === query;
-    const showSuggested = query === '';
+    const showLoading = isFetching && shouldSearch;
+    const showNoResults = !isFetching && isFetched && results.length === 0 && shouldSearch && debouncedQuery === query;
+    const showSuggested = query.length < 2;
+    const showSearchResults = shouldSearch && results.length > 0 && !showLoading;
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -142,34 +143,32 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     return (
         <>
-            <div className='-mx-6 -mt-6 flex items-center gap-2 border-b border-b-gray-150 px-6 pb-[10px] pt-3 dark:border-b-gray-950'>
+            <div className='sticky -top-6 z-30 -mt-6 flex h-[72px] shrink-0 items-center gap-2 bg-white pb-2 pt-3 before:pointer-events-none before:absolute before:-inset-x-6 before:bottom-0 before:h-0 before:border-b before:border-b-gray-150 before:content-[""] dark:bg-[#101114] dark:before:border-b-gray-950'>
                 <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
                 <Input
                     ref={queryInputRef}
                     autoComplete='off'
-                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
-                    placeholder='Enter a handle or account URL...'
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 text-lg focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
+                    placeholder='Search by name, handle, or URL...'
                     title="Search"
                     type='text'
                     value={query}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 />
-            </div>
-            <div className='min-h-[320px]'>
                 {showLoading && (
-                    <div className='flex h-full items-center justify-center pb-8'>
-                        <LoadingIndicator size='lg' />
-                    </div>
+                    <LoadingIndicator className='!absolute right-0 mr-0.5 shrink-0' size='sm' />
                 )}
+            </div>
+            <div className='h-full'>
                 {showNoResults && (
-                    <div className='flex h-full items-center justify-center pb-8'>
+                    <div className='flex h-full items-center justify-center pb-14'>
                         <NoValueLabel>
                             <NoValueLabelIcon><LucideIcon.UserRound /></NoValueLabelIcon>
                             No users matching this handle or account URL
                         </NoValueLabel>
                     </div>
                 )}
-                {!showLoading && !showNoResults && (
+                {showSearchResults && (
                     <SearchResults
                         results={results}
                         onOpenChange={onOpenChange}
