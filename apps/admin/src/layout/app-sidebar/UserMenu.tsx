@@ -41,6 +41,7 @@ function UserMenu(props: UserMenuProps) {
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    aria-label="User menu"
                 >
                 <div className="relative">
                     <Avatar>
@@ -117,14 +118,14 @@ function UserMenu(props: UserMenuProps) {
                     )}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+                    <Link to={`/settings/staff/${currentUser.data?.slug}`} role="menuitem">
                         <LucideIcon.User />
                         <span>Your profile</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
+                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer" role="menuitem">
                         <LucideIcon.Book />
                         Resources & guides
                     </a>

@@ -4,7 +4,7 @@ import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import classic from 'ember-classic-decorator';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {action} from '@ember/object';
-import {and, equal, match, or, reads} from '@ember/object/computed';
+import {and, equal, or, reads} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -35,9 +35,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     iconClass = '';
     shortcuts = null;
     previousRoute = null;
-
-    @match('router.currentRouteName', /^settings\.integration/)
-        isIntegrationRoute;
 
     // HACK: {{link-to}} should be doing this automatically but there appears to
     // be a bug in Ember that's preventing it from working immediately after login
