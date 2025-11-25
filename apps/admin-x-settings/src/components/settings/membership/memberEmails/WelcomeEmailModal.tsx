@@ -5,7 +5,11 @@ import {Button, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-const WelcomeEmailModal = NiceModal.create(() => {
+interface WelcomeEmailModalProps {
+    emailType?: 'free' | 'paid';
+}
+
+const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free'}) => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
     const {data: currentUser} = useCurrentUser();
@@ -55,7 +59,7 @@ const WelcomeEmailModal = NiceModal.create(() => {
             <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto'>
                 <div className='sticky top-0 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
                     <div className='mb-2 flex items-center justify-between'>
-                        <h3 className='font-semibold'>Free members welcome email</h3>
+                        <h3 className='font-semibold'>{emailType === 'paid' ? 'Paid' : 'Free'} members welcome email</h3>
                         <div className='flex items-center gap-2'>
                             <div ref={dropdownRef} className='relative'>
                                 <Button

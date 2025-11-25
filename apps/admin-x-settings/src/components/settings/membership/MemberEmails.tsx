@@ -9,10 +9,12 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const DummyEmail: React.FC<{
     sender: string,
-    title: string
+    title: string,
+    emailType: 'free' | 'paid'
 }> = ({
     sender,
-    title
+    title,
+    emailType
 }) => {
     const {settings} = useGlobalData();
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
@@ -43,7 +45,7 @@ const DummyEmail: React.FC<{
                 icon='pen'
                 label='Edit'
                 onClick={() => {
-                    NiceModal.show(WelcomeEmailModal);
+                    NiceModal.show(WelcomeEmailModal, {emailType});
                 }}
             />
         </div>
@@ -78,6 +80,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 {freeWelcomeEmailState &&
                     <DummyEmail
+                        emailType='free'
                         sender='Publisher Weekly'
                         title='Welcome to Publisher Weekly'
                     />
@@ -97,6 +100,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 {paidWelcomeEmailState &&
                     <DummyEmail
+                        emailType='paid'
                         sender='Publisher Weekly'
                         title='Welcome to your paid subscription'
                     />
