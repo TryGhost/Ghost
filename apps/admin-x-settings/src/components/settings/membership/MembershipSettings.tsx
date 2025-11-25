@@ -14,7 +14,7 @@ export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
-    memberemails: ['membership', 'signup', 'welcome email', 'email', 'new user', 'new member', 'account'],
+    memberEmails: ['membership', 'signup', 'welcome email', 'email', 'new user', 'new member', 'account'],
     tips: ['growth', 'tips', 'donations', 'one time', 'payment']
 };
 
@@ -30,7 +30,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.memberemails} />}
+            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
