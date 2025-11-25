@@ -66,7 +66,14 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
 /**
  * Playwright fixture that provides a unique Ghost instance for each test
  * Each instance gets its own database, runs on a unique port, and includes authentication
+ *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
+ * and Ghost config via config settings like:
+ *
+ *  test.use({config: {
+ *      memberWelcomeEmailSendInstantly: 'true',
+ *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+ *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define labs as an option that can be set per test or describe block
