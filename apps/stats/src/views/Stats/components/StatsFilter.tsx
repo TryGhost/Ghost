@@ -1,9 +1,9 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceQueryParam} from './AudienceSelect';
+import {getAudienceQueryParam} from './audience-select';
 import {useBrowsePosts, useSearchIndexPosts} from '@tryghost/admin-x-framework/api/posts';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {

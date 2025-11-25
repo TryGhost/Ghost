@@ -1,18 +1,18 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
-import DateRangeSelect from '../components/DateRangeSelect';
+import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
+import DateRangeSelect from '../components/date-range-select';
 import React, {useMemo, useState} from 'react';
-import SourcesCard from './components/SourcesCard';
+import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/StatsFilter';
-import StatsHeader from '../layout/StatsHeader';
-import StatsLayout from '../layout/StatsLayout';
-import StatsView from '../layout/StatsView';
-import TopContent from './components/TopContent';
-import WebKPIs, {KpiDataItem} from './components/WebKPIs';
+import StatsHeader from '../layout/stats-header';
+import StatsLayout from '../layout/stats-layout';
+import StatsView from '../layout/stats-view';
+import TopContent from './components/top-content';
+import WebKPIs, {KpiDataItem} from './components/web-kpis';
 import {Card, CardContent, Filter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useGlobalData} from '@src/providers/global-data-provider';
 
 interface SourcesData {
     source?: string | number;
