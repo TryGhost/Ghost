@@ -30,7 +30,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.portal} />}
+            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.memberemails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );
