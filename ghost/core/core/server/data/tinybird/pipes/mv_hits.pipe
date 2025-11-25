@@ -4,7 +4,8 @@ NODE mv_hits_0
 SQL >
 
     SELECT timestamp,
-        parseDateTimeBestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_timestamp,
+        inserted_at,
+        parseDateTime64BestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
         action,
         version,
         coalesce(session_id, '0') as session_id,
@@ -38,6 +39,8 @@ SQL >
     SELECT
         site_uuid,
         timestamp,
+        received_at,
+        inserted_at,
         action,
         version,
         session_id,
