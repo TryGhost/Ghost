@@ -9,7 +9,7 @@ SQL >
         inserted_at,
         received_timestamp,
         dateDiff('millisecond', received_timestamp, inserted_at) as latency_ms
-    FROM mv_hits
+    FROM _mv_hits
     WHERE
         JSONExtractString(payload, 'meta', 'received_timestamp') != ''
         {% if defined(start_date) %}
