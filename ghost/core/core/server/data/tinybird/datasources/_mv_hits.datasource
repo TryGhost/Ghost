@@ -3,7 +3,7 @@ SCHEMA >
     `timestamp` DateTime,
     `received_at` DateTime64(3),
     `inserted_at` DateTime64(3),
-    `ingestion_latency_ms` IntervalMillisecond,
+    `ingestion_latency_ms` Int64,
     `action` LowCardinality(String),
     `version` LowCardinality(String),
     `session_id` String,

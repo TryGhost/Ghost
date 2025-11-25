@@ -43,7 +43,11 @@ SQL >
         timestamp,
         received_at,
         inserted_at,
-        date_diff('millisecond', received_at, inserted_at) as ingestion_latency_ms,
+        case
+            when toUnixTimestamp(received_at) = 0 then -1
+            when received_at > inserted_at then -1
+            else date_diff('millisecond', received_at, inserted_at)
+        end as ingestion_latency_ms,
         action,
         version,
         session_id,

@@ -9,11 +9,11 @@ SQL >
         site_uuid,
         inserted_at,
         received_at,
-        toUInt64(ingestion_latency_ms) as ingestion_latency_ms
+        ingestion_latency_ms
     FROM _mv_hits
     WHERE
-        -- If received_at is not set in payload, defaults to 1970-01-01T00:00:00Z
-        received_at > '1970-01-01 00:00:00'
+        -- ingestion_latency_ms is set to -1 if received_at is invalid
+        ingestion_latency_ms >= 0
         {% if defined(start_date) %}
             AND toDate(inserted_at) >= {{ Date(start_date, description="Start date for filtering", required=False) }}
         {% else %}
