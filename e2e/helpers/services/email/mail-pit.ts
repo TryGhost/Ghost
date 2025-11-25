@@ -40,7 +40,7 @@ export interface EmailClient {
     getMessages(limit: number): Promise<EmailMessage[]>;
     getMessageDetailed(message: EmailMessage): Promise<EmailMessageDetailed>;
     searchByContent(content: string, options?: EmailSearchOptions): Promise<EmailMessage[]>;
-    searchByRecipient(recipient: string): Promise<EmailMessage[]>;
+    searchByRecipient(recipient: string, options?: EmailSearchOptions): Promise<EmailMessage[]>;
     search(queryOptions: Partial<EmailSearchQuery>, options?: EmailSearchOptions): Promise<EmailMessage[]>;
 }
 

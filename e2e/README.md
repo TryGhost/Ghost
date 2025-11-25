@@ -9,24 +9,19 @@ This test suite runs automated browser tests against a running Ghost instance to
 - Node.js and Yarn installed
 
 ### Running Tests
-From the repository root:
+To run the test, within this `e2e` folder run:
 
 ```bash
 # Install dependencies
 yarn
 
-# Run the e2e tests
-yarn test:e2e
+# All tests
+yarn test
 ```
 
 ### Running Specific Tests
 
-Within `e2e` folder, run one of the following commands: 
-
 ```bash
-# All tests
-yarn test
-
 # Specific test file
 yarn test specific/folder/testfile.spec.ts
 
@@ -37,6 +32,18 @@ yarn test --grep "homepage"
 yarn test --debug
 ```
 
+### Testing with React Admin Shell
+
+To run e2e tests against the new React admin shell instead of the Ember admin:
+
+From the repository root:
+
+```bash
+USE_REACT_SHELL=true yarn test
+```
+
+This builds the React admin (`apps/admin`) and configures Ghost to serve it at `/ghost/` instead of the Ember admin.
+
 ## Tests Development
 
 The test suite is organized into separate directories for different areas/functions:
@@ -45,7 +52,7 @@ The test suite is organized into separate directories for different areas/functi
 - `tests/public/` - Public-facing site tests (homepage, posts, etc.)
 - `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
 
-We can decide on additional sub-folders as we go.
+We can decide whether to add additional sub-folders as we add more tests.
 
 Example structure for admin tests:
 ```text
@@ -179,7 +186,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 ## Available Scripts
 
-From the e2e directory:
+Within the e2e directory:
 
 ```bash
 # Run all tests
