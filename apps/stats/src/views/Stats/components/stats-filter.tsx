@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
-import {useBrowsePosts, useSearchIndexPosts} from '@tryghost/admin-x-framework/api/posts';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
@@ -117,31 +117,26 @@ const usePostOptions = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // When there's a search query, use the search-index API for better results
-    // Otherwise, fetch latest 20 published posts from Ghost API for initial load
-    const shouldUseSearch = debouncedSearchQuery.trim().length > 0;
+    // Use browse API for both initial load and search
+    // When searching, filter by title containing the search query
+    // When not searching, fetch latest 20 published posts
+    const hasSearchQuery = debouncedSearchQuery.trim().length > 0;
+    
+    const filter = hasSearchQuery
+        ? `title:~'${debouncedSearchQuery.replace(/'/g, '\\\'')}'+status:[published,sent]`
+        : 'status:[published,sent]';
 
-    // Search index API - fetches all posts efficiently when searching
-    const {data: searchData, isLoading: isSearchLoading} = useSearchIndexPosts({
-        searchParams: shouldUseSearch ? {
-            filter: `title:~'${debouncedSearchQuery}'+status:[published,sent]`
-        } : undefined,
-        enabled: shouldUseSearch
-    });
-
-    // Browse API - fetches latest 20 for initial load
     const {data: browseData, isLoading: isBrowseLoading} = useBrowsePosts({
         searchParams: {
-            filter: 'status:[published,sent]',
+            filter,
             fields: 'id,uuid,title,slug',
             order: 'published_at DESC',
-            limit: '20'
-        },
-        enabled: !shouldUseSearch
+            limit: hasSearchQuery ? '50' : '20'
+        }
     });
 
     const options = useMemo(() => {
-        const posts = shouldUseSearch ? searchData?.posts : browseData?.posts;
+        const posts = browseData?.posts;
 
         if (!posts) {
             return [];
@@ -151,7 +146,7 @@ const usePostOptions = () => {
             label: post.title || post.slug || '(Untitled)',
             value: post.uuid
         }));
-    }, [shouldUseSearch, searchData, browseData]);
+    }, [browseData]);
 
     // Memoize the callback to avoid recreating the function on each render
     const setSearchQuery = useCallback((query: string) => {
@@ -160,7 +155,7 @@ const usePostOptions = () => {
 
     return {
         options,
-        loading: shouldUseSearch ? isSearchLoading : isBrowseLoading,
+        loading: isBrowseLoading,
         setSearchQuery
     };
 };
