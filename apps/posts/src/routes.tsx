@@ -7,7 +7,7 @@ import Tags from '@views/Tags/tags';
 import Web from '@views/PostAnalytics/Web/web';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
-// import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
+// import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
 export const APP_ROUTE_PREFIX = '/';
 
