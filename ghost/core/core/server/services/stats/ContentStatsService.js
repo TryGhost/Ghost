@@ -31,6 +31,8 @@ class ContentStatsService {
      * @param {string} [options.member_status] - Member status filter (defaults to 'all')
      * @param {string} [options.post_type] - Post type filter ('post' or 'page')
      * @param {string} [options.tb_version] - Tinybird version for API URL
+     * @param {string} [options.post_uuid] - Post UUID filter
+     * @param {string} [options.source] - Source filter
      * @param {string} [options.utm_source] - UTM source filter
      * @param {string} [options.utm_medium] - UTM medium filter
      * @param {string} [options.utm_campaign] - UTM campaign filter
@@ -82,6 +84,11 @@ class ContentStatsService {
         // Only add post_uuid if defined
         if (options.post_uuid) {
             tinybirdOptions.postUuid = options.post_uuid;
+        }
+
+        // Only add source if defined
+        if (options.source) {
+            tinybirdOptions.source = options.source;
         }
 
         // Only add UTM parameters if they are defined (not undefined/null)

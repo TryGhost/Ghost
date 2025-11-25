@@ -29,6 +29,11 @@ interface UtmOption {
     visits: number;
 }
 
+interface SourceOption {
+    source?: string;
+    visits: number;
+}
+
 // Hook to fetch UTM options from Tinybird
 // Data is contextual - results are filtered based on currently applied filters
 const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) => {
@@ -64,6 +69,8 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
         currentFilters.forEach((filter) => {
             if (filter.field === 'post' && filter.values.length > 0) {
                 baseParams.post_uuid = filter.values[0] as string;
+            } else if (filter.field === 'source' && filter.values.length > 0) {
+                baseParams.source = filter.values[0] as string;
             } else if (filter.field !== fieldKey && filter.field.startsWith('utm_') && filter.values.length > 0) {
                 // Add other UTM filters
                 baseParams[filter.field] = filter.values[0] as string;
@@ -100,6 +107,69 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
             };
         });
     }, [data, fieldKey]);
+
+    return {options, loading};
+};
+
+// Hook to fetch source options from Tinybird
+// Data is contextual - results are filtered based on currently applied filters
+const useSourceOptions = (currentFilters: Filter[] = []) => {
+    const {statsConfig, range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    // Build params including filters from other fields
+    const params = useMemo(() => {
+        const baseParams: Record<string, string> = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            timezone: timezone,
+            member_status: getAudienceQueryParam(audience),
+            limit: '50'
+        };
+
+        // Add filters from currently applied filters (excluding source to avoid circular filtering)
+        currentFilters.forEach((filter) => {
+            if (filter.field === 'post' && filter.values.length > 0) {
+                baseParams.post_uuid = filter.values[0] as string;
+            } else if (filter.field === 'source' && filter.values.length > 0) {
+                // Skip source filter to avoid circular filtering
+                return;
+            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
+                baseParams[filter.field] = filter.values[0] as string;
+            }
+        });
+
+        return baseParams;
+    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters]);
+
+    const {data, loading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig,
+        params,
+        enabled: true
+    });
+
+    const options = useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        return (data as unknown as SourceOption[]).map((item: SourceOption) => {
+            const value = String(item.source || '(not set)');
+            const visits = item.visits || 0;
+            return {
+                label: value,
+                value: value,
+                // Add a custom icon element that shows the count badge
+                icon: (
+                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                        {visits.toLocaleString()}
+                    </span>
+                )
+            };
+        });
+    }, [data]);
 
     return {options, loading};
 };
@@ -296,6 +366,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const {options: contentOptions} = useUtmOptionsForField('utm_content', filters);
     const {options: termOptions} = useUtmOptionsForField('utm_term', filters);
 
+    // Fetch source options
+    const {options: sourceOptions} = useSourceOptions(filters);
+
     // Fetch options for posts with search support
     const {options: postOptions, setSearchQuery} = usePostOptions();
 
@@ -391,6 +464,18 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         operators: supportedOperators,
                         defaultOperator: 'is',
                         hideOperatorSelect: true
+                    },
+                    {
+                        key: 'source',
+                        label: 'Source',
+                        type: 'select',
+                        icon: <LucideIcon.Globe className="size-4" />,
+                        placeholder: 'Select source',
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: sourceOptions,
+                        searchable: true
                     }
                 ]
             },
@@ -399,7 +484,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery, audienceOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery, audienceOptions, sourceOptions]);
 
     return (
         <Filters
