@@ -1,14 +1,14 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import SourcesCard from './components/sources-card';
-import StatsFilter from '../components/StatsFilter';
+import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {Card, CardContent, Filter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -48,11 +48,56 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
+// Audience bit values matching StatsFilter and AudienceSelect
+const AUDIENCE_BITS = {
+    PUBLIC: 1 << 0, // 1
+    FREE: 1 << 1, // 2
+    PAID: 1 << 2 // 4
+};
+
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
     const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
+
+    // Initialize filters based on current audience state when component mounts or audience changes
+    // Only create audience filter if audience is not the default "all audiences" state
+    useEffect(() => {
+        const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+        const isDefaultAudience = audience === ALL_AUDIENCES;
+        
+        setUtmFilters(prevFilters => {
+            // Check if audience filter already exists
+            const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
+            
+            // If audience is not default and filter doesn't exist, create it
+            if (!isDefaultAudience && !hasAudienceFilter) {
+                const audienceValues: string[] = [];
+                if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
+                    audienceValues.push('undefined');
+                }
+                if ((audience & AUDIENCE_BITS.FREE) !== 0) {
+                    audienceValues.push('free');
+                }
+                if ((audience & AUDIENCE_BITS.PAID) !== 0) {
+                    audienceValues.push('paid');
+                }
+                
+                if (audienceValues.length > 0) {
+                    return [...prevFilters, createFilter('audience', 'is', audienceValues)];
+                }
+            }
+            
+            // If audience is default and filter exists, remove it
+            if (isDefaultAudience && hasAudienceFilter) {
+                return prevFilters.filter(f => f.field !== 'audience');
+            }
+            
+            // No changes needed
+            return prevFilters;
+        });
+    }, [audience]); // Only depend on audience, not utmFilters to avoid loops
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
