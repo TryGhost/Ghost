@@ -731,6 +731,8 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    // Search handler for select fields - called when search input changes
+    onSearchChange?: (searchQuery: string) => void;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
     // Hide the operator dropdown and only show the operator as text
@@ -992,6 +994,11 @@ function SelectOptionsPopover<T = unknown>({
     const selectedOptions = field.options?.filter(opt => effectiveValues.includes(opt.value)) || [];
     const unselectedOptions = field.options?.filter(opt => !effectiveValues.includes(opt.value)) || [];
 
+    const handleSearchChange = (value: string) => {
+        setSearchInput(value);
+        field.onSearchChange?.(value);
+    };
+
     const handleClose = () => {
         setOpen(false);
         onClose?.();
@@ -1007,7 +1014,7 @@ function SelectOptionsPopover<T = unknown>({
                             className="h-8.5 text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
-                            onValueChange={setSearchInput}
+                            onValueChange={handleSearchChange}
                         />
                     )}
                     <CommandList>
@@ -1136,7 +1143,7 @@ function SelectOptionsPopover<T = unknown>({
                             className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
-                            onValueChange={setSearchInput}
+                            onValueChange={handleSearchChange}
                         />
                     )}
                     <CommandList>
@@ -1212,6 +1219,11 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
     const [open, setOpen] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const context = useFilterContext();
+
+    const handleSearchChange = (value: string) => {
+        setSearchInput(value);
+        field.onSearchChange?.(value);
+    };
 
     // Hide value input for empty/not empty operators
     if (operator === 'empty' || operator === 'not_empty') {
@@ -1557,7 +1569,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                             className="h-[34px] text-sm"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
-                            onValueChange={setSearchInput}
+                            onValueChange={handleSearchChange}
                         />
                     )}
                     <CommandList>

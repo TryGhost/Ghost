@@ -1,0 +1,426 @@
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {getAudienceQueryParam} from './AudienceSelect';
+import {useBrowsePosts, useSearchIndexPosts} from '@tryghost/admin-x-framework/api/posts';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+
+interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
+    filters: Filter[];
+    utmTrackingEnabled?: boolean;
+    onChange?: (filters: Filter[]) => void;
+}
+
+// Audience bit values matching AudienceSelect
+const AUDIENCE_BITS = {
+    PUBLIC: 1 << 0, // 1
+    FREE: 1 << 1, // 2
+    PAID: 1 << 2 // 4
+};
+
+interface UtmOption {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+    visits: number;
+}
+
+// Hook to fetch UTM options from Tinybird
+// Data is contextual - results are filtered based on currently applied filters
+const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) => {
+    const {statsConfig, range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    const endpointMap: Record<string, string> = {
+        utm_source: 'api_top_utm_sources',
+        utm_medium: 'api_top_utm_mediums',
+        utm_campaign: 'api_top_utm_campaigns',
+        utm_content: 'api_top_utm_contents',
+        utm_term: 'api_top_utm_terms'
+    };
+
+    const endpoint = endpointMap[fieldKey] || '';
+
+    // Always fetch UTM data when enabled
+    // Data is contextual - if filters exist, results will be filtered accordingly
+    const shouldFetch = true;
+
+    // Build params including filters from other fields
+    const params = useMemo(() => {
+        const baseParams: Record<string, string> = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            timezone: timezone,
+            member_status: getAudienceQueryParam(audience),
+            limit: '50'
+        };
+
+        // Add filters from currently applied filters (excluding the current field to avoid circular filtering)
+        currentFilters.forEach((filter) => {
+            if (filter.field === 'post' && filter.values.length > 0) {
+                baseParams.post_uuid = filter.values[0] as string;
+            } else if (filter.field !== fieldKey && filter.field.startsWith('utm_') && filter.values.length > 0) {
+                // Add other UTM filters
+                baseParams[filter.field] = filter.values[0] as string;
+            }
+        });
+
+        return baseParams;
+    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey]);
+
+    const {data, loading} = useTinybirdQuery({
+        endpoint,
+        statsConfig,
+        params,
+        enabled: shouldFetch && !!endpoint
+    });
+
+    const options = useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        return (data as unknown as UtmOption[]).map((item: UtmOption) => {
+            const value = String(item[fieldKey as keyof UtmOption] || '(not set)');
+            const visits = item.visits || 0;
+            return {
+                label: value,
+                value: value,
+                // Add a custom icon element that shows the count badge
+                icon: (
+                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                        {visits.toLocaleString()}
+                    </span>
+                )
+            };
+        });
+    }, [data, fieldKey]);
+
+    return {options, loading};
+};
+
+// Hook to fetch posts/pages options from Ghost API with search support
+const usePostOptions = () => {
+    const [searchQuery, setSearchQueryInternal] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+    // Debounce the search query to avoid too many API calls
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // When there's a search query, use the search-index API for better results
+    // Otherwise, fetch latest 20 published posts from Ghost API for initial load
+    const shouldUseSearch = debouncedSearchQuery.trim().length > 0;
+
+    // Search index API - fetches all posts efficiently when searching
+    const {data: searchData, isLoading: isSearchLoading} = useSearchIndexPosts({
+        searchParams: shouldUseSearch ? {
+            filter: `title:~'${debouncedSearchQuery}'+status:[published,sent]`
+        } : undefined,
+        enabled: shouldUseSearch
+    });
+
+    // Browse API - fetches latest 20 for initial load
+    const {data: browseData, isLoading: isBrowseLoading} = useBrowsePosts({
+        searchParams: {
+            filter: 'status:[published,sent]',
+            fields: 'id,uuid,title,slug',
+            order: 'published_at DESC',
+            limit: '20'
+        },
+        enabled: !shouldUseSearch
+    });
+
+    const options = useMemo(() => {
+        const posts = shouldUseSearch ? searchData?.posts : browseData?.posts;
+
+        if (!posts) {
+            return [];
+        }
+
+        return posts.map(post => ({
+            label: post.title || post.slug || '(Untitled)',
+            value: post.uuid
+        }));
+    }, [shouldUseSearch, searchData, browseData]);
+
+    // Memoize the callback to avoid recreating the function on each render
+    const setSearchQuery = useCallback((query: string) => {
+        setSearchQueryInternal(query);
+    }, []);
+
+    return {
+        options,
+        loading: shouldUseSearch ? isSearchLoading : isBrowseLoading,
+        setSearchQuery
+    };
+};
+
+function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
+    const {audience, setAudience} = useGlobalData();
+
+    // Track if we're currently handling a filter change to prevent loops
+    const isHandlingChange = useRef(false);
+
+    // Check if all audiences are selected (default state)
+    const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+    const isDefaultAudience = audience === ALL_AUDIENCES;
+
+    // Only sync global audience to filter if:
+    // 1. The audience filter already exists (user has interacted with it), OR
+    // 2. The global audience is NOT the default "all" state
+    // This prevents showing the filter by default when all audiences are selected
+    useEffect(() => {
+        // Don't sync if we're in the middle of handling a filter change
+        if (isHandlingChange.current) {
+            return;
+        }
+
+        const audienceFilter = filters.find(f => f.field === 'audience');
+
+        // Don't create the filter if it doesn't exist and we're in default "all" state
+        if (!audienceFilter && isDefaultAudience) {
+            return;
+        }
+
+        // Don't sync if there's no audience filter - this prevents creating it
+        // when other filters change
+        if (!audienceFilter) {
+            return;
+        }
+
+        const currentValues = audienceFilter?.values || [];
+
+        // Convert global audience bitmask to filter values
+        const expectedValues: string[] = [];
+        if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
+            expectedValues.push('undefined');
+        }
+        if ((audience & AUDIENCE_BITS.FREE) !== 0) {
+            expectedValues.push('free');
+        }
+        if ((audience & AUDIENCE_BITS.PAID) !== 0) {
+            expectedValues.push('paid');
+        }
+
+        // Only update if values have changed
+        const valuesChanged = expectedValues.length !== currentValues.length ||
+            !expectedValues.every(v => currentValues.includes(v));
+
+        if (valuesChanged && onChange) {
+            const otherFilters = filters.filter(f => f.field !== 'audience');
+            if (expectedValues.length > 0) {
+                // Keep existing audience filter id if it exists, otherwise create new one
+                onChange([
+                    ...otherFilters,
+                    {
+                        id: audienceFilter.id,
+                        field: 'audience',
+                        operator: 'is',
+                        values: expectedValues
+                    }
+                ]);
+            } else {
+                onChange(otherFilters);
+            }
+        }
+    }, [audience, isDefaultAudience, filters, onChange]);
+
+    // Handle filter changes - update global audience when audience filter changes
+    const handleFilterChange = useCallback((newFilters: Filter[]) => {
+        // Set flag to prevent the useEffect from running during this change
+        isHandlingChange.current = true;
+
+        const oldAudienceFilter = filters.find(f => f.field === 'audience');
+        const audienceFilter = newFilters.find(f => f.field === 'audience');
+        const values = audienceFilter?.values || [];
+
+        // If audience filter was removed, reset to default (all audiences)
+        if (oldAudienceFilter && !audienceFilter) {
+            setAudience(ALL_AUDIENCES);
+            if (onChange) {
+                onChange(newFilters);
+            }
+            // Reset flag after a short delay to allow the change to propagate
+            setTimeout(() => {
+                isHandlingChange.current = false;
+            }, 0);
+            return;
+        }
+
+        // Only update audience if the audience filter actually changed
+        const audienceChanged = oldAudienceFilter !== audienceFilter ||
+            JSON.stringify(oldAudienceFilter?.values) !== JSON.stringify(values);
+
+        if (audienceChanged && audienceFilter) {
+            // Convert filter values to bitmask
+            let newAudience = 0;
+            if (values.includes('undefined')) {
+                newAudience |= AUDIENCE_BITS.PUBLIC;
+            }
+            if (values.includes('free')) {
+                newAudience |= AUDIENCE_BITS.FREE;
+            }
+            if (values.includes('paid')) {
+                newAudience |= AUDIENCE_BITS.PAID;
+            }
+
+            // Update global audience if it changed
+            if (newAudience !== audience) {
+                setAudience(newAudience);
+            }
+        }
+
+        // Pass through to parent onChange
+        if (onChange) {
+            onChange(newFilters);
+        }
+
+        // Reset flag after a short delay to allow the change to propagate
+        setTimeout(() => {
+            isHandlingChange.current = false;
+        }, 0);
+    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES]);
+
+    // Fetch options for all UTM fields
+    // Options are contextual - filtered based on currently applied filters (e.g., if a post is selected,
+    // only UTM params used for that post will be shown)
+    const {options: utmSourceOptions} = useUtmOptionsForField('utm_source', filters);
+    const {options: mediumOptions} = useUtmOptionsForField('utm_medium', filters);
+    const {options: campaignOptions} = useUtmOptionsForField('utm_campaign', filters);
+    const {options: contentOptions} = useUtmOptionsForField('utm_content', filters);
+    const {options: termOptions} = useUtmOptionsForField('utm_term', filters);
+
+    // Fetch options for posts with search support
+    const {options: postOptions, setSearchQuery} = usePostOptions();
+
+    // Note: Only 'is' operator supported - Tinybird pipes only support exact match
+    const supportedOperators = useMemo(() => [
+        {value: 'is', label: 'is'}
+    ], []);
+
+    // Grouped fields - memoized to avoid recreation on every render
+    const groupedFields: FilterFieldConfig[] = useMemo(() => {
+        const utmFields: FilterFieldConfig[] = utmTrackingEnabled ? [
+            {
+                key: 'utm_source',
+                label: 'UTM Source',
+                type: 'select',
+                icon: <LucideIcon.Link className="size-4" />,
+                placeholder: 'Select source',
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                hideOperatorSelect: true,
+                options: utmSourceOptions,
+                searchable: true
+            },
+            {
+                key: 'utm_medium',
+                label: 'UTM Medium',
+                type: 'select',
+                icon: <LucideIcon.Network className="size-4" />,
+                placeholder: 'Select medium',
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                hideOperatorSelect: true,
+                options: mediumOptions,
+                searchable: true
+            },
+            {
+                key: 'utm_campaign',
+                label: 'UTM Campaign',
+                type: 'select',
+                icon: <LucideIcon.Megaphone className="size-4" />,
+                placeholder: 'Select campaign',
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                hideOperatorSelect: true,
+                options: campaignOptions,
+                searchable: true
+            },
+            {
+                key: 'utm_content',
+                label: 'UTM Content',
+                type: 'select',
+                icon: <LucideIcon.FileText className="size-4" />,
+                placeholder: 'Select content',
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                hideOperatorSelect: true,
+                options: contentOptions,
+                searchable: true
+            },
+            {
+                key: 'utm_term',
+                label: 'UTM Term',
+                type: 'select',
+                icon: <LucideIcon.Tag className="size-4" />,
+                placeholder: 'Select term',
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                hideOperatorSelect: true,
+                options: termOptions,
+                searchable: true
+            }
+        ] : [];
+
+        return [
+            {
+                group: 'Basic',
+                fields: [
+                    {
+                        key: 'audience',
+                        label: 'Audience',
+                        type: 'multiselect',
+                        icon: <LucideIcon.Users />,
+                        options: [
+                            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>},
+                            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>},
+                            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>}
+                        ]
+                    },
+                    {
+                        key: 'post',
+                        label: 'Post or page',
+                        type: 'select',
+                        icon: <LucideIcon.File />,
+                        options: postOptions,
+                        searchable: true,
+                        onSearchChange: setSearchQuery,
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true
+                    }
+                ]
+            },
+            ...(utmTrackingEnabled ? [{
+                group: 'UTM parameters',
+                fields: utmFields
+            }] : [])
+        ];
+    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery]);
+
+    return (
+        <Filters
+            addButtonIcon={filters.length ? <LucideIcon.Plus /> : <LucideIcon.ListFilter />}
+            addButtonText={filters.length ? 'Add filter' : 'Filter'}
+            className='mb-6 mt-0.5 [&>button]:order-last'
+            fields={groupedFields}
+            filters={filters}
+            showSearchInput={false}
+            onChange={handleFilterChange}
+            {...props}
+        />
+    );
+};
+
+export default StatsFilter;
