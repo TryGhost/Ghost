@@ -42,6 +42,7 @@ describe('EmailAddressService', function () {
             }, {useFallbackAddress: true});
 
             assert.equal(result.from.address, 'fallback@fallback.example.com');
+            assert.equal(result.from.name, 'Custom Sender');
             assert.equal(result.replyTo?.address, 'custom@custom.example.com');
             assert.equal(result.replyTo?.name, 'Custom Sender');
         });
@@ -99,8 +100,38 @@ describe('EmailAddressService', function () {
             }, {useFallbackAddress: true});
 
             assert.equal(result.from.address, 'fallback@fallback.example.com');
+            assert.equal(result.from.name, 'Custom Sender');
             assert.equal(result.replyTo?.address, 'support@custom.example.com');
             assert.equal(result.replyTo?.name, 'Support');
+        });
+
+        it('sets fallback from name to default email name when preferred from has no name', function () {
+            labsStub.isSet.withArgs('domainWarmup').returns(true);
+            const service = createService();
+
+            const result = service.getAddress({
+                from: {address: 'custom@custom.example.com'}
+            }, {useFallbackAddress: true});
+
+            assert.equal(result.from.address, 'fallback@fallback.example.com');
+            assert.equal(result.from.name, 'Ghost');
+            assert.equal(result.replyTo?.address, 'custom@custom.example.com');
+        });
+
+        it('preserves fallback email name when already set', function () {
+            labsStub.isSet.withArgs('domainWarmup').returns(true);
+            const service = createService({
+                getFallbackEmail: () => '"Fallback Sender" <fallback@fallback.example.com>'
+            });
+
+            const result = service.getAddress({
+                from: {address: 'custom@custom.example.com', name: 'Custom Sender'}
+            }, {useFallbackAddress: true});
+
+            assert.equal(result.from.address, 'fallback@fallback.example.com');
+            assert.equal(result.from.name, 'Fallback Sender');
+            assert.equal(result.replyTo?.address, 'custom@custom.example.com');
+            assert.equal(result.replyTo?.name, 'Custom Sender');
         });
     });
 

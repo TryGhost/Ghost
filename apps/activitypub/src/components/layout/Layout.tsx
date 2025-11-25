@@ -44,7 +44,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
                         <div className='block grid-cols-[auto_320px] items-start lg:grid'>
                             <div className='z-0 min-w-0'>
                                 <Header
-                                    showBorder={!(currentPage === 'reader')}
+                                    showBorder={!(currentPage === 'reader' || (currentPage === 'explore'))}
                                     onToggleMobileSidebar={toggleMobileSidebar}
                                 />
                                 <div className='px-[min(4vw,32px)]'>

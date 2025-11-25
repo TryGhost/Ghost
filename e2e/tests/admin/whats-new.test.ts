@@ -1,15 +1,18 @@
-import {WhatsNewBanner, WhatsNewMenu} from '../../helpers/pages/admin/whats-new';
-import {expect, test} from '../../helpers/playwright/fixture';
+import {WhatsNewBanner, WhatsNewMenu} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright/fixture';
 import type {Page} from '@playwright/test';
 
-interface ChangelogEntry {
+// Local type definition matching the API response format
+type RawChangelogEntry = {
+    slug: string;
     title: string;
     custom_excerpt: string;
     published_at: string;
     url: string;
-    featured: boolean;
+    featured: string;
     feature_image?: string;
-}
+    html?: string;
+};
 
 function daysAgo(days: number): Date {
     const date = new Date();
@@ -28,19 +31,21 @@ function createEntry(publishedAt: Date, options: {
     title?: string;
     excerpt?: string;
     feature_image?: string;
-} = {}): ChangelogEntry {
+} = {}): RawChangelogEntry {
     const title = options.title ?? 'Test Update';
+    const slug = title.toLowerCase().replace(/\s+/g, '-');
     return {
+        slug,
         title,
         custom_excerpt: options.excerpt ?? 'Test feature',
         published_at: publishedAt.toISOString(),
-        url: `https://ghost.org/changelog/${title.toLowerCase().replace(/\s+/g, '-')}`,
-        featured: options.featured ?? false,
+        url: `https://ghost.org/changelog/${slug}`,
+        featured: (options.featured ?? false) ? 'true' : 'false',
         ...(options.feature_image && {feature_image: options.feature_image})
     };
 }
 
-async function mockChangelog(page: Page, entries: ChangelogEntry[]): Promise<void> {
+async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<void> {
     await page.route('https://ghost.org/changelog.json', async (route) => {
         await route.fulfill({
             status: 200,

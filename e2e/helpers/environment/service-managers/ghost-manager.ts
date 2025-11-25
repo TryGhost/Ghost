@@ -1,8 +1,8 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '../constants';
-import {DockerCompose} from '../docker-compose';
+import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
+import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {TinybirdManager} from './tinybird-manager';
 import type {Container, ContainerCreateOptions} from 'dockerode';
 
@@ -71,7 +71,9 @@ export class GhostManager {
                 mail__options__port: `${MAILPIT.PORT}`,
                 mail__options__secure: 'false',
                 // other services configuration
-                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`
+                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
+                // Use React admin shell if specified
+                ...(process.env.USE_REACT_SHELL === 'true' ? {USE_REACT_SHELL: 'true'} : {})
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {

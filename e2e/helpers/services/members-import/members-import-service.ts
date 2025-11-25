@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {HttpClient as APIRequest} from '../../../data-factory/persistence/adapters/http-client';
+import {HttpClient as APIRequest} from '@/data-factory';
 
 export interface MemberImportData {
     email: string;
@@ -229,7 +229,7 @@ export class MembersImportService {
                 // Import completed successfully
                 return;
             }
-            
+
             await new Promise((resolve) => {
                 setTimeout(resolve, interval);
             });

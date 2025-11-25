@@ -1,5 +1,5 @@
-import {AdminPage} from '../admin-page';
-import {BasePage} from '../../base-page';
+import {AdminPage} from '@/admin-pages';
+import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
 class TopContentCard extends BasePage {

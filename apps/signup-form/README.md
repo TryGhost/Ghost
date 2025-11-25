@@ -35,7 +35,6 @@ Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
 2. Run `yarn` to install top-level dependencies.
 
-
 ## Test
 
 - `yarn lint` run just eslint
@@ -43,3 +42,21 @@ Follow the instructions for the top-level repo.
 - `yarn test:e2e` run e2e tests on Chromium
 - `yarn test:slowmo` run e2e tests visually (headed) and slower on Chromium
 - `yarn test:e2e:full` run e2e tests on all browsers
+
+## Release
+
+A patch release can be rolled out instantly in production, whereas a minor/major release requires the Ghost monorepo to be updated and released.
+In either case, you need sufficient permissions to release `@tryghost` packages on NPM.
+
+### Patch release
+
+1. Run `yarn ship` and select a patch version when prompted
+2. Merge the release commit to `main`
+
+### Minor / major release
+
+1. Run `yarn ship` and select a minor or major version when prompted
+2. Merge the release commit to `main`
+3. Wait until a new version of Ghost is released
+
+To use the new version of signup form in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)

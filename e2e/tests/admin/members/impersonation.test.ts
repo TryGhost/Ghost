@@ -1,6 +1,6 @@
-import {HomePage, MemberDetailsPage, MembersPage, PortalPage} from '../../../helpers/pages';
-import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {HomePage, MemberDetailsPage, MembersPage, PortalPage} from '@/helpers/pages';
+import {MemberFactory, createMemberFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Member Impersonation', () => {
     let memberFactory: MemberFactory;
@@ -15,7 +15,7 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         const membersPage = new MembersPage(page);
 
         await membersPage.goto();
-        await membersPage.getMemberByName(name).click();
+        await membersPage.getMemberByName(name!).click();
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.settingsSection.memberActionsButton.click();
@@ -26,9 +26,12 @@ test.describe('Ghost Admin - Member Impersonation', () => {
         await memberDetailsPage.goto(magicLink);
 
         const homePage = new HomePage(page);
+        await homePage.waitUntilLoaded();
         await homePage.accountButton.click();
 
         const portal = new PortalPage(page);
+        await portal.waitForPortalToOpen();
+
         await expect(portal.portalFrameBody).toContainText('Your account');
         await expect(portal.portalFrameBody).toContainText('impersonate@ghost.org');
     });

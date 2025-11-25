@@ -1,7 +1,7 @@
-import {expect, test} from '../../../helpers/playwright';
+import {expect, test} from '@/helpers/playwright';
 
-import {MemberFactory, createMemberFactory} from '../../../data-factory';
-import {MembersPage} from '../../../helpers/pages';
+import {MemberFactory, createMemberFactory} from '@/data-factory';
+import {MembersPage} from '@/admin-pages';
 
 test.describe('Ghost Admin - Member Filter Actions', () => {
     let memberFactory: MemberFactory;

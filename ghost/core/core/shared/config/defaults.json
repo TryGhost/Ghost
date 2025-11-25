@@ -218,6 +218,7 @@
     "enableTipsAndDonations": true,
     "emailAnalytics": {
         "enabled": true,
+        "batchProcessing": false,
         "metrics": {
             "openThroughput": {
                 "enabled": false,
@@ -302,5 +303,5 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "memberWelcomeEmailTestInbox" : ""
+    "memberWelcomeEmailTestInbox": ""
 }
