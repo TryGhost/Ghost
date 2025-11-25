@@ -1,8 +1,6 @@
 import Component from '@ember/component';
 import SearchModal from '../modals/search';
-import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import classic from 'ember-classic-decorator';
-import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {action} from '@ember/object';
 import {and, equal, or, reads} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
@@ -13,7 +11,7 @@ import {tagName} from '@ember-decorators/component';
 
 @classic
 @tagName('')
-export default class Main extends Component.extend(ShortcutsMixin) {
+export default class Main extends Component {
     @service billing;
     @service customViews;
     @service feature;
@@ -33,7 +31,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     iconStyle = '';
     iconClass = '';
-    shortcuts = null;
     previousRoute = null;
 
     // HACK: {{link-to}} should be doing this automatically but there appears to
@@ -52,12 +49,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     init() {
         super.init(...arguments);
-
-        let shortcuts = {};
-
-        shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
-        shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
-        this.shortcuts = shortcuts;
 
         // Set initial previous route
         this.previousRoute = this.router.currentRouteName;
@@ -91,13 +82,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         this._setIconStyle();
     }
 
-    didInsertElement() {
-        super.didInsertElement(...arguments);
-        this.registerShortcuts();
-    }
-
     willDestroyElement() {
-        this.removeShortcuts();
         super.willDestroyElement(...arguments);
         if (this._routeChangeHandler) {
             this.router.off('routeDidChange', this._routeChangeHandler);
@@ -121,11 +106,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
-    }
-
-    @action
-    openSettings() {
-        this.router.transitionTo('settings-x');
     }
 
     @action
