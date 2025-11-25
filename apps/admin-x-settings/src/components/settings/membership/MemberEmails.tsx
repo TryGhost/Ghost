@@ -60,7 +60,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='memberemails'
             testId='memberemails'
-            title="Welcome emails"
+            title='Welcome emails'
         >
             <SettingGroupContent className="!gap-y-0" columns={1}>
                 <Separator />
@@ -98,7 +98,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {paidWelcomeEmailState &&
                     <DummyEmail
                         sender='Publisher Weekly'
-                        title="Welcome to your paid subscription"
+                        title='Welcome to your paid subscription'
                     />
                 }
             </SettingGroupContent>
