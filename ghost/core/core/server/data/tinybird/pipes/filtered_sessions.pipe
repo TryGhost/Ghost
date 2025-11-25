@@ -1,6 +1,6 @@
 TOKEN "axis" READ
 
-NODE query_filters
+NODE sessions_filtered_by_hit_attributes
 DESCRIPTION >
     Get sessions where at least one hit matches the hit-level filter criteria.
     Hit-level filters (pathname, post_uuid, member_status, location) can vary across pageviews within a session.
@@ -35,12 +35,24 @@ SQL >
     %
     select session_id
     from mv_session_data sd
-    inner join query_filters qf
-      on qf.session_id = sd.session_id
+    inner join sessions_filtered_by_hit_attributes sfha
+      on sfha.session_id = sd.session_id
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
-        {% if defined(date_from) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
-        {% if defined(date_to) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+        {% if defined(date_from) %}
+            {# Filter from specified start date #}
+            and toDate(toTimezone(first_pageview,{{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) >= {{ Date(date_from) }}
+        {% else %}
+            {# Default to last 7 days if no start date provided #}
+            and toDate(toTimezone(first_pageview,{{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) >= timestampAdd(today(), interval -7 day)
+        {% end %}
+        {% if defined(date_to) %}
+            {# Filter to specified end date #}
+            and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }}
+        {% else %}
+            {# Default to today if no end date provided #}
+            and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today()
+        {% end %}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
         {% if defined(utm_source) %} and utm_source = {{ String(utm_source, description="UTM source to filter on", required=False) }} {% end %}
         {% if defined(utm_medium) %} and utm_medium = {{ String(utm_medium, description="UTM medium to filter on", required=False) }} {% end %}
