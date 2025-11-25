@@ -1,7 +1,7 @@
 # Development Dockerfile for Ghost Monorepo
 # Not intended for production use. See https://github.com/tryghost/ghost-docker for production-ready self-hosting setup.
 
-ARG NODE_VERSION=22.13.1
+ARG NODE_VERSION=22.18.0
 
 # --------------------
 # Base Image
@@ -57,9 +57,6 @@ COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/emb
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-
-# Copy patches directory so patch-package can apply patches during yarn install
-COPY patches patches
 
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
     yarn install --frozen-lockfile --prefer-offline
