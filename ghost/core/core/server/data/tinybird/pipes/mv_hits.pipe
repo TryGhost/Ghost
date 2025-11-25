@@ -5,8 +5,8 @@ SQL >
 
     SELECT timestamp,
         inserted_at,
-        -- payload.meta.received_timestamp may be missing or null. Default to 0 (1970-01-01T:00:00:00Z) in this case.
-        -- Nullable fields incur performance penalty in clickhouse, so we default to zero instead of null.
+        -- payload.meta.received_timestamp may be missing or null
+        -- Nullable fields incur performance penalty in clickhouse, so we default to zero (unix epoch) instead of null.
         parseDateTime64BestEffortOrZero(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
         action,
         version,
@@ -44,6 +44,7 @@ SQL >
         received_at,
         inserted_at,
         case
+            -- set to -1 if received_at is the unix epoch, or if received_at is after inserted_at
             when toUnixTimestamp(received_at) = 0 then -1
             when received_at > inserted_at then -1
             else date_diff('millisecond', received_at, inserted_at)
