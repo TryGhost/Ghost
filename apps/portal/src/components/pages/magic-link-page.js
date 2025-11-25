@@ -288,7 +288,6 @@ export default class MagicLinkPage extends React.Component {
     render() {
         const {otcRef} = this.context;
         const showOTCForm = !!otcRef;
-        // const showOTCForm = true;
 
         return (
             <div className='gh-portal-content'>
