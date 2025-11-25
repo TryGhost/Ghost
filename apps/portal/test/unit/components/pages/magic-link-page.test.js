@@ -239,6 +239,22 @@ describe('MagicLinkPage', () => {
             });
         });
 
+        test('auto-submits when 6 digits are entered', () => {
+            const {mockDoActionFn, ...testUtils} = setupOTCTest();
+            const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
+
+            // Should not submit with less than 6 digits
+            fireEvent.change(otcInput, {target: {value: '12345'}});
+            expect(mockDoActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
+
+            // Should auto-submit when exactly 6 digits are entered
+            fireEvent.change(otcInput, {target: {value: '123456'}});
+            expect(mockDoActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '123456',
+                otcRef: 'test-otc-ref'
+            });
+        });
+
         test('handles different valid OTC formats', () => {
             const {mockDoActionFn, ...testUtils} = setupOTCTest();
             const testCodes = ['000000', '123456', '999999'];
