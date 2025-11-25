@@ -3,7 +3,7 @@ type LabsService = {
 };
 
 type EmailModel = {
-    findOne: (options: {filter: string; order: string}) => Promise<EmailRecord | null>;
+    findPage: (options: {filter: string; order: string; limit: number}) => Promise<{data: EmailRecord[]}>;
 };
 
 type EmailRecord = {
@@ -20,22 +20,48 @@ type WarmupScalingTable = {
         limit: number;
         scale: number;
     }[];
-    defaultScale: number;
+    highVolume: {
+        threshold: number;
+        maxScale: number;
+        maxAbsoluteIncrease: number;
+    };
 }
 
+/**
+ * Configuration for domain warming email volume scaling.
+ *
+ * | Volume Range | Multiplier                                       |
+ * |--------------|--------------------------------------------------|
+ * | ≤100 (base)  | 200 messages                                     |
+ * | 101 – 1k     | 1.25× (conservative early ramp)                  |
+ * | 1k – 5k      | 1.5× (moderate increase)                         |
+ * | 5k – 100k    | 1.75× (faster ramp after proving deliverability) |
+ * | 100k – 400k  | 2×                                               |
+ * | 400k+        | min(1.2×, +75k) cap                              |
+ */
 const WARMUP_SCALING_TABLE: WarmupScalingTable = {
     base: {
         limit: 100,
         value: 200
     },
     thresholds: [{
+        limit: 1_000,
+        scale: 1.25
+    }, {
+        limit: 5_000,
+        scale: 1.5
+    }, {
         limit: 100_000,
-        scale: 2
+        scale: 1.75
     }, {
         limit: 400_000,
-        scale: 1.5
+        scale: 2
     }],
-    defaultScale: 1.25
+    highVolume: {
+        threshold: 400_000,
+        maxScale: 1.2,
+        maxAbsoluteIncrease: 75_000
+    }
 };
 
 export class DomainWarmingService {
@@ -72,16 +98,17 @@ export class DomainWarmingService {
      * @returns The highest number of messages sent from the CSD in a single email (excluding today)
      */
     async #getHighestCount(): Promise<number> {
-        const email = await this.#emailModel.findOne({
+        const result = await this.#emailModel.findPage({
             filter: `created_at:<${new Date().toISOString().split('T')[0]}`,
-            order: 'csd_email_count DESC'
+            order: 'csd_email_count DESC',
+            limit: 1
         });
 
-        if (!email) {
+        if (!result.data.length) {
             return 0;
         }
 
-        const count = email.get('csd_email_count');
+        const count = result.data[0].get('csd_email_count');
         return count || 0;
     }
 
@@ -94,12 +121,20 @@ export class DomainWarmingService {
             return WARMUP_SCALING_TABLE.base.value;
         }
 
+        // For high volume senders (400k+), cap the increase at 20% or 75k absolute
+        if (lastCount > WARMUP_SCALING_TABLE.highVolume.threshold) {
+            const scaledIncrease = Math.ceil(lastCount * WARMUP_SCALING_TABLE.highVolume.maxScale);
+            const absoluteIncrease = lastCount + WARMUP_SCALING_TABLE.highVolume.maxAbsoluteIncrease;
+            return Math.min(scaledIncrease, absoluteIncrease);
+        }
+
         for (const threshold of WARMUP_SCALING_TABLE.thresholds.sort((a, b) => a.limit - b.limit)) {
             if (lastCount <= threshold.limit) {
                 return Math.ceil(lastCount * threshold.scale);
             }
         }
 
-        return Math.ceil(lastCount * WARMUP_SCALING_TABLE.defaultScale);
+        // This should not be reached given the thresholds cover all cases up to highVolume.threshold
+        return Math.ceil(lastCount * WARMUP_SCALING_TABLE.highVolume.maxScale);
     }
 }
