@@ -5,7 +5,7 @@ SQL >
 
     SELECT timestamp,
         inserted_at,
-        parseDateTime64BestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
+        parseDateTime64BestEffortOrZero(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
         action,
         version,
         coalesce(session_id, '0') as session_id,
@@ -41,6 +41,7 @@ SQL >
         timestamp,
         received_at,
         inserted_at,
+        date_diff('millisecond', received_at, inserted_at) as ingestion_latency_ms,
         action,
         version,
         session_id,
