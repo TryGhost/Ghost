@@ -1,0 +1,134 @@
+name: ghost-dev
+
+services:
+  mysql:
+    image: mysql:8.4.5
+    container_name: ghost-dev-mysql
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost_dev}
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ghost
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}", "-e", "SELECT 1"]
+      interval: 1s
+      retries: 120
+      timeout: 5s
+      start_period: 10s
+
+  redis:
+    image: redis:7.0
+    container_name: ghost-dev-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      interval: 1s
+      retries: 120
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: ghost-dev-mailpit
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web interface
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 1s
+      retries: 30
+
+  # Main development Ghost instance
+  # Additional instances can be created programmatically via E2E GhostManager
+  ghost-dev:
+    build:
+      context: ./
+      dockerfile: docker/ghost-dev/Dockerfile
+    container_name: ghost-dev
+    working_dir: /home/ghost/ghost/core
+    command: ["yarn", "dev"]
+    volumes:
+      - ./ghost:/home/ghost/ghost
+      # Mount specific content subdirectories to preserve themes/adapters from source
+      - ghost-dev-data:/home/ghost/ghost/core/content/data
+      - ghost-dev-images:/home/ghost/ghost/core/content/images
+      - ghost-dev-media:/home/ghost/ghost/core/content/media
+      - ghost-dev-files:/home/ghost/ghost/core/content/files
+      - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+    environment:
+      NODE_ENV: development
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      database__client: mysql2
+      database__connection__host: mysql
+      database__connection__user: root
+      database__connection__password: ${MYSQL_ROOT_PASSWORD:-root}
+      database__connection__database: ${MYSQL_DATABASE:-ghost_dev}
+      server__host: 0.0.0.0
+      server__port: 2368
+      mail__transport: SMTP
+      mail__options__host: mailpit
+      mail__options__port: 1025
+      # Redis cache (optional)
+      adapters__cache__Redis__host: redis
+      adapters__cache__Redis__port: 6379
+      # Public app assets - proxied through Caddy gateway to host dev servers
+      # Using /ghost/assets/* paths
+      portal__url: /ghost/assets/portal/portal.min.js
+      comments__url: /ghost/assets/comments-ui/comments-ui.min.js
+      sodoSearch__url: /ghost/assets/sodo-search/sodo-search.min.js
+      sodoSearch__styles: /ghost/assets/sodo-search/main.css
+      signupForm__url: /ghost/assets/signup-form/signup-form.min.js
+      announcementBar__url: /ghost/assets/announcement-bar/announcement-bar.min.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # Caddy reverse proxy for the main dev instance
+  # Routes Ghost backend + proxies asset requests to host dev servers
+  ghost-dev-gateway:
+    build:
+      context: ./docker/dev-gateway
+      dockerfile: Dockerfile
+    container_name: ghost-dev-gateway
+    ports:
+      - "2368:80"
+      - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ghost-dev:
+        condition: service_healthy
+
+
+volumes:
+  mysql-data:
+  redis-data:
+  ghost-dev-data:
+  ghost-dev-images:
+  ghost-dev-media:
+  ghost-dev-files:
+  ghost-dev-logs:
+
+networks:
+  default:
+    name: ghost_dev

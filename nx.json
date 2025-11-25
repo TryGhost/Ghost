@@ -30,6 +30,10 @@
         },
         "test:unit": {
             "cache": true
+        },
+        "dev": {
+          "dependsOn": ["^dev"],
+          "continuous": true
         }
     },
     "cacheDirectory": ".nxcache"

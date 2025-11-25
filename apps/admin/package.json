@@ -44,6 +44,14 @@
   },
   "nx": {
     "targets": {
+      "dev": {
+        "dependsOn": [
+          "ghost-admin:dev",
+          "@tryghost/admin-x-framework:dev",
+          "@tryghost/admin-x-design-system:dev",
+          "@tryghost/shade:dev"
+        ]
+      },
       "build:dev": {
         "dependsOn": [
           "build",

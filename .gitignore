@@ -126,6 +126,7 @@ test/functional/*.png
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
 !docker/caddy/Caddyfile
+!docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json

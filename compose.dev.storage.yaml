@@ -1,0 +1,66 @@
+# Object Storage configuration for Ghost development environment
+# Use with: docker compose -f compose.dev.yaml -f compose.dev.storage.yaml up
+#
+# This file adds MinIO (S3-compatible storage) and configures ghost-dev to use it.
+# Without this file, Ghost uses local filesystem storage (the default).
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2024-12-13T22-19-12Z
+    container_name: ghost-dev-minio
+    command: server /data --console-address ':9001'
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Web console
+    environment:
+      - MINIO_ROOT_USER=minio-user
+      - MINIO_ROOT_PASSWORD=minio-pass
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 1s
+      retries: 120
+
+  minio-setup:
+    image: minio/mc
+    container_name: ghost-dev-minio-setup
+    entrypoint: ["/bin/sh", "/setup.sh"]
+    environment:
+      - MINIO_ROOT_USER=minio-user
+      - MINIO_ROOT_PASSWORD=minio-pass
+      - MINIO_BUCKET=ghost-dev
+    volumes:
+      - ./.docker/minio/setup.sh:/setup.sh:ro
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
+  ghost-dev:
+    environment:
+      # Object Storage - S3Storage adapter with MinIO backend
+      storage__media__adapter: S3Storage
+      storage__media__staticFileURLPrefix: content/media
+      storage__files__adapter: S3Storage
+      storage__files__staticFileURLPrefix: content/files
+      storage__S3Storage__bucket: ghost-dev
+      storage__S3Storage__region: us-east-1
+      storage__S3Storage__tenantPrefix: ab/ab1234567890abcdef1234567890abcd
+      storage__S3Storage__forcePathStyle: "true"
+      storage__S3Storage__cdnUrl: http://127.0.0.1:9000/ghost-dev
+      storage__S3Storage__staticFileURLPrefix: content/images
+      storage__S3Storage__endpoint: http://minio:9000
+      storage__S3Storage__accessKeyId: minio-user
+      storage__S3Storage__secretAccessKey: minio-pass
+      urls__media: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
+      urls__files: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
+    depends_on:
+      minio:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+
+volumes:
+  minio-data:
+
