@@ -5,6 +5,8 @@ SQL >
 
     SELECT timestamp,
         inserted_at,
+        -- payload.meta.received_timestamp may be missing or null. Default to 0 (1970-01-01T:00:00:00Z) in this case.
+        -- Nullable fields incur performance penalty in clickhouse, so we default to zero instead of null.
         parseDateTime64BestEffortOrZero(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
         action,
         version,
