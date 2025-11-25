@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             <DialogTrigger className='mt-0.5 w-full'>
                                 <SearchInput />
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className='max-h-[452px] h-full overflow-y-auto pb-0 flex flex-col'>
                                 <Search query={searchQuery} setQuery={setSearchQuery} onOpenChange={setIsSearchOpen} />
                             </DialogContent>
                         </Dialog>
