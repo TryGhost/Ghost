@@ -12,7 +12,7 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
-    getMailClient(settingsCache, configService) {
+    getMailClient(settingsCache, configService, labs) {
         if (settingsCache.get('bulk_email_provider') === 'postmark') {
             // Postmark client instance for email provider
             return new PostmarkClient({
@@ -22,7 +22,7 @@ class EmailServiceWrapper {
 
         // Mailgun client instance for email provider
         return new MailgunClient({
-            config: configService, settings: settingsCache
+            config: configService, settings: settingsCache, labs
         });
     }
 
@@ -37,6 +37,7 @@ class EmailServiceWrapper {
         const SendingService = require('./SendingService');
         const BatchSendingService = require('./BatchSendingService');
         const EmailSegmenter = require('./EmailSegmenter');
+        const {DomainWarmingService} = require('./DomainWarmingService');
         const BulkEmailProvider = require('./BulkEmailProvider');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
@@ -70,7 +71,7 @@ class EmailServiceWrapper {
         };
 
         // Mail client instance for email provider
-        let mailClient = this.getMailClient(settingsCache, configService);
+        let mailClient = this.getMailClient(settingsCache, configService, labs);
 
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
@@ -121,12 +122,19 @@ class EmailServiceWrapper {
 
         const sendingService = new SendingService({
             emailProvider: bulkEmailProvider,
-            emailRenderer
+            emailRenderer,
+            emailAddressService: emailAddressService.service
         });
 
         const emailSegmenter = new EmailSegmenter({
             membersRepository
         });
+
+        const domainWarmingService = new DomainWarmingService({
+            models: {Email},
+            labs
+        });
+
         const batchSendingService = new BatchSendingService({
             sendingService,
             models: {
@@ -138,6 +146,7 @@ class EmailServiceWrapper {
             jobsService,
             emailSegmenter,
             emailRenderer,
+            domainWarmingService,
             db,
             sentry,
             debugStorageFilePath: configService.getContentPath('data')
@@ -157,7 +166,8 @@ class EmailServiceWrapper {
             limitService,
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
-            emailAnalyticsJobs
+            emailAnalyticsJobs,
+            domainWarmingService
         });
 
         this.controller = new EmailController(this.service, {

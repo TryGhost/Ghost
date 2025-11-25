@@ -1,5 +1,5 @@
 import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
-import {UserDetailProps} from '../UserDetailModal';
+import {type UserDetailProps} from '../UserDetailModal';
 import {
     blueskyHandleToUrl,
     blueskyUrlToHandle,

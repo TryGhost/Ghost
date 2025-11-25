@@ -4,6 +4,7 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
   "author": "Ghost Foundation",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --noEmit",
     "build": "yarn test:types",
@@ -16,17 +17,19 @@
     "test:single": "playwright test --project=main -g",
     "test:debug": "playwright test --project=main --headed --timeout=60000 -g",
     "test:types": "tsc --noEmit",
-    "lint": "eslint . --ext .ts --cache"
+    "lint": "eslint . --cache"
   },
   "files": [
     "build"
   ],
   "devDependencies": {
+    "@eslint/js": "9.37.0",
     "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.55.1",
     "@tryghost/debug": "0.1.35",
     "@tryghost/logging": "2.4.23",
     "@types/dockerode": "3.3.44",
+    "typescript-eslint": "8.46.1",
     "c8": "10.1.3",
     "dockerode": "4.0.9",
     "dotenv": "16.6.1",

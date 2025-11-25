@@ -9,9 +9,13 @@ import PostsAppContextProvider from "@tryghost/posts/src/providers/PostsAppConte
 import { routes as postRoutes } from "@tryghost/posts/src/routes";
 
 // Stats (aka analytics)
-import GlobalDataProvider from "@tryghost/stats/src/providers/GlobalDataProvider";
+import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provider";
 import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 
+// Settings
+import { Settings } from "./settings/Settings";
+
+// Ember
 import { EmberFallback } from "./ember-bridge";
 
 export const routes: RouteObject[] = [
@@ -52,6 +56,10 @@ export const routes: RouteObject[] = [
             </FeatureFlagsProvider>
         ),
         children: activityPubRoutes,
+    },
+    {
+        path: `settings/*`,
+        element: <Settings />,
     },
     {
         path: "*",

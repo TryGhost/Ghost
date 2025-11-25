@@ -96,6 +96,7 @@ class BulkEmailProvider {
             html,
             plaintext,
             from,
+            domainOverride,
             replyTo,
             emailId,
             recipients,
@@ -113,6 +114,7 @@ class BulkEmailProvider {
                 plaintext,
                 from,
                 replyTo,
+                domainOverride,
                 id: emailId,
                 track_opens: !!options.openTrackingEnabled,
                 track_clicks: !!options.clickTrackingEnabled
