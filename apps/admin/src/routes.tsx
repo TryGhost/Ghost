@@ -5,7 +5,7 @@ import { FeatureFlagsProvider } from "@tryghost/activitypub/src/lib/feature-flag
 import { routes as activityPubRoutes } from "@tryghost/activitypub/src/routes";
 
 // Posts (aka tags and post analytics)
-import PostsAppContextProvider from "@tryghost/posts/src/providers/PostsAppContext";
+import PostsAppContextProvider from "@tryghost/posts/src/providers/posts-app-context";
 import { routes as postRoutes } from "@tryghost/posts/src/routes";
 
 // Stats (aka analytics)

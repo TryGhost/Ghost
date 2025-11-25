@@ -1,5 +1,5 @@
 import './styles/index.css';
-import App from './App';
+import App from './app';
 
 export {
     App as AdminXApp

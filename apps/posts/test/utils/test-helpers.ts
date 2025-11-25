@@ -25,12 +25,12 @@ export const createTestWrapper = () => {
             mutations: {retry: false}
         }
     });
-    
+
     const Wrapper = ({children}: {children: React.ReactNode}) => (
         React.createElement(QueryClientProvider, {client: queryClient}, children)
     );
     Wrapper.displayName = 'TestWrapper';
-    
+
     return Wrapper;
 };
 
@@ -148,7 +148,7 @@ export const setupPostsAppMocks = async () => {
     const mockUsePostGrowthStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostGrowthStats;
     const mockUseMrrHistory = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useMrrHistory;
     const mockUseTopLinks = vi.mocked(await import('@tryghost/admin-x-framework/api/links')).useTopLinks;
-    const mockUseGlobalData = vi.mocked(await import('@src/providers/PostAnalyticsContext')).useGlobalData;
+    const mockUseGlobalData = vi.mocked(await import('@src/providers/post-analytics-context')).useGlobalData;
     const mockGetSettingValue = vi.mocked(await import('@tryghost/admin-x-framework/api/settings')).getSettingValue;
 
     // Set up ALL mocks with sensible defaults using centralized fixtures
@@ -179,4 +179,4 @@ export const setupPostsAppMocks = async () => {
 
 // Legacy compatibility
 export const setupUniversalMocks = setupPostsAppMocks;
-export const setupDefaultPostMocks = setupPostsAppMocks; 
+export const setupDefaultPostMocks = setupPostsAppMocks;
