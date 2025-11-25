@@ -14,24 +14,6 @@ SQL >
         on fs.session_id = h.session_id
     where
         site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
-        {% if defined(date_from) %}
-            and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
-            >=
-            {{ Date(date_from, description="Starting day for filtering a date range", required=False) }}
-        {% else %}
-            and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
-            >=
-            timestampAdd(today(), interval -7 day)
-        {% end %}
-        {% if defined(date_to) %}
-            and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
-            <=
-            {{ Date(date_to, description="Finishing day for filtering a date range", required=False) }}
-        {% else %}
-            and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
-            <=
-            today()
-        {% end %}
         {% if defined(member_status) %}
             and member_status IN (
                 select arrayJoin(
@@ -50,11 +32,6 @@ SQL >
                 and (post_type != 'post' or post_type is null)
             {% end %}
         {% end %}
-        {% if defined(utm_source) %} and utm_source = {{ String(utm_source, description="UTM source to filter on", required=False) }} {% end %}
-        {% if defined(utm_medium) %} and utm_medium = {{ String(utm_medium, description="UTM medium to filter on", required=False) }} {% end %}
-        {% if defined(utm_campaign) %} and utm_campaign = {{ String(utm_campaign, description="UTM campaign to filter on", required=False) }} {% end %}
-        {% if defined(utm_term) %} and utm_term = {{ String(utm_term, description="UTM term to filter on", required=False) }} {% end %}
-        {% if defined(utm_content) %} and utm_content = {{ String(utm_content, description="UTM content to filter on", required=False) }} {% end %}
     group by post_uuid, pathname
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
