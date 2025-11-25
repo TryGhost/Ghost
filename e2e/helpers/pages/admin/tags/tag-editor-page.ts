@@ -6,8 +6,6 @@ export class TagEditorPage extends TagDetailsPage {
     readonly deleteModalPostsCount: Locator;
     readonly deleteModalConfirmButton: Locator;
 
-    readonly navMenuItem: Locator;
-
     constructor(page: Page) {
         super(page);
 
@@ -16,8 +14,6 @@ export class TagEditorPage extends TagDetailsPage {
         this.deleteModal = page.locator('[data-test-modal="confirm-delete-tag"]');
         this.deleteModalPostsCount = this.deleteModal.locator('[data-test-text="posts-count"]');
         this.deleteModalConfirmButton = this.deleteModal.locator('[data-test-button="confirm"]');
-
-        this.navMenuItem = page.locator('[data-test-nav="tags"]');
     }
 
     async gotoTagBySlug(slug: string) {

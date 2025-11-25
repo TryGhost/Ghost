@@ -118,14 +118,14 @@ function UserMenu(props: UserMenuProps) {
                     )}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <Link to={`/settings/staff/${currentUser.data?.slug}`} role="menuitem">
+                    <Link to={`/settings/staff/${currentUser.data?.slug}`}>
                         <LucideIcon.User />
                         <span>Your profile</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-base" asChild>
-                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <a href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
                         <LucideIcon.Book />
                         Resources & guides
                     </a>

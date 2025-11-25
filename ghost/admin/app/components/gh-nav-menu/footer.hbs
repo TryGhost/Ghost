@@ -110,7 +110,7 @@
                 <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" data-test-nav="settings">{{svg-jar "settings" title="Settings (CTRL/⌘ + ,)"}}</LinkTo>
             {{/if}}
             <div class="nightshift-toggle-container">
-                <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{on "click" this.toggleNightShift}} role="button">
+                <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{on "click" this.toggleNightShift}} role="button" aria-label="Dark mode">
                     <div class="sun">{{svg-jar "sun"}}</div>
                     <div class="moon">{{svg-jar "moon"}}</div>
                     <div class="thumb"></div>
