@@ -8,8 +8,6 @@ let hasScheduled = {
 
 module.exports = {
     async scheduleMemberWelcomeEmailJob() {
-        const configValue = config.get('memberWelcomeEmailSendInstantly');
-        const testEmailSendInstantly = configValue === true || configValue === 'true';
         const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
         const alreadyScheduledProcessing = hasScheduled.processOutbox;
 
@@ -17,7 +15,8 @@ module.exports = {
             return false;
         }
 
-        hasScheduled.processOutbox = true;
+        const configValue = config.get('memberWelcomeEmailSendInstantly');
+        const testEmailSendInstantly = configValue === true || configValue === 'true';
         const cronSchedule = testEmailSendInstantly ? '*/3 * * * * *' : '0 */5 * * * *';
 
         jobsService.addJob({
@@ -26,6 +25,7 @@ module.exports = {
             name: 'process-member-welcome-emails'
         });
 
+        hasScheduled.processOutbox = true;
         return hasScheduled.processOutbox;
     }
 };
