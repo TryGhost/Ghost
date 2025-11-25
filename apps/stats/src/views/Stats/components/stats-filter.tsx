@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
+import {useAppContext} from '@src/app';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
@@ -162,12 +163,26 @@ const usePostOptions = () => {
 
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
     const {audience, setAudience} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     // Track if we're currently handling a filter change to prevent loops
     const isHandlingChange = useRef(false);
 
-    // Check if all audiences are selected (default state)
-    const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+    // Filter audience options based on site settings
+    const audienceOptions = useMemo(() => {
+        const options = [
+            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>, bit: AUDIENCE_BITS.PUBLIC},
+            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>, bit: AUDIENCE_BITS.FREE},
+            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>, bit: AUDIENCE_BITS.PAID}
+        ];
+        return appSettings?.paidMembersEnabled ? options : options.filter(opt => opt.value !== 'paid');
+    }, [appSettings?.paidMembersEnabled]);
+
+    // Calculate "all audiences" bitmask based on available options
+    const ALL_AUDIENCES = useMemo(() => {
+        return audienceOptions.reduce((acc, opt) => acc | opt.bit, 0);
+    }, [audienceOptions]);
+
     const isDefaultAudience = audience === ALL_AUDIENCES;
 
     // Only sync global audience to filter if:
@@ -195,17 +210,10 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
         const currentValues = audienceFilter?.values || [];
 
-        // Convert global audience bitmask to filter values
-        const expectedValues: string[] = [];
-        if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
-            expectedValues.push('undefined');
-        }
-        if ((audience & AUDIENCE_BITS.FREE) !== 0) {
-            expectedValues.push('free');
-        }
-        if ((audience & AUDIENCE_BITS.PAID) !== 0) {
-            expectedValues.push('paid');
-        }
+        // Convert global audience bitmask to filter values using available options
+        const expectedValues = audienceOptions
+            .filter(opt => (audience & opt.bit) !== 0)
+            .map(opt => opt.value);
 
         // Only update if values have changed
         const valuesChanged = expectedValues.length !== currentValues.length ||
@@ -228,7 +236,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 onChange(otherFilters);
             }
         }
-    }, [audience, isDefaultAudience, filters, onChange]);
+    }, [audience, isDefaultAudience, filters, onChange, audienceOptions]);
 
     // Handle filter changes - update global audience when audience filter changes
     const handleFilterChange = useCallback((newFilters: Filter[]) => {
@@ -257,17 +265,10 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             JSON.stringify(oldAudienceFilter?.values) !== JSON.stringify(values);
 
         if (audienceChanged && audienceFilter) {
-            // Convert filter values to bitmask
-            let newAudience = 0;
-            if (values.includes('undefined')) {
-                newAudience |= AUDIENCE_BITS.PUBLIC;
-            }
-            if (values.includes('free')) {
-                newAudience |= AUDIENCE_BITS.FREE;
-            }
-            if (values.includes('paid')) {
-                newAudience |= AUDIENCE_BITS.PAID;
-            }
+            // Convert filter values to bitmask using available options
+            const newAudience = audienceOptions
+                .filter(opt => values.includes(opt.value))
+                .reduce((acc, opt) => acc | opt.bit, 0);
 
             // Update global audience if it changed
             if (newAudience !== audience) {
@@ -284,7 +285,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         setTimeout(() => {
             isHandlingChange.current = false;
         }, 0);
-    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES]);
+    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES, audienceOptions]);
 
     // Fetch options for all UTM fields
     // Options are contextual - filtered based on currently applied filters (e.g., if a post is selected,
@@ -377,11 +378,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         label: 'Audience',
                         type: 'multiselect',
                         icon: <LucideIcon.Users />,
-                        options: [
-                            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>},
-                            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>},
-                            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>}
-                        ]
+                        options: audienceOptions.map(({value, label, icon}) => ({value, label, icon}))
                     },
                     {
                         key: 'post',
@@ -402,7 +399,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery]);
+    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery, audienceOptions]);
 
     return (
         <Filters
