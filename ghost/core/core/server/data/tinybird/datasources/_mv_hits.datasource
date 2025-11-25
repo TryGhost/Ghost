@@ -1,6 +1,7 @@
 SCHEMA >
     `site_uuid` LowCardinality(String),
     `timestamp` DateTime,
+    `received_timestamp` DateTime,
     `action` LowCardinality(String),
     `version` LowCardinality(String),
     `session_id` String,
