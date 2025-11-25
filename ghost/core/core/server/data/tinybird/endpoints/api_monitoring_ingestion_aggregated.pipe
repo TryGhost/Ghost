@@ -4,13 +4,13 @@ TOKEN "axis" READ
 NODE ingestion_latency
 SQL >
     %
-    SELECT
+    SELECT 
         site_uuid,
         inserted_at,
-        received_timestamp,
+        parseDateTimeBestEffort(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_timestamp,
         dateDiff('millisecond', received_timestamp, inserted_at) as latency_ms
-    FROM _mv_hits
-    WHERE
+    FROM analytics_events
+    WHERE 
         JSONExtractString(payload, 'meta', 'received_timestamp') != ''
         {% if defined(start_date) %}
             AND toDate(inserted_at) >= {{ Date(start_date, description="Start date for filtering", required=False) }}
@@ -29,7 +29,7 @@ SQL >
 NODE ingestion_metrics
 SQL >
     %
-    SELECT
+    SELECT 
         {% if defined(site_uuid) %}
         site_uuid,
         {% end %}
