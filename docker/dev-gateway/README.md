@@ -13,7 +13,7 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
 - `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5173`)
-- `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4201`)
+- `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
 - `PORTAL_DEV_SERVER` - Portal dev server (e.g., `host.docker.internal:4175`)
 - `COMMENTS_DEV_SERVER` - Comments UI (e.g., `host.docker.internal:7173`)
 - `SIGNUP_DEV_SERVER` - Signup form (e.g., `host.docker.internal:6174`)
@@ -34,7 +34,7 @@ The Caddyfile defines these routing rules:
 
 | Path Pattern                         | Target                              | Purpose                                                                |
 |--------------------------------------|-------------------------------------|------------------------------------------------------------------------|
-| `/ember-cli-live-reload.js`          | Admin live reload (port 4201)       | Ember hot-reload script and WebSocket                                  |
+| `/ember-cli-live-reload.js`          | Admin live reload (port 4200)       | Ember hot-reload script and WebSocket                                  |
 | `/ghost/api/*`                       | Ghost backend                       | Ghost API (bypasses admin dev server)                                  |
 | `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
 | `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
