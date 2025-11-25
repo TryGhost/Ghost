@@ -302,7 +302,8 @@ describe('MagicLinkPage', () => {
             const loadingButton = testUtils.getByRole('button');
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
 
-            fireEvent.change(otcInput, {target: {value: '123456'}});
+            // Enter less than 6 digits to avoid auto-submit
+            fireEvent.change(otcInput, {target: {value: '12345'}});
             fireEvent.click(loadingButton);
 
             expect(mockDoActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
@@ -310,8 +311,12 @@ describe('MagicLinkPage', () => {
 
         test('Enter key submission is blocked during loading state', () => {
             const {mockDoActionFn, ...testUtils} = setupOTCTest({action: 'verifyOTC:running'});
+            const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
 
-            fillAndSubmitOTC(testUtils, '123456', 'enter');
+            // Enter less than 6 digits to avoid auto-submit
+            fireEvent.change(otcInput, {target: {value: '12345'}});
+            const form = otcInput.closest('form');
+            fireEvent.submit(form);
 
             expect(mockDoActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
         });
@@ -341,13 +346,12 @@ describe('MagicLinkPage', () => {
         test('supports multiple submission attempts with different values', () => {
             const {mockDoActionFn, ...testUtils} = setupOTCTest();
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
-            const submitButton = testUtils.getByRole('button', {name: 'Continue'});
 
+            // First submission - auto-submits when 6 digits entered
             fireEvent.change(otcInput, {target: {value: '111111'}});
-            fireEvent.click(submitButton);
 
+            // Second submission - auto-submits when 6 digits entered
             fireEvent.change(otcInput, {target: {value: '222222'}});
-            fireEvent.click(submitButton);
 
             expect(mockDoActionFn).toHaveBeenCalledTimes(2);
             expect(mockDoActionFn).toHaveBeenNthCalledWith(1, 'verifyOTC', {
