@@ -1,7 +1,7 @@
 const jobs = require('./jobs');
 const StartMemberWelcomeEmailJobEvent = require('./events/StartMemberWelcomeEmailJobEvent');
 const domainEvents = require('@tryghost/domain-events');
-const processOutbox = require('./jobs/lib/process-outbox-main');
+const processOutbox = require('./jobs/lib/process-outbox');
 
 class MemberWelcomeEmailsServiceWrapper {
     init() {

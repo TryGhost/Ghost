@@ -1,6 +1,5 @@
 // @ts-nocheck - Models are dynamically loaded
 const assert = require('assert/strict');
-const path = require('path');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
@@ -9,7 +8,7 @@ const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 
 const JOB_NAME = 'process-outbox-test';
-const runProcessOutbox = require('../../../core/server/services/member-welcome-emails/jobs/lib/process-outbox-main');
+const processOutbox = require('../../../core/server/services/member-welcome-emails/jobs/lib/process-outbox');
 
 describe('Process Outbox Job', function () {
     let jobService;
@@ -36,7 +35,7 @@ describe('Process Outbox Job', function () {
     async function scheduleInlineJob() {
         await jobService.addJob({
             name: JOB_NAME,
-            job: () => runProcessOutbox(),
+            job: () => processOutbox(),
             offloaded: false
         });
 
