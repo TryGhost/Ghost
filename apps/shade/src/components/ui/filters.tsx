@@ -21,7 +21,7 @@ import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Switch} from '@/components/ui/switch';
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {cva, type VariantProps} from 'class-variance-authority';
-import {AlertCircle, Check, Plus, X} from 'lucide-react';
+import {AlertCircle, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 // i18n Configuration Interface
@@ -31,6 +31,7 @@ export interface FilterI18nConfig {
     searchFields: string;
     noFieldsFound: string;
     noResultsFound: string;
+    loading: string;
     select: string;
     true: string;
     false: string;
@@ -105,6 +106,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     searchFields: 'Search fields...',
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
+    loading: 'Loading...',
     select: 'Select...',
     true: 'True',
     false: 'False',
@@ -733,6 +735,11 @@ export interface FilterFieldConfig<T = unknown> {
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     // Search handler for select fields - called when search input changes
     onSearchChange?: (searchQuery: string) => void;
+    // When true, disables cmdk's built-in filtering and relies on parent to manage options
+    // Use this for server-side/async search where options are fetched dynamically
+    asyncSearch?: boolean;
+    // Shows loading indicator in the dropdown while true (used with asyncSearch)
+    isLoading?: boolean;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
     // Hide the operator dropdown and only show the operator as text
@@ -1004,11 +1011,14 @@ function SelectOptionsPopover<T = unknown>({
         onClose?.();
     };
 
+    // Determine if we should use server-side filtering (async search)
+    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
+
     // If inline mode, render the content directly without popover
     if (inline) {
         return (
             <div className="w-full">
-                <Command>
+                <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-8.5 text-sm"
@@ -1018,7 +1028,14 @@ function SelectOptionsPopover<T = unknown>({
                         />
                     )}
                     <CommandList>
-                        <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        {field.isLoading ? (
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                {context.i18n.loading}
+                            </div>
+                        ) : (
+                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        )}
 
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
@@ -1137,7 +1154,7 @@ function SelectOptionsPopover<T = unknown>({
                 </div>
             </PopoverTrigger>
             <PopoverContent align="start" className={cn('w-[200px] p-0', field.className)}>
-                <Command>
+                <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1147,7 +1164,14 @@ function SelectOptionsPopover<T = unknown>({
                         />
                     )}
                     <CommandList>
-                        <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        {field.isLoading ? (
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                {context.i18n.loading}
+                            </div>
+                        ) : (
+                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        )}
 
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
@@ -1523,6 +1547,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
     const isMultiSelect = values.length > 1;
     const selectedOptions = field.options?.filter(opt => values.includes(opt.value)) || [];
     const unselectedOptions = field.options?.filter(opt => !values.includes(opt.value)) || [];
+    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
 
     return (
         <Popover
@@ -1563,7 +1588,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 </div>
             </PopoverTrigger>
             <PopoverContent className={cn('w-36 p-0', field.popoverContentClassName)}>
-                <Command>
+                <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1573,7 +1598,14 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                         />
                     )}
                     <CommandList>
-                        <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        {field.isLoading ? (
+                            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                {context.i18n.loading}
+                            </div>
+                        ) : (
+                            <CommandEmpty>{context.i18n.noResultsFound}</CommandEmpty>
+                        )}
 
                         {/* Selected items */}
                         {selectedOptions.length > 0 && (
@@ -1781,7 +1813,7 @@ export function Filters<T = unknown>({
     popoverAlign = 'start'
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
-    const [selectedFieldForOptions, setSelectedFieldForOptions] = useState<FilterFieldConfig<T> | null>(null);
+    const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
 
     // Merge provided i18n with defaults
@@ -1803,6 +1835,9 @@ export function Filters<T = unknown>({
     };
 
     const fieldsMap = useMemo(() => getFieldsMap(fields), [fields]);
+
+    // Always get fresh field from fieldsMap to ensure we have updated options
+    const selectedFieldForOptions = selectedFieldKeyForOptions ? fieldsMap[selectedFieldKeyForOptions] : null;
 
     const updateFilter = useCallback(
         (filterId: string, updates: Partial<Filter<T>>) => {
@@ -1836,7 +1871,7 @@ export function Filters<T = unknown>({
             if (field && field.key) {
                 // For select and multiselect types, show options directly
                 if (field.type === 'select' || field.type === 'multiselect') {
-                    setSelectedFieldForOptions(field);
+                    setSelectedFieldKeyForOptions(field.key!);
                     // For multiselect, check if there's already a filter and use its values
                     const existingFilter = filters.find(f => f.field === fieldKey);
                     const initialValues = field.type === 'multiselect' && existingFilter ? existingFilter.values : [];
@@ -1907,7 +1942,7 @@ export function Filters<T = unknown>({
 
             if (closePopover) {
                 setAddFilterOpen(false);
-                setSelectedFieldForOptions(null);
+                setSelectedFieldKeyForOptions(null);
                 setTempSelectedValues([]);
             } else {
                 // For multiselect, keep popover open but update temp values
@@ -1959,7 +1994,7 @@ export function Filters<T = unknown>({
                         onOpenChange={(open) => {
                             setAddFilterOpen(open);
                             if (!open) {
-                                setSelectedFieldForOptions(null);
+                                setSelectedFieldKeyForOptions(null);
                                 setTempSelectedValues([]);
                             }
                         }}
@@ -1987,132 +2022,131 @@ export function Filters<T = unknown>({
                             )}
                         </PopoverTrigger>
                         <PopoverContent align={popoverAlign} className={cn('w-[200px] p-0', popoverContentClassName)}>
-                            <Command>
-                                {selectedFieldForOptions ? (
+                            {selectedFieldForOptions ? (
                                 // Show original select/multiselect rendering without back button
-                                    <SelectOptionsPopover<T>
-                                        field={selectedFieldForOptions}
-                                        inline={true}
-                                        values={tempSelectedValues as T[]}
-                                        onChange={(values) => {
-                                            // For multiselect, create filter immediately but keep popover open
-                                            // For single select, create filter and close popover
-                                            const shouldClosePopover = selectedFieldForOptions.type === 'select';
-                                            addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
-                                        }}
-                                        onClose={() => setAddFilterOpen(false)}
-                                    />
-                                ) : (
-                                // Show field selection
-                                    <>
-                                        {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
-                                        <CommandList>
-                                            <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
-                                            {fields.map((item, index) => {
-                                                // Handle grouped fields (FilterFieldGroup structure)
-                                                if (isFieldGroup(item)) {
-                                                    const groupFields = item.fields.filter((field) => {
-                                                        // Include separators and labels for display
-                                                        if (field.type === 'separator') {
-                                                            return true;
-                                                        }
-                                                        // If allowMultiple is true, don't filter out fields that already have filters
-                                                        if (allowMultiple) {
-                                                            return true;
-                                                        }
-                                                        // Filter out fields that already have filters (default behavior)
-                                                        return !filters.some(filter => filter.field === field.key);
-                                                    });
-
-                                                    if (groupFields.length === 0) {
-                                                        return null;
+                                // SelectOptionsPopover renders its own Command component when inline={true}
+                                <SelectOptionsPopover<T>
+                                    field={selectedFieldForOptions}
+                                    inline={true}
+                                    values={tempSelectedValues as T[]}
+                                    onChange={(values) => {
+                                        // For multiselect, create filter immediately but keep popover open
+                                        // For single select, create filter and close popover
+                                        const shouldClosePopover = selectedFieldForOptions.type === 'select';
+                                        addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
+                                    }}
+                                    onClose={() => setAddFilterOpen(false)}
+                                />
+                            ) : (
+                                // Show field selection - needs Command wrapper for search/list
+                                <Command>
+                                    {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
+                                    <CommandList>
+                                        <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
+                                        {fields.map((item, index) => {
+                                            // Handle grouped fields (FilterFieldGroup structure)
+                                            if (isFieldGroup(item)) {
+                                                const groupFields = item.fields.filter((field) => {
+                                                    // Include separators and labels for display
+                                                    if (field.type === 'separator') {
+                                                        return true;
                                                     }
-
-                                                    return (
-                                                        <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                            {groupFields.map((field, fieldIndex) => {
-                                                                // Handle separator - use field.key if available, or generate stable key
-                                                                if (field.type === 'separator') {
-                                                                    const sepKey = field.key ?? `${item.group ?? `group-${index}`}-separator-${fieldIndex}`;
-                                                                    return <CommandSeparator key={sepKey} />;
-                                                                }
-
-                                                                // Regular field
-                                                                return (
-                                                                    <CommandItem
-                                                                        key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
-                                                                        onSelect={() => field.key && addFilter(field.key)}
-                                                                    >
-                                                                        {field.icon}
-                                                                        <span>{field.label}</span>
-                                                                    </CommandItem>
-                                                                );
-                                                            })}
-                                                        </CommandGroup>
-                                                    );
-                                                }
-
-                                                // Handle group-level fields (new FilterFieldConfig structure with group property)
-                                                if (isGroupLevelField(item)) {
-                                                    const groupFields = item.fields!.filter((field) => {
-                                                        // Include separators and labels for display
-                                                        if (field.type === 'separator') {
-                                                            return true;
-                                                        }
-                                                        // If allowMultiple is true, don't filter out fields that already have filters
-                                                        if (allowMultiple) {
-                                                            return true;
-                                                        }
-                                                        // Filter out fields that already have filters (default behavior)
-                                                        return !filters.some(filter => filter.field === field.key);
-                                                    });
-
-                                                    if (groupFields.length === 0) {
-                                                        return null;
+                                                    // If allowMultiple is true, don't filter out fields that already have filters
+                                                    if (allowMultiple) {
+                                                        return true;
                                                     }
+                                                    // Filter out fields that already have filters (default behavior)
+                                                    return !filters.some(filter => filter.field === field.key);
+                                                });
 
-                                                    return (
-                                                        <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
-                                                            {groupFields.map((field) => {
-                                                                // Handle separator - use field.key if available, or generate stable key
-                                                                if (field.type === 'separator') {
-                                                                    const sepKey = field.key || `${item.group || `group-${index}`}-separator-${field.label || Math.random()}`;
-                                                                    return <CommandSeparator key={sepKey} />;
-                                                                }
-
-                                                                // Regular field
-                                                                return (
-                                                                    <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
-                                                                        {field.icon}
-                                                                        <span>{field.label}</span>
-                                                                    </CommandItem>
-                                                                );
-                                                            })}
-                                                        </CommandGroup>
-                                                    );
+                                                if (groupFields.length === 0) {
+                                                    return null;
                                                 }
 
-                                                // Handle flat field configuration (backward compatibility)
-                                                const field = item as FilterFieldConfig<T>;
-
-                                                // Handle separator - use field.key if available
-                                                if (field.type === 'separator') {
-                                                    const sepKey = field.key || `flat-separator-${field.label || index}`;
-                                                    return <CommandSeparator key={sepKey} />;
-                                                }
-
-                                                // Regular field
                                                 return (
-                                                    <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
-                                                        {field.icon}
-                                                        <span>{field.label}</span>
-                                                    </CommandItem>
+                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
+                                                        {groupFields.map((field, fieldIndex) => {
+                                                            // Handle separator - use field.key if available, or generate stable key
+                                                            if (field.type === 'separator') {
+                                                                const sepKey = field.key ?? `${item.group ?? `group-${index}`}-separator-${fieldIndex}`;
+                                                                return <CommandSeparator key={sepKey} />;
+                                                            }
+
+                                                            // Regular field
+                                                            return (
+                                                                <CommandItem
+                                                                    key={field.key ?? `${item.group ?? `group-${index}`}-field-${fieldIndex}`}
+                                                                    onSelect={() => field.key && addFilter(field.key)}
+                                                                >
+                                                                    {field.icon}
+                                                                    <span>{field.label}</span>
+                                                                </CommandItem>
+                                                            );
+                                                        })}
+                                                    </CommandGroup>
                                                 );
-                                            })}
-                                        </CommandList>
-                                    </>
-                                )}
-                            </Command>
+                                            }
+
+                                            // Handle group-level fields (new FilterFieldConfig structure with group property)
+                                            if (isGroupLevelField(item)) {
+                                                const groupFields = item.fields!.filter((field) => {
+                                                    // Include separators and labels for display
+                                                    if (field.type === 'separator') {
+                                                        return true;
+                                                    }
+                                                    // If allowMultiple is true, don't filter out fields that already have filters
+                                                    if (allowMultiple) {
+                                                        return true;
+                                                    }
+                                                    // Filter out fields that already have filters (default behavior)
+                                                    return !filters.some(filter => filter.field === field.key);
+                                                });
+
+                                                if (groupFields.length === 0) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <CommandGroup key={item.group || `group-${index}`} heading={item.group || 'Fields'}>
+                                                        {groupFields.map((field) => {
+                                                            // Handle separator - use field.key if available, or generate stable key
+                                                            if (field.type === 'separator') {
+                                                                const sepKey = field.key || `${item.group || `group-${index}`}-separator-${field.label || Math.random()}`;
+                                                                return <CommandSeparator key={sepKey} />;
+                                                            }
+
+                                                            // Regular field
+                                                            return (
+                                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                                    {field.icon}
+                                                                    <span>{field.label}</span>
+                                                                </CommandItem>
+                                                            );
+                                                        })}
+                                                    </CommandGroup>
+                                                );
+                                            }
+
+                                            // Handle flat field configuration (backward compatibility)
+                                            const field = item as FilterFieldConfig<T>;
+
+                                            // Handle separator - use field.key if available
+                                            if (field.type === 'separator') {
+                                                const sepKey = field.key || `flat-separator-${field.label || index}`;
+                                                return <CommandSeparator key={sepKey} />;
+                                            }
+
+                                            // Regular field
+                                            return (
+                                                <CommandItem key={field.key} onSelect={() => field.key && addFilter(field.key)}>
+                                                    {field.icon}
+                                                    <span>{field.label}</span>
+                                                </CommandItem>
+                                            );
+                                        })}
+                                    </CommandList>
+                                </Command>
+                            )}
                         </PopoverContent>
                     </Popover>
                 )}

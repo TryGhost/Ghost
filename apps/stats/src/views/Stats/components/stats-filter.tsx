@@ -218,7 +218,7 @@ const usePostOptions = () => {
             value: post.uuid
         }));
     }, [browseData]);
-
+    
     // Memoize the callback to avoid recreating the function on each render
     const setSearchQuery = useCallback((query: string) => {
         setSearchQueryInternal(query);
@@ -232,6 +232,9 @@ const usePostOptions = () => {
 };
 
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
+    // eslint-disable-next-line no-console
+    console.log('🔥 StatsFilter RENDER', Date.now());
+
     const {audience, setAudience} = useGlobalData();
     const {appSettings} = useAppContext();
 
@@ -370,7 +373,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const {options: sourceOptions} = useSourceOptions(filters);
 
     // Fetch options for posts with search support
-    const {options: postOptions, setSearchQuery} = usePostOptions();
+    const {options: postOptions, loading: postLoading, setSearchQuery} = usePostOptions();
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -460,6 +463,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         icon: <LucideIcon.File />,
                         options: postOptions,
                         searchable: true,
+                        asyncSearch: true,
+                        isLoading: postLoading,
                         onSearchChange: setSearchQuery,
                         operators: supportedOperators,
                         defaultOperator: 'is',
@@ -484,7 +489,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, setSearchQuery, audienceOptions, sourceOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions]);
 
     return (
         <Filters
