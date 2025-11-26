@@ -1,6 +1,9 @@
 import {AnalyticsWebTrafficPage} from '@/admin-pages';
 import {HomePage} from '@/public-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
+import { shouldSkipAnalyticsTests } from '@/helpers/environment/service-availability';
+
+test.skip(await shouldSkipAnalyticsTests(), 'Tinybird not available');
 
 test.describe('Ghost Admin - Analytics UTM Tracking', () => {
     test.describe('utmTracking flag disabled', () => {

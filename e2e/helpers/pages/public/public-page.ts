@@ -1,3 +1,4 @@
+import { shouldSkipAnalyticsTests } from '@/helpers/environment/service-availability';
 import {BasePage, pageGotoOptions} from '@/helpers/pages';
 import {Locator, Page, Response} from '@playwright/test';
 
@@ -86,19 +87,19 @@ export class PublicPage extends BasePage {
 
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
         await this.enableAnalyticsRequests();
-        const pageHitPromise = this.pageHitRequestPromise();
+        const pageHitPromise = this.waitForPageHitRequest();
         await super.goto(url, options);
         await pageHitPromise;
     }
-
-    pageHitRequestPromise(): Promise<Response> {
-        return this.page.waitForResponse((response) => {
+    
+    async waitForPageHitRequest(): Promise<void> {
+        if (await shouldSkipAnalyticsTests()) {
+            return;
+        }
+    
+        await this.page.waitForResponse((response) => {
             return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
         }, {timeout: 10000});
-    }
-
-    async waitForPageHitRequest(): Promise<void> {
-        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
