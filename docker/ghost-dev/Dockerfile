@@ -1,7 +1,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.13.1
+ARG NODE_VERSION=22.18.0
 
 FROM node:$NODE_VERSION-bullseye-slim
 
@@ -21,7 +21,6 @@ WORKDIR /home/ghost
 COPY package.json yarn.lock ./
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY patches patches
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime
