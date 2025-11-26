@@ -1,5 +1,8 @@
 import {AnalyticsWebTrafficPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
+import {shouldSkipAnalyticsTests} from '@/helpers/environment/service-availability';
+
+test.skip(await shouldSkipAnalyticsTests(), 'Tinybird not available');
 
 test.describe('Ghost Admin - Analytics Web Traffic', () => {
     let analyticsWebTrafficPage: AnalyticsWebTrafficPage;

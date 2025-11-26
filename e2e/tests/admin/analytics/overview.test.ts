@@ -5,6 +5,9 @@ import {
 } from '@/admin-pages';
 import {HomePage} from '@/public-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
+import {shouldSkipAnalyticsTests} from '@/helpers/environment/service-availability';
+
+test.skip(await shouldSkipAnalyticsTests(), 'Tinybird not available');
 
 test.describe('Ghost Admin - Analytics Overview', () => {
     test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {
