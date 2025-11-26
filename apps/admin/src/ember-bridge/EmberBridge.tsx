@@ -241,7 +241,7 @@ const defaultRouting: EmberRouting = {
 /**
  * Hook to access Ember routing state.
  * Returns routing methods that re-render when Ember's route changes.
- * 
+ *
  * @example
  * ```tsx
  * const routing = useEmberRouting();
@@ -257,19 +257,14 @@ export function useEmberRouting(): EmberRouting {
     useEffect(() => {
         // Wait for bridge to be available
         if (!bridge) {
-            void getStateBridge().then((stateBridge) => {
-                if (stateBridge) {
-                    setBridge(stateBridge);
-                }
-            });
-            return;
+            return waitForStateBridge(setBridge);
         }
-        
+
         // Subscribe to route changes to force re-renders
         const handleRouteChange = () => {
             forceUpdate(n => n + 1);
         };
-        
+
         bridge.on('routeChange', handleRouteChange);
         return () => bridge.off('routeChange', handleRouteChange);
     }, [bridge]);
