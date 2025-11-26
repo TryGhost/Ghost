@@ -36,9 +36,10 @@ export class LoginPage extends AdminPage {
     }
 
     async logoutByCookieClear() {
-        const context = await this.page.context();
+        const context = this.page.context();
         await context.clearCookies();
-        await this.page.reload();
+        await this.goto();
+        await this.refresh();
     }
 
     async waitForLoginPageAfterUserCreated(): Promise<void> {
