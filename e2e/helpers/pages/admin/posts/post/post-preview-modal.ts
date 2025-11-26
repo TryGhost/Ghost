@@ -1,12 +1,5 @@
 import {FrameLocator, Locator, Page} from '@playwright/test';
 
-interface PostContentLocators {
-    title: Locator;
-    featuredImage: Locator;
-    image: Locator;
-    content: Locator;
-}
-
 export class PostPreviewModal {
     private readonly page: Page;
     readonly modal: Locator;
@@ -35,6 +28,16 @@ export class PostPreviewModal {
         this.emailPreviewFrameBody = this.emailPreviewFrame.locator('body');
     }
 
+    async focusPreviewFrame(): Promise<void> {
+        await this.previewFrame.getByRole('heading', {level: 1}).click();
+    }
+
+    async clickPostLinkByTitle(title: string): Promise<void> {
+        await this.previewFrame.getByRole('link', {name: new RegExp(title, 'i')}).click();
+        await this.previewFrame.getByRole('heading', {level: 1, name: new RegExp(title, 'i')}).waitFor({state: 'visible', timeout: 10000});
+        await this.waitForEscapeScriptToByReady();
+    }
+
     async switchToEmailTab(): Promise<void> {
         await this.emailTabButton.click();
         await this.emailPreviewFrameBody.waitFor({state: 'visible'});
@@ -50,25 +53,14 @@ export class PostPreviewModal {
         await this.modal.waitFor({state: 'hidden'});
     }
 
-    async previewModalFrame(): Promise<PostContentLocators> {
+    async waitForPreviewModalFrame(): Promise<void> {
         await this.waitForPreviewContentToLoad();
         await this.waitForEscapeScriptToByReady();
-
-        return this.getContentLocators();
     }
 
     private async waitForPreviewContentToLoad(): Promise<void> {
         await this.previewFrame.getByRole('heading', {level: 1}).waitFor({state: 'visible', timeout: 20000});
-        await this.waitForImagesIfPresent();
-    }
-
-    private async waitForImagesIfPresent(): Promise<void> {
-        const anyImage = this.previewFrame.locator('img').first();
-        try {
-            await anyImage.waitFor({state: 'visible', timeout: 5000});
-        } catch {
-            // Images may not exist or may be slow to load on CI
-        }
+        await this.previewFrame.getByRole('article').first().waitFor({state: 'visible', timeout: 20000});
     }
 
     private async waitForEscapeScriptToByReady(): Promise<void> {
@@ -90,19 +82,5 @@ export class PostPreviewModal {
             },
             {timeout: 5000}
         );
-    }
-
-    private getContentLocators(): PostContentLocators {
-        return {
-            title: this.previewFrame.locator('h1').first(),
-            featuredImage: this.previewFrame.locator('.gh-content img, article img, .post-content img, main img').first(),
-            image: this.previewFrame.locator('img').first(),
-            content: this.previewFrame.locator('.gh-content, article, .post-content, main').first()
-        };
-    }
-
-    async focusElement(selector: string): Promise<void> {
-        const element = this.previewFrame.locator(selector);
-        await element.click();
     }
 }
