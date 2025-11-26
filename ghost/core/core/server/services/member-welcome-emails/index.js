@@ -1,3 +1,4 @@
+const logging = require('@tryghost/logging');
 const jobs = require('./jobs');
 const StartMemberWelcomeEmailJobEvent = require('./events/StartMemberWelcomeEmailJobEvent');
 const domainEvents = require('@tryghost/domain-events');
@@ -11,14 +12,26 @@ class MemberWelcomeEmailsServiceWrapper {
 
         jobs.scheduleMemberWelcomeEmailJob();
 
-        // We currently cannot trigger a non-offloaded job from the job manager
-        // So the member welcome email job simply emits an event that we listen for here
-        // This allows the actual processing to run on the main thread instead of in a worker
         domainEvents.subscribe(StartMemberWelcomeEmailJobEvent, async () => {
-            await processOutbox();
+            await this.startProcessing();
         });
 
         this.initialized = true;
+    }
+
+    async startProcessing() {
+        if (this.processing) {
+            logging.info('Member welcome email job already running, skipping');
+            return;
+        }
+        this.processing = true;
+
+        try {
+            await processOutbox();
+        } catch (e) {
+            logging.error(e, 'Error while processing member welcome emails');
+        }
+        this.processing = false;
     }
 }
 
