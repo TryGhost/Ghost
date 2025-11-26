@@ -1,7 +1,7 @@
-import {EnvironmentManager} from '@/helpers/environment';
+import {getEnvironmentManager} from '@/helpers/environment';
 import {test as setup} from '@playwright/test';
 
 setup('global environment setup', async () => {
-    const environmentManager = new EnvironmentManager();
-    await environmentManager.globalSetup();
+    const manager = await getEnvironmentManager();
+    await manager.globalSetup();
 });
