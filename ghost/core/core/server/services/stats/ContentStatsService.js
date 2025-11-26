@@ -86,8 +86,8 @@ class ContentStatsService {
             tinybirdOptions.postUuid = options.post_uuid;
         }
 
-        // Only add source if defined
-        if (options.source) {
+        // Only add source if defined (allow empty string for "Direct" traffic)
+        if (options.source !== undefined) {
             tinybirdOptions.source = options.source;
         }
 
