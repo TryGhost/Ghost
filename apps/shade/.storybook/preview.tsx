@@ -4,7 +4,7 @@ import '../styles.css';
 import './storybook.css';
 
 import type { Preview } from "@storybook/react-vite";
-import ShadeProvider from '../src/providers/ShadeProvider';
+import ShadeProvider from '../src/providers/shade-provider';
 import shadeTheme from './shade-theme';
 
 const customViewports = {
