@@ -10,6 +10,7 @@ export type StateBridgeEventMap = {
     emberAuthChange: EmberAuthChangeEvent;
     subscriptionChange: SubscriptionState;
     sidebarVisibilityChange: SidebarVisibilityChangeEvent;
+    routeChange: RouteChangeEvent;
 }
 
 export interface StateBridge {
@@ -19,6 +20,8 @@ export interface StateBridge {
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     sidebarVisible: boolean;
+    getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
+    isRouteActive: (routeNames: string | string[], queryParams?: Record<string, string | null> | null) => boolean;
 }
 
 declare global {
@@ -49,6 +52,13 @@ export interface SidebarVisibilityChangeEvent {
     isVisible: boolean;
 }
 
+export interface RouteChangeEvent {
+    routeName: string;
+    queryParams: Record<string, unknown>;
+}
+
+export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
+
 /**
  * Maps Ember Data model names to React ResponseType strings.
  * This is the inverse of emberDataTypeMapping in state-bridge.js
@@ -70,37 +80,32 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'webhook': 'WebhooksResponseType'
 };
 
-let stateBridgePromise: Promise<StateBridge | undefined> | null = null;
-
 /**
  * Gets the StateBridge, waiting for EmberBridge to load if necessary.
  *
  * This polls indefinitely because we may lazy-load Ember in the future
  * once more of the app is migrated to React.
  *
- * @returns Promise that resolves when StateBridge is available
+ * @returns Function to unsubscribe from the StateBridge polling
  */
-function getStateBridge(): Promise<StateBridge | undefined> {
+function waitForStateBridge(onReady: (stateBridge: StateBridge) => void): () => void {
     if (typeof window === 'undefined') {
-        return Promise.resolve(undefined);
+        return () => {};
     }
 
     if (window.EmberBridge?.state) {
-        return Promise.resolve(window.EmberBridge.state);
+        onReady(window.EmberBridge.state);
+        return () => {};
     }
 
-    if (!stateBridgePromise) {
-        stateBridgePromise = new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (window.EmberBridge?.state) {
-                    clearInterval(interval);
-                    resolve(window.EmberBridge.state);
-                }
-            }, 100);
-        });
-    }
+    const interval = setInterval(() => {
+        if (window.EmberBridge?.state) {
+            clearInterval(interval);
+            onReady(window.EmberBridge.state);
+        }
+    }, 100);
 
-    return stateBridgePromise;
+    return () => clearInterval(interval);
 }
 
 function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
@@ -110,17 +115,17 @@ function onEmberStateBridgeEvent<K extends keyof StateBridgeEventMap>(
     let unsubscribe: (() => void) | null = null;
     let isMounted = true;
 
-    void getStateBridge().then((stateBridge) => {
-        if (!stateBridge || !isMounted) {
+    const stopPolling = waitForStateBridge((stateBridge) => {
+        if (!isMounted) {
             return;
         }
-
         stateBridge.on(event, handler);
         unsubscribe = () => stateBridge.off(event, handler);
     });
 
     return () => {
         isMounted = false;
+        stopPolling();
         unsubscribe?.();
     };
 }
@@ -212,10 +217,10 @@ function getSidebarVisibility(): boolean {
 
 /**
  * Hook to sync sidebar visibility state from Ember.
- * 
+ *
  * This hook uses useSyncExternalStore to listen to sidebar visibility changes
  * triggered by Ember routes (e.g., hiding the sidebar when entering the editor).
- * 
+ *
  * This is a temporary bridge during the Ember -> React migration and should be
  * removed once the editor is ported to React.
  */
@@ -226,3 +231,52 @@ export function useSidebarVisibility(): boolean {
         getSidebarVisibility // Server snapshot (same as client for now)
     );
 }
+
+// Default no-op routing for when the bridge isn't available yet
+const defaultRouting: EmberRouting = {
+    getRouteUrl: (routeName) => routeName,
+    isRouteActive: () => false
+};
+
+/**
+ * Hook to access Ember routing state.
+ * Returns routing methods that re-render when Ember's route changes.
+ *
+ * @example
+ * ```tsx
+ * const routing = useEmberRouting();
+ * const postsUrl = routing.getRouteUrl('posts');
+ * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
+ * const isActive = routing.isRouteActive('posts', {type: 'draft'});
+ * ```
+ */
+export function useEmberRouting(): EmberRouting {
+    const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
+    const [, forceUpdate] = useState(0);
+
+    useEffect(() => {
+        // Wait for bridge to be available
+        if (!bridge) {
+            return waitForStateBridge(setBridge);
+        }
+
+        // Subscribe to route changes to force re-renders
+        const handleRouteChange = () => {
+            forceUpdate(n => n + 1);
+        };
+
+        bridge.on('routeChange', handleRouteChange);
+        return () => bridge.off('routeChange', handleRouteChange);
+    }, [bridge]);
+
+    // Return default no-op routing until bridge is available
+    if (!bridge) {
+        return defaultRouting;
+    }
+
+    return {
+        getRouteUrl: bridge.getRouteUrl,
+        isRouteActive: bridge.isRouteActive
+    };
+}
+

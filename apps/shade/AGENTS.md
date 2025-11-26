@@ -6,7 +6,7 @@
 - `src/components/features/*`: Higher-level, opinionated components (e.g., PostShareModal, SourceTabs).
 - `src/hooks/*`: Custom React hooks.
 - `src/lib/utils.ts`: Shared utilities (class merging, formatting, chart helpers).
-- `src/providers/*` and `src/ShadeApp.tsx`: Context + app wrapper that scopes styles to `.shade`.
+- `src/providers/*` and `src/shade-app.tsx`: Context + app wrapper that scopes styles to `.shade`.
 - `src/assets/*`: Logos and custom icon SVGs (icons auto-exported via `Icon`).
 - `test/unit/*`: Vitest tests. `test/unit/utils/test-utils.tsx` provides a `render` helper.
 - Build artifacts: `es/` (compiled ESM) and `types/` (generated `.d.ts`). Storybook config lives in `.storybook/`.
