@@ -261,7 +261,7 @@ export class ActivityPubAPI {
         }
         const response = await this.fetch(url, options);
 
-        if (response.status === 204) {
+        if (response.status === 204 || response.status === 202) {
             return null;
         }
 
