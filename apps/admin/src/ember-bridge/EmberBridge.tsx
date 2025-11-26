@@ -10,6 +10,7 @@ export type StateBridgeEventMap = {
     emberAuthChange: EmberAuthChangeEvent;
     subscriptionChange: SubscriptionState;
     sidebarVisibilityChange: SidebarVisibilityChangeEvent;
+    routeChange: RouteChangeEvent;
 }
 
 export interface StateBridge {
@@ -19,6 +20,8 @@ export interface StateBridge {
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     sidebarVisible: boolean;
+    getRouteUrl: (routeName: string, queryParams?: Record<string, string | null> | null) => string;
+    isRouteActive: (routeNames: string | string[], queryParams?: Record<string, string | null> | null) => boolean;
 }
 
 declare global {
@@ -48,6 +51,13 @@ export interface SubscriptionState {
 export interface SidebarVisibilityChangeEvent {
     isVisible: boolean;
 }
+
+export interface RouteChangeEvent {
+    routeName: string;
+    queryParams: Record<string, unknown>;
+}
+
+export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
 
 /**
  * Maps Ember Data model names to React ResponseType strings.
@@ -226,3 +236,57 @@ export function useSidebarVisibility(): boolean {
         getSidebarVisibility // Server snapshot (same as client for now)
     );
 }
+
+// Default no-op routing for when the bridge isn't available yet
+const defaultRouting: EmberRouting = {
+    getRouteUrl: (routeName) => routeName,
+    isRouteActive: () => false
+};
+
+/**
+ * Hook to access Ember routing state.
+ * Returns routing methods that re-render when Ember's route changes.
+ * 
+ * @example
+ * ```tsx
+ * const routing = useEmberRouting();
+ * const postsUrl = routing.getRouteUrl('posts');
+ * const customUrl = routing.getRouteUrl('posts', {type: 'draft'});
+ * const isActive = routing.isRouteActive('posts', {type: 'draft'});
+ * ```
+ */
+export function useEmberRouting(): EmberRouting {
+    const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
+    const [, forceUpdate] = useState(0);
+
+    useEffect(() => {
+        // Wait for bridge to be available
+        if (!bridge) {
+            void getStateBridge().then((stateBridge) => {
+                if (stateBridge) {
+                    setBridge(stateBridge);
+                }
+            });
+            return;
+        }
+        
+        // Subscribe to route changes to force re-renders
+        const handleRouteChange = () => {
+            forceUpdate(n => n + 1);
+        };
+        
+        bridge.on('routeChange', handleRouteChange);
+        return () => bridge.off('routeChange', handleRouteChange);
+    }, [bridge]);
+
+    // Return default no-op routing until bridge is available
+    if (!bridge) {
+        return defaultRouting;
+    }
+
+    return {
+        getRouteUrl: bridge.getRouteUrl,
+        isRouteActive: bridge.isRouteActive
+    };
+}
+

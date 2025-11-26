@@ -19,17 +19,20 @@ type NavMenuLinkProps = React.ComponentProps<typeof SidebarMenuButton> & {
     target?: string
     rel?: string
     activeOnSubpath?: boolean
+    isActive?: boolean
 };
 function NavMenuLink({
     to,
     target,
     rel,
     activeOnSubpath = false,
+    isActive: controlledIsActive,
     children,
     ...props
 }: NavMenuLinkProps) {
-    const href = `#/${to}`;
-    const isActive = useIsActiveLink({ path: to, activeOnSubpath });
+    const href = `#/${to?.replace(/^\/?#\//, '')}`;
+    const computedIsActive = useIsActiveLink({ path: to, activeOnSubpath });
+    const isActive = controlledIsActive !== undefined ? controlledIsActive : computedIsActive;
     const { isMobile, setOpenMobile } = useSidebar();
 
     const handleClick = () => {
