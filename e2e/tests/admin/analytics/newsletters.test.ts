@@ -54,6 +54,7 @@ test.describe('Ghost Admin - Newsletters', () => {
         ];
         await membersService.import(members);
 
+        await newslettersPage.goto();
         await page.reload();
         await expect(newslettersPage.newslettersCard).toBeVisible();
         await expect(newslettersPage.totalSubscribers.value).toContainText('3');

@@ -35,10 +35,8 @@ export class LoginPage extends AdminPage {
         await this.forgotButton.click();
     }
 
-    async logoutByCookieClear() {
-        const context = await this.page.context();
-        await context.clearCookies();
-        await this.page.reload();
+    async logout() {
+        await this.page.goto('/ghost/#/signout');
     }
 
     async waitForLoginPageAfterUserCreated(): Promise<void> {
