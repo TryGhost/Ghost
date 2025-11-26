@@ -1,15 +1,18 @@
-import {WhatsNewBanner, WhatsNewMenu} from '../../helpers/pages/admin/whats-new';
-import {expect, test} from '../../helpers/playwright/fixture';
+import {WhatsNewBanner, WhatsNewMenu} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright/fixture';
 import type {Page} from '@playwright/test';
 
-interface ChangelogEntry {
+// Local type definition matching the API response format
+type RawChangelogEntry = {
+    slug: string;
     title: string;
     custom_excerpt: string;
     published_at: string;
     url: string;
-    featured: boolean;
+    featured: string;
     feature_image?: string;
-}
+    html?: string;
+};
 
 function daysAgo(days: number): Date {
     const date = new Date();
@@ -28,19 +31,21 @@ function createEntry(publishedAt: Date, options: {
     title?: string;
     excerpt?: string;
     feature_image?: string;
-} = {}): ChangelogEntry {
+} = {}): RawChangelogEntry {
     const title = options.title ?? 'Test Update';
+    const slug = title.toLowerCase().replace(/\s+/g, '-');
     return {
+        slug,
         title,
         custom_excerpt: options.excerpt ?? 'Test feature',
         published_at: publishedAt.toISOString(),
-        url: `https://ghost.org/changelog/${title.toLowerCase().replace(/\s+/g, '-')}`,
-        featured: options.featured ?? false,
+        url: `https://ghost.org/changelog/${slug}`,
+        featured: (options.featured ?? false) ? 'true' : 'false',
         ...(options.feature_image && {feature_image: options.feature_image})
     };
 }
 
-async function mockChangelog(page: Page, entries: ChangelogEntry[]): Promise<void> {
+async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<void> {
     await page.route('https://ghost.org/changelog.json', async (route) => {
         await route.fulfill({
             status: 200,
@@ -79,7 +84,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             const banner = new WhatsNewBanner(page);
             await banner.goto();
 
-            await expect(banner.container).not.toBeVisible();
+            await expect(banner.container).toBeHidden();
         });
 
         test('does not show banner when there are no entries', async ({page}) => {
@@ -88,7 +93,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             const banner = new WhatsNewBanner(page);
             await banner.goto();
 
-            await expect(banner.container).not.toBeVisible();
+            await expect(banner.container).toBeHidden();
         });
 
         test('does not show banner when latest entry is not featured', async ({page}) => {
@@ -97,7 +102,7 @@ test.describe('Ghost Admin - What\'s New', () => {
             const banner = new WhatsNewBanner(page);
             await banner.goto();
 
-            await expect(banner.container).not.toBeVisible();
+            await expect(banner.container).toBeHidden();
         });
 
         test.describe('dismissal behavior', () => {
@@ -112,7 +117,7 @@ test.describe('Ghost Admin - What\'s New', () => {
 
                 await banner.dismiss();
 
-                await expect(banner.container).not.toBeVisible();
+                await expect(banner.container).toBeHidden();
             });
 
             test('hides banner immediately when link is clicked', async ({page}) => {
@@ -126,7 +131,7 @@ test.describe('Ghost Admin - What\'s New', () => {
 
                 await banner.clickLinkAndClosePopup();
 
-                await expect(banner.container).not.toBeVisible();
+                await expect(banner.container).toBeHidden();
             });
 
             test('hides banner immediately when modal is opened', async ({page}) => {
@@ -146,7 +151,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 const modal = await menu.openWhatsNewModal();
                 await modal.close();
 
-                await expect(banner.container).not.toBeVisible();
+                await expect(banner.container).toBeHidden();
             });
 
             test('banner remains hidden after reload when dismissed', async ({page}) => {
@@ -159,7 +164,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 await banner.dismiss();
 
                 await banner.goto();
-                await expect(banner.container).not.toBeVisible();
+                await expect(banner.container).toBeHidden();
             });
 
             test('banner reappears when a new entry is published after dismissal', async ({page}) => {
@@ -172,7 +177,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 await banner.dismiss();
 
                 await banner.goto();
-                await expect(banner.container).not.toBeVisible();
+                await expect(banner.container).toBeHidden();
 
                 await mockChangelog(page, [
                     createEntry(daysFromNow(2), {
@@ -251,10 +256,10 @@ test.describe('Ghost Admin - What\'s New', () => {
             const menu = new WhatsNewMenu(page);
             await menu.goto();
 
-            await expect(menu.avatarBadge).not.toBeVisible();
+            await expect(menu.avatarBadge).toBeHidden();
 
             await menu.openUserMenu();
-            await expect(menu.menuBadge).not.toBeVisible();
+            await expect(menu.menuBadge).toBeHidden();
         });
 
         test.describe('dismissal behavior', () => {
@@ -269,7 +274,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 const modal = await menu.openWhatsNewModal();
                 await modal.close();
 
-                await expect(menu.avatarBadge).not.toBeVisible();
+                await expect(menu.avatarBadge).toBeHidden();
             });
 
             test('badges remain hidden after reload when What\'s new has been viewed', async ({page}) => {
@@ -282,7 +287,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 await modal.close();
 
                 await menu.goto();
-                await expect(menu.avatarBadge).not.toBeVisible();
+                await expect(menu.avatarBadge).toBeHidden();
             });
 
             test('badges reappear when a new entry is published after viewing', async ({page}) => {
@@ -295,7 +300,7 @@ test.describe('Ghost Admin - What\'s New', () => {
                 await modal.close();
 
                 await menu.goto();
-                await expect(menu.avatarBadge).not.toBeVisible();
+                await expect(menu.avatarBadge).toBeHidden();
 
                 await mockChangelog(page, [createEntry(daysFromNow(2))]);
 

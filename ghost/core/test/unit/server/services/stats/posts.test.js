@@ -74,12 +74,17 @@ describe('PostsStatsService', function () {
     async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
+
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_created_events').insert({
             id: eventId,
             member_id: memberId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: moment(createdAt).utc().toISOString(),
@@ -92,13 +97,17 @@ describe('PostsStatsService', function () {
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
 
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_subscription_created_events').insert({
             id: subCreatedEventId,
             member_id: memberId,
             subscription_id: subscriptionId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
             created_at: moment(createdAt).utc().toISOString()
@@ -113,10 +122,10 @@ describe('PostsStatsService', function () {
         });
     }
 
-    async function _createFreeSignup(postId, referrerSource,memberId = null) {
+    async function _createFreeSignup(postId, referrerSource, memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
     }
 
     async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
@@ -687,6 +696,20 @@ describe('PostsStatsService', function () {
 
             const expectedResults = [
                 {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('returns growth stats for a page', async function () {
+            await _createFreeSignup('page1', 'referrer_1');
+            await _createPaidSignup('page1', 500, 'referrer_1');
+            await _createPaidConversion('page1', 'page2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('page1');
+
+            const expectedResults = [
+                {post_id: 'page1', free_members: 2, paid_members: 1, mrr: 500}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
@@ -1710,7 +1733,7 @@ describe('PostsStatsService', function () {
 
         it('should handle empty date range', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             const result = await service.getNewsletterSubscriberStats(newsletterId, {
@@ -1722,7 +1745,14 @@ describe('PostsStatsService', function () {
             assert.ok(result.data);
             assert.equal(result.data.length, 1);
             assert.equal(result.data[0].total, 0);
-            assert.deepEqual(result.data[0].values, []);
+            // Should backfill all dates in range even when there are no events
+            assert.equal(result.data[0].values.length, 3, 'Should have 3 days of data');
+            assert.equal(result.data[0].values[0].date, '2024-01-01');
+            assert.equal(result.data[0].values[0].value, 0);
+            assert.equal(result.data[0].values[1].date, '2024-01-02');
+            assert.equal(result.data[0].values[1].value, 0);
+            assert.equal(result.data[0].values[2].date, '2024-01-03');
+            assert.equal(result.data[0].values[2].value, 0);
         });
 
         it('should exclude email_disabled members', async function () {
@@ -1747,8 +1777,11 @@ describe('PostsStatsService', function () {
 
             const stats = result.data[0];
             assert.equal(stats.total, 1, 'Total should exclude email_disabled member');
-            assert.equal(stats.values.length, 1, 'Should only have data for enabled member');
-            assert.equal(stats.values[0].value, 1, 'Should show 1 cumulative subscriber');
+            assert.equal(stats.values.length, 2, 'Should backfill all dates in range');
+            assert.equal(stats.values[0].date, '2024-01-01', 'First date should be 2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Should show 1 on first day (member1 subscribes)');
+            assert.equal(stats.values[1].date, '2024-01-02', 'Second date should be 2024-01-02');
+            assert.equal(stats.values[1].value, 1, 'Should stay 1 on second day (member2 excluded due to email_disabled)');
         });
 
         it('should calculate correct starting point for historical data', async function () {
@@ -1868,11 +1901,175 @@ describe('PostsStatsService', function () {
             });
 
             const stats = result.data[0];
-            assert.equal(stats.values.length, 1, 'Should only have data for date range');
-            assert.equal(stats.values[0].date, '2024-01-05');
-            // Starting point: total (3) - changes in range (1) = 2
-            // Day value: 2 + 1 = 3
-            assert.equal(stats.values[0].value, 3, 'Should show correct cumulative value');
+            assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
+            // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+            assert.equal(stats.values[0].date, '2024-01-04');
+            assert.equal(stats.values[0].value, 2, 'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)');
+            assert.equal(stats.values[1].date, '2024-01-05');
+            assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+            assert.equal(stats.values[2].date, '2024-01-06');
+            assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+        });
+    });
+
+    describe('_fillMissingDates', function () {
+        it('fills in all missing dates in the range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-03', value: 15}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 5, 'Should have 5 days');
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 10);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 10, 'Should carry forward from Jan 1');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 15);
+            assert.equal(result[3].date, '2024-01-04');
+            assert.equal(result[3].value, 15, 'Should carry forward from Jan 3');
+            assert.equal(result[4].date, '2024-01-05');
+            assert.equal(result[4].value, 15, 'Should carry forward from Jan 3');
+        });
+
+        it('uses startingValue when no events exist at the beginning', function () {
+            const sparseValues = [
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                100
+            );
+
+            assert.equal(result.length, 5);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 100, 'Should use startingValue for first day');
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 100, 'Should carry forward startingValue');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 20, 'Should use actual value when event exists');
+        });
+
+        it('handles empty values array', function () {
+            const result = service._fillMissingDates(
+                [],
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                50
+            );
+
+            assert.equal(result.length, 3);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 50);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 50);
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 50);
+        });
+
+        it('returns values as-is when no date range provided', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, sparseValues, 'Should return input values unchanged when no date range');
+        });
+
+        it('returns empty array when values is null and no dates', function () {
+            const result = service._fillMissingDates(
+                null,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, []);
+        });
+
+        it('handles single day range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 25}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-01',
+                'UTC',
+                10
+            );
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 25);
+        });
+
+        it('respects timezone when parsing dates', function () {
+            const sparseValues = [
+                {date: '2024-01-02', value: 30}
+            ];
+
+            // Using different timezones shouldn't affect YYYY-MM-DD date strings
+            const resultUTC = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                20
+            );
+
+            const resultNY = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'America/New_York',
+                20
+            );
+
+            assert.equal(resultUTC.length, 3);
+            assert.equal(resultNY.length, 3);
+            assert.deepEqual(resultUTC, resultNY, 'Should produce same results for date-only strings');
+        });
+
+        it('handles values with all dates already present', function () {
+            const completeValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-02', value: 15},
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                completeValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 3);
+            assert.deepEqual(result, completeValues, 'Should return same values when all dates present');
         });
     });
 });

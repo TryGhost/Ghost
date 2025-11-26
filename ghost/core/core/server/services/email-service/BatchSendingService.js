@@ -15,6 +15,7 @@ const MAX_SENDING_CONCURRENCY = 2;
  * @typedef {import('./SendingService')} SendingService
  * @typedef {import('./EmailSegmenter')} EmailSegmenter
  * @typedef {import('./EmailRenderer')} EmailRenderer
+ * @typedef {import('./DomainWarmingService').DomainWarmingService} DomainWarmingService
  * @typedef {import('./EmailRenderer').MemberLike} MemberLike
  * @typedef {object} JobsService
  * @typedef {object} Email
@@ -27,6 +28,7 @@ class BatchSendingService {
     #emailRenderer;
     #sendingService;
     #emailSegmenter;
+    #domainWarmingService;
     #jobsService;
     #models;
     #db;
@@ -44,6 +46,7 @@ class BatchSendingService {
      * @param {SendingService} dependencies.sendingService
      * @param {JobsService} dependencies.jobsService
      * @param {EmailSegmenter} dependencies.emailSegmenter
+     * @param {DomainWarmingService} dependencies.domainWarmingService
      * @param {object} dependencies.models
      * @param {object} dependencies.models.EmailRecipient
      * @param {EmailBatch} dependencies.models.EmailBatch
@@ -61,6 +64,7 @@ class BatchSendingService {
         sendingService,
         jobsService,
         emailSegmenter,
+        domainWarmingService,
         models,
         db,
         sentry,
@@ -73,6 +77,7 @@ class BatchSendingService {
         this.#sendingService = sendingService;
         this.#jobsService = jobsService;
         this.#emailSegmenter = emailSegmenter;
+        this.#domainWarmingService = domainWarmingService;
         this.#models = models;
         this.#db = db;
         this.#sentry = sentry;
@@ -234,6 +239,12 @@ class BatchSendingService {
     async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
+        // Infinity implies all emails should be sent from the primary domain
+        let domainWarmupLimit = Infinity;
+        if (this.#domainWarmingService.isEnabled()) {
+            domainWarmupLimit = Number.isInteger(email.get('csd_email_count')) ? email.get('csd_email_count') : Infinity;
+        }
+
         const segments = await this.#emailRenderer.getSegments(post);
         const batches = [];
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
@@ -262,14 +273,37 @@ class BatchSendingService {
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
                 if (members.length > 0) {
-                    totalCount += Math.min(members.length, BATCH_SIZE);
-                    const batch = await this.retryDb(
-                        async () => {
-                            return await this.createBatch(email, segment, members.slice(0, BATCH_SIZE));
-                        },
-                        {...this.#getBeforeRetryConfig(email), description: `createBatch email ${email.id} segment ${segment}`}
-                    );
-                    batches.push(batch);
+                    // Determine how many members to include in this batch
+                    const remainingCustomDomainCapacity = domainWarmupLimit - totalCount;
+                    const membersToProcess = Math.min(members.length, BATCH_SIZE);
+
+                    const shouldSplitBatch = remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < membersToProcess;
+                    if (shouldSplitBatch) {
+                        // Split batch: some via custom domain, rest via fallback
+                        totalCount += await this.#createBatchWithRetry({
+                            email,
+                            segment,
+                            members: members.slice(0, remainingCustomDomainCapacity),
+                            useFallbackDomain: false,
+                            batches
+                        });
+                        totalCount += await this.#createBatchWithRetry({
+                            email,
+                            segment,
+                            members: members.slice(remainingCustomDomainCapacity, membersToProcess),
+                            useFallbackDomain: true,
+                            batches
+                        });
+                    } else {
+                        // Single batch: all members use same domain
+                        totalCount += await this.#createBatchWithRetry({
+                            email,
+                            segment,
+                            members: members.slice(0, membersToProcess),
+                            useFallbackDomain: totalCount >= domainWarmupLimit,
+                            batches
+                        });
+                    }
                 }
 
                 if (members.length > BATCH_SIZE) {
@@ -295,11 +329,46 @@ class BatchSendingService {
 
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
             // between creating the email and sending it
-            await email.save({
+            const newEmailUpdate = {
                 email_count: totalCount
-            }, {patch: true, require: false, autoRefresh: false});
+            };
+            if (this.#domainWarmingService.isEnabled()) {
+                newEmailUpdate.csd_email_count = Math.min(totalCount, domainWarmupLimit);
+            }
+
+            await email.save(newEmailUpdate, {patch: true, require: false, autoRefresh: false});
         }
         return batches;
+    }
+
+    /**
+     * Creates a batch with retry logic and adds it to the batches array
+     * @param {object} params
+     * @param {Email} params.email
+     * @param {import('./EmailRenderer').Segment} params.segment
+     * @param {object[]} params.members
+     * @param {boolean} params.useFallbackDomain
+     * @param {EmailBatch[]} params.batches
+     * @returns {Promise<number>} The number of members added
+     */
+    async #createBatchWithRetry({email, segment, members, useFallbackDomain, batches}) {
+        if (members.length === 0) {
+            return 0;
+        }
+
+        const batch = await this.retryDb(
+            async () => {
+                return await this.createBatch(email, segment, members, {
+                    useFallbackDomain
+                });
+            },
+            {
+                ...this.#getBeforeRetryConfig(email),
+                description: `createBatch email ${email.id} segment ${segment}${useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`
+            }
+        );
+        batches.push(batch);
+        return members.length;
     }
 
     /**
@@ -307,12 +376,15 @@ class BatchSendingService {
      * @param {Email} email
      * @param {import('./EmailRenderer').Segment} segment
      * @param {object[]} members
+     * @param {object} options
+     * @param {boolean} options.useFallbackDomain
+     * @param {import('knex').Knex} [options.transacting]
      * @returns {Promise<EmailBatch>}
      */
     async createBatch(email, segment, members, options) {
         if (!options || !options.transacting) {
             return this.#models.EmailBatch.transaction(async (transacting) => {
-                return this.createBatch(email, segment, members, {transacting});
+                return this.createBatch(email, segment, members, {transacting, ...options});
             });
         }
 
@@ -321,7 +393,8 @@ class BatchSendingService {
         const batch = await this.#models.EmailBatch.add({
             email_id: email.id,
             member_segment: segment,
-            status: 'pending'
+            status: 'pending',
+            fallback_sending_domain: Boolean(options.useFallbackDomain)
         }, options);
 
         const recipientData = [];
@@ -357,7 +430,7 @@ class BatchSendingService {
     async sendBatches({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
         const deadline = this.getDeliveryDeadline(email);
-        
+
         if (deadline) {
             logging.info(`Delivery deadline for email ${email.id} is ${deadline}`);
         }
@@ -457,6 +530,7 @@ class BatchSendingService {
                 }, {
                     openTrackingEnabled: !!email.get('track_opens'),
                     clickTrackingEnabled: !!email.get('track_clicks'),
+                    useFallbackAddress: batch.get('fallback_sending_domain'),
                     deliveryTime,
                     emailBodyCache
                 });
@@ -657,7 +731,7 @@ class BatchSendingService {
     /**
      * Returns the sending deadline for an email
      * Based on the email.created_at timestamp and the configured target delivery window
-     * @param {*} email 
+     * @param {*} email
      * @returns Date | undefined
      */
     getDeliveryDeadline(email) {

@@ -18,30 +18,31 @@ export function stripHtml(html: string, exclude: string[] = []): string {
     const placeholders: {[key: string]: string} = {};
     let placeholderCount = 0;
 
-    // Replace excluded tags with placeholders
-    let processedHtml = html;
+    // Convert block-level closing tags to <br> before extracting excluded tags
+    // This handles headings, paragraphs, divs, list items, etc.
+    const withBlockBreaks = html.replace(/<\/(h[1-6]|p|div|li|blockquote|pre)>/gi, '<br>');
 
-    // Process each excluded tag type
+    // Process each excluded tag type (including the <br> tags we just added)
+    let processedWithExclusions = withBlockBreaks;
     for (const tag of excludeTags) {
         // Match both opening and closing tags, and self-closing tags
         const regex = new RegExp(`<${tag}[^>]*>.*?<\\/${tag}>|<${tag}[^>]*\\/?>`, 'gis');
 
-        processedHtml = processedHtml.replace(regex, (match) => {
+        processedWithExclusions = processedWithExclusions.replace(regex, (match) => {
             const placeholder = `__EXCLUDED_TAG_${placeholderCount += 1}__`;
             placeholders[placeholder] = match;
             return placeholder;
         });
     }
 
-    // Apply the original HTML stripping logic to the modified HTML
-    // Replace <br> tags with spaces
-    const withLineBreaks = processedHtml.replace(/<br\s*\/?>/gi, ' ');
-
-    // Replace tags that should have a space after them
-    const withSpaces = withLineBreaks.replace(/<\/p>\s*<p>|<\/div>\s*<div>|<\/h[1-6]>\s*<|<\/li>\s*<li>|<\/a>/gi, ' ');
+    // Replace <br> tags with spaces (only if 'br' is not in exclusions)
+    let withLineBreaks = processedWithExclusions;
+    if (!excludeTags.includes('br')) {
+        withLineBreaks = processedWithExclusions.replace(/<br\s*\/?>/gi, ' ');
+    }
 
     // Remove all remaining HTML tags
-    let result = withSpaces.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    let result = withLineBreaks.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 
     // Restore the excluded tags
     for (const [placeholder, originalTag] of Object.entries(placeholders)) {

@@ -4,11 +4,12 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
   "author": "Ghost Foundation",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --noEmit",
     "build": "yarn test:types",
     "build:ts": "tsc --noEmit",
-    "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f .docker/Dockerfile .",
+    "docker:build:ghost": "cd .. && docker build -t ghost-monorepo:latest -f Dockerfile .",
     "docker:update": "docker compose pull && docker compose up -d --force-recreate",
     "prepare": "tsc --noEmit",
     "pretest": "(test -n \"$GHOST_E2E_SKIP_BUILD\" || test -n \"$CI\") && echo 'Skipping Docker build (GHOST_E2E_SKIP_BUILD or CI is set)' || docker compose -f ../compose.yml build ghost tb-cli",
@@ -16,24 +17,28 @@
     "test:single": "playwright test --project=main -g",
     "test:debug": "playwright test --project=main --headed --timeout=60000 -g",
     "test:types": "tsc --noEmit",
-    "lint": "eslint . --ext .ts --cache"
+    "lint": "eslint . --cache"
   },
   "files": [
     "build"
   ],
   "devDependencies": {
+    "@eslint/js": "9.37.0",
     "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.55.1",
+    "@tryghost/debug": "0.1.35",
+    "@tryghost/logging": "2.4.23",
+    "@types/dockerode": "3.3.44",
+    "typescript-eslint": "8.46.1",
     "c8": "10.1.3",
     "dockerode": "4.0.9",
     "dotenv": "16.6.1",
+    "eslint-plugin-playwright": "2.3.0",
+    "eslint-plugin-no-relative-import-paths": "^1.6.1",
     "knex": "3.1.0",
     "mysql2": "3.15.2",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3",
-    "@tryghost/logging": "2.4.23",
-    "@tryghost/debug": "0.1.35",
-    "@types/dockerode": "3.3.44"
+    "typescript": "5.8.3"
   },
   "dependencies": {}
 }

@@ -1,16 +1,15 @@
-import {AnalyticsOverviewPage, LoginPage, PasswordResetPage, SettingsPage} from '../../helpers/pages/admin';
-import {EmailClient, MailPit} from '../../helpers/services/email/MailPit';
+import {AnalyticsOverviewPage, LoginPage, PasswordResetPage, SettingsPage} from '@/admin-pages';
+import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {Page} from '@playwright/test';
-import {expect, test} from '../../helpers/playwright';
-import {extractPasswordResetLink} from '../../helpers/services/email/utils';
+import {expect, test} from '@/helpers/playwright';
+import {extractPasswordResetLink} from '@/helpers/services/email/utils';
 
 test.describe('Ghost Admin - Reset Password', () => {
-    const emailClient:EmailClient = new MailPit();
+    const emailClient: EmailClient = new MailPit();
 
     async function logout(page: Page) {
         const loginPage = new LoginPage(page);
-        await loginPage.logoutByCookieClear();
-        await loginPage.goto();
+        await loginPage.logout();
     }
 
     test('resets account owner password', async ({page, ghostAccountOwner}) => {

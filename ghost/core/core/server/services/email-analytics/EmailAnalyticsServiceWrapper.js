@@ -16,6 +16,7 @@ class EmailAnalyticsServiceWrapper {
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
+        const labs = require('../../../shared/labs');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
         const membersService = require('../members');
@@ -49,12 +50,16 @@ class EmailAnalyticsServiceWrapper {
             settings,
             eventProcessor,
             providers: [
-                new MailgunProvider({config, settings})
+                new MailgunProvider({config, settings, labs})
             ],
             queries,
             domainEvents,
             prometheusClient
         });
+
+        // Log the processing mode on initialization
+        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+        logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
         // We currently cannot trigger a non-offloaded job from the job manager
         // So the email analytics jobs simply emits an event.
@@ -80,10 +85,12 @@ class EmailAnalyticsServiceWrapper {
         const apiPercent = totalDurationMs > 0 ? Math.round((apiPollingTimeMs / totalDurationMs) * 100) : 0;
         const processingPercent = totalDurationMs > 0 ? Math.round((processingTimeMs / totalDurationMs) * 100) : 0;
         const aggregationPercent = totalDurationMs > 0 ? Math.round((aggregationTimeMs / totalDurationMs) * 100) : 0;
+        const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
 
         const logMessage = [
             `[EmailAnalytics] Job complete: ${jobType}`,
             `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
+            `Mode: ${batchMode}`,
             `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%)`,
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');

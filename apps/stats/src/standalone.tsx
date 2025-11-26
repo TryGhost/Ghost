@@ -1,5 +1,5 @@
 import './styles/index.css';
-import App from './App';
+import App from './app';
 import renderShadeApp from '@tryghost/admin-x-framework/test/render-shade';
 import {AppSettings} from '@tryghost/admin-x-framework';
 

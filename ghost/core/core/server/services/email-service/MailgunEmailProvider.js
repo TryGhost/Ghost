@@ -90,6 +90,7 @@ class MailgunEmailProvider {
             html,
             plaintext,
             from,
+            domainOverride,
             replyTo,
             emailId,
             recipients,
@@ -107,6 +108,7 @@ class MailgunEmailProvider {
                 plaintext,
                 from,
                 replyTo,
+                domainOverride,
                 id: emailId,
                 track_opens: !!options.openTrackingEnabled,
                 track_clicks: !!options.clickTrackingEnabled
@@ -180,7 +182,7 @@ class MailgunEmailProvider {
 
     /**
      * Returns the configured delay between batches in milliseconds
-     * 
+     *
      * @returns {number}
      */
     getTargetDeliveryWindow() {

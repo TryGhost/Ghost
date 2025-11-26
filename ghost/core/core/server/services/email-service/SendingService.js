@@ -9,6 +9,7 @@ const logging = require('@tryghost/logging');
  * @prop {string} from
  * @prop {string} emailId
  * @prop {string} [replyTo]
+ * @prop {string} [domainOverride]
  * @prop {Recipient[]} recipients
  * @prop {import("./EmailRenderer").ReplacementDefinition[]} replacementDefinitions
  *
@@ -27,9 +28,14 @@ const logging = require('@tryghost/logging');
  */
 
 /**
+ * @typedef {import("../email-address/EmailAddressService").EmailAddressService} EmailAddressService
+ */
+
+/**
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {boolean} useFallbackAddress
  * @prop {Date} deliveryTime
  * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
@@ -59,18 +65,22 @@ const logging = require('@tryghost/logging');
 class SendingService {
     #emailProvider;
     #emailRenderer;
+    #emailAddressService;
 
     /**
      * @param {object} dependencies
      * @param {IEmailProviderService} dependencies.emailProvider
      * @param {EmailRenderer} dependencies.emailRenderer
+     * @param {EmailAddressService} dependencies.emailAddressService
      */
     constructor({
         emailProvider,
-        emailRenderer
+        emailRenderer,
+        emailAddressService
     }) {
         this.#emailProvider = emailProvider;
         this.#emailRenderer = emailRenderer;
+        this.#emailAddressService = emailAddressService;
     }
 
     getMaximumRecipients() {
@@ -79,7 +89,7 @@ class SendingService {
 
     /**
      * Returns the configured target delivery window in seconds
-     * 
+     *
      * @returns {number}
      */
     getTargetDeliveryWindow() {
@@ -127,16 +137,18 @@ class SendingService {
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
             subject: this.#emailRenderer.getSubject(post, isTestEmail),
-            from: this.#emailRenderer.getFromAddress(post, newsletter),
-            replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
+            from: this.#emailRenderer.getFromAddress(post, newsletter, !!options.useFallbackAddress),
+            replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter, !!options.useFallbackAddress) ?? undefined,
             html: emailBody.html,
             plaintext: emailBody.plaintext,
             recipients,
             emailId: emailId,
-            replacementDefinitions: emailBody.replacements
+            replacementDefinitions: emailBody.replacements,
+            domainOverride: options.useFallbackAddress ? this.#emailAddressService.fallbackDomain : undefined
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
             openTrackingEnabled: !!options.openTrackingEnabled,
+            useFallbackAddress: !!options.useFallbackAddress,
             ...(options.deliveryTime && {deliveryTime: options.deliveryTime})
         });
     }

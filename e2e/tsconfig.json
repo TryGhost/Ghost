@@ -25,10 +25,16 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
 
     /* Modules */
-    "module": "commonjs",                                /* Specify what module code is generated. */
-    // "moduleResolution": "node10",                     /* Specify how TypeScript looks up a file from a given module specifier. */
-    // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
-    // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
+    "module": "ESNext",                                  /* Specify what module code is generated. */
+    "moduleResolution": "bundler",                       /* Specify how TypeScript looks up a file from a given module specifier. */
+    "baseUrl": "./",                                     /* Specify the base directory to resolve non-relative module names. */
+    "paths": {
+        "@/admin-pages": ["./helpers/pages/admin/index"],
+        "@/public-pages": ["./helpers/pages/public/index"],
+        "@/portal-pages": ["./helpers/pages/portal/index"],
+        "@/helpers/*": ["./helpers/*"],
+        "@/data-factory": ["./data-factory/index.ts"]
+    },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
@@ -106,5 +112,5 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": ["helpers/**/*", "tests/**/*", "data-factory/**/*", "types.d.ts"],
-  "exclude": ["**/*.test.ts", "**/*.test.js", "node_modules"]
+  "exclude": ["node_modules"]
 }

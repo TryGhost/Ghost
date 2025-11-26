@@ -2,7 +2,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';

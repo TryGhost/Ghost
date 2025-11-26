@@ -1,4 +1,4 @@
-import {AnalyticsOverviewPage, LoginPage} from '../../pages';
+import {AnalyticsOverviewPage, LoginPage} from '@/helpers/pages';
 import {Page} from '@playwright/test';
 
 export async function loginToGetAuthenticatedSession(page: Page, email: string, password: string) {

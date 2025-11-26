@@ -65,9 +65,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handleDelivered(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleDelivered(emailIdentification, timestamp, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailDeliveredEvent.create({
                 email: emailIdentification.email,
@@ -87,9 +88,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handleOpened(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleOpened(emailIdentification, timestamp, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailOpenedEvent.create({
                 email: emailIdentification.email,
@@ -108,9 +110,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handleTemporaryFailed(emailIdentification, {timestamp, error, id}) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleTemporaryFailed(emailIdentification, {timestamp, error, id}, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailTemporaryBouncedEvent.create({
                 id,
@@ -131,9 +134,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {{id: string, timestamp: Date, error: {code: number; message: string; enhandedCode: string|number} | null}} event
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handlePermanentFailed(emailIdentification, {timestamp, error, id}) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handlePermanentFailed(emailIdentification, {timestamp, error, id}, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailBouncedEvent.create({
                 id,
@@ -155,9 +159,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handleUnsubscribed(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleUnsubscribed(emailIdentification, timestamp, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = EmailUnsubscribedEvent.create({
                 email: emailIdentification.email,
@@ -175,9 +180,10 @@ class EmailEventProcessor {
     /**
      * @param {EmailIdentification} emailIdentification
      * @param {Date} timestamp
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      */
-    async handleComplained(emailIdentification, timestamp) {
-        const recipient = await this.getRecipient(emailIdentification);
+    async handleComplained(emailIdentification, timestamp, recipientCache) {
+        const recipient = await this.getRecipient(emailIdentification, recipientCache);
         if (recipient) {
             const event = SpamComplaintEvent.create({
                 email: emailIdentification.email,
@@ -196,9 +202,10 @@ class EmailEventProcessor {
     /**
      * @private
      * @param {EmailIdentification} emailIdentification
+     * @param {Map<string, EmailRecipientInformation>} [recipientCache] Optional cache for batched processing
      * @returns {Promise<EmailRecipientInformation|undefined>}
      */
-    async getRecipient(emailIdentification) {
+    async getRecipient(emailIdentification, recipientCache) {
         if (!emailIdentification.emailId && !emailIdentification.providerId) {
             // Protection if both are null or undefined
             return;
@@ -211,6 +218,16 @@ class EmailEventProcessor {
             return;
         }
 
+        // Check cache first if batched processing is enabled
+        if (recipientCache) {
+            const key = `${emailIdentification.email}:${emailId}`;
+            const cached = recipientCache.get(key);
+            if (cached) {
+                return cached;
+            }
+        }
+
+        // Fall back to individual query for backwards compatibility
         const {id: emailRecipientId, member_id: memberId} = await this.#db.knex('email_recipients')
             .select('id', 'member_id')
             .where('member_email', emailIdentification.email)
@@ -261,6 +278,89 @@ class EmailEventProcessor {
 
         this.providerIdEmailIdMap[providerId] = emailId;
         return emailId;
+    }
+
+    /**
+     * Batch lookup recipients for all events
+     * @param {Array<EmailIdentification>} emailIdentifications
+     * @returns {Promise<Map<string, EmailRecipientInformation>>}
+     */
+    async batchGetRecipients(emailIdentifications) {
+        const recipientCache = new Map();
+
+        if (!emailIdentifications || emailIdentifications.length === 0) {
+            return recipientCache;
+        }
+
+        // Step 1: Resolve all providerId -> emailId mappings
+        const providerIds = [...new Set(
+            emailIdentifications
+                .filter(e => e.providerId && !e.emailId)
+                .map(e => e.providerId)
+        )];
+
+        if (providerIds.length > 0) {
+            const providerIdMapping = await this.#db.knex('email_batches')
+                .select('provider_id', 'email_id')
+                .whereIn('provider_id', providerIds);
+
+            for (const row of providerIdMapping) {
+                this.providerIdEmailIdMap[row.provider_id] = row.email_id;
+            }
+        }
+
+        // Step 2: Build list of (email, emailId) pairs to lookup
+        const lookups = [];
+        for (const identification of emailIdentifications) {
+            const emailId = identification.emailId ?? this.providerIdEmailIdMap[identification.providerId];
+            if (emailId && identification.email) {
+                lookups.push({
+                    email: identification.email,
+                    emailId: emailId
+                });
+            }
+        }
+
+        if (lookups.length === 0) {
+            return recipientCache;
+        }
+
+        // Step 3: Batch query all recipients with OR conditions
+        // Build the WHERE clause with OR conditions
+        const recipientQuery = this.#db.knex('email_recipients')
+            .select('id', 'member_id', 'email_id', 'member_email');
+
+        // Add WHERE conditions - need to build complex OR query
+        recipientQuery.where(function () {
+            for (const lookup of lookups) {
+                this.orWhere(function () {
+                    this.where('member_email', lookup.email)
+                        .andWhere('email_id', lookup.emailId);
+                });
+            }
+        });
+
+        const recipients = await recipientQuery;
+
+        // Step 4: Build cache map keyed by "email:emailId"
+        for (const recipient of recipients) {
+            const key = `${recipient.member_email}:${recipient.email_id}`;
+            recipientCache.set(key, {
+                emailRecipientId: recipient.id,
+                memberId: recipient.member_id,
+                emailId: recipient.email_id
+            });
+        }
+
+        return recipientCache;
+    }
+
+    /**
+     * Flush any batched updates to the database
+     * @returns {Promise<void>}
+     */
+    async flushBatchedUpdates() {
+        return await this.#eventStorage.flushBatchedUpdates();
     }
 }
 
