@@ -19,7 +19,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
-  NODE_VERSION: 22.13.1
+  NODE_VERSION: 22.18.0
 
 jobs:
 
