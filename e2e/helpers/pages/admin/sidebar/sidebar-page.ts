@@ -35,6 +35,10 @@ export class SidebarPage extends AdminPage {
             .filter({hasText: new RegExp(name, 'i')});
     }
 
+    getCustomViewColorIndicator(viewName: string): Locator {
+        return this.getNavLink(viewName).locator('[data-color]');
+    }
+
     async expandPostsSubmenu(): Promise<void> {
         const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
         if (isExpanded !== 'true') {
