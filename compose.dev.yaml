@@ -44,6 +44,7 @@ services:
     ports:
       - "1025:1025"  # SMTP server
       - "8025:8025"  # Web interface
+      - "8026:8025"  # Web interface (for e2e tests)
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
       interval: 1s
