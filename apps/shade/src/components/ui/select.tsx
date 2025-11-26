@@ -3,7 +3,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
-import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 const Select = SelectPrimitive.Root;
 

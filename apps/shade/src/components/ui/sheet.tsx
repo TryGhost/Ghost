@@ -7,7 +7,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {X} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
-import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 const Sheet = SheetPrimitive.Root;
 

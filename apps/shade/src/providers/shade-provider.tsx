@@ -4,7 +4,7 @@ import {createPortal} from 'react-dom';
 // import {FetchKoenigLexical} from '../global/form/HtmlEditor';
 import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
-import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 interface ShadeContextType {
     isAnyTextFieldFocused: boolean;

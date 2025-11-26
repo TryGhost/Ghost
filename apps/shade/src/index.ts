@@ -54,7 +54,7 @@ export * from './components/layout/header';
 export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
-export {default as PostShareModal} from './components/features/post_share_modal';
+export {default as PostShareModal} from './components/features/post-share-modal';
 export * from './components/features/table-filter-tabs/table-filter-tabs';
 export * from './components/features/utm-campaign-tabs/utm-campaign-tabs';
 export type {CampaignType, TabType} from './components/features/utm-campaign-tabs/utm-campaign-tabs';
@@ -81,6 +81,6 @@ export {useSimplePagination} from './hooks/use-simple-pagination';
 export * from '@/lib/utils';
 export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatTimestamp, formatNumber, formatDuration, formatPercentage, formatDisplayDate, isValidDomain, getYRange, getYRangeWithMinPadding, getYRangeWithLargePadding, calculateYAxisWidth, getRangeDates, getCountryFlag, sanitizeChartData, formatDisplayDateWithRange, centsToDollars, getRangeForStartDate, formatMemberName, getMemberInitials, stringToHslColor, abbreviateNumber} from '@/lib/utils';
 
-export {default as ShadeApp} from './ShadeApp';
-export type {ShadeAppProps} from './ShadeApp';
-export {useFocusContext} from './providers/ShadeProvider';
+export {default as ShadeApp} from './shade-app';
+export type {ShadeAppProps} from './shade-app';
+export {useFocusContext} from './providers/shade-provider';
