@@ -199,6 +199,7 @@ yalc.lock
 /e2e/build
 /e2e/playwright
 /e2e/data
+/e2e/.e2e-logs
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

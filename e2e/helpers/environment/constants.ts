@@ -40,3 +40,8 @@ export const MAILPIT = {
     PORT: 1025
 };
 
+export const LOG_CAPTURE = {
+    OUTPUT_DIR: path.resolve(__dirname, '../../.e2e-logs'),
+    ENV_VAR: 'E2E_CAPTURE_LOGS'
+};
+
