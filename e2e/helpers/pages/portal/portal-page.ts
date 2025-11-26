@@ -23,6 +23,6 @@ export class PortalPage extends BasePage {
 
     async closePortal(): Promise<void> {
         await this.closeButton.click();
-        await this.page.waitForSelector(this.frameSelector, {state: 'hidden', timeout: 2000});
+        await this.portalPopupFrame.waitFor({state: 'hidden', timeout: 2000});
     }
 }
