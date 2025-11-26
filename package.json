@@ -103,6 +103,7 @@
     "nx": "22.0.4",
     "patch-package": "8.0.1",
     "postinstall-postinstall": "2.1.0",
+    "prettier": "3.6.2",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
   },
