@@ -231,8 +231,7 @@
         align-items: center;
         height: 64px;
         margin: 0;
-        padding: 0;
-        padding-left: 15px;
+        padding: 0 15px;
         background-color: var(--white);
         border-radius: 0;
     }
@@ -649,8 +648,8 @@
 
 .gh-publish-cta {
     display: flex;
-    width: max-content;
     gap: 3.2rem;
+    width: 100%;
 }
 
 .gh-publish-cta .gh-btn {
