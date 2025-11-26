@@ -285,8 +285,8 @@ jobs:
 
           } >> $GITHUB_STEP_SUMMARY
 
-  test_e2e:
-    name: E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+  test_e2e_ember:
+    name: E2E Tests (Ember ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [build, setup]
     strategy:
@@ -294,8 +294,6 @@ jobs:
       matrix:
         shardIndex: [1, 2]
         shardTotal: [2]
-        shell: [ember, react]
-    continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -344,14 +342,13 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: blob-report-ember-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -359,14 +356,94 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: test-results-ember-${{ matrix.shardIndex }}
+          path: e2e/test-results
+          retention-days: 7
+
+  test_e2e_react:
+    name: E2E Tests (React ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: ubuntu-latest
+    needs: [build, setup]
+    # React e2e tests are optional - failures don't block the workflow
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+        # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Tinybird CLI Image
+        uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: docker/tb-cli/Dockerfile
+          push: false
+          load: true
+          tags: ghost-tb-cli
+
+      - name: Load Image
+        uses: ./.github/actions/load-docker-image
+        id: load
+        with:
+          is-fork: ${{ needs.build.outputs.is-fork }}
+          image-tags: ${{ needs.build.outputs.image-tags }}
+
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
+
+      - name: Pull images
+        env:
+          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+        run: docker compose -f e2e/compose.yml pull
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.setup.outputs.dependency_cache_key }}
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      - name: Run e2e tests
+        env:
+          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+          USE_REACT_SHELL: 'true'
+        run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-react-${{ matrix.shardIndex }}
+          path: e2e/blob-report
+          retention-days: 1
+
+      - name: Upload test results artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-react-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
   merge_reports:
     name: Merge Playwright Reports
-    if: always() && needs.test_e2e.result == 'failure'
-    needs: [test_e2e, setup]
+    # Only merge reports for Ember failures (required tests)
+    # React failures still have individual artifacts uploaded
+    if: always() && needs.test_e2e_ember.result == 'failure'
+    needs: [test_e2e_ember, test_e2e_react, setup]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -429,3 +506,21 @@ jobs:
           \`\`\`bash
           REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
+
+  required_tests:
+    name: All required tests passed
+    needs: [test_e2e_ember, test_e2e_react]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required test results
+        run: |
+          echo "Ember E2E tests: ${{ needs.test_e2e_ember.result }}"
+          echo "React E2E tests: ${{ needs.test_e2e_react.result }} (optional)"
+
+          if [[ "${{ needs.test_e2e_ember.result }}" == "failure" || "${{ needs.test_e2e_ember.result }}" == "cancelled" ]]; then
+            echo "Required Ember E2E tests failed or were cancelled"
+            exit 1
+          fi
+
+          echo "All required tests passed (React tests are optional)"
