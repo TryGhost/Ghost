@@ -15,6 +15,11 @@ test.describe('Post Preview Modal', () => {
             status: 'draft'
         });
 
+        const publishedPost = await postFactory.create({
+            title: 'clickpost',
+            status: 'published'
+        });
+
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
@@ -35,13 +40,12 @@ test.describe('Post Preview Modal', () => {
         });
 
         const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoPost(post.id);
 
+        await postEditorPage.gotoPost(post.id);
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
         await postEditorPage.previewModal.header.click();
-
         await postEditorPage.pressKey('Escape');
         await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
