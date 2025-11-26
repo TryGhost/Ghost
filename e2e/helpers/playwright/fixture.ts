@@ -97,9 +97,11 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(ghostInstance);
 
         // On test failure: fetch and output logs before cleanup
-        if (testInfo.status === 'failed' && shouldCaptureLogs()) {
+        if (testInfo.status !== 'passed' && shouldCaptureLogs()) {
+            // eslint-disable-next-line no-console
+            console.log(`\n🔍 Test ${testInfo.status} - fetching Ghost server logs from container ${ghostInstance.containerId}...\n`);
             try {
-                debug('Test failed, fetching Ghost container logs...');
+                debug('Test did not pass (status: %s), fetching Ghost container logs...', testInfo.status);
                 const docker = new Docker();
                 const container = docker.getContainer(ghostInstance.containerId);
                 const logManager = new LogManager();
@@ -116,7 +118,9 @@ export const test = base.extend<GhostInstanceFixture>({
                 // eslint-disable-next-line no-console
                 console.log(`\n📝 Ghost logs saved to: ${logFilePath}\n`);
             } catch (error) {
-                debug('Failed to capture logs:', error);
+                // eslint-disable-next-line no-console
+                console.error('⚠️  Failed to capture Ghost server logs:', error instanceof Error ? error.message : String(error));
+                debug('Failed to capture logs (full error):', error);
                 // Don't throw - log capture is best effort
             }
         }
