@@ -156,11 +156,14 @@ const useSourceOptions = (currentFilters: Filter[] = []) => {
         }
 
         return (data as unknown as SourceOption[]).map((item: SourceOption) => {
-            const value = String(item.source || '(not set)');
+            // For empty/null sources, use empty string as value (for Tinybird) but display "Direct"
+            const isEmpty = !item.source;
+            const value = isEmpty ? '' : String(item.source);
+            const label = isEmpty ? 'Direct' : String(item.source);
             const visits = item.visits || 0;
             return {
-                label: value,
-                value: value,
+                label,
+                value,
                 // Add a custom icon element that shows the count badge
                 icon: (
                     <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">

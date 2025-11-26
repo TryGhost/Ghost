@@ -994,11 +994,51 @@ function SelectOptionsPopover<T = unknown>({
 }: SelectOptionsPopoverProps<T>) {
     const [open, setOpen] = useState(false);
     const [searchInput, setSearchInput] = useState('');
+    // Track selected options separately so they persist during async search
+    const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
-    const selectedOptions = field.options?.filter(opt => effectiveValues.includes(opt.value)) || [];
+
+    // For async search, we need to preserve selected options even when they're not in search results
+    // Update cached options when we find them in the current options list
+    const optionsFromField = field.options?.filter(opt => effectiveValues.includes(opt.value)) || [];
+
+    // Update cache when we have matching options from the field
+    // This happens on initial load or when the selected option appears in search results
+    if (optionsFromField.length > 0) {
+        const newCachedValues = optionsFromField.filter(
+            opt => !cachedSelectedOptions.some(cached => cached.value === opt.value)
+        );
+        if (newCachedValues.length > 0 ||
+            (cachedSelectedOptions.length > 0 && effectiveValues.length === 0)) {
+            // Use a microtask to avoid updating state during render
+            queueMicrotask(() => {
+                if (effectiveValues.length === 0) {
+                    setCachedSelectedOptions([]);
+                } else {
+                    setCachedSelectedOptions((prev) => {
+                        // Merge new options with existing cached ones, avoiding duplicates
+                        const merged = [...prev];
+                        for (const opt of optionsFromField) {
+                            if (!merged.some(m => m.value === opt.value)) {
+                                merged.push(opt);
+                            }
+                        }
+                        // Remove options that are no longer selected
+                        return merged.filter(m => effectiveValues.includes(m.value));
+                    });
+                }
+            });
+        }
+    }
+
+    // Use cached options for display, falling back to field options
+    // This ensures selected items stay visible during async search
+    const selectedOptions = effectiveValues.length > 0
+        ? (cachedSelectedOptions.length > 0 ? cachedSelectedOptions : optionsFromField)
+        : [];
     const unselectedOptions = field.options?.filter(opt => !effectiveValues.includes(opt.value)) || [];
 
     const handleSearchChange = (value: string) => {

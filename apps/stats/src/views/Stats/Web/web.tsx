@@ -110,9 +110,14 @@ const Web: React.FC = () => {
     // Note: Currently only 'is' operator is supported by Tinybird pipes
     // Use a stable reference for the dependency to avoid unnecessary recalculations
     const filterParamsKey = useMemo(() => {
-        // Create a stable key based only on filters with actual non-empty values
+        // Create a stable key based only on filters with actual values
+        // Allow empty string for 'source' field (used for "Direct" traffic)
         return utmFilters
-            .filter(f => f.values && f.values.length > 0 && f.values[0] !== '' && f.values[0] !== null && f.values[0] !== undefined)
+            .filter((f) => {
+                const hasValue = f.values && f.values.length > 0 && f.values[0] !== null && f.values[0] !== undefined;
+                const isEmptySourceFilter = f.field === 'source' && f.values?.[0] === '';
+                return hasValue && (f.values![0] !== '' || isEmptySourceFilter);
+            })
             .map(f => `${f.field}:${f.values![0]}`)
             .sort()
             .join('|');
@@ -130,8 +135,12 @@ const Web: React.FC = () => {
                 return;
             }
 
-            // Only handle 'is' operator with exact match and non-empty values
-            if (values && values.length > 0 && values[0] !== '' && values[0] !== null && values[0] !== undefined) {
+            // Check if we have a value to filter on
+            // Allow empty string for 'source' field (used for "Direct" traffic)
+            const hasValue = values && values.length > 0 && values[0] !== null && values[0] !== undefined;
+            const isEmptySourceFilter = fieldKey === 'source' && values?.[0] === '';
+
+            if (hasValue && (values[0] !== '' || isEmptySourceFilter)) {
                 const value = String(values[0]);
 
                 // Map filter field names to Tinybird parameter names
