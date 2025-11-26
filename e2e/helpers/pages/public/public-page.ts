@@ -1,5 +1,5 @@
 import {BasePage, pageGotoOptions} from '@/helpers/pages';
-import {Locator, Page, Response} from '@playwright/test';
+import {Locator, Page, Response, test} from '@playwright/test';
 
 declare global {
     interface Window {
@@ -85,10 +85,17 @@ export class PublicPage extends BasePage {
     }
 
     async goto(url?: string, options?: pageGotoOptions): Promise<void> {
+        const testInfo = test.info();
+        let pageHitPromise = null;
+        if (testInfo.project.name === 'analytics') {
+            await this.enableAnalyticsRequests();
+            pageHitPromise = this.pageHitRequestPromise();
+        }
         await this.enableAnalyticsRequests();
-        const pageHitPromise = this.pageHitRequestPromise();
         await super.goto(url, options);
-        await pageHitPromise;
+        if (pageHitPromise) {
+            await pageHitPromise;
+        }
     }
 
     pageHitRequestPromise(): Promise<Response> {
