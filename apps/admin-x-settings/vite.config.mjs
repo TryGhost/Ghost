@@ -14,6 +14,8 @@ export default (function viteConfig() {
             resolve: {
                 // Shim node modules utilized by the @tryghost/nql package
                 alias: {
+                    '@src': resolve(__dirname, 'src'),
+                    '@test': resolve(__dirname, 'test'),
                     fs: 'node-shim.cjs',
                     path: 'node-shim.cjs',
                     util: 'node-shim.cjs',

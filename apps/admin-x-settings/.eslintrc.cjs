@@ -105,6 +105,9 @@ module.exports = {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         // TODO: enable this when we have the time to retroactively go and fix the issues
         'prefer-const': 'off',
 
