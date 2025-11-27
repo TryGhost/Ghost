@@ -100,6 +100,22 @@ describe('S3Storage', function () {
         assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/06/test-image.jpg');
     });
 
+    it('normalizes absolute target directories before uploading', async function () {
+        const {storage, sendStub} = createStorage();
+
+        sinon.stub(storage, 'exists').resolves(false);
+        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+
+        await storage.save({
+            path: '/tmp/video.mp4',
+            name: 'video.mp4'
+        }, '/var/lib/ghost/content/files/2024/07');
+
+        sinon.assert.calledOnce(sendStub);
+        const command = sendStub.firstCall.args[0] as PutObjectCommand;
+        assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/07/video.mp4');
+    });
+
     it('save() uses getTargetDir() when targetDir not provided', async function () {
         const {storage, sendStub} = createStorage();
 
@@ -124,6 +140,16 @@ describe('S3Storage', function () {
         sinon.assert.calledOnce(sendStub);
         const command = sendStub.firstCall.args[0] as PutObjectCommand;
         assert.equal(command.input.Key, 'configurable/prefix/content/files/thumbnails/raw-image.jpg');
+    });
+
+    it('saveRaw strips duplicated storage prefixes in targetPath', async function () {
+        const {storage, sendStub} = createStorage();
+
+        await storage.saveRaw(Buffer.from('raw-data'), 'content/files/custom/report.pdf');
+
+        sinon.assert.calledOnce(sendStub);
+        const command = sendStub.firstCall.args[0] as PutObjectCommand;
+        assert.equal(command.input.Key, 'configurable/prefix/content/files/custom/report.pdf');
     });
 
     it('converts CDN urls back to relative paths (strips prefix and storagePath)', function () {
@@ -180,6 +206,16 @@ describe('S3Storage', function () {
         assert.equal(missing, false);
     });
 
+    it('exists normalizes absolute directories', async function () {
+        const {storage, sendStub} = createStorage();
+
+        await storage.exists('video.mp4', '/var/lib/ghost/content/files/2024/08');
+
+        sinon.assert.calledOnce(sendStub);
+        const command = sendStub.firstCall.args[0] as any;
+        assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/08/video.mp4');
+    });
+
     it('delete removes objects using derived key', async function () {
         const {storage, sendStub} = createStorage();
 
@@ -188,6 +224,16 @@ describe('S3Storage', function () {
         sinon.assert.calledOnce(sendStub);
         const command = sendStub.firstCall.args[0] as DeleteObjectCommand;
         assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/06/test-image.jpg');
+    });
+
+    it('delete normalizes absolute paths that include storage directory', async function () {
+        const {storage, sendStub} = createStorage();
+
+        await storage.delete('clip.mp4', '/var/data/content/files/2024/09');
+
+        sinon.assert.calledOnce(sendStub);
+        const command = sendStub.firstCall.args[0] as DeleteObjectCommand;
+        assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/09/clip.mp4');
     });
 
     it('delete ignores missing objects', async function () {
