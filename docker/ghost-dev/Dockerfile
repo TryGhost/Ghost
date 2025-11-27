@@ -28,9 +28,14 @@ COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
     bash .github/scripts/install-deps.sh
 
+# Copy entrypoint script that optionally loads Tinybird config
+COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows node --watch to pick up file changes for hot-reload
 WORKDIR /home/ghost/ghost/core
 
+ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["node", "--watch", "--import=tsx", "index.js"]
 
