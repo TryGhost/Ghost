@@ -58,8 +58,9 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
+COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
-    yarn install --frozen-lockfile --prefer-offline
+    bash .github/scripts/install-deps.sh
 
 # --------------------
 # Shade Builder
