@@ -36,7 +36,7 @@ runs:
       shell: bash
       run: |
         echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
-        yarn install --prefer-offline --frozen-lockfile --ignore-scripts
+        bash .github/scripts/install-deps.sh
 
     - name: Set cache miss output
       id: check-cache

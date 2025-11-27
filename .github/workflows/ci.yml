@@ -194,7 +194,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --prefer-offline --frozen-lockfile --ignore-scripts
+        run: bash .github/scripts/install-deps.sh
 
 
     outputs:
