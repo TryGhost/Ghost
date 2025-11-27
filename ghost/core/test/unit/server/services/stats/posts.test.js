@@ -222,7 +222,7 @@ describe('PostsStatsService', function () {
 
     before(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'

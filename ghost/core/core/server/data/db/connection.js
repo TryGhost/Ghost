@@ -15,23 +15,35 @@ let knexInstance;
 // - then this file is cached and you have no chance to connect to the db anymore
 // - bring dynamic into this file (db.connect())
 function configure(dbConfig) {
-    const client = dbConfig.client;
+    let client = dbConfig.client;
 
+    // Alias sqlite3 to better-sqlite3 for backwards compatibility
+    // This allows self-hosters and developers to continue using 'sqlite3' in their config
     if (client === 'sqlite3') {
+        logging.info('Detected sqlite3 config, using better-sqlite3 as drop-in replacement');
+        client = 'better-sqlite3';
+        dbConfig.client = 'better-sqlite3';
+    }
+
+    if (client === 'better-sqlite3') {
         // Backwards compatibility with old knex behaviour
         dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault') ? dbConfig.useNullAsDefault : true;
 
         // Enables foreign key checks and delete on cascade
+        // better-sqlite3 uses synchronous .pragma() method instead of async .run()
         dbConfig.pool = {
             afterCreate(conn, cb) {
-                conn.run('PRAGMA foreign_keys = ON', cb);
+                // better-sqlite3 exposes .pragma() method for setting PRAGMA commands
+                conn.pragma('foreign_keys = ON');
 
                 // These two are meant to improve performance at the cost of reliability
                 // Should be safe for tests. We add them here and leave them on
                 if (config.get('env').startsWith('testing')) {
-                    conn.run('PRAGMA synchronous = OFF;');
-                    conn.run('PRAGMA journal_mode = TRUNCATE;');
+                    conn.pragma('synchronous = OFF');
+                    conn.pragma('journal_mode = TRUNCATE');
                 }
+
+                cb(null, conn);
             }
         };
 

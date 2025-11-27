@@ -14,10 +14,10 @@ describe('Collection Model', function () {
 
     describe('add', function () {
         it('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
-            if (db?.knex?.client?.config?.client !== 'sqlite3') {
+            if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
                 return this.skip();
             }
-            /** @type {import('sqlite3').Database} */
+            /** @type {import('better-sqlite3').Database} */
             const database = db.knex.client;
 
             let didUpdateCollectionPosts = false;
@@ -51,10 +51,10 @@ describe('Collection Model', function () {
         });
 
         it('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
-            if (db?.knex?.client?.config?.client !== 'sqlite3') {
+            if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
                 return this.skip();
             }
-            /** @type {import('sqlite3').Database} */
+            /** @type {import('better-sqlite3').Database} */
             const database = db.knex.client;
 
             let didUpdateCollectionPosts = false;
