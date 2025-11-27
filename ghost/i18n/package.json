@@ -5,7 +5,7 @@
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
-  "types": "./build/i18n.d.ts",
+  "types": "./index.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
@@ -23,6 +23,7 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "lib",
     "locales"
   ],

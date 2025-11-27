@@ -22,12 +22,12 @@ export default (function viteConfig() {
                 }
             },
             optimizeDeps: {
-                include: ['@tryghost/kg-unsplash-selector', '@tryghost/custom-fonts']
-            }
-        },
-        build: {
-            commonjsOptions: {
-                include: [/ghost\/custom-fonts/]
+                include: ['@tryghost/kg-unsplash-selector', '@tryghost/custom-fonts', '@tryghost/i18n']
+            },
+            build: {
+                commonjsOptions: {
+                    include: [/ghost\/custom-fonts/, /ghost\/i18n/]
+                }
             }
         }
     });
