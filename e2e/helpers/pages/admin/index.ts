@@ -11,3 +11,4 @@ export * from './tags';
 export * from './sidebar';
 export * from './billing';
 export * from './comments';
+export * from './signup-page';
