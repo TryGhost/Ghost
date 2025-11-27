@@ -50,10 +50,8 @@
 
         <GhContentCover />
 
-        {{#if this.session.user}}
-            {{#unless this.session.user.isContributor}}
-                <GhMobileNavBar />
-            {{/unless}}
+        {{#if this.showMobileNavMenu}}
+            <GhMobileNavBar />
         {{/if}}
     </div>
 

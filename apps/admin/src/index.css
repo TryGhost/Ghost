@@ -10,13 +10,6 @@ body.react-admin #ember-app .gh-app {
     position: static;
 }
 
-
-/* Hide the nav menu and tab bar on mobile when running in React admin shell */
-body.react-admin #ember-app .gh-nav,
-body.react-admin #ember-app .gh-mobile-nav-bar {
-    display: none;
-}
-
 /* Temporary overrides until Ember transition is finished */
 body.react-admin .gh-canvas-header {
     padding-top: 24px;

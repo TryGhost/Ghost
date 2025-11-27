@@ -8,3 +8,4 @@ export * from './whats-new';
 export * from './analytics';
 export * from './posts';
 export * from './tags';
+export * from './sidebar';

@@ -9,7 +9,6 @@ export class TagDetailsPage extends AdminPage {
     readonly saveButtonSuccess: Locator;
     readonly deleteButton: Locator;
     readonly backLink: Locator;
-    readonly navMenuItem: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -22,7 +21,6 @@ export class TagDetailsPage extends AdminPage {
         this.deleteButton = page.getByRole('button', {name: 'Delete tag'});
 
         this.backLink = page.locator('[data-test-link="tags-back"]');
-        this.navMenuItem = page.locator('[data-test-nav="tags"]');
     }
 
     async fillTagName(name: string) {

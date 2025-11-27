@@ -184,6 +184,7 @@ const Sidebar = React.forwardRef<
                         'flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground',
                         className
                     )}
+                    role="navigation"
                     {...props}
                 >
                     {children}
@@ -198,6 +199,7 @@ const Sidebar = React.forwardRef<
                         className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
                         data-mobile="true"
                         data-sidebar="sidebar"
+                        role="navigation"
                         side={side}
                         style={
             {
@@ -219,6 +221,7 @@ const Sidebar = React.forwardRef<
                 data-side={side}
                 data-state={state}
                 data-variant={variant}
+                role="navigation"
             >
                 {/* This is what handles the sidebar gap on desktop */}
                 <div

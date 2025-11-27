@@ -15,6 +15,7 @@ export default class ApplicationController extends Controller {
     @service ghostPaths;
     @service ajax;
     @service store;
+    @service feature;
 
     @inject config;
 
@@ -65,6 +66,10 @@ export default class ApplicationController extends Controller {
     }
 
     get showNavMenu() {
+        if (this.feature.inAdminForward) {
+            return false;
+        }
+
         let {router, session, ui} = this;
 
         // if we're in fullscreen mode don't show the nav menu
@@ -80,6 +85,18 @@ export default class ApplicationController extends Controller {
 
         return (router.currentRouteName !== 'error404' || session.isAuthenticated)
                 && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
+    }
+
+    get showMobileNavMenu() {
+        if (this.feature.inAdminForward) {
+            return false;
+        }
+
+        if (!this.session.isAuthenticated || !this.session.user || this.session.user.isContributor) {
+            return false;
+        }
+
+        return true;
     }
 
     @action

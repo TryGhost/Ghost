@@ -73,9 +73,11 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
                             isActive={isActive}
                         >
                             <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
-                            <span 
-                                className="size-2 rounded-full shrink-0 mx-0.5" 
+                            <span
+                                className="size-2 rounded-full shrink-0 mx-0.5"
                                 style={{backgroundColor: getColorHex(view.color)}}
+                                data-color={view.color}
+                                aria-hidden="true"
                             />
                         </NavMenuItem.Link>
                     </NavMenuItem>
