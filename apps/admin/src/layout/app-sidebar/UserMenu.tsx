@@ -41,6 +41,7 @@ function UserMenu(props: UserMenuProps) {
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    aria-label="User menu"
                 >
                 <div className="relative">
                     <Avatar>

@@ -2,6 +2,8 @@ import LinkComponent from '@ember/routing/link-component';
 import {computed} from '@ember/object';
 
 LinkComponent.reopen({
+    attributeBindings: ['ariaCurrent:aria-current'],
+
     active: computed('attrs.params', '_routing.currentState', function () {
         let isActive = this._super(...arguments);
 
@@ -14,5 +16,9 @@ LinkComponent.reopen({
 
     activeClass: computed('tagName', function () {
         return this.tagName === 'button' ? '' : 'active';
+    }),
+
+    ariaCurrent: computed('active', function () {
+        return this.active ? 'page' : null;
     })
 });
