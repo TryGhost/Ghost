@@ -25,7 +25,7 @@ test.describe('Ghost Admin - i18n Newsletter', () => {
         await postEditorPage.previewButton.click();
         await postEditorPage.previewModal.switchToEmailTab();
 
-        const emailPreviewContent = await postEditorPage.previewModal.content();
+        const emailPreviewContent = await postEditorPage.previewModal.emailPreviewContent();
         expect(emailPreviewContent).toContain(`Par ${ghostAccountOwner.name}`);
         expect(emailPreviewContent).not.toContain(`By ${ghostAccountOwner.name}`);
     });

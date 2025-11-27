@@ -15,14 +15,21 @@ test.describe('Post Preview Modal', () => {
             status: 'draft'
         });
 
+        // create a published post that will be in read more section of preview modal that you can preview
+        // to ensure that iframe preview modal is focused when ESC key is pressed
+        await postFactory.create({
+            title: 'clickpost',
+            status: 'published'
+        });
+
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
-        const previewModalFrame = await postEditorPage.previewModal.previewModalFrame();
-        await previewModalFrame.image.click();
+        await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle('clickpost');
+        await postEditorPage.previewModalDesktopFrame.focus();
 
         await postEditorPage.pressKey('Escape');
         await expect(postEditorPage.previewModal.modal).toBeHidden();
@@ -35,13 +42,12 @@ test.describe('Post Preview Modal', () => {
         });
 
         const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoPost(post.id);
 
+        await postEditorPage.gotoPost(post.id);
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
         await postEditorPage.previewModal.header.click();
-
         await postEditorPage.pressKey('Escape');
         await expect(postEditorPage.previewModal.modal).toBeHidden();
     });

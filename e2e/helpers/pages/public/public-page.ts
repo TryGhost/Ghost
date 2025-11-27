@@ -93,12 +93,10 @@ export class PublicPage extends BasePage {
 
     pageHitRequestPromise(): Promise<Response> {
         return this.page.waitForResponse((response) => {
-            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+            return response
+                .url()
+                .includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
         }, {timeout: 10000});
-    }
-
-    async waitForPageHitRequest(): Promise<void> {
-        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {
