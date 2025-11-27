@@ -22,7 +22,7 @@ runs:
       run: |
         echo "::warning::Cache miss detected, waiting 10 seconds and retrying..."
         sleep 10
-      
+
     - name: Check dependency cache (retry)
       id: dep-cache-retry-attempt
       if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -36,7 +36,7 @@ runs:
       shell: bash
       run: |
         echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
-        yarn install --prefer-offline --frozen-lockfile
+        yarn install --prefer-offline --frozen-lockfile --ignore-scripts
 
     - name: Set cache miss output
       id: check-cache
