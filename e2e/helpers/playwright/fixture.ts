@@ -3,15 +3,10 @@ import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {createContextWithRoute} from '@/helpers/playwright/context-with-route';
 import {User} from '@/data-factory';
-import * as fs from 'fs';
-import * as path from 'path';
+import {createContextWithRoute} from '@/helpers/playwright/context-with-route';
 
 const debug = baseDebug('e2e:ghost-fixture');
-
-const AUTH_STATE_DIR = path.join(process.cwd(), 'e2e', 'data', 'state', 'auth');
-const USERS_STATE_FILE = path.join(process.cwd(), 'e2e', 'data', 'state', 'users.json');
 
 export interface GhostConfig {
     memberWelcomeEmailSendInstantly: string;
@@ -52,7 +47,6 @@ async function setupNewAuthenticatedPage(browser: Browser, backendURL: string, r
     });
     
     const page = await context.newPage();
-    debug('Authenticated page created using saved storageState with host aliasing');
 
     return {page, context};
 }
@@ -100,18 +94,12 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(ghostInstance.baseUrl);
     },
 
-    // Load owner user credentials from saved state (backward compatibility)
     ghostAccountOwner: async ({}, use) => {
-        if (!fs.existsSync(USERS_STATE_FILE)) {
-            throw new Error(`User credentials file not found: ${USERS_STATE_FILE}. Run global setup first.`);
-        }
-
-        const credentials = JSON.parse(fs.readFileSync(USERS_STATE_FILE, 'utf-8'));
         const owner: User = {
-            name: credentials.owner.name,
-            email: credentials.owner.email,
-            password: credentials.owner.password,
-            blogTitle: credentials.owner.blogTitle
+            name: 'Test Owner',
+            email: 'owner@ghost.org',
+            password: 'test@123@test',
+            blogTitle: 'Test Blog'
         };
         await use(owner);
     },
