@@ -63,12 +63,14 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         }
         // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
-            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key)) {
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key) && value !== undefined && value !== null) {
+                // Convert camelCase to snake_case for Tinybird API
+                const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
                 // Handle arrays by converting them to comma-separated strings for Tinybird
                 if (Array.isArray(value)) {
-                    searchParams[key] = value.join(',');
+                    searchParams[snakeKey] = value.join(',');
                 } else {
-                    searchParams[key] = value;
+                    searchParams[snakeKey] = value;
                 }
             }
         });

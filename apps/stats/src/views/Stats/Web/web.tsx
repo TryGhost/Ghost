@@ -1,13 +1,14 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
-import React, {useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import SourcesCard from './components/sources-card';
+import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {CampaignType, Card, CardContent, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -47,12 +48,56 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
+// Audience bit values matching StatsFilter and AudienceSelect
+const AUDIENCE_BITS = {
+    PUBLIC: 1 << 0, // 1
+    FREE: 1 << 1, // 2
+    PAID: 1 << 2 // 4
+};
+
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
-    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
-    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
+    const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
+
+    // Initialize filters based on current audience state when component mounts or audience changes
+    // Only create audience filter if audience is not the default "all audiences" state
+    useEffect(() => {
+        const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+        const isDefaultAudience = audience === ALL_AUDIENCES;
+        
+        setUtmFilters(prevFilters => {
+            // Check if audience filter already exists
+            const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
+            
+            // If audience is not default and filter doesn't exist, create it
+            if (!isDefaultAudience && !hasAudienceFilter) {
+                const audienceValues: string[] = [];
+                if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
+                    audienceValues.push('undefined');
+                }
+                if ((audience & AUDIENCE_BITS.FREE) !== 0) {
+                    audienceValues.push('free');
+                }
+                if ((audience & AUDIENCE_BITS.PAID) !== 0) {
+                    audienceValues.push('paid');
+                }
+                
+                if (audienceValues.length > 0) {
+                    return [...prevFilters, createFilter('audience', 'is', audienceValues)];
+                }
+            }
+            
+            // If audience is default and filter exists, remove it
+            if (isDefaultAudience && hasAudienceFilter) {
+                return prevFilters.filter(f => f.field !== 'audience');
+            }
+            
+            // No changes needed
+            return prevFilters;
+        });
+    }, [audience]); // Only depend on audience, not utmFilters to avoid loops
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
@@ -61,14 +106,67 @@ const Web: React.FC = () => {
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
 
-    // Prepare query parameters
-    const params = {
+    // Convert all filters to query parameters
+    // Note: Currently only 'is' operator is supported by Tinybird pipes
+    // Use a stable reference for the dependency to avoid unnecessary recalculations
+    const filterParamsKey = useMemo(() => {
+        // Create a stable key based only on filters with actual values
+        // Allow empty string for 'source' field (used for "Direct" traffic)
+        return utmFilters
+            .filter((f) => {
+                const hasValue = f.values && f.values.length > 0 && f.values[0] !== null && f.values[0] !== undefined;
+                const isEmptySourceFilter = f.field === 'source' && f.values?.[0] === '';
+                return hasValue && (f.values![0] !== '' || isEmptySourceFilter);
+            })
+            .map(f => `${f.field}:${f.values![0]}`)
+            .sort()
+            .join('|');
+    }, [utmFilters]);
+
+    const filterParams = useMemo(() => {
+        const params: Record<string, string> = {};
+
+        utmFilters.forEach((filter) => {
+            const fieldKey = filter.field;
+            const values = filter.values;
+
+            // Skip audience filter - it's handled separately via member_status
+            if (fieldKey === 'audience') {
+                return;
+            }
+
+            // Check if we have a value to filter on
+            // Allow empty string for 'source' field (used for "Direct" traffic)
+            const hasValue = values && values.length > 0 && values[0] !== null && values[0] !== undefined;
+            const isEmptySourceFilter = fieldKey === 'source' && values?.[0] === '';
+
+            if (hasValue && (values[0] !== '' || isEmptySourceFilter)) {
+                const value = String(values[0]);
+
+                // Map filter field names to Tinybird parameter names
+                // UTM fields map directly, but post and source need mapping
+                if (fieldKey === 'post') {
+                    params.post_uuid = value;
+                } else {
+                    // UTM fields and other fields map directly
+                    params[fieldKey] = value;
+                }
+            }
+        });
+
+        return params;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterParamsKey]); // Depend on the key, not the full filters array
+
+    // Prepare query parameters - memoized to prevent unnecessary refetches
+    const params = useMemo(() => ({
         site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
+        member_status: getAudienceQueryParam(audience),
+        ...filterParams
+    }), [statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
 
     const queryParams: Record<string, string> = {
         date_from: formatQueryDate(startDate),
@@ -94,63 +192,6 @@ const Web: React.FC = () => {
         params
     });
 
-    // Map campaign types to endpoints
-    const campaignEndpointMap: Record<CampaignType, string> = {
-        '': '',
-        'UTM sources': 'api_top_utm_sources',
-        'UTM mediums': 'api_top_utm_mediums',
-        'UTM campaigns': 'api_top_utm_campaigns',
-        'UTM contents': 'api_top_utm_contents',
-        'UTM terms': 'api_top_utm_terms'
-    };
-
-    // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
-    const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
-    const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
-        endpoint: campaignEndpoint,
-        statsConfig,
-        params,
-        enabled: utmTrackingEnabled && selectedTab === 'campaigns' && !!selectedCampaign
-    });
-
-    // Select and transform the appropriate data based on current view
-    const displayData = React.useMemo(() => {
-        // If we're viewing UTM campaigns, use and transform the UTM data
-        if (selectedTab === 'campaigns' && selectedCampaign) {
-            // If UTM data is still loading or undefined, return null
-            if (!utmData) {
-                return null;
-            }
-
-            // Map UTM field names to the generic key name
-            const utmKeyMap: Record<CampaignType, string> = {
-                '': '',
-                'UTM sources': 'utm_source',
-                'UTM mediums': 'utm_medium',
-                'UTM campaigns': 'utm_campaign',
-                'UTM contents': 'utm_content',
-                'UTM terms': 'utm_term'
-            };
-
-            const utmKey = utmKeyMap[selectedCampaign];
-            if (!utmKey) {
-                return utmData;
-            }
-
-            // Transform the data to use 'source' as the key, omitting the original utm_* field
-            return utmData.map((item: SourcesData) => {
-                const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
-                return {
-                    ...rest,
-                    source: String(utmValue || '(not set)')
-                };
-            });
-        }
-
-        // Default to regular sources data
-        return sourcesData;
-    }, [sourcesData, utmData, selectedTab, selectedCampaign]);
-
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
@@ -166,9 +207,16 @@ const Web: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <AudienceSelect />
+                {!utmTrackingEnabled && <AudienceSelect />}
                 <DateRangeSelect />
             </StatsHeader>
+            {utmTrackingEnabled && (
+                <StatsFilter
+                    filters={utmFilters}
+                    utmTrackingEnabled={utmTrackingEnabled}
+                    onChange={setUtmFilters}
+                />
+            )}
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
@@ -183,20 +231,16 @@ const Web: React.FC = () => {
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}
+                        utmFilterParams={filterParams}
                     />
                     <SourcesCard
-                        data={displayData as SourcesData[] | null}
+                        data={sourcesData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-                        isLoading={selectedTab === 'campaigns' ? isUtmLoading : isSourcesLoading}
+                        isLoading={isSourcesLoading}
                         range={range}
-                        selectedCampaign={selectedCampaign}
-                        selectedTab={selectedTab}
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
-                        utmTrackingEnabled={utmTrackingEnabled}
-                        onCampaignChange={setSelectedCampaign}
-                        onTabChange={setSelectedTab}
                     />
                 </div>
             </StatsView>

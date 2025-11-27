@@ -488,20 +488,46 @@ describe('ContentStatsService', function () {
             result.should.have.property('data').which.is.an.Array().with.lengthOf(0);
         });
 
-        it('passes post_type parameter to tinybird client', async function () {
+        it('passes all filter parameters to tinybird client with correct shape', async function () {
             mockTinybirdClient.fetch.resolves([]);
 
             const options = {
                 date_from: '2023-01-01',
                 date_to: '2023-01-31',
-                post_type: 'page'
+                timezone: 'America/New_York',
+                member_status: 'paid',
+                post_type: 'page',
+                post_uuid: 'post-123',
+                source: 'google.com',
+                utm_source: 'newsletter',
+                utm_medium: 'email',
+                utm_campaign: 'spring_sale',
+                utm_content: 'banner',
+                utm_term: 'headless_cms'
             };
 
             await service.fetchRawTopContentData(options);
 
             mockTinybirdClient.fetch.calledOnce.should.be.true();
+            mockTinybirdClient.fetch.firstCall.args[0].should.equal('api_top_pages');
+
             const tinybirdOptions = mockTinybirdClient.fetch.firstCall.args[1];
+            // Base parameters
+            tinybirdOptions.should.have.property('dateFrom', '2023-01-01');
+            tinybirdOptions.should.have.property('dateTo', '2023-01-31');
+            tinybirdOptions.should.have.property('timezone', 'America/New_York');
+            tinybirdOptions.should.have.property('memberStatus', 'paid');
+            // Content filters
             tinybirdOptions.should.have.property('postType', 'page');
+            tinybirdOptions.should.have.property('postUuid', 'post-123');
+            // Source filter
+            tinybirdOptions.should.have.property('source', 'google.com');
+            // UTM filters
+            tinybirdOptions.should.have.property('utmSource', 'newsletter');
+            tinybirdOptions.should.have.property('utmMedium', 'email');
+            tinybirdOptions.should.have.property('utmCampaign', 'spring_sale');
+            tinybirdOptions.should.have.property('utmContent', 'banner');
+            tinybirdOptions.should.have.property('utmTerm', 'headless_cms');
         });
     });
 });
