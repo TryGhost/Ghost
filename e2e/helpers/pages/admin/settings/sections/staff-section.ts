@@ -74,9 +74,6 @@ export class StaffSection extends BasePage {
         // Submit the invitation
         await this.inviteModal.getByRole('button', {name: 'Send invitation'}).click();
 
-        // Wait for success toast
-        await this.page.getByTestId('toast-success').waitFor({state: 'visible'});
-
         // Wait for modal to close
         await this.inviteModal.waitFor({state: 'hidden'});
     }

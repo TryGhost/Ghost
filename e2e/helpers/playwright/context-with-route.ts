@@ -11,43 +11,26 @@ export const PLAYWRIGHT_BASE_URL = 'http://ghost.test:2368';
 const AUTH_STATE_DIR = path.join(process.cwd(), 'e2e', 'data', 'state', 'auth');
 
 /**
- * Creates a browser context with route interception to map ghost.test:2368
- * to localhost:{port} while preserving the Origin header for Ghost's CSRF protection.
+ * Creates a browser context using the backend URL directly. Caddy proxy handles
+ * Origin header rewriting for CSRF protection, so no route interception needed.
+ * Also creates a separate APIRequestContext that uses the actual backend URL for direct HTTP requests.
  */
 export async function createContextWithRoute(
     browser: Browser,
     backendURL: string,
     options?: {role?: string}
 ): Promise<BrowserContext> {
-    const port = new URL(backendURL).port;
     const storageState = options?.role ? path.join(AUTH_STATE_DIR, `${options.role}.json`) : undefined;
     
     if (storageState && !fs.existsSync(storageState)) {
         throw new Error(`Storage state file not found: ${storageState}. Run global setup first.`);
     }
     
-    const context = await browser.newContext({
-        baseURL: PLAYWRIGHT_BASE_URL,
-        storageState,
-        extraHTTPHeaders: {
-            Origin: PLAYWRIGHT_BASE_URL
-        }
+    // Context for page navigation - uses backend URL directly
+    // Caddy proxy handles Origin header rewriting
+    return await browser.newContext({
+        baseURL: backendURL,
+        storageState
     });
-    
-    await context.route('**/*', async (route) => {
-        const url = new URL(route.request().url());
-        if (url.hostname === 'ghost.test') {
-            url.hostname = 'localhost';
-            url.port = port;
-            const headers = route.request().headers();
-            // Preserve Origin header to match what was used during authentication
-            headers.Origin = PLAYWRIGHT_BASE_URL;
-            await route.continue({url: url.toString(), headers});
-        } else {
-            await route.continue();
-        }
-    });
-    
-    return context;
 }
 

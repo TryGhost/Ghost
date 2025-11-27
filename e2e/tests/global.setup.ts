@@ -1,21 +1,21 @@
-import {expect, test as setup} from '@playwright/test';
-import {getEnvironmentManager} from '@/helpers/environment';
-
-const TIMEOUT = 2 * 60 * 1000; // 2 minutes
 import * as path from 'path';
 import {MailPit} from '@/helpers/services/email/mail-pit';
-import {SettingsPage} from '@/helpers/pages';
-import {SignupPage} from '@/helpers/pages/admin/signup-page';
+import {SettingsPage, SignupPage} from '@/helpers/pages';
 import {createContextWithRoute} from '@/helpers/playwright/context-with-route';
 import {ensureDir} from '@/helpers/utils/ensure-dir';
+import {expect, test as setup} from '@playwright/test';
 import {extractInvitationLink} from '@/helpers/services/email/utils';
+import {getEnvironmentManager} from '@/helpers/environment';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
 import {setupUser} from '@/helpers/utils/setup-user';
 
 const AUTH_STATE_DIR = path.join(process.cwd(), 'e2e', 'data', 'state', 'auth');
 const PASSWORD = 'test@123@test';
+const TIMEOUT = 2 * 60 * 1000; // 2 minutes
 
+setup.describe.configure({mode: 'serial'});
 // Setup environment first
-setup('environment setup', async () => {
+setup('setup environment', async () => {
     const manager = await getEnvironmentManager();
     const result = await manager.globalSetup();
     
@@ -30,7 +30,7 @@ setup('environment setup', async () => {
 });
 
 // Setup owner user
-setup('setup owner user', async ({browser}) => {
+setup('create owner user', async ({browser}) => {
     const backendURL = process.env.E2E_BASE_URL!;
     const ownerEmail = 'owner@ghost.org';
 
@@ -51,64 +51,65 @@ setup('setup owner user', async ({browser}) => {
     await context.close();
 });
 
-// Invite and onboard staff members using parameterized tests
 const staffRoles: Array<{role: 'administrator' | 'editor' | 'author' | 'contributor'; name: string; email: string}> = [
     {role: 'administrator', name: 'Test Administrator', email: 'administrator@ghost.org'},
     {role: 'editor', name: 'Test Editor', email: 'editor@ghost.org'},
     {role: 'author', name: 'Test Author', email: 'author@ghost.org'},
     {role: 'contributor', name: 'Test Contributor', email: 'contributor@ghost.org'}
 ];
-
-for (const {role, name, email} of staffRoles) {
-    setup(`invite ${role}`, async ({browser}) => {
-        const backendURL = process.env.E2E_BASE_URL!;
-        
-        const context = await createContextWithRoute(browser, backendURL, {
-            role: 'owner'
-        });
-
-        const page = await context.newPage();
-        const settingsPage = new SettingsPage(page);
-        await settingsPage.goto();
-        await settingsPage.staffSection.goto();
-
-        await settingsPage.staffSection.inviteUser(email, role);
-        await context.close();
+setup(`invite staff users`, async ({browser}) => {
+    const backendURL = process.env.E2E_BASE_URL!;
+    
+    const context = await createContextWithRoute(browser, backendURL, {
+        role: 'owner'
     });
 
-    setup(`complete ${role} signup`, async ({browser}) => {
+    const page = await context.newPage();
+    const settingsPage = new SettingsPage(page);
+    await settingsPage.goto();
+    await settingsPage.staffSection.goto();
+
+    for (const {role, email} of staffRoles) {
+        await settingsPage.staffSection.inviteUser(email, role);
+    }
+    
+    await context.close();
+});
+
+for (const {role, name, email} of staffRoles) {
+    setup(`create ${role} user`, async ({browser}) => {
         const backendURL = process.env.E2E_BASE_URL!;
         const emailClient = new MailPit();
 
         const messages = await emailClient.searchByRecipient(email, {timeoutMs: 30000});
+        
+        // We are within a test block, so we can use expect directly
+        // eslint-disable-next-line playwright/no-standalone-expect
         expect(messages.length).toBeGreaterThan(0);
 
         const emailMessage = await emailClient.getMessageDetailed(messages[0]);
         const invitationLink = extractInvitationLink(emailMessage.HTML || emailMessage.Text);
 
-        let signupUrl = invitationLink.startsWith('http') 
+        // Extract the path from the invitation link and use consistent baseURL
+        const invitationUrl = new URL(invitationLink.startsWith('http') 
             ? invitationLink 
-            : `${backendURL}${invitationLink}`;
-        signupUrl = signupUrl.replace(/\/ghost\/signup\//, '/ghost/#/signup/');
+            : `${backendURL}${invitationLink}`);
+        const signupPath = invitationUrl.pathname.replace(/\/ghost\/signup\//, '/ghost/#/signup/');
 
         const context = await createContextWithRoute(browser, backendURL);
         const page = await context.newPage();
         
-        await page.goto(signupUrl);
+        // Use relative path so it goes through our route interception
+        await page.goto(signupPath);
         const signupPage = new SignupPage(page);
         await signupPage.nameField.waitFor({state: 'visible'});
 
-        await signupPage.completeSignup(name, PASSWORD);
-        await context.close();
-    });
+        await signupPage.nameField.fill(name);
+        await signupPage.emailField.fill(email);
+        await signupPage.passwordField.fill(PASSWORD);
+        await signupPage.submitButton.click();
 
-    setup(`authenticate ${role}`, async ({browser}) => {
-        const backendURL = process.env.E2E_BASE_URL!;
-
-        const context = await createContextWithRoute(browser, backendURL);
-        const page = await context.newPage();
-
-        await loginToGetAuthenticatedSession(page, email, PASSWORD);
+        await page.waitForURL(/\/ghost\/#\/(analytics|posts|site)/);
         
         await context.storageState({path: path.join(AUTH_STATE_DIR, `${role}.json`)});
         await context.close();
@@ -116,7 +117,7 @@ for (const {role, name, email} of staffRoles) {
 }
 
 // Create database snapshot after all users are onboarded
-setup('create database snapshot', async () => {
+setup('save database snapshot', async () => {
     setup.setTimeout(TIMEOUT);
     const manager = await getEnvironmentManager();
     if ('createSnapshot' in manager && typeof manager.createSnapshot === 'function') {
