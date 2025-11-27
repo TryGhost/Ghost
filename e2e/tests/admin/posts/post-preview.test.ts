@@ -28,9 +28,8 @@ test.describe('Post Preview Modal', () => {
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
-        await postEditorPage.previewModal.waitForPreviewModalFrame();
-        await postEditorPage.previewModal.clickPostLinkByTitle('clickpost');
-        await postEditorPage.previewModal.focusPreviewFrame();
+        await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle('clickpost');
+        await postEditorPage.previewModalDesktopFrame.focus();
 
         await postEditorPage.pressKey('Escape');
         await expect(postEditorPage.previewModal.modal).toBeHidden();
