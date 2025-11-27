@@ -222,7 +222,7 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "3.2.8",
-    "sqlite3": "5.1.7"
+    "better-sqlite3": "12.4.6"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
