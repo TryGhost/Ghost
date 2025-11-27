@@ -637,5 +637,15 @@
             },
             "type": "boolean"
         }
+    },
+    "automations": {
+        "member_welcome_emails_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
     }
 }
