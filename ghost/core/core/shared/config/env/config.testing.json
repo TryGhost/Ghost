@@ -1,7 +1,7 @@
 {
     "url": "http://127.0.0.1:2369",
     "database": {
-        "client": "sqlite3",
+        "client": "better-sqlite3",
         "connection": {
             "filename": "/tmp/ghost-test.db"
         },
