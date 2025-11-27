@@ -59,7 +59,7 @@ COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
-    yarn install --frozen-lockfile --prefer-offline --ignore-scripts
+    yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Shade Builder
