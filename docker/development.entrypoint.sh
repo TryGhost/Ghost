@@ -14,13 +14,13 @@ set -euo pipefail
         stored_hash=$(cat "$yarn_lock_hash_file_path")
         if [ "$calculated_hash" != "$stored_hash" ]; then
             echo "INFO: yarn.lock has changed. Running yarn install..."
-            yarn install --frozen-lockfile
+            yarn install --frozen-lockfile --ignore-scripts
             mkdir -p .yarnhash
             echo "$calculated_hash" > "$yarn_lock_hash_file_path"
         fi
     else
         echo "WARNING: yarn.lock hash file ($yarn_lock_hash_file_path) not found. Running yarn install as a precaution."
-        yarn install --frozen-lockfile
+        yarn install --frozen-lockfile --ignore-scripts
         mkdir -p .yarnhash
         echo "$calculated_hash" > "$yarn_lock_hash_file_path"
     fi
