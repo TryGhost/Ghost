@@ -706,7 +706,7 @@ describe('migrations/utils/settings', function () {
 
 async function setupNullableTestDb() {
     const knex = Knex({
-        client: 'sqlite3',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },

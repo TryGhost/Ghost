@@ -24,10 +24,10 @@ const postMatcherShallowIncludes = Object.assign(
 
 async function trackDb(fn, skip) {
     const db = require('../../../core/server/data/db');
-    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+    if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
         return skip();
     }
-    /** @type {import('sqlite3').Database} */
+    /** @type {import('better-sqlite3').Database} */
     const database = db.knex.client;
 
     const queries = [];
