@@ -1,5 +1,5 @@
 import React from 'react';
-import {AnnouncementBar} from './AnnouncementBar';
+import {AnnouncementBar} from './announcement-bar';
 import setupGhostApi from '../utils/api';
 
 export function Main({apiUrl}) {

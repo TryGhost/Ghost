@@ -1,6 +1,6 @@
-import setupGhostApi from './api';
+import setupGhostApi from '../../src/utils/api';
 
-test('should call settings endpoint on init', () => {
+test('calls settings endpoint on init', () => {
     jest.spyOn(window, 'fetch');
     window.fetch.mockResolvedValueOnce({
         ok: true,

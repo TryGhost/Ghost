@@ -1,6 +1,6 @@
 import React from 'react';
-import {Preview} from './components/Preview';
-import {Main} from './components/Main';
+import {Preview} from './components/preview';
+import {Main} from './components/main';
 
 export function App({apiUrl, previewData}) {
     if (previewData) {

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './AnnouncementBar.css';
+import './announcement-bar.css';
 import {ReactComponent as CloseIcon} from '../icons/clear.svg';
 
 export function AnnouncementBar({settings = {}}) {
