@@ -25,7 +25,7 @@ COPY ghost/i18n/package.json ghost/i18n/package.json
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
-    yarn install --frozen-lockfile --ignore-scripts
+    yarn install --frozen-lockfile
 
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows node --watch to pick up file changes for hot-reload
