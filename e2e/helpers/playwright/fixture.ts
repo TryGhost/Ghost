@@ -1,22 +1,28 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage, LoginPage} from '../pages/admin';
+import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment';
-import {SettingsService} from '../services/settings/SettingsService';
+import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
-import {setupUser} from '../utils';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
+import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
-
-interface User {
+export interface User {
     name: string;
     email: string;
     password: string;
 }
 
+export interface GhostConfig {
+    memberWelcomeEmailSendInstantly: string;
+    memberWelcomeEmailTestInbox: string;
+}
+
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
+    config?: GhostConfig;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -25,22 +31,13 @@ export interface GhostInstanceFixture {
     };
 }
 
-async function loginToGetAuthenticatedSession(page: Page, user: User) {
-    const loginPage = new LoginPage(page);
-    await loginPage.waitForLoginPageAfterUserCreated();
-    await loginPage.signIn(user.email, user.password);
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.header.waitFor({state: 'visible'});
-    debug('Authentication completed for Ghost instance');
-}
-
 async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
     const analyticsPage = new AnalyticsOverviewPage(page);
     await analyticsPage.goto();
 
     debug('Updating labs settings:', labsFlags);
     const settingsService = new SettingsService(page.request);
-    await settingsService.updateSettings(labsFlags);
+    await settingsService.updateLabsSettings(labsFlags);
 
     // Reload the page to ensure the new labs settings take effect in the UI
     await page.reload();
@@ -60,7 +57,8 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
     });
     const page = await context.newPage();
 
-    await loginToGetAuthenticatedSession(page, ghostAccountOwner);
+    await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+    debug('Authentication completed for Ghost instance');
 
     return {page, context, ghostAccountOwner};
 }
@@ -68,15 +66,23 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
 /**
  * Playwright fixture that provides a unique Ghost instance for each test
  * Each instance gets its own database, runs on a unique port, and includes authentication
+ *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
+ * and Ghost config via config settings like:
+ *
+ *  test.use({config: {
+ *      memberWelcomeEmailSendInstantly: 'true',
+ *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+ *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define labs as an option that can be set per test or describe block
+    config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
-    ghostInstance: async ({ }, use, testInfo: TestInfo) => {
+    ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.perTestSetup();
+        const ghostInstance = await environmentManager.perTestSetup({config});
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
@@ -89,8 +95,8 @@ export const test = base.extend<GhostInstanceFixture>({
     baseURL: async ({ghostInstance}, use) => {
         await use(ghostInstance.baseUrl);
     },
-    // Intermediate fixture that sets up the page and returns all setup data
-    pageWithAuthenticatedUser: async ({browser, baseURL}, use) => {
+    // Create user credentials only (no authentication)
+    ghostAccountOwner: async ({baseURL}, use) => {
         if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
@@ -102,14 +108,17 @@ export const test = base.extend<GhostInstanceFixture>({
             password: 'test@123@test'
         };
         await setupUser(baseURL, ghostAccountOwner);
+        await use(ghostAccountOwner);
+    },
+    // Intermediate fixture that sets up the page and returns all setup data
+    pageWithAuthenticatedUser: async ({browser, baseURL, ghostAccountOwner}, use) => {
+        if (!baseURL) {
+            throw new Error('baseURL is not defined');
+        }
 
         const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
-    },
-    // Extract the created user from pageWithAuthenticatedUser
-    ghostAccountOwner: async ({pageWithAuthenticatedUser}, use) => {
-        await use(pageWithAuthenticatedUser.ghostAccountOwner);
     },
     // Extract the page from pageWithAuthenticatedUser and apply labs settings
     page: async ({pageWithAuthenticatedUser, labs}, use) => {

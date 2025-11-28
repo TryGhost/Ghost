@@ -68,19 +68,12 @@ function createAdminApiProxy(site: {
 }
 
 /**
- * Creates proxy configuration for Ember Admin assets.
+ * Creates proxy configuration for Ember CLI live reload script.
  */
-function createEmberAssetsProxy(site: {
-    url: string;
-    host: string;
-}): Record<string, ProxyOptions> {
+function createEmberLiveReloadProxy(): Record<string, ProxyOptions> {
     return {
-        "^/ghost/assets/.*": {
-            target: site.url,
-            changeOrigin: true,
-        },
-        "^/ghost/ember-cli-live-reload.js": {
-            target: site.url,
+        "^/ember-cli-live-reload.js": {
+            target: "http://localhost:4200",
             changeOrigin: true,
         },
     };
@@ -89,7 +82,7 @@ function createEmberAssetsProxy(site: {
 /**
  * Vite plugin that injects proxy configurations for:
  * 1. Ghost Admin API - proxies /ghost/api requests to the Ghost backend
- * 2. Ember Assets - proxies /ghost/assets and ember-cli-live-reload.js
+ * 2. Ember Live Reload - proxies ember-cli-live-reload.js to Ember dev server
  */
 export function ghostBackendProxyPlugin(): Plugin {
     let siteUrl!: { url: string; host: string };
@@ -98,8 +91,8 @@ export function ghostBackendProxyPlugin(): Plugin {
         name: "ghost-backend-proxy",
 
         async configResolved(config) {
-            // Only resolve backend URL for dev/preview, not for builds
-            if (config.command !== 'serve') return;
+            // Only resolve backend URL for dev/preview, not for builds or tests
+            if (config.command !== 'serve' || config.mode === 'test') return;
 
             try {
                 // We expect this to succeed immediately, but if the backend
@@ -126,14 +119,18 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
         },
 
         configureServer(server) {
+            if (!siteUrl) return;
+
             server.config.server.proxy = {
                 ...server.config.server.proxy,
                 ...createAdminApiProxy(siteUrl),
-                ...createEmberAssetsProxy(siteUrl),
+                ...createEmberLiveReloadProxy(),
             };
         },
 
         configurePreviewServer(server) {
+            if (!siteUrl) return;
+
             server.config.preview.proxy = {
                 ...server.config.preview.proxy,
                 ...createAdminApiProxy(siteUrl),

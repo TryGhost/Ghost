@@ -1118,6 +1118,43 @@ describe('Email renderer', function () {
             const response = emailRenderer.getReplyToAddress({}, newsletter);
             assert.equal(response, null);
         });
+
+        it('passes useFallbackAddress parameter to getAddress', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'newsletter'
+            });
+            let capturedOptions;
+            emailAddressService.getAddress = (addresses, options) => {
+                capturedOptions = options;
+                return {
+                    from: addresses.from,
+                    replyTo: {address: 'fallback@fallback.example.com'}
+                };
+            };
+            const response = emailRenderer.getReplyToAddress({}, newsletter, true);
+            assert.equal(capturedOptions.useFallbackAddress, true);
+            assert.equal(response, 'fallback@fallback.example.com');
+        });
+
+        it('defaults useFallbackAddress to false when not provided', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'custom@example.com'
+            });
+            let capturedOptions;
+            emailAddressService.getAddress = (addresses, options) => {
+                capturedOptions = options;
+                return {
+                    from: addresses.from,
+                    replyTo: addresses.replyTo
+                };
+            };
+            emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(capturedOptions.useFallbackAddress, false);
+        });
     });
 
     describe('getSegments', function () {

@@ -1,7 +1,13 @@
+TOKEN "axis" READ
+
 NODE mv_hits_0
 SQL >
 
     SELECT timestamp,
+        inserted_at,
+        -- payload.meta.received_timestamp may be missing or null
+        -- Nullable fields incur performance penalty in clickhouse, so we default to zero (unix epoch) instead of null.
+        parseDateTime64BestEffortOrZero(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
         action,
         version,
         coalesce(session_id, '0') as session_id,
@@ -35,6 +41,14 @@ SQL >
     SELECT
         site_uuid,
         timestamp,
+        received_at,
+        inserted_at,
+        case
+            -- set to -1 if received_at is the unix epoch, or if received_at is after inserted_at
+            when toUnixTimestamp(received_at) = 0 then -1
+            when received_at > inserted_at then -1
+            else date_diff('millisecond', received_at, inserted_at)
+        end as ingestion_latency_ms,
         action,
         version,
         session_id,
@@ -52,20 +66,20 @@ SQL >
             when referrer IN ('Instagram', 'www.instagram.com') then 'Instagram'
             when referrer IN ('LinkedIn', 'LINKEDIN_COMPANY') then 'LinkedIn'
             when referrer IN ('l.threads.com') then 'Threads'
-            
+
             -- Reddit Ecosystem
             when referrer IN ('www.reddit.com', 'out.reddit.com', 'old.reddit.com', 'com.reddit.frontpage') then 'Reddit'
-            
+
             -- Search Engines (keep distinctions)
             when referrer IN ('search.brave.com') then 'Brave Search'
             when referrer IN ('www.ecosia.org') then 'Ecosia'
-            
+
             -- Email Services
             when referrer IN ('Gmail', 'com.google.android.gm', 'mail.google.com') then 'Gmail'
             when referrer IN ('Outlook.com') then 'Outlook'
             when referrer IN ('Yahoo!', 'www.yahoo.com', 'Yahoo! Mail', 'r.search.yahoo.com') then 'Yahoo!'
             when referrer IN ('AOL Mail') then 'AOL Mail'
-            
+
             -- Content Platforms
             when referrer IN ('flipboard', 'flipboard.com', 'flipboard.app') then 'Flipboard'
             when referrer IN ('substack', 'substack.com') then 'Substack'
@@ -73,22 +87,22 @@ SQL >
             when referrer IN ('buffer') then 'Buffer'
             when referrer IN ('Taboola') then 'Taboola'
             when referrer IN ('AppNexus') then 'AppNexus'
-            
+
             -- Wikipedia
             when referrer IN ('en.wikipedia.org', 'en.m.wikipedia.org') then 'Wikipedia'
-            
+
             -- Mastodon Network
             when referrer IN ('mastodon.social', 'mastodon.online', 'org.joinmastodon.android', 'phanpy.social', 'dev.phanpy.social') then 'Mastodon'
-            
+
             -- News Aggregators
             when referrer IN ('www.memeorandum.com', 'memeorandum.com') then 'Memeorandum'
             when referrer IN ('ground.news') then 'Ground News'
             when referrer IN ('apple.news') then 'Apple News'
             when referrer IN ('www.smartnews.com') then 'SmartNews'
-            
+
             -- Keep other sources as-is
-            when domainWithoutWWW(referrer) != '' then domainWithoutWWW(referrer) 
-            else referrer 
+            when domainWithoutWWW(referrer) != '' then domainWithoutWWW(referrer)
+            else referrer
         end as source,
         pathname,
         href,

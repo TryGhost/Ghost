@@ -1,4 +1,5 @@
 import baseDebug from '@tryghost/debug';
+import {EmailMessageDetailed} from './mail-pit';
 
 const debug = baseDebug('e2e:helpers:utils:email');
 
@@ -25,4 +26,15 @@ export function extractMagicLink(emailMessageBody: string): string {
     }
 
     throw new Error('No magic link found in email');
+}
+
+export function extractPasswordResetLink(message: EmailMessageDetailed): string {
+    const html = message.HTML || '';
+    const match = html.match(/href="([^"]*\/ghost\/reset\/[^"]+)"/);
+
+    if (!match) {
+        throw new Error(`No reset URL found in email HTML`);
+    }
+
+    return match[1];
 }

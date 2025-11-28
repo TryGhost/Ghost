@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import {Icon, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './TierDetailPreview';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';

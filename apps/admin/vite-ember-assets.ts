@@ -1,6 +1,7 @@
 import type {PluginOption, HtmlTagDescriptor, ResolvedConfig} from 'vite';
 import path from 'path';
 import fs from 'fs';
+import sirv from 'sirv';
 
 const GHOST_ADMIN_PATH = path.resolve(__dirname, '../../ghost/core/core/built/admin');
 
@@ -82,6 +83,26 @@ export function emberAssetsPlugin() {
                     return;
                 }
             }
+        },
+        configureServer(server) {
+            // Serve Ember assets from the filesystem in development
+            const assetsMiddleware = sirv(path.resolve(GHOST_ADMIN_PATH, 'assets'), {
+                dev: true,
+                etag: true
+            });
+            
+            server.middlewares.use((req, res, next) => {
+                if (req.url?.startsWith('/ghost/assets/')) {
+                    const originalUrl = req.url;
+                    req.url = req.url.replace('/ghost/assets', '');
+                    assetsMiddleware(req, res, () => {
+                        req.url = originalUrl;
+                        next();
+                    });
+                } else {
+                    next();
+                }
+            });
         },
         closeBundle() {
             // Only copy assets during production builds

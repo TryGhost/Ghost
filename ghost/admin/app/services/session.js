@@ -2,7 +2,6 @@ import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
 import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
-import {identifyUser, resetUser} from '../utils/analytics';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -22,6 +21,7 @@ export default class SessionService extends ESASessionService {
     @service upgradeStatus;
     @service whatsNew;
     @service membersUtils;
+    @service stateBridge;
     @service themeManagement;
 
     @inject config;
@@ -47,9 +47,6 @@ export default class SessionService extends ESASessionService {
             this.settings.fetch(),
             this.membersUtils.fetch()
         ]);
-
-        // Identify the user to our analytics service upon successful login
-        await identifyUser(this.user);
 
         // Theme management requires features to be loaded
         this.themeManagement.fetch().catch(console.error); // eslint-disable-line no-console
@@ -86,6 +83,8 @@ export default class SessionService extends ESASessionService {
         }
 
         return this.handleAuthenticationTask.perform(() => {
+            this.stateBridge.triggerEmberAuthChange();
+
             if (this.skipAuthSuccessHandler) {
                 this.skipAuthSuccessHandler = false;
                 return;
@@ -104,17 +103,12 @@ export default class SessionService extends ESASessionService {
      * If failed, it will be handled by the redirect to sign in.
      */
     async requireAuthentication(transition, route) {
-        if (this.isAuthenticated && this.user) {
-            identifyUser(this.user);
-        }
-
         // Only when ember session invalidated
         if (!this.isAuthenticated) {
             transition.abort();
 
             if (this.user) {
                 await this.setup();
-                identifyUser(this.user);
                 this.notifications.clearAll();
                 transition.retry();
             }
@@ -125,9 +119,6 @@ export default class SessionService extends ESASessionService {
 
     handleInvalidation() {
         let transition = this.appLoadTransition;
-
-        // Reset the PostHog user when the session is invalidated (e.g. signout, token expiry, etc.)
-        resetUser();
 
         if (transition) {
             transition.send('authorizationFailed');

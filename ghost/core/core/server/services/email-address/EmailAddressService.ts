@@ -19,24 +19,40 @@ type LabsService = {
     isSet: (flag: string) => boolean
 }
 
+type GetAddressOptions = {
+    useFallbackAddress: boolean
+}
+
 export class EmailAddressService {
     #getManagedEmailEnabled: () => boolean;
     #getSendingDomain: () => string | null;
     #getDefaultEmail: () => EmailAddress;
+    #getFallbackDomain: () => string | null;
+    #getFallbackEmail: () => EmailAddress | null;
     #isValidEmailAddress: (email: string) => boolean;
     #labs: LabsService;
 
     constructor(dependencies: {
         getManagedEmailEnabled: () => boolean,
         getSendingDomain: () => string | null,
+        getFallbackDomain: () => string | null,
         getDefaultEmail: () => EmailAddress,
+        getFallbackEmail: () => string | null,
         isValidEmailAddress: (email: string) => boolean,
         labs: LabsService
 
     }) {
         this.#getManagedEmailEnabled = dependencies.getManagedEmailEnabled;
         this.#getSendingDomain = dependencies.getSendingDomain;
+        this.#getFallbackDomain = dependencies.getFallbackDomain;
         this.#getDefaultEmail = dependencies.getDefaultEmail;
+        this.#getFallbackEmail = () => {
+            const fallbackAddress = dependencies.getFallbackEmail();
+            if (!fallbackAddress) {
+                return null;
+            }
+            return EmailAddressParser.parse(fallbackAddress);
+        };
         this.#isValidEmailAddress = dependencies.isValidEmailAddress;
         this.#labs = dependencies.labs;
     }
@@ -45,12 +61,20 @@ export class EmailAddressService {
         return this.#getSendingDomain();
     }
 
+    get fallbackDomain(): string | null {
+        return this.#getFallbackDomain();
+    }
+
     get managedEmailEnabled(): boolean {
         return this.#getManagedEmailEnabled();
     }
 
     get defaultFromEmail(): EmailAddress {
         return this.#getDefaultEmail();
+    }
+
+    get fallbackEmail(): EmailAddress | null {
+        return this.#getFallbackEmail();
     }
 
     getAddressFromString(from: string, replyTo?: string): EmailAddresses {
@@ -71,7 +95,7 @@ export class EmailAddressService {
      * If we send an email from an email address that doesn't pass, we'll just default to the default email address,
      * and instead add a replyTo email address from the requested from address.
      */
-    getAddress(preferred: EmailAddresses): EmailAddresses {
+    getAddress(preferred: EmailAddresses, options: GetAddressOptions = {useFallbackAddress: false}): EmailAddresses {
         if (preferred.replyTo && !this.#isValidEmailAddress(preferred.replyTo.address)) {
             // Remove invalid replyTo addresses
             logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
@@ -90,6 +114,23 @@ export class EmailAddressService {
         if (!this.managedEmailEnabled) {
             // Self hoster or legacy Ghost Pro
             return preferred;
+        }
+
+        // Case: use fallback address when warming up custom domain
+        if (this.#labs.isSet('domainWarmup') && options.useFallbackAddress) {
+            const fallbackEmail = this.fallbackEmail;
+            if (fallbackEmail) {
+                if (!fallbackEmail.name) {
+                    fallbackEmail.name = preferred.from.name || this.defaultFromEmail.name;
+                }
+
+                return {
+                    from: fallbackEmail,
+                    replyTo: preferred.replyTo || preferred.from || this.defaultFromEmail
+                };
+            } else {
+                logging.error('[EmailAddresses] Fallback email address is not configured, cannot use fallback address for sending email.');
+            }
         }
 
         // Case: always allow the default from address

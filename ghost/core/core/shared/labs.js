@@ -51,7 +51,9 @@ const PRIVATE_FEATURES = [
     'tagsX',
     'utmTracking',
     'emailUniqueid',
-    'welcomeEmails'
+    'welcomeEmails',
+    'adminForward',
+    'domainWarmup'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
