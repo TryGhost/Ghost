@@ -14,25 +14,84 @@ import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
+import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { UserMenuItem } from "./UserMenuItem";
 import { UserMenuAvatar } from "./UserMenuAvatar";
 import { UserMenuHeader } from "./UserMenuHeader";
 import { Link } from "@tryghost/admin-x-framework";
 
-interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
-    onOpenWhatsNew?: () => void;
+function UserMenuProfile() {
+    const currentUser = useCurrentUser();
+
+    return (
+        <UserMenuItem>
+            <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+                <LucideIcon.User />
+                <UserMenuItem.Label>Your profile</UserMenuItem.Label>
+            </Link>
+        </UserMenuItem>
+    );
 }
 
-function UserMenu(props: UserMenuProps) {
-    const currentUser = useCurrentUser();
+function UserMenuDarkMode() {
     const {data: preferences} = useUserPreferences();
     const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
-    const { data: whatsNewData } = useWhatsNew();
-    const { showUpgradeBanner } = useUpgradeStatus();
 
     const setNightShift = (nightShift: boolean) => {
         void editPreferences({nightShift});
-    }
+    };
+
+    return (
+        <UserMenuItem
+            asChild={false}
+            onSelect={(e: Event) => {
+                e.preventDefault();
+                setNightShift(!preferences?.nightShift);
+            }}
+        >
+            <LucideIcon.Moon />
+            <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
+            <Switch
+                size='sm'
+                checked={preferences?.nightShift ?? false}
+                disabled={isEditingPreferences}
+                onCheckedChange={setNightShift}
+                onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
+                tabIndex={-1}
+            />
+        </UserMenuItem>
+    );
+}
+
+function UserMenuSignOut() {
+    const handleSignOut = () => {
+        fetch("/ghost/api/admin/session", {
+            method: "DELETE",
+        }).then(() => {
+            window.location.href = "/ghost";
+        }).catch((error) => {
+            console.error(error);
+        });
+    };
+
+    return (
+        <UserMenuItem
+            asChild={false}
+            onClick={handleSignOut}
+        >
+            <LucideIcon.LogOut />
+            <UserMenuItem.Label>Sign out</UserMenuItem.Label>
+        </UserMenuItem>
+    );
+}
+
+interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
+    onOpenWhatsNew?: () => void;
+}
+function UserMenu(props: UserMenuProps) {
+    const currentUser = useCurrentUser();
+    const { data: whatsNewData } = useWhatsNew();
+    const { showUpgradeBanner } = useUpgradeStatus();
 
     return (
         <DropdownMenu {...props}>
@@ -99,12 +158,7 @@ function UserMenu(props: UserMenuProps) {
                         </div>
                     )}
                 </UserMenuItem>
-                <UserMenuItem>
-                    <Link to={`/settings/staff/${currentUser.data?.slug}`}>
-                        <LucideIcon.User />
-                        <UserMenuItem.Label>Your profile</UserMenuItem.Label>
-                    </Link>
-                </UserMenuItem>
+                <UserMenuProfile />
                 <DropdownMenuSeparator />
                 <UserMenuItem>
                     <a
@@ -116,43 +170,81 @@ function UserMenu(props: UserMenuProps) {
                         <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
                     </a>
                 </UserMenuItem>
-                <UserMenuItem
-                    asChild={false}
-                    onSelect={(e: Event) => {
-                        e.preventDefault();
-                        setNightShift(!preferences?.nightShift);
-                    }}
-                >
-                    <LucideIcon.Moon />
-                    <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
-                    <Switch
-                        size='sm'
-                        checked={preferences?.nightShift ?? false}
-                        disabled={isEditingPreferences}
-                        onCheckedChange={setNightShift}
-                        onClick={(e: React.MouseEvent<HTMLElement>) => e.stopPropagation()}
-                        tabIndex={-1}
-                    />
-                </UserMenuItem>
+                <UserMenuDarkMode />
                 <DropdownMenuSeparator />
-                <UserMenuItem
-                    asChild={false}
-                    onClick={() => {
-                        fetch("/ghost/api/admin/session", {
-                            method: "DELETE",
-                        }).then(() => {
-                            window.location.href = "/ghost";
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                    }}
-                >
-                    <LucideIcon.LogOut />
-                    <UserMenuItem.Label>Sign out</UserMenuItem.Label>
-                </UserMenuItem>
+                <UserMenuSignOut />
             </DropdownMenuContent>
         </DropdownMenu>
     );
 }
 
-export default UserMenu;
+/**
+ * Floating profile menu for contributor users
+ * Positioned in top-right corner, minimal menu with essential actions only
+ *
+ * Mirrors Ember behavior where contributors have a simplified menu with:
+ * - Posts (navigate to posts list)
+ * - View site (open site in new tab)
+ * - Your profile (navigate to profile settings)
+ * - Dark mode toggle
+ * - Sign out
+ *
+ * Contributors do not have access to:
+ * - What's new
+ * - Help center / Resources & guides
+ * - Settings navigation
+ */
+function ContributorUserMenu() {
+    const currentUser = useCurrentUser();
+    const site = useBrowseSite();
+    const siteUrl = site.data?.site.url ?? "";
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    className="rounded-full shadow-lg hover:shadow-xl transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-0.5 flex items-center justify-center border border-border dark:bg-muted bg-background"
+                    aria-label="Open user menu"
+                >
+                    <UserMenuAvatar className="w-11 h-11" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                align="start"
+                side="top"
+                sideOffset={10}
+                className="w-full min-w-[240px] mb-2"
+            >
+                <UserMenuHeader
+                    name={currentUser.data?.name}
+                    email={currentUser.data?.email}
+                >
+                    <UserMenuAvatar />
+                </UserMenuHeader>
+                <DropdownMenuSeparator />
+                <UserMenuItem>
+                    <Link to="/">
+                        <LucideIcon.FileText />
+                        <UserMenuItem.Label>Posts</UserMenuItem.Label>
+                    </Link>
+                </UserMenuItem>
+                <UserMenuItem>
+                    <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+                        <LucideIcon.ExternalLink />
+                        <UserMenuItem.Label>View site</UserMenuItem.Label>
+                    </a>
+                </UserMenuItem>
+                <DropdownMenuSeparator />
+                <UserMenuProfile />
+                <UserMenuDarkMode />
+                <DropdownMenuSeparator />
+                <UserMenuSignOut />
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+export {
+    UserMenu,
+    ContributorUserMenu
+};

@@ -8,7 +8,7 @@ import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { useSidebarVisibility } from "@/ember-bridge/EmberBridge";
 import AppSidebar from "./app-sidebar";
 import { MobileNavBar } from "./app-sidebar/MobileNavBar";
-import ContributorUserMenu from "./app-sidebar/ContributorUserMenu";
+import { ContributorUserMenu } from "./app-sidebar/UserMenu";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
