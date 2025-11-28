@@ -345,7 +345,7 @@ jobs:
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
           USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
-        run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: yarn test:e2e -x --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
@@ -365,7 +365,7 @@ jobs:
 
   merge_reports:
     name: Merge Playwright Reports
-    if: always() && needs.test_e2e.result == 'failure'
+    if: always() && needs.test_e2e.outcome == 'failure'
     needs: [test_e2e, setup]
     runs-on: ubuntu-latest
     steps:

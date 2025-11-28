@@ -1,13 +1,19 @@
+import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {EnvironmentManager, GhostInstance, LogManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+
+function shouldCaptureLogs(): boolean {
+    return process.env.E2E_CAPTURE_LOGS !== 'false';
+}
+
 export interface User {
     name: string;
     email: string;
@@ -83,14 +89,57 @@ export const test = base.extend<GhostInstanceFixture>({
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
         const ghostInstance = await environmentManager.perTestSetup({config});
+        const instanceStartTime = new Date();
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
         });
         await use(ghostInstance);
-        debug('Tearing down Ghost instance for test:', testInfo.title);
-        await environmentManager.perTestTeardown(ghostInstance);
-        debug('Teardown completed for test:', testInfo.title);
+
+        // On test failure: fetch and output logs before cleanup
+        if (testInfo.status !== 'passed' && shouldCaptureLogs()) {
+            // eslint-disable-next-line no-console
+            console.log(`\n🔍 Test ${testInfo.status} - fetching Ghost server logs from container ${ghostInstance.containerId}...\n`);
+            try {
+                debug('Test did not pass (status: %s), fetching Ghost container logs...', testInfo.status);
+                const docker = new Docker();
+                const container = docker.getContainer(ghostInstance.containerId);
+                const logManager = new LogManager();
+
+                const logs = await logManager.fetchLogs(container);
+                const formattedLogs = logManager.formatLogs(logs, {
+                    testName: testInfo.title,
+                    containerId: ghostInstance.containerId,
+                    startTime: instanceStartTime
+                });
+
+                logManager.outputToConsole(formattedLogs);
+                const logFilePath = await logManager.writeLogsToFile(formattedLogs, testInfo.title);
+                // eslint-disable-next-line no-console
+                console.log(`\n📝 Ghost logs saved to: ${logFilePath}\n`);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('⚠️  Failed to capture Ghost server logs:', error instanceof Error ? error.message : String(error));
+                debug('Failed to capture logs (full error):', error);
+                // Don't throw - log capture is best effort
+            }
+        }
+
+        // Only cleanup if test passed - keep container running on failure for debugging
+        if (testInfo.status === 'passed') {
+            debug('Tearing down Ghost instance for test:', testInfo.title);
+            await environmentManager.perTestTeardown(ghostInstance);
+            debug('Teardown completed for test:', testInfo.title);
+        } else {
+            /* eslint-disable no-console */
+            console.log(`\n⚠️  Test failed - Ghost container left running for debugging:`);
+            console.log(`   Container ID: ${ghostInstance.containerId}`);
+            console.log(`   Base URL: ${ghostInstance.baseUrl}`);
+            console.log(`   View logs: docker logs ${ghostInstance.containerId}`);
+            console.log(`   Access shell: docker exec -it ${ghostInstance.containerId} sh`);
+            console.log(`   Remove when done: docker rm -f ${ghostInstance.containerId}\n`);
+            /* eslint-enable no-console */
+        }
     },
     baseURL: async ({ghostInstance}, use) => {
         await use(ghostInstance.baseUrl);
