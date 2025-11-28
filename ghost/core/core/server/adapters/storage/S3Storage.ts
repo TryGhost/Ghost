@@ -111,8 +111,9 @@ export default class S3Storage extends StorageBase {
     }
 
     async save(file: UploadFile, targetDir?: string): Promise<string> {
-        const dir = targetDir || this.getTargetDir();
-        const relativePath = await this.getUniqueFileName(file, dir);
+        const dir = targetDir || this.getTargetDir(this.storagePath);
+        const absolutePath = await this.getUniqueFileName(file, dir);
+        const relativePath = this.getRelativePathOrThrow(absolutePath);
 
         const key = this.buildKey(relativePath);
         const body = fs.createReadStream(file.path);
@@ -134,7 +135,8 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        const key = this.buildKey(targetPath);
+        const relativePath = this.getRelativePathOrThrow(targetPath);
+        const key = this.buildKey(relativePath);
 
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
@@ -184,7 +186,8 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativeDir = this.normalizeToRelativePath(targetDir);
+        const relativePath = path.posix.join(relativeDir, fileName);
         const key = this.buildKey(relativePath);
 
         try {
@@ -215,7 +218,8 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativeDir = this.normalizeToRelativePath(targetDir);
+        const relativePath = path.posix.join(relativeDir, fileName);
         const key = this.buildKey(relativePath);
 
         try {
@@ -253,6 +257,54 @@ export default class S3Storage extends StorageBase {
         }
 
         return `${this.tenantPrefix}/${pathWithStorage}`;
+    }
+
+    private getRelativePathOrThrow(pathOrRelative: string): string {
+        const relativePath = this.normalizeToRelativePath(pathOrRelative);
+
+        if (!relativePath) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.emptyRelativePath)
+            });
+        }
+
+        return relativePath;
+    }
+
+    private normalizeToRelativePath(pathOrRelative?: string): string {
+        if (!pathOrRelative) {
+            return '';
+        }
+
+        const trimmed = pathOrRelative.trim();
+        if (!trimmed) {
+            return '';
+        }
+
+        const normalizedPath = this.normalizeSlashes(trimmed);
+        const normalizedStorage = this.normalizeSlashes(this.storagePath);
+
+        const storageIndex = normalizedPath.indexOf(normalizedStorage);
+        if (storageIndex !== -1 && this.matchesStorageBoundary(normalizedPath, storageIndex, normalizedStorage.length)) {
+            const afterStorage = normalizedPath.slice(storageIndex + normalizedStorage.length);
+            return afterStorage.replace(/^\/+/, '');
+        }
+
+        return normalizedPath.replace(/^\/+/, '');
+    }
+
+    private normalizeSlashes(value: string): string {
+        return value.replace(/\\/g, '/');
+    }
+
+    private matchesStorageBoundary(fullPath: string, storageIndex: number, storageLength: number): boolean {
+        const charBefore = storageIndex === 0 ? '' : fullPath[storageIndex - 1];
+        const charAfter = fullPath[storageIndex + storageLength];
+
+        const validBefore = storageIndex === 0 || charBefore === '/';
+        const validAfter = typeof charAfter === 'undefined' || charAfter === '/';
+
+        return validBefore && validAfter;
     }
 
     private isNotFound(error: unknown): boolean {
