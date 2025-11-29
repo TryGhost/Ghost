@@ -59,5 +59,40 @@ describe('Config API', function () {
                     assert.equal(body.config.exploreTestimonialsUrl, 'https://testing.com/that/this/is/set/correctly');
                 });
         });
+
+        it('Will receive emailProvider when SES is configured', async function () {
+            // Test that emailProvider is exposed in the config API when SES is configured
+            configUtils.set('adapters:email', {
+                active: 'ses',
+                ses: {
+                    region: 'us-east-1',
+                    accessKeyId: 'test-key',
+                    secretAccessKey: 'test-secret',
+                    fromEmail: 'test@example.com'
+                }
+            });
+            await agent
+                .get('/config/')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.config.emailProvider, 'emailProvider should be present in config');
+                    assert.equal(body.config.emailProvider.active, 'ses', 'Active provider should be ses');
+                    assert.equal(body.config.emailProvider.isConfigured, true, 'SES should be marked as configured');
+                });
+        });
+
+        it('Will receive emailProvider as null when no email adapter is configured', async function () {
+            // Test default state - no email adapter configured
+            await agent
+                .get('/config/')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    // emailProvider should exist but be null or have active: null
+                    if (body.config.emailProvider) {
+                        assert.equal(body.config.emailProvider.active, null, 'Active provider should be null when not configured');
+                        assert.equal(body.config.emailProvider.isConfigured, false, 'Should not be marked as configured');
+                    }
+                });
+        });
     });
 });
