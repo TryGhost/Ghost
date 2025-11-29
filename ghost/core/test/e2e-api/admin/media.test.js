@@ -76,6 +76,21 @@ describe('Media API', function () {
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
         });
 
+        it('Can upload an Ogg audio with application/ogg content type', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'https://ghost.org/sample.ogg')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.ogg'), {filename: 'sample.ogg', contentType: 'application/ogg'})
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample.ogg`));
+            res.body.media[0].ref.should.equal('https://ghost.org/sample.ogg');
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+        });
+
         it('Can upload an mp3', async function () {
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
