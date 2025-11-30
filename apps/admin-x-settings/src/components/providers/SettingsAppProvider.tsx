@@ -1,8 +1,10 @@
 import GlobalDataProvider from './GlobalDataProvider';
-import useSearchService, {ComponentId, SearchService} from '../../utils/search';
-import {ReactNode, createContext, useContext, useState} from 'react';
+import useSearchService, {type ComponentId, type SearchService} from '../../utils/search';
+import {type ReactNode, createContext, useContext, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
-import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
+import {type ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
+import {officialThemes} from '../../data/officialThemes';
+import {zapierTemplates} from '../../data/zapierTemplates';
 
 export type ThemeVariant = {
     category: string;
@@ -41,8 +43,8 @@ interface SettingsAppContextType {
 }
 
 const SettingsAppContext = createContext<SettingsAppContextType>({
-    officialThemes: [],
-    zapierTemplates: [],
+    officialThemes,
+    zapierTemplates,
     search: {
         filter: '',
         setFilter: () => {},
@@ -58,7 +60,7 @@ const SettingsAppContext = createContext<SettingsAppContextType>({
     sortingState: []
 });
 
-type SettingsAppProviderProps = Omit<SettingsAppContextType, 'search'> & {children: ReactNode};
+type SettingsAppProviderProps = Partial<Omit<SettingsAppContextType, 'search'>> & {children: ReactNode};
 
 const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, ...props}) => {
     const search = useSearchService();
@@ -72,6 +74,9 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, ...p
 
     return (
         <SettingsAppContext.Provider value={{
+            // Use local data as default, allow props to override (for backward compatibility)
+            officialThemes,
+            zapierTemplates,
             ...props,
             search,
             sortingState,

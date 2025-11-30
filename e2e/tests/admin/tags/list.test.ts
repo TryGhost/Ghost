@@ -1,7 +1,7 @@
 import {Page} from '@playwright/test';
-import {TagEditorPage, TagsPage} from '../../../helpers/pages/admin';
-import {TagFactory, createPostFactory,createTagFactory} from '../../../data-factory';
-import {expect, test} from '../../../helpers/playwright';
+import {TagEditorPage, TagsPage} from '@/admin-pages';
+import {TagFactory, createPostFactory,createTagFactory} from '@/data-factory';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;

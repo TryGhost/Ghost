@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, Link, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design-system';
-import {Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
+import {Button, Link, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design-system';
+import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 

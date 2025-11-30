@@ -4,7 +4,7 @@ module.exports = function (data, t) {
 
 ${t('Someone just replied to your comment on {postTitle}.', {postTitle: data.postTitle, interpolation: {escapeValue: false}})}
 
-${data.postUrl}#ghost-comments
+${data.postUrl}#ghost-comments-root
 
 ---
 

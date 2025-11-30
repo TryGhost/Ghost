@@ -1,5 +1,5 @@
-import {NewTagsPage, TagEditorPage, TagsPage} from '../../../helpers/pages/admin';
-import {expect, test} from '../../../helpers/playwright';
+import {NewTagsPage, SidebarPage, TagEditorPage, TagsPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags Editor', () => {
     test('can add tags', async ({page}) => {
@@ -75,7 +75,7 @@ test.describe('Ghost Admin - Tags Editor', () => {
         await expect(tagEditor.deleteModal).toBeVisible();
         await tagEditor.confirmDelete();
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
+        await expect(tagEditor.deleteModal).toBeHidden();
         await expect(page).toHaveURL(tagsPage.pageUrl);
         await expect(tagsPage.tagListRow).toHaveCount(1);
     });
@@ -93,9 +93,9 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
         await tagEditor.confirmDelete();
 
-        await expect(tagEditor.deleteModal).not.toBeVisible();
+        await expect(tagEditor.deleteModal).toBeHidden();
         await expect(page).toHaveURL(tagsPage.pageUrl);
-        await expect(tagsPage.getTagLinkByName('News')).not.toBeVisible();
+        await expect(tagsPage.getTagLinkByName('News')).toBeHidden();
     });
 
     test('can load tag via slug in url', async ({page}) => {
@@ -116,20 +116,21 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('maintains active state in nav menu when creating a new tag', async ({page}) => {
         const newTagsPage = new NewTagsPage(page);
+        const sidebar = new SidebarPage(page);
         await newTagsPage.goto();
 
         await expect(page).toHaveURL(newTagsPage.pageUrl);
-        await expect(newTagsPage.navMenuItem).toHaveClass(/active/);
+        await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
     });
 
     test('maintains active state in nav menu when editing a tag', async ({page}) => {
         const tagsPage = new TagsPage(page);
+        const sidebar = new SidebarPage(page);
 
         await tagsPage.goto();
         await tagsPage.getTagLinkByName('News').click();
 
-        const tagEditor = new TagEditorPage(page);
-        await expect(tagEditor.navMenuItem).toHaveClass(/active/);
+        await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
     });
 });
 

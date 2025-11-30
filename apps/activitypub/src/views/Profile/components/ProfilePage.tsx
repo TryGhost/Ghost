@@ -8,6 +8,7 @@ import {Account} from '@src/api/activitypub';
 import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount, abbreviateNumber} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
+import {openLinksInNewTab, stripHtml} from '@src/utils/content-formatters';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -269,7 +270,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                             </div>
                             {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content relative text-[1.5rem] break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
-                                    <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
+                                    <div dangerouslySetInnerHTML={{__html: openLinksInNewTab(stripHtml(account?.bio ?? '', ['a', 'br']))}} /> :
                                     <>
                                         <Skeleton />
                                         <Skeleton className='w-full max-w-48' />

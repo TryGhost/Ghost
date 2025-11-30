@@ -327,6 +327,41 @@ describe('staticTheme', function () {
         });
     });
 
+    describe('apple-app-site-association handling', function () {
+        beforeEach(function () {
+            activeThemeStub.returns({
+                path: 'my/fake/path'
+            });
+        });
+
+        it('should serve .well-known/apple-app-site-association despite missing extension', function (done) {
+            req.path = '/.well-known/apple-app-site-association';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                should.exist(options.setHeaders);
+
+                const setHeaderStub = sinon.stub();
+                options.setHeaders({setHeader: setHeaderStub});
+                setHeaderStub.calledWith('Content-Type', 'application/json').should.be.true();
+
+                done();
+            });
+        });
+
+        it('should fall through when request differs from exact path', function (done) {
+            req.path = '/.WELL-KNOWN/apple-app-site-association.json';
+
+            staticTheme()(req, res, function next() {
+                expressStaticStub.called.should.be.false();
+                done();
+            });
+        });
+    });
+
     describe('fallthrough behavior', function () {
         it('should set fallthrough to true for /robots.txt', function (done) {
             req.path = '/robots.txt';

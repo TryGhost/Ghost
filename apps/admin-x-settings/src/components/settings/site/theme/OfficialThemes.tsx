@@ -2,9 +2,7 @@ import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {Heading, ModalPage} from '@tryghost/admin-x-design-system';
-import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/SettingsAppProvider';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {resolveAsset} from '../../../../utils/helpers';
+import {type OfficialTheme, type ThemeVariant, useOfficialThemes} from '../../../providers/SettingsAppProvider';
 
 const VARIANT_LOOP_INTERVAL = 3000;
 
@@ -29,7 +27,6 @@ const OfficialThemes: React.FC<{
 }> = ({
     onSelectTheme
 }) => {
-    const {adminRoot} = getGhostPaths();
     const officialThemes = useOfficialThemes();
 
     const [variantLoopTheme, setVariantLoopTheme] = useState<OfficialTheme | null>(null);
@@ -80,14 +77,14 @@ const OfficialThemes: React.FC<{
                                                     'left-0': idx !== visibleVariantIdx,
                                                     'top-0': idx !== visibleVariantIdx
                                                 })}
-                                                src={resolveAsset(variant.image, adminRoot)}
+                                                src={variant.image}
                                             />
                                         ))}
                                     </> :
                                     <img
                                         alt={`${theme.name} Theme`}
                                         className='size-full object-contain'
-                                        src={resolveAsset(theme.image, adminRoot)}
+                                        src={theme.image}
                                     />
                                 }
                             </div>

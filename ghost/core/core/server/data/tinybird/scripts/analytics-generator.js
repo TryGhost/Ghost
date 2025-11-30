@@ -111,6 +111,59 @@ class AnalyticsEventGenerator {
         this.locales = [
             'en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-BR', 'ja-JP', 'ko-KR', 'zh-CN'
         ];
+
+        // UTM parameters for realistic campaign tracking
+        this.utmSources = [
+            {value: 'google', weight: 25},
+            {value: 'facebook', weight: 15},
+            {value: 'twitter', weight: 12},
+            {value: 'linkedin', weight: 10},
+            {value: 'reddit', weight: 8},
+            {value: 'newsletter', weight: 15},
+            {value: 'email', weight: 10},
+            {value: 'bluesky', weight: 5}
+        ];
+
+        this.utmMediums = [
+            {value: 'cpc', weight: 30}, // Paid search
+            {value: 'social', weight: 25}, // Social media
+            {value: 'email', weight: 20}, // Email campaigns
+            {value: 'organic', weight: 15}, // Organic search
+            {value: 'referral', weight: 10} // Referral traffic
+        ];
+
+        this.utmCampaigns = [
+            {value: 'spring_sale_2024', weight: 15},
+            {value: 'product_launch', weight: 12},
+            {value: 'weekly_newsletter', weight: 20},
+            {value: 'summer_promotion', weight: 10},
+            {value: 'black_friday', weight: 8},
+            {value: 'holiday_special', weight: 8},
+            {value: 'retargeting', weight: 12},
+            {value: 'brand_awareness', weight: 10},
+            {value: 'lead_generation', weight: 5}
+        ];
+
+        this.utmContents = [
+            {value: 'header_cta', weight: 20},
+            {value: 'sidebar_banner', weight: 15},
+            {value: 'footer_link', weight: 10},
+            {value: 'inline_text', weight: 15},
+            {value: 'hero_button', weight: 20},
+            {value: 'popup_form', weight: 10},
+            {value: 'video_thumbnail', weight: 10}
+        ];
+
+        this.utmTerms = [
+            {value: 'ghost_cms', weight: 15},
+            {value: 'blogging_platform', weight: 12},
+            {value: 'content_management', weight: 10},
+            {value: 'publishing_software', weight: 8},
+            {value: 'newsletter_tool', weight: 10},
+            {value: 'membership_site', weight: 8},
+            {value: 'headless_cms', weight: 7},
+            {value: 'open_source_blog', weight: 5}
+        ];
         
         // Weighted distributions based on production data
         this.memberStatusWeights = [
@@ -497,6 +550,39 @@ class AnalyticsEventGenerator {
     randomChoice(array) {
         return array[Math.floor(Math.random() * array.length)];
     }
+
+    /**
+     * Generate UTM parameters for an event
+     * Returns null for ~50% of events (organic/direct traffic without UTM)
+     */
+    generateUtmParameters() {
+        // 50% of events have no UTM parameters (organic/direct traffic)
+        if (Math.random() < 0.5) {
+            return null;
+        }
+
+        const utmParams = {
+            utm_source: this.weightedChoice(this.utmSources),
+            utm_medium: this.weightedChoice(this.utmMediums)
+        };
+
+        // 80% of UTM events include a campaign
+        if (Math.random() < 0.8) {
+            utmParams.utm_campaign = this.weightedChoice(this.utmCampaigns);
+        }
+
+        // 40% of UTM events include content
+        if (Math.random() < 0.4) {
+            utmParams.utm_content = this.weightedChoice(this.utmContents);
+        }
+
+        // 30% of UTM events include term (mainly for paid search)
+        if (Math.random() < 0.3 && utmParams.utm_medium === 'cpc') {
+            utmParams.utm_term = this.weightedChoice(this.utmTerms);
+        }
+
+        return utmParams;
+    }
     
     /**
      * Format timestamp to match the schema format
@@ -533,7 +619,19 @@ class AnalyticsEventGenerator {
         
         // Generate referrerSource for meta field
         const referrerSource = this.referrerSourceMap[referrer] || referrer;
-        
+
+        // Generate UTM parameters
+        const utmParams = this.generateUtmParameters();
+
+        // Build href with UTM parameters if present
+        let href = `${this.baseUrl}${content.pathname}`;
+        if (utmParams) {
+            const utmQueryString = Object.entries(utmParams)
+                .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                .join('&');
+            href = `${href}?${utmQueryString}`;
+        }
+
         const payload = {
             site_uuid: this.siteUuid,
             member_uuid: memberUuid,
@@ -545,11 +643,16 @@ class AnalyticsEventGenerator {
             location: this.weightedChoice(this.locationWeights),
             referrer: referrer,
             pathname: content.pathname,
-            href: `${this.baseUrl}${content.pathname}`,
+            href: href,
             meta: {
                 referrerSource: referrerSource
             }
         };
+
+        // Add UTM parameters to payload if present
+        if (utmParams) {
+            Object.assign(payload, utmParams);
+        }
         
         return {
             timestamp: this.formatTimestamp(timestamp),
@@ -591,6 +694,7 @@ class AnalyticsEventGenerator {
         console.log(`📈 Traffic pattern: Moderate growth over time with realistic seasonal patterns`);
         console.log(`⏰ Includes realistic daily/weekly patterns (weekdays > weekends, business hours > nights)`);
         console.log(`🔗 Using production-based referrer patterns (Google, Reddit, Bluesky, newsletters, etc.)`);
+        console.log(`🎯 ~50% of events include UTM tracking parameters (source, medium, campaign, content, term)`);
         
         for (let i = 0; i < numEvents; i++) {
             events.push(this.generateEvent(i, numEvents));
