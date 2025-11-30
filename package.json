@@ -25,6 +25,10 @@
     "build": "nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
+    "dev:forward": "nx run ghost-monorepo:docker:dev",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
@@ -68,7 +72,6 @@
     "prepare": "husky install .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
-    "postinstall": "patch-package",
     "query:posts": "cd ghost/core/core/server/data/tinybird/scripts && ./query-posts.sh",
     "query:members": "cd ghost/core/core/server/data/tinybird/scripts && ./query-members.sh",
     "generate:analytics": "cd ghost/core && node core/server/data/tinybird/scripts/analytics-generator.js"
@@ -97,10 +100,55 @@
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
-    "patch-package": "8.0.1",
-    "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "docker:up": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait"
+        },
+        "dependsOn": [
+          "docker:build"
+        ]
+      },
+      "docker:down": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down"
+        }
+      },
+      "docker:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
+        }
+      },
+      "docker:dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "dev",
+            "projects": [
+              "@tryghost/admin",
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar"
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

@@ -5,12 +5,11 @@ import {expect, test} from '@/helpers/playwright';
 import {extractPasswordResetLink} from '@/helpers/services/email/utils';
 
 test.describe('Ghost Admin - Reset Password', () => {
-    const emailClient:EmailClient = new MailPit();
+    const emailClient: EmailClient = new MailPit();
 
     async function logout(page: Page) {
         const loginPage = new LoginPage(page);
-        await loginPage.logoutByCookieClear();
-        await loginPage.goto();
+        await loginPage.logout();
     }
 
     test('resets account owner password', async ({page, ghostAccountOwner}) => {

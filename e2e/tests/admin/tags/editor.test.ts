@@ -1,4 +1,4 @@
-import {NewTagsPage, TagEditorPage, TagsPage} from '@/admin-pages';
+import {NewTagsPage, SidebarPage, TagEditorPage, TagsPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags Editor', () => {
@@ -116,20 +116,21 @@ test.describe('Ghost Admin - Tags Editor', () => {
 
     test('maintains active state in nav menu when creating a new tag', async ({page}) => {
         const newTagsPage = new NewTagsPage(page);
+        const sidebar = new SidebarPage(page);
         await newTagsPage.goto();
 
         await expect(page).toHaveURL(newTagsPage.pageUrl);
-        await expect(newTagsPage.navMenuItem).toHaveClass(/active/);
+        await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
     });
 
     test('maintains active state in nav menu when editing a tag', async ({page}) => {
         const tagsPage = new TagsPage(page);
+        const sidebar = new SidebarPage(page);
 
         await tagsPage.goto();
         await tagsPage.getTagLinkByName('News').click();
 
-        const tagEditor = new TagEditorPage(page);
-        await expect(tagEditor.navMenuItem).toHaveClass(/active/);
+        await expect(sidebar.getNavLink('Tags')).toHaveAttribute('aria-current', 'page');
     });
 });
 

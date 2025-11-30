@@ -21,6 +21,9 @@ module.exports = {
         // ignore prop-types for now
         'react/prop-types': 'off',
 
+        // Enforce a kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         'react/jsx-sort-props': ['error', {
             reservedFirst: true,
             callbacksLast: true,
