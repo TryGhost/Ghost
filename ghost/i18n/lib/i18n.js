@@ -2,6 +2,7 @@ const i18next = require('i18next');
 const path = require('path');
 const fs = require('fs');
 const errors = require('@tryghost/errors');
+const debug = require('@tryghost/debug')('i18n');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -106,6 +107,7 @@ function generateThemeResources(lng, themeLocalesPath) {
             .map(file => file.replace('.json', ''));
     } catch (err) {
         // If we can't read the directory, fall back to just trying the requested locale and English
+        
         availableLocales = [lng, 'en'];
     }
 
@@ -128,6 +130,7 @@ function generateThemeResources(lng, themeLocalesPath) {
                 });
             }
         } catch (err) {
+            debug(`Error loading theme locale file: ${locale}`);
             // Fallback to English if it's not the locale we're already trying
             if (locale !== 'en') {
                 try {
@@ -143,6 +146,7 @@ function generateThemeResources(lng, themeLocalesPath) {
                     res = {};
                 }
             } else {
+                debug(`Theme en.json file not found`);
                 res = {};
             }
         }
@@ -172,8 +176,7 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     if (ns !== 'theme') {
         resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
-        // eslint-disable-next-line no-console
-        console.log('generateThemeResources', lng, options.themePath);
+        debug(`generateThemeResources: ${lng}, ${options.themePath}`);
         resources = generateThemeResources(lng, options.themePath);
     }
     

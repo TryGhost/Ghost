@@ -14,7 +14,7 @@ const {themeI18n} = require('../services/handlebars');
 const {themeI18next} = require('../services/handlebars');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');
-const config = require('../../shared/config');
+const debug = require('@tryghost/debug')('i18n-t');
 
 module.exports = function t(text, options = {}) {
     if (!text || text.length === 0) {
@@ -32,23 +32,21 @@ module.exports = function t(text, options = {}) {
 
     if (labs.isSet('themeTranslation')) {
         // Use the new translation package when feature flag is enabled
-        // eslint-disable-next-line no-console
-        console.log('======themeI18next', themeI18next);
+        debug('themeI18next will be initialized');
         if (!themeI18next._i18n) {
             themeI18next.init({
                 activeTheme: settingsCache.get('active_theme'),
-                locale: config.get('locale')
+                locale: settingsCache.get('locale')
             });
         }
         return themeI18next.t(text, bindings);
     } else {
         // Use the existing translation package when feature flag is disabled
-        // eslint-disable-next-line no-console
-        console.log('======themeI18n', themeI18n);
+        debug('themeI18n will be initialized');
         if (!themeI18n._strings) {
             themeI18n.init({
                 activeTheme: settingsCache.get('active_theme'),
-                locale: config.get('locale')
+                locale: settingsCache.get('locale')
             });
         }
         return themeI18n.t(text, bindings);

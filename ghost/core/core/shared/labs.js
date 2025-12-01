@@ -34,8 +34,7 @@ const GA_FEATURES = [
 const PUBLIC_BETA_FEATURES = [
     'superEditors',
     'editorExcerpt',
-    'additionalPaymentMethods',
-    'themeTranslation'
+    'additionalPaymentMethods'
 ];
 
 // These features are considered private they live in the private tab of the labs settings page
@@ -53,7 +52,8 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'welcomeEmails',
     'adminForward',
-    'domainWarmup'
+    'domainWarmup',
+    'themeTranslation'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
