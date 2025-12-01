@@ -17,12 +17,12 @@ test.describe('Time zone settings', async () => {
 
         await expect(select).toBeVisible();
 
-        await chooseOptionInSelect(select, '(GMT -9:00) Alaska');
+        await chooseOptionInSelect(select, 'Alaska');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(select).toBeVisible();
-        await expect(select).toContainText('(GMT -9:00) Alaska');
+        await expect(select).toContainText('Alaska');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

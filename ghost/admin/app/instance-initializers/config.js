@@ -1,12 +1,12 @@
-import timezoneData from '@tryghost/timezone-data';
 import {TrackedObject} from 'tracked-built-ins';
+import {timezoneDataWithGMTOffset} from '@tryghost/timezone-data';
 
 export function initialize(applicationInstance) {
     const config = new TrackedObject({});
 
     Object.defineProperty(config, 'availableTimezones', {
         get() {
-            return timezoneData;
+            return timezoneDataWithGMTOffset();
         },
         enumerable: true
     });
