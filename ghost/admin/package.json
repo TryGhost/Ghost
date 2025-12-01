@@ -123,7 +123,7 @@
     "ember-truth-helpers": "3.1.1",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.2",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
