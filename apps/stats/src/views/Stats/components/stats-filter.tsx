@@ -354,10 +354,10 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Options are contextual - filtered based on currently applied filters (e.g., if a post is selected,
     // only UTM params used for that post will be shown)
     const {options: utmSourceOptions} = useUtmOptionsForField('utm_source', filters);
-    const {options: mediumOptions} = useUtmOptionsForField('utm_medium', filters);
-    const {options: campaignOptions} = useUtmOptionsForField('utm_campaign', filters);
-    const {options: contentOptions} = useUtmOptionsForField('utm_content', filters);
-    const {options: termOptions} = useUtmOptionsForField('utm_term', filters);
+    const {options: utmMediumOptions} = useUtmOptionsForField('utm_medium', filters);
+    const {options: utmCampaignOptions} = useUtmOptionsForField('utm_campaign', filters);
+    const {options: utmContentOptions} = useUtmOptionsForField('utm_content', filters);
+    const {options: utmTermOptions} = useUtmOptionsForField('utm_term', filters);
 
     // Fetch source options
     const {options: sourceOptions} = useSourceOptions(filters);
@@ -394,7 +394,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
-                options: mediumOptions,
+                options: utmMediumOptions,
                 searchable: true
             },
             {
@@ -406,7 +406,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
-                options: campaignOptions,
+                options: utmCampaignOptions,
                 searchable: true
             },
             {
@@ -418,7 +418,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
-                options: contentOptions,
+                options: utmContentOptions,
                 searchable: true
             },
             {
@@ -430,7 +430,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 operators: supportedOperators,
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
-                options: termOptions,
+                options: utmTermOptions,
                 searchable: true
             }
         ] : [];
@@ -479,7 +479,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, mediumOptions, campaignOptions, contentOptions, termOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions]);
 
     return (
         <Filters
