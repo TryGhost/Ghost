@@ -36,6 +36,7 @@
     "i18next-cli": "^1.28.2"
   },
   "dependencies": {
-    "i18next": "23.16.8"
+    "i18next": "23.16.8",
+    "i18next-cli": "^1.28.2"
   }
 }
