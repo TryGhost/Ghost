@@ -126,7 +126,14 @@ const controller = {
             'timezone',
             'member_status',
             'tb_version',
-            'post_type'
+            'post_type',
+            'post_uuid',
+            'source',
+            'utm_source',
+            'utm_medium',
+            'utm_campaign',
+            'utm_content',
+            'utm_term'
         ],
         permissions: {
             docName: 'posts',
