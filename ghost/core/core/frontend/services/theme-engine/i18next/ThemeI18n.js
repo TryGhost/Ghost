@@ -52,10 +52,9 @@ class ThemeI18n {
         const themePathExists = fs.existsSync(themeLocalesPath);
 
         if (!themePathExists) {
-            // If the theme path doesn't exist, use the key as the translation
-            this._i18n = {
-                t: key => key
-            };
+            // If the theme path doesn't exist, initialize with an empty resource
+            // this maintains interpolation of keys when locales files are missing.
+            this._i18n = i18nLib(this._locale, 'theme', {});
             return;
         }
 
@@ -81,10 +80,8 @@ class ThemeI18n {
             return;
         }   
         
-        // If both fail, use the key as the translation
-        this._i18n = {
-            t: key => key
-        };           
+        // If both fail, initialize the empty resource so that i18next can handle interpolation.
+        this._i18n = i18nLib(this._locale, 'theme', {});        
     }
 
     /**
