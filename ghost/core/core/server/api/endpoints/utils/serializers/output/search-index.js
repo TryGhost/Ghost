@@ -24,8 +24,10 @@ module.exports = {
         } else {
             keys.push(
                 'id',
+                'uuid',
                 'url',
                 'title',
+                'slug',
                 'status',
                 'published_at',
                 'visibility'
@@ -50,8 +52,10 @@ module.exports = {
 
         const keys = [
             'id',
+            'uuid',
             'url',
             'title',
+            'slug',
             'status',
             'published_at',
             'visibility'

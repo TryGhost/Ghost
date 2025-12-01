@@ -1,13 +1,8 @@
 import React from 'react';
+import {AUDIENCE_BITS} from '@src/utils/constants';
 import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
-
-const AUDIENCE_BITS = {
-    PUBLIC: 1 << 0, // 1
-    FREE: 1 << 1, // 2
-    PAID: 1 << 2 // 4
-};
 
 export const AUDIENCE_TYPES = [
     {name: 'Public visitors', value: 'undefined'},
