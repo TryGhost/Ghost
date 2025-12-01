@@ -29,7 +29,8 @@ class MemberWelcomeEmailsServiceWrapper {
         this.processing = true;
 
         try {
-            await processOutbox();
+            const statusMessage = await processOutbox();
+            logging.info(statusMessage);
         } catch (e) {
             logging.error(e, 'Error while processing member welcome emails');
         } finally {
