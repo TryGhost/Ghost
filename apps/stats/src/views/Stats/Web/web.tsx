@@ -11,7 +11,7 @@ import WebKPIs, {KpiDataItem} from './components/web-kpis';
 import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {ALL_AUDIENCES, AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
 interface SourcesData {
@@ -48,13 +48,6 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-// Audience bit values matching StatsFilter and AudienceSelect
-const AUDIENCE_BITS = {
-    PUBLIC: 1 << 0, // 1
-    FREE: 1 << 1, // 2
-    PAID: 1 << 2 // 4
-};
-
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
@@ -64,7 +57,6 @@ const Web: React.FC = () => {
     // Initialize filters based on current audience state when component mounts or audience changes
     // Only create audience filter if audience is not the default "all audiences" state
     useEffect(() => {
-        const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
         const isDefaultAudience = audience === ALL_AUDIENCES;
         
         setUtmFilters((prevFilters) => {

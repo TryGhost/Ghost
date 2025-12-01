@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {AUDIENCE_BITS} from '@src/utils/constants';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
@@ -12,13 +13,6 @@ interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'f
     utmTrackingEnabled?: boolean;
     onChange?: (filters: Filter[]) => void;
 }
-
-// Audience bit values matching AudienceSelect
-const AUDIENCE_BITS = {
-    PUBLIC: 1 << 0, // 1
-    FREE: 1 << 1, // 2
-    PAID: 1 << 2 // 4
-};
 
 interface UtmOption {
     utm_source?: string;
