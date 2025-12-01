@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import {createContext, useCallback, useContext, useMemo, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {
     Command,
     CommandEmpty,
@@ -1002,37 +1002,35 @@ function SelectOptionsPopover<T = unknown>({
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
 
     // For async search, we need to preserve selected options even when they're not in search results
-    // Update cached options when we find them in the current options list
-    const optionsFromField = field.options?.filter(opt => effectiveValues.includes(opt.value)) || [];
+    // Memoize to get stable reference for useEffect dependency
+    const optionsFromField = useMemo(
+        () => field.options?.filter(opt => effectiveValues.includes(opt.value)) || [],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [field.options, JSON.stringify(effectiveValues)]
+    );
 
-    // Update cache when we have matching options from the field
-    // This happens on initial load or when the selected option appears in search results
-    if (optionsFromField.length > 0) {
-        const newCachedValues = optionsFromField.filter(
-            opt => !cachedSelectedOptions.some(cached => cached.value === opt.value)
-        );
-        if (newCachedValues.length > 0 ||
-            (cachedSelectedOptions.length > 0 && effectiveValues.length === 0)) {
-            // Use a microtask to avoid updating state during render
-            queueMicrotask(() => {
-                if (effectiveValues.length === 0) {
-                    setCachedSelectedOptions([]);
-                } else {
-                    setCachedSelectedOptions((prev) => {
-                        // Merge new options with existing cached ones, avoiding duplicates
-                        const merged = [...prev];
-                        for (const opt of optionsFromField) {
-                            if (!merged.some(m => m.value === opt.value)) {
-                                merged.push(opt);
-                            }
-                        }
-                        // Remove options that are no longer selected
-                        return merged.filter(m => effectiveValues.includes(m.value));
-                    });
+    // Sync cached options when field options or selected values change
+    // This preserves selected item labels/icons during async search when they're not in results
+    useEffect(() => {
+        if (effectiveValues.length === 0) {
+            setCachedSelectedOptions([]);
+            return;
+        }
+
+        if (optionsFromField.length > 0) {
+            setCachedSelectedOptions((prev) => {
+                // Merge new options with existing cached ones, avoiding duplicates
+                const merged = [...prev];
+                for (const opt of optionsFromField) {
+                    if (!merged.some(m => m.value === opt.value)) {
+                        merged.push(opt);
+                    }
                 }
+                // Remove options that are no longer selected
+                return merged.filter(m => effectiveValues.includes(m.value));
             });
         }
-    }
+    }, [optionsFromField, effectiveValues]);
 
     // Use cached options for display, falling back to field options
     // This ensures selected items stay visible during async search
