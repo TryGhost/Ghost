@@ -9,6 +9,10 @@ import {
     NotFound,
     NoSuchKey,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
+    AbortMultipartUploadCommand,
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3';
@@ -48,6 +52,8 @@ export interface S3StorageOptions {
     sessionToken?: string;
     tenantPrefix?: string;
     s3Client?: S3Client;
+    multipartThreshold?: number; // File size threshold for multipart upload (default: 10MB)
+    partSize?: number; // Size of each part for multipart upload (default: 10MB)
 }
 
 export default class S3Storage extends StorageBase {
@@ -60,6 +66,10 @@ export default class S3Storage extends StorageBase {
     private readonly cdnUrl: string;
 
     public readonly staticFileURLPrefix: string;
+
+    private readonly multipartThreshold: number;
+
+    private readonly partSize: number;
 
     constructor(options: S3StorageOptions) {
         super();
@@ -93,6 +103,11 @@ export default class S3Storage extends StorageBase {
             });
         }
 
+        // 10MB threshold - files larger than this use multipart upload
+        this.multipartThreshold = options.multipartThreshold || 10 * 1024 * 1024;
+        // 10MB part size - each part uploaded separately to keep memory low
+        this.partSize = options.partSize || 10 * 1024 * 1024;
+
         const clientConfig: S3ClientConfig = {
             region: options.region,
             endpoint: options.endpoint,
@@ -115,7 +130,18 @@ export default class S3Storage extends StorageBase {
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
-        const body = fs.createReadStream(file.path);
+
+        // Get file size to determine upload strategy
+        const stats = await fs.promises.stat(file.path);
+
+        if (stats.size >= this.multipartThreshold) {
+            console.log(`Large file (${Math.round(stats.size / 1024 / 1024)}MB), using multipart upload...`);
+            return await this.uploadMultipart(file, key, stats.size);
+        }
+ 
+        // Use simple upload for small files (faster, less overhead)
+        console.log(`Small file (${Math.round(stats.size / 1024)}KB), using simple upload...`);
+        const body = await fs.promises.readFile(file.path);
 
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
@@ -125,6 +151,101 @@ export default class S3Storage extends StorageBase {
         }));
 
         return `${this.cdnUrl}/${key}`;
+    }
+
+    private async uploadMultipart(file: UploadFile, key: string, fileSize: number): Promise<string> {
+        let uploadId: string | undefined;
+
+        try {
+            // Step 1: Initiate multipart upload
+            const createResponse = await this.client.send(new CreateMultipartUploadCommand({
+                Bucket: this.bucket,
+                Key: key,
+                ContentType: file.type
+            }));
+
+            uploadId = createResponse.UploadId;
+            if (!uploadId) {
+                throw new Error('Failed to initiate multipart upload');
+            }
+
+            // Step 2: Upload parts
+            const parts: {ETag: string; PartNumber: number}[] = [];
+            const fileHandle = await fs.promises.open(file.path, 'r');
+            
+            try {
+                let partNumber = 1;
+                let uploadedBytes = 0;
+
+                while (uploadedBytes < fileSize) {
+                    // Read one part into buffer
+                    const remainingBytes = fileSize - uploadedBytes;
+                    const currentPartSize = Math.min(this.partSize, remainingBytes);
+                    const buffer = Buffer.alloc(currentPartSize);
+                    
+                    const {bytesRead} = await fileHandle.read(buffer, 0, currentPartSize, uploadedBytes);
+                    
+                    if (bytesRead === 0) {
+                        break;
+                    }
+
+                    // Upload this part
+                    const uploadPartResponse = await this.client.send(new UploadPartCommand({
+                        Bucket: this.bucket,
+                        Key: key,
+                        UploadId: uploadId,
+                        PartNumber: partNumber,
+                        Body: buffer.slice(0, bytesRead)
+                    }));
+
+                    if (!uploadPartResponse.ETag) {
+                        throw new Error(`Failed to upload part ${partNumber}`);
+                    }
+
+                    parts.push({
+                        ETag: uploadPartResponse.ETag,
+                        PartNumber: partNumber
+                    });
+
+                    uploadedBytes += bytesRead;
+                    partNumber++;
+
+                    const progress = Math.round((uploadedBytes / fileSize) * 100);
+                    console.log(`Uploaded part ${partNumber - 1}/${Math.ceil(fileSize / this.partSize)} (${progress}%)`);
+                }
+            } finally {
+                await fileHandle.close();
+            }
+
+            // Step 3: Complete multipart upload
+            await this.client.send(new CompleteMultipartUploadCommand({
+                Bucket: this.bucket,
+                Key: key,
+                UploadId: uploadId,
+                MultipartUpload: {
+                    Parts: parts
+                }
+            }));
+
+            console.log(`Multipart upload completed: ${parts.length} parts`);
+            return `${this.cdnUrl}/${key}`;
+
+        } catch (error) {
+            // Abort multipart upload on error to clean up
+            if (uploadId) {
+                console.log(`Aborting multipart upload ${uploadId}...`);
+                try {
+                    await this.client.send(new AbortMultipartUploadCommand({
+                        Bucket: this.bucket,
+                        Key: key,
+                        UploadId: uploadId
+                    }));
+                } catch (abortError) {
+                    console.error('Failed to abort multipart upload:', abortError);
+                }
+            }
+            throw error;
+        }
     }
 
     async saveRaw(buffer: Buffer, targetPath: string): Promise<string> {
