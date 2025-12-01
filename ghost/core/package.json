@@ -185,6 +185,7 @@
     "luxon": "3.7.2",
     "mailgun.js": "10.4.0",
     "metascraper": "5.45.15",
+    "metascraper-amazon": "5.45.10",
     "metascraper-author": "5.45.10",
     "metascraper-description": "5.45.10",
     "metascraper-image": "5.45.10",

@@ -281,6 +281,7 @@ class OEmbedService {
         };
 
         const metascraper = require('metascraper')([
+            require('metascraper-amazon')(),
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
