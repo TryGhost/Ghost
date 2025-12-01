@@ -10,7 +10,7 @@ See [add source columns to emails table](../../../ghost/core/core/server/data/mi
 
 ## Add a setting
 
-See [add member track source setting](../../../ghost/core/core/server/data/migrations/versions/5.21/2022-10-27-09-50-add-member-track-source-setting.js)
+See [add member track source setting](ghost/core/core/server/data/migrations/versions/5.21/2022-10-27-09-50-add-member-track-source-setting.js)
 
 ## Manipulate data
 See [update newsletter subscriptions](../../../ghost/core/core/server/data/migrations/versions/5.31/2022-12-05-09-56-update-newsletter-subscriptions.js).
