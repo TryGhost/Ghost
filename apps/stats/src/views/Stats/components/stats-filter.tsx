@@ -235,9 +235,6 @@ const usePostOptions = () => {
 };
 
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
-    // eslint-disable-next-line no-console
-    console.log('🔥 StatsFilter RENDER', Date.now());
-
     const {audience, setAudience} = useGlobalData();
     const {appSettings} = useAppContext();
 
