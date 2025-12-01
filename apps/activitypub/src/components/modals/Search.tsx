@@ -2,7 +2,7 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import ProfilePreviewHoverCard from '../global/ProfilePreviewHoverCard';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
@@ -128,11 +128,21 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', shouldSearch ? debouncedQuery : '');
     const {data, isFetching, isFetched} = searchQuery;
 
-    const results = data?.accounts || [];
+
+    const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
+
+    useEffect(() => {
+        if (data?.accounts && data.accounts.length > 0) {
+            setDisplayResults(data.accounts);
+        } else if (!isFetching && shouldSearch) {
+            setDisplayResults([]);
+        }
+    }, [data?.accounts, isFetching, shouldSearch]);
+
     const showLoading = isFetching && shouldSearch;
-    const showNoResults = !isFetching && isFetched && results.length === 0 && shouldSearch && debouncedQuery === query;
-    const showSuggested = query.length < 2;
-    const showSearchResults = shouldSearch && results.length > 0 && !showLoading;
+    const showNoResults = !isFetching && isFetched && displayResults.length === 0 && shouldSearch && debouncedQuery === query;
+    const showSuggested = query.length < 2 || (showLoading && displayResults.length === 0);
+    const showSearchResults = shouldSearch && displayResults.length > 0;
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -170,7 +180,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 )}
                 {showSearchResults && (
                     <SearchResults
-                        results={results}
+                        results={displayResults}
                         onOpenChange={onOpenChange}
                         onUpdate={updateResult}
                     />
