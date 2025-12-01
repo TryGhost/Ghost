@@ -184,7 +184,7 @@ class OEmbedService {
                 headers: {
                     'user-agent': USER_AGENT
                 },
-                timeout: 2000,
+                timeout: 10000,
                 followRedirect: true,
                 ...options
             });
