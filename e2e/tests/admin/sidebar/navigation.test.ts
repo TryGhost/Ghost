@@ -1,7 +1,19 @@
+import {Page} from '@playwright/test';
 import {SidebarPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright/fixture';
 
 type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+
+// TODO: Remove this when the ActivityPub backend has been integrated with the E2E tests
+async function mockNotificationCount(page: Page, count: number) {
+    await page.route('**/.ghost/activitypub/v1/notifications/unread/count', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/activity+json',
+            body: JSON.stringify({count})
+        });
+    });
+}
 
 interface NavItem {
     name: string;
@@ -11,6 +23,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, roles: ['Administrator']},
+    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, roles: ['Administrator']},
     {name: 'View site', path: /\/ghost\/#\/site\/?$/, roles: ['Administrator', 'Editor']},
     {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
     {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, roles: ['Administrator', 'Editor']},
@@ -147,6 +160,57 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await sidebar.userDropdownTrigger.click();
 
             await expect(sidebar.signOutLink).toBeVisible();
+        });
+    });
+
+    test.describe('network notification badge', () => {
+        test('shows badge when there are unread notifications', async ({page}) => {
+            const sidebar = new SidebarPage(page);
+            await mockNotificationCount(page, 5);
+
+            await sidebar.goto('/ghost');
+
+            await expect(sidebar.getNavLink('Network')).toBeVisible();
+            await expect(sidebar.networkNotificationBadge).toBeVisible();
+            await expect(sidebar.networkNotificationBadge).toHaveText('5');
+        });
+
+        test('does not show badge when count is zero', async ({page}) => {
+            const sidebar = new SidebarPage(page);
+
+            await mockNotificationCount(page, 0);
+
+            await sidebar.goto('/ghost');
+
+            await expect(sidebar.getNavLink('Network')).toBeVisible();
+            await expect(sidebar.networkNotificationBadge).toBeHidden();
+        });
+
+        test('hides badge when navigating to network route and shows it again when navigating away', async ({page}) => {
+            const sidebar = new SidebarPage(page);
+
+            await mockNotificationCount(page, 5);
+
+            await sidebar.goto('/ghost');
+            
+            // Badge should be visible initially
+            await expect(sidebar.networkNotificationBadge).toBeVisible();
+            await expect(sidebar.networkNotificationBadge).toHaveText('5');
+
+            // Navigate to network route
+            await sidebar.getNavLink('Network').click();
+
+            // Badge should be hidden when on network route
+            await expect(page).toHaveURL(/\/ghost\/#\/(network|activitypub)/);
+            await expect(sidebar.networkNotificationBadge).toBeHidden();
+
+            // Navigate away to posts
+            await sidebar.getNavLink('Posts').click();
+            await expect(page).toHaveURL(/\/ghost\/#\/posts/);
+
+            // Badge should be visible again
+            await expect(sidebar.networkNotificationBadge).toBeVisible();
+            await expect(sidebar.networkNotificationBadge).toHaveText('5');
         });
     });
 });
