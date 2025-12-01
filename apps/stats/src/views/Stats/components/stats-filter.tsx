@@ -44,10 +44,6 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
 
     const endpoint = endpointMap[fieldKey] || '';
 
-    // Always fetch UTM data when enabled
-    // Data is contextual - if filters exist, results will be filtered accordingly
-    const shouldFetch = true;
-
     // Build params including filters from other fields
     const params = useMemo(() => {
         const baseParams: Record<string, string> = {
@@ -78,7 +74,7 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
         endpoint,
         statsConfig,
         params,
-        enabled: shouldFetch && !!endpoint
+        enabled: !!endpoint
     });
 
     const options = useMemo(() => {
