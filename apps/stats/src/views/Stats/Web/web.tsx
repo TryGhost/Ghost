@@ -8,10 +8,10 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
+import {ALL_AUDIENCES, AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {ALL_AUDIENCES, AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
 interface SourcesData {
@@ -98,23 +98,8 @@ const Web: React.FC = () => {
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
 
-    // Convert all filters to query parameters
+    // Convert filters to query parameters for Tinybird API
     // Note: Currently only 'is' operator is supported by Tinybird pipes
-    // Use a stable reference for the dependency to avoid unnecessary recalculations
-    const filterParamsKey = useMemo(() => {
-        // Create a stable key based only on filters with actual values
-        // Allow empty string for 'source' field (used for "Direct" traffic)
-        return utmFilters
-            .filter((f) => {
-                const hasValue = f.values && f.values.length > 0 && f.values[0] !== null && f.values[0] !== undefined;
-                const isEmptySourceFilter = f.field === 'source' && f.values?.[0] === '';
-                return hasValue && (f.values![0] !== '' || isEmptySourceFilter);
-            })
-            .map(f => `${f.field}:${f.values![0]}`)
-            .sort()
-            .join('|');
-    }, [utmFilters]);
-
     const filterParams = useMemo(() => {
         const params: Record<string, string> = {};
 
@@ -136,19 +121,17 @@ const Web: React.FC = () => {
                 const value = String(values[0]);
 
                 // Map filter field names to Tinybird parameter names
-                // UTM fields map directly, but post and source need mapping
+                // UTM fields map directly, but post needs mapping to post_uuid
                 if (fieldKey === 'post') {
                     params.post_uuid = value;
                 } else {
-                    // UTM fields and other fields map directly
                     params[fieldKey] = value;
                 }
             }
         });
 
         return params;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filterParamsKey]); // Depend on the key, not the full filters array
+    }, [utmFilters]);
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
