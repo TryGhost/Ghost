@@ -5,7 +5,7 @@ set -euo pipefail
 # This maintains security while ensuring sqlite3 binaries are built when needed
 
 echo "Installing dependencies with --ignore-scripts..."
-yarn install --frozen-lockfile --prefer-offline --ignore-scripts
+yarn install --frozen-lockfile --prefer-offline --ignore-scripts "$@"
 
 # Check if sqlite3 binary already exists (from cache or previous build)
 if [ -d "node_modules/sqlite3" ]; then
