@@ -4,29 +4,38 @@ import {
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarMenu
+    SidebarMenu,
+    SidebarMenuBadge
 } from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
 import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
 import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
 import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
+import { useNotificationsCountForUser } from "@tryghost/activitypub/src/hooks/use-activity-pub-queries";
 import NetworkIcon from "./icons/NetworkIcon";
 import { NavMenuItem } from "./NavMenuItem";
+import { useIsActiveLink } from "./useIsActiveLink";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: settings } = useBrowseSettings();
+    const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled');
     const site = useBrowseSite();
     const url = site.data?.site.url;
-
+    
+    
+    // The network app has its own notification state, so we don't want to show
+    // multiple indicators when you have navigated there. 
+    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '');
+    const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
+    const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
+    const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
+        
     // Only show NavMain for admin users
     if (!currentUser || !hasAdminAccess(currentUser)) {
         return null;
     }
-
-    const socialWebEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled');
-
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
@@ -37,12 +46,15 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
-                    {socialWebEnabled && (
+                    {networkEnabled && (
                         <NavMenuItem>
-                            <NavMenuItem.Link to="network">
+                            <NavMenuItem.Link to="network" isActive={isNetworkRouteActive || isActivitypubRouteActive}>
                                 <NetworkIcon />
                                 <NavMenuItem.Label>Network</NavMenuItem.Label>
                             </NavMenuItem.Link>
+                            {showNetworkBadge && (
+                                <SidebarMenuBadge>{networkNotificationCount}</SidebarMenuBadge>
+                            )}
                         </NavMenuItem>
                     )}
                     <NavMenuItem className="relative group/viewsite">
