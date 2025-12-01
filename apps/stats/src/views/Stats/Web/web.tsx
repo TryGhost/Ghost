@@ -67,7 +67,7 @@ const Web: React.FC = () => {
         const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
         const isDefaultAudience = audience === ALL_AUDIENCES;
         
-        setUtmFilters(prevFilters => {
+        setUtmFilters((prevFilters) => {
             // Check if audience filter already exists
             const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
             
