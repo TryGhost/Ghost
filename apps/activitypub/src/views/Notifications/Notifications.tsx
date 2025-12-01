@@ -5,6 +5,7 @@ import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import APAvatar from '@components/global/APAvatar';
 import Error from '@components/layout/Error';
 import FeedItemStats from '@components/feed/FeedItemStats';
+import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import NotificationItem from './components/NotificationItem';
@@ -118,7 +119,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorText = (
         <>
-            <ProfilePreviewHoverCard actor={firstActor as unknown as ActorProperties} isCurrentUser={false}>
+            <ProfilePreviewHoverCard actor={firstActor as unknown as ActorProperties} align="center" isCurrentUser={false}>
                 <span
                     className={actorClass}
                     onClick={(e) => {
@@ -329,7 +330,7 @@ const Notifications: React.FC = () => {
                                                 )
                                             }
                                             {group.actors.length > 1 && <NotificationItem.Avatars>
-                                                <div className='flex flex-col'>
+                                                <div className='flex w-full flex-col'>
                                                     <div className='relative flex items-center pl-2'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
@@ -367,21 +368,31 @@ const Notifications: React.FC = () => {
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
-                                                                        className='flex items-center break-anywhere hover:opacity-80'
+                                                                        className='flex items-center justify-between gap-4 break-anywhere group/item'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
                                                                             handleProfileClick(actor.handle, navigate);
                                                                         }}
                                                                     >
-                                                                        <APAvatar author={{
-                                                                            icon: {
-                                                                                url: actor.avatarUrl || ''
-                                                                            },
-                                                                            name: actor.name,
-                                                                            handle: actor.handle
-                                                                        }} size='xs' />
-                                                                        <span className='ml-2 line-clamp-1 text-base font-semibold dark:text-white'>{actor.name}</span>
-                                                                        <span className='ml-1 line-clamp-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
+                                                                        <div className='flex min-w-0 items-center'>
+                                                                            <APAvatar author={{
+                                                                                icon: {
+                                                                                    url: actor.avatarUrl || ''
+                                                                                },
+                                                                                name: actor.name,
+                                                                                handle: actor.handle
+                                                                            }} size='xs' />
+                                                                            <span className='group-hover/item:underline ml-2 line-clamp-1 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                            <span className='ml-1 line-clamp-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
+                                                                        </div>
+                                                                        {group.type === 'follow' && !actor.followedByMe && (
+                                                                            <FollowButton
+                                                                                followsYou={actor.followsMe}
+                                                                                following={false}
+                                                                                handle={actor.handle}
+                                                                                variant="link"
+                                                                            />
+                                                                        )}
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -396,14 +407,25 @@ const Notifications: React.FC = () => {
                                                             <Skeleton />
                                                             <Skeleton className='w-full max-w-60' />
                                                         </> :
-                                                        <div className='flex items-center gap-1'>
-                                                            <span className='truncate'><NotificationGroupDescription group={group} /></span>
-                                                            {group.actors.length < 2 &&
-                                                                <>
-                                                                    <span className='mt-px text-[8px] text-gray-700 dark:text-gray-600'>&bull;</span>
-                                                                    <span className='mt-0.5 text-sm text-gray-700 dark:text-gray-600'>{renderTimestamp(group, false)}</span>
-                                                                </>
-                                                            }
+                                                        <div className='flex justify-between'>
+                                                            <div className='flex items-center gap-1'>
+                                                                <span className='truncate'><NotificationGroupDescription group={group} /></span>
+                                                                {group.actors.length < 2 &&
+                                                                    <>
+                                                                        <span className='mt-px text-[8px] text-gray-700 dark:text-gray-600'>&bull;</span>
+                                                                        <span className='mt-0.5 text-sm text-gray-700 dark:text-gray-600'>{renderTimestamp(group, false)}</span>
+                                                                    </>
+                                                                }
+                                                            </div>
+                                                            {/* Follow button for singular follow, reply, and mention */}
+                                                            {group.actors.length === 1 && (group.type === 'follow' || group.type === 'reply' || group.type === 'mention') && !group.actors[0].followedByMe && (
+                                                                <FollowButton
+                                                                    followsYou={group.actors[0].followsMe}
+                                                                    following={false}
+                                                                    handle={group.actors[0].handle}
+                                                                    variant="link"
+                                                                />
+                                                            )}
                                                         </div>
                                                     }
                                                 </div>
