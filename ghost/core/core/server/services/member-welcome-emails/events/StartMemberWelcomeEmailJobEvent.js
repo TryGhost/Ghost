@@ -17,7 +17,7 @@ module.exports = class StartMemberWelcomeEmailJobEvent {
      * @param {Date} [timestamp]
      */
     static create(data, timestamp) {
-        return new StartMemberWelcomeEmailJobEvent(data, timestamp ?? new Date);
+        return new StartMemberWelcomeEmailJobEvent(data, timestamp ?? new Date());
     }
 };
 

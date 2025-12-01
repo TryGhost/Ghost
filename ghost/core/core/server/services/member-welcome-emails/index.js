@@ -10,6 +10,8 @@ class MemberWelcomeEmailsServiceWrapper {
             return;
         }
 
+        this.processing = false;
+
         jobs.scheduleMemberWelcomeEmailJob();
 
         domainEvents.subscribe(StartMemberWelcomeEmailJobEvent, async () => {
@@ -30,8 +32,9 @@ class MemberWelcomeEmailsServiceWrapper {
             await processOutbox();
         } catch (e) {
             logging.error(e, 'Error while processing member welcome emails');
+        } finally {
+            this.processing = false;
         }
-        this.processing = false;
     }
 }
 
