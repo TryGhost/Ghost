@@ -8,6 +8,8 @@ interface FollowButtonProps {
     following: boolean;
     handle: string;
     type?: 'primary' | 'secondary';
+    variant?: 'default' | 'link';
+    followsYou?: boolean;
     onFollow?: () => void;
     onUnfollow?: () => void;
     'data-testid'?: string;
@@ -19,6 +21,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     className,
     following,
     handle,
+    variant = 'default',
+    followsYou = false,
     onFollow = noop,
     onUnfollow = noop,
     'data-testid': testId
@@ -59,6 +63,31 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
+    const buttonText = isFollowing ? 'Following' : (followsYou ? 'Follow back' : 'Follow');
+
+    if (variant === 'link') {
+        return (
+            <Button
+                className={clsx(
+                    'p-0 font-medium',
+                    isFollowing
+                        ? 'text-gray-700 dark:text-gray-600 hover:text-black dark:hover:text-white'
+                        : 'text-purple hover:text-black dark:hover:text-white',
+                    className
+                )}
+                data-testid={testId}
+                variant="link"
+                onClick={(event) => {
+                    event?.preventDefault();
+                    event?.stopPropagation();
+                    handleClick();
+                }}
+            >
+                {buttonText}
+            </Button>
+        );
+    }
+
     return (
         <Button
             className={clsx(
@@ -74,7 +103,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 handleClick();
             }}
         >
-            {isFollowing ? 'Following' : 'Follow'}
+            {buttonText}
         </Button>
     );
 };
