@@ -221,6 +221,17 @@ describe('Acceptance: Search', function () {
             await closeSearchWithBackdrop();
         });
 
+        it('does not open search modal if the sidebar is hidden', async function () {
+            const post = this.server.create('post', {title: 'Test post', slug: 'test-post', status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            assertSearchModalClosed();
+            await triggerKeyEvent(document, 'keydown', 'K', {
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+            assertSearchModalClosed();
+        });
+
         it('finds all content types when searching for "first"', async function () {
             await visit('/analytics');
             await openSearch();
