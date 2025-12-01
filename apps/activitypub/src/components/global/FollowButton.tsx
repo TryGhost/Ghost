@@ -71,7 +71,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 className={clsx(
                     'p-0 font-medium',
                     isFollowing
-                        ? 'text-gray-700 dark:text-gray-600 hover:text-black dark:hover:text-white'
+                        ? 'text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white'
                         : 'text-purple hover:text-black dark:hover:text-white',
                     className
                 )}

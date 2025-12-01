@@ -368,7 +368,7 @@ const Notifications: React.FC = () => {
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
-                                                                        className='flex items-center justify-between gap-4 break-anywhere group/item'
+                                                                        className='group/item flex items-center justify-between gap-4 break-anywhere'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
                                                                             handleProfileClick(actor.handle, navigate);
@@ -382,13 +382,13 @@ const Notifications: React.FC = () => {
                                                                                 name: actor.name,
                                                                                 handle: actor.handle
                                                                             }} size='xs' />
-                                                                            <span className='group-hover/item:underline ml-2 line-clamp-1 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                            <span className='ml-2 line-clamp-1 text-base font-semibold group-hover/item:underline dark:text-white'>{actor.name}</span>
                                                                             <span className='ml-1 line-clamp-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
                                                                         </div>
                                                                         {group.type === 'follow' && !actor.followedByMe && (
                                                                             <FollowButton
-                                                                                followsYou={actor.followsMe}
                                                                                 following={false}
+                                                                                followsYou={actor.followsMe}
                                                                                 handle={actor.handle}
                                                                                 variant="link"
                                                                             />
@@ -420,8 +420,8 @@ const Notifications: React.FC = () => {
                                                             {/* Follow button for singular follow, reply, and mention */}
                                                             {group.actors.length === 1 && (group.type === 'follow' || group.type === 'reply' || group.type === 'mention') && !group.actors[0].followedByMe && (
                                                                 <FollowButton
-                                                                    followsYou={group.actors[0].followsMe}
                                                                     following={false}
+                                                                    followsYou={group.actors[0].followsMe}
                                                                     handle={group.actors[0].handle}
                                                                     variant="link"
                                                                 />
