@@ -77,7 +77,7 @@ function UserMenuSignOut() {
     return (
         <UserMenuItem
             asChild={false}
-            onClick={handleSignOut}
+            onSelect={handleSignOut}
         >
             <LucideIcon.LogOut />
             <UserMenuItem.Label>Sign out</UserMenuItem.Label>
