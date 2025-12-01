@@ -24,12 +24,14 @@ export default class GhTagsTokenInput extends Component {
 
     constructor() {
         super(...arguments);
-        this.addInitialTags(this.args.selected?.toArray ? this.args.selected.toArray() : (this.args.selected || []));
+        // Don't add selected tags to initial tags - they should remain available for re-selection
+        // The loadInitialTags action will populate _initialTags with all available tags
     }
 
     get availableTags() {
         const selectedTags = this.args.selected || [];
-        return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedTags.includes(tag)));
+        const selectedTagIds = new Set(selectedTags.map(tag => tag.id));
+        return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedTagIds.has(tag.id)));
     }
 
     // if we only have one page of tags available or we've already loaded all tags
@@ -43,16 +45,18 @@ export default class GhTagsTokenInput extends Component {
 
     @action
     addInitialTags(tags) {
-        const selectedTags = this.args.selected || [];
-        const deduplicatedTags = tags.filter(tag => !selectedTags.includes(tag));
-        this._initialTags.push(...deduplicatedTags);
+        // Store all tags, but avoid duplicates
+        const existingTags = new Set(this._initialTags);
+        const newTags = tags.filter(tag => !existingTags.has(tag));
+        this._initialTags.push(...newTags);
     }
 
     @action
     addSearchedTags(tags) {
-        const selectedTags = this.args.selected || [];
-        const deduplicatedTags = tags.filter(tag => !selectedTags.includes(tag));
-        this._searchedTags.push(...deduplicatedTags);
+        // Store all search results, but avoid duplicates 
+        const existingTags = new Set(this._searchedTags);
+        const newTags = tags.filter(tag => !existingTags.has(tag));
+        this._searchedTags.push(...newTags);
     }
 
     @action
