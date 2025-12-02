@@ -64,33 +64,45 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 <PageMenu defaultValue={normalizedPath} responsive>
                     <PageMenuItem value="/analytics/" onClick={() => {
                         navigate('/analytics/');
-                    }}>Overview</PageMenuItem>
+                    }}>
+                        <LucideIcon.Gauge />
+                        Overview
+                    </PageMenuItem>
 
                     {appSettings?.analytics.webAnalytics &&
                         <PageMenuItem value="/analytics/web/" onClick={() => {
                             navigate('/analytics/web/');
-                        }}>Web traffic</PageMenuItem>
+                        }}>
+                            <LucideIcon.Globe />
+                            Web traffic
+                        </PageMenuItem>
                     }
 
                     {appSettings?.newslettersEnabled &&
                         <PageMenuItem value="/analytics/newsletters/" onClick={() => {
                             navigate('/analytics/newsletters/');
-                        }}>Newsletters</PageMenuItem>
+                        }}>
+                            <LucideIcon.Mail />
+                            Newsletters
+                        </PageMenuItem>
                     }
 
                     <PageMenuItem value="/analytics/growth/" onClick={() => {
                         navigate('/analytics/growth/');
-                    }}>Growth</PageMenuItem>
+                    }}>
+                        <LucideIcon.Sprout />
+                        Growth
+                    </PageMenuItem>
 
-                    {appSettings?.analytics.webAnalytics && (
+                    {/* {appSettings?.analytics.webAnalytics && (
                         <PageMenuItem value="/analytics/locations/" onClick={() => {
                             navigate('/analytics/locations/');
                         }}>Locations</PageMenuItem>
-                    )}
+                    )} */}
                 </PageMenu>
                 <NavbarActions>
                     {children}

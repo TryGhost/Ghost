@@ -102,7 +102,7 @@ export interface FilterI18nConfig {
 // Default English i18n configuration
 export const DEFAULT_I18N: FilterI18nConfig = {
     // UI Labels
-    addFilter: 'Add filter',
+    addFilter: '',
     searchFields: 'Search fields...',
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
@@ -119,7 +119,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     percent: '%',
     defaultCurrency: '$',
     defaultColor: '#000000',
-    addFilterTitle: 'Add filter',
+    addFilterTitle: '',
 
     // Operators
     operators: {
@@ -236,7 +236,7 @@ const filterInputVariants = cva(
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 md: 'h-[34px] px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                sm: 'h-8 px-1.5 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
+                sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
                 true: 'cursor-pointer',
@@ -941,7 +941,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center border-x px-3 text-sm text-muted-foreground">
+            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm text-muted-foreground">
                 {operatorLabel}
             </div>
         );

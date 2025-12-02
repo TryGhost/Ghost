@@ -185,7 +185,7 @@ const usePostOptions = () => {
     // When searching, filter by title containing the search query
     // When not searching, fetch latest 20 published posts
     const hasSearchQuery = debouncedSearchQuery.trim().length > 0;
-    
+
     const filter = hasSearchQuery
         ? `title:~'${debouncedSearchQuery.replace(/'/g, '\\\'')}'+status:[published,sent]`
         : 'status:[published,sent]';
@@ -211,7 +211,7 @@ const usePostOptions = () => {
             value: post.uuid
         }));
     }, [browseData]);
-    
+
     // Memoize the callback to avoid recreating the function on each render
     const setSearchQuery = useCallback((query: string) => {
         setSearchQueryInternal(query);
@@ -444,7 +444,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         label: 'Audience',
                         type: 'multiselect',
                         icon: <LucideIcon.Users />,
-                        options: audienceOptions.map(({value, label, icon}) => ({value, label, icon}))
+                        options: audienceOptions.map(({value, label, icon}) => ({value, label, icon})),
+                        defaultOperator: 'is any of',
+                        hideOperatorSelect: true
                     },
                     {
                         key: 'post',
@@ -483,12 +485,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     return (
         <Filters
-            addButtonIcon={filters.length ? <LucideIcon.Plus /> : <LucideIcon.ListFilter />}
-            addButtonText={filters.length ? 'Add filter' : 'Filter'}
-            className='mb-6 mt-0.5 [&>button]:order-last'
+            addButtonIcon={<LucideIcon.FunnelPlus />}
+            addButtonText={filters.length ? '' : ''}
+            className='mb-6 [&>button]:order-last'
             fields={groupedFields}
             filters={filters}
             showSearchInput={false}
+            size='sm'
             onChange={handleFilterChange}
             {...props}
         />
