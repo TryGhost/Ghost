@@ -16,7 +16,7 @@ module.exports.init = function () {
     }
 
     module.exports = i18nInstance = i18n(locale, 'ghost');
-/*  Dead code, to be removed.  (i18n is now always on)
+/*  TODO: dead code  (i18n is now always on)
     events.on('settings.labs.edited', () => {
         if (labs.isSet('i18n')) {
             debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
