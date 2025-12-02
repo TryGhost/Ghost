@@ -11,6 +11,7 @@
  */
 
 const debug = require('@tryghost/debug')('bridge');
+const debugI18n = require('@tryghost/debug')('ghost:i18n');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -41,7 +42,7 @@ class Bridge {
          * When locale changes, we reload theme translations
          */
         events.on('settings.locale.edited', (model) => {
-            debug('Active theme init18n');
+            debugI18n('Active theme init18n');
             this.getActiveTheme().initI18n({locale: model.get('value')});
         });
         
@@ -49,7 +50,7 @@ class Bridge {
             const currentThemeTranslationState = labs.isSet('themeTranslation');
             
             if (currentThemeTranslationState !== this.previousThemeTranslationState) {
-                debug('themeTranslation flag changed from %s to %s', 
+                debugI18n('themeTranslation flag changed from %s to %s', 
                     this.previousThemeTranslationState, currentThemeTranslationState);
                 
                 const locale = settingsCache.get('locale');
@@ -58,7 +59,7 @@ class Bridge {
                 // Update the tracked state
                 this.previousThemeTranslationState = currentThemeTranslationState;
             } else {
-                debug('themeTranslation flag unchanged');
+                debugI18n('themeTranslation flag unchanged');
             }
         });
 

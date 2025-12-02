@@ -14,7 +14,7 @@ const {themeI18n} = require('../services/handlebars');
 const {themeI18next} = require('../services/handlebars');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');
-const debug = require('@tryghost/debug')('i18n-t');
+const debug = require('@tryghost/debug')('ghost:i18n');
 
 module.exports = function t(text, options = {}) {
     if (!text || text.length === 0) {
