@@ -2,8 +2,21 @@ import { defineConfig } from 'i18next-cli';
 
 const pathsConfig: Record<string, string | string[]> = {
   'portal': [
-    '../../apps/portal/src/**/*.{js,jsx,ts,tsx}',
-    '!../../apps/portal/src/index.js'
+    '../../apps/portal/src/**/*.{js,jsx,ts,tsx}'
+  ],
+  'signup-form': [
+    '../../apps/signup-form/src/**/*.{ts,tsx}'
+  ],
+  'comments': [
+    '../../apps/comments-ui/src/**/*.{ts,tsx}'
+  ],
+  'search': [
+    '../../apps/sodo-search/src/**/*.{js,jsx,ts,tsx}'
+  ],
+  'ghost': [
+    '../core/core/{frontend,server,shared}/**/*.{js,jsx}',
+    '../core/core/server/services/email-service/email-templates/**/*.hbs',
+    '../core/core/server/services/comments/email-templates/**/*.hbs'
   ]
 };
 
