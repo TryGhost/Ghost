@@ -115,7 +115,7 @@ export default class S3Storage extends StorageBase {
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
-        const body = fs.createReadStream(file.path);
+        const body = await fs.promises.readFile(file.path);
 
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,

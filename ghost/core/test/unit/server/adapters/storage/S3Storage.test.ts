@@ -1,6 +1,5 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
-import {Readable} from 'stream';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -86,7 +85,7 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const url = await storage.save({
             path: '/tmp/test-image.jpg',
@@ -104,7 +103,7 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const url = await storage.save({
             path: '/tmp/test-image.jpg',
@@ -237,7 +236,7 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const videoUrl = await storage.save({
             path: '/tmp/video.mp4',
