@@ -15,6 +15,7 @@ export interface GhostInstance {
     port: number;
     baseUrl: string;
     siteUuid: string;
+    workerNetworkId?: string; // isolated network for this worker
 }
 
 export interface GhostStartConfig {
@@ -30,6 +31,7 @@ export class GhostManager {
     private docker: Docker;
     private dockerCompose: DockerCompose;
     private tinybird: TinybirdManager;
+    private workerNetworkId: string | null = null;
 
     constructor(docker: Docker, dockerCompose: DockerCompose, tinybird: TinybirdManager) {
         this.docker = docker;
@@ -37,9 +39,101 @@ export class GhostManager {
         this.tinybird = tinybird;
     }
 
+    /**
+     * Get or create an isolated network for this worker.
+     * Each parallel worker gets its own network to prevent ERR_NETWORK_CHANGED
+     * errors caused by container operations in other workers affecting the shared network.
+     */
+    private async getOrCreateWorkerNetwork(): Promise<string> {
+        if (this.workerNetworkId) {
+            return this.workerNetworkId;
+        }
+
+        const workerIndex = process.env.TEST_PARALLEL_INDEX || '0';
+        const networkName = `ghost_e2e_worker_${workerIndex}`;
+
+        // Check if network already exists (listNetworks name filter returns substring matches,
+        // so we need to find an exact match)
+        const existingNetworks = await this.docker.listNetworks({
+            filters: {name: [networkName]}
+        });
+
+        const exactMatch = existingNetworks.find(n => n.Name === networkName);
+        if (exactMatch) {
+            this.workerNetworkId = exactMatch.Id;
+            debug(`Using existing worker network: ${networkName} (${this.workerNetworkId})`);
+            return this.workerNetworkId;
+        }
+
+        // Create new isolated network for this worker
+        const network = await this.docker.createNetwork({
+            Name: networkName,
+            Driver: 'bridge',
+            Labels: {
+                'com.docker.compose.project': DOCKER_COMPOSE_CONFIG.PROJECT,
+                'tryghost/e2e': 'worker-network',
+                'tryghost/e2e/worker': workerIndex
+            }
+        });
+
+        this.workerNetworkId = network.id;
+        debug(`Created worker network: ${networkName} (${this.workerNetworkId})`);
+        return this.workerNetworkId;
+    }
+
+    /**
+     * Remove the worker-specific network if it exists
+     */
+    async removeWorkerNetwork(): Promise<void> {
+        const workerIndex = process.env.TEST_PARALLEL_INDEX || '0';
+        const networkName = `ghost_e2e_worker_${workerIndex}`;
+
+        try {
+            const networks = await this.docker.listNetworks({
+                filters: {name: [networkName]}
+            });
+
+            for (const networkInfo of networks) {
+                const network = this.docker.getNetwork(networkInfo.Id);
+                await network.remove();
+                debug(`Removed worker network: ${networkName}`);
+            }
+        } catch (error) {
+            debug('Failed to remove worker network:', error);
+        }
+
+        this.workerNetworkId = null;
+    }
+
+    /**
+     * Remove all worker networks (used during global cleanup)
+     */
+    async removeAllWorkerNetworks(): Promise<void> {
+        try {
+            const networks = await this.docker.listNetworks({
+                filters: {label: ['tryghost/e2e=worker-network']}
+            });
+
+            for (const networkInfo of networks) {
+                try {
+                    const network = this.docker.getNetwork(networkInfo.Id);
+                    await network.remove();
+                    debug(`Removed worker network: ${networkInfo.Name}`);
+                } catch (error) {
+                    debug(`Failed to remove network ${networkInfo.Name}:`, error);
+                }
+            }
+        } catch (error) {
+            debug('Failed to list worker networks:', error);
+        }
+    }
+
     private async createAndStart(config: GhostStartConfig): Promise<Container> {
         try {
-            const network = await this.dockerCompose.getNetwork();
+            // Get both the shared compose network (for MySQL, Tinybird, etc.)
+            // and the worker-specific network (for isolation from other workers)
+            const composeNetwork = await this.dockerCompose.getNetwork();
+            const workerNetworkId = await this.getOrCreateWorkerNetwork();
             const tinyBirdConfig = this.tinybird.loadConfig();
 
             // Use deterministic port based on worker index (or 0 if not in parallel)
@@ -78,12 +172,19 @@ export class GhostManager {
                 ...(config.config ? config.config : {})
             } as Record<string, string>;
 
+            // Connect to both the shared compose network and the isolated worker network.
+            // The compose network allows communication with MySQL, Tinybird, mailpit, etc.
+            // The worker network isolates this container from other workers' container operations,
+            // preventing ERR_NETWORK_CHANGED errors during parallel test execution.
             const containerConfig: ContainerCreateOptions = {
                 Image: GHOST_DEFAULTS.IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
                 NetworkingConfig: {
                     EndpointsConfig: {
-                        [network.id]: {
+                        [composeNetwork.id]: {
+                            Aliases: [config.instanceId]
+                        },
+                        [workerNetworkId]: {
                             Aliases: [config.instanceId]
                         }
                     }
@@ -99,7 +200,8 @@ export class GhostManager {
                 Labels: {
                     'com.docker.compose.project': DOCKER_COMPOSE_CONFIG.PROJECT,
                     'com.docker.compose.service': `ghost-${config.siteUuid}`,
-                    'tryghost/e2e': 'ghost'
+                    'tryghost/e2e': 'ghost',
+                    'tryghost/e2e/worker': process.env.TEST_PARALLEL_INDEX || '0'
                 },
                 WorkingDir: config.workingDir || GHOST_DEFAULTS.WORKDIR,
                 Cmd: config.command || ['yarn', 'dev'],
@@ -134,7 +236,8 @@ export class GhostManager {
             database: instanceId,
             port: hostPort,
             baseUrl: `http://localhost:${hostPort}`,
-            siteUuid
+            siteUuid,
+            workerNetworkId: this.workerNetworkId || undefined
         };
     }
 
@@ -150,14 +253,16 @@ export class GhostManager {
 
             if (containers.length === 0) {
                 debug('No Ghost containers found');
-                return;
+            } else {
+                debug(`Found ${containers.length} Ghost container(s) to remove`);
+                for (const containerInfo of containers) {
+                    await this.stopAndRemoveInstance(containerInfo.Id);
+                }
+                debug('All Ghost containers removed');
             }
 
-            debug(`Found ${containers.length} Ghost container(s) to remove`);
-            for (const containerInfo of containers) {
-                await this.stopAndRemoveInstance(containerInfo.Id);
-            }
-            debug('All Ghost containers removed');
+            // Clean up worker networks after removing containers
+            await this.removeAllWorkerNetworks();
         } catch (error) {
             // Don't throw - we want to continue with setup even if cleanup fails
             logging.error('Failed to remove all Ghost containers:', error);
