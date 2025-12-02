@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS} from '@src/utils/constants';
@@ -6,9 +6,9 @@ import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
 import {useAppContext} from '@src/app';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
 
@@ -256,61 +256,89 @@ const useLocationOptions = (currentFilters: Filter[] = []) => {
     return {options, loading};
 };
 
-// Hook to fetch posts/pages options from Ghost API with search support
-const usePostOptions = () => {
-    const [searchQuery, setSearchQueryInternal] = useState('');
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+// Hook to fetch posts/pages options from Tinybird via Ghost API
+// Data is contextual - results are filtered based on currently applied filters
+// Only returns posts that have actual visits in the selected time period
+const usePostOptions = (currentFilters: Filter[] = []) => {
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
-    // Debounce the search query to avoid too many API calls
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchQuery(searchQuery);
-        }, 300);
+    // Build query params including filters from other fields (excluding post to avoid circular filtering)
+    const queryParams = useMemo(() => {
+        const params: Record<string, string> = {
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            member_status: getAudienceQueryParam(audience)
+        };
 
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    // Use browse API for both initial load and search
-    // When searching, filter by title containing the search query
-    // When not searching, fetch latest 20 published posts
-    const hasSearchQuery = debouncedSearchQuery.trim().length > 0;
-
-    const filter = hasSearchQuery
-        ? `title:~'${debouncedSearchQuery.replace(/'/g, '\\\'')}'+status:[published,sent]`
-        : 'status:[published,sent]';
-
-    const {data: browseData, isLoading: isBrowseLoading} = useBrowsePosts({
-        searchParams: {
-            filter,
-            fields: 'id,uuid,title,slug',
-            order: 'published_at DESC',
-            limit: hasSearchQuery ? '50' : '20'
+        if (timezone) {
+            params.timezone = timezone;
         }
+
+        // Add filters from currently applied filters (excluding post to avoid circular filtering)
+        currentFilters.forEach((filter) => {
+            if (filter.field === 'post' && filter.values.length > 0) {
+                // Skip post filter to avoid circular filtering
+                return;
+            } else if (filter.field === 'source' && filter.values.length > 0) {
+                params.source = filter.values[0] as string;
+            } else if (filter.field === 'location' && filter.values.length > 0) {
+                params.location = filter.values[0] as string;
+            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
+                params[filter.field] = filter.values[0] as string;
+            }
+        });
+
+        return params;
+    }, [startDate, endDate, timezone, audience, currentFilters]);
+
+    // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
+    const {data: topContentData, isLoading} = useTopContent({
+        searchParams: queryParams
     });
 
     const options = useMemo(() => {
-        const posts = browseData?.posts;
+        const stats = topContentData?.stats;
 
-        if (!posts) {
+        if (!stats) {
             return [];
         }
 
-        return posts.map(post => ({
-            label: post.title || post.slug || '(Untitled)',
-            value: post.uuid
-        }));
-    }, [browseData]);
+        // Deduplicate items - prefer post_uuid for posts/pages, use pathname for other content
+        const seen = new Set<string>();
+        return stats
+            .filter((item) => {
+                // Create a unique key - prefer post_uuid if available, otherwise use pathname
+                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
+                const uniqueKey = hasValidPostUuid ? `uuid:${item.post_uuid}` : `path:${item.pathname}`;
 
-    // Memoize the callback to avoid recreating the function on each render
-    const setSearchQuery = useCallback((query: string) => {
-        setSearchQueryInternal(query);
-    }, []);
+                if (seen.has(uniqueKey)) {
+                    return false;
+                }
+                seen.add(uniqueKey);
+                return true;
+            })
+            .map((item) => {
+                const visits = item.visits || 0;
+                // Use post_uuid as the filter value if available, otherwise use pathname
+                // The filter logic in web.tsx maps 'post' field to post_uuid param for Tinybird
+                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
+                const filterValue = hasValidPostUuid ? item.post_uuid! : item.pathname;
 
-    return {
-        options,
-        loading: isBrowseLoading,
-        setSearchQuery
-    };
+                return {
+                    label: item.title || item.pathname || '(Untitled)',
+                    value: filterValue,
+                    // Add a custom icon element that shows the count badge
+                    icon: (
+                        <span className="order-2 font-mono text-xs text-muted-foreground">
+                            {visits.toLocaleString()}
+                        </span>
+                    )
+                };
+            });
+    }, [topContentData]);
+
+    return {options, loading: isLoading};
 };
 
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
@@ -446,8 +474,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Fetch location options
     const {options: locationOptions} = useLocationOptions(filters);
 
-    // Fetch options for posts with search support
-    const {options: postOptions, loading: postLoading, setSearchQuery} = usePostOptions();
+    // Fetch options for posts - data is contextual based on current filters
+    const {options: postOptions, loading: postLoading} = usePostOptions(filters);
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -545,14 +573,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         icon: <LucideIcon.PenLine />,
                         options: postOptions,
                         searchable: true,
-                        asyncSearch: true,
                         isLoading: postLoading,
-                        onSearchChange: setSearchQuery,
                         operators: supportedOperators,
                         defaultOperator: 'is',
                         className: 'w-80',
                         popoverContentClassName: 'w-80',
-                        hideOperatorSelect: true
+                        hideOperatorSelect: true,
+                        selectedOptionsClassName: 'hidden'
                     },
                     {
                         key: 'source',
@@ -587,7 +614,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions, locationOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, locationOptions]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;

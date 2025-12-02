@@ -733,12 +733,7 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    // Search handler for select fields - called when search input changes
-    onSearchChange?: (searchQuery: string) => void;
-    // When true, disables cmdk's built-in filtering and relies on parent to manage options
-    // Use this for server-side/async search where options are fetched dynamically
-    asyncSearch?: boolean;
-    // Shows loading indicator in the dropdown while true (used with asyncSearch)
+    // Shows loading indicator in the dropdown
     isLoading?: boolean;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
@@ -1043,7 +1038,6 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
-        field.onSearchChange?.(value);
     };
 
     const handleClose = () => {
@@ -1052,14 +1046,11 @@ function SelectOptionsPopover<T = unknown>({
         onClose?.();
     };
 
-    // Determine if we should use server-side filtering (async search)
-    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
-
     // If inline mode, render the content directly without popover
     if (inline) {
         return (
             <div className="w-full">
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-8.5 text-sm"
@@ -1205,7 +1196,7 @@ function SelectOptionsPopover<T = unknown>({
                     field.className || 'w-[200px]'
                 )}
             >
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1301,7 +1292,6 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
-        field.onSearchChange?.(value);
     };
 
     // Hide value input for empty/not empty operators
@@ -1602,7 +1592,6 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
     const isMultiSelect = values.length > 1;
     const selectedOptions = field.options?.filter(opt => values.includes(opt.value)) || [];
     const unselectedOptions = field.options?.filter(opt => !values.includes(opt.value)) || [];
-    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
 
     return (
         <Popover
@@ -1643,7 +1632,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 </div>
             </PopoverTrigger>
             <PopoverContent className={cn('w-36 p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0', field.popoverContentClassName)}>
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"

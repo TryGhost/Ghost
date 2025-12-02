@@ -122,9 +122,15 @@ const Web: React.FC = () => {
                 const value = String(values[0]);
 
                 // Map filter field names to Tinybird parameter names
-                // UTM fields map directly, but post needs mapping to post_uuid
+                // UTM fields map directly, but post needs special handling
                 if (fieldKey === 'post') {
-                    params.post_uuid = value;
+                    // Determine if the value is a post_uuid or a pathname
+                    // Pathnames start with '/' while UUIDs don't
+                    if (value.startsWith('/')) {
+                        params.pathname = value;
+                    } else {
+                        params.post_uuid = value;
+                    }
                 } else {
                     params[fieldKey] = value;
                 }
