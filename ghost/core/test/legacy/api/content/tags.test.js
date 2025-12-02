@@ -52,7 +52,7 @@ describe('api/endpoints/content/tags', function () {
                 jsonResponse.meta.pagination.should.have.property('page', 1);
                 jsonResponse.meta.pagination.should.have.property('limit', 15);
                 jsonResponse.meta.pagination.should.have.property('pages', 4);
-                jsonResponse.meta.pagination.should.have.property('total', 56);
+                jsonResponse.meta.pagination.should.have.property('total', 57);
                 jsonResponse.meta.pagination.should.have.property('next', 2);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
