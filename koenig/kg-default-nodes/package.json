@@ -39,7 +39,7 @@
     "c8": "10.1.3",
     "html-minifier": "^4.0.0",
     "mocha": "11.7.5",
-    "prettier": "3.7.2",
+    "prettier": "3.7.3",
     "rollup": "4.53.3",
     "rollup-plugin-svg": "2.0.0",
     "should": "13.2.3",
