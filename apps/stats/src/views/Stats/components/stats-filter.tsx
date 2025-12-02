@@ -452,7 +452,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         key: 'post',
                         label: 'Post or page',
                         type: 'select',
-                        icon: <LucideIcon.File />,
+                        icon: <LucideIcon.PenLine />,
                         options: postOptions,
                         searchable: true,
                         asyncSearch: true,
