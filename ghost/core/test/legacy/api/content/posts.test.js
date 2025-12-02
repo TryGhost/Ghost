@@ -427,7 +427,7 @@ describe('api/endpoints/content/posts', function () {
         });
 
         it('cannot browse members only posts content', function () {
-            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=20`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
@@ -440,7 +440,7 @@ describe('api/endpoints/content/posts', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(15);
+                    jsonResponse.posts.should.have.length(17);
                     localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, null);
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -474,9 +474,9 @@ describe('api/endpoints/content/posts', function () {
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
-                    jsonResponse.meta.pagination.limit.should.eql(15);
+                    jsonResponse.meta.pagination.limit.should.eql(20);
                     jsonResponse.meta.pagination.pages.should.eql(1);
-                    jsonResponse.meta.pagination.total.should.eql(15);
+                    jsonResponse.meta.pagination.total.should.eql(17);
                     jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                     jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                     should.not.exist(jsonResponse.meta.pagination.next);
