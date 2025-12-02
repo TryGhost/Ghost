@@ -33,14 +33,34 @@ module.exports = class ActivityPubServiceWrapper {
         );
 
         async function configureActivityPub() {
-            if (settingsCache.get('social_web_enabled')) {
+            const socialWebEnabled = settingsCache.get('social_web_enabled');
+            const isPrivate = settingsCache.get('is_private');
+
+            if (socialWebEnabled) {
                 if (!ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.enable();
+                    // Service is being initialised - only create webhooks if site is NOT private
+                    // Currently `enable` ONLY creates webhooks
+                    if (!isPrivate) {
+                        await ActivityPubServiceWrapper.instance.enable();
+                    }
+
                     ActivityPubServiceWrapper.initialised = true;
+                } else if (!isPrivate) {
+                    // Service is already initialised, private mode was disabled,
+                    // create webhooks if they don't exist
+                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
+                } else {
+                    // Service is already initialised, private mode was enabled,
+                    // remove webhooks but DO NOT disable the service (we just
+                    // want to disable federation of posts)
+                    logging.info('Removing ActivityPub webhooks - site is in private mode');
+
+                    await ActivityPubServiceWrapper.instance.removeWebhooks();
                 }
             } else {
                 if (ActivityPubServiceWrapper.initialised) {
                     await ActivityPubServiceWrapper.instance.disable();
+
                     ActivityPubServiceWrapper.initialised = false;
                 }
             }
@@ -48,6 +68,7 @@ module.exports = class ActivityPubServiceWrapper {
 
         events.on('settings.labs.edited', configureActivityPub);
         events.on('settings.social_web.edited', configureActivityPub);
+        events.on('settings.is_private.edited', configureActivityPub);
 
         configureActivityPub();
     }
