@@ -29,7 +29,7 @@ yarn data:analytics:clear
 yarn dev:analytics
 
 # 2. (Optional) Reset Ghost data if needed
-yarn reset:data
+yarn docker:reset:data
 
 # 3. Generate analytics data
 yarn data:analytics:generate
@@ -40,6 +40,9 @@ yarn data:analytics:generate
 # 5. Clear analytics when needed
 yarn data:analytics:clear
 ```
+
+**Note:** Use `yarn docker:reset:data` when the Docker environment is running.
+Use `yarn reset:data` when running Ghost locally without Docker.
 
 ## Configuration
 
