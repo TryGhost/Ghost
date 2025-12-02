@@ -36,33 +36,37 @@ module.exports = class ActivityPubServiceWrapper {
             const socialWebEnabled = settingsCache.get('social_web_enabled');
             const isPrivate = settingsCache.get('is_private');
 
-            if (socialWebEnabled) {
-                if (!ActivityPubServiceWrapper.initialised) {
-                    // Service is being initialised - only create webhooks if site is NOT private
-                    // Currently `enable` ONLY creates webhooks
-                    if (!isPrivate) {
-                        await ActivityPubServiceWrapper.instance.enable();
+            try {
+                if (socialWebEnabled) {
+                    if (!ActivityPubServiceWrapper.initialised) {
+                        // Service is being initialised - only create webhooks if site is NOT private
+                        // Currently `enable` ONLY creates webhooks
+                        if (!isPrivate) {
+                            await ActivityPubServiceWrapper.instance.enable();
+                        }
+
+                        ActivityPubServiceWrapper.initialised = true;
+                    } else if (!isPrivate) {
+                        // Service is already initialised, private mode was disabled,
+                        // create webhooks if they don't exist
+                        await ActivityPubServiceWrapper.instance.initialiseWebhooks();
+                    } else {
+                        // Service is already initialised, private mode was enabled,
+                        // remove webhooks but DO NOT disable the service (we just
+                        // want to disable federation of posts)
+                        logging.info('Removing ActivityPub webhooks - site is in private mode');
+
+                        await ActivityPubServiceWrapper.instance.removeWebhooks();
                     }
-
-                    ActivityPubServiceWrapper.initialised = true;
-                } else if (!isPrivate) {
-                    // Service is already initialised, private mode was disabled,
-                    // create webhooks if they don't exist
-                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
                 } else {
-                    // Service is already initialised, private mode was enabled,
-                    // remove webhooks but DO NOT disable the service (we just
-                    // want to disable federation of posts)
-                    logging.info('Removing ActivityPub webhooks - site is in private mode');
+                    if (ActivityPubServiceWrapper.initialised) {
+                        await ActivityPubServiceWrapper.instance.disable();
 
-                    await ActivityPubServiceWrapper.instance.removeWebhooks();
+                        ActivityPubServiceWrapper.initialised = false;
+                    }
                 }
-            } else {
-                if (ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.disable();
-
-                    ActivityPubServiceWrapper.initialised = false;
-                }
+            } catch (error) {
+                logging.error('Failed to configure ActivityPub', error);
             }
         }
 
