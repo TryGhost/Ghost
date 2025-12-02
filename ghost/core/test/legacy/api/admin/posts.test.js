@@ -46,7 +46,7 @@ describe('Posts API', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(13);
+                    jsonResponse.posts.should.have.length(15);
 
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
@@ -77,7 +77,7 @@ describe('Posts API', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(13);
+                    jsonResponse.posts.should.have.length(15);
 
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
@@ -169,7 +169,7 @@ describe('Posts API', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(13);
+                    jsonResponse.posts.should.have.length(15);
 
                     should.equal(jsonResponse.posts[0].meta_description, null);
                     jsonResponse.posts[12].slug.should.equal('short-and-sweet');
