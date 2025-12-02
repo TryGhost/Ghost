@@ -1,12 +1,15 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
-import {Readable} from 'stream';
 import fs from 'fs';
 import path from 'path';
 import {
     DeleteObjectCommand,
     NotFound,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
+    AbortMultipartUploadCommand,
     S3Client
 } from '@aws-sdk/client-s3';
 import S3Storage, {type S3StorageOptions} from '../../../../../core/server/adapters/storage/S3Storage';
@@ -86,7 +89,8 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'stat').resolves({size: 512} as fs.Stats);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const url = await storage.save({
             path: '/tmp/test-image.jpg',
@@ -104,7 +108,8 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'stat').resolves({size: 512} as fs.Stats);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const url = await storage.save({
             path: '/tmp/test-image.jpg',
@@ -237,7 +242,8 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
 
         sinon.stub(storage, 'exists').resolves(false);
-        sinon.stub(fs, 'createReadStream').returns(Readable.from('file-data') as unknown as fs.ReadStream);
+        sinon.stub(fs.promises, 'stat').resolves({size: 512} as fs.Stats);
+        sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('file-data'));
 
         const videoUrl = await storage.save({
             path: '/tmp/video.mp4',
@@ -317,5 +323,491 @@ describe('S3Storage', function () {
             storage.read(),
             /read\(\) is not supported by S3Storage/
         );
+    });
+
+    describe('Multipart Upload', function () {
+        function createMockFileHandle(fileContent: Buffer, options: {failAtByte?: number} = {}) {
+            return {
+                read: sinon.stub().callsFake(async (buffer: Buffer, offset: number, length: number, position: number) => {
+                    if (options.failAtByte !== undefined && position >= options.failAtByte) {
+                        return {bytesRead: 0, buffer};
+                    }
+                    const start = position;
+                    const end = Math.min(position + length, fileContent.length);
+                    const bytesToRead = end - start;
+                    fileContent.copy(buffer, offset, start, end);
+                    return {bytesRead: bytesToRead, buffer};
+                }),
+                close: sinon.stub().resolves()
+            };
+        }
+
+        it('uses simple upload for files below threshold', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024});
+
+            const smallFileContent = Buffer.alloc(512, 'x');
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 512} as fs.Stats);
+            sinon.stub(fs.promises, 'readFile').resolves(smallFileContent);
+
+            const url = await storage.save({
+                path: '/tmp/small-file.mp4',
+                name: 'small-file.mp4',
+                type: 'video/mp4'
+            }, '2024/06');
+
+            assert.equal(url, 'https://cdn.example.com/configurable/prefix/content/files/2024/06/small-file.mp4');
+            sinon.assert.calledOnce(sendStub);
+            const command = sendStub.firstCall.args[0];
+            assert.ok(command instanceof PutObjectCommand);
+            assert.equal(command.input.ContentType, 'video/mp4');
+        });
+
+        it('uses multipart upload for files at or above threshold', async function () {
+            const partSize = 1024;
+            const fileSize = partSize * 2;
+            const {storage, sendStub} = createStorage({
+                multipartThreshold: 1024,
+                partSize: partSize
+            });
+
+            const fileContent = Buffer.alloc(fileSize, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    return {ETag: `"etag-part-${(command as UploadPartCommand).input.PartNumber}"`};
+                }
+                if (command instanceof CompleteMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            const url = await storage.save({
+                path: '/tmp/large-file.mp4',
+                name: 'large-file.mp4',
+                type: 'video/mp4'
+            }, '2024/06');
+
+            assert.equal(url, 'https://cdn.example.com/configurable/prefix/content/files/2024/06/large-file.mp4');
+
+            // Verify CreateMultipartUploadCommand
+            const createCommand = sendStub.getCall(0).args[0];
+            assert.ok(createCommand instanceof CreateMultipartUploadCommand);
+            assert.equal(createCommand.input.Bucket, 'test-bucket');
+            assert.equal(createCommand.input.ContentType, 'video/mp4');
+
+            // Verify UploadPartCommands
+            const part1Command = sendStub.getCall(1).args[0];
+            assert.ok(part1Command instanceof UploadPartCommand);
+            assert.equal(part1Command.input.PartNumber, 1);
+            assert.equal(part1Command.input.UploadId, 'test-upload-id');
+
+            const part2Command = sendStub.getCall(2).args[0];
+            assert.ok(part2Command instanceof UploadPartCommand);
+            assert.equal(part2Command.input.PartNumber, 2);
+
+            // Verify CompleteMultipartUploadCommand
+            const completeCommand = sendStub.getCall(3).args[0];
+            assert.ok(completeCommand instanceof CompleteMultipartUploadCommand);
+            assert.equal(completeCommand.input.UploadId, 'test-upload-id');
+            assert.deepEqual(completeCommand.input.MultipartUpload?.Parts, [
+                {ETag: '"etag-part-1"', PartNumber: 1},
+                {ETag: '"etag-part-2"', PartNumber: 2}
+            ]);
+
+            // Verify file handle was closed
+            sinon.assert.calledOnce(mockFileHandle.close);
+        });
+
+        it('throws error when CreateMultipartUpload returns no UploadId', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024});
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {}; // No UploadId
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /Failed to initiate file upload/
+            );
+        });
+
+        it('throws error when UploadPart returns no ETag', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024, partSize: 1024});
+
+            const fileContent = Buffer.alloc(2048, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    return {}; // No ETag
+                }
+                if (command instanceof AbortMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /Failed to upload file part 1/
+            );
+
+            // Verify abort was called
+            const abortCall = sendStub.getCalls().find(call => call.args[0] instanceof AbortMultipartUploadCommand);
+            assert.ok(abortCall, 'AbortMultipartUploadCommand should have been called');
+            assert.equal(abortCall.args[0].input.UploadId, 'test-upload-id');
+        });
+
+        it('throws error when file read returns 0 bytes unexpectedly', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024, partSize: 1024});
+
+            const fileContent = Buffer.alloc(2048, 'x');
+            // Simulate file being truncated - fail at byte 0 (first read)
+            const mockFileHandle = createMockFileHandle(fileContent, {failAtByte: 0});
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof AbortMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /There was an error uploading the file/
+            );
+
+            // Verify abort was called
+            const abortCall = sendStub.getCalls().find(call => call.args[0] instanceof AbortMultipartUploadCommand);
+            assert.ok(abortCall, 'AbortMultipartUploadCommand should have been called');
+        });
+
+        it('aborts multipart upload when part upload fails with S3 error', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024, partSize: 1024});
+
+            const fileContent = Buffer.alloc(2048, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    throw new Error('S3 network error');
+                }
+                if (command instanceof AbortMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /S3 network error/
+            );
+
+            // Verify abort was called
+            const abortCall = sendStub.getCalls().find(call => call.args[0] instanceof AbortMultipartUploadCommand);
+            assert.ok(abortCall, 'AbortMultipartUploadCommand should have been called');
+            assert.equal(abortCall.args[0].input.UploadId, 'test-upload-id');
+            assert.equal(abortCall.args[0].input.Key, 'configurable/prefix/content/files/2024/06/large-file.mp4');
+        });
+
+        it('continues to throw original error when abort also fails', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024, partSize: 1024});
+
+            const fileContent = Buffer.alloc(2048, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    throw new Error('Original upload error');
+                }
+                if (command instanceof AbortMultipartUploadCommand) {
+                    throw new Error('Abort also failed');
+                }
+                return {};
+            });
+
+            // Should throw the original error, not the abort error
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /Original upload error/
+            );
+        });
+
+        it('does not call abort if upload fails before getting uploadId', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024});
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    throw new Error('Failed to create multipart upload');
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /Failed to create multipart upload/
+            );
+
+            // Verify abort was NOT called
+            const abortCall = sendStub.getCalls().find(call => call.args[0] instanceof AbortMultipartUploadCommand);
+            assert.ok(!abortCall, 'AbortMultipartUploadCommand should NOT have been called');
+        });
+
+        it('closes file handle even when upload fails', async function () {
+            const {storage, sendStub} = createStorage({multipartThreshold: 1024, partSize: 1024});
+
+            const fileContent = Buffer.alloc(2048, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    throw new Error('Upload failed');
+                }
+                if (command instanceof AbortMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await assert.rejects(
+                storage.save({
+                    path: '/tmp/large-file.mp4',
+                    name: 'large-file.mp4'
+                }, '2024/06'),
+                /Upload failed/
+            );
+
+            // File handle should still be closed
+            sinon.assert.calledOnce(mockFileHandle.close);
+        });
+
+        it('handles file exactly at threshold using multipart', async function () {
+            const threshold = 1024;
+            const {storage, sendStub} = createStorage({
+                multipartThreshold: threshold,
+                partSize: threshold
+            });
+
+            const fileContent = Buffer.alloc(threshold, 'x'); // Exactly at threshold
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: threshold} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    return {ETag: '"etag"'};
+                }
+                if (command instanceof CompleteMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            const url = await storage.save({
+                path: '/tmp/exact-threshold.mp4',
+                name: 'exact-threshold.mp4'
+            }, '2024/06');
+
+            assert.ok(url.includes('exact-threshold.mp4'));
+
+            // Should use multipart (CreateMultipartUpload was called)
+            const createCall = sendStub.getCalls().find(call => call.args[0] instanceof CreateMultipartUploadCommand);
+            assert.ok(createCall, 'Should use multipart upload for files at threshold');
+        });
+
+        it('handles file just below threshold using simple upload', async function () {
+            const threshold = 1024;
+            const {storage, sendStub} = createStorage({multipartThreshold: threshold});
+
+            const fileContent = Buffer.alloc(threshold - 1, 'x'); // Just below threshold
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: threshold - 1} as fs.Stats);
+            sinon.stub(fs.promises, 'readFile').resolves(fileContent);
+
+            const url = await storage.save({
+                path: '/tmp/below-threshold.mp4',
+                name: 'below-threshold.mp4'
+            }, '2024/06');
+
+            assert.ok(url.includes('below-threshold.mp4'));
+
+            // Should use simple upload (PutObjectCommand was called)
+            sinon.assert.calledOnce(sendStub);
+            const command = sendStub.firstCall.args[0];
+            assert.ok(command instanceof PutObjectCommand);
+        });
+
+        it('respects custom multipartThreshold and partSize options', async function () {
+            const customThreshold = 512;
+            const customPartSize = 256;
+            const fileSize = 768; // 3 parts of 256 bytes
+            const {storage, sendStub} = createStorage({
+                multipartThreshold: customThreshold,
+                partSize: customPartSize
+            });
+
+            const fileContent = Buffer.alloc(fileSize, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    return {ETag: `"etag-${(command as UploadPartCommand).input.PartNumber}"`};
+                }
+                if (command instanceof CompleteMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await storage.save({
+                path: '/tmp/custom-parts.mp4',
+                name: 'custom-parts.mp4'
+            }, '2024/06');
+
+            // Should have: CreateMultipartUpload + 3 UploadPart + CompleteMultipartUpload = 5 calls
+            assert.equal(sendStub.callCount, 5);
+
+            // Verify 3 parts were uploaded
+            const uploadPartCalls = sendStub.getCalls().filter(call => call.args[0] instanceof UploadPartCommand);
+            assert.equal(uploadPartCalls.length, 3);
+        });
+
+        it('uses default 10MB threshold and part size when not specified', function () {
+            const {storage} = createStorage();
+
+            assert.equal((storage as any).multipartThreshold, 10 * 1024 * 1024);
+            assert.equal((storage as any).partSize, 10 * 1024 * 1024);
+        });
+
+        it('handles last part being smaller than partSize', async function () {
+            const partSize = 1024;
+            const fileSize = partSize + 512; // 1.5 parts
+            const {storage, sendStub} = createStorage({
+                multipartThreshold: 1024,
+                partSize: partSize
+            });
+
+            const fileContent = Buffer.alloc(fileSize, 'x');
+            const mockFileHandle = createMockFileHandle(fileContent);
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
+            sinon.stub(fs.promises, 'open').resolves(mockFileHandle as unknown as fs.promises.FileHandle);
+
+            const uploadedParts: {partNumber: number; size: number}[] = [];
+
+            sendStub.callsFake(async (command: unknown) => {
+                if (command instanceof CreateMultipartUploadCommand) {
+                    return {UploadId: 'test-upload-id'};
+                }
+                if (command instanceof UploadPartCommand) {
+                    const body = command.input.Body as Buffer;
+                    uploadedParts.push({
+                        partNumber: command.input.PartNumber!,
+                        size: body.length
+                    });
+                    return {ETag: `"etag-${command.input.PartNumber}"`};
+                }
+                if (command instanceof CompleteMultipartUploadCommand) {
+                    return {};
+                }
+                return {};
+            });
+
+            await storage.save({
+                path: '/tmp/uneven-file.mp4',
+                name: 'uneven-file.mp4'
+            }, '2024/06');
+
+            // Verify part sizes
+            assert.equal(uploadedParts.length, 2);
+            assert.equal(uploadedParts[0].size, 1024); // First part is full size
+            assert.equal(uploadedParts[1].size, 512); // Last part is smaller
+        });
     });
 });
