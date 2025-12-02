@@ -1,7 +1,7 @@
-import GlobalSettings, {type GlobalSettingValues} from './designAndBranding/global-settings';
+import GlobalSettings, {type GlobalSettingValues} from './design-and-branding/global-settings';
 import React, {useEffect, useState} from 'react';
-import ThemePreview from './designAndBranding/theme-preview';
-import ThemeSettings from './designAndBranding/theme-settings';
+import ThemePreview from './design-and-branding/theme-preview';
+import ThemeSettings from './design-and-branding/theme-settings';
 import useQueryParams from '../../../hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';

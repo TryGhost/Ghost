@@ -12,7 +12,7 @@ import CustomIntegrationModal from '../../settings/advanced/integrations/custom-
 import DesignAndThemeModal from '../../settings/site/design-and-theme-modal';
 // import EditOfferModal from '../../settings/growth/offers/EditOfferModal';
 import EditRecommendationModal from '../../settings/growth/recommendations/edit-recommendation-modal';
-import EmbedSignupFormModal from '../../settings/growth/embedSignup/embed-signup-form-modal';
+import EmbedSignupFormModal from '../../settings/growth/embed-signup/embed-signup-form-modal';
 import FirstPromoterModal from '../../settings/advanced/integrations/first-promoter-modal';
 import HistoryModal from '../../settings/advanced/history-modal';
 import InviteUserModal from '../../settings/general/invite-user-modal';

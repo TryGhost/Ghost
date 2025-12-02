@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {facebookHandleToUrl, facebookUrlToHandle, validateFacebookUrl} from '../../../src/utils/socialUrls/index';
+import {facebookHandleToUrl, facebookUrlToHandle, validateFacebookUrl} from '@src/utils/social-urls/index';
 
 describe('Facebook URLs', () => {
     describe('URL validation', () => {
@@ -38,4 +38,4 @@ describe('Facebook URLs', () => {
             assert.equal(facebookUrlToHandle('facebook.com/my\nPage'), null);
         });
     });
-}); 
+});
