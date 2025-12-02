@@ -618,6 +618,15 @@ DataGenerator.Content = {
             id: '6193c6dfe792de832cd08149',
             name: 'injection',
             slug: 'injection'
+        },
+        {
+            id: '6193c6dfe792de832cd08150',
+            name: 'Tag with images',
+            slug: 'tag-with-images',
+            feature_image: '__GHOST_URL__/content/images/tag-feature.jpg',
+            og_image: '__GHOST_URL__/content/images/tag-og.jpg',
+            twitter_image: '__GHOST_URL__/content/images/tag-twitter.jpg',
+            description: 'A tag with all image types for testing URL transformations'
         }
     ],
 
@@ -941,6 +950,24 @@ DataGenerator.Content = {
             show_badge: true,
             sort_order: 2,
             header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'New Newsletter',
+            slug: 'new-newsletter',
+            description: 'Newsletter for testing URL transformations',
+            sender_name: 'Ghost Testing',
+            sender_email: 'test@example.com',
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: false,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 3,
+            header_image: '__GHOST_URL__/content/images/newsletter-header.jpg'
         }
     ],
 
@@ -2143,7 +2170,8 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[1]),
         createTag(DataGenerator.Content.tags[2]),
         createTag(DataGenerator.Content.tags[3]),
-        createTag(DataGenerator.Content.tags[4])
+        createTag(DataGenerator.Content.tags[4]),
+        createTag(DataGenerator.Content.tags[5])
     ];
 
     const roles = [
@@ -2556,7 +2584,8 @@ DataGenerator.forKnex = (function () {
     const newsletters = [
         createNewsletter(DataGenerator.Content.newsletters[0]),
         createNewsletter(DataGenerator.Content.newsletters[1]),
-        createNewsletter(DataGenerator.Content.newsletters[2])
+        createNewsletter(DataGenerator.Content.newsletters[2]),
+        createNewsletter(DataGenerator.Content.newsletters[3])
 
     ];
 
