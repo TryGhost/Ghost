@@ -90,7 +90,7 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
                 value: value,
                 // Add a custom icon element that shows the count badge
                 icon: (
-                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                    <span className="order-2 font-mono text-xs text-muted-foreground">
                         {visits.toLocaleString()}
                     </span>
                 )
@@ -156,7 +156,7 @@ const useSourceOptions = (currentFilters: Filter[] = []) => {
                 value,
                 // Add a custom icon element that shows the count badge
                 icon: (
-                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                    <span className="order-2 font-mono text-xs text-muted-foreground">
                         {visits.toLocaleString()}
                     </span>
                 )
@@ -383,7 +383,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmSourceOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_medium',
@@ -395,7 +396,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_campaign',
@@ -407,7 +409,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_content',
@@ -419,7 +422,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_term',
@@ -431,7 +435,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             }
         ] : [];
 
@@ -474,7 +479,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
-                        searchable: true
+                        searchable: true,
+                        selectedOptionsClassName: 'hidden'
                     }
                 ]
             },
