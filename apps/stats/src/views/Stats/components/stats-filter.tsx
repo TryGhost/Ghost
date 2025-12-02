@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS} from '@src/utils/constants';
-import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
+import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
 import {useAppContext} from '@src/app';
@@ -597,18 +597,41 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         ];
     }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions, locationOptions]);
 
+    // Show clear button when there's at least one filter
+    const hasFilters = filters.length > 0;
+
+    const handleClearFilters = useCallback(() => {
+        if (onChange) {
+            onChange([]);
+        }
+        // Reset audience to default (all audiences)
+        setAudience(ALL_AUDIENCES);
+    }, [onChange, setAudience, ALL_AUDIENCES]);
+
     return (
-        <Filters
-            addButtonIcon={<LucideIcon.FunnelPlus />}
-            addButtonText='Filter'
-            className='mb-6 [&>button]:order-last'
-            fields={groupedFields}
-            filters={filters}
-            showSearchInput={false}
-            // size='sm'
-            onChange={handleFilterChange}
-            {...props}
-        />
+        <div className="mb-6 flex justify-between gap-2">
+            <Filters
+                addButtonIcon={<LucideIcon.FunnelPlus />}
+                addButtonText='Filter'
+                className='[&>button]:order-last'
+                fields={groupedFields}
+                filters={filters}
+                showSearchInput={false}
+                // size='sm'
+                onChange={handleFilterChange}
+                {...props}
+            />
+            {hasFilters && (
+                <Button
+                    className='font-normal text-muted-foreground'
+                    variant="ghost"
+                    onClick={handleClearFilters}
+                >
+                    <LucideIcon.FunnelX />
+                    Clear
+                </Button>
+            )}
+        </div>
     );
 };
 
