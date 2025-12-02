@@ -18,40 +18,113 @@ interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'f
     onChange?: (filters: Filter[]) => void;
 }
 
-interface UtmOption {
-    utm_source?: string;
-    utm_medium?: string;
-    utm_campaign?: string;
-    utm_content?: string;
-    utm_term?: string;
-    visits: number;
+// Helper to get country name from code
+const getCountryName = (code: string): string => {
+    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+};
+
+// Helper component for visit count badge - used by all filter options
+const VisitCountBadge = ({visits}: {visits: number}) => (
+    <span className="order-2 font-mono text-xs text-muted-foreground">
+        {visits.toLocaleString()}
+    </span>
+);
+
+// Configuration for each filter field type
+interface FilterFieldDefinition {
+    endpoint: string;
+    valueKey: string;
+    // Transform value and get display label
+    transformValue?: (value: string) => {value: string; label: string};
+    // Filter out invalid items from API response
+    filterItem?: (item: Record<string, unknown>) => boolean;
 }
 
-interface SourceOption {
-    source?: string;
-    visits: number;
-}
+const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
+    utm_source: {
+        endpoint: 'api_top_utm_sources',
+        valueKey: 'utm_source',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_medium: {
+        endpoint: 'api_top_utm_mediums',
+        valueKey: 'utm_medium',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_campaign: {
+        endpoint: 'api_top_utm_campaigns',
+        valueKey: 'utm_campaign',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_content: {
+        endpoint: 'api_top_utm_contents',
+        valueKey: 'utm_content',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    utm_term: {
+        endpoint: 'api_top_utm_terms',
+        valueKey: 'utm_term',
+        transformValue: v => ({value: v || '(not set)', label: v || '(not set)'})
+    },
+    source: {
+        endpoint: 'api_top_sources',
+        valueKey: 'source',
+        transformValue: v => ({
+            value: v || '',
+            label: v || 'Direct'
+        })
+    },
+    location: {
+        endpoint: 'api_top_locations',
+        valueKey: 'location',
+        filterItem(item) {
+            const location = String(item.location || '');
+            return location !== '' && !UNKNOWN_LOCATION_VALUES.includes(location);
+        },
+        transformValue: v => ({value: v, label: getCountryName(v)})
+    }
+};
 
-interface LocationOption {
-    location?: string;
-    visits: number;
-}
+// Build filter params for Tinybird API, excluding the specified field to avoid circular filtering
+const buildFilterParams = (
+    currentFilters: Filter[],
+    excludeField: string,
+    baseParams: Record<string, string>
+): Record<string, string> => {
+    const params = {...baseParams};
 
-// Hook to fetch UTM options from Tinybird
-// Data is contextual - results are filtered based on currently applied filters
-const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) => {
+    currentFilters.forEach((filter) => {
+        if (filter.field === excludeField || filter.values.length === 0) {
+            return;
+        }
+
+        const value = filter.values[0] as string;
+
+        if (filter.field === 'post') {
+            // Determine if the value is a post_uuid or a pathname
+            if (value.startsWith('/')) {
+                params.pathname = value;
+            } else {
+                params.post_uuid = value;
+            }
+        } else if (filter.field === 'audience') {
+            // Skip audience - handled separately via member_status
+            return;
+        } else if (filter.field === 'source' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+            params[filter.field] = value;
+        }
+    });
+
+    return params;
+};
+
+// Generic hook to fetch filter options from Tinybird
+// Handles the common pattern: fetch data, transform to options, ensure selected value is included
+const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = []) => {
     const {statsConfig, range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    const endpointMap: Record<string, string> = {
-        utm_source: 'api_top_utm_sources',
-        utm_medium: 'api_top_utm_mediums',
-        utm_campaign: 'api_top_utm_campaigns',
-        utm_content: 'api_top_utm_contents',
-        utm_term: 'api_top_utm_terms'
-    };
-
-    const endpoint = endpointMap[fieldKey] || '';
+    const definition = FILTER_FIELD_DEFINITIONS[fieldKey];
 
     // Build params including filters from other fields
     const params = useMemo(() => {
@@ -64,229 +137,63 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
             limit: '50'
         };
 
-        // Add filters from currently applied filters (excluding the current field to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                baseParams.post_uuid = filter.values[0] as string;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                baseParams.source = filter.values[0] as string;
-            } else if (filter.field !== fieldKey && filter.field.startsWith('utm_') && filter.values.length > 0) {
-                // Add other UTM filters
-                baseParams[filter.field] = filter.values[0] as string;
-            }
-        });
-
-        return baseParams;
+        return buildFilterParams(currentFilters, fieldKey, baseParams);
     }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey]);
 
     const {data, loading} = useTinybirdQuery({
-        endpoint,
+        endpoint: definition?.endpoint || '',
         statsConfig,
         params,
-        enabled: !!endpoint
+        enabled: !!definition
     });
 
     const options = useMemo(() => {
-        if (!data) {
+        if (!definition) {
             return [];
         }
 
-        return (data as unknown as UtmOption[]).map((item: UtmOption) => {
-            const value = String(item[fieldKey as keyof UtmOption] || '(not set)');
-            const visits = item.visits || 0;
-            return {
-                label: value,
-                value: value,
-                // Add a custom icon element that shows the count badge
-                icon: (
-                    <span className="order-2 font-mono text-xs text-muted-foreground">
-                        {visits.toLocaleString()}
-                    </span>
-                )
-            };
-        });
-    }, [data, fieldKey]);
+        const items = (data as unknown as Array<Record<string, unknown>>) || [];
 
-    return {options, loading};
-};
+        // Filter and transform items
+        return items
+            .filter(item => (definition.filterItem ? definition.filterItem(item) : true))
+            .map((item) => {
+                const rawValue = String(item[definition.valueKey] ?? '');
+                const visits = Number(item.visits) || 0;
+                const {value, label} = definition.transformValue
+                    ? definition.transformValue(rawValue)
+                    : {value: rawValue, label: rawValue};
 
-// Hook to fetch source options from Tinybird
-// Data is contextual - results are filtered based on currently applied filters
-const useSourceOptions = (currentFilters: Filter[] = []) => {
-    const {statsConfig, range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // Build params including filters from other fields
-    const params = useMemo(() => {
-        const baseParams: Record<string, string> = {
-            site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            timezone: timezone,
-            member_status: getAudienceQueryParam(audience),
-            limit: '50'
-        };
-
-        // Add filters from currently applied filters (excluding source to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                baseParams.post_uuid = filter.values[0] as string;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                // Skip source filter to avoid circular filtering
-                return;
-            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
-                baseParams[filter.field] = filter.values[0] as string;
-            }
-        });
-
-        return baseParams;
-    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters]);
-
-    const {data, loading} = useTinybirdQuery({
-        endpoint: 'api_top_sources',
-        statsConfig,
-        params,
-        enabled: true
-    });
-
-    const options = useMemo(() => {
-        if (!data) {
-            return [];
-        }
-
-        return (data as unknown as SourceOption[]).map((item: SourceOption) => {
-            // For empty/null sources, use empty string as value (for Tinybird) but display "Direct"
-            const isEmpty = !item.source;
-            const value = isEmpty ? '' : String(item.source);
-            const label = isEmpty ? 'Direct' : String(item.source);
-            const visits = item.visits || 0;
-            return {
-                label,
-                value,
-                // Add a custom icon element that shows the count badge
-                icon: (
-                    <span className="order-2 font-mono text-xs text-muted-foreground">
-                        {visits.toLocaleString()}
-                    </span>
-                )
-            };
-        });
-    }, [data]);
-
-    return {options, loading};
-};
-
-// Hook to fetch location options from Tinybird
-// Data is contextual - results are filtered based on currently applied filters
-// Only returns locations that actually have visits in the selected time period
-const useLocationOptions = (currentFilters: Filter[] = []) => {
-    const {statsConfig, range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // Helper function to get country name
-    const getCountryName = useCallback((code: string): string => {
-        return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
-    }, []);
-
-    // Build params including filters from other fields
-    const params = useMemo(() => {
-        const baseParams: Record<string, string> = {
-            site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            timezone: timezone,
-            member_status: getAudienceQueryParam(audience),
-            limit: '50'
-        };
-
-        // Add filters from currently applied filters (excluding location to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                baseParams.post_uuid = filter.values[0] as string;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                baseParams.source = filter.values[0] as string;
-            } else if (filter.field === 'location' && filter.values.length > 0) {
-                // Skip location filter to avoid circular filtering
-                return;
-            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
-                baseParams[filter.field] = filter.values[0] as string;
-            }
-        });
-
-        return baseParams;
-    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters]);
-
-    const {data, loading} = useTinybirdQuery({
-        endpoint: 'api_top_locations',
-        statsConfig,
-        params,
-        enabled: true
-    });
-
-    const options = useMemo(() => {
-        if (!data) {
-            return [];
-        }
-
-        return (data as unknown as LocationOption[])
-            .filter((item: LocationOption) => {
-                // Filter out NULL/empty locations
-                const location = String(item.location || '');
-                return location && !UNKNOWN_LOCATION_VALUES.includes(location);
-            })
-            .map((item: LocationOption) => {
-                const locationCode = String(item.location || '');
-                const visits = item.visits || 0;
                 return {
-                    label: getCountryName(locationCode),
-                    value: locationCode,
-                    // Add a custom icon element that shows the count badge
-                    icon: (
-                        <span className="order-2 font-mono text-xs text-muted-foreground">
-                            {visits.toLocaleString()}
-                        </span>
-                    )
+                    label,
+                    value,
+                    icon: <VisitCountBadge visits={visits} />
                 };
             });
-    }, [data, getCountryName]);
+    }, [data, definition]);
 
     return {options, loading};
 };
 
-// Hook to fetch posts/pages options from Tinybird via Ghost API
-// Data is contextual - results are filtered based on currently applied filters
-// Only returns posts that have actual visits in the selected time period
+// Hook to fetch posts/pages options from Ghost API (which queries Tinybird and enriches with titles)
+// This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (currentFilters: Filter[] = []) => {
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     // Build query params including filters from other fields (excluding post to avoid circular filtering)
     const queryParams = useMemo(() => {
-        const params: Record<string, string> = {
+        const baseParams: Record<string, string> = {
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
             member_status: getAudienceQueryParam(audience)
         };
 
         if (timezone) {
-            params.timezone = timezone;
+            baseParams.timezone = timezone;
         }
 
-        // Add filters from currently applied filters (excluding post to avoid circular filtering)
-        currentFilters.forEach((filter) => {
-            if (filter.field === 'post' && filter.values.length > 0) {
-                // Skip post filter to avoid circular filtering
-                return;
-            } else if (filter.field === 'source' && filter.values.length > 0) {
-                params.source = filter.values[0] as string;
-            } else if (filter.field === 'location' && filter.values.length > 0) {
-                params.location = filter.values[0] as string;
-            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
-                params[filter.field] = filter.values[0] as string;
-            }
-        });
-
-        return params;
+        return buildFilterParams(currentFilters, 'post', baseParams);
     }, [startDate, endDate, timezone, audience, currentFilters]);
 
     // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
@@ -297,13 +204,9 @@ const usePostOptions = (currentFilters: Filter[] = []) => {
     const options = useMemo(() => {
         const stats = topContentData?.stats;
 
-        if (!stats) {
-            return [];
-        }
-
         // Deduplicate items - prefer post_uuid for posts/pages, use pathname for other content
         const seen = new Set<string>();
-        return stats
+        return (stats || [])
             .filter((item) => {
                 // Create a unique key - prefer post_uuid if available, otherwise use pathname
                 const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
@@ -318,19 +221,13 @@ const usePostOptions = (currentFilters: Filter[] = []) => {
             .map((item) => {
                 const visits = item.visits || 0;
                 // Use post_uuid as the filter value if available, otherwise use pathname
-                // The filter logic in web.tsx maps 'post' field to post_uuid param for Tinybird
                 const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
                 const filterValue = hasValidPostUuid ? item.post_uuid! : item.pathname;
 
                 return {
                     label: item.title || item.pathname || '(Untitled)',
                     value: filterValue,
-                    // Add a custom icon element that shows the count badge
-                    icon: (
-                        <span className="order-2 font-mono text-xs text-muted-foreground">
-                            {visits.toLocaleString()}
-                        </span>
-                    )
+                    icon: <VisitCountBadge visits={visits} />
                 };
             });
     }, [topContentData]);
@@ -413,20 +310,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             !expectedValues.every(v => currentValues.includes(v));
 
         if (valuesChanged && onChange) {
-            const otherFilters = filters.filter(f => f.field !== 'audience');
             if (expectedValues.length > 0) {
-                // Keep existing audience filter id if it exists, otherwise create new one
-                onChange([
-                    ...otherFilters,
-                    {
-                        id: audienceFilter.id,
-                        field: 'audience',
-                        operator: 'is',
-                        values: expectedValues
-                    }
-                ]);
+                // Update values in place to preserve filter order
+                onChange(filters.map(f => (f.field === 'audience' ? {
+                    ...f,
+                    values: expectedValues
+                } : f)));
             } else {
-                onChange(otherFilters);
+                // Remove the audience filter
+                onChange(filters.filter(f => f.field !== 'audience'));
             }
         }
     }, [audience, filters, onChange, audienceOptions, setAudience]);
@@ -480,20 +372,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         }, 0);
     }, [audience, setAudience, onChange, filters, ALL_AUDIENCES, audienceOptions]);
 
-    // Fetch options for all UTM fields
-    // Options are contextual - filtered based on currently applied filters (e.g., if a post is selected,
-    // only UTM params used for that post will be shown)
-    const {options: utmSourceOptions} = useUtmOptionsForField('utm_source', filters);
-    const {options: utmMediumOptions} = useUtmOptionsForField('utm_medium', filters);
-    const {options: utmCampaignOptions} = useUtmOptionsForField('utm_campaign', filters);
-    const {options: utmContentOptions} = useUtmOptionsForField('utm_content', filters);
-    const {options: utmTermOptions} = useUtmOptionsForField('utm_term', filters);
-
-    // Fetch source options
-    const {options: sourceOptions} = useSourceOptions(filters);
-
-    // Fetch location options
-    const {options: locationOptions} = useLocationOptions(filters);
+    // Fetch options for all Tinybird-backed fields using the generic hook
+    // Options are contextual - filtered based on currently applied filters
+    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters);
+    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters);
+    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters);
+    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters);
+    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters);
+    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters);
+    const {options: locationOptions} = useTinybirdFilterOptions('location', filters);
 
     // Fetch options for posts - data is contextual based on current filters
     const {options: postOptions, loading: postLoading} = usePostOptions(filters);

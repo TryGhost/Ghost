@@ -55,28 +55,32 @@ function getStableFilterId(field: string): string {
 
 /**
  * Parse URL search params into Filter objects
+ * Preserves the order of params as they appear in the URL
  */
 function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
     const filters: Filter[] = [];
+    const supportedSet = new Set<string>(SUPPORTED_FILTER_FIELDS);
 
-    SUPPORTED_FILTER_FIELDS.forEach((field) => {
-        const value = searchParams.get(field);
-        if (value !== null) {
-            // Split by comma for multi-select values, decoding empty string marker
-            const values = value.split(',')
-                .map(v => (v === EMPTY_VALUE_MARKER ? '' : v));
+    // Iterate in URL order to preserve the sequence filters were added
+    searchParams.forEach((value, field) => {
+        if (!supportedSet.has(field)) {
+            return;
+        }
 
-            if (values.length > 0) {
-                // Use appropriate operator based on field type
-                const operator = field === 'audience' ? 'is any of' : 'is';
-                // Use stable IDs for URL-parsed filters to prevent unnecessary re-renders
-                filters.push({
-                    id: getStableFilterId(field),
-                    field,
-                    operator,
-                    values
-                });
-            }
+        // Split by comma for multi-select values, decoding empty string marker
+        const values = value.split(',')
+            .map(v => (v === EMPTY_VALUE_MARKER ? '' : v));
+
+        if (values.length > 0) {
+            // Use appropriate operator based on field type
+            const operator = field === 'audience' ? 'is any of' : 'is';
+            // Use stable IDs for URL-parsed filters to prevent unnecessary re-renders
+            filters.push({
+                id: getStableFilterId(field),
+                field,
+                operator,
+                values
+            });
         }
     });
 
