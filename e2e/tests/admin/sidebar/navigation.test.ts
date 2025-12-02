@@ -6,7 +6,7 @@ type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
 
 // TODO: Remove this when the ActivityPub backend has been integrated with the E2E tests
 async function mockNotificationCount(page: Page, count: number) {
-    await page.route('**/.ghost/activitypub/v1/notifications/unread/count', async (route) => {
+    await page.route('**/.ghost/activitypub/*/notifications/unread/count', async (route) => {
         await route.fulfill({
             status: 200,
             contentType: 'application/activity+json',

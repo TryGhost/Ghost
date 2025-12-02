@@ -20,14 +20,14 @@ import { useIsActiveLink } from "./useIsActiveLink";
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: settings } = useBrowseSettings();
-    const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled');
+    const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
     const url = site.data?.site.url;
     
     
     // The network app has its own notification state, so we don't want to show
     // multiple indicators when you have navigated there. 
-    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '');
+    const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '', networkEnabled);
     const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
     const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
     const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
