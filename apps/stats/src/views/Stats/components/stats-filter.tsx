@@ -528,11 +528,19 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const hasFilters = filters.length > 0;
 
     const handleClearFilters = useCallback(() => {
+        // Set flag to prevent the useEffect from running during this change
+        isHandlingChange.current = true;
+
         if (onChange) {
             onChange([]);
         }
         // Reset audience to default (all audiences)
         setAudience(ALL_AUDIENCES);
+
+        // Reset flag after a short delay to allow the change to propagate
+        setTimeout(() => {
+            isHandlingChange.current = false;
+        }, 0);
     }, [onChange, setAudience, ALL_AUDIENCES]);
 
     return (
