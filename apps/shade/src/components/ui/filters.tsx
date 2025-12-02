@@ -102,7 +102,7 @@ export interface FilterI18nConfig {
 // Default English i18n configuration
 export const DEFAULT_I18N: FilterI18nConfig = {
     // UI Labels
-    addFilter: 'Add filter',
+    addFilter: '',
     searchFields: 'Search fields...',
     noFieldsFound: 'No fields found.',
     noResultsFound: 'No results found.',
@@ -119,7 +119,7 @@ export const DEFAULT_I18N: FilterI18nConfig = {
     percent: '%',
     defaultCurrency: '$',
     defaultColor: '#000000',
-    addFilterTitle: 'Add filter',
+    addFilterTitle: '',
 
     // Operators
     operators: {
@@ -236,7 +236,7 @@ const filterInputVariants = cva(
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 md: 'h-[34px] px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                sm: 'h-8 px-1.5 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
+                sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
                 true: 'cursor-pointer',
@@ -747,6 +747,8 @@ export interface FilterFieldConfig<T = unknown> {
     // Controlled values support for this field
     value?: T[];
     onValueChange?: (values: T[]) => void;
+    // Auto-close dropdown after selection (even for multiselect types)
+    autoCloseOnSelect?: boolean;
 }
 
 // Helper functions to handle both flat and grouped field configurations
@@ -941,7 +943,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center border-x px-3 text-sm text-muted-foreground">
+            <div className="flex items-center self-stretch border border-r-[0px] px-3 text-sm text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -1046,6 +1048,7 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleClose = () => {
         setOpen(false);
+        setTimeout(() => setSearchInput(''), 200);
         onClose?.();
     };
 
@@ -1128,6 +1131,10 @@ function SelectOptionsPopover<T = unknown>({
                                                     } else {
                                                         onChange(newValues);
                                                     }
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        onClose?.();
+                                                    }
                                                     // For multiselect, don't close the popover to allow multiple selections
                                                 } else {
                                                     if (field.onValueChange) {
@@ -1191,7 +1198,13 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent align="start" className={cn('w-[200px] p-0', field.className)}>
+            <PopoverContent
+                align="start"
+                className={cn(
+                    'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
+                    field.className || 'w-[200px]'
+                )}
+            >
                 <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
@@ -1255,6 +1268,10 @@ function SelectOptionsPopover<T = unknown>({
                                                         return; // Don't exceed max selections
                                                     }
                                                     onChange(newValues);
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        handleClose();
+                                                    }
                                                 } else {
                                                     onChange([option.value] as T[]);
                                                     setOpen(false);
@@ -1625,7 +1642,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent className={cn('w-36 p-0', field.popoverContentClassName)}>
+            <PopoverContent className={cn('w-36 p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0', field.popoverContentClassName)}>
                 <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
@@ -2059,7 +2076,13 @@ export function Filters<T = unknown>({
                                 </button>
                             )}
                         </PopoverTrigger>
-                        <PopoverContent align={popoverAlign} className={cn('w-[200px] p-0', popoverContentClassName)}>
+                        <PopoverContent
+                            align={popoverAlign}
+                            className={cn(
+                                'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
+                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]'
+                            )}
+                        >
                             {selectedFieldForOptions ? (
                                 // Show original select/multiselect rendering without back button
                                 // SelectOptionsPopover renders its own Command component when inline={true}
@@ -2073,7 +2096,11 @@ export function Filters<T = unknown>({
                                         const shouldClosePopover = selectedFieldForOptions.type === 'select';
                                         addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
                                     }}
-                                    onClose={() => setAddFilterOpen(false)}
+                                    onClose={() => {
+                                        setAddFilterOpen(false);
+                                        setSelectedFieldKeyForOptions(null);
+                                        setTempSelectedValues([]);
+                                    }}
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
