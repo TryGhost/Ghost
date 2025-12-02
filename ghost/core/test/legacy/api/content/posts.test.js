@@ -118,7 +118,7 @@ describe('api/endpoints/content/posts', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
+                jsonResponse.posts.should.have.length(13);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -131,7 +131,7 @@ describe('api/endpoints/content/posts', function () {
                 jsonResponse.meta.pagination.page.should.eql(1);
                 jsonResponse.meta.pagination.limit.should.eql(15);
                 jsonResponse.meta.pagination.pages.should.eql(1);
-                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.total.should.eql(13);
                 jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                 jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                 should.not.exist(jsonResponse.meta.pagination.next);
@@ -159,7 +159,7 @@ describe('api/endpoints/content/posts', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
+                jsonResponse.posts.should.have.length(13);
                 localUtils.API.checkResponse(
                     jsonResponse.posts[0],
                     'post',
@@ -178,7 +178,7 @@ describe('api/endpoints/content/posts', function () {
                 jsonResponse.meta.pagination.page.should.eql(1);
                 jsonResponse.meta.pagination.limit.should.eql(15);
                 jsonResponse.meta.pagination.pages.should.eql(1);
-                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.total.should.eql(13);
                 jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                 jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                 should.not.exist(jsonResponse.meta.pagination.next);

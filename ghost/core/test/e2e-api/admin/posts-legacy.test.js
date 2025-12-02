@@ -52,7 +52,7 @@ describe('Posts API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(13);
+        jsonResponse.posts.should.have.length(15);
         localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -61,12 +61,12 @@ describe('Posts API', function () {
 
         // Ensure default order
         jsonResponse.posts[0].slug.should.eql('scheduled-post');
-        jsonResponse.posts[12].slug.should.eql('html-ipsum');
+        jsonResponse.posts[14].slug.should.eql('html-ipsum');
 
         // Absolute urls by default
         jsonResponse.posts[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
         jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
-        jsonResponse.posts[11].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
+        jsonResponse.posts[13].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
 
         jsonResponse.posts[0].tags.length.should.eql(0);
         jsonResponse.posts[2].tags.length.should.eql(1);
@@ -114,7 +114,7 @@ describe('Posts API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.posts);
         localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(13);
+        jsonResponse.posts.should.have.length(15);
         localUtils.API.checkResponse(
             jsonResponse.posts[0],
             'post',
