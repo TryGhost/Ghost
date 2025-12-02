@@ -345,6 +345,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Track if we're currently handling a filter change to prevent loops
     const isHandlingChange = useRef(false);
 
+    // Track if this is the initial mount - we don't want to overwrite URL-loaded filters
+    const isInitialMount = useRef(true);
+
     // Filter audience options based on site settings
     const audienceOptions = useMemo(() => {
         const options = [
@@ -377,6 +380,27 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             return;
         }
 
+        // On initial mount with URL filter, sync filter → global state
+        // Check if this filter came from URL (has 'url-' prefix in id)
+        const isFromUrl = audienceFilter.id.startsWith('url-');
+
+        if (isInitialMount.current && isFromUrl) {
+            isInitialMount.current = false;
+
+            // Convert filter values to bitmask and update global state
+            const newAudience = audienceOptions
+                .filter(opt => audienceFilter.values.includes(opt.value))
+                .reduce((acc, opt) => acc | opt.bit, 0);
+
+            if (newAudience > 0 && newAudience !== audience) {
+                setAudience(newAudience);
+            }
+            return;
+        }
+
+        // After initial mount, mark as done
+        isInitialMount.current = false;
+
         const currentValues = audienceFilter?.values || [];
 
         // Convert global audience bitmask to filter values using available options
@@ -405,7 +429,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 onChange(otherFilters);
             }
         }
-    }, [audience, filters, onChange, audienceOptions]);
+    }, [audience, filters, onChange, audienceOptions, setAudience]);
 
     // Handle filter changes - update global audience when audience filter changes
     const handleFilterChange = useCallback((newFilters: Filter[]) => {

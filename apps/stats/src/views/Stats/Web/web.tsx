@@ -1,7 +1,7 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
@@ -9,10 +9,11 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
 interface SourcesData {
@@ -53,44 +54,9 @@ const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
-    const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
 
-    // Sync audience filter values when global audience state changes
-    // Note: We never automatically create or remove the audience filter here.
-    // The filter is created when the user explicitly adds it via StatsFilter UI,
-    // and removed when the user explicitly removes it (via the X button).
-    // This ensures the filter stays visible even when all options are selected.
-    useEffect(() => {
-        setUtmFilters((prevFilters) => {
-            // Check if audience filter already exists
-            const audienceFilter = prevFilters.find(f => f.field === 'audience');
-
-            // Only update if the filter already exists - don't auto-create or auto-remove
-            if (audienceFilter) {
-                const audienceValues: string[] = [];
-                if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
-                    audienceValues.push('undefined');
-                }
-                if ((audience & AUDIENCE_BITS.FREE) !== 0) {
-                    audienceValues.push('free');
-                }
-                if ((audience & AUDIENCE_BITS.PAID) !== 0) {
-                    audienceValues.push('paid');
-                }
-
-                // Update the filter values to match the global audience state
-                return prevFilters.map((f) => {
-                    if (f.field === 'audience') {
-                        return {...f, values: audienceValues};
-                    }
-                    return f;
-                });
-            }
-
-            // No changes needed - filter doesn't exist
-            return prevFilters;
-        });
-    }, [audience]); // Only depend on audience, not utmFilters to avoid loops
+    // Use URL-synced filter state for bookmarking and sharing
+    const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
@@ -158,7 +124,7 @@ const Web: React.FC = () => {
             // Add a new location filter
             setUtmFilters(prevFilters => [...prevFilters, createFilter('location', 'is', [location])]);
         }
-    }, [utmFilters]);
+    }, [utmFilters, setUtmFilters]);
 
     // Handler for clicking on a source in the SourcesCard
     const handleSourceClick = useCallback((source: string) => {
@@ -178,7 +144,7 @@ const Web: React.FC = () => {
             // Add a new source filter
             setUtmFilters(prevFilters => [...prevFilters, createFilter('source', 'is', [source])]);
         }
-    }, [utmFilters]);
+    }, [utmFilters, setUtmFilters]);
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
