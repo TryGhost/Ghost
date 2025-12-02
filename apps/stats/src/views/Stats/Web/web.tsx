@@ -9,8 +9,8 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {ALL_AUDIENCES, AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {Card, CardContent, Filter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -55,17 +55,18 @@ const Web: React.FC = () => {
     const {appSettings} = useAppContext();
     const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
 
-    // Initialize filters based on current audience state when component mounts or audience changes
-    // Only create audience filter if audience is not the default "all audiences" state
+    // Sync audience filter values when global audience state changes
+    // Note: We never automatically create or remove the audience filter here.
+    // The filter is created when the user explicitly adds it via StatsFilter UI,
+    // and removed when the user explicitly removes it (via the X button).
+    // This ensures the filter stays visible even when all options are selected.
     useEffect(() => {
-        const isDefaultAudience = audience === ALL_AUDIENCES;
-
         setUtmFilters((prevFilters) => {
             // Check if audience filter already exists
-            const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
+            const audienceFilter = prevFilters.find(f => f.field === 'audience');
 
-            // If audience is not default and filter doesn't exist, create it
-            if (!isDefaultAudience && !hasAudienceFilter) {
+            // Only update if the filter already exists - don't auto-create or auto-remove
+            if (audienceFilter) {
                 const audienceValues: string[] = [];
                 if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
                     audienceValues.push('undefined');
@@ -77,17 +78,16 @@ const Web: React.FC = () => {
                     audienceValues.push('paid');
                 }
 
-                if (audienceValues.length > 0) {
-                    return [...prevFilters, createFilter('audience', 'is', audienceValues)];
-                }
+                // Update the filter values to match the global audience state
+                return prevFilters.map((f) => {
+                    if (f.field === 'audience') {
+                        return {...f, values: audienceValues};
+                    }
+                    return f;
+                });
             }
 
-            // If audience is default and filter exists, remove it
-            if (isDefaultAudience && hasAudienceFilter) {
-                return prevFilters.filter(f => f.field !== 'audience');
-            }
-
-            // No changes needed
+            // No changes needed - filter doesn't exist
             return prevFilters;
         });
     }, [audience]); // Only depend on audience, not utmFilters to avoid loops

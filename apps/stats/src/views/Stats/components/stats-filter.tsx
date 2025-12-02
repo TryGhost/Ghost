@@ -335,12 +335,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         return audienceOptions.reduce((acc, opt) => acc | opt.bit, 0);
     }, [audienceOptions]);
 
-    const isDefaultAudience = audience === ALL_AUDIENCES;
-
-    // Only sync global audience to filter if:
-    // 1. The audience filter already exists (user has interacted with it), OR
-    // 2. The global audience is NOT the default "all" state
-    // This prevents showing the filter by default when all audiences are selected
+    // Only sync global audience to filter if the audience filter already exists
+    // This prevents showing the filter by default, but keeps it visible once user adds it
+    // (even if all options are selected - that's still a valid user choice to display)
     useEffect(() => {
         // Don't sync if we're in the middle of handling a filter change
         if (isHandlingChange.current) {
@@ -349,13 +346,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
         const audienceFilter = filters.find(f => f.field === 'audience');
 
-        // Don't create the filter if it doesn't exist and we're in default "all" state
-        if (!audienceFilter && isDefaultAudience) {
-            return;
-        }
-
-        // Don't sync if there's no audience filter - this prevents creating it
-        // when other filters change
+        // Don't create the filter if it doesn't exist - it should only be created
+        // when the user explicitly adds it via the filter UI
         if (!audienceFilter) {
             return;
         }
@@ -388,7 +380,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 onChange(otherFilters);
             }
         }
-    }, [audience, isDefaultAudience, filters, onChange, audienceOptions]);
+    }, [audience, filters, onChange, audienceOptions]);
 
     // Handle filter changes - update global audience when audience filter changes
     const handleFilterChange = useCallback((newFilters: Filter[]) => {
