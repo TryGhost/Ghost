@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {AUDIENCE_BITS} from '@src/utils/constants';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
@@ -7,6 +9,8 @@ import {useAppContext} from '@src/app';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+
+countries.registerLocale(enLocale);
 
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
@@ -25,6 +29,11 @@ interface UtmOption {
 
 interface SourceOption {
     source?: string;
+    visits: number;
+}
+
+interface LocationOption {
+    location?: string;
     visits: number;
 }
 
@@ -163,6 +172,86 @@ const useSourceOptions = (currentFilters: Filter[] = []) => {
             };
         });
     }, [data]);
+
+    return {options, loading};
+};
+
+// Hook to fetch location options from Tinybird
+// Data is contextual - results are filtered based on currently applied filters
+// Only returns locations that actually have visits in the selected time period
+const useLocationOptions = (currentFilters: Filter[] = []) => {
+    const {statsConfig, range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
+
+    // Helper function to get country name
+    const getCountryName = useCallback((code: string): string => {
+        return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+    }, []);
+
+    // Build params including filters from other fields
+    const params = useMemo(() => {
+        const baseParams: Record<string, string> = {
+            site_uuid: statsConfig?.id || '',
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
+            timezone: timezone,
+            member_status: getAudienceQueryParam(audience),
+            limit: '50'
+        };
+
+        // Add filters from currently applied filters (excluding location to avoid circular filtering)
+        currentFilters.forEach((filter) => {
+            if (filter.field === 'post' && filter.values.length > 0) {
+                baseParams.post_uuid = filter.values[0] as string;
+            } else if (filter.field === 'source' && filter.values.length > 0) {
+                baseParams.source = filter.values[0] as string;
+            } else if (filter.field === 'location' && filter.values.length > 0) {
+                // Skip location filter to avoid circular filtering
+                return;
+            } else if (filter.field.startsWith('utm_') && filter.values.length > 0) {
+                baseParams[filter.field] = filter.values[0] as string;
+            }
+        });
+
+        return baseParams;
+    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters]);
+
+    const {data, loading} = useTinybirdQuery({
+        endpoint: 'api_top_locations',
+        statsConfig,
+        params,
+        enabled: true
+    });
+
+    const options = useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        // Array of values that represent unknown locations
+        const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
+
+        return (data as unknown as LocationOption[])
+            .filter((item: LocationOption) => {
+                // Filter out NULL/empty locations
+                const location = String(item.location || '');
+                return location && !UNKNOWN_LOCATIONS.includes(location);
+            })
+            .map((item: LocationOption) => {
+                const locationCode = String(item.location || '');
+                const visits = item.visits || 0;
+                return {
+                    label: getCountryName(locationCode),
+                    value: locationCode,
+                    // Add a custom icon element that shows the count badge
+                    icon: (
+                        <span className="order-2 font-mono text-xs text-muted-foreground">
+                            {visits.toLocaleString()}
+                        </span>
+                    )
+                };
+            });
+    }, [data, getCountryName]);
 
     return {options, loading};
 };
@@ -362,6 +451,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Fetch source options
     const {options: sourceOptions} = useSourceOptions(filters);
 
+    // Fetch location options
+    const {options: locationOptions} = useLocationOptions(filters);
+
     // Fetch options for posts with search support
     const {options: postOptions, loading: postLoading, setSearchQuery} = usePostOptions();
 
@@ -482,6 +574,19 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         options: sourceOptions,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
+                    },
+                    {
+                        key: 'location',
+                        label: 'Location',
+                        type: 'select',
+                        icon: <LucideIcon.MapPin className="size-4" />,
+                        placeholder: 'Select location',
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: locationOptions,
+                        searchable: true,
+                        selectedOptionsClassName: 'hidden'
                     }
                 ]
             },
@@ -490,7 +595,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, setSearchQuery, audienceOptions, sourceOptions, locationOptions]);
 
     return (
         <Filters
