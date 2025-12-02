@@ -218,7 +218,7 @@ export default class S3Storage extends StorageBase {
                     });
 
                     uploadedBytes += bytesRead;
-                    partNumber++;
+                    partNumber += 1;
 
                     const progress = Math.round((uploadedBytes / fileSize) * 100);
                     logging.info(`Uploaded part ${partNumber - 1}/${Math.ceil(fileSize / this.partSize)} (${progress}%)`);
@@ -239,7 +239,6 @@ export default class S3Storage extends StorageBase {
 
             logging.info(`Multipart upload completed: ${parts.length} parts`);
             return `${this.cdnUrl}/${key}`;
-
         } catch (error) {
             // Abort multipart upload on error to clean up
             if (uploadId) {
