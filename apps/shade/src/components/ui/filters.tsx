@@ -1270,7 +1270,6 @@ function SelectOptionsPopover<T = unknown>({
                                                     onChange(newValues);
                                                     // Auto-close if configured
                                                     if (field.autoCloseOnSelect) {
-                                                        setOpen(false);
                                                         handleClose();
                                                     }
                                                 } else {
