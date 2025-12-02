@@ -7,11 +7,13 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     invalidStatus: 'Status must be one of: inactive, active',
     invalidLexical: 'Lexical must be a valid JSON string',
-    invalidName: 'Name must be "member-welcome-email"'
+    invalidSlug: 'Slug must be one of: member-welcome-email-free, member-welcome-email-paid',
+    invalidName: 'Name must be one of: Welcome Email (Free), Welcome Email (Paid)'
 };
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
-const ALLOWED_NAMES = ['member-welcome-email'];
+const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
+const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
 
 const validateAutomatedEmail = async function (frame, options = {}) {
     if (!frame.data.automated_emails || !frame.data.automated_emails[0]) {
@@ -25,6 +27,13 @@ const validateAutomatedEmail = async function (frame, options = {}) {
         return Promise.reject(new ValidationError({
             message: tpl(messages.invalidStatus),
             property: 'status'
+        }));
+    }
+
+    if (data.slug && !ALLOWED_SLUGS.includes(data.slug)) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.invalidSlug),
+            property: 'slug'
         }));
     }
 
