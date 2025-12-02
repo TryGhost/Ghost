@@ -97,6 +97,7 @@ export default defineConfig({
       "t",
       "*.t"
     ],
+    "indentation": '    ',
     "transComponents": [
       "Trans"
     ],
