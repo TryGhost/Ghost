@@ -206,7 +206,7 @@ describe('api/endpoints/content/posts', function () {
                 }
                 const jsonResponse = res.body;
 
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
+                jsonResponse.posts.should.be.an.Array().with.lengthOf(13);
 
                 done();
             });
