@@ -65,32 +65,6 @@ const controller = {
         permissions: true,
         async query(frame) {
             const data = frame.data.automated_emails[0];
-
-            // Validate status
-            if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.invalidStatus)
-                });
-            }
-
-            // Validate name
-            if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.invalidName)
-                });
-            }
-
-            // Validate lexical is valid JSON
-            if (data.lexical) {
-                try {
-                    JSON.parse(data.lexical);
-                } catch (e) {
-                    throw new errors.ValidationError({
-                        message: tpl(messages.invalidLexical)
-                    });
-                }
-            }
-
             return models.AutomatedEmail.add(data, frame.options);
         }
     },
@@ -112,32 +86,6 @@ const controller = {
         permissions: true,
         async query(frame) {
             const data = frame.data.automated_emails[0];
-
-            // Validate status
-            if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.invalidStatus)
-                });
-            }
-
-            // Validate name
-            if (data.name && !ALLOWED_NAMES.includes(data.name)) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.invalidName)
-                });
-            }
-
-            // Validate lexical is valid JSON
-            if (data.lexical) {
-                try {
-                    JSON.parse(data.lexical);
-                } catch (e) {
-                    throw new errors.ValidationError({
-                        message: tpl(messages.invalidLexical)
-                    });
-                }
-            }
-
             const model = await models.AutomatedEmail.edit(data, frame.options);
             if (!model) {
                 throw new errors.NotFoundError({
