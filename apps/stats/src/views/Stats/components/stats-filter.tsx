@@ -495,12 +495,12 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     return (
         <Filters
             addButtonIcon={<LucideIcon.FunnelPlus />}
-            addButtonText={filters.length ? '' : ''}
+            addButtonText='Filter'
             className='mb-6 [&>button]:order-last'
             fields={groupedFields}
             filters={filters}
             showSearchInput={false}
-            size='sm'
+            // size='sm'
             onChange={handleFilterChange}
             {...props}
         />

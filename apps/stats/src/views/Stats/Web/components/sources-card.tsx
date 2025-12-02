@@ -106,7 +106,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 11);
+    const topSources = extendedData.slice(0, 6);
 
     // Generate description based on mode and range
     const title = 'Top sources';

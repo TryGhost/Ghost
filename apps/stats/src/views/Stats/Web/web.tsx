@@ -1,5 +1,6 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
+import LocationsCard from '../Locations/components/locations-card';
 import React, {useEffect, useMemo, useState} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/stats-filter';
@@ -167,6 +168,13 @@ const Web: React.FC = () => {
         params
     });
 
+    // Get top locations data
+    const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
+        endpoint: 'api_top_locations',
+        statsConfig,
+        params
+    });
+
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
 
@@ -218,6 +226,11 @@ const Web: React.FC = () => {
                         totalVisitors={totalVisitors}
                     />
                 </div>
+                <LocationsCard
+                    data={locationsData}
+                    isLoading={isLocationsLoading}
+                    range={range}
+                />
             </StatsView>
         </StatsLayout>
     );

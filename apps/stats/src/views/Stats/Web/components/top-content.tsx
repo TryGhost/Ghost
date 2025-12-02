@@ -143,7 +143,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
         }));
     }, [topContentData, totalVisitors]);
 
-    const topContent = transformedData?.slice(0, 10) || [];
+    const topContent = transformedData?.slice(0, 6) || [];
 
     return (
         <Card className='group/datalist' data-testid='top-content-card'>
