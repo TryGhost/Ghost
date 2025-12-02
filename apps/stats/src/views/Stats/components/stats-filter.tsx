@@ -451,7 +451,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         icon: <LucideIcon.Users />,
                         options: audienceOptions.map(({value, label, icon}) => ({value, label, icon})),
                         defaultOperator: 'is any of',
-                        hideOperatorSelect: true
+                        hideOperatorSelect: true,
+                        autoCloseOnSelect: true
                     },
                     {
                         key: 'post',

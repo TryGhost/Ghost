@@ -747,6 +747,8 @@ export interface FilterFieldConfig<T = unknown> {
     // Controlled values support for this field
     value?: T[];
     onValueChange?: (values: T[]) => void;
+    // Auto-close dropdown after selection (even for multiselect types)
+    autoCloseOnSelect?: boolean;
 }
 
 // Helper functions to handle both flat and grouped field configurations
@@ -1046,6 +1048,7 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleClose = () => {
         setOpen(false);
+        setTimeout(() => setSearchInput(''), 200);
         onClose?.();
     };
 
@@ -1127,6 +1130,10 @@ function SelectOptionsPopover<T = unknown>({
                                                         field.onValueChange(newValues);
                                                     } else {
                                                         onChange(newValues);
+                                                    }
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        onClose?.();
                                                     }
                                                     // For multiselect, don't close the popover to allow multiple selections
                                                 } else {
@@ -1255,6 +1262,11 @@ function SelectOptionsPopover<T = unknown>({
                                                         return; // Don't exceed max selections
                                                     }
                                                     onChange(newValues);
+                                                    // Auto-close if configured
+                                                    if (field.autoCloseOnSelect) {
+                                                        setOpen(false);
+                                                        handleClose();
+                                                    }
                                                 } else {
                                                     onChange([option.value] as T[]);
                                                     setOpen(false);
