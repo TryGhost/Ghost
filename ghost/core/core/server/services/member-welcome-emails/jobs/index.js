@@ -21,7 +21,7 @@ module.exports = {
 
         jobsService.addJob({
             at: cronSchedule,
-            job: path.resolve(__dirname, 'process-outbox.js'),
+            job: path.resolve(__dirname, 'member-welcome-email-job.js'),
             name: 'process-member-welcome-emails'
         });
 
