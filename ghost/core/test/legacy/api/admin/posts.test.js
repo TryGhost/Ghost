@@ -172,8 +172,8 @@ describe('Posts API', function () {
                     jsonResponse.posts.should.have.length(15);
 
                     should.equal(jsonResponse.posts[0].meta_description, null);
-                    jsonResponse.posts[12].slug.should.equal('short-and-sweet');
-                    jsonResponse.posts[12].meta_description.should.equal('meta description for short and sweet');
+                    jsonResponse.posts[14].slug.should.equal('short-and-sweet');
+                    jsonResponse.posts[14].meta_description.should.equal('meta description for short and sweet');
 
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
