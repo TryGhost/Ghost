@@ -184,8 +184,8 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                 <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
             </CardHeader>
             <CardContent className='p-0'>
-                <div className='flex flex-col lg:grid lg:grid-cols-3 lg:items-stretch'>
-                    <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
+                <div className='flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch'>
+                    <div className='svg-map-container relative mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                         <SVGMap
                             locationClassName={getLocationClassName}
                             map={World}
@@ -212,8 +212,8 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                             </div>
                         )}
                     </div>
-                    <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6' data-testid='visitors-card'>
-                        <DataList className='grow'>
+                    <div className='group/datalist flex flex-col justify-between overflow-hidden px-6' data-testid='visitors-card'>
+                        <DataList className='ml-6 grow'>
                             <DataListHeader className='py-4'>
                                 <DataListHead>Country</DataListHead>
                                 <DataListHead>Visitors</DataListHead>
