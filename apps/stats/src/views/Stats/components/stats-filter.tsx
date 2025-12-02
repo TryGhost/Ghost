@@ -460,6 +460,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         onSearchChange: setSearchQuery,
                         operators: supportedOperators,
                         defaultOperator: 'is',
+                        className: 'w-80',
+                        popoverContentClassName: 'w-80',
                         hideOperatorSelect: true
                     },
                     {

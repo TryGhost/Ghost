@@ -2059,7 +2059,7 @@ export function Filters<T = unknown>({
                                 </button>
                             )}
                         </PopoverTrigger>
-                        <PopoverContent align={popoverAlign} className={cn('w-[200px] p-0', popoverContentClassName)}>
+                        <PopoverContent align={popoverAlign} className={cn('p-0', selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]')}>
                             {selectedFieldForOptions ? (
                                 // Show original select/multiselect rendering without back button
                                 // SelectOptionsPopover renders its own Command component when inline={true}
