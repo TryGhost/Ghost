@@ -26,6 +26,8 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
 
                 await sidebar.goto('/ghost');
 
+                expect(process.env.USE_REACT_SHELL).not.toBeDefined();
+
                 await sidebar.getNavLink(name).click();
 
                 await expect(page).toHaveURL(path);
