@@ -48,7 +48,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                 const measureContainer = measureRef.current;
                 const containerWidth = container.clientWidth;
                 const dropdownWidth = 60; // Space needed for dropdown button
-                const gap = 8; // Gap between items (gap-2)
+                const gap = 6; // Gap between items (gap-1.5)
 
                 // Get all child elements from the measure container
                 const items = Array.from(measureContainer.children) as HTMLElement[];
@@ -142,9 +142,9 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                 {/* Visible container */}
                 <div
                     ref={containerRef}
-                    className="flex w-full min-w-0 flex-1 items-center gap-2"
+                    className="flex w-full min-w-0 flex-1 items-center gap-1.5"
                 >
-                    <div ref={ref} className={cn('flex items-center gap-2 min-w-0', className)} {...props}>
+                    <div ref={ref} className={cn('flex items-center gap-1.5 min-w-0', className)} {...props}>
                         {visibleItems}
                     </div>
 
@@ -208,12 +208,12 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
             <Button
                 ref={ref}
                 className={cn(
-                    'relative rounded-md px-3 font-medium text-gray-800 hover:text-foreground focus-visible:ring-0',
-                    'data-[state=active]:bg-accent data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
+                    'relative h-[30px] rounded-md px-3 text-md font-medium text-gray-800 hover:text-foreground focus-visible:ring-0',
+                    'data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
                     className
                 )}
                 data-state={isActive ? 'active' : undefined}
-                variant="outline"
+                variant="ghost"
                 {...props}
             >
                 {children}

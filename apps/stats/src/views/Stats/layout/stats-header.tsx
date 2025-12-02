@@ -68,41 +68,29 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                 <PageMenu defaultValue={normalizedPath} responsive>
                     <PageMenuItem value="/analytics/" onClick={() => {
                         navigate('/analytics/');
-                    }}>
-                        <LucideIcon.Gauge />
-                        Overview
-                    </PageMenuItem>
+                    }}>Overview</PageMenuItem>
 
                     {appSettings?.analytics.webAnalytics &&
                         <PageMenuItem value="/analytics/web/" onClick={() => {
                             navigate('/analytics/web/');
-                        }}>
-                            <LucideIcon.Globe />
-                            Web traffic
-                        </PageMenuItem>
+                        }}>Web traffic</PageMenuItem>
                     }
 
                     {appSettings?.newslettersEnabled &&
                         <PageMenuItem value="/analytics/newsletters/" onClick={() => {
                             navigate('/analytics/newsletters/');
-                        }}>
-                            <LucideIcon.Mail />
-                            Newsletters
-                        </PageMenuItem>
+                        }}>Newsletters</PageMenuItem>
                     }
 
                     <PageMenuItem value="/analytics/growth/" onClick={() => {
                         navigate('/analytics/growth/');
-                    }}>
-                        <LucideIcon.Sprout />
-                        Growth
-                    </PageMenuItem>
+                    }}>Growth</PageMenuItem>
 
-                    {/* {appSettings?.analytics.webAnalytics && (
+                    {appSettings?.analytics.webAnalytics && (
                         <PageMenuItem value="/analytics/locations/" onClick={() => {
                             navigate('/analytics/locations/');
                         }}>Locations</PageMenuItem>
-                    )} */}
+                    )}
                 </PageMenu>
                 <NavbarActions>
                     {children}
