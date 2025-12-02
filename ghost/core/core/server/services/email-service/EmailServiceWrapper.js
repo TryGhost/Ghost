@@ -59,7 +59,7 @@ class EmailServiceWrapper {
         const mailgunClient = new MailgunClient({
             config: configService, settings: settingsCache, labs
         });
-        const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
+        const i18nLanguage = settingsCache.get('locale') || 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
 
         events.on('settings.locale.edited', (model) => {
