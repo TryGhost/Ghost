@@ -341,11 +341,79 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
+      - name: Install psutil
+        run: pip install psutil
+
+      - name: Start metrics collector
+        run: |
+          cat > monitor.py << 'EOF'
+          import psutil, time, datetime, json, os
+
+          interval = 5  # seconds
+          log_path = "metrics.jsonl"
+
+          with open(log_path, "a") as f:
+              while True:
+                  now = datetime.datetime.utcnow().isoformat() + "Z"
+                  vm = psutil.virtual_memory()
+                  cpu_times_per_core = psutil.cpu_times_percent(interval=None, percpu=True)
+                  load_avg = os.getloadavg()
+                  
+                  # Convert cpu_times_per_core to a list of dicts for JSON serialization
+                  cpu_times_list = []
+                  for i, cpu_times in enumerate(cpu_times_per_core):
+                      cpu_times_list.append({
+                          "core": i,
+                          "user": cpu_times.user,
+                          "system": cpu_times.system,
+                          "idle": cpu_times.idle,
+                          "nice": cpu_times.nice,
+                          "iowait": cpu_times.iowait,
+                          "irq": cpu_times.irq,
+                          "softirq": cpu_times.softirq,
+                          "steal": cpu_times.steal,
+                          "guest": cpu_times.guest,
+                          "guest_nice": cpu_times.guest_nice,
+                      })
+                  
+                  data = {
+                      "time": now,
+                      "cpu_times_per_core": cpu_times_list,
+                      "load_avg_1min": load_avg[0],
+                      "load_avg_5min": load_avg[1],
+                      "mem_used": vm.used,
+                      "mem_total": vm.total,
+                      "mem_percent": vm.percent,
+                  }
+                  f.write(json.dumps(data) + "\n")
+                  f.flush()
+                  time.sleep(interval)
+          EOF
+
+          python monitor.py &
+          echo $! > monitor.pid
+
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
           USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      
+      - name: Stop metrics collector
+        if: always()
+        run: |
+          if [ -f monitor.pid ]; then
+            kill "$(cat monitor.pid)" || true
+          fi
+          echo "Last 20 samples:"
+          tail -n 20 metrics.jsonl
+
+      - name: Upload metrics artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-metrics-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          path: metrics.jsonl
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
