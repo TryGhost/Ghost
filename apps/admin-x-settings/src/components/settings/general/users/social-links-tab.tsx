@@ -28,7 +28,7 @@ import {
     validateYouTubeUrl,
     youtubeHandleToUrl,
     youtubeUrlToHandle
-} from '../../../../utils/socialUrls/index';
+} from '../../../../utils/social-urls/index';
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {

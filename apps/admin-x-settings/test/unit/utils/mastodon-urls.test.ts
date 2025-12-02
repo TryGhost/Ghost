@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {mastodonHandleToUrl, mastodonUrlToHandle, sanitiseMastodonUrl, validateMastodonUrl} from '../../../src/utils/socialUrls/index';
+import {mastodonHandleToUrl, mastodonUrlToHandle, sanitiseMastodonUrl, validateMastodonUrl} from '../../../src/utils/social-urls/index';
 
 describe('Mastodon URL validation', () => {
     it('should return empty string when input is empty', () => {

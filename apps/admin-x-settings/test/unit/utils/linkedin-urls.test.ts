@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {linkedinHandleToUrl, linkedinUrlToHandle, validateLinkedInUrl} from '../../../src/utils/socialUrls/index';
+import {linkedinHandleToUrl, linkedinUrlToHandle, validateLinkedInUrl} from '../../../src/utils/social-urls/index';
 
 describe('LinkedIn URLs', () => {
     describe('URL validation', () => {
@@ -72,4 +72,4 @@ describe('LinkedIn URLs', () => {
             assert.equal(linkedinUrlToHandle('invalid-url'), null);
         });
     });
-}); 
+});

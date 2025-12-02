@@ -1,4 +1,4 @@
-import AnnouncementBarPreview from './announcementBar/announcement-bar-preview';
+import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
