@@ -3,6 +3,7 @@ import path from 'node:path';
 import StorageBase from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import {
     DeleteObjectCommand,
     HeadObjectCommand,
@@ -27,7 +28,10 @@ const messages = {
     emptyTargetPath: 'S3Storage.saveRaw requires a non-empty targetPath',
     emptyFileName: 'S3Storage.{method} requires a non-empty fileName',
     emptyRelativePath: 'S3Storage.buildKey requires a non-empty relativePath',
-    readNotSupported: 'read() is not supported by S3Storage. S3Storage is designed for media and files, not images. Use LocalImagesStorage for image storage.'
+    readNotSupported: 'read() is not supported by S3Storage. S3Storage is designed for media and files, not images. Use LocalImagesStorage for image storage.',
+    multipartUploadInitFailed: 'Failed to initiate file upload.',
+    multipartUploadPartFailed: 'Failed to upload file part {partNumber}.',
+    multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -135,12 +139,12 @@ export default class S3Storage extends StorageBase {
         const stats = await fs.promises.stat(file.path);
 
         if (stats.size >= this.multipartThreshold) {
-            console.log(`Large file (${Math.round(stats.size / 1024 / 1024)}MB), using multipart upload...`);
+            logging.info(`Large file (${Math.round(stats.size / 1024 / 1024)}MB), using multipart upload...`);
             return await this.uploadMultipart(file, key, stats.size);
         }
  
         // Use simple upload for small files (faster, less overhead)
-        console.log(`Small file (${Math.round(stats.size / 1024)}KB), using simple upload...`);
+        logging.info(`Small file (${Math.round(stats.size / 1024)}KB), using simple upload...`);
         const body = await fs.promises.readFile(file.path);
 
         await this.client.send(new PutObjectCommand({
@@ -166,7 +170,9 @@ export default class S3Storage extends StorageBase {
 
             uploadId = createResponse.UploadId;
             if (!uploadId) {
-                throw new Error('Failed to initiate multipart upload');
+                throw new errors.InternalServerError({
+                    message: tpl(messages.multipartUploadInitFailed)
+                });
             }
 
             // Step 2: Upload parts
@@ -186,7 +192,9 @@ export default class S3Storage extends StorageBase {
                     const {bytesRead} = await fileHandle.read(buffer, 0, currentPartSize, uploadedBytes);
                     
                     if (bytesRead === 0) {
-                        break;
+                        throw new errors.InternalServerError({
+                            message: tpl(messages.multipartUploadReadFailed)
+                        });
                     }
 
                     // Upload this part
@@ -199,7 +207,9 @@ export default class S3Storage extends StorageBase {
                     }));
 
                     if (!uploadPartResponse.ETag) {
-                        throw new Error(`Failed to upload part ${partNumber}`);
+                        throw new errors.InternalServerError({
+                            message: tpl(messages.multipartUploadPartFailed, {partNumber})
+                        });
                     }
 
                     parts.push({
@@ -211,7 +221,7 @@ export default class S3Storage extends StorageBase {
                     partNumber++;
 
                     const progress = Math.round((uploadedBytes / fileSize) * 100);
-                    console.log(`Uploaded part ${partNumber - 1}/${Math.ceil(fileSize / this.partSize)} (${progress}%)`);
+                    logging.info(`Uploaded part ${partNumber - 1}/${Math.ceil(fileSize / this.partSize)} (${progress}%)`);
                 }
             } finally {
                 await fileHandle.close();
@@ -227,13 +237,13 @@ export default class S3Storage extends StorageBase {
                 }
             }));
 
-            console.log(`Multipart upload completed: ${parts.length} parts`);
+            logging.info(`Multipart upload completed: ${parts.length} parts`);
             return `${this.cdnUrl}/${key}`;
 
         } catch (error) {
             // Abort multipart upload on error to clean up
             if (uploadId) {
-                console.log(`Aborting multipart upload ${uploadId}...`);
+                logging.warn(`Aborting multipart upload ${uploadId}...`);
                 try {
                     await this.client.send(new AbortMultipartUploadCommand({
                         Bucket: this.bucket,
@@ -241,7 +251,7 @@ export default class S3Storage extends StorageBase {
                         UploadId: uploadId
                     }));
                 } catch (abortError) {
-                    console.error('Failed to abort multipart upload:', abortError);
+                    logging.error('Failed to abort multipart upload:', abortError);
                 }
             }
             throw error;
