@@ -398,42 +398,32 @@ class DockerAnalyticsManager {
 
         const timeRange = now.getTime() - startDate.getTime();
 
-        // Create gradual growth using triangular distribution
-        // max(r1, r2) creates a right-skewed distribution (more recent = more events)
-        // This gives approximately:
-        //   - First 6 months: ~25% of traffic
-        //   - Last 6 months: ~75% of traffic
-        // But with meaningful data throughout the entire period
-        const r1 = Math.random();
-        const r2 = Math.random();
-        const timePosition = Math.max(r1, r2);
+        // Use a power distribution to create gradual growth
+        // position = random^0.6 gives a nice S-curve growth pattern:
+        //   - Earliest months: ~5-10% of traffic
+        //   - Middle months: steady growth
+        //   - Recent months: ~15-20% of traffic (not overwhelming spike)
+        const random = Math.random();
+        const timePosition = Math.pow(random, 0.6);
 
         let timestamp = new Date(startDate.getTime() + (timePosition * timeRange));
 
-        // Apply realistic daily patterns
+        // Apply realistic daily patterns (but don't shift dates, only hours)
         const hour = timestamp.getHours();
-        const dayOfWeek = timestamp.getDay();
 
-        // Reduce overnight traffic (midnight to 6am)
+        // Reduce overnight traffic (midnight to 6am) by shifting hours only
         if (hour >= 0 && hour < 6) {
             if (Math.random() < 0.7) {
-                // Shift to daytime hours
+                // Shift to daytime hours (same day)
                 timestamp.setHours(9 + Math.floor(Math.random() * 12));
             }
         }
 
-        // Slightly reduce weekend traffic
-        if ((dayOfWeek === 0 || dayOfWeek === 6) && Math.random() < 0.3) {
-            // Shift some weekend traffic to weekdays (always backward to avoid future dates)
-            const daysToSubtract = dayOfWeek === 0 ? 2 : 1; // Sunday -> Friday, Saturday -> Friday
-            timestamp = new Date(timestamp.getTime() - (daysToSubtract * 24 * 60 * 60 * 1000));
-        }
-
-        // Add some random minute/second variation
+        // Add random minute/second variation
         timestamp.setMinutes(Math.floor(Math.random() * 60));
         timestamp.setSeconds(Math.floor(Math.random() * 60));
 
-        // Never return a future timestamp
+        // Safety check: never return future timestamp
         if (timestamp > now) {
             timestamp = new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000);
         }
