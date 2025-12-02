@@ -263,7 +263,7 @@ class DockerAnalyticsManager {
                     tier: tier.tier,
                     multiplier: tier.multiplier
                 });
-                postIndex++;
+                postIndex += 1;
             }
         }
     }
@@ -529,7 +529,7 @@ class DockerAnalyticsManager {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${this.tinybirdToken}`,
+                Authorization: `Bearer ${this.tinybirdToken}`,
                 'Content-Type': 'application/x-ndjson'
             },
             body: ndjson
@@ -671,7 +671,7 @@ class DockerAnalyticsManager {
         while (events.length < numEvents) {
             const sessionEvents = this.generateSession();
             events.push(...sessionEvents);
-            sessionCount++;
+            sessionCount += 1;
         }
 
         // Trim to exact count if we overshot
@@ -737,7 +737,7 @@ class DockerAnalyticsManager {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${this.tinybirdToken}`
+                Authorization: `Bearer ${this.tinybirdToken}`
             }
         });
 

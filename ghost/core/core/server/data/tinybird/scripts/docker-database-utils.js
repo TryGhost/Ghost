@@ -8,7 +8,7 @@
  */
 
 const path = require('path');
-
+const {NotFoundError} = require('@tryghost/errors');
 class DockerDatabaseUtils {
     constructor(options = {}) {
         this.knex = null;
@@ -157,7 +157,7 @@ class DockerDatabaseUtils {
                 return result.value;
             }
 
-            throw new Error('site_uuid not found in settings');
+            throw new NotFoundError({message: 'site_uuid not found in settings'});
         } catch (error) {
             console.error('Error fetching site_uuid:', error.message);
             throw error;
