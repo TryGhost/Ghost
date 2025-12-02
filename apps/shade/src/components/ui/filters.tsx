@@ -1198,7 +1198,13 @@ function SelectOptionsPopover<T = unknown>({
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent align="start" className={cn('w-[200px] p-0', field.className)}>
+            <PopoverContent
+                align="start"
+                className={cn(
+                    'p-0',
+                    field.className || 'w-[200px]'
+                )}
+            >
                 <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
@@ -2071,7 +2077,13 @@ export function Filters<T = unknown>({
                                 </button>
                             )}
                         </PopoverTrigger>
-                        <PopoverContent align={popoverAlign} className={cn('p-0', selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]')}>
+                        <PopoverContent
+                            align={popoverAlign}
+                            className={cn(
+                                'p-0',
+                                selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]'
+                            )}
+                        >
                             {selectedFieldForOptions ? (
                                 // Show original select/multiselect rendering without back button
                                 // SelectOptionsPopover renders its own Command component when inline={true}
@@ -2085,7 +2097,11 @@ export function Filters<T = unknown>({
                                         const shouldClosePopover = selectedFieldForOptions.type === 'select';
                                         addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
                                     }}
-                                    onClose={() => setAddFilterOpen(false)}
+                                    onClose={() => {
+                                        setAddFilterOpen(false);
+                                        setSelectedFieldKeyForOptions(null);
+                                        setTempSelectedValues([]);
+                                    }}
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
