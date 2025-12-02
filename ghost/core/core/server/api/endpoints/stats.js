@@ -129,6 +129,7 @@ const controller = {
             'post_type',
             'post_uuid',
             'pathname',
+            'location',
             'source',
             'utm_source',
             'utm_medium',

@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS} from '@src/utils/constants';
+import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceQueryParam} from './audience-select';
@@ -228,14 +228,11 @@ const useLocationOptions = (currentFilters: Filter[] = []) => {
             return [];
         }
 
-        // Array of values that represent unknown locations
-        const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
-
         return (data as unknown as LocationOption[])
             .filter((item: LocationOption) => {
                 // Filter out NULL/empty locations
                 const location = String(item.location || '');
-                return location && !UNKNOWN_LOCATIONS.includes(location);
+                return location && !UNKNOWN_LOCATION_VALUES.includes(location);
             })
             .map((item: LocationOption) => {
                 const locationCode = String(item.location || '');

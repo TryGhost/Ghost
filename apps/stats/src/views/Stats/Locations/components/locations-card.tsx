@@ -3,7 +3,7 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
-import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
+import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
@@ -11,9 +11,6 @@ countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
 };
-
-// Array of values that represent unknown locations
-const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
 
 // Normalize country code for flag display
 const normalizeCountryCode = (code: string): string => {
@@ -51,9 +48,10 @@ interface LocationsCardProps {
     data: Array<{location?: string | number; visits?: number; [key: string]: unknown}> | null | undefined;
     isLoading: boolean;
     range: number;
+    onLocationClick?: (location: string) => void;
 }
 
-const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) => {
+const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, onLocationClick}) => {
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
 
@@ -63,15 +61,15 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
 
     const processedData = useMemo<ProcessedLocationData[]>(() => {
         // First calculate total visits for known locations only
-        const knownTotalVisits = data?.reduce((sum, row) => (UNKNOWN_LOCATIONS.includes(String(row.location)) ? sum : sum + Number(row.visits)), 0) || 0;
+        const knownTotalVisits = data?.reduce((sum, row) => (UNKNOWN_LOCATION_VALUES.includes(String(row.location)) ? sum : sum + Number(row.visits)), 0) || 0;
 
         const processed = data?.map(row => ({
             location: String(row.location),
             visits: Number(row.visits),
             percentage: totalVisits > 0 ? (Number(row.visits) / totalVisits) : 0,
-            relativeValue: UNKNOWN_LOCATIONS.includes(String(row.location)) ? 0 :
+            relativeValue: UNKNOWN_LOCATION_VALUES.includes(String(row.location)) ? 0 :
                 Math.min(100, Math.max(10, Math.ceil((Number(row.visits) / knownTotalVisits) * 100 / 10) * 10)),
-            isUnknown: UNKNOWN_LOCATIONS.includes(String(row.location))
+            isUnknown: UNKNOWN_LOCATION_VALUES.includes(String(row.location))
         })) || [];
 
         // Separate known and unknown locations
@@ -177,6 +175,21 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
         setTooltipData(null);
     };
 
+    const handleLocationClick = (e: React.MouseEvent<SVGPathElement>) => {
+        const target = e.target as SVGPathElement;
+        const countryCode = target.getAttribute('id')?.toUpperCase() || '';
+        if (countryCode && onLocationClick) {
+            onLocationClick(countryCode);
+        }
+    };
+
+    const handleRowClick = (location: string) => {
+        // Don't allow clicking on "Unknown" locations
+        if (location !== 'Unknown' && onLocationClick) {
+            onLocationClick(location);
+        }
+    };
+
     return (
         <Card className='p-0'>
             <CardHeader className='border-b'>
@@ -189,6 +202,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                         <SVGMap
                             locationClassName={getLocationClassName}
                             map={World}
+                            onLocationClick={handleLocationClick}
                             onLocationMouseOut={handleLocationMouseOut}
                             onLocationMouseOver={handleLocationMouseOver}
                         />
@@ -227,8 +241,13 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                                         <DataListBody>
                                             {tableData.map((row) => {
                                                 const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                                const isClickable = row.location !== 'Unknown' && onLocationClick;
                                                 return (
-                                                    <DataListRow key={row.location || 'unknown'}>
+                                                    <DataListRow
+                                                        key={row.location || 'unknown'}
+                                                        className={isClickable ? 'cursor-pointer transition-colors hover:bg-accent/50' : ''}
+                                                        onClick={isClickable ? () => handleRowClick(row.location) : undefined}
+                                                    >
                                                         <DataListBar style={{
                                                             width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                                                         }}/>

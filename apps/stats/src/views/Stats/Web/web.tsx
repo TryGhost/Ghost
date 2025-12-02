@@ -1,7 +1,7 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
@@ -10,7 +10,7 @@ import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
 import {AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {Card, CardContent, Filter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -140,6 +140,46 @@ const Web: React.FC = () => {
         return params;
     }, [utmFilters]);
 
+    // Handler for clicking on a location in the LocationsCard
+    const handleLocationClick = useCallback((location: string) => {
+        // Check if a location filter already exists
+        const existingLocationFilter = utmFilters.find(f => f.field === 'location');
+        if (existingLocationFilter) {
+            // Update the existing filter
+            setUtmFilters((prevFilters) => {
+                return prevFilters.map((f) => {
+                    if (f.field === 'location') {
+                        return {...f, values: [location]};
+                    }
+                    return f;
+                });
+            });
+        } else {
+            // Add a new location filter
+            setUtmFilters(prevFilters => [...prevFilters, createFilter('location', 'is', [location])]);
+        }
+    }, [utmFilters]);
+
+    // Handler for clicking on a source in the SourcesCard
+    const handleSourceClick = useCallback((source: string) => {
+        // Check if a source filter already exists
+        const existingSourceFilter = utmFilters.find(f => f.field === 'source');
+        if (existingSourceFilter) {
+            // Update the existing filter
+            setUtmFilters((prevFilters) => {
+                return prevFilters.map((f) => {
+                    if (f.field === 'source') {
+                        return {...f, values: [source]};
+                    }
+                    return f;
+                });
+            });
+        } else {
+            // Add a new source filter
+            setUtmFilters(prevFilters => [...prevFilters, createFilter('source', 'is', [source])]);
+        }
+    }, [utmFilters]);
+
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
         site_uuid: statsConfig?.id || '',
@@ -230,12 +270,14 @@ const Web: React.FC = () => {
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
+                        onSourceClick={handleSourceClick}
                     />
                 </div>
                 <LocationsCard
                     data={locationsData}
                     isLoading={isLocationsLoading}
                     range={range}
+                    onLocationClick={handleLocationClick}
                 />
             </StatsView>
         </StatsLayout>
