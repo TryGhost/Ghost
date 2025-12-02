@@ -1,5 +1,5 @@
 import './styles/index.css';
-import {StandaloneApp} from './App.tsx';
+import {StandaloneApp} from './app.tsx';
 
 export {
     StandaloneApp as AdminXApp
