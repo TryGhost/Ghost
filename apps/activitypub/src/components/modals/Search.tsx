@@ -128,7 +128,6 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', shouldSearch ? debouncedQuery : '');
     const {data, isFetching, isFetched} = searchQuery;
 
-
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
 
     useEffect(() => {
