@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/audience-select';
 import {getClickHandler} from '@src/utils/url-helpers';
@@ -147,12 +147,11 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
 
     return (
         <Card className='group/datalist' data-testid='top-content-card'>
-            <div className='flex items-center justify-between gap-6 p-6'>
+            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                 </CardHeader>
-                <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
                 <div className='mb-2'>
@@ -187,7 +186,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
                 }
             </CardContent>
 
-            {transformedData && transformedData.length > 10 &&
+            {transformedData && transformedData.length > 6 &&
             <CardFooter>
                 <Sheet>
                     <SheetTrigger asChild>

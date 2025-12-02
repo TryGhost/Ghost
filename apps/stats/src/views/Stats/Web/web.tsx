@@ -58,11 +58,11 @@ const Web: React.FC = () => {
     // Only create audience filter if audience is not the default "all audiences" state
     useEffect(() => {
         const isDefaultAudience = audience === ALL_AUDIENCES;
-        
+
         setUtmFilters((prevFilters) => {
             // Check if audience filter already exists
             const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
-            
+
             // If audience is not default and filter doesn't exist, create it
             if (!isDefaultAudience && !hasAudienceFilter) {
                 const audienceValues: string[] = [];
@@ -75,17 +75,17 @@ const Web: React.FC = () => {
                 if ((audience & AUDIENCE_BITS.PAID) !== 0) {
                     audienceValues.push('paid');
                 }
-                
+
                 if (audienceValues.length > 0) {
                     return [...prevFilters, createFilter('audience', 'is', audienceValues)];
                 }
             }
-            
+
             // If audience is default and filter exists, remove it
             if (isDefaultAudience && hasAudienceFilter) {
                 return prevFilters.filter(f => f.field !== 'audience');
             }
-            
+
             // No changes needed
             return prevFilters;
         });
@@ -202,7 +202,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='flex min-h-[460px] grid-cols-2 flex-col gap-8 lg:grid'>
+                <div className='flex grid-cols-2 flex-col gap-8 lg:grid'>
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}

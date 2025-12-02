@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/source-icon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -114,15 +114,13 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist' data-testid='top-sources-card'>
-            <div className='flex items-center justify-between gap-6 p-6'>
+            <div className='flex items-center justify-between gap-6 px-6 pb-5 pt-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
                 </CardHeader>
-                <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <Separator />
                 {isLoading && !data ?
                     <SkeletonTable className='mt-3' />
                     : (topSources.length > 0 ? (
@@ -130,7 +128,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             data={topSources}
                             defaultSourceIconUrl={defaultSourceIconUrl}
                             range={range}
-                            tableHeader={false} />
+                            tableHeader={true} />
                     ) : (
                         <EmptyIndicator
                             className='mt-8 w-full py-20'
@@ -140,7 +138,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                         </EmptyIndicator>
                     ))}
             </CardContent>
-            {extendedData.length > 11 &&
+            {extendedData.length > 6 &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>
