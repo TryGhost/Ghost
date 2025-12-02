@@ -154,7 +154,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
                 </CardHeader>
             </div>
             <CardContent className='overflow-hidden'>
-                <div className='mb-2'>
+                <div className='mb-2 flex items-center justify-between'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>
@@ -164,6 +164,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterP
                             <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
                         </TabsList>
                     </Tabs>
+                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
                 </div>
                 <Separator />
                 {isLoading ?
