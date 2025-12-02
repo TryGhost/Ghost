@@ -254,19 +254,21 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                                                 );
                                             })}
                                         </DataListBody>
-                                        <SimplePagination className='mt-5'>
-                                            <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
-                                            <SimplePaginationNavigation>
-                                                <SimplePaginationPreviousButton
-                                                    disabled={!hasPreviousPage}
-                                                    onClick={previousPage}
-                                                />
-                                                <SimplePaginationNextButton
-                                                    disabled={!hasNextPage}
-                                                    onClick={nextPage}
-                                                />
-                                            </SimplePaginationNavigation>
-                                        </SimplePagination>
+                                        {totalPages > 1 && (
+                                            <SimplePagination className='mt-5'>
+                                                <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
+                                                <SimplePaginationNavigation>
+                                                    <SimplePaginationPreviousButton
+                                                        disabled={!hasPreviousPage}
+                                                        onClick={previousPage}
+                                                    />
+                                                    <SimplePaginationNextButton
+                                                        disabled={!hasNextPage}
+                                                        onClick={nextPage}
+                                                    />
+                                                </SimplePaginationNavigation>
+                                            </SimplePagination>
+                                        )}
                                     </>
                                     :
                                     <EmptyIndicator
