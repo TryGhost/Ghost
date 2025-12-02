@@ -1,3 +1,6 @@
+// Filename must match the docName specified in ../../../automated-emails.js
+/* eslint-disable ghost/filenames/match-regex */
+
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 

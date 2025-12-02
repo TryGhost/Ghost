@@ -3,14 +3,8 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 
 const messages = {
-    automatedEmailNotFound: 'Automated email not found.',
-    invalidStatus: 'Status must be one of: inactive, active',
-    invalidLexical: 'Lexical must be a valid JSON string',
-    invalidName: 'Name must be "member-welcome-email"'
+    automatedEmailNotFound: 'Automated email not found.'
 };
-
-const ALLOWED_STATUSES = ['inactive', 'active'];
-const ALLOWED_NAMES = ['member-welcome-email'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
