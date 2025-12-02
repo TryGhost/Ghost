@@ -31,7 +31,8 @@ describe('Automated Emails API', function () {
         await agent
             .post('automated_emails')
             .body({automated_emails: [{
-                name: 'member-welcome-email',
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
                 status: 'inactive',
                 subject: 'Welcome to the site!',
                 lexical: JSON.stringify({root: {children: []}})
@@ -146,7 +147,8 @@ describe('Automated Emails API', function () {
         await agent
             .post('automated_emails')
             .body({automated_emails: [{
-                name: 'member-welcome-email',
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
                 status: 'active',
                 subject: 'Test',
                 lexical: 'not-valid-json'
