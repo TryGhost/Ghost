@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/source-icon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -121,6 +121,11 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 </CardHeader>
             </div>
             <CardContent className='overflow-hidden'>
+                <div className='mb-2 flex h-6 items-center justify-between'>
+                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Source</div>
+                    <div className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>Visitors</div>
+                </div>
+                <Separator />
                 {isLoading && !data ?
                     <SkeletonTable className='mt-3' />
                     : (topSources.length > 0 ? (
@@ -128,7 +133,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             data={topSources}
                             defaultSourceIconUrl={defaultSourceIconUrl}
                             range={range}
-                            tableHeader={true} />
+                            tableHeader={false} />
                     ) : (
                         <EmptyIndicator
                             className='mt-8 w-full py-20'

@@ -213,8 +213,8 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range}) =
                         )}
                     </div>
                     <div className='group/datalist flex flex-col justify-between overflow-hidden px-6' data-testid='visitors-card'>
-                        <DataList className='ml-6 grow'>
-                            <DataListHeader className='py-4'>
+                        <DataList className='mb-6 grow lg:ml-6'>
+                            <DataListHeader className='px-0 pt-8'>
                                 <DataListHead>Country</DataListHead>
                                 <DataListHead>Visitors</DataListHead>
                             </DataListHeader>
