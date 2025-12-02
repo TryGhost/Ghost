@@ -14,7 +14,9 @@ describe('Search Index API', function () {
     describe('fetchPosts', function () {
         const searchIndexPostMatcher = {
             id: anyString,
+            uuid: anyString,
             title: anyString,
+            slug: anyString,
             url: anyString,
             status: anyString,
             published_at: anyISODateTime,
@@ -45,7 +47,9 @@ describe('Search Index API', function () {
     describe('fetchPages', function () {
         const searchIndexPageMatcher = {
             id: anyString,
+            uuid: anyString,
             title: anyString,
+            slug: anyString,
             url: anyString,
             status: anyString,
             published_at: anyISODateTime,
