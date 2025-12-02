@@ -1,4 +1,4 @@
-import EmbedSignupForm from './embedSignup/embed-signup-form';
+import EmbedSignupForm from './embed-signup/embed-signup-form';
 import Explore from './explore';
 import Network from './network';
 import Offers from './offers';

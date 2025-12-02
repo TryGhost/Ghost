@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {threadsHandleToUrl, threadsUrlToHandle, validateThreadsUrl} from '../../../src/utils/socialUrls/index';
+import {threadsHandleToUrl, threadsUrlToHandle, validateThreadsUrl} from '@src/utils/social-urls/index';
 
 describe('Threads URLs', () => {
     describe('URL validation', () => {
@@ -36,4 +36,4 @@ describe('Threads URLs', () => {
             assert.equal(threadsUrlToHandle('invalid-url'), null);
         });
     });
-}); 
+});

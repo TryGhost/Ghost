@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {validateYouTubeUrl, youtubeHandleToUrl, youtubeUrlToHandle} from '../../../src/utils/socialUrls/index';
+import {validateYouTubeUrl, youtubeHandleToUrl, youtubeUrlToHandle} from '../../../src/utils/social-urls/index';
 
 describe('YouTube URL validation', () => {
     it('should return empty string when input is empty', () => {

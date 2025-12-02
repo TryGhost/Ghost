@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {twitterHandleToUrl, twitterUrlToHandle, validateTwitterUrl} from '../../../src/utils/socialUrls/index';
+import {twitterHandleToUrl, twitterUrlToHandle, validateTwitterUrl} from '../../../src/utils/social-urls/index';
 
 describe('Twitter URLs', () => {
     describe('URL validation', () => {
@@ -37,4 +37,4 @@ describe('Twitter URLs', () => {
             assert.equal(twitterUrlToHandle('invalid-url'), null);
         });
     });
-}); 
+});

@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {blueskyHandleToUrl, blueskyUrlToHandle, validateBlueskyUrl} from '../../../src/utils/socialUrls/index';
+import {blueskyHandleToUrl, blueskyUrlToHandle, validateBlueskyUrl} from '../../../src/utils/social-urls/index';
 
 describe('Bluesky URLs', () => {
     describe('URL validation', () => {
@@ -62,4 +62,4 @@ describe('Bluesky URLs', () => {
             assert.equal(blueskyUrlToHandle('invalid-url'), null);
         });
     });
-}); 
+});

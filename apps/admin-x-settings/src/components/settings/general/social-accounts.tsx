@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
+import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/social-urls';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {

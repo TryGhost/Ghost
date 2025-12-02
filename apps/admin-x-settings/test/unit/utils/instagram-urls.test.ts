@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {instagramHandleToUrl, instagramUrlToHandle, validateInstagramUrl} from '../../../src/utils/socialUrls/index';
+import {instagramHandleToUrl, instagramUrlToHandle, validateInstagramUrl} from '../../../src/utils/social-urls/index';
 
 describe('Instagram URL validation', () => {
     it('should return empty string when input is empty', () => {
