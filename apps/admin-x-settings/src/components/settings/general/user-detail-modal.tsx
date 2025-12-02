@@ -161,8 +161,18 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User; pathName: string}> = ({user, pathName}) => {
     const {updateRoute} = useRouting();
+
+    const getTabFromPath = (path: string): string => {
+        const lastSegment = path.split('/').pop() || '';
+
+        if (lastSegment === 'social-links' || lastSegment === 'email-notifications') {
+            return lastSegment;
+        }
+
+        return 'profile';
+    };
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
@@ -402,7 +412,15 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
-    const [selectedTab, setSelectedTab] = useState<string>('profile');
+    const initialTab = getTabFromPath(pathName);
+    const [selectedTab, setSelectedTab] = useState<string>(initialTab);
+
+    const handleTabChange = (newTabId: string) => {
+        const urlSegment = newTabId === 'profile' ? '' : `/${newTabId}`;
+
+        updateRoute(`staff/${user.slug}${urlSegment}`);
+        setSelectedTab(newTabId);
+    };
 
     return (
         <Modal
@@ -546,7 +564,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
                             }
                         ]}
-                        onTabChange={setSelectedTab}
+                        onTabChange={handleTabChange}
                     />
                 </div>
             </div>
@@ -554,7 +572,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     );
 };
 
-const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const UserDetailModal: React.FC<RoutingModalProps> = ({params, pathName}) => {
     const {currentUser} = useGlobalData();
 
     // Skip API call if it's the current user (we already have their data)
@@ -570,7 +588,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const user = isCurrentUser ? currentUser : fetchedUserData?.users?.[0];
 
     if (user) {
-        return <UserDetailModalContent user={user} />;
+        return <UserDetailModalContent pathName={pathName} user={user} />;
     } else {
         return null;
     }
