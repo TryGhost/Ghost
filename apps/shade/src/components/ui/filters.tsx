@@ -1201,7 +1201,7 @@ function SelectOptionsPopover<T = unknown>({
             <PopoverContent
                 align="start"
                 className={cn(
-                    'p-0',
+                    'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
                     field.className || 'w-[200px]'
                 )}
             >
@@ -1643,7 +1643,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent className={cn('w-36 p-0', field.popoverContentClassName)}>
+            <PopoverContent className={cn('w-36 p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0', field.popoverContentClassName)}>
                 <Command shouldFilter={!isAsyncSearch}>
                     {field.searchable !== false && (
                         <CommandInput
@@ -2080,7 +2080,7 @@ export function Filters<T = unknown>({
                         <PopoverContent
                             align={popoverAlign}
                             className={cn(
-                                'p-0',
+                                'p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0',
                                 selectedFieldForOptions?.className || popoverContentClassName || 'w-[200px]'
                             )}
                         >
