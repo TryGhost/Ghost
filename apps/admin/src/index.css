@@ -1,13 +1,43 @@
 @import "@tryghost/shade/styles.css";
 
-/* Ensure the Ember app renders in the correct position */
+/* Flex layout to allow alerts to push down the SPA content */
+body.react-admin {
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+}
+
+body.react-admin #ember-alerts-wormhole {
+    flex-shrink: 0;
+}
+
+body.react-admin #root {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+/* Ensure ShadeApp takes full width */
+body.react-admin .shade.shade-admin {
+    width: 100%;
+}
+
+/* Ensure the Ember app renders in the correct position and takes full width/height */
 body.react-admin #ember-app {
     width: 100%;
     height: 100%;
 }
 
+/* Override Ember's fixed positioning to work within our flex layout */
 body.react-admin #ember-app .gh-app {
     position: static;
+    width: 100%;
+    height: 100%;
+}
+
+/* Remove Ember's overflow since we handle scrolling at the SidebarInset level */
+body.react-admin .gh-main {
+    overflow: visible;
 }
 
 /* Temporary overrides until Ember transition is finished */
