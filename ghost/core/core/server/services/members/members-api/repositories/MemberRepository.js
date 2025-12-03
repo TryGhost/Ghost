@@ -26,8 +26,6 @@ const messages = {
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
-const WELCOME_EMAIL_SOURCES = ['member'];
-
 /**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
