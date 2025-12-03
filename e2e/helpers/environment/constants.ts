@@ -40,3 +40,30 @@ export const MAILPIT = {
     PORT: 1025
 };
 
+/**
+ * Configuration for dev environment mode.
+ * Used when yarn dev:forward infrastructure is detected.
+ */
+export const DEV_ENVIRONMENT = {
+    networkName: 'ghost_dev',
+    projectNamespace: 'ghost-dev-e2e',
+    mysql: {
+        host: 'ghost-dev-mysql',
+        port: 3306,
+        user: 'root',
+        password: 'root'
+    },
+    redis: {
+        host: 'ghost-dev-redis',
+        port: 6379
+    },
+    images: {
+        ghost: 'ghost-dev-ghost-dev',
+        gateway: 'ghost-dev-ghost-dev-gateway'
+    },
+    ghost: {
+        port: 2368,
+        workdir: '/home/ghost/ghost/core'
+    }
+};
+

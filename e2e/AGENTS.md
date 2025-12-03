@@ -22,6 +22,24 @@ yarn test --debug                               # See browser during execution, 
 PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
 ```
 
+## Dev Environment Mode (Recommended)
+
+When `yarn dev:forward` is running, e2e tests automatically use a more efficient execution mode:
+
+```bash
+# Terminal 1: Start dev environment
+yarn dev:forward
+
+# Terminal 2: Run e2e tests (automatically uses dev environment)
+cd e2e && yarn test
+```
+
+Benefits:
+- Uses existing MySQL, Redis, and other infrastructure
+- Worker-scoped Ghost containers (faster than per-test containers)
+- Can run tests alongside active development
+- Easy cleanup: `docker compose -p ghost-dev-e2e down`
+
 ## Test Structure
 
 ### Naming Conventions

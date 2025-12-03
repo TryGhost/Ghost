@@ -1,13 +1,14 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+
 export interface User {
     name: string;
     email: string;
@@ -67,6 +68,10 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * Playwright fixture that provides a unique Ghost instance for each test
  * Each instance gets its own database, runs on a unique port, and includes authentication
  *
+ * Automatically detects if dev environment (yarn dev:forward) is running:
+ * - Dev mode: Uses worker-scoped containers with per-test database cloning (faster)
+ * - Standalone mode: Uses per-test containers (traditional behavior)
+ *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
  * and Ghost config via config settings like:
  *
@@ -76,25 +81,31 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
-    // Define labs as an option that can be set per test or describe block
+    // Options that can be set per test or describe block
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
+
+    // Each test gets its own Ghost instance with isolated database
     ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
-        const environmentManager = new EnvironmentManager();
+        const environmentManager = await getEnvironmentManager();
         const ghostInstance = await environmentManager.perTestSetup({config});
+
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
             ...ghostInstance
         });
         await use(ghostInstance);
+
         debug('Tearing down Ghost instance for test:', testInfo.title);
         await environmentManager.perTestTeardown(ghostInstance);
         debug('Teardown completed for test:', testInfo.title);
     },
+
     baseURL: async ({ghostInstance}, use) => {
         await use(ghostInstance.baseUrl);
     },
+
     // Create user credentials only (no authentication)
     ghostAccountOwner: async ({baseURL}, use) => {
         if (!baseURL) {
@@ -110,6 +121,7 @@ export const test = base.extend<GhostInstanceFixture>({
         await setupUser(baseURL, ghostAccountOwner);
         await use(ghostAccountOwner);
     },
+
     // Intermediate fixture that sets up the page and returns all setup data
     pageWithAuthenticatedUser: async ({browser, baseURL, ghostAccountOwner}, use) => {
         if (!baseURL) {
@@ -120,6 +132,7 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
     },
+
     // Extract the page from pageWithAuthenticatedUser and apply labs settings
     page: async ({pageWithAuthenticatedUser, labs}, use) => {
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;

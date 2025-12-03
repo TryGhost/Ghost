@@ -1,6 +1,9 @@
 import {AnalyticsNewslettersPage} from '@/admin-pages';
 import {MembersImportService} from '@/helpers/services/members-import';
 import {expect, test} from '@/helpers/playwright';
+import {shouldSkipAnalyticsTests} from '@/helpers/environment/service-availability';
+
+test.skip(await shouldSkipAnalyticsTests(), 'Tinybird not available');
 
 function getDateDaysAgo(days: number): string {
     const date = new Date();

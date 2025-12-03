@@ -5,6 +5,9 @@ import {
     PostAnalyticsPage
 } from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
+import {shouldSkipAnalyticsTests} from '@/helpers/environment/service-availability';
+
+test.skip(await shouldSkipAnalyticsTests(), 'Tinybird not available');
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
     test.beforeEach(async ({page}) => {
