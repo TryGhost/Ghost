@@ -580,6 +580,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
                 fields={groupedFields}
                 filters={filters}
+                keyboardShortcut="f"
                 popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
                 showSearchInput={false}
                 // size='sm'

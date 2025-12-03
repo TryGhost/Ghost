@@ -1867,6 +1867,7 @@ interface FiltersProps<T = unknown> {
     allowMultiple?: boolean;
     popoverContentClassName?: string;
     popoverAlign?: 'start' | 'center' | 'end';
+    keyboardShortcut?: string;
 }
 
 export function Filters<T = unknown>({
@@ -1888,11 +1889,36 @@ export function Filters<T = unknown>({
     trigger,
     allowMultiple = true,
     popoverContentClassName,
-    popoverAlign = 'start'
+    popoverAlign = 'start',
+    keyboardShortcut
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Keyboard shortcut handler
+    useEffect(() => {
+        if (!keyboardShortcut) {
+            return;
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input field
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                return;
+            }
+
+            // Check if the pressed key matches the shortcut (case-insensitive)
+            if (e.key.toLowerCase() === keyboardShortcut.toLowerCase() && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                e.preventDefault();
+                setAddFilterOpen(prev => !prev);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [keyboardShortcut]);
 
     // Focus the appropriate element when the popover opens
     useEffect(() => {
@@ -2147,7 +2173,7 @@ export function Filters<T = unknown>({
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
-                                <Command tabIndex={showSearchInput ? undefined : 0}>
+                                <Command className='outline-none' tabIndex={showSearchInput ? undefined : 0}>
                                     {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
                                     <CommandList className="outline-none">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
