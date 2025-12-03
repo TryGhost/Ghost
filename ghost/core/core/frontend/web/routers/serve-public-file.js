@@ -5,6 +5,9 @@ const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
+const {cardAssets} = require('../../services/assets-minification');
+const themeEngine = require('../../services/theme-engine');
+const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
     imageNotFound: 'Image not found',
@@ -99,7 +102,6 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
     };
 }
 
-// ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(location, file, type, maxAge, options = {}) {
     const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
@@ -113,6 +115,47 @@ function servePublicFile(location, file, type, maxAge, options = {}) {
     };
 }
 
-module.exports = servePublicFile;
+// Handles requests to public static files served by Ghost
+function servePublicFiles(siteApp) {
+    // Serve sitemap.xsl
+    siteApp.get('/sitemap.xsl', createPublicFileMiddleware('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
+
+    // Serve stylesheets for default templates
+    siteApp.get('/public/ghost.css', createPublicFileMiddleware('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/ghost.min.css', createPublicFileMiddleware('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+
+    // Traffic analytics tracking script
+    siteApp.get('/public/ghost-stats.min.js', createPublicFileMiddleware('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
+    // Card assets (built on the fly)
+    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
+    // Comment counts
+    siteApp.get('/public/comment-counts.min.js', createPublicFileMiddleware('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
+    // Member attribution
+    siteApp.get('/public/member-attribution.min.js', createPublicFileMiddleware('static', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
+    // Recommendations well-known
+    siteApp.get('/.well-known/recommendations.json', createPublicFileMiddleware('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
+
+    // Serve robots.txt if not found in theme (and blog is not private)
+    const defaultRobotsTxtMiddleware = createPublicFileMiddleware('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge'));
+    siteApp.get('/robots.txt', function serveRobotsTxt(req, res, next) {
+        // If private blogging is enabled, let filterPrivateRoutes handle it
+        if (settingsCache.get('is_private')) {
+            return next();
+        }
+
+        const activeTheme = themeEngine.getActive();
+        if (activeTheme?.hasRobotsTxt()) {
+            return next();
+        }
+        return defaultRobotsTxtMiddleware(req, res, next);
+    });
+}
+
+module.exports = servePublicFiles;
 module.exports.servePublicFile = servePublicFile;
 module.exports.createPublicFileMiddleware = createPublicFileMiddleware;
