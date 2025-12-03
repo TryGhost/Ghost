@@ -10,7 +10,7 @@ describe('Member Welcome Emails - send-member-welcome-email', function () {
     let renderTextStub;
 
     beforeEach(function () {
-        sendMemberWelcomeEmail = rewire('../../../../../core/server/services/member-welcome-emails/jobs/lib/send-member-welcome-email');
+        sendMemberWelcomeEmail = rewire('../../../../../core/server/services/member-welcome-emails/send-member-welcome-email');
 
         loggingStub = {info: sinon.stub()};
         configStub = {get: sinon.stub().withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com')};

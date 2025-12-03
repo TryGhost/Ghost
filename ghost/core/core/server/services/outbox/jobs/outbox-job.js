@@ -1,9 +1,9 @@
 const {parentPort} = require('worker_threads');
-const StartMemberWelcomeEmailJobEvent = require('../events/StartMemberWelcomeEmailJobEvent');
+const StartOutboxProcessingEvent = require('../events/StartOutboxProcessingEvent');
 
 function cancel() {
     if (parentPort) {
-        parentPort.postMessage('Member welcome email job cancelled before completion');
+        parentPort.postMessage('Outbox job cancelled before completion');
         parentPort.postMessage('cancelled');
     } else {
         setTimeout(() => {
@@ -21,12 +21,10 @@ if (parentPort) {
 }
 
 (async () => {
-    // We send an event message, so that it is emitted on the main thread by the job manager
-    // This will start the member welcome email job on the main thread (the wrapper service is listening for this event)
     if (parentPort) {
         parentPort.postMessage({
             event: {
-                type: StartMemberWelcomeEmailJobEvent.name
+                type: StartOutboxProcessingEvent.name
             }
         });
         parentPort.postMessage('done');
@@ -36,3 +34,4 @@ if (parentPort) {
         }, 1000);
     }
 })();
+
