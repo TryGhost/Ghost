@@ -4,16 +4,16 @@
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
-const messages = {
-    invalidStatus: 'Status must be one of: inactive, active',
-    invalidLexical: 'Lexical must be a valid JSON string',
-    invalidSlug: 'Slug must be one of: member-welcome-email-free, member-welcome-email-paid',
-    invalidName: 'Name must be one of: Welcome Email (Free), Welcome Email (Paid)'
-};
-
 const ALLOWED_STATUSES = ['inactive', 'active'];
 const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
 const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
+
+const messages = {
+    invalidStatus: `Status must be one of: ${ALLOWED_STATUSES.join(', ')}`,
+    invalidLexical: 'Lexical must be a valid JSON string',
+    invalidSlug: `Slug must be one of: ${ALLOWED_SLUGS.join(', ')}`,
+    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`
+};
 
 const validateAutomatedEmail = async function (frame) {
     if (!frame.data.automated_emails || !frame.data.automated_emails[0]) {
