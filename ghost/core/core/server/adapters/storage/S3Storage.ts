@@ -31,7 +31,9 @@ const messages = {
     readNotSupported: 'read() is not supported by S3Storage. S3Storage is designed for media and files, not images. Use LocalImagesStorage for image storage.',
     multipartUploadInitFailed: 'Failed to initiate file upload.',
     multipartUploadPartFailed: 'Failed to upload file part {partNumber}.',
-    multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.'
+    multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.',
+    missingMultipartThreshold: 'S3Storage requires multipartUploadThresholdBytes option',
+    missingMultipartChunkSize: 'S3Storage requires multipartChunkSizeBytes option'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -56,8 +58,8 @@ export interface S3StorageOptions {
     sessionToken?: string;
     tenantPrefix?: string;
     s3Client?: S3Client;
-    multipartUploadThresholdBytes?: number;
-    multipartChunkSizeBytes?: number;
+    multipartUploadThresholdBytes: number;
+    multipartChunkSizeBytes: number;
 }
 
 export default class S3Storage extends StorageBase {
@@ -71,9 +73,9 @@ export default class S3Storage extends StorageBase {
 
     public readonly staticFileURLPrefix: string;
 
-    private readonly multipartThreshold: number;
+    private readonly multipartUploadThresholdBytes: number;
 
-    private readonly partSize: number;
+    private readonly multipartChunkSizeBytes: number;
 
     constructor(options: S3StorageOptions) {
         super();
@@ -105,10 +107,19 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        // 10MB threshold - files larger than this use multipart upload
-        this.multipartThreshold = options.multipartUploadThresholdBytes || 10 * 1024 * 1024;
-        // 10MB part size - each part uploaded separately to keep memory low
-        this.partSize = options.multipartChunkSizeBytes || 10 * 1024 * 1024;
+        if (!options.multipartUploadThresholdBytes) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingMultipartThreshold)
+            });
+        }
+        this.multipartUploadThresholdBytes = options.multipartUploadThresholdBytes;
+
+        if (!options.multipartChunkSizeBytes) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingMultipartChunkSize)
+            });
+        }
+        this.multipartChunkSizeBytes = options.multipartChunkSizeBytes;
 
         const clientConfig: S3ClientConfig = {
             region: options.region,
@@ -134,12 +145,12 @@ export default class S3Storage extends StorageBase {
         const key = this.buildKey(relativePath);
         const stats = await fs.promises.stat(file.path);
 
-        if (stats.size >= this.multipartThreshold) {
-            logging.info(`Large file (${Math.round(stats.size / 1024 / 1024)}MB), using multipart upload...`);
+        if (stats.size >= this.multipartUploadThresholdBytes) {
+            logging.info(`Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
             return await this.uploadMultipart(file, key, stats.size);
         }
 
-        logging.info(`Small file (${Math.round(stats.size / 1024)}KB), using simple upload...`);
+        logging.info(`Small file, using simple upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
         const body = await fs.promises.readFile(file.path);
 
         await this.client.send(new PutObjectCommand({
@@ -178,7 +189,7 @@ export default class S3Storage extends StorageBase {
 
                 while (uploadedBytes < fileSize) {
                     const remainingBytes = fileSize - uploadedBytes;
-                    const currentPartSize = Math.min(this.partSize, remainingBytes);
+                    const currentPartSize = Math.min(this.multipartChunkSizeBytes, remainingBytes);
                     const buffer = Buffer.alloc(currentPartSize);
                     
                     const {bytesRead} = await fileHandle.read(buffer, 0, currentPartSize, uploadedBytes);
@@ -209,10 +220,11 @@ export default class S3Storage extends StorageBase {
                     });
 
                     uploadedBytes += bytesRead;
-                    partNumber += 1;
 
                     const progress = Math.round((uploadedBytes / fileSize) * 100);
-                    logging.info(`Uploaded part ${partNumber - 1}/${Math.ceil(fileSize / this.partSize)} (${progress}%)`);
+                    logging.info(`Uploaded part ${partNumber}/${Math.ceil(fileSize / this.multipartChunkSizeBytes)} (${progress}%)`);
+                    
+                    partNumber += 1;
                 }
             } finally {
                 await fileHandle.close();
@@ -227,11 +239,11 @@ export default class S3Storage extends StorageBase {
                 }
             }));
 
-            logging.info(`Multipart upload completed: ${parts.length} parts`);
+            logging.info(`Multipart upload completed: file=${key} parts=${parts.length}`);
             return `${this.cdnUrl}/${key}`;
         } catch (error) {
             if (uploadId) {
-                logging.warn(`Aborting multipart upload ${uploadId}...`);
+                logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
                 try {
                     await this.client.send(new AbortMultipartUploadCommand({
                         Bucket: this.bucket,
@@ -239,7 +251,7 @@ export default class S3Storage extends StorageBase {
                         UploadId: uploadId
                     }));
                 } catch (abortError) {
-                    logging.error('Failed to abort multipart upload:', abortError);
+                    logging.error(`Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
                 }
             }
             throw error;
