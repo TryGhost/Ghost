@@ -27,7 +27,8 @@ module.exports = {
             ];
 
             const emailTypeSettings = [
-                'members_support_address'
+                'members_support_address',
+                'members_transactional_address'
             ];
 
             if (arrayTypeSettings.includes(setting.key)) {
