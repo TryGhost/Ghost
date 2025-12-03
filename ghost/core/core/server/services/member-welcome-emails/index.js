@@ -22,16 +22,9 @@ class MemberWelcomeEmailsServiceWrapper {
         });
 
         domainEvents.subscribe(MemberCreatedEvent, async (event) => {
-            if (!config.get('memberWelcomeEmailTestInbox')) {
-                return;
+            if (config.get('memberWelcomeEmailTestInbox') && !WELCOME_EMAIL_SOURCES.includes(event.data.source)) {
+                await this.startProcessing();
             }
-
-            if (!WELCOME_EMAIL_SOURCES.includes(event.data.source)) {
-                logging.info('member created but from api so skipping');
-                return;
-            }
-
-            await this.startProcessing();
         });
 
         this.initialized = true;
