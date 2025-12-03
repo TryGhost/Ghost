@@ -47,7 +47,7 @@ export const usePostSuccessModal = () => {
 
     // Helper functions for formatting
     const formatSubscriberCount = (count: number) => {
-        return `${count} subscriber${count !== 1 ? 's' : ''}`;
+        return `${count.toLocaleString()} subscriber${count !== 1 ? 's' : ''}`;
     };
 
     const formatPublicationTime = (publishedAt: string) => {
