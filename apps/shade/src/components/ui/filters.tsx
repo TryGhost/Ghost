@@ -998,6 +998,19 @@ function SelectOptionsPopover<T = unknown>({
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
 
+    // Focus the search input when the popover opens
+    useEffect(() => {
+        if (open && field.searchable !== false) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
+                }
+            }, 0);
+        }
+    }, [open, field.searchable]);
+
     // For async search, we need to preserve selected options even when they're not in search results
     // Memoize to get stable reference for useEffect dependency
     const optionsFromField = useMemo(
@@ -1293,6 +1306,19 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
     };
+
+    // Focus the search input when the popover opens
+    useEffect(() => {
+        if (open && field.searchable !== false) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
+                }
+            }, 0);
+        }
+    }, [open, field.searchable]);
 
     // Hide value input for empty/not empty operators
     if (operator === 'empty' || operator === 'not_empty') {
@@ -1859,6 +1885,35 @@ export function Filters<T = unknown>({
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Focus the appropriate element when the popover opens
+    useEffect(() => {
+        if (addFilterOpen) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                // When showing field selection (not option selection)
+                if (!selectedFieldKeyForOptions) {
+                    // If there's a search input, focus it
+                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                    if (input) {
+                        input.focus();
+                    } else {
+                        // If no search input, focus the command list for keyboard navigation
+                        const commandList = document.querySelector('[cmdk-list]') as HTMLElement;
+                        if (commandList) {
+                            commandList.focus();
+                        }
+                    }
+                } else {
+                    // When showing option selection, focus the search input if available
+                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                    if (input) {
+                        input.focus();
+                    }
+                }
+            }, 0);
+        }
+    }, [addFilterOpen, selectedFieldKeyForOptions]);
 
     // Merge provided i18n with defaults
     const mergedI18n: FilterI18nConfig = {
