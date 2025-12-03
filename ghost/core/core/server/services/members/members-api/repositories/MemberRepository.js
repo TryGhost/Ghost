@@ -360,8 +360,6 @@ module.exports = class MemberRepository {
                         timestamp
                     })
                 }, {transacting});
-
-                this.dispatchEvent(StartMemberWelcomeEmailJobEvent.create());
                 
                 return newMember;
             };
@@ -371,6 +369,8 @@ module.exports = class MemberRepository {
             } else {
                 member = await this._Member.transaction(runMemberCreation);
             }
+
+            this.dispatchEvent(StartMemberWelcomeEmailJobEvent.create());
         } else {
             member = await this._Member.add({
                 ...memberData,
