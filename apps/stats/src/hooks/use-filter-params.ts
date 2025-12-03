@@ -20,6 +20,9 @@ type SupportedFilterField = typeof SUPPORTED_FILTER_FIELDS[number];
 // Special marker for empty string values in URL (e.g., "Direct" traffic)
 const EMPTY_VALUE_MARKER = '__empty__';
 
+// Encoded comma for values that contain commas (e.g., UTM campaign "summer,sale,2024")
+const ENCODED_COMMA = '%2C';
+
 /**
  * Serialize filters to URL search params format
  * Format: field=value or field=value1,value2 for multi-select
@@ -31,9 +34,15 @@ function filtersToSearchParams(filters: Filter[]): URLSearchParams {
     filters.forEach((filter) => {
         if (SUPPORTED_FILTER_FIELDS.includes(filter.field as SupportedFilterField)) {
             if (filter.values.length > 0) {
-                // Join multiple values with comma, encoding empty strings
+                // Join multiple values with comma, encoding empty strings and escaping commas within values
                 const value = filter.values
-                    .map(v => (v === '' ? EMPTY_VALUE_MARKER : String(v)))
+                    .map((v) => {
+                        if (v === '') {
+                            return EMPTY_VALUE_MARKER;
+                        }
+                        // Escape commas within values to prevent incorrect splitting during parsing
+                        return String(v).replace(/,/g, ENCODED_COMMA);
+                    })
                     .join(',');
                 params.set(filter.field, value);
             }
@@ -67,9 +76,15 @@ function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
             return;
         }
 
-        // Split by comma for multi-select values, decoding empty string marker
+        // Split by comma for multi-select values, then decode empty string marker and escaped commas
         const values = value.split(',')
-            .map(v => (v === EMPTY_VALUE_MARKER ? '' : v));
+            .map((v) => {
+                if (v === EMPTY_VALUE_MARKER) {
+                    return '';
+                }
+                // Decode escaped commas back to actual commas
+                return v.replace(new RegExp(ENCODED_COMMA, 'g'), ',');
+            });
 
         if (values.length > 0) {
             // Use appropriate operator based on field type
