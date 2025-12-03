@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {tiktokHandleToUrl, tiktokUrlToHandle, validateTikTokUrl} from '../../../src/utils/socialUrls/index';
+import {tiktokHandleToUrl, tiktokUrlToHandle, validateTikTokUrl} from '../../../src/utils/social-urls/index';
 
 describe('TikTok URL validation', () => {
     it('should return empty string when input is empty', () => {

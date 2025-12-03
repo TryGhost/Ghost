@@ -90,7 +90,7 @@ const useUtmOptionsForField = (fieldKey: string, currentFilters: Filter[] = []) 
                 value: value,
                 // Add a custom icon element that shows the count badge
                 icon: (
-                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                    <span className="order-2 font-mono text-xs text-muted-foreground">
                         {visits.toLocaleString()}
                     </span>
                 )
@@ -156,7 +156,7 @@ const useSourceOptions = (currentFilters: Filter[] = []) => {
                 value,
                 // Add a custom icon element that shows the count badge
                 icon: (
-                    <span className="flex items-center justify-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-medium text-grey-900 dark:bg-grey-800 dark:text-grey-100">
+                    <span className="order-2 font-mono text-xs text-muted-foreground">
                         {visits.toLocaleString()}
                     </span>
                 )
@@ -185,7 +185,7 @@ const usePostOptions = () => {
     // When searching, filter by title containing the search query
     // When not searching, fetch latest 20 published posts
     const hasSearchQuery = debouncedSearchQuery.trim().length > 0;
-    
+
     const filter = hasSearchQuery
         ? `title:~'${debouncedSearchQuery.replace(/'/g, '\\\'')}'+status:[published,sent]`
         : 'status:[published,sent]';
@@ -211,7 +211,7 @@ const usePostOptions = () => {
             value: post.uuid
         }));
     }, [browseData]);
-    
+
     // Memoize the callback to avoid recreating the function on each render
     const setSearchQuery = useCallback((query: string) => {
         setSearchQueryInternal(query);
@@ -383,7 +383,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmSourceOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_medium',
@@ -395,7 +396,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_campaign',
@@ -407,7 +409,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_content',
@@ -419,7 +422,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             },
             {
                 key: 'utm_term',
@@ -431,7 +435,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
-                searchable: true
+                searchable: true,
+                selectedOptionsClassName: 'hidden'
             }
         ] : [];
 
@@ -444,13 +449,16 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         label: 'Audience',
                         type: 'multiselect',
                         icon: <LucideIcon.Users />,
-                        options: audienceOptions.map(({value, label, icon}) => ({value, label, icon}))
+                        options: audienceOptions.map(({value, label, icon}) => ({value, label, icon})),
+                        defaultOperator: 'is any of',
+                        hideOperatorSelect: true,
+                        autoCloseOnSelect: true
                     },
                     {
                         key: 'post',
                         label: 'Post or page',
                         type: 'select',
-                        icon: <LucideIcon.File />,
+                        icon: <LucideIcon.PenLine />,
                         options: postOptions,
                         searchable: true,
                         asyncSearch: true,
@@ -458,6 +466,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         onSearchChange: setSearchQuery,
                         operators: supportedOperators,
                         defaultOperator: 'is',
+                        className: 'w-80',
+                        popoverContentClassName: 'w-80',
                         hideOperatorSelect: true
                     },
                     {
@@ -470,7 +480,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
-                        searchable: true
+                        searchable: true,
+                        selectedOptionsClassName: 'hidden'
                     }
                 ]
             },
@@ -483,12 +494,13 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     return (
         <Filters
-            addButtonIcon={filters.length ? <LucideIcon.Plus /> : <LucideIcon.ListFilter />}
-            addButtonText={filters.length ? 'Add filter' : 'Filter'}
-            className='mb-6 mt-0.5 [&>button]:order-last'
+            addButtonIcon={<LucideIcon.FunnelPlus />}
+            addButtonText={filters.length ? '' : ''}
+            className='mb-6 [&>button]:order-last'
             fields={groupedFields}
             filters={filters}
             showSearchInput={false}
+            size='sm'
             onChange={handleFilterChange}
             {...props}
         />
