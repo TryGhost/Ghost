@@ -505,7 +505,7 @@ jobs:
 
   merge_react_reports:
     name: Merge React Reports
-    if: always() && !cancelled()
+    if: always()
     needs: [test_e2e_react, setup]
     runs-on: ubuntu-latest
     steps:
@@ -571,3 +571,16 @@ jobs:
         if: steps.check.outputs.has_reports == 'true'
         run: |
           echo -e "::notice::To view the React Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-react -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
+
+      - name: Comment on PR with test report command
+        if: github.event_name == 'pull_request' && steps.check.outputs.has_reports == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## React E2E Tests Failed
+
+          To view the Playwright test report locally, run:
+
+          \`\`\`bash
+          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-react -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
+          \`\`\`"
