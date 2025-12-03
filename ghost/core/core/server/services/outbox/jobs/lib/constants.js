@@ -17,4 +17,3 @@ module.exports = {
     MESSAGES,
     WELCOME_EMAIL_SOURCES
 };
-

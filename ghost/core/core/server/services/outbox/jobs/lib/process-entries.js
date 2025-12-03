@@ -93,4 +93,3 @@ async function processEntries({db, entries, mailConfig}) {
 }
 
 module.exports = processEntries;
-

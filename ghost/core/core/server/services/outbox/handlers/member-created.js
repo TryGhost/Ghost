@@ -17,4 +17,3 @@ module.exports = {
     getLogInfo,
     LOG_KEY
 };
-

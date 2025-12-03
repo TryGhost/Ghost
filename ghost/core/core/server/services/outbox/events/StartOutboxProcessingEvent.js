@@ -1,3 +1,7 @@
+/**
+ * This is an event that is used to circumvent the job manager that currently isn't able to run scheduled jobs on the main thread (not offloaded).
+ * We simply emit this event in the job manager and listen for it on the main thread.
+ */
 module.exports = class StartOutboxProcessingEvent {
     /**
      * @param {any} data
@@ -16,4 +20,3 @@ module.exports = class StartOutboxProcessingEvent {
         return new StartOutboxProcessingEvent(data, timestamp ?? new Date());
     }
 };
-
