@@ -26,21 +26,27 @@ Webhook = ghostBookshelf.Model.extend({
     },
 
     onCreated: function onCreated(model, options) {
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+
         model.emitChange('added', options);
 
-        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        return result;
     },
 
     onUpdated: function onUpdated(model, options) {
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+
         model.emitChange('edited', options);
 
-        return ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        return result;
     },
 
     onDestroyed: function onDestroyed(model, options) {
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+
         model.emitChange('deleted', options);
 
-        return ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+        return result;
     }
 }, {
     findAllByEvent: function findAllByEvent(event, unfilteredOptions) {

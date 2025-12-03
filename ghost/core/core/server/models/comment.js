@@ -122,9 +122,11 @@ const Comment = ghostBookshelf.Model.extend({
     },
 
     onCreated: function onCreated(model, options) {
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+
         model.emitChange('added', options);
 
-        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        return result;
     },
 
     enforcedFilters: function enforcedFilters(options) {
