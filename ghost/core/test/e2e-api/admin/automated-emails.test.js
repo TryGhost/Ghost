@@ -90,6 +90,7 @@ describe('Automated Emails API', function () {
         await agent
             .put(`automated_emails/${id}`)
             .body({automated_emails: [{
+                name: 'Welcome Email (Free)',
                 subject: 'Updated subject',
                 status: 'active'
             }]})
@@ -107,7 +108,8 @@ describe('Automated Emails API', function () {
         await agent
             .post('automated_emails')
             .body({automated_emails: [{
-                name: 'member-welcome-email',
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
                 status: 'invalid-status',
                 subject: 'Test'
             }]})
@@ -175,6 +177,7 @@ describe('Automated Emails API', function () {
         await agent
             .put(`automated_emails/${id}`)
             .body({automated_emails: [{
+                name: 'Welcome Email (Free)',
                 status: 'invalid-status'
             }]})
             .expectStatus(422)
@@ -189,7 +192,31 @@ describe('Automated Emails API', function () {
             });
     });
 
-    it('Validates name on edit', async function () {
+    it('Validates name is required on edit', async function () {
+        const {body} = await agent
+            .get('automated_emails')
+            .expectStatus(200);
+
+        const id = body.automated_emails[0].id;
+
+        await agent
+            .put(`automated_emails/${id}`)
+            .body({automated_emails: [{
+                subject: 'Updated subject'
+            }]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Validates name value on edit', async function () {
         const {body} = await agent
             .get('automated_emails')
             .expectStatus(200);
@@ -223,6 +250,7 @@ describe('Automated Emails API', function () {
         await agent
             .put(`automated_emails/${id}`)
             .body({automated_emails: [{
+                name: 'Welcome Email (Free)',
                 lexical: 'not-valid-json'
             }]})
             .expectStatus(422)

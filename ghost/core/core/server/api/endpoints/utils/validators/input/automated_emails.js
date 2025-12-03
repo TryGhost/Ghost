@@ -15,14 +15,20 @@ const ALLOWED_STATUSES = ['inactive', 'active'];
 const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
 const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
 
-const validateAutomatedEmail = async function (frame, options = {}) {
+const validateAutomatedEmail = async function (frame) {
     if (!frame.data.automated_emails || !frame.data.automated_emails[0]) {
         return Promise.resolve();
     }
 
     const data = frame.data.automated_emails[0];
 
-    // Validate status
+    if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.invalidName),
+            property: 'name'
+        }));
+    }
+
     if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
         return Promise.reject(new ValidationError({
             message: tpl(messages.invalidStatus),
@@ -37,22 +43,6 @@ const validateAutomatedEmail = async function (frame, options = {}) {
         }));
     }
 
-    // Validate name - required for add, optional for edit
-    if (options.requireName) {
-        if (!data.name || !ALLOWED_NAMES.includes(data.name)) {
-            return Promise.reject(new ValidationError({
-                message: tpl(messages.invalidName),
-                property: 'name'
-            }));
-        }
-    } else if (data.name && !ALLOWED_NAMES.includes(data.name)) {
-        return Promise.reject(new ValidationError({
-            message: tpl(messages.invalidName),
-            property: 'name'
-        }));
-    }
-
-    // Validate lexical is valid JSON
     if (data.lexical) {
         try {
             JSON.parse(data.lexical);
@@ -69,9 +59,9 @@ const validateAutomatedEmail = async function (frame, options = {}) {
 
 module.exports = {
     async add(apiConfig, frame) {
-        await validateAutomatedEmail(frame, {requireName: true});
+        await validateAutomatedEmail(frame);
     },
     async edit(apiConfig, frame) {
-        await validateAutomatedEmail(frame, {requireName: false});
+        await validateAutomatedEmail(frame);
     }
 };
