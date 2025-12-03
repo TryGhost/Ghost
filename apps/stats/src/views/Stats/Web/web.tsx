@@ -234,7 +234,7 @@ const Web: React.FC = () => {
             </StatsHeader>
             {/* Show filter component below header when filters are applied */}
             {utmTrackingEnabled && hasFilters && (
-                <div ref={filterContainerRef} className='mb-4'>
+                <div ref={filterContainerRef} className='mb-4 mt-px'>
                     <StatsFilter
                         filters={utmFilters}
                         utmTrackingEnabled={utmTrackingEnabled}

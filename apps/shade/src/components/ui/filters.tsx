@@ -255,7 +255,7 @@ const filterInputVariants = cva(
 const filterRemoveButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
@@ -290,7 +290,7 @@ const filterAddButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-foreground transition',
         '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
@@ -323,7 +323,7 @@ const filterAddButtonVariants = cva(
 const filterOperatorVariants = cva(
     [
         'focus-visible:z-1 relative flex shrink-0 items-center text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
@@ -380,7 +380,7 @@ const filterFieldLabelVariants = cva(
 const filterFieldValueVariants = cva(
     [
         'focus-visible:z-1 relative flex shrink-0 items-center gap-1 text-foreground transition',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
