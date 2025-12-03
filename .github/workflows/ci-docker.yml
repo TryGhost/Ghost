@@ -292,8 +292,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2]
-        shardTotal: [2]
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
         shell: [ember, react]
     continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
@@ -345,6 +345,7 @@ jobs:
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
           USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
+          TEST_WORKERS_COUNT: 1
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
