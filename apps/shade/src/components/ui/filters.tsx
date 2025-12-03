@@ -1899,29 +1899,20 @@ export function Filters<T = unknown>({
         if (addFilterOpen) {
             // Use setTimeout to ensure the popover is fully rendered
             setTimeout(() => {
-                // When showing field selection (not option selection)
-                if (!selectedFieldKeyForOptions) {
-                    // If there's a search input, focus it
-                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
-                    if (input) {
-                        input.focus();
-                    } else {
-                        // If no search input, focus the command list for keyboard navigation
-                        const commandList = document.querySelector('[cmdk-list]') as HTMLElement;
-                        if (commandList) {
-                            commandList.focus();
-                        }
-                    }
+                // Always try to focus the search input first (if available)
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
                 } else {
-                    // When showing option selection, focus the search input if available
-                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
-                    if (input) {
-                        input.focus();
+                    // If no search input, focus the Command component directly to enable keyboard navigation
+                    const command = document.querySelector('[cmdk-root]') as HTMLElement;
+                    if (command) {
+                        command.focus();
                     }
                 }
             }, 0);
         }
-    }, [addFilterOpen, selectedFieldKeyForOptions]);
+    }, [addFilterOpen, selectedFieldKeyForOptions, showSearchInput]);
 
     // Merge provided i18n with defaults
     const mergedI18n: FilterI18nConfig = {
@@ -2156,7 +2147,7 @@ export function Filters<T = unknown>({
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
-                                <Command>
+                                <Command tabIndex={showSearchInput ? undefined : 0}>
                                     {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
                                     <CommandList className="outline-none">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
