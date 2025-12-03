@@ -227,7 +227,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                         )}
                     </div>
                     <div className='group/datalist flex flex-col justify-between overflow-hidden px-6' data-testid='visitors-card'>
-                        <DataList className='mb-6 grow lg:ml-6'>
+                        <DataList className='mb-6 grow lg:ml-4'>
                             <DataListHeader className='px-0 pt-8'>
                                 <DataListHead>Country</DataListHead>
                                 <DataListHead>Visitors</DataListHead>
