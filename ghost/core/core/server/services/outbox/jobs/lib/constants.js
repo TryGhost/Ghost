@@ -1,7 +1,6 @@
 const BATCH_SIZE = 100;
 const MAX_ENTRIES_PER_JOB = BATCH_SIZE * 10;
 const MAX_RETRIES = 1;
-const WELCOME_EMAIL_SOURCES = ['member'];
 const OUTBOX_LOG_KEY = '[OUTBOX]';
 
 const MESSAGES = {
@@ -14,6 +13,5 @@ module.exports = {
     MAX_ENTRIES_PER_JOB,
     MAX_RETRIES,
     OUTBOX_LOG_KEY,
-    MESSAGES,
-    WELCOME_EMAIL_SOURCES
+    MESSAGES
 };
