@@ -163,71 +163,71 @@ export default class S3Storage extends StorageBase {
         return `${this.cdnUrl}/${key}`;
     }
 
+    private async *readFileInChunks(filePath: string, chunkSize: number): AsyncGenerator<Buffer> {
+        const stream = fs.createReadStream(filePath);
+        let buffer = Buffer.alloc(0);
+
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk as Buffer]);
+
+            while (buffer.length >= chunkSize) {
+                yield buffer.slice(0, chunkSize);
+                buffer = buffer.slice(chunkSize);
+            }
+        }
+
+        if (buffer.length > 0) {
+            yield buffer;
+        }
+    }
+
     private async uploadMultipart(file: UploadFile, key: string, fileSize: number): Promise<string> {
-        let uploadId: string | undefined;
+        const createResponse = await this.client.send(new CreateMultipartUploadCommand({
+            Bucket: this.bucket,
+            Key: key,
+            ContentType: file.type
+        }));
+
+        const uploadId = createResponse.UploadId;
+        if (!uploadId) {
+            throw new errors.InternalServerError({
+                message: tpl(messages.multipartUploadInitFailed)
+            });
+        }
 
         try {
-            const createResponse = await this.client.send(new CreateMultipartUploadCommand({
-                Bucket: this.bucket,
-                Key: key,
-                ContentType: file.type
-            }));
-
-            uploadId = createResponse.UploadId;
-            if (!uploadId) {
-                throw new errors.InternalServerError({
-                    message: tpl(messages.multipartUploadInitFailed)
-                });
-            }
-
             const parts: {ETag: string; PartNumber: number}[] = [];
-            const fileHandle = await fs.promises.open(file.path, 'r');
-            
-            try {
-                let partNumber = 1;
-                let uploadedBytes = 0;
+            let partNumber = 1;
+            let uploadedBytes = 0;
+            const totalParts = Math.ceil(fileSize / this.multipartChunkSizeBytes);
+            const chunks = this.readFileInChunks(file.path, this.multipartChunkSizeBytes);
 
-                while (uploadedBytes < fileSize) {
-                    const remainingBytes = fileSize - uploadedBytes;
-                    const currentPartSize = Math.min(this.multipartChunkSizeBytes, remainingBytes);
-                    const buffer = Buffer.alloc(currentPartSize);
-                    
-                    const {bytesRead} = await fileHandle.read(buffer, 0, currentPartSize, uploadedBytes);
-                    
-                    if (bytesRead === 0) {
-                        throw new errors.InternalServerError({
-                            message: tpl(messages.multipartUploadReadFailed)
-                        });
-                    }
+            for await (const chunk of chunks) {
+                const uploadPartResponse = await this.client.send(new UploadPartCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                    UploadId: uploadId,
+                    PartNumber: partNumber,
+                    Body: chunk
+                }));
 
-                    const uploadPartResponse = await this.client.send(new UploadPartCommand({
-                        Bucket: this.bucket,
-                        Key: key,
-                        UploadId: uploadId,
-                        PartNumber: partNumber,
-                        Body: buffer.slice(0, bytesRead)
-                    }));
-
-                    if (!uploadPartResponse.ETag) {
-                        throw new errors.InternalServerError({
-                            message: tpl(messages.multipartUploadPartFailed, {partNumber})
-                        });
-                    }
-
-                    parts.push({
-                        ETag: uploadPartResponse.ETag,
-                        PartNumber: partNumber
+                if (!uploadPartResponse.ETag) {
+                    throw new errors.InternalServerError({
+                        message: tpl(messages.multipartUploadPartFailed, {partNumber})
                     });
-
-                    uploadedBytes += bytesRead;
-
-                    const progress = Math.round((uploadedBytes / fileSize) * 100);
-                    logging.info(`Uploaded part ${partNumber}/${Math.ceil(fileSize / this.multipartChunkSizeBytes)} (${progress}%)`);
-                    
-                    partNumber += 1;
                 }
-            } finally {
-                await fileHandle.close();
+
+                parts.push({
+                    ETag: uploadPartResponse.ETag,
+                    PartNumber: partNumber
+                });
+
+                uploadedBytes += chunk.length;
+
+                const progress = Math.round((uploadedBytes / fileSize) * 100);
+                logging.info(`Uploaded part ${partNumber}/${totalParts} (${progress}%)`);
+
+                partNumber += 1;
             }
 
             await this.client.send(new CompleteMultipartUploadCommand({
