@@ -49,9 +49,9 @@ const Integration = ghostBookshelf.Model.extend({
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
-
         model.emitChange('added', options);
+
+        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
     },
 
     permittedAttributes(...args) {

@@ -252,21 +252,21 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
-
         model.emitChange('added', options);
+
+        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
-
         model.emitChange('edited', options);
+
+        return ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
-
         model.emitChange('deleted', options);
+
+        return ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
     },
 
     onDestroying: function onDestroyed(model) {

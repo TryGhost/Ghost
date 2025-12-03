@@ -127,29 +127,27 @@ User = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
-
         if (activeStates.includes(model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
         model.emitChange('deleted', options);
+
+        return ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
-
         model.emitChange('added', options);
 
         // active is the default state, so if status isn't provided, this will be an active user
         if (!model.get('status') || activeStates.includes(model.get('status'))) {
             model.emitChange('activated', options);
         }
+
+        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
-
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = activeStates.includes(model.get('status'));
 
@@ -162,6 +160,8 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited', options);
+
+        return ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
     },
 
     isActive: function isActive() {

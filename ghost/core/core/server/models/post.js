@@ -392,8 +392,6 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
-
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isPublished = model.get('status') === 'published';
         model.isScheduled = model.get('status') === 'scheduled';
@@ -461,16 +459,18 @@ Post = ghostBookshelf.Model.extend({
         if (model.statusChanging && (model.isPublished || model.wasPublished)) {
             this.handleStatusForAttachedModels(model, options);
         }
+
+        return ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
     },
 
-    onDestroyed: async function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
-
+    onDestroyed: function onDestroyed(model, options) {
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
 
         model.emitChange('deleted', Object.assign({usePreviousAttribute: true}, options));
+
+        return ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
     },
 
     onDestroying: function onDestroyed(model) {
