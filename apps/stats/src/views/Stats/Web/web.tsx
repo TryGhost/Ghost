@@ -124,49 +124,24 @@ const Web: React.FC = () => {
         return params;
     }, [utmFilters]);
 
-    // Handler for clicking on a location in the LocationsCard
-    const handleLocationClick = useCallback((location: string) => {
-        // Check if a location filter already exists
-        const existingLocationFilter = utmFilters.find(f => f.field === 'location');
-        if (existingLocationFilter) {
-            // Update the existing filter
-            setUtmFilters((prevFilters) => {
+    // Generic handler for click-to-filter on any field (source, location, etc.)
+    const handleFilterClick = useCallback((field: string, value: string) => {
+        setUtmFilters((prevFilters) => {
+            const existingFilter = prevFilters.find(f => f.field === field);
+            if (existingFilter) {
+                // Update the existing filter
                 return prevFilters.map((f) => {
-                    if (f.field === 'location') {
-                        return {...f, values: [location]};
-                    }
-                    return f;
+                    return f.field === field ? {...f, values: [value]} : f;
                 });
-            });
-        } else {
-            // Add a new location filter
-            setUtmFilters(prevFilters => [...prevFilters, createFilter('location', 'is', [location])]);
-        }
-
+            }
+            // Add a new filter
+            return [...prevFilters, createFilter(field, 'is', [value])];
+        });
         scrollToTop();
-    }, [utmFilters, setUtmFilters, scrollToTop]);
+    }, [setUtmFilters, scrollToTop]);
 
-    // Handler for clicking on a source in the SourcesCard
-    const handleSourceClick = useCallback((source: string) => {
-        // Check if a source filter already exists
-        const existingSourceFilter = utmFilters.find(f => f.field === 'source');
-        if (existingSourceFilter) {
-            // Update the existing filter
-            setUtmFilters((prevFilters) => {
-                return prevFilters.map((f) => {
-                    if (f.field === 'source') {
-                        return {...f, values: [source]};
-                    }
-                    return f;
-                });
-            });
-        } else {
-            // Add a new source filter
-            setUtmFilters(prevFilters => [...prevFilters, createFilter('source', 'is', [source])]);
-        }
-
-        scrollToTop();
-    }, [utmFilters, setUtmFilters, scrollToTop]);
+    const handleLocationClick = useCallback((location: string) => handleFilterClick('location', location), [handleFilterClick]);
+    const handleSourceClick = useCallback((source: string) => handleFilterClick('source', source), [handleFilterClick]);
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
@@ -177,16 +152,6 @@ const Web: React.FC = () => {
         member_status: getAudienceQueryParam(audience),
         ...filterParams
     }), [statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
-
-    const queryParams: Record<string, string> = {
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    if (timezone) {
-        queryParams.timezone = timezone;
-    }
 
     // Get KPI data
     const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
