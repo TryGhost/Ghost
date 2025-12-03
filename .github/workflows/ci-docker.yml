@@ -370,6 +370,7 @@ jobs:
     needs: [test_e2e, setup]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shell: [ember, react]
     steps:
