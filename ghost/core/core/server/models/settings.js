@@ -108,24 +108,24 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
-
         model.emitChange('deleted', options);
         model.emitChange(model._previousAttributes.key + '.' + 'deleted', options);
+
+        return ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
-
         model.emitChange('added', options);
         model.emitChange(model.attributes.key + '.' + 'added', options);
+
+        return ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
-
         model.emitChange('edited', options);
         model.emitChange(model.attributes.key + '.' + 'edited', options);
+
+        return ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
     },
 
     async onValidate(model, attr, options) {
