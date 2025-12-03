@@ -111,9 +111,13 @@ describe('Webhook Service', function () {
             assert.equal(payload.called, true);
             assert.equal(request.called, true);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
-            assert.equal(request.args[0][1].body, '{"data":[1]}');
+            const reqBody = JSON.parse(request.args[0][1].body);
+            assert.deepEqual(reqBody, {
+                event: WEBHOOK_EVENT,
+                data: [1]
+            });
             assert.deepEqual(Object.keys(request.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
-            assert.equal(request.args[0][1].headers['Content-Length'], 12);
+            assert.equal(request.args[0][1].headers['Content-Length'], 33);
             assert.equal(request.args[0][1].headers['Content-Type'], 'application/json');
             assert.match(request.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
         });
@@ -177,12 +181,42 @@ describe('Webhook Service', function () {
             assert.equal(payload.called, true);
             assert.equal(request.called, true);
             assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
-
-            const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`{"data":[1]}${ts}`).digest('hex')}, t=${ts}`;
+            const expectedPayload = JSON.stringify({
+                event: WEBHOOK_EVENT,
+                data: [1]
+            });
+            const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`${expectedPayload}${ts}`).digest('hex')}, t=${ts}`;
             const header = request.args[0][1].headers[SIGNATURE_HEADER];
             assert.equal(expectedHeader, header);
 
             clock.restore();
+        });
+        it('includes the event name in the JSON payload', async function () {
+            const webhookModel = {
+                get: sinon.stub()
+            };
+
+            webhookModel.get
+                .withArgs('event').returns(WEBHOOK_EVENT)
+                .withArgs('target_url').returns(WEBHOOK_TARGET_URL)
+                .withArgs('secret').returns('');
+
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
+                .resolves({models: [webhookModel]});
+
+            const postModel = sinon.stub();
+
+            payload
+                .withArgs(WEBHOOK_EVENT, postModel)
+                .resolves({data: [1]});
+
+            await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
+
+            const reqBody = request.args[0][1].body;
+            const parsed = JSON.parse(reqBody);
+
+            assert.equal(parsed.event, WEBHOOK_EVENT);
         });
     });
 });

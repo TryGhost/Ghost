@@ -106,7 +106,10 @@ class WebhookTrigger {
         debug(`${hooks.models.length} webhooks found for ${event}.`);
 
         for (const webhook of hooks.models) {
-            const hookPayload = await this.payload(webhook.get('event'), model);
+            const hookPayload = {
+                event: webhook.get('event'),
+                ...await this.payload(webhook.get('event'), model)
+            };
 
             const reqPayload = JSON.stringify(hookPayload);
             const url = webhook.get('target_url');
