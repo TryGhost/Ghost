@@ -8,7 +8,6 @@
   "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "postinstall": "patch-package",
     "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:base && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
