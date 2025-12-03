@@ -161,8 +161,8 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserDetailModalContent: React.FC<{user: User; pathName: string}> = ({user, pathName}) => {
-    const {updateRoute} = useRouting();
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
+    const {updateRoute, route} = useRouting();
 
     const getTabFromPath = (path: string): string => {
         const lastSegment = path.split('/').pop() || '';
@@ -412,7 +412,7 @@ const UserDetailModalContent: React.FC<{user: User; pathName: string}> = ({user,
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
-    const initialTab = getTabFromPath(pathName);
+    const initialTab = getTabFromPath(route);
     const [selectedTab, setSelectedTab] = useState<string>(initialTab);
 
     const handleTabChange = (newTabId: string) => {
@@ -572,7 +572,7 @@ const UserDetailModalContent: React.FC<{user: User; pathName: string}> = ({user,
     );
 };
 
-const UserDetailModal: React.FC<RoutingModalProps> = ({params, pathName}) => {
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {currentUser} = useGlobalData();
 
     // Skip API call if it's the current user (we already have their data)
@@ -588,7 +588,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params, pathName}) => {
     const user = isCurrentUser ? currentUser : fetchedUserData?.users?.[0];
 
     if (user) {
-        return <UserDetailModalContent pathName={pathName} user={user} />;
+        return <UserDetailModalContent user={user} />;
     } else {
         return null;
     }
