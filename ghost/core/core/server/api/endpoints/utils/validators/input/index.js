@@ -5,6 +5,10 @@
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automated_emails() {
+        return require('./automated_emails');
+    },
+
     get password_reset() {
         return require('./password_reset');
     },
