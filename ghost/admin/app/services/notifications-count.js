@@ -21,7 +21,7 @@ export default class NotificationsCountService extends Service {
                 return 0;
             }
 
-            const siteInfoResponse = await this.ajax.request('/ghost/api/admin/site');
+            const siteInfoResponse = await this.ajax.request('/ghost/api/admin/site/');
             const siteUrl = siteInfoResponse?.site?.url;
 
             if (!siteUrl) {
