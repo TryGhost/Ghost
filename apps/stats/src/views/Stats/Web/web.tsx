@@ -9,11 +9,10 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {Card, CardContent, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {useFilterFocus} from '@hooks/use-filter-focus';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -61,9 +60,6 @@ const Web: React.FC = () => {
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
-
-    // Auto-focus filter button when first filter is added
-    const {filterContainerRef} = useFilterFocus(utmFilters.length);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -221,27 +217,29 @@ const Web: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                {!utmTrackingEnabled && <AudienceSelect />}
-                {/* Show filter button in header when UTM is enabled and no filters applied */}
-                {utmTrackingEnabled && !hasFilters && (
-                    <StatsFilter
-                        filters={utmFilters}
-                        utmTrackingEnabled={utmTrackingEnabled}
-                        onChange={setUtmFilters}
-                    />
-                )}
-                <DateRangeSelect />
+                {!utmTrackingEnabled ?
+                    <NavbarActions>
+                        <AudienceSelect />
+                        <DateRangeSelect />
+                    </NavbarActions>
+                    :
+                    <>
+                        {hasFilters &&
+                        <NavbarActions>
+                            <DateRangeSelect />
+                        </NavbarActions>
+                        }
+                        <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-6' : '[grid-area:actions]'}`}>
+                            <StatsFilter
+                                filters={utmFilters}
+                                utmTrackingEnabled={utmTrackingEnabled}
+                                onChange={setUtmFilters}
+                            />
+                            {!hasFilters && <DateRangeSelect />}
+                        </NavbarActions>
+                    </>
+                }
             </StatsHeader>
-            {/* Show filter component below header when filters are applied */}
-            {utmTrackingEnabled && hasFilters && (
-                <div ref={filterContainerRef} className='mb-4 mt-px'>
-                    <StatsFilter
-                        filters={utmFilters}
-                        utmTrackingEnabled={utmTrackingEnabled}
-                        onChange={setUtmFilters}
-                    />
-                </div>
-            )}
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>

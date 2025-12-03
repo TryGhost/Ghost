@@ -1,5 +1,5 @@
 import React from 'react';
-import {H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, formatNumber} from '@tryghost/shade';
+import {H1, LucideIcon, Navbar, NavbarNavigation, PageMenu, PageMenuItem, formatNumber} from '@tryghost/shade';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -64,49 +64,49 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
-                <PageMenu defaultValue={normalizedPath} responsive>
-                    <PageMenuItem value="/analytics/" onClick={() => {
-                        navigate('/analytics/');
-                    }}>
-                        <LucideIcon.Gauge />
+            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-0 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+                <NavbarNavigation>
+                    <PageMenu defaultValue={normalizedPath} responsive>
+                        <PageMenuItem value="/analytics/" onClick={() => {
+                            navigate('/analytics/');
+                        }}>
+                            <LucideIcon.Gauge />
                         Overview
-                    </PageMenuItem>
+                        </PageMenuItem>
 
-                    {appSettings?.analytics.webAnalytics &&
+                        {appSettings?.analytics.webAnalytics &&
                         <PageMenuItem value="/analytics/web/" onClick={() => {
                             navigate('/analytics/web/');
                         }}>
                             <LucideIcon.Globe />
                             Web traffic
                         </PageMenuItem>
-                    }
+                        }
 
-                    {appSettings?.newslettersEnabled &&
+                        {appSettings?.newslettersEnabled &&
                         <PageMenuItem value="/analytics/newsletters/" onClick={() => {
                             navigate('/analytics/newsletters/');
                         }}>
                             <LucideIcon.Mail />
                             Newsletters
                         </PageMenuItem>
-                    }
+                        }
 
-                    <PageMenuItem value="/analytics/growth/" onClick={() => {
-                        navigate('/analytics/growth/');
-                    }}>
-                        <LucideIcon.Sprout />
+                        <PageMenuItem value="/analytics/growth/" onClick={() => {
+                            navigate('/analytics/growth/');
+                        }}>
+                            <LucideIcon.Sprout />
                         Growth
-                    </PageMenuItem>
+                        </PageMenuItem>
 
-                    {/* {appSettings?.analytics.webAnalytics && (
+                        {/* {appSettings?.analytics.webAnalytics && (
                         <PageMenuItem value="/analytics/locations/" onClick={() => {
                             navigate('/analytics/locations/');
                         }}>Locations</PageMenuItem>
                     )} */}
-                </PageMenu>
-                <NavbarActions>
-                    {children}
-                </NavbarActions>
+                    </PageMenu>
+                </NavbarNavigation>
+                {children}
             </Navbar>
         </>
     );

@@ -6,7 +6,7 @@ import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, NavbarActions, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -125,7 +125,9 @@ const Growth: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <DateRangeSelect />
+                <NavbarActions>
+                    <DateRangeSelect />
+                </NavbarActions>
             </StatsHeader>
             <StatsView data={isPageLoading ? undefined : chartData} isLoading={false} loadingComponent={<></>}>
                 <Card data-testid='total-members-card'>
