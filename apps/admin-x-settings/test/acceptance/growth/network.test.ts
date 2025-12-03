@@ -40,14 +40,10 @@ test.describe('Network settings', async () => {
             ...globalDataRequests,
             browseSettings: {
                 ...globalDataRequests.browseSettings,
-                response: {
-                    ...responseFixtures.settings,
-                    settings: [
-                        ...responseFixtures.settings.settings,
-                        {key: 'social_web', value: true},
-                        {key: 'is_private', value: true}
-                    ]
-                }
+                response: updatedSettingsResponse([
+                    {key: 'social_web', value: true},
+                    {key: 'is_private', value: true}
+                ])
             }
         }});
 
