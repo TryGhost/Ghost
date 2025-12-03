@@ -51,7 +51,7 @@ describe('Unit: Service: notifications-count', function () {
                 })];
             });
 
-            server.get('/ghost/api/admin/site', function () {
+            server.get('/ghost/api/admin/site/', function () {
                 return [200, {'Content-Type': 'application/json'}, JSON.stringify({
                     site: {}
                 })];
@@ -76,7 +76,7 @@ describe('Unit: Service: notifications-count', function () {
                 })];
             });
 
-            server.get('/ghost/api/admin/site', function () {
+            server.get('/ghost/api/admin/site/', function () {
                 return [200, {'Content-Type': 'application/json'}, JSON.stringify({
                     site: {url: siteUrl}
                 })];
@@ -124,7 +124,7 @@ describe('Unit: Service: notifications-count', function () {
                 })];
             });
 
-            server.get('/ghost/api/admin/site', function () {
+            server.get('/ghost/api/admin/site/', function () {
                 return [200, {'Content-Type': 'application/json'}, JSON.stringify({
                     site: {url: siteUrl}
                 })];

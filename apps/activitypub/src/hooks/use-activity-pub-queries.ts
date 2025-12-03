@@ -33,7 +33,7 @@ let SITE_URL: string;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
-        const response = await fetch('/ghost/api/admin/site');
+        const response = await fetch('/ghost/api/admin/site/');
         const json = await response.json();
         SITE_URL = json.site.url;
     }

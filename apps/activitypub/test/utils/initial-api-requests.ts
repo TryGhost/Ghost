@@ -13,7 +13,7 @@ const initialAdminApiRequests = {
     },
     getSite: {
         method: 'GET',
-        path: '/site',
+        path: '/site/',
         response: site
     },
     getIdentities: {
