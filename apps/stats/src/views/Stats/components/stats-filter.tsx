@@ -435,6 +435,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -448,6 +450,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -461,6 +465,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -474,6 +480,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
+                className: 'w-60',
+                popoverContentClassName: 'w-60',
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             }
@@ -518,6 +526,8 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
+                        className: 'w-60',
+                        popoverContentClassName: 'w-60',
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
                     },
