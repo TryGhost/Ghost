@@ -67,10 +67,10 @@ export const WithNavbarNavigation: Story = {
                     </PageMenu>
                 </NavbarNavigation>
                 <NavbarActions>
-                    <Button variant='outline' size='sm'>
+                    <Button size='sm' variant='outline'>
                         <Download /> Export
                     </Button>
-                    <Button variant='outline' size='sm'>
+                    <Button size='sm' variant='outline'>
                         <Settings /> Settings
                     </Button>
                 </NavbarActions>
@@ -144,7 +144,7 @@ export const Minimal: Story = {
                     <h2 className="text-lg font-semibold">Page Title</h2>
                 </NavbarNavigation>
                 <NavbarActions>
-                    <Button variant='outline' size='sm'>
+                    <Button size='sm' variant='outline'>
                         <User /> Account
                     </Button>
                 </NavbarActions>
@@ -171,10 +171,10 @@ export const WithoutBorder: Story = {
                     <PageMenuItem value="contact">Contact</PageMenuItem>
                 </PageMenu>
                 <NavbarActions>
-                    <Button variant='ghost' size='sm'>
+                    <Button size='sm' variant='ghost'>
                         Sign in
                     </Button>
-                    <Button variant='default' size='sm'>
+                    <Button size='sm' variant='default'>
                         Get started
                     </Button>
                 </NavbarActions>
