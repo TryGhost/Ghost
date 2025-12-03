@@ -3,15 +3,24 @@ import path from 'node:path';
 import StorageBase from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import {
     DeleteObjectCommand,
     HeadObjectCommand,
     NotFound,
     NoSuchKey,
     PutObjectCommand,
+    CreateMultipartUploadCommand,
+    UploadPartCommand,
+    CompleteMultipartUploadCommand,
+    AbortMultipartUploadCommand,
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3';
+
+// Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
+// GCS limits: https://docs.cloud.google.com/storage/quotas#requests
+const MIN_MULTIPART_CHUNK_SIZE = 5 * 1024 * 1024;
 
 const messages = {
     invalidUrlParameter: 'The URL "{url}" is not a valid URL for this site.',
@@ -23,7 +32,13 @@ const messages = {
     emptyTargetPath: 'S3Storage.saveRaw requires a non-empty targetPath',
     emptyFileName: 'S3Storage.{method} requires a non-empty fileName',
     emptyRelativePath: 'S3Storage.buildKey requires a non-empty relativePath',
-    readNotSupported: 'read() is not supported by S3Storage. S3Storage is designed for media and files, not images. Use LocalImagesStorage for image storage.'
+    readNotSupported: 'read() is not supported by S3Storage. S3Storage is designed for media and files, not images. Use LocalImagesStorage for image storage.',
+    multipartUploadInitFailed: 'Failed to initiate file upload.',
+    multipartUploadPartFailed: 'Failed to upload file part {partNumber}.',
+    multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.',
+    missingMultipartThreshold: 'S3Storage requires multipartUploadThresholdBytes option',
+    missingMultipartChunkSize: 'S3Storage requires multipartChunkSizeBytes option',
+    multipartChunkSizeTooSmall: 'S3Storage multipartChunkSizeBytes must be at least 5 MiB (5242880 bytes)'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -48,6 +63,8 @@ export interface S3StorageOptions {
     sessionToken?: string;
     tenantPrefix?: string;
     s3Client?: S3Client;
+    multipartUploadThresholdBytes: number;
+    multipartChunkSizeBytes: number;
 }
 
 export default class S3Storage extends StorageBase {
@@ -60,6 +77,10 @@ export default class S3Storage extends StorageBase {
     private readonly cdnUrl: string;
 
     public readonly staticFileURLPrefix: string;
+
+    private readonly multipartUploadThresholdBytes: number;
+
+    private readonly multipartChunkSizeBytes: number;
 
     constructor(options: S3StorageOptions) {
         super();
@@ -80,10 +101,8 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        // Required by ImporterContentFileHandler
         this.staticFileURLPrefix = staticFileURLPrefix;
 
-        // Required by ExternalMediaInliner
         this.storagePath = staticFileURLPrefix;
 
         this.cdnUrl = stripTrailingSlash(options.cdnUrl || '');
@@ -92,6 +111,25 @@ export default class S3Storage extends StorageBase {
                 message: tpl(messages.missingCdnUrl)
             });
         }
+
+        if (!options.multipartUploadThresholdBytes) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingMultipartThreshold)
+            });
+        }
+        this.multipartUploadThresholdBytes = options.multipartUploadThresholdBytes;
+
+        if (!options.multipartChunkSizeBytes) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingMultipartChunkSize)
+            });
+        }
+        if (options.multipartChunkSizeBytes < MIN_MULTIPART_CHUNK_SIZE) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.multipartChunkSizeTooSmall)
+            });
+        }
+        this.multipartChunkSizeBytes = options.multipartChunkSizeBytes;
 
         const clientConfig: S3ClientConfig = {
             region: options.region,
@@ -115,7 +153,15 @@ export default class S3Storage extends StorageBase {
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
-        const body = fs.createReadStream(file.path);
+        const stats = await fs.promises.stat(file.path);
+
+        if (stats.size >= this.multipartUploadThresholdBytes) {
+            logging.info(`Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
+            return await this.uploadMultipart(file, key);
+        }
+
+        logging.info(`Small file, using simple upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
+        const body = await fs.promises.readFile(file.path);
 
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
@@ -125,6 +171,92 @@ export default class S3Storage extends StorageBase {
         }));
 
         return `${this.cdnUrl}/${key}`;
+    }
+
+    private async *readFileInChunks(filePath: string, chunkSize: number): AsyncGenerator<Buffer> {
+        const stream = fs.createReadStream(filePath);
+        let buffer = Buffer.alloc(0);
+
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk as Buffer]);
+
+            while (buffer.length >= chunkSize) {
+                yield buffer.slice(0, chunkSize);
+                buffer = buffer.slice(chunkSize);
+            }
+        }
+
+        if (buffer.length > 0) {
+            yield buffer;
+        }
+    }
+
+    private async uploadMultipart(file: UploadFile, key: string): Promise<string> {
+        const createResponse = await this.client.send(new CreateMultipartUploadCommand({
+            Bucket: this.bucket,
+            Key: key,
+            ContentType: file.type
+        }));
+
+        const uploadId = createResponse.UploadId;
+        if (!uploadId) {
+            throw new errors.InternalServerError({
+                message: tpl(messages.multipartUploadInitFailed)
+            });
+        }
+
+        try {
+            const parts: {ETag: string; PartNumber: number}[] = [];
+            let partNumber = 1;
+            const chunks = this.readFileInChunks(file.path, this.multipartChunkSizeBytes);
+
+            for await (const chunk of chunks) {
+                const uploadPartResponse = await this.client.send(new UploadPartCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                    UploadId: uploadId,
+                    PartNumber: partNumber,
+                    Body: chunk
+                }));
+
+                if (!uploadPartResponse.ETag) {
+                    throw new errors.InternalServerError({
+                        message: tpl(messages.multipartUploadPartFailed, {partNumber})
+                    });
+                }
+
+                parts.push({
+                    ETag: uploadPartResponse.ETag,
+                    PartNumber: partNumber
+                });
+
+                partNumber += 1;
+            }
+
+            await this.client.send(new CompleteMultipartUploadCommand({
+                Bucket: this.bucket,
+                Key: key,
+                UploadId: uploadId,
+                MultipartUpload: {
+                    Parts: parts
+                }
+            }));
+
+            logging.info(`Multipart upload completed: file=${key} parts=${parts.length}`);
+            return `${this.cdnUrl}/${key}`;
+        } catch (error) {
+            logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
+            try {
+                await this.client.send(new AbortMultipartUploadCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                    UploadId: uploadId
+                }));
+            } catch (abortError) {
+                logging.error(`Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
+            }
+            throw error;
+        }
     }
 
     async saveRaw(buffer: Buffer, targetPath: string): Promise<string> {
