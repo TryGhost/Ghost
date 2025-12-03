@@ -3,9 +3,6 @@ const jobs = require('./jobs');
 const StartOutboxProcessingEvent = require('./events/StartOutboxProcessingEvent');
 const domainEvents = require('@tryghost/domain-events');
 const processOutbox = require('./jobs/lib/process-outbox');
-const {WELCOME_EMAIL_SOURCES} = require('./jobs/lib/constants');
-const MemberCreatedEvent = require('../../../shared/events/MemberCreatedEvent');
-const config = require('../../../shared/config');
 
 class OutboxServiceWrapper {
     init() {
@@ -19,12 +16,6 @@ class OutboxServiceWrapper {
 
         domainEvents.subscribe(StartOutboxProcessingEvent, async () => {
             await this.startProcessing();
-        });
-
-        domainEvents.subscribe(MemberCreatedEvent, async (event) => {
-            if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(event.data.source)) {
-                await this.startProcessing();
-            }
         });
 
         this.initialized = true;
