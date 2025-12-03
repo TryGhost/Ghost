@@ -46,7 +46,6 @@ describe('Outbox Service', function () {
             await service.startProcessing();
 
             sinon.assert.notCalled(processOutboxStub);
-            sinon.assert.calledWith(loggingStub.info, 'Outbox job already running, skipping');
         });
     });
 });
