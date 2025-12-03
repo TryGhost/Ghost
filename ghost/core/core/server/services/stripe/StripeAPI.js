@@ -495,6 +495,21 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Apply Automatic Tax related session options consistently.
+     * @param {object} stripeSessionOptions
+     * @param {{hasCustomer: boolean}} ctx
+     */
+    _applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer}) {
+        if (!this._config.enableAutomaticTax) {
+            return;
+        }
+        stripeSessionOptions.tax_id_collection = {enabled: true};
+        if (hasCustomer) {
+            stripeSessionOptions.customer_update = {address: 'auto', name: 'auto'};
+        }
+    }
+
+    /**
      * Create a new Stripe Checkout Session for a new subscription.
      * 
      * @param {string} priceId
@@ -581,9 +596,7 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
-        if (customerId && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
-        }
+        this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customerId)});
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
@@ -657,9 +670,7 @@ module.exports = class StripeAPI {
             ]
         };
 
-        if (customer && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
-        }
+        this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
