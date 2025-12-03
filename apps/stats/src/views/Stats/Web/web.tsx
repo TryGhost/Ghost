@@ -264,14 +264,14 @@ const Web: React.FC = () => {
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
-                        onSourceClick={handleSourceClick}
+                        onSourceClick={utmTrackingEnabled ? handleSourceClick : undefined}
                     />
                 </div>
                 <LocationsCard
                     data={locationsData}
                     isLoading={isLocationsLoading}
                     range={range}
-                    onLocationClick={handleLocationClick}
+                    onLocationClick={utmTrackingEnabled ? handleLocationClick : undefined}
                 />
             </StatsView>
         </StatsLayout>
