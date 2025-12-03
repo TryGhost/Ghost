@@ -98,12 +98,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                             <LucideIcon.Sprout />
                         Growth
                         </PageMenuItem>
-
-                        {/* {appSettings?.analytics.webAnalytics && (
-                        <PageMenuItem value="/analytics/locations/" onClick={() => {
-                            navigate('/analytics/locations/');
-                        }}>Locations</PageMenuItem>
-                    )} */}
                     </PageMenu>
                 </NavbarNavigation>
                 {children}
