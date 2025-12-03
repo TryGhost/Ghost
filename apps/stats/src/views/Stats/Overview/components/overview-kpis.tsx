@@ -154,7 +154,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     } else if (cardCount === 1) {
         cols = 'lg:grid-cols-1';
     }
-    const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
+    const containerClass = `flex flex-col lg:grid ${cols} gap-6`;
 
     return (
         <div className={containerClass}>

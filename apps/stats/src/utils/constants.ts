@@ -50,8 +50,17 @@ export const STATS_LABEL_MAPPINGS = {
     'bing.com': 'Bing',
     'bsky.app': 'Bluesky',
     'yahoo.com': 'Yahoo',
-    'duckduckgo.com': 'DuckDuckGo'
+    'duckduckgo.com': 'DuckDuckGo',
+
+    // Unknown/Other values - normalize to "Unknown"
+    Others: 'Unknown',
+    Other: 'Unknown',
+    NULL: 'Unknown',
+    ᴺᵁᴸᴸ: 'Unknown'
 };
+
+// Values that represent unknown locations in the data
+export const UNKNOWN_LOCATION_VALUES = ['NULL', 'ᴺᵁᴸᴸ', '', 'Others', 'Other'];
 
 export const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
 

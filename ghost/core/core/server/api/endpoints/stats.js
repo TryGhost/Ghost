@@ -128,6 +128,8 @@ const controller = {
             'tb_version',
             'post_type',
             'post_uuid',
+            'pathname',
+            'location',
             'source',
             'utm_source',
             'utm_medium',

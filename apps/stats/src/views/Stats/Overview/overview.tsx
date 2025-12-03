@@ -6,7 +6,7 @@ import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopPosts from './components/top-posts';
-import {GhAreaChartDataItem, H3, LucideIcon, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {GhAreaChartDataItem, H3, LucideIcon, NavbarActions, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/audience-select';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -195,7 +195,9 @@ const Overview: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <DateRangeSelect excludeRanges={['today']} />
+                <NavbarActions>
+                    <DateRangeSelect excludeRanges={['today']} />
+                </NavbarActions>
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <OverviewKPIs
@@ -216,7 +218,7 @@ const Overview: React.FC = () => {
                     isLoading={isTopPostsLoading}
                     topPostsData={topPostsData}
                 />
-                <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'

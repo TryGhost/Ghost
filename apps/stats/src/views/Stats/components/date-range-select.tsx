@@ -28,7 +28,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({excludeRanges = []}) =
         <Select value={`${range}`} onValueChange={(value) => {
             setRange(Number(value));
         }}>
-            <SelectTrigger>
+            <SelectTrigger className='w-auto'>
                 <LucideIcon.Calendar className='mr-2' size={16} strokeWidth={1.5} />
                 <SelectValue placeholder="Select a period" />
             </SelectTrigger>

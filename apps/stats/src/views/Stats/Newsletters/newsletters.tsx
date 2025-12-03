@@ -7,7 +7,7 @@ import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -369,8 +369,10 @@ const Newsletters: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <NewsletterSelect newsletters={newslettersData?.newsletters} />
-                <DateRangeSelect />
+                <NavbarActions>
+                    <NewsletterSelect newsletters={newslettersData?.newsletters} />
+                    <DateRangeSelect />
+                </NavbarActions>
             </StatsHeader>
             <StatsView isLoading={false} loadingComponent={<></>}>
                 <>

@@ -3,7 +3,7 @@ import {cn} from '@tryghost/shade';
 
 const TagsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <section className={cn('flex gap-8 flex-col p-4 lg:p-8 size-full grow', className)} {...props}>
+        <section className={cn('flex gap-6 flex-col p-4 lg:p-8 size-full grow', className)} {...props}>
             {children}
         </section>
     );

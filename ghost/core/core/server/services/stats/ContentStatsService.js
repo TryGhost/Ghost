@@ -32,6 +32,8 @@ class ContentStatsService {
      * @param {string} [options.post_type] - Post type filter ('post' or 'page')
      * @param {string} [options.tb_version] - Tinybird version for API URL
      * @param {string} [options.post_uuid] - Post UUID filter
+     * @param {string} [options.pathname] - Pathname filter (e.g. '/team')
+     * @param {string} [options.location] - Location/country code filter (e.g. 'US')
      * @param {string} [options.source] - Source filter
      * @param {string} [options.utm_source] - UTM source filter
      * @param {string} [options.utm_medium] - UTM medium filter
@@ -84,6 +86,16 @@ class ContentStatsService {
         // Only add post_uuid if defined
         if (options.post_uuid) {
             tinybirdOptions.postUuid = options.post_uuid;
+        }
+
+        // Only add pathname if defined
+        if (options.pathname) {
+            tinybirdOptions.pathname = options.pathname;
+        }
+
+        // Only add location if defined
+        if (options.location) {
+            tinybirdOptions.location = options.location;
         }
 
         // Only add source if defined (allow empty string for "Direct" traffic)
