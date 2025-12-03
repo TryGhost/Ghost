@@ -1,0 +1,49 @@
+# Semgrep configuration file
+# This file allows you to customize Semgrep rules for this repository
+
+rules:
+  # Security rules
+  - id: security-audit
+    pattern: p/security-audit
+  
+  # JavaScript/TypeScript rules
+  - id: javascript
+    pattern: p/javascript
+  
+  - id: typescript
+    pattern: p/typescript
+  
+  # Node.js specific rules
+  - id: nodejs
+    pattern: p/nodejs
+  
+  # OWASP Top 10
+  - id: owasp
+    pattern: p/owasp-top-ten
+
+# Exclude paths
+exclude:
+  - node_modules
+  - dist
+  - build
+  - .next
+  - coverage
+  - playwright-report
+  - test
+  - tests
+  - e2e
+  - "*.test.js"
+  - "*.test.ts"
+  - "*.test.tsx"
+  - "*.spec.js"
+  - "*.spec.ts"
+  - "*.spec.tsx"
+  - yarn.lock
+  - package-lock.json
+  - .git
+  - .github
+  - docker
+  - "compose*.yml"
+  - "compose*.yaml"
+  - Dockerfile*
+

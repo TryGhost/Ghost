@@ -1,0 +1,39 @@
+name: "Ghost CodeQL Configuration"
+
+# Paths to exclude from analysis
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/.next/**'
+  - '**/coverage/**'
+  - '**/playwright-report/**'
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/e2e/**'
+  - '**/*.test.js'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.js'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
+  - '**/yarn.lock'
+  - '**/package-lock.json'
+  - '**/.git/**'
+  - '**/.github/**'
+  - '**/docker/**'
+  - '**/compose*.yml'
+  - '**/compose*.yaml'
+  - '**/Dockerfile*'
+
+# Queries to run
+queries:
+  # Use the default security and quality queries
+  - uses: security-and-quality
+  # Additional queries for Node.js/JavaScript
+  - uses: security-extended
+  - uses: javascript-security-and-quality.qls
+
+# Disable some queries that may have too many false positives
+disable-default-queries: false
+
