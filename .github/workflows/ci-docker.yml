@@ -430,3 +430,16 @@ jobs:
           \`\`\`bash
           REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
+
+  job_required_tests:
+    name: All required tests passed or skipped
+    needs: [test_e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.test_e2e.result }}" != "success" ]]; then
+            echo "E2E tests did not succeed (result: ${{ needs.test_e2e.result }})"
+            exit 1
+          fi
