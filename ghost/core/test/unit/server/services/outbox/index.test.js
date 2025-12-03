@@ -46,6 +46,7 @@ describe('Outbox Service', function () {
             await service.startProcessing();
 
             sinon.assert.notCalled(processOutboxStub);
+            sinon.assert.calledOnce(loggingStub.info);
         });
     });
 });
