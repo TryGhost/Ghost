@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
 
 const matchAutomatedEmail = {
@@ -10,10 +10,31 @@ const matchAutomatedEmail = {
 describe('Automated Emails API', function () {
     let agent;
 
+    // Helper to create an automated email for tests
+    const createAutomatedEmail = async (overrides = {}) => {
+        const {body} = await agent
+            .post('automated_emails')
+            .body({automated_emails: [{
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
+                status: 'inactive',
+                subject: 'Welcome to the site!',
+                lexical: JSON.stringify({root: {children: []}}),
+                ...overrides
+            }]})
+            .expectStatus(201);
+        return body.automated_emails[0];
+    };
+
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsOwner();
+    });
+
+    beforeEach(async function () {
+        // Ensure clean state for each test
+        await dbUtils.truncate('automated_emails');
     });
 
     it('Can browse with no automated emails', async function () {
@@ -49,6 +70,8 @@ describe('Automated Emails API', function () {
     });
 
     it('Can browse automated emails', async function () {
+        await createAutomatedEmail();
+
         await agent
             .get('automated_emails')
             .expectStatus(200)
@@ -62,11 +85,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Can read an automated email by id', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .get(`automated_emails/${id}`)
@@ -81,11 +102,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Can edit an automated email', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .put(`automated_emails/${id}`)
@@ -168,11 +187,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Validates status on edit', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .put(`automated_emails/${id}`)
@@ -193,11 +210,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Validates name is required on edit', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .put(`automated_emails/${id}`)
@@ -217,11 +232,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Validates name value on edit', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .put(`automated_emails/${id}`)
@@ -241,11 +254,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Validates lexical is valid JSON on edit', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .put(`automated_emails/${id}`)
@@ -266,11 +277,9 @@ describe('Automated Emails API', function () {
     });
 
     it('Can destroy an automated email', async function () {
-        const {body} = await agent
-            .get('automated_emails')
-            .expectStatus(200);
+        const automatedEmail = await createAutomatedEmail();
 
-        const id = body.automated_emails[0].id;
+        const id = automatedEmail.id;
 
         await agent
             .delete(`automated_emails/${id}`)
