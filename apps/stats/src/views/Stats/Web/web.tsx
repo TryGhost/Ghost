@@ -211,18 +211,32 @@ const Web: React.FC = () => {
         );
     }
 
+    // Check if filters are applied
+    const hasFilters = utmFilters.length > 0;
+
     return (
         <StatsLayout>
             <StatsHeader>
                 {!utmTrackingEnabled && <AudienceSelect />}
+                {/* Show filter button in header when UTM is enabled and no filters applied */}
+                {utmTrackingEnabled && !hasFilters && (
+                    <StatsFilter
+                        filters={utmFilters}
+                        utmTrackingEnabled={utmTrackingEnabled}
+                        onChange={setUtmFilters}
+                    />
+                )}
                 <DateRangeSelect />
             </StatsHeader>
-            {utmTrackingEnabled && (
-                <StatsFilter
-                    filters={utmFilters}
-                    utmTrackingEnabled={utmTrackingEnabled}
-                    onChange={setUtmFilters}
-                />
+            {/* Show filter component below header when filters are applied */}
+            {utmTrackingEnabled && hasFilters && (
+                <div className='mb-4'>
+                    <StatsFilter
+                        filters={utmFilters}
+                        utmTrackingEnabled={utmTrackingEnabled}
+                        onChange={setUtmFilters}
+                    />
+                </div>
             )}
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>

@@ -544,13 +544,14 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     }, [onChange, setAudience, ALL_AUDIENCES]);
 
     return (
-        <div className="mb-4 flex justify-between gap-2">
+        <div className="flex justify-between gap-2">
             <Filters
                 addButtonIcon={<LucideIcon.FunnelPlus />}
-                addButtonText={hasFilters ? '' : 'Filter'}
-                className='[&>button]:order-last'
+                addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+                className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
                 fields={groupedFields}
                 filters={filters}
+                popoverAlign={hasFilters ? 'start' : 'end'}
                 showSearchInput={false}
                 // size='sm'
                 onChange={handleFilterChange}
