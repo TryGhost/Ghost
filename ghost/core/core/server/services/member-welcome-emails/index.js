@@ -3,6 +3,9 @@ const jobs = require('./jobs');
 const StartMemberWelcomeEmailJobEvent = require('./events/StartMemberWelcomeEmailJobEvent');
 const domainEvents = require('@tryghost/domain-events');
 const processOutbox = require('./jobs/lib/process-outbox');
+const {MemberCreatedEvent} = require('../../../shared/events');
+const config = require('../../../shared/config');
+const {WELCOME_EMAIL_SOURCES} = require('./jobs/lib/constants');
 
 class MemberWelcomeEmailsServiceWrapper {
     init() {
@@ -15,6 +18,19 @@ class MemberWelcomeEmailsServiceWrapper {
         jobs.scheduleMemberWelcomeEmailJob();
 
         domainEvents.subscribe(StartMemberWelcomeEmailJobEvent, async () => {
+            await this.startProcessing();
+        });
+
+        domainEvents.subscribe(MemberCreatedEvent, async (event) => {
+            if (!config.get('memberWelcomeEmailTestInbox')) {
+                return;
+            }
+
+            if (!WELCOME_EMAIL_SOURCES.includes(event.data.source)) {
+                logging.info('member created but from api so skipping');
+                return;
+            }
+
             await this.startProcessing();
         });
 

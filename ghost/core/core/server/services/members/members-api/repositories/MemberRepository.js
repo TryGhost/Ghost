@@ -9,6 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const config = require('../../../../../shared/config');
+const {WELCOME_EMAIL_SOURCES} = require('../../../member-welcome-emails/jobs/lib/constants');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -24,8 +25,6 @@ const messages = {
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
-
-const WELCOME_EMAIL_SOURCES = ['member'];
 
 /**
  * @typedef {object} ITokenService
@@ -347,6 +346,7 @@ module.exports = class MemberRepository {
                 }, {...memberAddOptions, transacting});
 
                 const timestamp = eventData.created_at || newMember.get('created_at');
+                const memberType = stripeCustomer ? 'paid' : 'free';
 
                 await this._Outbox.add({
                     id: ObjectId().toHexString(),
@@ -356,7 +356,8 @@ module.exports = class MemberRepository {
                         email: newMember.get('email'),
                         name: newMember.get('name'),
                         source,
-                        timestamp
+                        timestamp,
+                        memberType
                     })
                 }, {transacting});
 
