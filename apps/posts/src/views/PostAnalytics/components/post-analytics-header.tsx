@@ -205,28 +205,32 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <PageMenuItem value="Overview" onClick={() => {
                                 navigate(`/posts/analytics/${postId}`);
                             }}>
-                                    Overview
+                                <LucideIcon.Gauge />
+                                Overview
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/web`);
                             }}>
-                                    Web traffic
+                                <LucideIcon.Globe />
+                                Web traffic
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/newsletter`);
                             }}>
-                                    Newsletter
+                                <LucideIcon.Mail />
+                                Newsletter
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Growth') && (
                             <PageMenuItem value="Growth" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/growth`);
                             }}>
-                                    Growth
+                                <LucideIcon.Sprout />
+                                Growth
                             </PageMenuItem>
                         )}
                     </PageMenu>
