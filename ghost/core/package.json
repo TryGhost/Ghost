@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.8.1",
+  "version": "6.9.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -55,11 +55,7 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test && yarn lint:types",
-    "prepack": "node monobundle.js",
-    "query:posts": "cd core/server/data/tinybird/scripts && ./query-posts.sh",
-    "query:members": "cd core/server/data/tinybird/scripts && ./query-members.sh",
-    "generate:analytics": "node core/server/data/tinybird/scripts/analytics-generator.js",
-    "reset:data:tinybird": "cd core/server/data/tinybird/scripts && node reset-data-tinybird.js"
+    "prepack": "node monobundle.js"
   },
   "engines": {
     "node": "^22.13.1",

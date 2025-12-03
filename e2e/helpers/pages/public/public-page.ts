@@ -24,11 +24,12 @@ class PortalSection extends BasePage {
 
     async waitForScript(): Promise<void> {
         await this.portalScript.waitFor({
-            state: 'attached',
-            timeout: 10000
+            state: 'attached'
         });
 
-        await this.page.waitForTimeout(500);
+        await this.portalRoot.waitFor({
+            state: 'attached'
+        });
     }
 
     async waitForIFrame(): Promise<void> {
@@ -61,7 +62,7 @@ export class PublicPage extends BasePage {
     private readonly subscribeLink: Locator;
     private readonly signInLink: Locator;
 
-    private readonly portal: PortalSection;
+    protected readonly portal: PortalSection;
 
     constructor(page: Page) {
         super(page, '/');
@@ -92,12 +93,10 @@ export class PublicPage extends BasePage {
 
     pageHitRequestPromise(): Promise<Response> {
         return this.page.waitForResponse((response) => {
-            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+            return response
+                .url()
+                .includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
         }, {timeout: 10000});
-    }
-
-    async waitForPageHitRequest(): Promise<void> {
-        await this.pageHitRequestPromise();
     }
 
     async openPortalViaSubscribeButton(): Promise<void> {

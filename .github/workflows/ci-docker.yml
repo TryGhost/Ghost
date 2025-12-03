@@ -19,7 +19,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
-  NODE_VERSION: 22.13.1
+  NODE_VERSION: 22.18.0
 
 jobs:
 
@@ -106,7 +106,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --prefer-offline --frozen-lockfile
+        run: bash .github/scripts/install-deps.sh
 
     outputs:
       dependency_cache_key: ${{ env.cachekey }}
@@ -286,7 +286,7 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   test_e2e:
-    name: E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: ${{matrix.shell == 'react' && '[Optional] ' || ''}}E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [build, setup]
     strategy:

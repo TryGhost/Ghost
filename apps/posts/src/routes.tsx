@@ -1,13 +1,13 @@
-import Growth from './views/PostAnalytics/Growth/Growth';
-import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
-import Overview from './views/PostAnalytics/Overview/Overview';
-import PostAnalytics from './views/PostAnalytics/PostAnalytics';
-import PostAnalyticsProvider from './providers/PostAnalyticsContext';
-import Tags from './views/Tags/Tags';
-import Web from './views/PostAnalytics/Web/Web';
+import Growth from '@views/PostAnalytics/Growth/growth';
+import Newsletter from '@views/PostAnalytics/Newsletter/newsletter';
+import Overview from '@views/PostAnalytics/Overview/overview';
+import PostAnalytics from '@views/PostAnalytics/post-analytics';
+import PostAnalyticsProvider from './providers/post-analytics-context';
+import Tags from '@views/Tags/tags';
+import Web from '@views/PostAnalytics/Web/web';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
-// import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
+// import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
 export const APP_ROUTE_PREFIX = '/';
 

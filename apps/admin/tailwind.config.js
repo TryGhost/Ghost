@@ -10,5 +10,6 @@ export default {
         "../stats/src/**/*.{js,ts,jsx,tsx}",
         "../activitypub/src/**/*.{js,ts,jsx,tsx}",
         "../admin-x-settings/src/**/*.{js,ts,jsx,tsx}",
+        "../admin-x-design-system/src/**/*.{js,ts,jsx,tsx}",
     ],
 };

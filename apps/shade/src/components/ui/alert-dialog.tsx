@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 const AlertDialog = AlertDialogPrimitive.Root;
 

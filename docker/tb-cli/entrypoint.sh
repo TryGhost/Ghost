@@ -34,20 +34,34 @@ fi
 # Get the admin token from the Tinybird API
 ## This is different from the workspace admin token
 echo "Fetching tokens from Tinybird API..."
-TOKENS_RESPONSE=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens)
+MAX_RETRIES=10
+RETRY_DELAY=1
 
-# Check if curl succeeded
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to fetch tokens from Tinybird API. curl failed." >&2
-    exit 1
-fi
-
-# Find admin token by looking for ADMIN scope (more robust than name matching)
-ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.scopes[]? | .type == "ADMIN") | .token' | head -n1)
+for i in $(seq 1 $MAX_RETRIES); do
+    set +e
+    TOKENS_RESPONSE=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens 2>&1)
+    CURL_EXIT=$?
+    set -e
+    
+    if [ $CURL_EXIT -eq 0 ]; then
+        # Find admin token by looking for ADMIN scope (more robust than name matching)
+        ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.scopes[]? | .type == "ADMIN") | .token' | head -n1)
+        
+        if [ -n "$ADMIN_TOKEN" ] && [ "$ADMIN_TOKEN" != "null" ]; then
+            break
+        fi
+    fi
+    
+    if [ $i -lt $MAX_RETRIES ]; then
+        echo "Attempt $i failed, retrying in ${RETRY_DELAY}s..." >&2
+        sleep $RETRY_DELAY
+    fi
+done
 
 # Check if admin token is valid
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
-    echo "Error: Failed to get admin token from Tinybird API. Please ensure Tinybird is properly configured." >&2
+    echo "Error: Failed to get admin token from Tinybird API after $MAX_RETRIES attempts. Please ensure Tinybird is properly configured." >&2
+    echo "Tokens response: $TOKENS_RESPONSE" >&2
     exit 1
 fi
 

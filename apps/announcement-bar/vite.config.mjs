@@ -37,7 +37,7 @@ export default defineConfig((config) => {
                     {
                         name: 'load-js-files-as-jsx',
                         setup(build) {
-                            build.onLoad({filter: /src\/.*\.js$/}, async args => ({
+                            build.onLoad({filter: /(src|test)\/.*\.js$/}, async args => ({
                                 loader: 'jsx',
                                 contents: await fs.readFile(args.path, 'utf8')
                             }));
@@ -63,7 +63,7 @@ export default defineConfig((config) => {
         test: {
             globals: true,
             environment: 'jsdom',
-            setupFiles: './src/setupTests.js',
+            setupFiles: './test/setup-tests.js',
             testTimeout: 10000
         }
     };
