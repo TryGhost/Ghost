@@ -64,7 +64,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-0 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-0 border-none bg-white/70 pb-6 pt-9 backdrop-blur-md transform-gpu lg:flex-row lg:items-center dark:bg-black'>
                 <NavbarNavigation>
                     <PageMenu defaultValue={normalizedPath} responsive>
                         <PageMenuItem value="/analytics/" onClick={() => {
