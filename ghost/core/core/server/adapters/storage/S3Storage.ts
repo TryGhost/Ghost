@@ -56,8 +56,8 @@ export interface S3StorageOptions {
     sessionToken?: string;
     tenantPrefix?: string;
     s3Client?: S3Client;
-    multipartThreshold?: number; // File size threshold for multipart upload (default: 10MB)
-    partSize?: number; // Size of each part for multipart upload (default: 10MB)
+    multipartUploadThresholdBytes?: number;
+    multipartChunkSizeBytes?: number;
 }
 
 export default class S3Storage extends StorageBase {
@@ -94,10 +94,8 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        // Required by ImporterContentFileHandler
         this.staticFileURLPrefix = staticFileURLPrefix;
 
-        // Required by ExternalMediaInliner
         this.storagePath = staticFileURLPrefix;
 
         this.cdnUrl = stripTrailingSlash(options.cdnUrl || '');
@@ -108,9 +106,9 @@ export default class S3Storage extends StorageBase {
         }
 
         // 10MB threshold - files larger than this use multipart upload
-        this.multipartThreshold = options.multipartThreshold || 10 * 1024 * 1024;
+        this.multipartThreshold = options.multipartUploadThresholdBytes || 10 * 1024 * 1024;
         // 10MB part size - each part uploaded separately to keep memory low
-        this.partSize = options.partSize || 10 * 1024 * 1024;
+        this.partSize = options.multipartChunkSizeBytes || 10 * 1024 * 1024;
 
         const clientConfig: S3ClientConfig = {
             region: options.region,
@@ -134,16 +132,13 @@ export default class S3Storage extends StorageBase {
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
-
-        // Get file size to determine upload strategy
         const stats = await fs.promises.stat(file.path);
 
         if (stats.size >= this.multipartThreshold) {
             logging.info(`Large file (${Math.round(stats.size / 1024 / 1024)}MB), using multipart upload...`);
             return await this.uploadMultipart(file, key, stats.size);
         }
- 
-        // Use simple upload for small files (faster, less overhead)
+
         logging.info(`Small file (${Math.round(stats.size / 1024)}KB), using simple upload...`);
         const body = await fs.promises.readFile(file.path);
 
@@ -161,7 +156,6 @@ export default class S3Storage extends StorageBase {
         let uploadId: string | undefined;
 
         try {
-            // Step 1: Initiate multipart upload
             const createResponse = await this.client.send(new CreateMultipartUploadCommand({
                 Bucket: this.bucket,
                 Key: key,
@@ -175,7 +169,6 @@ export default class S3Storage extends StorageBase {
                 });
             }
 
-            // Step 2: Upload parts
             const parts: {ETag: string; PartNumber: number}[] = [];
             const fileHandle = await fs.promises.open(file.path, 'r');
             
@@ -184,7 +177,6 @@ export default class S3Storage extends StorageBase {
                 let uploadedBytes = 0;
 
                 while (uploadedBytes < fileSize) {
-                    // Read one part into buffer
                     const remainingBytes = fileSize - uploadedBytes;
                     const currentPartSize = Math.min(this.partSize, remainingBytes);
                     const buffer = Buffer.alloc(currentPartSize);
@@ -197,7 +189,6 @@ export default class S3Storage extends StorageBase {
                         });
                     }
 
-                    // Upload this part
                     const uploadPartResponse = await this.client.send(new UploadPartCommand({
                         Bucket: this.bucket,
                         Key: key,
@@ -227,7 +218,6 @@ export default class S3Storage extends StorageBase {
                 await fileHandle.close();
             }
 
-            // Step 3: Complete multipart upload
             await this.client.send(new CompleteMultipartUploadCommand({
                 Bucket: this.bucket,
                 Key: key,
@@ -240,7 +230,6 @@ export default class S3Storage extends StorageBase {
             logging.info(`Multipart upload completed: ${parts.length} parts`);
             return `${this.cdnUrl}/${key}`;
         } catch (error) {
-            // Abort multipart upload on error to clean up
             if (uploadId) {
                 logging.warn(`Aborting multipart upload ${uploadId}...`);
                 try {
