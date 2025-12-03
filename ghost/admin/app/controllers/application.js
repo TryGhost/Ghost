@@ -39,11 +39,6 @@ export default class ApplicationController extends Controller {
         return document.getElementById('ember-modal-wormhole') || this.rootElement;
     }
 
-    setAdjustmentStyles(element) {
-        const height = element.offsetHeight;
-        document.body.style.setProperty('--sidebar-height-adjustment', `${height}px`);
-    }
-
     get showBilling() {
         return this.config.hostSettings?.billing?.enabled;
     }
