@@ -1,4 +1,5 @@
 import DateRangeSelect from '../components/date-range-select';
+import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
 import React, {useMemo, useState} from 'react';
@@ -206,17 +207,7 @@ const Growth: React.FC = () => {
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
                                                 <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                                                    <EmptyIndicator
-                                                        actions={
-                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
-                                                                Open settings
-                                                            </Button>
-                                                        }
-                                                        description='Enable member source tracking in settings to see which content drives member growth.'
-                                                        title='Member sources have been disabled'
-                                                    >
-                                                        <LucideIcon.Activity />
-                                                    </EmptyIndicator>
+                                                    <DisabledSourcesIndicator />
                                                 </TableCell>
                                             </TableRow>
                                         ) : transformedTopPosts.length > 0 ? (
