@@ -10,7 +10,6 @@ const matchAutomatedEmail = {
 describe('Automated Emails API', function () {
     let agent;
 
-    // Helper to create an automated email for tests
     const createAutomatedEmail = async (overrides = {}) => {
         const {body} = await agent
             .post('automated_emails')
@@ -33,277 +32,286 @@ describe('Automated Emails API', function () {
     });
 
     beforeEach(async function () {
-        // Ensure clean state for each test
         await dbUtils.truncate('automated_emails');
     });
 
-    it('Can browse with no automated emails', async function () {
-        await agent
-            .get('automated_emails')
-            .expectStatus(200)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+    describe('Browse', function () {
+        it('Can browse with no automated emails', async function () {
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Can browse automated emails', async function () {
+            await createAutomatedEmail();
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
-    it('Can add an automated email', async function () {
-        await agent
-            .post('automated_emails')
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'inactive',
-                subject: 'Welcome to the site!',
-                lexical: JSON.stringify({root: {children: []}})
-            }]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                automated_emails: [matchAutomatedEmail]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('automated_emails')
-            });
+    describe('Read', function () {
+        it('Can read an automated email by id', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .get(`automated_emails/${id}`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
-    it('Can browse automated emails', async function () {
-        await createAutomatedEmail();
+    describe('Add', function () {
+        it('Can add an automated email', async function () {
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: JSON.stringify({root: {children: []}})
+                }]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('automated_emails')
+                });
+        });
 
-        await agent
-            .get('automated_emails')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                automated_emails: [matchAutomatedEmail]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+        it('Validates status on add', async function () {
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    status: 'invalid-status',
+                    subject: 'Test'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates name on add', async function () {
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'invalid-name',
+                    status: 'active',
+                    subject: 'Test'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates lexical is valid JSON on add', async function () {
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    status: 'active',
+                    subject: 'Test',
+                    lexical: 'not-valid-json'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
-    it('Can read an automated email by id', async function () {
-        const automatedEmail = await createAutomatedEmail();
+    describe('Edit', function () {
+        it('Can edit an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
 
-        const id = automatedEmail.id;
+            const id = automatedEmail.id;
 
-        await agent
-            .get(`automated_emails/${id}`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                automated_emails: [matchAutomatedEmail]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+            await agent
+                .put(`automated_emails/${id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    subject: 'Updated subject',
+                    status: 'active'
+                }]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    automated_emails: [matchAutomatedEmail]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates status on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .put(`automated_emails/${id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    status: 'invalid-status'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates name is required on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .put(`automated_emails/${id}`)
+                .body({automated_emails: [{
+                    subject: 'Updated subject'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates name value on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .put(`automated_emails/${id}`)
+                .body({automated_emails: [{
+                    name: 'invalid-name'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Validates lexical is valid JSON on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            const id = automatedEmail.id;
+
+            await agent
+                .put(`automated_emails/${id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    lexical: 'not-valid-json'
+                }]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
-    it('Can edit an automated email', async function () {
-        const automatedEmail = await createAutomatedEmail();
+    describe('Destroy', function () {
+        it('Can destroy an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
 
-        const id = automatedEmail.id;
+            const id = automatedEmail.id;
 
-        await agent
-            .put(`automated_emails/${id}`)
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                subject: 'Updated subject',
-                status: 'active'
-            }]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                automated_emails: [matchAutomatedEmail]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
+            await agent
+                .delete(`automated_emails/${id}`)
+                .expectStatus(204)
+                .expectEmptyBody()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
 
-    it('Validates status on add', async function () {
-        await agent
-            .post('automated_emails')
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'invalid-status',
-                subject: 'Test'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates name on add', async function () {
-        await agent
-            .post('automated_emails')
-            .body({automated_emails: [{
-                name: 'invalid-name',
-                status: 'active',
-                subject: 'Test'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates lexical is valid JSON on add', async function () {
-        await agent
-            .post('automated_emails')
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'active',
-                subject: 'Test',
-                lexical: 'not-valid-json'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates status on edit', async function () {
-        const automatedEmail = await createAutomatedEmail();
-
-        const id = automatedEmail.id;
-
-        await agent
-            .put(`automated_emails/${id}`)
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                status: 'invalid-status'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates name is required on edit', async function () {
-        const automatedEmail = await createAutomatedEmail();
-
-        const id = automatedEmail.id;
-
-        await agent
-            .put(`automated_emails/${id}`)
-            .body({automated_emails: [{
-                subject: 'Updated subject'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates name value on edit', async function () {
-        const automatedEmail = await createAutomatedEmail();
-
-        const id = automatedEmail.id;
-
-        await agent
-            .put(`automated_emails/${id}`)
-            .body({automated_emails: [{
-                name: 'invalid-name'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Validates lexical is valid JSON on edit', async function () {
-        const automatedEmail = await createAutomatedEmail();
-
-        const id = automatedEmail.id;
-
-        await agent
-            .put(`automated_emails/${id}`)
-            .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
-                lexical: 'not-valid-json'
-            }]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can destroy an automated email', async function () {
-        const automatedEmail = await createAutomatedEmail();
-
-        const id = automatedEmail.id;
-
-        await agent
-            .delete(`automated_emails/${id}`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Cannot destroy non-existent automated email', async function () {
-        await agent
-            .delete('automated_emails/abcd1234abcd1234abcd1234')
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+        it('Cannot destroy non-existent automated email', async function () {
+            await agent
+                .delete('automated_emails/abcd1234abcd1234abcd1234')
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('Permissions', function () {
