@@ -142,9 +142,9 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                 {/* Visible container */}
                 <div
                     ref={containerRef}
-                    className="flex w-full min-w-0 flex-1 items-center gap-1.5"
+                    className="flex w-full min-w-0 flex-1 items-center gap-2"
                 >
-                    <div ref={ref} className={cn('flex items-center gap-1.5 min-w-0', className)} {...props}>
+                    <div ref={ref} className={cn('flex items-center gap-2 min-w-0', className)} {...props}>
                         {visibleItems}
                     </div>
 
@@ -208,12 +208,12 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
             <Button
                 ref={ref}
                 className={cn(
-                    'relative px-3 font-medium text-gray-800 hover:text-foreground focus-visible:ring-0',
-                    'data-[state=active]:bg-accent data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
+                    'relative px-3 gap-1.5 font-medium text-gray-800 hover:text-foreground focus-visible:ring-0',
+                    'data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
                     className
                 )}
                 data-state={isActive ? 'active' : undefined}
-                variant="outline"
+                variant="ghost"
                 {...props}
             >
                 {children}

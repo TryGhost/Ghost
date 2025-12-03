@@ -51,7 +51,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
             </CardHeader>
-            <CardContent className='flex flex-col gap-8 px-0 lg:flex-row xl:grid xl:grid-cols-3'>
+            <CardContent className='6 flex flex-col px-0 lg:flex-row xl:grid xl:grid-cols-3'>
                 {isLoading &&
                     <>
                         <div className='flex w-full items-center gap-6 px-6 xl:col-span-2'>

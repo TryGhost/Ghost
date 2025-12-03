@@ -222,7 +222,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='flex grid-cols-2 flex-col gap-8 lg:grid'>
+                <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}

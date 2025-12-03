@@ -544,10 +544,10 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     }, [onChange, setAudience, ALL_AUDIENCES]);
 
     return (
-        <div className="mb-6 flex justify-between gap-2">
+        <div className="mb-4 flex justify-between gap-2">
             <Filters
                 addButtonIcon={<LucideIcon.FunnelPlus />}
-                addButtonText='Filter'
+                addButtonText={hasFilters ? '' : 'Filter'}
                 className='[&>button]:order-last'
                 fields={groupedFields}
                 filters={filters}
