@@ -56,8 +56,9 @@ test.describe('Network settings', async () => {
         await expect(toggle).not.toBeChecked();
         await expect(toggle).toBeDisabled();
 
-        // Should show contextual disabled message
-        await expect(section.getByText('Network is automatically disabled while your site is set to private.')).toBeVisible();
+        // Should show contextual disabled message with link to private mode settings
+        await expect(section.getByText(/Network is automatically disabled while your site is in/)).toBeVisible();
+        await expect(section.getByText('private mode')).toBeVisible();
     });
 
     test('Network toggle can be turned off', async ({page}) => {

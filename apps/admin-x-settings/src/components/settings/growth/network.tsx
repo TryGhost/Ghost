@@ -8,11 +8,13 @@ import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLimiter} from '../../../hooks/use-limiter';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
+    const {updateRoute} = useRouting();
 
     // The Network toggle is disabled in Admin settings if:
     // 1. (Ghost (Pro) only) the feature is disabled by config
@@ -79,7 +81,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <Icon name='info' size={16} />
                                 <div className='-mt-0.5'>
                                     {isDisabledByPrivateMode
-                                        ? 'Network is automatically disabled while your site is set to private.'
+                                        ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('locksite')}>private mode</span></>
                                         : <>You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/#custom-domain-required" rel="noopener noreferrer" target="_blank">Help &rarr;</a></>
                                     }
                                 </div>
