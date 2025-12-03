@@ -1080,7 +1080,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1226,7 +1226,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1675,7 +1675,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -2158,7 +2158,7 @@ export function Filters<T = unknown>({
                                 // Show field selection - needs Command wrapper for search/list
                                 <Command>
                                     {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
-                                    <CommandList>
+                                    <CommandList className="outline-none">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                         {fields.map((item, index) => {
                                             // Handle grouped fields (FilterFieldGroup structure)
