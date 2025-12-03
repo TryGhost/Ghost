@@ -65,6 +65,14 @@ const Web: React.FC = () => {
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
 
+    // Scroll to top of the scrollable container
+    const scrollToTop = useCallback(() => {
+        const scrollContainer = document.querySelector('.overflow-y-scroll');
+        if (scrollContainer) {
+            scrollContainer.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    }, []);
+
     // Convert filters to query parameters for Tinybird API
     // Note: Currently only 'is' operator is supported by Tinybird pipes
     const filterParams = useMemo(() => {
@@ -124,7 +132,9 @@ const Web: React.FC = () => {
             // Add a new location filter
             setUtmFilters(prevFilters => [...prevFilters, createFilter('location', 'is', [location])]);
         }
-    }, [utmFilters, setUtmFilters]);
+
+        scrollToTop();
+    }, [utmFilters, setUtmFilters, scrollToTop]);
 
     // Handler for clicking on a source in the SourcesCard
     const handleSourceClick = useCallback((source: string) => {
@@ -144,7 +154,9 @@ const Web: React.FC = () => {
             // Add a new source filter
             setUtmFilters(prevFilters => [...prevFilters, createFilter('source', 'is', [source])]);
         }
-    }, [utmFilters, setUtmFilters]);
+
+        scrollToTop();
+    }, [utmFilters, setUtmFilters, scrollToTop]);
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
