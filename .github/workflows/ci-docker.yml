@@ -365,10 +365,13 @@ jobs:
           retention-days: 7
 
   merge_reports:
-    name: Merge Playwright Reports
-    if: always() && needs.test_e2e.result == 'failure'
+    name: Merge ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Reports
+    if: always()
     needs: [test_e2e, setup]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shell: [ember, react]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -384,49 +387,64 @@ jobs:
 
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: e2e/all-blob-reports
-          pattern: blob-report-*
+          pattern: blob-report-${{ matrix.shell }}-*
           merge-multiple: true
 
+      - name: Check for blob reports
+        id: check
+        run: |
+          if [ -d "e2e/all-blob-reports" ] && [ -n "$(ls -A e2e/all-blob-reports 2>/dev/null)" ]; then
+            echo "has_reports=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_reports=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Download test results from GitHub Actions Artifacts
+        if: steps.check.outputs.has_reports == 'true'
         uses: actions/download-artifact@v4
         with:
           path: e2e/all-test-results
-          pattern: test-results-*
+          pattern: test-results-${{ matrix.shell }}-*
           merge-multiple: true
 
       - name: Merge into HTML Report
+        if: steps.check.outputs.has_reports == 'true'
         run: npx playwright merge-reports --reporter html ./all-blob-reports
         working-directory: e2e
 
       - name: Upload HTML report
+        if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shell }}
           path: e2e/playwright-report
           retention-days: 14
 
       - name: Upload merged test results
+        if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.shell }}
           path: e2e/all-test-results
           retention-days: 7
 
       - name: View Test Report command
+        if: steps.check.outputs.has_reports == 'true'
         run: |
-          echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
+          echo -e "::notice::To view the ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
       - name: Comment on PR with test report command
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.check.outputs.has_reports == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "## E2E Tests Failed
+          gh pr comment ${{ github.event.pull_request.number }} --body "## ${{ matrix.shell == 'react' && 'React' || 'Ember' }} E2E Tests Failed
 
           To view the Playwright test report locally, run:
 
           \`\`\`bash
-          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
+          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
