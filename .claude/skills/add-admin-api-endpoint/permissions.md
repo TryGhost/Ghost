@@ -470,7 +470,7 @@ module.exports = {
         }
       }
     },
-    query(frame) {
+    async query(frame) {
       // The query can now use frame.user.subscription
       const content = await models.Content.findOne({id: frame.options.id});
 
