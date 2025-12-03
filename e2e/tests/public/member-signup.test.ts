@@ -63,8 +63,10 @@ test.describe('Ghost Public - Member Signup', () => {
 
         latestMessage = await retrieveLatestEmailMessage(emailInbox);
 
+        // From.Name should be the site title (set during Ghost setup via UserFactory)
         expect(latestMessage.From.Name).toContain('Test Blog');
-        expect(latestMessage.From.Address).toContain('test@example.com');
+        // From.Address should be the noreply address derived from the site URL
+        expect(latestMessage.From.Address).toContain('noreply@');
         expect(latestMessage.Subject).toContain('Welcome to Test Blog!');
         expect(latestMessage.Text).toContain('Welcome to Test Blog!');
         expect(latestMessage.HTML).toContain('Welcome to Test Blog!');
