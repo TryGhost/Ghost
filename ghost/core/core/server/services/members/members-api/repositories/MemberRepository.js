@@ -9,7 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const config = require('../../../../../shared/config');
-const {WELCOME_EMAIL_SOURCES} = require('../../../member-welcome-emails/jobs/lib/constants');
+const StartMemberWelcomeEmailJobEvent = require('../../../member-welcome-emails/events/StartMemberWelcomeEmailJobEvent');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -25,6 +25,8 @@ const messages = {
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
+
+const WELCOME_EMAIL_SOURCES = ['member'];
 
 /**
  * @typedef {object} ITokenService
@@ -359,6 +361,8 @@ module.exports = class MemberRepository {
                     })
                 }, {transacting});
 
+                this.dispatchEvent(StartMemberWelcomeEmailJobEvent.create());
+                
                 return newMember;
             };
 

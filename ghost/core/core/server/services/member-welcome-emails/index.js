@@ -3,10 +3,6 @@ const jobs = require('./jobs');
 const StartMemberWelcomeEmailJobEvent = require('./events/StartMemberWelcomeEmailJobEvent');
 const domainEvents = require('@tryghost/domain-events');
 const processOutbox = require('./jobs/lib/process-outbox');
-const {MemberCreatedEvent} = require('../../../shared/events');
-const config = require('../../../shared/config');
-const {WELCOME_EMAIL_SOURCES} = require('./jobs/lib/constants');
-
 class MemberWelcomeEmailsServiceWrapper {
     init() {
         if (this.initialized) {
@@ -19,12 +15,6 @@ class MemberWelcomeEmailsServiceWrapper {
 
         domainEvents.subscribe(StartMemberWelcomeEmailJobEvent, async () => {
             await this.startProcessing();
-        });
-
-        domainEvents.subscribe(MemberCreatedEvent, async (event) => {
-            if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(event.data.source)) {
-                await this.startProcessing();
-            }
         });
 
         this.initialized = true;
