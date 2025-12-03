@@ -1,12 +1,14 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {useEffect, useRef, useState} from 'react';
 
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 import {Button, HtmlEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface WelcomeEmailModalProps {
     emailType?: 'free' | 'paid';
+    automatedEmail?: AutomatedEmail;
 }
 
 const getDefaultContent = () => {
@@ -17,14 +19,20 @@ const getDefaultContent = () => {
 <p>Thanks for joining — feel free to share it with a friend or two if you think they'd enjoy it.</p>`;
 };
 
-const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free'}) => {
+const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
     const {data: currentUser} = useCurrentUser();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
-    const [emailContent, setEmailContent] = useState(getDefaultContent());
+    const [emailContent, setEmailContent] = useState(automatedEmail?.lexical || getDefaultContent());
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Get display values from automatedEmail or use defaults
+    const senderName = automatedEmail?.sender_name || 'Your Site';
+    const senderEmail = automatedEmail?.sender_email || 'noreply@example.com';
+    const replyTo = automatedEmail?.sender_reply_to;
+    const subject = automatedEmail?.subject || 'Welcome';
 
     // Update test email when current user data loads
     useEffect(() => {
@@ -112,21 +120,22 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <div className='flex items-center'>
                         <div className='w-20 font-semibold'>From:</div>
                         <div>
-                            Publisher Weekly
-                            <span className='ml-1 text-grey-700'>{`<test@example.com>`}</span>
+                            {senderName}
+                            <span className='ml-1 text-grey-700'>{`<${senderEmail}>`}</span>
                         </div>
                     </div>
 
-                    {/* Only display if it's not the same as sender email */}
-                    <div className='flex items-center py-1'>
-                        <div className='w-20 font-semibold'>Reply-to:</div>
-                        <span className='text-grey-700'>hello@example.com</span>
-                    </div>
+                    {replyTo && replyTo !== senderEmail && (
+                        <div className='flex items-center py-1'>
+                            <div className='w-20 font-semibold'>Reply-to:</div>
+                            <span className='text-grey-700'>{replyTo}</span>
+                        </div>
+                    )}
 
                     <div className='-mt-1 flex items-center'>
                         <div className='w-20 font-semibold'>Subject:</div>
                         <div className='grow'>
-                            <TextField className='!h-[34px] w-full' value={'Welcome to Publisher Weekly'}/>
+                            <TextField className='!h-[34px] w-full' value={subject}/>
                         </div>
                     </div>
                 </div>
