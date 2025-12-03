@@ -14,6 +14,7 @@ export interface HtmlEditorProps {
     nodes?: 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES'
     emojiPicker?: boolean;
     darkMode?: boolean;
+    singleParagraph?: boolean;
 }
 
 declare global {
@@ -63,7 +64,8 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     placeholder,
     nodes,
     emojiPicker = true,
-    darkMode = false
+    darkMode = false,
+    singleParagraph = true
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -140,7 +142,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 markdownTransformers={transformers[nodes || 'DEFAULT_NODES']}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
                 placeholderText={placeholder}
-                singleParagraph={true}
+                singleParagraph={singleParagraph}
                 onBlur={handleBlur}
                 onFocus={handleFocus}
             >

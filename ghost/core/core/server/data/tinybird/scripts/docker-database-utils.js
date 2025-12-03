@@ -1,41 +1,63 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 /* eslint-disable no-console */
 /**
- * Database Utilities for Ghost Analytics Scripts
- * Provides common database operations for fixture generation
+ * Docker Database Utilities for Ghost Analytics Scripts
+ * Provides database operations for the Docker-based development environment
+ *
+ * Connects directly to MySQL when running outside Docker (from host machine)
  */
 
 const path = require('path');
-
-class DatabaseUtils {
-    constructor() {
+const {NotFoundError} = require('@tryghost/errors');
+class DockerDatabaseUtils {
+    constructor(options = {}) {
         this.knex = null;
         this.initialized = false;
+        this.options = {
+            host: options.host || process.env.MYSQL_HOST || 'localhost',
+            port: options.port || process.env.MYSQL_PORT || 3306,
+            user: options.user || process.env.MYSQL_USER || 'root',
+            password: options.password || process.env.MYSQL_PASSWORD || 'root',
+            database: options.database || process.env.MYSQL_DATABASE || 'ghost_dev'
+        };
     }
 
     /**
-     * Initialize the knex connection
+     * Initialize the knex connection to Docker MySQL
      */
     async init() {
         if (this.initialized) {
             return;
         }
-        
+
         try {
-            // Try different connection paths depending on where we're running from
-            let connectionPath;
-            
-            // If running from ghost/core directory (like query scripts do)
-            if (process.cwd().endsWith('ghost/core')) {
-                connectionPath = path.resolve(process.cwd(), 'core/server/data/db/connection');
-            } else {
-                // If running from scripts directory
-                connectionPath = path.resolve(__dirname, '../../db/connection');
+            // Try to require knex from ghost/core where it's installed
+            let knex;
+            try {
+                knex = require('knex');
+            } catch (err) {
+                // If running from monorepo root, require from ghost/core
+                const ghostCorePath = path.resolve(__dirname, '..', '..', '..', '..', '..');
+                knex = require(path.join(ghostCorePath, 'node_modules', 'knex'));
             }
-            
-            this.knex = require(connectionPath);
+
+            this.knex = knex({
+                client: 'mysql2',
+                connection: {
+                    host: this.options.host,
+                    port: this.options.port,
+                    user: this.options.user,
+                    password: this.options.password,
+                    database: this.options.database
+                },
+                pool: {min: 0, max: 5}
+            });
+
+            // Test the connection
+            await this.knex.raw('SELECT 1');
+
             this.initialized = true;
-            console.log('Database connection initialized');
+            console.log(`Database connection initialized (${this.options.host}:${this.options.port}/${this.options.database})`);
         } catch (error) {
             console.error('Failed to initialize database connection:', error.message);
             throw error;
@@ -43,99 +65,34 @@ class DatabaseUtils {
     }
 
     /**
-     * Get all post UUIDs from the database
-     */
-    async getPostUuids(options = {}) {
-        await this.init();
-        
-        const {
-            status = null,
-            type = 'post',
-            limit = null,
-            publishedOnly = false
-        } = options;
-
-        let query = this.knex('posts').select('uuid');
-
-        if (status) {
-            query = query.where('status', status);
-        }
-
-        if (type) {
-            query = query.where('type', type);
-        }
-
-        if (publishedOnly) {
-            query = query.where('status', 'published');
-        }
-
-        if (limit) {
-            query = query.limit(limit);
-        }
-
-        const results = await query;
-        return results.map(row => row.uuid);
-    }
-
-    /**
-     * Get post details including UUIDs, titles, and other metadata
-     */
-    async getPostDetails(options = {}) {
-        await this.init();
-        
-        const {
-            status = null,
-            type = 'post',
-            limit = null,
-            fields = ['uuid', 'title', 'slug', 'status', 'type', 'created_at', 'published_at']
-        } = options;
-
-        let query = this.knex('posts').select(fields);
-
-        if (status) {
-            query = query.where('status', status);
-        }
-
-        if (type) {
-            query = query.where('type', type);
-        }
-
-        if (limit) {
-            query = query.limit(limit);
-        }
-
-        return await query.orderBy('created_at', 'desc');
-    }
-
-    /**
      * Get posts with detailed information including published dates and slugs
      */
     async getPostsWithDetails(options = {}) {
         await this.init();
-        
+
         const {publishedOnly = true, limit = null} = options;
-        
+
         let query = this.knex('posts').select([
             'uuid',
-            'slug', 
+            'slug',
             'type',
             'published_at',
             'status'
         ]);
-        
+
         if (publishedOnly) {
             query = query.where('status', 'published');
         }
-        
+
         query = query.orderBy('published_at', 'desc');
-        
+
         if (limit) {
             query = query.limit(limit);
         }
-        
+
         try {
             const rows = await query;
-            
+
             // Transform the data to include pathname
             return rows.map(row => ({
                 uuid: row.uuid,
@@ -155,7 +112,7 @@ class DatabaseUtils {
      */
     generatePathname(type, slug) {
         if (type === 'post') {
-            return `/blog/${slug}/`;
+            return `/${slug}/`;
         } else if (type === 'page') {
             return `/${slug}/`;
         }
@@ -167,7 +124,7 @@ class DatabaseUtils {
      */
     async getMemberUuids(options = {}) {
         await this.init();
-        
+
         const {limit = null, status = null} = options;
 
         let query = this.knex('members').select('uuid');
@@ -185,21 +142,44 @@ class DatabaseUtils {
     }
 
     /**
-     * Get site configuration
+     * Get site UUID from settings
+     */
+    async getSiteUuid() {
+        await this.init();
+
+        try {
+            const result = await this.knex('settings')
+                .where('key', 'site_uuid')
+                .select('value')
+                .first();
+
+            if (result && result.value) {
+                return result.value;
+            }
+
+            throw new NotFoundError({message: 'site_uuid not found in settings'});
+        } catch (error) {
+            console.error('Error fetching site_uuid:', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Get site configuration including URL and UUID
      */
     async getSiteConfig() {
         await this.init();
-        
+
         try {
             const settings = await this.knex('settings')
-                .whereIn('key', ['title', 'description', 'url', 'ghost_head', 'ghost_foot'])
+                .whereIn('key', ['title', 'description', 'url', 'site_uuid'])
                 .select('key', 'value');
-            
+
             const config = {};
             settings.forEach((setting) => {
                 config[setting.key] = setting.value;
             });
-            
+
             return config;
         } catch (error) {
             console.warn('Could not fetch site config:', error.message);
@@ -212,7 +192,7 @@ class DatabaseUtils {
      */
     async getStats() {
         await this.init();
-        
+
         try {
             const [posts, members, pages] = await Promise.all([
                 this.knex('posts').where('type', 'post').count('* as count').first(),
@@ -241,14 +221,6 @@ class DatabaseUtils {
             console.log('Database connection closed');
         }
     }
-
-    /**
-     * Execute a raw SQL query (for advanced use cases)
-     */
-    async raw(sql, bindings = []) {
-        await this.init();
-        return await this.knex.raw(sql, bindings);
-    }
 }
 
-module.exports = DatabaseUtils; 
+module.exports = DockerDatabaseUtils;
