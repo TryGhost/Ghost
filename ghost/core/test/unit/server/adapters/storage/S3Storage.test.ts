@@ -15,6 +15,9 @@ import {
 } from '@aws-sdk/client-s3';
 import S3Storage, {type S3StorageOptions} from '../../../../../core/server/adapters/storage/S3Storage';
 
+// Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
+const MIN_MULTIPART_CHUNK_SIZE = 5 * 1024 * 1024;
+
 const baseOptions: S3StorageOptions = {
     staticFileURLPrefix: 'content/files',
     bucket: 'test-bucket',
@@ -367,10 +370,10 @@ describe('S3Storage', function () {
         });
 
         it('uses multipart upload for files at or above threshold', async function () {
-            const partSize = 1024;
+            const partSize = MIN_MULTIPART_CHUNK_SIZE;
             const fileSize = partSize * 2;
             const {storage, sendStub} = createStorage({
-                multipartUploadThresholdBytes: 1024,
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE,
                 multipartChunkSizeBytes: partSize
             });
 
@@ -450,12 +453,16 @@ describe('S3Storage', function () {
         });
 
         it('throws error when UploadPart returns no ETag', async function () {
-            const {storage, sendStub} = createStorage({multipartUploadThresholdBytes: 1024, multipartChunkSizeBytes: 1024});
+            const fileSize = MIN_MULTIPART_CHUNK_SIZE * 2;
+            const {storage, sendStub} = createStorage({
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE,
+                multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE
+            });
 
-            const fileContent = Buffer.alloc(2048, 'x');
+            const fileContent = Buffer.alloc(fileSize, 'x');
 
             sinon.stub(storage, 'exists').resolves(false);
-            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
             sinon.stub(fs, 'createReadStream').returns(createMockReadStream(fileContent) as unknown as fs.ReadStream);
 
             sendStub.callsFake(async (command: unknown) => {
@@ -486,12 +493,16 @@ describe('S3Storage', function () {
         });
 
         it('aborts multipart upload when part upload fails with S3 error', async function () {
-            const {storage, sendStub} = createStorage({multipartUploadThresholdBytes: 1024, multipartChunkSizeBytes: 1024});
+            const fileSize = MIN_MULTIPART_CHUNK_SIZE * 2;
+            const {storage, sendStub} = createStorage({
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE,
+                multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE
+            });
 
-            const fileContent = Buffer.alloc(2048, 'x');
+            const fileContent = Buffer.alloc(fileSize, 'x');
 
             sinon.stub(storage, 'exists').resolves(false);
-            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
             sinon.stub(fs, 'createReadStream').returns(createMockReadStream(fileContent) as unknown as fs.ReadStream);
 
             sendStub.callsFake(async (command: unknown) => {
@@ -523,12 +534,16 @@ describe('S3Storage', function () {
         });
 
         it('continues to throw original error when abort also fails', async function () {
-            const {storage, sendStub} = createStorage({multipartUploadThresholdBytes: 1024, multipartChunkSizeBytes: 1024});
+            const fileSize = MIN_MULTIPART_CHUNK_SIZE * 2;
+            const {storage, sendStub} = createStorage({
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE,
+                multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE
+            });
 
-            const fileContent = Buffer.alloc(2048, 'x');
+            const fileContent = Buffer.alloc(fileSize, 'x');
 
             sinon.stub(storage, 'exists').resolves(false);
-            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
             sinon.stub(fs, 'createReadStream').returns(createMockReadStream(fileContent) as unknown as fs.ReadStream);
 
             sendStub.callsFake(async (command: unknown) => {
@@ -555,10 +570,13 @@ describe('S3Storage', function () {
         });
 
         it('does not call abort if upload fails before getting uploadId', async function () {
-            const {storage, sendStub} = createStorage({multipartUploadThresholdBytes: 1024});
+            const fileSize = MIN_MULTIPART_CHUNK_SIZE * 2;
+            const {storage, sendStub} = createStorage({
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE
+            });
 
             sinon.stub(storage, 'exists').resolves(false);
-            sinon.stub(fs.promises, 'stat').resolves({size: 2048} as fs.Stats);
+            sinon.stub(fs.promises, 'stat').resolves({size: fileSize} as fs.Stats);
 
             sendStub.callsFake(async (command: unknown) => {
                 if (command instanceof CreateMultipartUploadCommand) {
@@ -581,7 +599,7 @@ describe('S3Storage', function () {
         });
 
         it('handles file exactly at threshold using multipart', async function () {
-            const threshold = 1024;
+            const threshold = MIN_MULTIPART_CHUNK_SIZE;
             const {storage, sendStub} = createStorage({
                 multipartUploadThresholdBytes: threshold,
                 multipartChunkSizeBytes: threshold
@@ -619,7 +637,7 @@ describe('S3Storage', function () {
         });
 
         it('handles file just below threshold using simple upload', async function () {
-            const threshold = 1024;
+            const threshold = MIN_MULTIPART_CHUNK_SIZE;
             const {storage, sendStub} = createStorage({multipartUploadThresholdBytes: threshold});
 
             const fileContent = Buffer.alloc(threshold - 1, 'x'); // Just below threshold
@@ -642,9 +660,9 @@ describe('S3Storage', function () {
         });
 
         it('respects custom multipartThreshold and partSize options', async function () {
-            const customThreshold = 512;
-            const customPartSize = 256;
-            const fileSize = 768; // 3 parts of 256 bytes
+            const customPartSize = MIN_MULTIPART_CHUNK_SIZE;
+            const customThreshold = MIN_MULTIPART_CHUNK_SIZE;
+            const fileSize = customPartSize * 3; // 3 parts
             const {storage, sendStub} = createStorage({
                 multipartUploadThresholdBytes: customThreshold,
                 multipartChunkSizeBytes: customPartSize
@@ -683,10 +701,11 @@ describe('S3Storage', function () {
         });
 
         it('handles last part being smaller than partSize', async function () {
-            const partSize = 1024;
-            const fileSize = partSize + 512; // 1.5 parts
+            const partSize = MIN_MULTIPART_CHUNK_SIZE;
+            const lastPartSize = Math.floor(partSize / 2); // Half a part
+            const fileSize = partSize + lastPartSize; // 1.5 parts
             const {storage, sendStub} = createStorage({
-                multipartUploadThresholdBytes: 1024,
+                multipartUploadThresholdBytes: MIN_MULTIPART_CHUNK_SIZE,
                 multipartChunkSizeBytes: partSize
             });
 
@@ -723,8 +742,16 @@ describe('S3Storage', function () {
 
             // Verify part sizes
             assert.equal(uploadedParts.length, 2);
-            assert.equal(uploadedParts[0].size, 1024); // First part is full size
-            assert.equal(uploadedParts[1].size, 512); // Last part is smaller
+            assert.equal(uploadedParts[0].size, partSize); // First part is full size
+            assert.equal(uploadedParts[1].size, lastPartSize); // Last part is smaller
+        });
+
+        it('throws error when multipartChunkSizeBytes is less than 5 MiB', function () {
+            assert.throws(() => {
+                createStorage({
+                    multipartChunkSizeBytes: 1024 // Less than 5 MiB
+                });
+            }, /multipartChunkSizeBytes must be at least 5 MiB/);
         });
     });
 });

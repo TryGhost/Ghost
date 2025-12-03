@@ -18,6 +18,9 @@ import {
     S3ClientConfig
 } from '@aws-sdk/client-s3';
 
+// Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
+const MIN_MULTIPART_CHUNK_SIZE = 5 * 1024 * 1024;
+
 const messages = {
     invalidUrlParameter: 'The URL "{url}" is not a valid URL for this site.',
     missingBucket: 'S3Storage requires a bucket name',
@@ -33,7 +36,8 @@ const messages = {
     multipartUploadPartFailed: 'Failed to upload file part {partNumber}.',
     multipartUploadReadFailed: 'There was an error uploading the file. The file may have been modified or removed during upload.',
     missingMultipartThreshold: 'S3Storage requires multipartUploadThresholdBytes option',
-    missingMultipartChunkSize: 'S3Storage requires multipartChunkSizeBytes option'
+    missingMultipartChunkSize: 'S3Storage requires multipartChunkSizeBytes option',
+    multipartChunkSizeTooSmall: 'S3Storage multipartChunkSizeBytes must be at least 5 MiB (5242880 bytes)'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -117,6 +121,11 @@ export default class S3Storage extends StorageBase {
         if (!options.multipartChunkSizeBytes) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.missingMultipartChunkSize)
+            });
+        }
+        if (options.multipartChunkSizeBytes < MIN_MULTIPART_CHUNK_SIZE) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.multipartChunkSizeTooSmall)
             });
         }
         this.multipartChunkSizeBytes = options.multipartChunkSizeBytes;
