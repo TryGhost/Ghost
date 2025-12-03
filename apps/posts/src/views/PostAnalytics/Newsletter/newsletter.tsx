@@ -268,7 +268,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Newsletter' />
             <PostAnalyticsContent>
 
-                <div className={`grid grid-cols-1 gap-8 ${shouldShowFeedback && emailTrackClicksEnabled && 'lg:grid-cols-2'}`}>
+                <div className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && emailTrackClicksEnabled && 'lg:grid-cols-2'}`}>
                     <Card className={shouldShowFeedback && emailTrackClicksEnabled ? 'lg:col-span-2' : ''}>
                         <CardHeader className='hidden'>
                             <CardTitle>Newsletters</CardTitle>

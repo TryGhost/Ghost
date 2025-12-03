@@ -26,7 +26,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
 
-    let containerClass = 'flex flex-col items-stretch gap-8';
+    let containerClass = 'flex flex-col items-stretch gap-6';
     let cardClass = '';
     if (!appSettings?.paidMembersEnabled) {
         containerClass = 'grid grid-cols-1 border rounded-md';

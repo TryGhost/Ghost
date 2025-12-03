@@ -253,7 +253,10 @@ const filterInputVariants = cva(
 
 // Reusable remove button variant component
 const filterRemoveButtonVariants = cva(
-    ['inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground'],
+    [
+        'inline-flex shrink-0 items-center justify-center text-muted-foreground transition hover:text-foreground',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+    ],
     {
         variants: {
             variant: {
@@ -286,7 +289,8 @@ const filterRemoveButtonVariants = cva(
 const filterAddButtonVariants = cva(
     [
         'inline-flex shrink-0 items-center justify-center text-foreground transition',
-        '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]'
+        '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
@@ -318,7 +322,8 @@ const filterAddButtonVariants = cva(
 
 const filterOperatorVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground'
+        'focus-visible:z-1 relative flex shrink-0 items-center text-muted-foreground transition hover:text-foreground data-[state=open]:text-foreground',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
         variants: {
@@ -373,7 +378,10 @@ const filterFieldLabelVariants = cva(
 );
 
 const filterFieldValueVariants = cva(
-    'focus-visible:z-1 relative flex shrink-0 items-center gap-1 text-foreground transition',
+    [
+        'focus-visible:z-1 relative flex shrink-0 items-center gap-1 text-foreground transition',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+    ],
     {
         variants: {
             variant: {
@@ -733,12 +741,7 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    // Search handler for select fields - called when search input changes
-    onSearchChange?: (searchQuery: string) => void;
-    // When true, disables cmdk's built-in filtering and relies on parent to manage options
-    // Use this for server-side/async search where options are fetched dynamically
-    asyncSearch?: boolean;
-    // Shows loading indicator in the dropdown while true (used with asyncSearch)
+    // Shows loading indicator in the dropdown
     isLoading?: boolean;
     // Default operator to use when creating a filter for this field
     defaultOperator?: string;
@@ -1003,6 +1006,19 @@ function SelectOptionsPopover<T = unknown>({
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
 
+    // Focus the search input when the popover opens
+    useEffect(() => {
+        if (open && field.searchable !== false) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
+                }
+            }, 0);
+        }
+    }, [open, field.searchable]);
+
     // For async search, we need to preserve selected options even when they're not in search results
     // Memoize to get stable reference for useEffect dependency
     const optionsFromField = useMemo(
@@ -1043,7 +1059,6 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
-        field.onSearchChange?.(value);
     };
 
     const handleClose = () => {
@@ -1052,14 +1067,11 @@ function SelectOptionsPopover<T = unknown>({
         onClose?.();
     };
 
-    // Determine if we should use server-side filtering (async search)
-    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
-
     // If inline mode, render the content directly without popover
     if (inline) {
         return (
             <div className="w-full">
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-8.5 text-sm"
@@ -1068,7 +1080,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1205,7 +1217,7 @@ function SelectOptionsPopover<T = unknown>({
                     field.className || 'w-[200px]'
                 )}
             >
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1214,7 +1226,7 @@ function SelectOptionsPopover<T = unknown>({
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1301,8 +1313,20 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
-        field.onSearchChange?.(value);
     };
+
+    // Focus the search input when the popover opens
+    useEffect(() => {
+        if (open && field.searchable !== false) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
+                }
+            }, 0);
+        }
+    }, [open, field.searchable]);
 
     // Hide value input for empty/not empty operators
     if (operator === 'empty' || operator === 'not_empty') {
@@ -1602,7 +1626,6 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
     const isMultiSelect = values.length > 1;
     const selectedOptions = field.options?.filter(opt => values.includes(opt.value)) || [];
     const unselectedOptions = field.options?.filter(opt => !values.includes(opt.value)) || [];
-    const isAsyncSearch = field.asyncSearch ?? !!field.onSearchChange;
 
     return (
         <Popover
@@ -1643,7 +1666,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 </div>
             </PopoverTrigger>
             <PopoverContent className={cn('w-36 p-0 data-[state=closed]:!animation-none data-[state=closed]:!duration-0', field.popoverContentClassName)}>
-                <Command shouldFilter={!isAsyncSearch}>
+                <Command>
                     {field.searchable !== false && (
                         <CommandInput
                             className="h-[34px] text-sm"
@@ -1652,7 +1675,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                             onValueChange={handleSearchChange}
                         />
                     )}
-                    <CommandList>
+                    <CommandList className="outline-none">
                         {field.isLoading ? (
                             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -1844,6 +1867,7 @@ interface FiltersProps<T = unknown> {
     allowMultiple?: boolean;
     popoverContentClassName?: string;
     popoverAlign?: 'start' | 'center' | 'end';
+    keyboardShortcut?: string;
 }
 
 export function Filters<T = unknown>({
@@ -1865,11 +1889,56 @@ export function Filters<T = unknown>({
     trigger,
     allowMultiple = true,
     popoverContentClassName,
-    popoverAlign = 'start'
+    popoverAlign = 'start',
+    keyboardShortcut
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Keyboard shortcut handler
+    useEffect(() => {
+        if (!keyboardShortcut) {
+            return;
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input field
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                return;
+            }
+
+            // Check if the pressed key matches the shortcut (case-insensitive)
+            if (e.key.toLowerCase() === keyboardShortcut.toLowerCase() && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                e.preventDefault();
+                setAddFilterOpen(prev => !prev);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [keyboardShortcut]);
+
+    // Focus the appropriate element when the popover opens
+    useEffect(() => {
+        if (addFilterOpen) {
+            // Use setTimeout to ensure the popover is fully rendered
+            setTimeout(() => {
+                // Always try to focus the search input first (if available)
+                const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                if (input) {
+                    input.focus();
+                } else {
+                    // If no search input, focus the Command component directly to enable keyboard navigation
+                    const command = document.querySelector('[cmdk-root]') as HTMLElement;
+                    if (command) {
+                        command.focus();
+                    }
+                }
+            }, 0);
+        }
+    }, [addFilterOpen, selectedFieldKeyForOptions, showSearchInput]);
 
     // Merge provided i18n with defaults
     const mergedI18n: FilterI18nConfig = {
@@ -2104,9 +2173,9 @@ export function Filters<T = unknown>({
                                 />
                             ) : (
                                 // Show field selection - needs Command wrapper for search/list
-                                <Command>
+                                <Command className='outline-none' tabIndex={showSearchInput ? undefined : 0}>
                                     {showSearchInput && <CommandInput className="h-[34px]" placeholder={mergedI18n.searchFields} />}
-                                    <CommandList>
+                                    <CommandList className="outline-none">
                                         <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
                                         {fields.map((item, index) => {
                                             // Handle grouped fields (FilterFieldGroup structure)
