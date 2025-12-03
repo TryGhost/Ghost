@@ -28,6 +28,9 @@
     <a href="https://github.com/TryGhost/Ghost/contributors/">
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
+    <a href="[https://github.com/TryGhost/Ghost/contributors/](https://insights.linuxfoundation.org/project/tryghost-ghost)">
+        <img src="https://insights.linuxfoundation.org/api/badge/health-score?project=tryghost-ghost" alt="Health score" />
+    </a>
 </p>
 
 &nbsp;
