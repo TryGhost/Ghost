@@ -67,7 +67,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
             location: String(row.location),
             visits: Number(row.visits),
             percentage: totalVisits > 0 ? (Number(row.visits) / totalVisits) : 0,
-            relativeValue: UNKNOWN_LOCATION_VALUES.includes(String(row.location)) ? 0 :
+            relativeValue: (UNKNOWN_LOCATION_VALUES.includes(String(row.location)) || knownTotalVisits === 0) ? 0 :
                 Math.min(100, Math.max(10, Math.ceil((Number(row.visits) / knownTotalVisits) * 100 / 10) * 10)),
             isUnknown: UNKNOWN_LOCATION_VALUES.includes(String(row.location))
         })) || [];
