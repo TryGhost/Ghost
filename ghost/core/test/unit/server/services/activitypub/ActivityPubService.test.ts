@@ -82,7 +82,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -128,7 +128,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -165,7 +165,7 @@ describe('ActivityPubService', function () {
         }
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -187,7 +187,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -226,7 +226,7 @@ describe('ActivityPubService', function () {
         await knexInstance('webhooks').update({event: 'wrong.event'}).limit(1);
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -254,7 +254,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/v1/site')
+            .get('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -315,7 +315,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .delete('/.ghost/activitypub/v1/site')
+            .delete('/.ghost/activitypub/v1/site/')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200);
 
