@@ -19,6 +19,7 @@ import {
 } from '@aws-sdk/client-s3';
 
 // Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
+// GCS limits: https://docs.cloud.google.com/storage/quotas#requests
 const MIN_MULTIPART_CHUNK_SIZE = 5 * 1024 * 1024;
 
 const messages = {
@@ -156,7 +157,7 @@ export default class S3Storage extends StorageBase {
 
         if (stats.size >= this.multipartUploadThresholdBytes) {
             logging.info(`Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
-            return await this.uploadMultipart(file, key, stats.size);
+            return await this.uploadMultipart(file, key);
         }
 
         logging.info(`Small file, using simple upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
@@ -190,7 +191,7 @@ export default class S3Storage extends StorageBase {
         }
     }
 
-    private async uploadMultipart(file: UploadFile, key: string, fileSize: number): Promise<string> {
+    private async uploadMultipart(file: UploadFile, key: string): Promise<string> {
         const createResponse = await this.client.send(new CreateMultipartUploadCommand({
             Bucket: this.bucket,
             Key: key,
@@ -207,8 +208,6 @@ export default class S3Storage extends StorageBase {
         try {
             const parts: {ETag: string; PartNumber: number}[] = [];
             let partNumber = 1;
-            let uploadedBytes = 0;
-            const totalParts = Math.ceil(fileSize / this.multipartChunkSizeBytes);
             const chunks = this.readFileInChunks(file.path, this.multipartChunkSizeBytes);
 
             for await (const chunk of chunks) {
@@ -231,11 +230,6 @@ export default class S3Storage extends StorageBase {
                     PartNumber: partNumber
                 });
 
-                uploadedBytes += chunk.length;
-
-                const progress = Math.round((uploadedBytes / fileSize) * 100);
-                logging.info(`Uploaded part ${partNumber}/${totalParts} (${progress}%)`);
-
                 partNumber += 1;
             }
 
@@ -251,17 +245,15 @@ export default class S3Storage extends StorageBase {
             logging.info(`Multipart upload completed: file=${key} parts=${parts.length}`);
             return `${this.cdnUrl}/${key}`;
         } catch (error) {
-            if (uploadId) {
-                logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
-                try {
-                    await this.client.send(new AbortMultipartUploadCommand({
-                        Bucket: this.bucket,
-                        Key: key,
-                        UploadId: uploadId
-                    }));
-                } catch (abortError) {
-                    logging.error(`Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
-                }
+            logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
+            try {
+                await this.client.send(new AbortMultipartUploadCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                    UploadId: uploadId
+                }));
+            } catch (abortError) {
+                logging.error(`Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
             }
             throw error;
         }
