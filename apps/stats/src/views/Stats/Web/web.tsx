@@ -13,6 +13,7 @@ import {Card, CardContent, createFilter, formatDuration, formatNumber, formatPer
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {useFilterFocus} from '@hooks/use-filter-focus';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -60,6 +61,9 @@ const Web: React.FC = () => {
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
+
+    // Auto-focus filter button when first filter is added
+    const {filterContainerRef} = useFilterFocus(utmFilters.length);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -230,7 +234,7 @@ const Web: React.FC = () => {
             </StatsHeader>
             {/* Show filter component below header when filters are applied */}
             {utmTrackingEnabled && hasFilters && (
-                <div className='mb-4'>
+                <div ref={filterContainerRef} className='mb-4'>
                     <StatsFilter
                         filters={utmFilters}
                         utmTrackingEnabled={utmTrackingEnabled}
