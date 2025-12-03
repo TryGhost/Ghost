@@ -35,6 +35,35 @@ test.describe('Network settings', async () => {
         await expect(section.getByText('You need to configure a supported custom domain to use this feature.')).toBeVisible();
     });
 
+    test('Network toggle is disabled if the site is in private mode', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: {
+                    ...responseFixtures.settings,
+                    settings: [
+                        ...responseFixtures.settings.settings,
+                        {key: 'social_web', value: true},
+                        {key: 'is_private', value: true}
+                    ]
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('network');
+        const toggle = section.getByRole('switch');
+
+        // Toggle should be unchecked and disabled
+        await expect(toggle).not.toBeChecked();
+        await expect(toggle).toBeDisabled();
+
+        // Should show contextual disabled message
+        await expect(section.getByText('Network is automatically disabled while your site is set to private.')).toBeVisible();
+    });
+
     test('Network toggle can be turned off', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
