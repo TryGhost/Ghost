@@ -1,4 +1,4 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
+import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
 import React, {useCallback, useMemo} from 'react';
@@ -51,7 +51,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience: globalAudience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
@@ -60,6 +60,16 @@ const Web: React.FC = () => {
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
+
+    // Derive audience from filters when UTM tracking is enabled, otherwise use global state
+    // This makes the URL the single source of truth for filters
+    const audience = useMemo(() => {
+        if (!utmTrackingEnabled) {
+            return globalAudience;
+        }
+        const audienceFilter = utmFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [utmTrackingEnabled, globalAudience, utmFilters]);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;

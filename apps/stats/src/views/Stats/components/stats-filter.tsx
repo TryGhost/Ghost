@@ -1,10 +1,10 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
+import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceQueryParam} from './audience-select';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience-select';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
@@ -121,10 +121,16 @@ const buildFilterParams = (
 // Generic hook to fetch filter options from Tinybird
 // Handles the common pattern: fetch data, transform to options, ensure selected value is included
 const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = []) => {
-    const {statsConfig, range, audience} = useGlobalData();
+    const {statsConfig, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const definition = FILTER_FIELD_DEFINITIONS[fieldKey];
+
+    // Derive audience from filters (URL is the source of truth)
+    const audience = useMemo(() => {
+        const audienceFilter = currentFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [currentFilters]);
 
     // Build params including filters from other fields
     const params = useMemo(() => {
@@ -178,8 +184,14 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
 // Hook to fetch posts/pages options from Ghost API (which queries Tinybird and enriches with titles)
 // This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (currentFilters: Filter[] = []) => {
-    const {range, audience} = useGlobalData();
+    const {range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+
+    // Derive audience from filters (URL is the source of truth)
+    const audience = useMemo(() => {
+        const audienceFilter = currentFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [currentFilters]);
 
     // Build query params including filters from other fields (excluding post to avoid circular filtering)
     const queryParams = useMemo(() => {
@@ -236,14 +248,7 @@ const usePostOptions = (currentFilters: Filter[] = []) => {
 };
 
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
-    const {audience, setAudience} = useGlobalData();
     const {appSettings} = useAppContext();
-
-    // Track if we're currently handling a filter change to prevent loops
-    const isHandlingChange = useRef(false);
-
-    // Track if this is the initial mount - we don't want to overwrite URL-loaded filters
-    const isInitialMount = useRef(true);
 
     // Track screen width for responsive popover alignment
     const [isMobile, setIsMobile] = useState(false);
@@ -267,129 +272,12 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Filter audience options based on site settings
     const audienceOptions = useMemo(() => {
         const options = [
-            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>, bit: AUDIENCE_BITS.PUBLIC},
-            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>, bit: AUDIENCE_BITS.FREE},
-            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>, bit: AUDIENCE_BITS.PAID}
+            {value: 'undefined', label: 'Public visitors', icon: <LucideIcon.Globe className='text-gray-700'/>},
+            {value: 'free', label: 'Free members', icon: <LucideIcon.User className='text-green'/>},
+            {value: 'paid', label: 'Paid members', icon: <LucideIcon.UserPlus className='text-orange'/>}
         ];
         return appSettings?.paidMembersEnabled ? options : options.filter(opt => opt.value !== 'paid');
     }, [appSettings?.paidMembersEnabled]);
-
-    // Calculate "all audiences" bitmask based on available options
-    const ALL_AUDIENCES = useMemo(() => {
-        return audienceOptions.reduce((acc, opt) => acc | opt.bit, 0);
-    }, [audienceOptions]);
-
-    // Only sync global audience to filter if the audience filter already exists
-    // This prevents showing the filter by default, but keeps it visible once user adds it
-    // (even if all options are selected - that's still a valid user choice to display)
-    useEffect(() => {
-        // Don't sync if we're in the middle of handling a filter change
-        if (isHandlingChange.current) {
-            return;
-        }
-
-        const audienceFilter = filters.find(f => f.field === 'audience');
-
-        // Don't create the filter if it doesn't exist - it should only be created
-        // when the user explicitly adds it via the filter UI
-        if (!audienceFilter) {
-            return;
-        }
-
-        // On initial mount with URL filter, sync filter → global state
-        // Check if this filter came from URL (has 'url-' prefix in id)
-        const isFromUrl = audienceFilter.id.startsWith('url-');
-
-        if (isInitialMount.current && isFromUrl) {
-            isInitialMount.current = false;
-
-            // Convert filter values to bitmask and update global state
-            const newAudience = audienceOptions
-                .filter(opt => audienceFilter.values.includes(opt.value))
-                .reduce((acc, opt) => acc | opt.bit, 0);
-
-            if (newAudience > 0 && newAudience !== audience) {
-                setAudience(newAudience);
-            }
-            return;
-        }
-
-        // After initial mount, mark as done
-        isInitialMount.current = false;
-
-        const currentValues = audienceFilter?.values || [];
-
-        // Convert global audience bitmask to filter values using available options
-        const expectedValues = audienceOptions
-            .filter(opt => (audience & opt.bit) !== 0)
-            .map(opt => opt.value);
-
-        // Only update if values have changed
-        const valuesChanged = expectedValues.length !== currentValues.length ||
-            !expectedValues.every(v => currentValues.includes(v));
-
-        if (valuesChanged && onChange) {
-            if (expectedValues.length > 0) {
-                // Update values in place to preserve filter order
-                onChange(filters.map(f => (f.field === 'audience' ? {
-                    ...f,
-                    values: expectedValues
-                } : f)));
-            } else {
-                // Remove the audience filter
-                onChange(filters.filter(f => f.field !== 'audience'));
-            }
-        }
-    }, [audience, filters, onChange, audienceOptions, setAudience]);
-
-    // Handle filter changes - update global audience when audience filter changes
-    const handleFilterChange = useCallback((newFilters: Filter[]) => {
-        // Set flag to prevent the useEffect from running during this change
-        isHandlingChange.current = true;
-
-        const oldAudienceFilter = filters.find(f => f.field === 'audience');
-        const audienceFilter = newFilters.find(f => f.field === 'audience');
-        const values = audienceFilter?.values || [];
-
-        // If audience filter was removed, reset to default (all audiences)
-        if (oldAudienceFilter && !audienceFilter) {
-            setAudience(ALL_AUDIENCES);
-            if (onChange) {
-                onChange(newFilters);
-            }
-            // Reset flag after a short delay to allow the change to propagate
-            setTimeout(() => {
-                isHandlingChange.current = false;
-            }, 0);
-            return;
-        }
-
-        // Only update audience if the audience filter actually changed
-        const audienceChanged = oldAudienceFilter !== audienceFilter ||
-            JSON.stringify(oldAudienceFilter?.values) !== JSON.stringify(values);
-
-        if (audienceChanged && audienceFilter) {
-            // Convert filter values to bitmask using available options
-            const newAudience = audienceOptions
-                .filter(opt => values.includes(opt.value))
-                .reduce((acc, opt) => acc | opt.bit, 0);
-
-            // Update global audience if it changed
-            if (newAudience !== audience) {
-                setAudience(newAudience);
-            }
-        }
-
-        // Pass through to parent onChange
-        if (onChange) {
-            onChange(newFilters);
-        }
-
-        // Reset flag after a short delay to allow the change to propagate
-        setTimeout(() => {
-            isHandlingChange.current = false;
-        }, 0);
-    }, [audience, setAudience, onChange, filters, ALL_AUDIENCES, audienceOptions]);
 
     // Fetch options for all Tinybird-backed fields using the generic hook
     // Options are contextual - filtered based on currently applied filters
@@ -557,20 +445,10 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const hasFilters = filters.length > 0;
 
     const handleClearFilters = useCallback(() => {
-        // Set flag to prevent the useEffect from running during this change
-        isHandlingChange.current = true;
-
         if (onChange) {
             onChange([]);
         }
-        // Reset audience to default (all audiences)
-        setAudience(ALL_AUDIENCES);
-
-        // Reset flag after a short delay to allow the change to propagate
-        setTimeout(() => {
-            isHandlingChange.current = false;
-        }, 0);
-    }, [onChange, setAudience, ALL_AUDIENCES]);
+    }, [onChange]);
 
     return (
         <div className="mt-3 flex w-full justify-between gap-2 lg:mt-0">
@@ -583,8 +461,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 keyboardShortcut="f"
                 popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
                 showSearchInput={false}
-                // size='sm'
-                onChange={handleFilterChange}
+                onChange={onChange || (() => {})}
                 {...props}
             />
             {hasFilters && (
