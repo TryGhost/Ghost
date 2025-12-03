@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {AUDIENCE_BITS, STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
@@ -244,6 +244,25 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     // Track if this is the initial mount - we don't want to overwrite URL-loaded filters
     const isInitialMount = useRef(true);
+
+    // Track screen width for responsive popover alignment
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 1024px)'); // lg breakpoint
+
+        const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+            setIsMobile(e.matches);
+        };
+
+        // Set initial value
+        handleChange(mediaQuery);
+
+        // Listen for changes
+        mediaQuery.addEventListener('change', handleChange);
+
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
 
     // Filter audience options based on site settings
     const audienceOptions = useMemo(() => {
@@ -551,7 +570,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
                 fields={groupedFields}
                 filters={filters}
-                popoverAlign={hasFilters ? 'start' : 'end'}
+                popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
                 showSearchInput={false}
                 // size='sm'
                 onChange={handleFilterChange}
