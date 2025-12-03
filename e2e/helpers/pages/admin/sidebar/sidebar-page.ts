@@ -17,6 +17,7 @@ export class SidebarPage extends AdminPage {
     public readonly whatsNewButton: Locator;
     public readonly userProfileLink: Locator;
     public readonly signOutLink: Locator;
+    public readonly networkNotificationBadge: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -27,6 +28,11 @@ export class SidebarPage extends AdminPage {
         this.whatsNewButton = page.getByRole('menuitem', {name: /what's new/i});
         this.userProfileLink = page.getByRole('menuitem', {name: /your profile/i});
         this.signOutLink = page.getByRole('menuitem', {name: /sign out/i});
+
+        // TODO: Remove .first() and .gh-nav-member-count after React shell fully replaces Ember admin
+        this.networkNotificationBadge = this.sidebar
+            .getByRole('listitem').filter({hasText: /network/i})
+            .locator('[data-sidebar="menu-badge"], .gh-nav-member-count').first();
     }
 
     getNavLink(name: string): Locator {

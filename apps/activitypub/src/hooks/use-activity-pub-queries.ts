@@ -2365,7 +2365,7 @@ export async function uploadFile(file: File) {
     return api.upload(file);
 }
 
-export function useNotificationsCountForUser(handle: string) {
+export function useNotificationsCountForUser(handle: string, enabled: boolean = true) {
     const siteUrl = useCallback(async () => await getSiteUrl(), []);
     const api = useCallback(async () => {
         const url = await siteUrl();
@@ -2374,6 +2374,7 @@ export function useNotificationsCountForUser(handle: string) {
 
     return useQuery({
         queryKey: QUERY_KEYS.notificationsCount(handle),
+        enabled,
         async queryFn() {
             const activityPubAPI = await api();
             const response = await activityPubAPI.getNotificationsCount();
