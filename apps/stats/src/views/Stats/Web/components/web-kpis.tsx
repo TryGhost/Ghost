@@ -1,5 +1,4 @@
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, getYRange} from '@tryghost/shade';
-import {KPI_METRICS} from '../web';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, type GhAreaChartSeries, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useMemo, useState} from 'react';
 
@@ -16,23 +15,43 @@ interface WebKPIsProps {
 
 const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
     const [currentTab, setCurrentTab] = useState('visits');
-    const currentMetric = KPI_METRICS[currentTab];
 
+    // Prepare multi-series chart data
     const chartData = useMemo(() => {
         if (!data) {
             return [];
         }
 
-        return sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
-            const value = Number(item[currentMetric.dataKey]);
+        // Sanitize both series
+        const visitsData = sanitizeChartData<KpiDataItem>(data, range, 'visits' as keyof KpiDataItem, 'sum');
+        const pageviewsData = sanitizeChartData<KpiDataItem>(data, range, 'pageviews' as keyof KpiDataItem, 'sum');
+
+        // Combine into single dataset with both series
+        return visitsData?.map((item: KpiDataItem, index: number) => {
             return {
                 date: String(item.date),
-                value,
-                formattedValue: currentMetric.formatter(value),
-                label: currentMetric.label
+                value: 0, // Not used in multi-series mode
+                formattedValue: '',
+                label: '',
+                visits: Number(item.visits),
+                pageviews: Number(pageviewsData?.[index]?.pageviews || 0)
             };
-        });
-    }, [data, range, currentMetric]);
+        }) || [];
+    }, [data, range]);
+
+    // Define series configuration
+    const series: GhAreaChartSeries[] = [
+        {
+            dataKey: 'visits',
+            label: 'Unique visitors',
+            color: 'hsl(var(--chart-blue))'
+        },
+        {
+            dataKey: 'pageviews',
+            label: 'Total views',
+            color: 'hsl(var(--chart-teal))'
+        }
+    ];
 
     // Calculate KPI values
     const getKpiValues = () => {
@@ -74,12 +93,12 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
     }
 
     return (
-        <Tabs data-testid='web-graph' defaultValue="visits" variant='kpis'>
+        <Tabs data-testid='web-graph' variant='kpis'>
             <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
-                <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
+                <KpiTabTrigger className='!opacity-100' value="visits" disabled>
                     <KpiTabValue color='hsl(var(--chart-blue))' label="Unique visitors" value={kpiValues.visits} />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="views" onClick={() => setCurrentTab('views')}>
+                <KpiTabTrigger className='!opacity-100' value="views" disabled>
                     <KpiTabValue color='hsl(var(--chart-teal))' label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
             </TabsList>
@@ -102,12 +121,11 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
                     className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
-                    color={currentMetric.chartColor}
                     data={chartData}
-                    id="mrr"
+                    id="web-kpis"
                     range={range}
+                    series={series}
                     showHours={true}
-                    yAxisRange={[0, getYRange(chartData).max]}
                 />
             </div>
         </Tabs>

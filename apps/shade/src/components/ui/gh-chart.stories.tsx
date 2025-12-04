@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {GhAreaChart, type GhAreaChartDataItem} from './gh-chart';
+import {GhAreaChart, type GhAreaChartDataItem, type GhAreaChartSeries} from './gh-chart';
 
 const meta = {
     title: 'Components / Ghost Chart',
@@ -112,5 +112,46 @@ export const HourlyData: Story = {
         id: 'hourly-chart',
         className: 'h-[200px]',
         showHours: true
+    }
+};
+
+// Multi-series data
+const multiSeriesData: GhAreaChartDataItem[] = [
+    {date: '2024-01-01', value: 0, formattedValue: '', label: '', visits: 120, pageviews: 280},
+    {date: '2024-01-02', value: 0, formattedValue: '', label: '', visits: 95, pageviews: 220},
+    {date: '2024-01-03', value: 0, formattedValue: '', label: '', visits: 180, pageviews: 410},
+    {date: '2024-01-04', value: 0, formattedValue: '', label: '', visits: 220, pageviews: 520},
+    {date: '2024-01-05', value: 0, formattedValue: '', label: '', visits: 160, pageviews: 350},
+    {date: '2024-01-06', value: 0, formattedValue: '', label: '', visits: 310, pageviews: 680},
+    {date: '2024-01-07', value: 0, formattedValue: '', label: '', visits: 250, pageviews: 590}
+];
+
+const webAnalyticsSeries: GhAreaChartSeries[] = [
+    {
+        dataKey: 'visits',
+        label: 'Unique visitors',
+        color: 'hsl(var(--chart-blue))'
+    },
+    {
+        dataKey: 'pageviews',
+        label: 'Total views',
+        color: 'hsl(var(--chart-teal))'
+    }
+];
+
+export const MultiSeries: Story = {
+    args: {
+        data: multiSeriesData,
+        range: 7,
+        id: 'multi-series-chart',
+        className: 'h-[300px]',
+        series: webAnalyticsSeries
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Display multiple data series on the same chart. Each series has its own color and appears in the tooltip. Perfect for comparing related metrics like visitors vs page views.'
+            }
+        }
     }
 };

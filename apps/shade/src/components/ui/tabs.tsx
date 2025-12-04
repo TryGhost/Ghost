@@ -211,12 +211,12 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     return (
         <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
             <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
-                {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
+                {color && <div className='ml-1 size-2 rounded-full opacity-70' style={{backgroundColor: color}}></div>}
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
             </div>
             <div className='flex flex-col items-start gap-2 xl:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
+                <div className='text-[2.3rem] font-semibold leading-none tracking-tighter' data-testid={testId}>
                     {value}
                 </div>
                 {diffDirection && diffDirection !== 'hidden' &&
