@@ -279,7 +279,7 @@
           "build:tsc",
           {
             "projects": [
-              "ghost-admin"
+              "@tryghost/admin"
             ],
             "target": "build"
           }
