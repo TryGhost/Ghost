@@ -324,8 +324,9 @@ describe('API hooks', () => {
 
                 expect(result.current.data).toEqual([1]);
 
-                expect(mock.calls.length).toBe(1);
-                expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
+                const getTestCalls = () => mock.calls.filter((call: [string, RequestInit]) => call[0].includes('/test/'));
+                expect(getTestCalls().length).toBe(1);
+                expect(getTestCalls()[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
                     credentials: 'include',
                     headers: {
                         'app-pragma': 'no-cache',
@@ -338,10 +339,40 @@ describe('API hooks', () => {
 
                 await act(() => result.current.fetchNextPage());
 
-                await waitFor(() => expect(mock.calls.length).toBe(2));
-                expect(mock.calls[1][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?page=2');
+                await waitFor(() => expect(getTestCalls().length).toBe(2));
+                expect(getTestCalls()[1][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?page=2');
 
                 await waitFor(() => expect(result.current.data).toEqual([1, 1]));
+            });
+        });
+
+        it('respects permissions option and disables query when user lacks permission', async () => {
+            await withMockFetch({
+                json: {test: 1, pagination: {next: 2}}
+            }, async (mock) => {
+                const useTestQuery = createInfiniteQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    permissions: ['Owner', 'Administrator'],
+                    defaultNextPageParams: () => ({}),
+                    returnData: (originalData) => {
+                        const {pages} = originalData as InfiniteData<{test: number}>;
+                        return pages.map(page => page.test);
+                    }
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                // Query should not be enabled because usePermission returns false when currentUser is not loaded
+                // The query remains in loading state but doesn't make a fetch
+                await waitFor(() => {
+                    // Verify no test endpoint calls were made (only /users/me/ may be called)
+                    const testCalls = mock.calls.filter((call: [string, RequestInit]) => call[0].includes('/test/'));
+                    expect(testCalls.length).toBe(0);
+                });
+
+                // The result should indicate the query is not fetching our data
+                expect(result.current.data).toBeUndefined();
             });
         });
     });

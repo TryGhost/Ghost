@@ -116,10 +116,13 @@ type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseDa
 export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
+    const permissionCheck = usePermission(options.permissions || []);
+    const hasPermission = options.permissions ? permissionCheck : true;
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
+        enabled: hasPermission,
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
         getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
