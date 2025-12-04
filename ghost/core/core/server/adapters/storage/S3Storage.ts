@@ -196,7 +196,7 @@ export default class S3Storage extends StorageBase {
         const readStart = Date.now();
         logging.info(`[S3Storage] readFileInChunks() started: file=${filePath} targetChunkSize=${chunkSize}`);
 
-        const stream = fs.createReadStream(filePath);
+        const stream = fs.createReadStream(filePath, {highWaterMark: chunkSize});
         let buffer = Buffer.alloc(0);
         let streamChunksRead = 0;
         let totalStreamBytesRead = 0;
