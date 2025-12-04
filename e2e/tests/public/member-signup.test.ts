@@ -9,7 +9,7 @@ test.describe('Ghost Public - Member Signup', () => {
 
     test.use({config: {
         memberWelcomeEmailSendInstantly: 'true',
-        memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+        labs__welcomeEmails: 'true'
     }});
 
     test.beforeEach(async () => {
@@ -47,8 +47,7 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(emailTextBody).toContain('complete the signup process');
     });
 
-    test('received welcome email', async ({page, config}) => {
-        const emailInbox = config!.memberWelcomeEmailTestInbox;
+    test('received welcome email', async ({page}) => {
         const homePage = new HomePage(page);
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
@@ -61,7 +60,7 @@ test.describe('Ghost Public - Member Signup', () => {
         await publicPage.goto(magicLink);
         await homePage.waitUntilLoaded();
 
-        latestMessage = await retrieveLatestEmailMessage(emailInbox);
+        latestMessage = await retrieveLatestEmailMessage(emailAddress);
 
         expect(latestMessage.From.Name).toContain('Test Blog');
         expect(latestMessage.From.Address).toContain('test@example.com');

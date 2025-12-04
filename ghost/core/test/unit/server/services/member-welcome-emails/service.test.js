@@ -6,7 +6,6 @@ const errors = require('@tryghost/errors');
 describe('MemberWelcomeEmailService', function () {
     let serviceModule;
     let loggingStub;
-    let configStub;
     let settingsCacheStub;
     let urlUtilsStub;
     let emailAddressServiceStub;
@@ -17,7 +16,6 @@ describe('MemberWelcomeEmailService', function () {
 
     beforeEach(function () {
         loggingStub = {info: sinon.stub()};
-        configStub = {get: sinon.stub()};
         settingsCacheStub = {get: sinon.stub()};
         urlUtilsStub = {
             urlFor: sinon.stub().returns('https://example.com/')
@@ -59,7 +57,6 @@ describe('MemberWelcomeEmailService', function () {
 
         serviceModule = rewire('../../../../../core/server/services/member-welcome-emails/service');
         serviceModule.__set__('logging', loggingStub);
-        serviceModule.__set__('config', configStub);
         serviceModule.__set__('settingsCache', settingsCacheStub);
         serviceModule.__set__('urlUtils', urlUtilsStub);
         serviceModule.__set__('emailAddressService', emailAddressServiceStub);
@@ -108,7 +105,6 @@ describe('MemberWelcomeEmailService', function () {
             serviceModule.init();
             await serviceModule.api.loadMemberWelcomeEmails();
 
-            configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('test@example.com');
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
             }).should.be.rejectedWith(errors.IncorrectUsageError);
@@ -128,7 +124,6 @@ describe('MemberWelcomeEmailService', function () {
             serviceModule.init();
             await serviceModule.api.loadMemberWelcomeEmails();
 
-            configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('test@example.com');
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
             }).should.be.rejectedWith(errors.IncorrectUsageError);
@@ -164,7 +159,6 @@ describe('MemberWelcomeEmailService', function () {
 
     describe('send', function () {
         beforeEach(function () {
-            configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
             settingsCacheStub.get.withArgs('title').returns('My Site');
             settingsCacheStub.get.withArgs('accent_color').returns('#00ff00');
         });
@@ -231,39 +225,12 @@ describe('MemberWelcomeEmailService', function () {
 
             sinon.assert.calledOnce(mailerSendStub);
             sinon.assert.calledWith(mailerSendStub, {
-                to: 'test-inbox@example.com',
+                to: 'john@example.com',
                 subject: 'Welcome!',
                 html: '<html>Test</html>',
                 text: 'Test',
                 forceTextContent: true
             });
-        });
-
-        it('uses memberWelcomeEmailTestInbox config for recipient', async function () {
-            configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('custom-inbox@example.com');
-
-            serviceModule.api = null;
-            serviceModule.init();
-            await serviceModule.api.loadMemberWelcomeEmails();
-
-            await serviceModule.api.send({
-                member: {name: 'John', email: 'john@example.com'}
-            });
-
-            const sendCall = mailerSendStub.getCall(0);
-            sendCall.args[0].to.should.equal('custom-inbox@example.com');
-        });
-
-        it('throws error when memberWelcomeEmailTestInbox config missing', async function () {
-            configStub.get.withArgs('memberWelcomeEmailTestInbox').returns(undefined);
-
-            serviceModule.api = null;
-            serviceModule.init();
-            await serviceModule.api.loadMemberWelcomeEmails();
-
-            await serviceModule.api.send({
-                member: {name: 'John', email: 'john@example.com'}
-            }).should.be.rejectedWith(errors.IncorrectUsageError);
         });
 
         it('logs info message with member name and email', async function () {

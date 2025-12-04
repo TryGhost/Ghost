@@ -26,7 +26,7 @@ describe('Member Welcome Emails Integration', function () {
 
     describe('Member creation with welcome emails enabled', function () {
         it('creates outbox entry when member source is "member"', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            configUtils.set('labs', {welcomeEmails: true});
 
             const member = await membersService.api.members.create({
                 email: 'welcome-test@example.com',
@@ -49,8 +49,8 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', '');
+        it('does NOT create outbox entry when labs flag is disabled', async function () {
+            configUtils.set('labs', {welcomeEmails: false});
             
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
@@ -65,7 +65,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is imported', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            configUtils.set('labs', {welcomeEmails: true});
 
             await membersService.api.members.create({
                 email: 'imported@example.com',
@@ -80,7 +80,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does NOT create outbox entry when member is created by admin', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            configUtils.set('labs', {welcomeEmails: true});
 
             await membersService.api.members.create({
                 email: 'admin-created@example.com',
@@ -95,7 +95,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates outbox entry with correct timestamp', async function () {
-            configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
+            configUtils.set('labs', {welcomeEmails: true});
 
             const beforeCreation = new Date(Date.now() - 1000);
             

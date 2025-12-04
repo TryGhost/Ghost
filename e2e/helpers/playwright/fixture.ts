@@ -16,7 +16,7 @@ export interface User {
 
 export interface GhostConfig {
     memberWelcomeEmailSendInstantly: string;
-    memberWelcomeEmailTestInbox: string;
+    labs__welcomeEmails: string;
 }
 
 export interface GhostInstanceFixture {
@@ -72,7 +72,7 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  *
  *  test.use({config: {
  *      memberWelcomeEmailSendInstantly: 'true',
- *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+ *      labs__welcomeEmails: 'true'
  *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
