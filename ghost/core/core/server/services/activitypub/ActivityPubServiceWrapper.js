@@ -48,6 +48,7 @@ module.exports = class ActivityPubServiceWrapper {
 
         events.on('settings.labs.edited', configureActivityPub);
         events.on('settings.social_web.edited', configureActivityPub);
+        events.on('settings.is_private.edited', configureActivityPub);
 
         configureActivityPub();
     }

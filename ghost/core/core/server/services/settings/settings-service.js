@@ -109,7 +109,7 @@ module.exports = {
         fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
 
         // Social web (ActivityPub)
-        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
+        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs', 'is_private']}));
 
         // Web analytics
         fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));

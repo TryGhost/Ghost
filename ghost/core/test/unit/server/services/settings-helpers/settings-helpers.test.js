@@ -261,8 +261,10 @@ describe('Settings Helpers', function () {
 
         beforeEach(function () {
             settingsCache = {
-                get: sinon.stub().withArgs('social_web').returns(true)
+                get: sinon.stub()
             };
+            settingsCache.get.withArgs('social_web').returns(true);
+            settingsCache.get.withArgs('is_private').returns(false);
             urlUtils = {
                 getSiteUrl: sinon.stub().returns('http://example.com/'),
                 getSubdir: sinon.stub().returns('')
@@ -306,6 +308,15 @@ describe('Settings Helpers', function () {
         it('returns false if the site is hosted on a localhost or IP address in production', function () {
             urlUtils.getSiteUrl.returns('http://localhost:2368');
             sinon.stub(process.env, 'NODE_ENV').value('production');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isSocialWebEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns false when the site is private', function () {
+            settingsCache.get.withArgs('is_private').returns(true);
 
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
