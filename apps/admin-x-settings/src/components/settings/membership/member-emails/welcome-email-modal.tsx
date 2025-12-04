@@ -1,10 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {useEffect, useRef, useState} from 'react';
 
-import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 import {Button, HtmlEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 
 interface WelcomeEmailModalProps {
     emailType?: 'free' | 'paid';
