@@ -1,10 +1,12 @@
 const logging = require('@tryghost/logging');
+const db = require('../../../../data/db');
 const MemberCreatedEvent = require('../../../../../shared/events/MemberCreatedEvent');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
 const processEntries = require('./process-entries');
+const memberWelcomeEmailService = require('../../../member-welcome-emails/service');
 
-async function fetchPendingEntries({db, batchSize, jobStartISO}) {
+async function fetchPendingEntries({batchSize, jobStartISO}) {
     let entries = [];
     await db.knex.transaction(async (trx) => {
         const query = trx('outbox')
@@ -36,19 +38,16 @@ async function fetchPendingEntries({db, batchSize, jobStartISO}) {
 }
 
 async function processOutbox() {
-    const db = require('../../../../data/db');
-    const getMailConfig = require('../../../member-welcome-emails/get-mail-config');
-
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
-    let mailConfig;
+    memberWelcomeEmailService.init();
     try {
-        mailConfig = await getMailConfig({db});
+        await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
-        logging.error(`${OUTBOX_LOG_KEY} Mail initialization failed: ${errorMessage}`);
-        return `${OUTBOX_LOG_KEY} Job aborted: Mail initialization failed`;
+        logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
+        return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
     }
 
     let totalProcessed = 0;
@@ -58,13 +57,13 @@ async function processOutbox() {
         const remainingCapacity = MAX_ENTRIES_PER_JOB - (totalProcessed + totalFailed);
         const fetchSize = Math.min(BATCH_SIZE, remainingCapacity);
 
-        const entries = await fetchPendingEntries({db, batchSize: fetchSize, jobStartISO});
+        const entries = await fetchPendingEntries({batchSize: fetchSize, jobStartISO});
         if (entries.length === 0) {
             break;
         }
 
         const batchStartMs = Date.now();
-        const {processed, failed} = await processEntries({db, entries, mailConfig});
+        const {processed, failed} = await processEntries({db, entries});
         const batchDurationMs = Date.now() - batchStartMs;
         const batchRate = ((processed + failed) / (Math.max(batchDurationMs, 1) / 1000)).toFixed(1);
 

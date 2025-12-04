@@ -62,7 +62,8 @@ module.exports = function MembersAPI({
         Settings,
         Comment,
         MemberFeedback,
-        Outbox
+        Outbox,
+        AutomatedEmail
     },
     tiersService,
     stripeAPIService,
@@ -96,6 +97,7 @@ module.exports = function MembersAPI({
         newslettersService,
         labsService,
         productRepository,
+        AutomatedEmail,
         Member,
         MemberNewsletter,
         MemberCancelEvent,

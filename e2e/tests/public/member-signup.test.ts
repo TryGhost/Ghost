@@ -1,5 +1,6 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
+import {createAutomatedEmailFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {signupViaPortal} from '@/helpers/playwright/flows/signup';
@@ -48,6 +49,9 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     test('received welcome email', async ({page, config}) => {
+        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
+        await automatedEmailFactory.create();
+
         const emailInbox = config!.memberWelcomeEmailTestInbox;
         const homePage = new HomePage(page);
         await homePage.goto();
