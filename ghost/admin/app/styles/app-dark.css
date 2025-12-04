@@ -288,7 +288,7 @@ input:focus,
     color: white;
 }
 
-.gh-btn-white {
+body .gh-btn-white {
     background: var(--transparent);
 }
 
