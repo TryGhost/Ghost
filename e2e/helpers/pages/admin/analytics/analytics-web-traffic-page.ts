@@ -54,8 +54,9 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         return this.page.getByRole('option', {name, exact: true});
     }
 
-    getFilterValue(name: string): Locator {
-        return this.page.getByRole('option', {name, exact: true});
+    getFilterOptionValue(name: string): Locator {
+        // Filter option values show as "count name" (e.g., "1 Direct"), so use regex
+        return this.page.getByRole('option', {name: new RegExp(`^\\d+\\s+${name}$`)});
     }
 
     async selectFilterField(label: string) {
@@ -63,7 +64,7 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     async selectFilterValue(label: string) {
-        await this.getFilterValue(label).click();
+        await this.getFilterOptionValue(label).click();
     }
 
     async addFilter(fieldLabel: string, valueLabel: string) {
@@ -99,9 +100,14 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         await row.click();
     }
 
-    getFilterParamsFromUrl(): URLSearchParams {
-        const url = new URL(this.page.url());
-        return url.searchParams;
+    /**
+     * Get the search params from the current URL
+     * The URL is like this: /ghost/#/analytics/web?source=direct, so we need to split the URL and get the query part.
+     */
+    getSearchParams(): URLSearchParams {
+        const url = this.page.url();
+        const hashQuery = url.split('?')[1] ?? '';
+        return new URLSearchParams(hashQuery);
     }
 
     async gotoWithFilters(filters: Record<string, string>) {
