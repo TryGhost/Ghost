@@ -46,7 +46,7 @@ test.describe('Ghost Admin - Web Filters', () => {
             await webTrafficPage.selectFilterField('Source');
 
             const directOption = webTrafficPage.getFilterValue('Direct');
-            await expect(directOption).toBeVisible({timeout: 15000});
+            await expect(directOption).toBeVisible();
             await expect(directOption).toContainText(/\d+/);
         });
 
@@ -58,7 +58,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
-            await expect(webTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+            await expect(webTrafficPage.topSourcesCard).toContainText('Direct');
 
             await webTrafficPage.clickSourceToFilter('direct');
 
@@ -73,7 +73,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
-            await expect(webTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+            await expect(webTrafficPage.topSourcesCard).toContainText('Direct');
 
             await webTrafficPage.clickSourceToFilter('direct');
 
@@ -89,7 +89,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
-            await expect(webTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+            await expect(webTrafficPage.topSourcesCard).toContainText('Direct');
 
             await webTrafficPage.clickSourceToFilter('direct');
             await expect(webTrafficPage.getActiveFilter('Source')).toBeVisible();
@@ -107,7 +107,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
-            await expect(webTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+            await expect(webTrafficPage.topSourcesCard).toContainText('Direct');
 
             await webTrafficPage.clickSourceToFilter('direct');
 
@@ -123,7 +123,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
-            await expect(webTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+            await expect(webTrafficPage.topSourcesCard).toContainText('Direct');
 
             await webTrafficPage.clickSourceToFilter('direct');
             await expect(webTrafficPage.getActiveFilter('Source')).toBeVisible();
