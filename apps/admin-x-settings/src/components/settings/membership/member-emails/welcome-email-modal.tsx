@@ -1,8 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {useEffect, useRef, useState} from 'react';
 
-import {Button, HtmlEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, LexicalEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 
@@ -11,12 +13,13 @@ interface WelcomeEmailModalProps {
     automatedEmail?: AutomatedEmail;
 }
 
-const getDefaultContent = () => {
-    return `<p><strong>Welcome! It's great to have you here.</strong></p>
-<p>You'll start getting updates right in your inbox. You can also log in any time to read the full archive or catch up on new posts as they go live.</p>
-<p>A quick heads-up: if the newsletter doesn't show up, check your <em>spam folder</em> or your Promotions tab and mark this address as not spam.</p>
-<p>And remember: everything is always available on <a href="https://example.com">publisherweekly.org</a>.</p>
-<p>Thanks for joining — feel free to share it with a friend or two if you think they'd enjoy it.</p>`;
+// Default welcome email content in Lexical JSON format
+const DEFAULT_FREE_LEXICAL_CONTENT = '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome! Thanks for subscribing — it\'s great to have you here.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"You\'ll now receive new posts straight to your inbox. You can also log in any time to read the full archive [link] or catch up on new posts as they go live.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"A little housekeeping: If this email landed in spam or promotions, try moving it to your primary inbox and adding this address to your contacts. Small signals like that helps your inbox recognize that these messages matter to you.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Have questions or just want to say hi? Feel free to reply directly to this email or any newsletter in the future.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
+
+const DEFAULT_PAID_LEXICAL_CONTENT = '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome, and thank you for your support — it means a lot.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"As a paid member, you now have full access to everything: the complete archive, and any paid-only content going forward. New posts will land straight to your inbox, and you can log in any time to catch up [link] on anything you\'ve missed.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"A little housekeeping: If this email landed in spam or promotions, try moving it to your primary inbox and adding this address to your contacts. Small signals like that helps your inbox recognize that these messages matter to you.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Have questions or just want to say hi? Feel free to reply directly to this email or any newsletter in the future.","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
+
+const getDefaultContent = (emailType: 'free' | 'paid') => {
+    return emailType === 'paid' ? DEFAULT_PAID_LEXICAL_CONTENT : DEFAULT_FREE_LEXICAL_CONTENT;
 };
 
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
@@ -25,14 +28,42 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {data: currentUser} = useCurrentUser();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
-    const [emailContent, setEmailContent] = useState(automatedEmail?.lexical || getDefaultContent());
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Get display values from automatedEmail or use defaults
-    const senderName = automatedEmail?.sender_name || 'Your Site';
-    const senderEmail = automatedEmail?.sender_email || 'noreply@example.com';
-    const replyTo = automatedEmail?.sender_reply_to;
-    const subject = automatedEmail?.subject || 'Welcome';
+    const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const handleError = useHandleError();
+
+    const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm<AutomatedEmail>({
+        initialState: automatedEmail ? {
+            ...automatedEmail,
+            // Ensure lexical has a value - use default if null/empty
+            lexical: automatedEmail.lexical || getDefaultContent(emailType)
+        } : {
+            id: '',
+            status: 'inactive',
+            name: emailType === 'paid' ? 'Welcome Email (Paid)' : 'Welcome Email (Free)',
+            slug: emailType === 'paid' ? 'member-welcome-email-paid' : 'member-welcome-email-free',
+            subject: 'Welcome',
+            lexical: getDefaultContent(emailType),
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: null,
+            created_at: new Date().toISOString(),
+            updated_at: null
+        },
+        savingDelay: 500,
+        onSave: async (state) => {
+            await editAutomatedEmail(state);
+        },
+        onSaveError: handleError,
+        onValidate: (state) => {
+            const newErrors: Record<string, string> = {};
+            if (!state.subject?.trim()) {
+                newErrors.subject = 'Subject is required';
+            }
+            return newErrors;
+        }
+    });
 
     // Update test email when current user data loads
     useEffect(() => {
@@ -63,14 +94,17 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             afterClose={() => {
                 updateRoute('memberemails');
             }}
+            dirty={saveState === 'unsaved'}
             footer={false}
             header={false}
             testId='welcome-email-modal'
             onCancel={() => {
                 modal.remove();
             }}
-            onOk={() => {
-                modal.remove();
+            onOk={async () => {
+                if (await handleSave()) {
+                    modal.remove();
+                }
             }}
         >
             <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto'>
@@ -112,41 +146,64 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 )}
                             </div>
                             <Button
-                                color="black"
-                                label="Save"
+                                color={okProps.color}
+                                disabled={okProps.disabled}
+                                label={okProps.label || 'Save'}
+                                onClick={async () => {
+                                    if (await handleSave()) {
+                                        modal.remove();
+                                    }
+                                }}
                             />
                         </div>
                     </div>
-                    <div className='flex items-center'>
+                    <div className='flex items-center gap-2'>
                         <div className='w-20 font-semibold'>From:</div>
-                        <div>
-                            {senderName}
-                            <span className='ml-1 text-grey-700'>{`<${senderEmail}>`}</span>
-                        </div>
+                        <TextField
+                            className='!h-[34px] w-48'
+                            placeholder='Sender name'
+                            value={formState?.sender_name || ''}
+                            onChange={e => updateForm(state => ({...state, sender_name: e.target.value}))}
+                        />
+                        <TextField
+                            className='!h-[34px] flex-1'
+                            placeholder='noreply@yoursite.com'
+                            value={formState?.sender_email || ''}
+                            onChange={e => updateForm(state => ({...state, sender_email: e.target.value}))}
+                        />
                     </div>
 
-                    {replyTo && replyTo !== senderEmail && (
-                        <div className='flex items-center py-1'>
-                            <div className='w-20 font-semibold'>Reply-to:</div>
-                            <span className='text-grey-700'>{replyTo}</span>
-                        </div>
-                    )}
+                    <div className='flex items-center gap-2'>
+                        <div className='w-20 font-semibold'>Reply-to:</div>
+                        <TextField
+                            className='!h-[34px] flex-1'
+                            placeholder='reply@yoursite.com (optional)'
+                            value={formState?.sender_reply_to || ''}
+                            onChange={e => updateForm(state => ({...state, sender_reply_to: e.target.value}))}
+                        />
+                    </div>
 
-                    <div className='-mt-1 flex items-center'>
+                    <div className='-mt-1 flex items-center gap-2'>
                         <div className='w-20 font-semibold'>Subject:</div>
-                        <div className='grow'>
-                            <TextField className='!h-[34px] w-full' value={subject}/>
-                        </div>
+                        <TextField
+                            className='!h-[34px] flex-1'
+                            error={Boolean(errors.subject)}
+                            placeholder='Welcome'
+                            value={formState?.subject || ''}
+                            onChange={e => updateForm(state => ({...state, subject: e.target.value}))}
+                            onKeyDown={() => clearError('subject')}
+                        />
                     </div>
                 </div>
                 <div className='bg-grey-50 p-6'>
                     <div className='mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
-                        <HtmlEditor
-                            nodes='BASIC_NODES'
+                        <LexicalEditor
+                            key={formState?.id || 'new'}
+                            nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
                             singleParagraph={false}
-                            value={emailContent}
-                            onChange={setEmailContent}
+                            value={formState?.lexical || getDefaultContent(emailType)}
+                            onChange={lexical => updateForm(state => ({...state, lexical}))}
                         />
                     </div>
                 </div>

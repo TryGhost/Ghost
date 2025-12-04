@@ -34,6 +34,8 @@ export {default as HtmlEditor} from './global/form/HtmlEditor';
 export type {HtmlEditorProps} from './global/form/HtmlEditor';
 export {default as HtmlField} from './global/form/HtmlField';
 export type {HtmlFieldProps} from './global/form/HtmlField';
+export {default as LexicalEditor} from './global/form/LexicalEditor';
+export type {LexicalEditorProps} from './global/form/LexicalEditor';
 export {default as ImageUpload} from './global/form/ImageUpload';
 export type {ImageUploadProps} from './global/form/ImageUpload';
 export {default as MultiSelect} from './global/form/MultiSelect';
