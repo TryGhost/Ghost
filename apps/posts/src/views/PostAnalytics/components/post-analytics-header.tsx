@@ -198,7 +198,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-0 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 {!isPostLoading && (
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
