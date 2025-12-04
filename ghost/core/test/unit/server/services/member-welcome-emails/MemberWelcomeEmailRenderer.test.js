@@ -42,8 +42,8 @@ describe('MemberWelcomeEmailRenderer', function () {
             sinon.assert.calledWith(lexicalRenderStub, lexicalJson, {target: 'email'});
         });
 
-        it('substitutes member.name template variable', async function () {
-            lexicalRenderStub.resolves('<p>Hello {{member.name}}</p>');
+        it('substitutes member template variables', async function () {
+            lexicalRenderStub.resolves('<p>Hello {{member.name}}, or {{member.firstname}}! Contact: {{member.email}}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -54,38 +54,12 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             result.html.should.containEql('Hello John Doe');
+            result.html.should.containEql('or John!');
+            result.html.should.containEql('Contact: john@example.com');
         });
 
-        it('substitutes member.firstname template variable', async function () {
-            lexicalRenderStub.resolves('<p>Hi {{member.firstname}}</p>');
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John Doe', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            result.html.should.containEql('Hi John');
-        });
-
-        it('substitutes member.email template variable', async function () {
-            lexicalRenderStub.resolves('<p>Your email: {{member.email}}</p>');
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            result.html.should.containEql('Your email: john@example.com');
-        });
-
-        it('substitutes site.title template variable', async function () {
-            lexicalRenderStub.resolves('<p>Welcome to {{site.title}}</p>');
+        it('substitutes site template variables', async function () {
+            lexicalRenderStub.resolves('<p>Welcome to {{site.title}} at {{site.url}}. Also {{siteTitle}} and {{siteUrl}}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -96,48 +70,9 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             result.html.should.containEql('Welcome to Test Site');
-        });
-
-        it('substitutes site.url template variable', async function () {
-            lexicalRenderStub.resolves('<p>Visit {{site.url}}</p>');
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            result.html.should.containEql('Visit https://example.com');
-        });
-
-        it('substitutes siteTitle template variable', async function () {
-            lexicalRenderStub.resolves('<p>From {{siteTitle}}</p>');
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            result.html.should.containEql('From Test Site');
-        });
-
-        it('substitutes siteUrl template variable', async function () {
-            lexicalRenderStub.resolves('<p>Go to {{siteUrl}}</p>');
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            result.html.should.containEql('Go to https://example.com');
+            result.html.should.containEql('at https://example.com');
+            result.html.should.containEql('Also Test Site');
+            result.html.should.containEql('and https://example.com');
         });
 
         it('inlines accentColor into link styles', async function () {
@@ -239,21 +174,6 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             result.text.should.be.a.String();
             result.text.should.containEql('Hello World');
-        });
-
-        it('returns html, text, and subject', async function () {
-            const renderer = new MemberWelcomeEmailRenderer();
-
-            const result = await renderer.render({
-                lexical: '{}',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            });
-
-            should.exist(result.html);
-            should.exist(result.text);
-            should.exist(result.subject);
         });
 
         it('throws IncorrectUsageError for invalid Lexical', async function () {

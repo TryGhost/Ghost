@@ -123,39 +123,7 @@ describe('Outbox - process-entries', function () {
     });
 
     describe('handler not found', function () {
-        it('logs warning when no handler found for event type', async function () {
-            const entries = [{
-                id: '1',
-                event_type: 'UnknownEvent',
-                payload: '{}',
-                retry_count: 0
-            }];
-
-            await processEntries({db: dbStub, entries});
-
-            sinon.assert.calledOnce(loggingStub.warn);
-            const warnMessage = loggingStub.warn.getCall(0).args[0];
-            warnMessage.should.containEql('No handler for event type');
-            warnMessage.should.containEql('UnknownEvent');
-        });
-
-        it('updates entry with failed status when no handler found', async function () {
-            const entries = [{
-                id: 'entry-456',
-                event_type: 'UnknownEvent',
-                payload: '{}',
-                retry_count: 0
-            }];
-
-            await processEntries({db: dbStub, entries});
-
-            sinon.assert.calledWith(knexFn, 'outbox');
-            sinon.assert.calledOnce(knexChain.update);
-            const updateArgs = knexChain.update.getCall(0).args[0];
-            updateArgs.message.should.containEql('No handler for event type');
-        });
-
-        it('returns failure when no handler found', async function () {
+        it('logs warning, updates entry as failed, and returns failure', async function () {
             const entries = [{
                 id: '1',
                 event_type: 'UnknownEvent',
@@ -165,6 +133,15 @@ describe('Outbox - process-entries', function () {
 
             const result = await processEntries({db: dbStub, entries});
 
+            // Logs warning
+            sinon.assert.calledOnce(loggingStub.warn);
+            loggingStub.warn.getCall(0).args[0].should.containEql('No handler for event type');
+
+            // Updates entry
+            sinon.assert.calledOnce(knexChain.update);
+            knexChain.update.getCall(0).args[0].message.should.containEql('No handler for event type');
+
+            // Returns failure
             result.failed.should.equal(1);
         });
     });
@@ -278,44 +255,24 @@ describe('Outbox - process-entries', function () {
     });
 
     describe('payload parsing errors', function () {
-        it('logs error when payload fails to parse', async function () {
+        it('logs error, updates entry, and returns failure when payload is invalid JSON', async function () {
             const entries = [{
-                id: 'entry-bad',
+                id: '1',
                 event_type: 'MemberCreatedEvent',
                 payload: 'not valid json',
                 retry_count: 0
             }];
 
-            await processEntries({db: dbStub, entries});
-
-            sinon.assert.calledOnce(loggingStub.error);
-            const errorMessage = loggingStub.error.getCall(0).args[0];
-            errorMessage.should.containEql('Failed to parse payload');
-        });
-
-        it('updates entry as failed when payload parsing fails', async function () {
-            const entries = [{
-                id: 'entry-invalid',
-                event_type: 'MemberCreatedEvent',
-                payload: '{invalid',
-                retry_count: 0
-            }];
-
-            await processEntries({db: dbStub, entries});
-
-            sinon.assert.calledOnce(knexChain.update);
-        });
-
-        it('returns failure when payload parsing fails', async function () {
-            const entries = [{
-                id: '1',
-                event_type: 'MemberCreatedEvent',
-                payload: 'bad json',
-                retry_count: 0
-            }];
-
             const result = await processEntries({db: dbStub, entries});
 
+            // Logs error
+            sinon.assert.calledOnce(loggingStub.error);
+            loggingStub.error.getCall(0).args[0].should.containEql('Failed to parse payload');
+
+            // Updates entry
+            sinon.assert.calledOnce(knexChain.update);
+
+            // Returns failure
             result.failed.should.equal(1);
         });
     });

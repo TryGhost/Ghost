@@ -55,20 +55,9 @@ describe('Outbox Handler - member-created', function () {
             result.should.equal('John Doe (john@example.com)');
         });
 
-        it('returns just email when name is missing', function () {
-            const payload = {email: 'john@example.com'};
-
-            const result = handler.getLogInfo(payload);
-
-            result.should.equal('john@example.com');
-        });
-
-        it('returns just email when name is empty string', function () {
-            const payload = {name: '', email: 'john@example.com'};
-
-            const result = handler.getLogInfo(payload);
-
-            result.should.equal('john@example.com');
+        it('returns just email when name is missing or empty', function () {
+            handler.getLogInfo({email: 'john@example.com'}).should.equal('john@example.com');
+            handler.getLogInfo({name: '', email: 'john@example.com'}).should.equal('john@example.com');
         });
 
         it('returns "unknown member" when email is missing', function () {
@@ -79,24 +68,10 @@ describe('Outbox Handler - member-created', function () {
             result.should.equal('John (unknown member)');
         });
 
-        it('returns "unknown member" when payload is empty', function () {
-            const payload = {};
-
-            const result = handler.getLogInfo(payload);
-
-            result.should.equal('unknown member');
-        });
-
-        it('returns "unknown member" when payload is null', function () {
-            const result = handler.getLogInfo(null);
-
-            result.should.equal('unknown member');
-        });
-
-        it('returns "unknown member" when payload is undefined', function () {
-            const result = handler.getLogInfo(undefined);
-
-            result.should.equal('unknown member');
+        it('returns "unknown member" when payload is empty, null, or undefined', function () {
+            handler.getLogInfo({}).should.equal('unknown member');
+            handler.getLogInfo(null).should.equal('unknown member');
+            handler.getLogInfo(undefined).should.equal('unknown member');
         });
     });
 

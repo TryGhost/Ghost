@@ -89,23 +89,18 @@ describe('Outbox - process-outbox', function () {
             sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.loadTemplate);
         });
 
-        it('returns early with error message if service initialization fails', async function () {
+        it('logs error and returns early when service initialization fails', async function () {
             memberWelcomeEmailServiceStub.api.loadTemplate.rejects(new Error('Template load failed'));
 
             const result = await processOutbox();
 
+            // Logs error
+            sinon.assert.calledOnce(loggingStub.error);
+            loggingStub.error.getCall(0).args[0].should.containEql('Service initialization failed');
+
+            // Returns abort message
             result.should.containEql('Job aborted');
             result.should.containEql('Service initialization failed');
-        });
-
-        it('logs error when service initialization fails', async function () {
-            memberWelcomeEmailServiceStub.api.loadTemplate.rejects(new Error('Template load failed'));
-
-            await processOutbox();
-
-            sinon.assert.calledOnce(loggingStub.error);
-            const errorMessage = loggingStub.error.getCall(0).args[0];
-            errorMessage.should.containEql('Service initialization failed');
         });
     });
 
@@ -214,37 +209,17 @@ describe('Outbox - process-outbox', function () {
             result.should.containEql('No pending outbox entries to process');
         });
 
-        it('returns summary message with processed count', async function () {
+        it('returns summary message with processed count, failed count, and duration', async function () {
             queryStub.select
-                .onFirstCall().resolves([{id: '1'}])
+                .onFirstCall().resolves([{id: '1'}, {id: '2'}])
                 .onSecondCall().resolves([]);
-            processEntriesStub.resolves({processed: 1, failed: 0});
+            processEntriesStub.resolves({processed: 1, failed: 1});
 
             const result = await processOutbox();
 
             result.should.containEql('Job complete');
             result.should.containEql('Processed 1 outbox entries');
-        });
-
-        it('returns summary message with failed count', async function () {
-            queryStub.select
-                .onFirstCall().resolves([{id: '1'}])
-                .onSecondCall().resolves([]);
-            processEntriesStub.resolves({processed: 0, failed: 1});
-
-            const result = await processOutbox();
-
             result.should.containEql('1 failed');
-        });
-
-        it('returns summary message with duration', async function () {
-            queryStub.select
-                .onFirstCall().resolves([{id: '1'}])
-                .onSecondCall().resolves([]);
-            processEntriesStub.resolves({processed: 1, failed: 0});
-
-            const result = await processOutbox();
-
             result.should.match(/\d+\.\d+s$/);
         });
     });
