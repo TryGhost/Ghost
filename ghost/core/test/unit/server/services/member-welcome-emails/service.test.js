@@ -325,4 +325,100 @@ describe('MemberWelcomeEmailService', function () {
             renderCall.args[0].siteSettings.accentColor.should.equal('#15212A');
         });
     });
+
+    describe('isMemberWelcomeEmailActive', function () {
+        it('returns true when email exists with lexical content and status is active', async function () {
+            automatedEmailStub.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {
+                        lexical: '{"root":{}}',
+                        status: 'active'
+                    };
+                    return data[key];
+                })
+            });
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            const result = await serviceModule.api.isMemberWelcomeEmailActive('free');
+            result.should.be.true();
+        });
+
+        it('returns false when no email found', async function () {
+            automatedEmailStub.findOne.resolves(null);
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            const result = await serviceModule.api.isMemberWelcomeEmailActive('free');
+            result.should.be.false();
+        });
+
+        it('returns false when email has no lexical content', async function () {
+            automatedEmailStub.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {
+                        lexical: null,
+                        status: 'active'
+                    };
+                    return data[key];
+                })
+            });
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            const result = await serviceModule.api.isMemberWelcomeEmailActive('free');
+            result.should.be.false();
+        });
+
+        it('returns false when email status is not active', async function () {
+            automatedEmailStub.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {
+                        lexical: '{"root":{}}',
+                        status: 'inactive'
+                    };
+                    return data[key];
+                })
+            });
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            const result = await serviceModule.api.isMemberWelcomeEmailActive('free');
+            result.should.be.false();
+        });
+
+        it('returns false for invalid memberStatus', async function () {
+            serviceModule.api = null;
+            serviceModule.init();
+
+            const result = await serviceModule.api.isMemberWelcomeEmailActive('invalid');
+            result.should.be.false();
+        });
+
+        it('queries AutomatedEmail with correct slug for free status', async function () {
+            automatedEmailStub.findOne.resolves(null);
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            await serviceModule.api.isMemberWelcomeEmailActive('free');
+
+            sinon.assert.calledWith(automatedEmailStub.findOne, {slug: 'member-welcome-email-free'});
+        });
+
+        it('queries AutomatedEmail with correct slug for paid status', async function () {
+            automatedEmailStub.findOne.resolves(null);
+
+            serviceModule.api = null;
+            serviceModule.init();
+
+            await serviceModule.api.isMemberWelcomeEmailActive('paid');
+
+            sinon.assert.calledWith(automatedEmailStub.findOne, {slug: 'member-welcome-email-paid'});
+        });
+    });
 });

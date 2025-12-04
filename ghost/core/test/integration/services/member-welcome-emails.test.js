@@ -1,9 +1,11 @@
 const assert = require('assert/strict');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const configUtils = require('../../utils/configUtils');
+const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 describe('Member Welcome Emails Integration', function () {
     let membersService;
@@ -16,11 +18,36 @@ describe('Member Welcome Emails Integration', function () {
     beforeEach(async function () {
         await db.knex('outbox').del();
         await db.knex('members').del();
+
+        const lexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{type: 'text', text: 'Welcome to our site!'}]
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+
+        await db.knex('automated_emails').insert({
+            id: ObjectId().toHexString(),
+            status: 'active',
+            name: 'Free Member Welcome Email',
+            slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+            subject: 'Welcome to {{site.title}}',
+            lexical,
+            created_at: new Date()
+        });
     });
 
     afterEach(async function () {
         await db.knex('outbox').del();
         await db.knex('members').del();
+        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         await configUtils.restore();
     });
 

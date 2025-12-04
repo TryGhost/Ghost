@@ -90,6 +90,17 @@ class MemberWelcomeEmailService {
             forceTextContent: true
         });
     }
+
+    async isMemberWelcomeEmailActive(memberStatus = 'free') {
+        const slug = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
+
+        if (!slug) {
+            return false;
+        }
+        
+        const row = await AutomatedEmail.findOne({slug});
+        return Boolean(row && row.get('lexical') && row.get('status') === 'active');
+    }
 }
 
 class MemberWelcomeEmailServiceWrapper {
