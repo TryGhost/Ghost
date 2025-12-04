@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {useEffect, useRef, useState} from 'react';
 
-import {Button, HtmlEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, LexicalEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
@@ -11,21 +11,12 @@ interface WelcomeEmailModalProps {
     automatedEmail?: AutomatedEmail;
 }
 
-const getDefaultContent = () => {
-    return `<p><strong>Welcome! It's great to have you here.</strong></p>
-<p>You'll start getting updates right in your inbox. You can also log in any time to read the full archive or catch up on new posts as they go live.</p>
-<p>A quick heads-up: if the newsletter doesn't show up, check your <em>spam folder</em> or your Promotions tab and mark this address as not spam.</p>
-<p>And remember: everything is always available on <a href="https://example.com">publisherweekly.org</a>.</p>
-<p>Thanks for joining — feel free to share it with a friend or two if you think they'd enjoy it.</p>`;
-};
-
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
     const {data: currentUser} = useCurrentUser();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
-    const [emailContent, setEmailContent] = useState(automatedEmail?.lexical || getDefaultContent());
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Get display values from automatedEmail or use defaults
@@ -141,12 +132,12 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 </div>
                 <div className='bg-grey-50 p-6'>
                     <div className='mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
-                        <HtmlEditor
-                            nodes='BASIC_NODES'
+                        <LexicalEditor
+                            key={automatedEmail?.id || 'new'}
+                            nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
                             singleParagraph={false}
-                            value={emailContent}
-                            onChange={setEmailContent}
+                            value={automatedEmail?.lexical || ''}
                         />
                     </div>
                 </div>
