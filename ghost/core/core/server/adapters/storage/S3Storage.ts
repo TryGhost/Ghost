@@ -149,54 +149,115 @@ export default class S3Storage extends StorageBase {
     }
 
     async save(file: UploadFile, targetDir?: string): Promise<string> {
+        const uploadStart = Date.now();
+        logging.info(`[S3Storage] save() started: file=${file.name}`);
+
         const dir = targetDir || this.getTargetDir();
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
+
+        const statStart = Date.now();
         const stats = await fs.promises.stat(file.path);
+        const statDuration = Date.now() - statStart;
+        logging.info(`[S3Storage] fs.stat completed: file=${key} size=${stats.size} duration=${statDuration}ms`);
 
         if (stats.size >= this.multipartUploadThresholdBytes) {
-            logging.info(`Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
-            return await this.uploadMultipart(file, key);
+            logging.info(`[S3Storage] Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
+            const result = await this.uploadMultipart(file, key);
+            const totalDuration = Date.now() - uploadStart;
+            logging.info(`[S3Storage] save() completed (multipart): file=${key} totalDuration=${totalDuration}ms`);
+            return result;
         }
 
-        logging.info(`Small file, using simple upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
-        const body = await fs.promises.readFile(file.path);
+        logging.info(`[S3Storage] Small file, using simple upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`);
 
+        const readStart = Date.now();
+        const body = await fs.promises.readFile(file.path);
+        const readDuration = Date.now() - readStart;
+        logging.info(`[S3Storage] fs.readFile completed: file=${key} size=${body.length} duration=${readDuration}ms`);
+
+        const uploadStart2 = Date.now();
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
             Key: key,
             Body: body,
             ContentType: file.type
         }));
+        const uploadDuration = Date.now() - uploadStart2;
+        logging.info(`[S3Storage] PutObjectCommand completed: file=${key} duration=${uploadDuration}ms`);
 
+        const totalDuration = Date.now() - uploadStart;
+        logging.info(`[S3Storage] save() completed (simple): file=${key} totalDuration=${totalDuration}ms`);
         return `${this.cdnUrl}/${key}`;
     }
 
     private async *readFileInChunks(filePath: string, chunkSize: number): AsyncGenerator<Buffer> {
+        const readStart = Date.now();
+        logging.info(`[S3Storage] readFileInChunks() started: file=${filePath} targetChunkSize=${chunkSize}`);
+
         const stream = fs.createReadStream(filePath);
         let buffer = Buffer.alloc(0);
+        let streamChunksRead = 0;
+        let totalStreamBytesRead = 0;
+        let bufferConcatCount = 0;
+        let bufferConcatTime = 0;
+        let bufferSliceCount = 0;
+        let bufferSliceTime = 0;
+        let yieldedChunks = 0;
 
         for await (const chunk of stream) {
+            streamChunksRead += 1;
+            const chunkLength = (chunk as Buffer).length;
+            totalStreamBytesRead += chunkLength;
+
+            const beforeConcatSize = buffer.length;
+            const concatStart = Date.now();
             buffer = Buffer.concat([buffer, chunk as Buffer]);
+            bufferConcatTime += Date.now() - concatStart;
+            bufferConcatCount += 1;
+
+            logging.info(`[S3Storage] readFileInChunks stream chunk: streamChunk=${streamChunksRead} streamChunkSize=${chunkLength} bufferBeforeConcat=${beforeConcatSize} bufferAfterConcat=${buffer.length} concatDuration=${Date.now() - concatStart}ms`);
 
             while (buffer.length >= chunkSize) {
-                yield buffer.slice(0, chunkSize);
+                const slice1Start = Date.now();
+                const chunkToYield = buffer.slice(0, chunkSize);
+                bufferSliceTime += Date.now() - slice1Start;
+                bufferSliceCount += 1;
+
+                const slice2Start = Date.now();
                 buffer = buffer.slice(chunkSize);
+                bufferSliceTime += Date.now() - slice2Start;
+                bufferSliceCount += 1;
+
+                yieldedChunks += 1;
+                logging.info(`[S3Storage] readFileInChunks yielding chunk: chunk=${yieldedChunks} size=${chunkSize} bufferRemaining=${buffer.length}`);
+                yield chunkToYield;
             }
         }
 
         if (buffer.length > 0) {
+            yieldedChunks += 1;
+            logging.info(`[S3Storage] readFileInChunks yielding final chunk: chunk=${yieldedChunks} size=${buffer.length}`);
             yield buffer;
         }
+
+        const readDuration = Date.now() - readStart;
+        logging.info(`[S3Storage] readFileInChunks() completed: file=${filePath} totalDuration=${readDuration}ms streamChunksRead=${streamChunksRead} totalStreamBytes=${totalStreamBytesRead} bufferConcats=${bufferConcatCount} bufferConcatTime=${bufferConcatTime}ms bufferSlices=${bufferSliceCount} bufferSliceTime=${bufferSliceTime}ms yielded=${yieldedChunks}`);
     }
 
     private async uploadMultipart(file: UploadFile, key: string): Promise<string> {
+        const multipartStart = Date.now();
+        logging.info(`[S3Storage] uploadMultipart() started: file=${key} chunkSize=${this.multipartChunkSizeBytes}`);
+
+        const createStart = Date.now();
         const createResponse = await this.client.send(new CreateMultipartUploadCommand({
             Bucket: this.bucket,
             Key: key,
             ContentType: file.type
         }));
+        const createDuration = Date.now() - createStart;
+        logging.info(`[S3Storage] CreateMultipartUploadCommand completed: file=${key} duration=${createDuration}ms`);
 
         const uploadId = createResponse.UploadId;
         if (!uploadId) {
@@ -210,7 +271,13 @@ export default class S3Storage extends StorageBase {
             let partNumber = 1;
             const chunks = this.readFileInChunks(file.path, this.multipartChunkSizeBytes);
 
+            const partsStart = Date.now();
+            let totalUploadTime = 0;
+
             for await (const chunk of chunks) {
+                const partStart = Date.now();
+
+                const uploadPartStart = Date.now();
                 const uploadPartResponse = await this.client.send(new UploadPartCommand({
                     Bucket: this.bucket,
                     Key: key,
@@ -218,6 +285,8 @@ export default class S3Storage extends StorageBase {
                     PartNumber: partNumber,
                     Body: chunk
                 }));
+                const uploadPartDuration = Date.now() - uploadPartStart;
+                totalUploadTime += uploadPartDuration;
 
                 if (!uploadPartResponse.ETag) {
                     throw new errors.InternalServerError({
@@ -230,9 +299,16 @@ export default class S3Storage extends StorageBase {
                     PartNumber: partNumber
                 });
 
+                const partDuration = Date.now() - partStart;
+                logging.info(`[S3Storage] UploadPartCommand completed: file=${key} part=${partNumber} size=${chunk.length} uploadDuration=${uploadPartDuration}ms totalPartDuration=${partDuration}ms`);
+
                 partNumber += 1;
             }
 
+            const partsDuration = Date.now() - partsStart;
+            logging.info(`[S3Storage] All parts uploaded: file=${key} totalParts=${parts.length} totalPartsDuration=${partsDuration}ms totalUploadTime=${totalUploadTime}ms`);
+
+            const completeStart = Date.now();
             await this.client.send(new CompleteMultipartUploadCommand({
                 Bucket: this.bucket,
                 Key: key,
@@ -241,11 +317,14 @@ export default class S3Storage extends StorageBase {
                     Parts: parts
                 }
             }));
+            const completeDuration = Date.now() - completeStart;
+            logging.info(`[S3Storage] CompleteMultipartUploadCommand completed: file=${key} duration=${completeDuration}ms`);
 
-            logging.info(`Multipart upload completed: file=${key} parts=${parts.length}`);
+            const multipartDuration = Date.now() - multipartStart;
+            logging.info(`[S3Storage] uploadMultipart() completed: file=${key} parts=${parts.length} totalDuration=${multipartDuration}ms`);
             return `${this.cdnUrl}/${key}`;
         } catch (error) {
-            logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
+            logging.warn(`[S3Storage] Aborting multipart upload: file=${key} uploadId=${uploadId}`);
             try {
                 await this.client.send(new AbortMultipartUploadCommand({
                     Bucket: this.bucket,
@@ -253,7 +332,7 @@ export default class S3Storage extends StorageBase {
                     UploadId: uploadId
                 }));
             } catch (abortError) {
-                logging.error(`Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
+                logging.error(`[S3Storage] Failed to abort multipart upload: file=${key} uploadId=${uploadId}`, abortError);
             }
             throw error;
         }
@@ -268,11 +347,15 @@ export default class S3Storage extends StorageBase {
 
         const key = this.buildKey(targetPath);
 
+        logging.info(`[S3Storage] saveRaw() started: file=${key} size=${buffer.length}`);
+        const uploadStart = Date.now();
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
             Key: key,
             Body: buffer
         }));
+        const uploadDuration = Date.now() - uploadStart;
+        logging.info(`[S3Storage] saveRaw() completed: file=${key} duration=${uploadDuration}ms`);
 
         return `${this.cdnUrl}/${key}`;
     }
