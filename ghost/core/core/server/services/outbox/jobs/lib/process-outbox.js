@@ -1,8 +1,10 @@
 const logging = require('@tryghost/logging');
+const db = require('../../../../data/db');
 const MemberCreatedEvent = require('../../../../../shared/events/MemberCreatedEvent');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
 const processEntries = require('./process-entries');
+const memberWelcomeEmailService = require('../../../member-welcome-emails/service');
 
 async function fetchPendingEntries({db, batchSize, jobStartISO}) {
     let entries = [];
@@ -36,9 +38,6 @@ async function fetchPendingEntries({db, batchSize, jobStartISO}) {
 }
 
 async function processOutbox() {
-    const db = require('../../../../data/db');
-    const memberWelcomeEmailService = require('../../../member-welcome-emails/service');
-
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 

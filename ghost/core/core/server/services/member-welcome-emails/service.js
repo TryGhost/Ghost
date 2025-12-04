@@ -69,7 +69,7 @@ class MemberWelcomeEmailService {
         const toEmail = config.get('memberWelcomeEmailTestInbox');
         if (!toEmail) {
             throw new errors.IncorrectUsageError({
-                message: 'memberWelcomeEmailTestInbox config is required but not defined'
+                message: MESSAGES.MISSING_TEST_INBOX_CONFIG
             });
         }
 

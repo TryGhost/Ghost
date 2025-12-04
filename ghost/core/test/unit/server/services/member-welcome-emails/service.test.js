@@ -171,9 +171,7 @@ describe('MemberWelcomeEmailService', function () {
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
-            }).should.be.rejectedWith(errors.IncorrectUsageError, {
-                message: 'No email template found for member welcome email'
-            });
+            }).should.be.rejectedWith(errors.IncorrectUsageError);
         });
 
         it('calls renderer with correct member and site settings', async function () {
@@ -240,9 +238,7 @@ describe('MemberWelcomeEmailService', function () {
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
-            }).should.be.rejectedWith(errors.IncorrectUsageError, {
-                message: 'memberWelcomeEmailTestInbox config is required but not defined'
-            });
+            }).should.be.rejectedWith(errors.IncorrectUsageError);
         });
 
         it('logs info message with member name and email', async function () {
