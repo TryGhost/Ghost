@@ -210,9 +210,6 @@ COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
 COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
-COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
-COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
-RUN rm -rf apps/admin/dist
-COPY --from=admin-react-builder /home/ghost/apps/admin/dist apps/admin/dist
+COPY --from=admin-react-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
 
 CMD ["yarn", "dev"]
