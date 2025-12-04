@@ -144,7 +144,7 @@
     "dompurify": "3.3.0",
     "downsize": "0.0.8",
     "entities": "4.5.0",
-    "express": "4.21.2",
+    "express": "4.22.0",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
     "express-jwt": "8.5.1",
