@@ -4,9 +4,9 @@ const memberWelcomeEmailService = require('../../member-welcome-emails/service')
 const LOG_KEY = `${OUTBOX_LOG_KEY}[MEMBER-WELCOME-EMAIL]`;
 
 async function handle({payload}) {
-    // TODO: derive templateType from payload when paid welcome emails are added
-    const templateType = 'free';
-    await memberWelcomeEmailService.api.send({member: payload, templateType});
+    // TODO: derive memberStatus from payload when paid welcome emails are added
+    const memberStatus = 'free';
+    await memberWelcomeEmailService.api.send({member: payload, memberStatus});
 }
 
 function getLogInfo(payload) {
