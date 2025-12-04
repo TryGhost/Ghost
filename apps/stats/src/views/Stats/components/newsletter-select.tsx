@@ -43,7 +43,7 @@ const NewsletterSelect: React.FC<NewsletterSelectProps> = ({newsletters}) => {
                 setSelectedNewsletterId(value);
             }}
         >
-            <SelectTrigger>
+            <SelectTrigger className='w-auto'>
                 <LucideIcon.Mails className='mr-2' size={16} strokeWidth={1.5} />
                 <SelectValue placeholder="Select a newsletter" />
             </SelectTrigger>
