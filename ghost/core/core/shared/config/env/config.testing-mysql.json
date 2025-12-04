@@ -97,6 +97,5 @@
         "fixtures": "test/utils/fixtures/fixtures",
         "defaultSettings": "test/utils/fixtures/default-settings.json",
         "urlCache": "test/utils/fixtures/urls"
-    },
-    "memberWelcomeEmailTestInbox": "test-inbox@example.com"
+    }
 }

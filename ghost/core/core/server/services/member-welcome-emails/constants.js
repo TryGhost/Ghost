@@ -8,7 +8,7 @@ const MEMBER_WELCOME_EMAIL_SLUGS = {
 const MESSAGES = {
     NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
     INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
-    MISSING_TEST_INBOX_CONFIG: 'memberWelcomeEmailTestInbox config is required but not defined',
+    MISSING_MEMBER_EMAIL_ADDRESS: 'Member email address is required but not defined',
     memberWelcomeEmailInactive: memberStatus => `Member welcome email for "${memberStatus}" members is inactive`
 };
 

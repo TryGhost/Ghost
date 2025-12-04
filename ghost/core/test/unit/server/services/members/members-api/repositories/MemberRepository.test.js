@@ -527,7 +527,7 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry for allowed source', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+            const labsService = {isSet: sinon.stub().withArgs('welcomeEmails').returns(true)};
 
             const repo = new MemberRepository({
                 Member,
@@ -535,6 +535,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -551,8 +552,8 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+        it('does NOT create outbox entry when labs flag is disabled', async function () {
+            const labsService = {isSet: sinon.stub().withArgs('welcomeEmails').returns(false)};
 
             const repo = new MemberRepository({
                 Member,
@@ -560,6 +561,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -569,7 +571,7 @@ describe('MemberRepository', function () {
         });
 
         it('does not create outbox entry for disallowed sources', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+            const labsService = {isSet: sinon.stub().withArgs('welcomeEmails').returns(true)};
 
             const repo = new MemberRepository({
                 Member,
@@ -577,6 +579,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -594,7 +597,7 @@ describe('MemberRepository', function () {
         });
 
         it('includes timestamp in outbox payload', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+            const labsService = {isSet: sinon.stub().withArgs('welcomeEmails').returns(true)};
 
             const repo = new MemberRepository({
                 Member,
@@ -602,6 +605,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -613,7 +617,7 @@ describe('MemberRepository', function () {
         });
 
         it('passes transaction to outbox entry creation', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+            const labsService = {isSet: sinon.stub().withArgs('welcomeEmails').returns(true)};
 
             const repo = new MemberRepository({
                 Member,
@@ -621,6 +625,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 

@@ -339,7 +339,7 @@ module.exports = class MemberRepository {
 
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
-        if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source)) {
+        if (this._labsService?.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source)) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,

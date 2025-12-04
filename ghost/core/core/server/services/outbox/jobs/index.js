@@ -1,6 +1,7 @@
 const path = require('path');
 const jobsService = require('../../jobs');
 const config = require('../../../../shared/config');
+const labs = require('../../../../shared/labs');
 
 let hasScheduled = {
     processOutbox: false
@@ -8,10 +9,10 @@ let hasScheduled = {
 
 module.exports = {
     scheduleOutboxJob() {
-        const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
+        const welcomeEmailsDisabled = !labs.isSet('welcomeEmails');
         const alreadyScheduledProcessing = hasScheduled.processOutbox;
 
-        if (testInboxDisabled || alreadyScheduledProcessing) {
+        if (welcomeEmailsDisabled || alreadyScheduledProcessing) {
             return false;
         }
 

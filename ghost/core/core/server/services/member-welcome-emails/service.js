@@ -2,7 +2,6 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const config = require('../../../shared/config');
 const emailAddressService = require('../email-address');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
@@ -45,6 +44,12 @@ class MemberWelcomeEmailService {
         const name = member?.name ? `${member.name} at ` : '';
         logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
 
+        if (!member?.email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.MISSING_MEMBER_EMAIL_ADDRESS
+            });
+        }
+
         const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 
         if (!memberWelcomeEmail) {
@@ -75,15 +80,8 @@ class MemberWelcomeEmailService {
             siteSettings
         });
 
-        const toEmail = config.get('memberWelcomeEmailTestInbox');
-        if (!toEmail) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.MISSING_TEST_INBOX_CONFIG
-            });
-        }
-
         await this.#mailer.send({
-            to: toEmail,
+            to: member.email,
             subject,
             html,
             text,

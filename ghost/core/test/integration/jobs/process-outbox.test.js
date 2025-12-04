@@ -3,11 +3,11 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
-const config = require('../../../core/shared/config');
 
 const JOB_NAME = 'process-outbox-test';
 const WELCOME_EMAIL_SLUG = 'member-welcome-email-free';
@@ -23,12 +23,7 @@ describe('Process Outbox Job', function () {
 
     beforeEach(async function () {
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        sinon.stub(config, 'get').callsFake(function (key) {
-            if (key === 'memberWelcomeEmailTestInbox') {
-                return 'test-inbox@example.com';
-            }
-            return config.get.wrappedMethod.call(config, key);
-        });
+        configUtils.set('labs', {welcomeEmails: true});
 
         const lexical = JSON.stringify({
             root: {
@@ -57,6 +52,7 @@ describe('Process Outbox Job', function () {
 
     afterEach(async function () {
         sinon.restore();
+        await configUtils.restore();
         await db.knex('outbox').del();
         await db.knex('automated_emails').where('slug', WELCOME_EMAIL_SLUG).del();
         try {
