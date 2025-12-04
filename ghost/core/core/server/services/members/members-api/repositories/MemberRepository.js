@@ -9,6 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const config = require('../../../../../shared/config');
+const StartMemberWelcomeEmailJobEvent = require('../../../member-welcome-emails/events/StartMemberWelcomeEmailJobEvent');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -359,7 +360,7 @@ module.exports = class MemberRepository {
                         timestamp
                     })
                 }, {transacting});
-
+                
                 return newMember;
             };
 
@@ -368,6 +369,8 @@ module.exports = class MemberRepository {
             } else {
                 member = await this._Member.transaction(runMemberCreation);
             }
+
+            this.dispatchEvent(StartMemberWelcomeEmailJobEvent.create());
         } else {
             member = await this._Member.add({
                 ...memberData,

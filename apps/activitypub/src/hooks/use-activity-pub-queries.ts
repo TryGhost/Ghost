@@ -33,7 +33,7 @@ let SITE_URL: string;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
-        const response = await fetch('/ghost/api/admin/site');
+        const response = await fetch('/ghost/api/admin/site/');
         const json = await response.json();
         SITE_URL = json.site.url;
     }
@@ -2365,7 +2365,7 @@ export async function uploadFile(file: File) {
     return api.upload(file);
 }
 
-export function useNotificationsCountForUser(handle: string) {
+export function useNotificationsCountForUser(handle: string, enabled: boolean = true) {
     const siteUrl = useCallback(async () => await getSiteUrl(), []);
     const api = useCallback(async () => {
         const url = await siteUrl();
@@ -2374,6 +2374,7 @@ export function useNotificationsCountForUser(handle: string) {
 
     return useQuery({
         queryKey: QUERY_KEYS.notificationsCount(handle),
+        enabled,
         async queryFn() {
             const activityPubAPI = await api();
             const response = await activityPubAPI.getNotificationsCount();

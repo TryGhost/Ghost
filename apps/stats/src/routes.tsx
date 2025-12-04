@@ -1,5 +1,4 @@
 import Growth from './views/Stats/Growth';
-import Locations from './views/Stats/Locations';
 import Newsletters from './views/Stats/Newsletters';
 import Overview from './views/Stats/Overview';
 import Web from './views/Stats/Web';
@@ -23,10 +22,6 @@ export const routes: RouteObject[] = [
             {
                 path: 'web',
                 element: <Web />
-            },
-            {
-                path: 'locations',
-                element: <Locations />
             },
             {
                 path: 'growth',

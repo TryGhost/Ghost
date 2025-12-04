@@ -131,7 +131,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 }}
                 syncId={syncId}
             >
-                <CartesianGrid horizontal={showHorizontalLines} vertical={false} />
+                <CartesianGrid horizontal={showHorizontalLines} stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                     axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                     dataKey="date"
