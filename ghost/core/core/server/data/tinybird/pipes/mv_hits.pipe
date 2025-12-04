@@ -24,7 +24,7 @@ SQL >
         JSONExtractString(payload, 'member_status') as member_status,
         JSONExtractString(payload, 'post_uuid') as post_uuid,
         JSONExtractString(payload, 'post_type') as post_type,
-        JSONExtractString(payload, 'user-agent') as user_agent,
+        lower(JSONExtractString(payload, 'user-agent')) as user_agent,
         JSONExtractString(payload, 'device') as device,
         JSONExtractString(payload, 'utm_source') as utm_source,
         JSONExtractString(payload, 'utm_medium') as utm_medium,
@@ -107,7 +107,10 @@ SQL >
         end as source,
         pathname,
         href,
-        device,
+        case  
+            when device = '' then 'unknown'  
+            else device  
+        end as device,
         case
             when match(user_agent, 'windows')
             then 'windows'
