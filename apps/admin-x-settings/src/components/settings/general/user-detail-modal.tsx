@@ -210,7 +210,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         if (canAccessSettings(currentUser)) {
             updateRoute('staff');
         } else {
-            updateRoute({isExternal: true, route: 'analytics'});
+            // Contributors can't access settings, exit to let the shell handle navigation
+            updateRoute({isExternal: true, route: ''});
         }
     }, [currentUser, updateRoute]);
 
