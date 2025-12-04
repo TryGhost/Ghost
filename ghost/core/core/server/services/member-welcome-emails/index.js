@@ -1,11 +1,9 @@
-const sendMemberWelcomeEmail = require('./send-member-welcome-email');
-const getMailConfig = require('./get-mail-config');
+const service = require('./service');
 const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
 const constants = require('./constants');
 
 module.exports = {
-    sendMemberWelcomeEmail,
-    getMailConfig,
+    service,
     MemberWelcomeEmailRenderer,
     ...constants
 };

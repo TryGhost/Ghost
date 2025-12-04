@@ -1,10 +1,10 @@
 const {OUTBOX_LOG_KEY} = require('../jobs/lib/constants');
+const memberWelcomeEmailService = require('../../member-welcome-emails/service');
 
 const LOG_KEY = `${OUTBOX_LOG_KEY}[MEMBER-WELCOME-EMAIL]`;
 
-async function handle({payload, mailConfig}) {
-    const sendMemberWelcomeEmail = require('../../member-welcome-emails').sendMemberWelcomeEmail;
-    await sendMemberWelcomeEmail({payload, mailConfig});
+async function handle({payload}) {
+    await memberWelcomeEmailService.api.send({member: payload});
 }
 
 function getLogInfo(payload) {
