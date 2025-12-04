@@ -357,7 +357,7 @@ const NewsletterKPIs: React.FC<{
                                                     <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
                                                 </linearGradient>
                                             </defs>
-                                            <Recharts.CartesianGrid horizontal={true} vertical={false} />
+                                            <Recharts.CartesianGrid horizontal={true} stroke="hsl(var(--border))" vertical={false} />
                                             <Recharts.XAxis
                                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                                                 dataKey="post_id"

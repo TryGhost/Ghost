@@ -1115,7 +1115,7 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground">{option.label}</span>
+                                        <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1159,7 +1159,7 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground">{option.label}</span>
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}

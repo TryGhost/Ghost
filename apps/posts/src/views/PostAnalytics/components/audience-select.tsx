@@ -98,7 +98,7 @@ const AudienceSelect: React.FC = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className='w-full' variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
+                <Button variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className="w-full min-w-48">
                 <DropdownMenuCheckboxItem
