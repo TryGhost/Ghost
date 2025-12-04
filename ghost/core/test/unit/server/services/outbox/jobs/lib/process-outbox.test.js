@@ -157,8 +157,8 @@ describe('Outbox - process-outbox', function () {
 
         it('continues processing batches until no more entries', async function () {
             queryStub.select
-                .onFirstCall().resolves([{id: '1'}])
-                .onSecondCall().resolves([{id: '2'}])
+                .onFirstCall().resolves([{id: '1', event_type: 'MemberCreatedEvent', payload: '{}'}])
+                .onSecondCall().resolves([{id: '2', event_type: 'MemberCreatedEvent', payload: '{}'}])
                 .onThirdCall().resolves([]);
             processEntriesStub.resolves({processed: 1, failed: 0});
 
@@ -169,7 +169,7 @@ describe('Outbox - process-outbox', function () {
 
         it('logs batch completion info', async function () {
             queryStub.select
-                .onFirstCall().resolves([{id: '1'}])
+                .onFirstCall().resolves([{id: '1', event_type: 'MemberCreatedEvent', payload: '{}'}])
                 .onSecondCall().resolves([]);
             processEntriesStub.resolves({processed: 1, failed: 0});
 
@@ -187,8 +187,15 @@ describe('Outbox - process-outbox', function () {
             processOutbox.__set__('BATCH_SIZE', 3);
 
             queryStub.select
-                .onFirstCall().resolves([{id: '1'}, {id: '2'}, {id: '3'}])
-                .onSecondCall().resolves([{id: '4'}, {id: '5'}])
+                .onFirstCall().resolves([
+                    {id: '1', event_type: 'MemberCreatedEvent', payload: '{}'},
+                    {id: '2', event_type: 'MemberCreatedEvent', payload: '{}'},
+                    {id: '3', event_type: 'MemberCreatedEvent', payload: '{}'}
+                ])
+                .onSecondCall().resolves([
+                    {id: '4', event_type: 'MemberCreatedEvent', payload: '{}'},
+                    {id: '5', event_type: 'MemberCreatedEvent', payload: '{}'}
+                ])
                 .onThirdCall().resolves([]);
             processEntriesStub
                 .onFirstCall().resolves({processed: 3, failed: 0})
@@ -211,7 +218,10 @@ describe('Outbox - process-outbox', function () {
 
         it('returns summary message with processed count, failed count, and duration', async function () {
             queryStub.select
-                .onFirstCall().resolves([{id: '1'}, {id: '2'}])
+                .onFirstCall().resolves([
+                    {id: '1', event_type: 'MemberCreatedEvent', payload: '{}'},
+                    {id: '2', event_type: 'MemberCreatedEvent', payload: '{}'}
+                ])
                 .onSecondCall().resolves([]);
             processEntriesStub.resolves({processed: 1, failed: 1});
 
@@ -226,7 +236,7 @@ describe('Outbox - process-outbox', function () {
 
     describe('error handling', function () {
         it('handles unknown errors during template loading', async function () {
-            memberWelcomeEmailServiceStub.api.loadMemberWelcomeEmails.rejects({});
+            memberWelcomeEmailServiceStub.api.loadMemberWelcomeEmails.rejects(new Error());
 
             const result = await processOutbox();
 

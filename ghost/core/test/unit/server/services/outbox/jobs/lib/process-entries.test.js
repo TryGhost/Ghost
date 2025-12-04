@@ -137,9 +137,10 @@ describe('Outbox - process-entries', function () {
             sinon.assert.calledOnce(loggingStub.warn);
             loggingStub.warn.getCall(0).args[0].should.containEql('No handler for event type');
 
-            // Updates entry
+            // Updates entry (status is PENDING since retry_count=0 allows retry)
             sinon.assert.calledOnce(knexChain.update);
             knexChain.update.getCall(0).args[0].message.should.containEql('No handler for event type');
+            knexChain.update.getCall(0).args[0].status.should.equal(OUTBOX_STATUSES.PENDING);
 
             // Returns failure
             result.failed.should.equal(1);

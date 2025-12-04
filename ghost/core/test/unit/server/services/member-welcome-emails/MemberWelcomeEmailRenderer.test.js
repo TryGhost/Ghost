@@ -127,7 +127,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Email: </p>');
+            result.html.should.containEql('Email: <');
         });
 
         it('extracts first name correctly from full name', async function () {

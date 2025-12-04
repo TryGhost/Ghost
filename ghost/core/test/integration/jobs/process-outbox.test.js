@@ -8,9 +8,9 @@ const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 const config = require('../../../core/shared/config');
+const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const JOB_NAME = 'process-outbox-test';
-const WELCOME_EMAIL_SLUG = 'member-welcome-email-free';
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 
 describe('Process Outbox Job', function () {
@@ -48,7 +48,7 @@ describe('Process Outbox Job', function () {
             id: ObjectId().toHexString(),
             status: 'active',
             name: 'Free Member Welcome Email',
-            slug: WELCOME_EMAIL_SLUG,
+            slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
             subject: 'Welcome to {{site.title}}',
             lexical,
             created_at: new Date()
@@ -58,7 +58,7 @@ describe('Process Outbox Job', function () {
     afterEach(async function () {
         sinon.restore();
         await db.knex('outbox').del();
-        await db.knex('automated_emails').where('slug', WELCOME_EMAIL_SLUG).del();
+        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
