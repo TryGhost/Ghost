@@ -1,13 +1,16 @@
 // @ts-nocheck - Models are dynamically loaded
 const assert = require('assert/strict');
 const sinon = require('sinon');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
+const config = require('../../../core/shared/config');
 
 const JOB_NAME = 'process-outbox-test';
+const WELCOME_EMAIL_SLUG = 'member-welcome-email-free';
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 
 describe('Process Outbox Job', function () {
@@ -18,13 +21,44 @@ describe('Process Outbox Job', function () {
         jobService = require('../../../core/server/services/jobs/job-service');
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+        sinon.stub(config, 'get').callsFake(function (key) {
+            if (key === 'memberWelcomeEmailTestInbox') {
+                return 'test-inbox@example.com';
+            }
+            return config.get.wrappedMethod.call(config, key);
+        });
+
+        const lexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{type: 'text', text: 'Welcome to our site!'}]
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+
+        await db.knex('automated_emails').insert({
+            id: ObjectId().toHexString(),
+            status: 'active',
+            name: 'Free Member Welcome Email',
+            slug: WELCOME_EMAIL_SLUG,
+            subject: 'Welcome to {{site.title}}',
+            lexical,
+            created_at: new Date()
+        });
     });
 
     afterEach(async function () {
         sinon.restore();
         await db.knex('outbox').del();
+        await db.knex('automated_emails').where('slug', WELCOME_EMAIL_SLUG).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
