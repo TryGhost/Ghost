@@ -1,64 +1,18 @@
-const fs = require('fs').promises;
-const path = require('path');
-const Handlebars = require('handlebars');
-const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const lexicalLib = require('../../lib/lexical');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MESSAGES} = require('./constants');
 const config = require('../../../shared/config');
+const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
 
 /** @typedef {import('./get-mail-config').MailConfig} MailConfig */
 
-let compiledTemplate = null;
+let renderer = null;
 
-async function getCompiledTemplate() {
-    if (!compiledTemplate) {
-        const [templateSource, stylesPartial] = await Promise.all([
-            fs.readFile(path.join(__dirname, './email-templates/wrapper.hbs'), 'utf8'),
-            fs.readFile(path.join(__dirname, '../staff/email-templates/partials/styles.hbs'), 'utf8')
-        ]);
-        Handlebars.registerPartial('styles', stylesPartial);
-        compiledTemplate = Handlebars.compile(templateSource);
+function getRenderer() {
+    if (!renderer) {
+        renderer = new MemberWelcomeEmailRenderer();
     }
-    return compiledTemplate;
-}
-
-function validateLexicalContent(lexical) {
-    if (!lexical || typeof lexical !== 'string') {
-        throw new errors.IncorrectUsageError({
-            message: MESSAGES.EMPTY_LEXICAL_CONTENT
-        });
-    }
-
-    try {
-        const parsed = JSON.parse(lexical);
-        if (!parsed.root || !Array.isArray(parsed.root.children) || parsed.root.children.length === 0) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.EMPTY_LEXICAL_CONTENT
-            });
-        }
-    } catch (err) {
-        if (err instanceof errors.IncorrectUsageError) {
-            throw err;
-        }
-        throw new errors.IncorrectUsageError({
-            message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
-            context: err.message
-        });
-    }
-}
-
-function replaceTemplateVariables(str, {siteSettings, member}) {
-    const memberName = member.name || 'there';
-    const firstName = memberName.split(' ')[0];
-
-    return str
-        .replace(/\{\{site\.title\}\}/g, siteSettings.title)
-        .replace(/\{\{site\.url\}\}/g, siteSettings.url)
-        .replace(/\{\{member\.name\}\}/g, memberName)
-        .replace(/\{\{member\.email\}\}/g, member.email || '')
-        .replace(/\{\{member\.firstname\}\}/g, firstName);
+    return renderer;
 }
 
 /**
@@ -77,40 +31,15 @@ async function sendMemberWelcomeEmail({payload, mailConfig}) {
         });
     }
 
-    validateLexicalContent(mailConfig.emailTemplate.lexical);
-
-    const replacementData = {
-        siteSettings: mailConfig.siteSettings,
+    const {html, text, subject} = await getRenderer().render({
+        lexical: mailConfig.emailTemplate.lexical,
+        subject: mailConfig.emailTemplate.subject,
         member: {
             name: payload.name,
             email: payload.email
-        }
-    };
-
-    let content;
-    try {
-        content = await lexicalLib.render(mailConfig.emailTemplate.lexical, {target: 'email'});
-    } catch (err) {
-        throw new errors.IncorrectUsageError({
-            message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
-            context: err.message
-        });
-    }
-
-    content = replaceTemplateVariables(content, replacementData);
-    const subject = replaceTemplateVariables(mailConfig.emailTemplate.subject, replacementData);
-
-    const template = await getCompiledTemplate();
-
-    const html = template({
-        content,
-        subject,
-        siteTitle: mailConfig.siteSettings.title,
-        siteUrl: mailConfig.siteSettings.url,
-        accentColor: mailConfig.siteSettings.accentColor
+        },
+        siteSettings: mailConfig.siteSettings
     });
-
-    const text = htmlToPlaintext.email(html);
 
     const toEmail = config.get('memberWelcomeEmailTestInbox');
     if (!toEmail) {
