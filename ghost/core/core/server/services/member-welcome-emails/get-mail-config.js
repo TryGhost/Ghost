@@ -1,5 +1,5 @@
-const emailAddressService = require('../../../email-address');
-const mail = require('../../../mail');
+const emailAddressService = require('../email-address');
+const mail = require('../mail');
 
 /**
  * @typedef {Object} MailConfig
@@ -22,7 +22,7 @@ async function loadSiteSettings({db}) {
  * Initializes mail configuration by fetching site settings and creating mailer.
  *
  * @param {Object} options
- * @param {import('../../../../data/db')} options.db - Database connection
+ * @param {import('../../data/db')} options.db - Database connection
  * @returns {Promise<MailConfig>}
  */
 async function getMailConfig({db}) {

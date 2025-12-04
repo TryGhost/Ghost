@@ -1,0 +1,5 @@
+const MEMBER_WELCOME_EMAIL_LOG_KEY = '[MEMBER-WELCOME-EMAIL]';
+
+module.exports = {
+    MEMBER_WELCOME_EMAIL_LOG_KEY
+};

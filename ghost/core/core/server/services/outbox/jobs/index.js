@@ -7,7 +7,7 @@ let hasScheduled = {
 };
 
 module.exports = {
-    async scheduleMemberWelcomeEmailJob() {
+    scheduleOutboxJob() {
         const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
         const alreadyScheduledProcessing = hasScheduled.processOutbox;
 
@@ -27,8 +27,8 @@ module.exports = {
 
         jobsService.addJob({
             at: cronSchedule,
-            job: path.resolve(__dirname, 'member-welcome-email-job.js'),
-            name: 'process-member-welcome-emails'
+            job: path.resolve(__dirname, 'outbox-job.js'),
+            name: 'process-outbox'
         });
 
         hasScheduled.processOutbox = true;
