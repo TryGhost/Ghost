@@ -6,7 +6,7 @@ const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./c
 const processEntries = require('./process-entries');
 const memberWelcomeEmailService = require('../../../member-welcome-emails/service');
 
-async function fetchPendingEntries({db, batchSize, jobStartISO}) {
+async function fetchPendingEntries({batchSize, jobStartISO}) {
     let entries = [];
     await db.knex.transaction(async (trx) => {
         const query = trx('outbox')
@@ -57,7 +57,7 @@ async function processOutbox() {
         const remainingCapacity = MAX_ENTRIES_PER_JOB - (totalProcessed + totalFailed);
         const fetchSize = Math.min(BATCH_SIZE, remainingCapacity);
 
-        const entries = await fetchPendingEntries({db, batchSize: fetchSize, jobStartISO});
+        const entries = await fetchPendingEntries({batchSize: fetchSize, jobStartISO});
         if (entries.length === 0) {
             break;
         }
