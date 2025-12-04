@@ -22,13 +22,13 @@ describe('Outbox Handler - member-created', function () {
     });
 
     describe('handle', function () {
-        it('calls memberWelcomeEmailService.api.send with member payload', async function () {
+        it('calls memberWelcomeEmailService.api.send with member payload and templateType', async function () {
             const payload = {name: 'John Doe', email: 'john@example.com'};
 
             await handler.handle({payload});
 
             sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-            sinon.assert.calledWith(memberWelcomeEmailServiceStub.api.send, {member: payload});
+            sinon.assert.calledWith(memberWelcomeEmailServiceStub.api.send, {member: payload, templateType: 'free'});
         });
 
         it('passes payload with all member fields', async function () {
@@ -43,6 +43,7 @@ describe('Outbox Handler - member-created', function () {
 
             const sendCall = memberWelcomeEmailServiceStub.api.send.getCall(0);
             sendCall.args[0].member.should.deepEqual(payload);
+            sendCall.args[0].templateType.should.equal('free');
         });
     });
 

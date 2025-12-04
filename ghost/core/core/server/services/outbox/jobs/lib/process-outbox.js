@@ -43,7 +43,7 @@ async function processOutbox() {
 
     memberWelcomeEmailService.init();
     try {
-        await memberWelcomeEmailService.api.loadTemplate();
+        await memberWelcomeEmailService.api.loadTemplates();
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
