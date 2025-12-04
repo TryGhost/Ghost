@@ -47,13 +47,6 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     /**
-     * Check if the filter UI is visible (requires utmTracking lab flag)
-     */
-    async isFilterUIVisible(): Promise<boolean> {
-        return await this.filterContainer.isVisible();
-    }
-
-    /**
      * Open the filter popover by clicking the Filter button
      */
     async openFilterPopover() {
