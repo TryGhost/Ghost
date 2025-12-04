@@ -8,7 +8,7 @@ const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
 
 const JOB_NAME = 'process-outbox-test';
-const processOutbox = require('../../../core/server/services/member-welcome-emails/jobs/lib/process-outbox');
+const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
 
 describe('Process Outbox Job', function () {
     let jobService;

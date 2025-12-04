@@ -419,8 +419,8 @@ async function initBackgroundServices({config}) {
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 
-    const memberWelcomeEmailsService = require('./server/services/member-welcome-emails');
-    memberWelcomeEmailsService.init();
+    const outboxService = require('./server/services/outbox');
+    outboxService.init();
     
     debug('End: initBackgroundServices');
 }

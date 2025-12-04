@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY} = require('./constants');
-const config = require('../../../../../shared/config');
+const config = require('../../../shared/config');
 const renderWelcomeHtml = require('./email-templates/welcome.html');
 const renderWelcomeText = require('./email-templates/welcome.txt');
 

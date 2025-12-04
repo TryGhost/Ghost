@@ -1,4 +1,4 @@
-const {escapeHtml} = require('../../../../koenig/render-utils/escape-html');
+const {escapeHtml} = require('../../koenig/render-utils/escape-html');
 
 const SAFE_URL_PROTOCOLS = ['http:', 'https:'];
 
