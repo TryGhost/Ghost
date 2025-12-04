@@ -370,7 +370,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            this.dispatchEvent(StartOutboxProcessingEvent.create(), memberAddOptions);
+            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
