@@ -180,4 +180,53 @@ describe('Process Outbox Job', function () {
         assert.equal(entriesAfterJob.length, 2);
         assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
     });
+
+    it('increments retry_count and keeps entry pending when handler fails', async function () {
+        mailService.GhostMailer.prototype.send.rejects(new Error('Mail service unavailable'));
+
+        await models.Outbox.add({
+            event_type: 'MemberCreatedEvent',
+            payload: JSON.stringify({
+                memberId: 'member1',
+                email: 'retry@example.com',
+                name: 'Retry Member'
+            }),
+            status: OUTBOX_STATUSES.PENDING,
+            retry_count: 0
+        });
+
+        await scheduleInlineJob();
+
+        const entriesAfterJob = await models.Outbox.findAll();
+        assert.equal(entriesAfterJob.length, 1);
+
+        const entry = entriesAfterJob.models[0];
+        assert.equal(entry.get('status'), OUTBOX_STATUSES.PENDING);
+        assert.equal(entry.get('retry_count'), 1);
+        assert.ok(entry.get('message').includes('Mail service unavailable'));
+    });
+
+    it('marks entry as failed when max retries exceeded', async function () {
+        mailService.GhostMailer.prototype.send.rejects(new Error('Persistent failure'));
+
+        await models.Outbox.add({
+            event_type: 'MemberCreatedEvent',
+            payload: JSON.stringify({
+                memberId: 'member1',
+                email: 'maxretry@example.com',
+                name: 'Max Retry Member'
+            }),
+            status: OUTBOX_STATUSES.PENDING,
+            retry_count: 1
+        });
+
+        await scheduleInlineJob();
+
+        const entriesAfterJob = await models.Outbox.findAll();
+        assert.equal(entriesAfterJob.length, 1);
+
+        const entry = entriesAfterJob.models[0];
+        assert.equal(entry.get('status'), OUTBOX_STATUSES.FAILED);
+        assert.equal(entry.get('retry_count'), 2);
+    });
 });
