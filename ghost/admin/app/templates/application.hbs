@@ -1,7 +1,7 @@
 <GhApp>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
-    {{#in-element this.alertDestinationElement insertBefore=null}}
+    <AlertsWormhole>
         {{#if this.upgradeStatus.refreshRequired}}
             <div class="gh-update-banner">
                 {{!-- template-lint-disable no-invalid-link-text --}}
@@ -31,7 +31,7 @@
         {{/if}}
 
         <GhAlerts />
-    {{/in-element}}
+    </AlertsWormhole>
 
     <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if this.showNavMenu}}

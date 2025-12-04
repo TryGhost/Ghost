@@ -19,7 +19,7 @@ export default class ApplicationController extends Controller {
 
     @inject config;
 
-    get rootElement() {
+    get modalDestinationElement() {
         const owner = getOwner(this);
         const app = owner.lookup('application:main');
         let rootElement = app.rootElement || 'body';
@@ -28,15 +28,7 @@ export default class ApplicationController extends Controller {
             rootElement = document.querySelector(rootElement);
         }
 
-        return rootElement;
-    }
-
-    get alertDestinationElement() {
-        return document.getElementById('ember-alerts-wormhole') || this.rootElement;
-    }
-
-    get modalDestinationElement() {
-        return document.getElementById('ember-modal-wormhole') || this.rootElement;
+        return document.getElementById('ember-modal-wormhole') || rootElement;
     }
 
     get showBilling() {
