@@ -5,6 +5,8 @@ const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const emailAddressService = require('../email-address');
 const mail = require('../mail');
+// @ts-expect-error type checker has trouble with the dynamic exporting in models
+const {AutomatedEmail} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MESSAGES} = require('./constants');
 
@@ -22,22 +24,19 @@ class MemberWelcomeEmailService {
     }
 
     async loadTemplate() {
-        const db = require('../../data/db');
-        const template = await db.knex('automated_emails')
-            .where('slug', FREE_WELCOME_EMAIL_SLUG)
-            .first('lexical', 'subject', 'sender_name', 'sender_email', 'sender_reply_to');
+        const template = await AutomatedEmail.findOne({slug: FREE_WELCOME_EMAIL_SLUG});
 
-        if (!template || !template.lexical) {
+        if (!template || !template.get('lexical')) {
             this.#template = null;
             return;
         }
 
         this.#template = {
-            lexical: urlUtils.transformReadyToAbsolute(template.lexical),
-            subject: template.subject,
-            senderName: template.sender_name,
-            senderEmail: template.sender_email,
-            senderReplyTo: template.sender_reply_to
+            lexical: template.get('lexical'),
+            subject: template.get('subject'),
+            senderName: template.get('sender_name'),
+            senderEmail: template.get('sender_email'),
+            senderReplyTo: template.get('sender_reply_to')
         };
     }
 
