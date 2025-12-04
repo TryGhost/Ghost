@@ -61,14 +61,40 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     }
 
     /**
+     * Get a locator for a filter field option in the dropdown
+     */
+    getFilterOption(name: string): Locator {
+        return this.page.getByRole('option', {name, exact: true});
+    }
+
+    /**
+     * Get a locator for a filter value option in the dropdown
+     */
+    getFilterValue(name: string): Locator {
+        return this.page.getByRole('option', {name, exact: true});
+    }
+
+    /**
+     * Select a filter field from the dropdown
+     */
+    async selectFilterField(label: string) {
+        await this.getFilterOption(label).click();
+    }
+
+    /**
+     * Select a filter value from the dropdown
+     */
+    async selectFilterValue(label: string) {
+        await this.getFilterValue(label).click();
+    }
+
+    /**
      * Add a filter by selecting a field and value from the filter popover
      */
     async addFilter(fieldLabel: string, valueLabel: string) {
         await this.openFilterPopover();
-        // Select the field from the dropdown (exact match to avoid "Source" matching "UTM Source")
-        await this.page.getByRole('option', {name: fieldLabel, exact: true}).click();
-        // The options appear in a combobox after selecting the field
-        await this.page.getByRole('option', {name: valueLabel, exact: true}).click();
+        await this.selectFilterField(fieldLabel);
+        await this.selectFilterValue(valueLabel);
     }
 
     /**
