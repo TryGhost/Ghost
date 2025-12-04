@@ -64,7 +64,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
 
-    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
+    const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
     const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
 
@@ -114,9 +114,11 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent className="!gap-y-0" columns={1}>
                 <Separator />
                 <Toggle
+                    key={`free-${isLoading ? 'loading' : freeWelcomeEmail?.status ?? 'none'}`}
                     checked={Boolean(freeWelcomeEmailEnabled)}
                     containerClasses='items-center'
                     direction='rtl'
+                    disabled={isLoading}
                     gap='gap-0'
                     hint='Email new free members receive when they join your site.'
                     label='Free members welcome email'
@@ -131,9 +133,11 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }
                 <Separator />
                 <Toggle
+                    key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
                     checked={Boolean(paidWelcomeEmailEnabled)}
                     containerClasses='items-center'
                     direction='rtl'
+                    disabled={isLoading}
                     gap='gap-0'
                     hint='Sent to new paid members as soon as they start their subscription.'
                     label='Paid members welcome email'
