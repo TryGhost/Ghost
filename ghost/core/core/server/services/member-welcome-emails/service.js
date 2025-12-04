@@ -8,12 +8,12 @@ const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, TEMPLATE_SLUGS, MESSAGES} = require('./constants');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
     #renderer;
-    #templates = {free: null, paid: null};
+    #memberWelcomeEmails = {free: null, paid: null};
 
     constructor() {
         emailAddressService.init();
@@ -21,41 +21,41 @@ class MemberWelcomeEmailService {
         this.#renderer = new MemberWelcomeEmailRenderer();
     }
 
-    async loadTemplates() {
-        for (const [templateType, slug] of Object.entries(TEMPLATE_SLUGS)) {
-            const template = await AutomatedEmail.findOne({slug});
+    async loadMemberWelcomeEmails() {
+        for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
+            const row = await AutomatedEmail.findOne({slug});
 
-            if (!template || !template.get('lexical')) {
-                this.#templates[templateType] = null;
+            if (!row || !row.get('lexical')) {
+                this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
-            this.#templates[templateType] = {
-                lexical: template.get('lexical'),
-                subject: template.get('subject'),
-                status: template.get('status'),
-                senderName: template.get('sender_name'),
-                senderEmail: template.get('sender_email'),
-                senderReplyTo: template.get('sender_reply_to')
+            this.#memberWelcomeEmails[memberStatus] = {
+                lexical: row.get('lexical'),
+                subject: row.get('subject'),
+                status: row.get('status'),
+                senderName: row.get('sender_name'),
+                senderEmail: row.get('sender_email'),
+                senderReplyTo: row.get('sender_reply_to')
             };
         }
     }
 
-    async send({member, templateType = 'free'}) {
+    async send({member, memberStatus = 'free'}) {
         const name = member?.name ? `${member.name} at ` : '';
         logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
 
-        const template = this.#templates[templateType];
+        const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
 
-        if (!template) {
+        if (!memberWelcomeEmail) {
             throw new errors.IncorrectUsageError({
-                message: MESSAGES.NO_EMAIL_TEMPLATE
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
         }
 
-        if (template.status !== 'active') {
+        if (memberWelcomeEmail.status !== 'active') {
             throw new errors.IncorrectUsageError({
-                message: MESSAGES.templateInactive(templateType)
+                message: MESSAGES.memberWelcomeEmailInactive(memberStatus)
             });
         }
 
@@ -66,8 +66,8 @@ class MemberWelcomeEmailService {
         };
 
         const {html, text, subject} = await this.#renderer.render({
-            lexical: template.lexical,
-            subject: template.subject,
+            lexical: memberWelcomeEmail.lexical,
+            subject: memberWelcomeEmail.subject,
             member: {
                 name: member.name,
                 email: member.email
