@@ -34,7 +34,7 @@ describe('Outbox - process-outbox', function () {
         memberWelcomeEmailServiceStub = {
             init: sinon.stub(),
             api: {
-                loadTemplate: sinon.stub().resolves()
+                loadTemplates: sinon.stub().resolves()
             }
         };
 
@@ -83,14 +83,14 @@ describe('Outbox - process-outbox', function () {
             sinon.assert.calledOnce(memberWelcomeEmailServiceStub.init);
         });
 
-        it('loads template before processing', async function () {
+        it('loads templates before processing', async function () {
             await processOutbox();
 
-            sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.loadTemplate);
+            sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.loadTemplates);
         });
 
         it('logs error and returns early when service initialization fails', async function () {
-            memberWelcomeEmailServiceStub.api.loadTemplate.rejects(new Error('Template load failed'));
+            memberWelcomeEmailServiceStub.api.loadTemplates.rejects(new Error('Template load failed'));
 
             const result = await processOutbox();
 
@@ -226,7 +226,7 @@ describe('Outbox - process-outbox', function () {
 
     describe('error handling', function () {
         it('handles unknown errors during template loading', async function () {
-            memberWelcomeEmailServiceStub.api.loadTemplate.rejects({});
+            memberWelcomeEmailServiceStub.api.loadTemplates.rejects({});
 
             const result = await processOutbox();
 

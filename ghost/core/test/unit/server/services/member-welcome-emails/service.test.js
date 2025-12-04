@@ -42,17 +42,18 @@ describe('MemberWelcomeEmailService', function () {
         });
 
         automatedEmailStub = {
-            findOne: sinon.stub().resolves({
-                get: sinon.stub().callsFake((key) => {
-                    const data = {
-                        lexical: '{"root":{}}',
-                        subject: 'Welcome to {{site.title}}',
-                        sender_name: 'Test',
-                        sender_email: 'test@example.com',
-                        sender_reply_to: 'reply@example.com'
-                    };
-                    return data[key];
-                })
+            findOne: sinon.stub().callsFake(() => {
+                const data = {
+                    lexical: '{"root":{}}',
+                    subject: 'Welcome to {{site.title}}',
+                    status: 'active',
+                    sender_name: 'Test',
+                    sender_email: 'test@example.com',
+                    sender_reply_to: 'reply@example.com'
+                };
+                return Promise.resolve({
+                    get: sinon.stub().callsFake(key => data[key])
+                });
             })
         };
 
@@ -90,13 +91,14 @@ describe('MemberWelcomeEmailService', function () {
         });
     });
 
-    describe('loadTemplate', function () {
-        it('loads template from AutomatedEmail model by slug', async function () {
+    describe('loadTemplates', function () {
+        it('loads templates from AutomatedEmail model by slug', async function () {
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
-            sinon.assert.calledOnce(automatedEmailStub.findOne);
+            sinon.assert.calledTwice(automatedEmailStub.findOne);
             sinon.assert.calledWith(automatedEmailStub.findOne, {slug: 'member-welcome-email-free'});
+            sinon.assert.calledWith(automatedEmailStub.findOne, {slug: 'member-welcome-email-paid'});
         });
 
         it('sets template to null when no template found', async function () {
@@ -104,7 +106,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('test@example.com');
             await serviceModule.api.send({
@@ -124,7 +126,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             configStub.get.withArgs('memberWelcomeEmailTestInbox').returns('test@example.com');
             await serviceModule.api.send({
@@ -132,11 +134,12 @@ describe('MemberWelcomeEmailService', function () {
             }).should.be.rejectedWith(errors.IncorrectUsageError);
         });
 
-        it('extracts template fields using model get method', async function () {
+        it('extracts template fields including status', async function () {
             const mockGet = sinon.stub().callsFake((key) => {
                 const data = {
                     lexical: '{"root":{}}',
                     subject: 'Welcome!',
+                    status: 'active',
                     sender_name: 'Sender',
                     sender_email: 'sender@example.com',
                     sender_reply_to: 'reply@example.com'
@@ -148,10 +151,11 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             sinon.assert.calledWith(mockGet, 'lexical');
             sinon.assert.calledWith(mockGet, 'subject');
+            sinon.assert.calledWith(mockGet, 'status');
             sinon.assert.calledWith(mockGet, 'sender_name');
             sinon.assert.calledWith(mockGet, 'sender_email');
             sinon.assert.calledWith(mockGet, 'sender_reply_to');
@@ -174,10 +178,31 @@ describe('MemberWelcomeEmailService', function () {
             }).should.be.rejectedWith(errors.IncorrectUsageError);
         });
 
+        it('throws IncorrectUsageError when template is inactive', async function () {
+            automatedEmailStub.findOne.callsFake(() => {
+                return Promise.resolve({
+                    get: sinon.stub().callsFake((key) => {
+                        if (key === 'status') {
+                            return 'inactive';
+                        }
+                        return '{"root":{}}';
+                    })
+                });
+            });
+
+            serviceModule.api = null;
+            serviceModule.init();
+            await serviceModule.api.loadTemplates();
+
+            await serviceModule.api.send({
+                member: {name: 'John', email: 'john@example.com'}
+            }).should.be.rejectedWith(errors.IncorrectUsageError);
+        });
+
         it('calls renderer with correct member and site settings', async function () {
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John Doe', email: 'john@example.com'}
@@ -198,7 +223,7 @@ describe('MemberWelcomeEmailService', function () {
         it('sends email via mailer with correct parameters', async function () {
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
@@ -219,7 +244,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
@@ -234,7 +259,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
@@ -244,7 +269,7 @@ describe('MemberWelcomeEmailService', function () {
         it('logs info message with member name and email', async function () {
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
@@ -259,7 +284,7 @@ describe('MemberWelcomeEmailService', function () {
         it('logs info message with just email when name missing', async function () {
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {email: 'john@example.com'}
@@ -275,7 +300,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
@@ -290,7 +315,7 @@ describe('MemberWelcomeEmailService', function () {
 
             serviceModule.api = null;
             serviceModule.init();
-            await serviceModule.api.loadTemplate();
+            await serviceModule.api.loadTemplates();
 
             await serviceModule.api.send({
                 member: {name: 'John', email: 'john@example.com'}
