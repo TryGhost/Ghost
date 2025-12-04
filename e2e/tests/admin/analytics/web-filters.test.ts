@@ -77,8 +77,8 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             await webTrafficPage.clickSourceToFilter('direct');
 
-            const url = page.url();
-            expect(url).toContain('source=');
+            const url = new URL(page.url());
+            expect(url.searchParams.has('source')).toBe(true);
         });
 
         test('can remove filter', async ({page, browser, baseURL}) => {
