@@ -1,4 +1,4 @@
-const {promises: fs, readFileSync} = require('fs');
+const {promises: fs} = require('fs');
 const path = require('path');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const lexicalLib = require('../../lib/lexical');
@@ -8,13 +8,6 @@ const {MESSAGES} = require('./constants');
 class MemberWelcomeEmailRenderer {
     constructor() {
         this.Handlebars = require('handlebars').create();
-        this.registerPartials();
-    }
-
-    registerPartials() {
-        const stylesPath = path.join(__dirname, '../staff/email-templates/partials/styles.hbs');
-        const stylesContent = readFileSync(stylesPath, 'utf8');
-        this.Handlebars.registerPartial('styles', stylesContent);
     }
 
     /**

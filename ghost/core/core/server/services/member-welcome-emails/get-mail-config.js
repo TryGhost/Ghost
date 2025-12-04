@@ -1,4 +1,5 @@
 const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 const emailAddressService = require('../email-address');
 const mail = require('../mail');
 
@@ -20,17 +21,6 @@ const FREE_WELCOME_EMAIL_SLUG = 'member-welcome-email-free';
  * @property {EmailTemplate|null} emailTemplate
 
  */
-
-async function loadSiteSettings({db}) {
-    const settings = await db.knex('settings')
-        .whereIn('key', ['title', 'accent_color', 'url'])
-        .select('key', 'value');
-
-    return settings.reduce((acc, setting) => {
-        acc[setting.key] = setting.value;
-        return acc;
-    }, {});
-}
 
 async function loadEmailTemplate({db}) {
     const template = await db.knex('automated_emails')
@@ -61,17 +51,14 @@ async function getMailConfig({db}) {
     emailAddressService.init();
     const mailer = new mail.GhostMailer();
 
-    const [settingsMap, emailTemplate] = await Promise.all([
-        loadSiteSettings({db}),
-        loadEmailTemplate({db})
-    ]);
+    const emailTemplate = await loadEmailTemplate({db});
 
     return {
         mailer,
         siteSettings: {
-            title: settingsMap.title || 'Ghost',
-            url: settingsMap.url || 'http://localhost:2368',
-            accentColor: settingsMap.accent_color || '#15212A'
+            title: settingsCache.get('title') || 'Ghost',
+            url: urlUtils.urlFor('home', true),
+            accentColor: settingsCache.get('accent_color') || '#15212A'
         },
         emailTemplate
     };
