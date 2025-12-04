@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
+import React, {useMemo, useState} from 'react';
+import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, type GhAreaChartSeries, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, formatDuration, formatNumber, formatPercentage, sanitizeChartData} from '@tryghost/shade';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
@@ -47,33 +47,54 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
     const initialTab = searchParams.get('tab') || 'visits';
     const [currentTab, setCurrentTab] = useState(initialTab);
 
-    const currentMetric = KPI_METRICS[currentTab];
+    // Prepare multi-series chart data
+    const chartData = useMemo(() => {
+        if (!data) {
+            return [];
+        }
 
-    const chartData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
-        const value = Number(item[currentMetric.dataKey]);
-        return {
-            date: String(item.date),
-            value,
-            formattedValue: currentMetric.formatter(value),
-            label: currentMetric.label
-        };
-    });
+        // Sanitize both series
+        const visitsData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, 'visits' as keyof KpiDataItem, 'sum');
+        const pageviewsData = sanitizeChartData<KpiDataItem>(data as KpiDataItem[] || [], range, 'pageviews' as keyof KpiDataItem, 'sum');
+
+        // Combine into single dataset with both series
+        return visitsData?.map((item: KpiDataItem, index: number) => {
+            return {
+                date: String(item.date),
+                value: 0, // Not used in multi-series mode
+                formattedValue: '',
+                label: '',
+                visits: Number(item.visits),
+                pageviews: Number(pageviewsData?.[index]?.pageviews || 0)
+            };
+        }) || [];
+    }, [data, range]);
+
+    // Define series configuration
+    const series: GhAreaChartSeries[] = [
+        {
+            dataKey: 'visits',
+            label: 'Unique visitors',
+            color: 'hsl(var(--chart-blue))'
+        },
+        {
+            dataKey: 'pageviews',
+            label: 'Total views',
+            color: 'hsl(var(--chart-teal))'
+        }
+    ];
 
     const kpiValues = getWebKpiValues(data as unknown as KpiDataItem[] | null);
 
     return (
         <Card>
             <CardContent>
-                <Tabs defaultValue={currentTab} variant='kpis'>
+                <Tabs variant='kpis'>
                     <TabsList className="-mx-6 hidden grid-cols-2 md:!visible md:!grid">
-                        <KpiTabTrigger value="visits" onClick={() => {
-                            setCurrentTab('visits');
-                        }}>
+                        <KpiTabTrigger className='!opacity-100' value="visits" disabled>
                             <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
                         </KpiTabTrigger>
-                        <KpiTabTrigger value="views" onClick={() => {
-                            setCurrentTab('views');
-                        }}>
+                        <KpiTabTrigger className='!opacity-100' value="views" disabled>
                             <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
                         </KpiTabTrigger>
                     </TabsList>
@@ -96,10 +117,10 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                     <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                         <GhAreaChart
                             className={'-mb-3 aspect-auto h-[16vw] max-h-[320px] min-h-[180px] w-full'}
-                            color={currentMetric.color}
                             data={chartData}
-                            id={currentMetric.dataKey}
+                            id="post-web-kpis"
                             range={range}
+                            series={series}
                             showHours={true}
                             syncId="overview-charts"
                         />
