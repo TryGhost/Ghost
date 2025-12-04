@@ -174,7 +174,7 @@ export default class S3Storage extends StorageBase {
     }
 
     private async *readFileInChunks(filePath: string, chunkSize: number): AsyncGenerator<Buffer> {
-        const stream = fs.createReadStream(filePath);
+        const stream = fs.createReadStream(filePath, {highWaterMark: chunkSize});
         let buffer = Buffer.alloc(0);
 
         for await (const chunk of stream) {
