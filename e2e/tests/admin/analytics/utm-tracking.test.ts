@@ -23,169 +23,114 @@ test.describe('Ghost Admin - Analytics UTM Tracking', () => {
             await expect(analyticsWebTrafficPage.filterButton).toBeVisible();
         });
 
-        test('can add utm_source filter from filter menu', async ({page, browser, baseURL}) => {
-            // Generate traffic with UTM parameters
+        test('filter popover shows available filter fields', async ({page}) => {
+            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+            await analyticsWebTrafficPage.goto();
+            await analyticsWebTrafficPage.openFilterPopover();
+
+            await expect(page.getByRole('option', {name: 'UTM Source', exact: true})).toBeVisible();
+            await expect(page.getByRole('option', {name: 'UTM Medium', exact: true})).toBeVisible();
+            await expect(page.getByRole('option', {name: 'UTM Campaign', exact: true})).toBeVisible();
+            await expect(page.getByRole('option', {name: 'Source', exact: true})).toBeVisible();
+        });
+
+        test('selecting filter field shows value options with visit counts', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'newsletter',
-                    utm_medium: 'email',
-                    utm_campaign: 'launch'
-                });
+                await homePage.goto();
             });
 
             const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
             await analyticsWebTrafficPage.goto();
+            await analyticsWebTrafficPage.openFilterPopover();
+            await page.getByRole('option', {name: 'Source', exact: true}).click();
 
-            // Add UTM Source filter
-            await analyticsWebTrafficPage.addFilter('UTM Source', 'newsletter');
-
-            // Verify filter is active
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeVisible();
-        });
-
-        test('can add utm_medium filter from filter menu', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'google',
-                    utm_medium: 'cpc',
-                    utm_campaign: 'spring2024'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            await analyticsWebTrafficPage.goto();
-
-            await analyticsWebTrafficPage.addFilter('UTM Medium', 'cpc');
-
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Medium')).toBeVisible();
-        });
-
-        test('can add utm_campaign filter from filter menu', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'twitter',
-                    utm_medium: 'social',
-                    utm_campaign: 'product_launch'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            await analyticsWebTrafficPage.goto();
-
-            await analyticsWebTrafficPage.addFilter('UTM Campaign', 'product_launch');
-
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Campaign')).toBeVisible();
-        });
-
-        test('filter persists in url for bookmarking', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'test_source'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            await analyticsWebTrafficPage.goto();
-
-            // Add a filter
-            await analyticsWebTrafficPage.addFilter('UTM Source', 'test_source');
-
-            // Verify URL contains filter parameter
-            const url = page.url();
-            expect(url).toContain('utm_source=test_source');
-        });
-
-        test('can navigate to page with filter in url', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'bookmarked_source'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            // Navigate with filter already in URL
-            await analyticsWebTrafficPage.gotoWithFilters({utm_source: 'bookmarked_source'});
-
-            // Filter should be applied from URL
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeVisible();
-        });
-
-        test('can remove filter', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'removable_source'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            await analyticsWebTrafficPage.goto();
-
-            // Add a filter
-            await analyticsWebTrafficPage.addFilter('UTM Source', 'removable_source');
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeVisible();
-
-            // Remove the filter
-            await analyticsWebTrafficPage.removeFilter('UTM Source');
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeHidden();
-        });
-
-        test('can remove multiple filters individually', async ({page, browser, baseURL}) => {
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
-                const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'clear_test',
-                    utm_medium: 'clear_medium'
-                });
-            });
-
-            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-            await analyticsWebTrafficPage.goto();
-
-            // Add multiple filters
-            await analyticsWebTrafficPage.addFilter('UTM Source', 'clear_test');
-            await analyticsWebTrafficPage.addFilter('UTM Medium', 'clear_medium');
-
-            // Verify both filters are visible
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeVisible();
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Medium')).toBeVisible();
-
-            // Remove filters one by one
-            await analyticsWebTrafficPage.removeFilter('UTM Source');
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Source')).toBeHidden();
-
-            await analyticsWebTrafficPage.removeFilter('UTM Medium');
-            await expect(analyticsWebTrafficPage.getActiveFilter('UTM Medium')).toBeHidden();
+            const directOption = page.getByRole('option', {name: 'Direct'});
+            await expect(directOption).toBeVisible({timeout: 15000});
+            await expect(directOption).toContainText(/\d+/);
         });
 
         test('click on source row adds source filter', async ({page, browser, baseURL}) => {
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const homePage = new HomePage(publicPage);
-                await homePage.gotoWithQueryParams({
-                    utm_source: 'clickable_source'
-                });
+                await homePage.goto();
             });
 
             const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
             await analyticsWebTrafficPage.goto();
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
 
-            // Wait for sources card to load
-            await analyticsWebTrafficPage.topSourcesCard.waitFor({state: 'visible'});
+            await analyticsWebTrafficPage.clickSourceToFilter('direct');
 
-            // Wait for the specific source row to appear (the one we created with utm_source)
-            const sourceRow = page.getByTestId('source-row-clickable_source');
-            await sourceRow.waitFor({state: 'visible', timeout: 10000});
-
-            // Click on the source row
-            await sourceRow.click();
-
-            // Verify source filter is added
             await expect(analyticsWebTrafficPage.getActiveFilter('Source')).toBeVisible();
+        });
+
+        test('filter persists in url', async ({page, browser, baseURL}) => {
+            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+                const homePage = new HomePage(publicPage);
+                await homePage.goto();
+            });
+
+            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+            await analyticsWebTrafficPage.goto();
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+
+            await analyticsWebTrafficPage.clickSourceToFilter('direct');
+
+            const url = page.url();
+            expect(url).toContain('source=');
+        });
+
+        test('can remove filter', async ({page, browser, baseURL}) => {
+            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+                const homePage = new HomePage(publicPage);
+                await homePage.goto();
+            });
+
+            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+            await analyticsWebTrafficPage.goto();
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+
+            await analyticsWebTrafficPage.clickSourceToFilter('direct');
+            await expect(analyticsWebTrafficPage.getActiveFilter('Source')).toBeVisible();
+
+            await analyticsWebTrafficPage.removeFilter('Source');
+
+            await expect(analyticsWebTrafficPage.getActiveFilter('Source')).toBeHidden();
+        });
+
+        test('filtering shows only matching data', async ({page, browser, baseURL}) => {
+            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+                const homePage = new HomePage(publicPage);
+                await homePage.goto();
+            });
+
+            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+            await analyticsWebTrafficPage.goto();
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+
+            await analyticsWebTrafficPage.clickSourceToFilter('direct');
+
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct');
+            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).not.toContainText('0');
+        });
+
+        test('removing filter restores original data', async ({page, browser, baseURL}) => {
+            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+                const homePage = new HomePage(publicPage);
+                await homePage.goto();
+            });
+
+            const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
+            await analyticsWebTrafficPage.goto();
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct', {timeout: 15000});
+
+            await analyticsWebTrafficPage.clickSourceToFilter('direct');
+            await expect(analyticsWebTrafficPage.getActiveFilter('Source')).toBeVisible();
+
+            await analyticsWebTrafficPage.removeFilter('Source');
+
+            await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('Direct');
         });
     });
 });

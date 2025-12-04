@@ -65,10 +65,10 @@ export class AnalyticsWebTrafficPage extends AdminPage {
      */
     async addFilter(fieldLabel: string, valueLabel: string) {
         await this.openFilterPopover();
-        // Select the field from the dropdown
-        await this.page.getByRole('option', {name: fieldLabel}).click();
-        // Select the value
-        await this.page.getByRole('option', {name: valueLabel}).click();
+        // Select the field from the dropdown (exact match to avoid "Source" matching "UTM Source")
+        await this.page.getByRole('option', {name: fieldLabel, exact: true}).click();
+        // The options appear in a combobox after selecting the field
+        await this.page.getByRole('option', {name: valueLabel, exact: true}).click();
     }
 
     /**
