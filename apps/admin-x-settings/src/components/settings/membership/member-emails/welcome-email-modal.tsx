@@ -1,7 +1,8 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {useEffect, useRef, useState} from 'react';
 
-import {Button, MinimalEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Modal, TextField} from '@tryghost/admin-x-design-system';
+import MemberEmailEditor from './member-email-editor';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
@@ -132,7 +133,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 </div>
                 <div className='bg-grey-50 p-6'>
                     <div className='mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
-                        <MinimalEditor
+                        <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
                             nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
