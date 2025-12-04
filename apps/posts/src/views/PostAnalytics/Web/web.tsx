@@ -159,7 +159,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                 data={kpiData as KpiDataItem[] | null}
                                 range={chartRange}
                             />
-                            <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
+                            <div className='flex flex-col gap-6 lg:grid lg:grid-cols-2'>
                                 <Locations
                                     data={processedLocationsData}
                                     isLoading={isLocationsLoading}

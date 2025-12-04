@@ -99,7 +99,7 @@ describe('Migrations', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(120);
+            permissions.length.should.eql(125);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);
@@ -243,6 +243,12 @@ describe('Migrations', function () {
             permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration', 'Super Editor']);
+
+            permissions.should.havePermission('Browse automated emails', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Read automated emails', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Edit automated emails', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Add automated emails', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Delete automated emails', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {

@@ -1,4 +1,5 @@
 import DateRangeSelect from '../components/date-range-select';
+import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
 import React, {useMemo, useState} from 'react';
@@ -6,7 +7,7 @@ import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, NavbarActions, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -125,7 +126,9 @@ const Growth: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <DateRangeSelect />
+                <NavbarActions>
+                    <DateRangeSelect />
+                </NavbarActions>
             </StatsHeader>
             <StatsView data={isPageLoading ? undefined : chartData} isLoading={false} loadingComponent={<></>}>
                 <Card data-testid='total-members-card'>
@@ -206,17 +209,7 @@ const Growth: React.FC = () => {
                                         !appSettings?.analytics.membersTrackSources ? (
                                             <TableRow className='last:border-none'>
                                                 <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                                                    <EmptyIndicator
-                                                        actions={
-                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
-                                                                Open settings
-                                                            </Button>
-                                                        }
-                                                        description='Enable member source tracking in settings to see which content drives member growth.'
-                                                        title='Member sources have been disabled'
-                                                    >
-                                                        <LucideIcon.Activity />
-                                                    </EmptyIndicator>
+                                                    <DisabledSourcesIndicator />
                                                 </TableCell>
                                             </TableRow>
                                         ) : transformedTopPosts.length > 0 ? (

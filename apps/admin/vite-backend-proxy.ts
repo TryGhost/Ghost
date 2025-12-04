@@ -11,7 +11,7 @@ async function resolveGhostSiteUrl() {
     const MAX_ATTEMPTS = 20;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
-            const siteEndpoint = new URL("/ghost/api/admin/site", GHOST_URL);
+            const siteEndpoint = new URL("/ghost/api/admin/site/", GHOST_URL);
             const response = await fetch(siteEndpoint);
             const data = (await response.json()) as { site: { url: string } };
             return {

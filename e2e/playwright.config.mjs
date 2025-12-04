@@ -22,7 +22,7 @@ const config = {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: process.env.CI ? 4 : parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
+    workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
     fullyParallel: true,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
     use: {

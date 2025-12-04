@@ -63,7 +63,7 @@ test.describe('Ghost Public - Member Signup', () => {
 
         latestMessage = await retrieveLatestEmailMessage(emailInbox);
 
-        expect(latestMessage.From.Name).toContain('Ghost');
+        expect(latestMessage.From.Name).toContain('Test Blog');
         expect(latestMessage.From.Address).toContain('test@example.com');
         expect(latestMessage.Subject).toContain('Welcome to Test Blog!');
         expect(latestMessage.Text).toContain('Welcome to Test Blog!');
