@@ -68,7 +68,7 @@ interface KoenigWrapperProps extends KoenigEditorBaseProps {
     // For MinimalEditor: initial lexical state
     initialEditorState?: string
     // For MinimalEditor: native onChange handler
-    onChange?: (data: unknown) => void
+    onChange?: (editorState: unknown) => void
 }
 
 export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
@@ -156,7 +156,7 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
 interface KoenigEditorBaseInternalProps extends KoenigEditorBaseProps {
     children: (koenig: KoenigInstance) => React.ReactNode
     initialEditorState?: string
-    onChange?: (data: unknown) => void
+    onChange?: (editorState: unknown) => void
 }
 
 const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
