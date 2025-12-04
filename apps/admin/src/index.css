@@ -1,25 +1,46 @@
 @import "@tryghost/shade/styles.css";
 
-/* Flex layout to allow alerts to push down the SPA content */
+/* Base layout - grid structure for alerts and main content */
 body.react-admin {
     height: 100svh;
-    display: flex;
-    flex-direction: column;
+    height: 100dvh; /* Dynamic viewport height for mobile Safari */
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 100%;
+    overflow: hidden; /* Prevent body scroll */
 }
 
+/* Alerts show at the top and push content down */
 body.react-admin #ember-alerts-wormhole {
-    flex-shrink: 0;
+    grid-row: 1;
+    grid-column: 1;
+    z-index: 100;
 }
 
+/* Main app container - pass through to children */
 body.react-admin #root {
-    flex: 1;
+    grid-row: 2;
+    grid-column: 1;
     min-height: 0;
-    display: flex;
+    display: contents;
 }
 
-/* Ensure ShadeApp takes full width */
+/* Ensure ShadeApp takes full grid space */
 body.react-admin .shade.shade-admin {
-    width: 100%;
+    grid-row: 2;
+    grid-column: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* iOS safe area handling for mobile navbar */
+body.react-admin .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mobile sidebar overlay should sit above navbar */
+body.react-admin [data-mobile="true"] {
+    z-index: 60; /* Higher than mobile navbar z-50 */
 }
 
 /* Ensure the Ember app renders in the correct position and takes full width/height */

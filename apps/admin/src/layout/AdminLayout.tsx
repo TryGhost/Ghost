@@ -34,7 +34,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <SidebarProvider open={!!currentUser && sidebarVisible}>
             <AppSidebar />
-            <SidebarInset className="bg-background overflow-auto">
+            <SidebarInset className="bg-background overflow-auto max-h-[calc(100%-var(--mobile-navbar-height))] sidebar:max-h-full">
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>

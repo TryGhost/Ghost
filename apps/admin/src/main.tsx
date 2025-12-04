@@ -39,7 +39,7 @@ createRoot(document.getElementById("root")!).render(
             <RouterProvider prefix={"/"} routes={routes}>
                 <AppProvider>
                     <ShadeApp
-                        className="shade-admin"
+                        className="shade-admin grid grid-cols-1 sidebar:grid-cols-[auto_1fr]"
                         darkMode={false}
                         fetchKoenigLexical={null}
                     >
