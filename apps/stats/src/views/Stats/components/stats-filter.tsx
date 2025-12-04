@@ -451,7 +451,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     }, [onChange]);
 
     return (
-        <div className="mt-3 flex w-full justify-between gap-2 lg:mt-0">
+        <div className="mt-3 flex w-full justify-between gap-2 lg:mt-0" data-testid="stats-filter-container">
             <Filters
                 addButtonIcon={<LucideIcon.FunnelPlus />}
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
@@ -467,6 +467,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             {hasFilters && (
                 <Button
                     className='hidden font-normal text-muted-foreground lg:flex'
+                    data-testid="stats-filter-clear-button"
                     variant="ghost"
                     onClick={handleClearFilters}
                 >

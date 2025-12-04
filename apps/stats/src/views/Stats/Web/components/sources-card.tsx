@@ -37,6 +37,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
                         <DataListRow
                             key={row.source}
                             className={onSourceClick ? 'group/row cursor-pointer transition-colors hover:bg-accent/50' : 'group/row'}
+                            data-testid={`source-row-${row.isDirectTraffic ? 'direct' : row.source}`}
                             onClick={onSourceClick ? () => handleRowClick(row) : undefined}
                         >
                             <DataListBar style={{
