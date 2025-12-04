@@ -63,20 +63,13 @@ describe('Outbox - process-outbox', function () {
 
         processOutbox = rewire('../../../../../../../core/server/services/outbox/jobs/lib/process-outbox');
         processOutbox.__set__('logging', loggingStub);
+        processOutbox.__set__('db', dbStub);
         processOutbox.__set__('processEntries', processEntriesStub);
+        processOutbox.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
         processOutbox.__set__('OUTBOX_STATUSES', OUTBOX_STATUSES);
         processOutbox.__set__('MESSAGES', MESSAGES);
         processOutbox.__set__('BATCH_SIZE', 100);
         processOutbox.__set__('MAX_ENTRIES_PER_JOB', 1000);
-        processOutbox.__set__('require', (modulePath) => {
-            if (modulePath === '../../../../data/db') {
-                return dbStub;
-            }
-            if (modulePath === '../../../member-welcome-emails/service') {
-                return memberWelcomeEmailServiceStub;
-            }
-            return require(modulePath);
-        });
     });
 
     afterEach(function () {

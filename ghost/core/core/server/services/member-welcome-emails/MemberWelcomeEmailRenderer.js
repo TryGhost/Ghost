@@ -1,13 +1,21 @@
-const {promises: fs} = require('fs');
+const fs = require('fs');
 const path = require('path');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const juice = require('juice');
 const lexicalLib = require('../../lib/lexical');
 const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
 
 class MemberWelcomeEmailRenderer {
+    #wrapperTemplate;
+
     constructor() {
         this.Handlebars = require('handlebars').create();
+        const wrapperSource = fs.readFileSync(
+            path.join(__dirname, './email-templates/wrapper.hbs'),
+            'utf8'
+        );
+        this.#wrapperTemplate = this.Handlebars.compile(wrapperSource);
     }
 
     /**
@@ -51,19 +59,12 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.Handlebars.compile(content)(templateData);
         const subjectWithReplacements = this.Handlebars.compile(subject)(templateData);
 
-        const wrapperSource = await fs.readFile(
-            path.join(__dirname, './email-templates/wrapper.hbs'),
-            'utf8'
-        );
-        const wrapperTemplate = this.Handlebars.compile(wrapperSource);
-
-        const html = wrapperTemplate({
+        const html = this.#wrapperTemplate({
             ...templateData,
             content: contentWithReplacements,
             subject: subjectWithReplacements
         });
 
-        const juice = require('juice');
         const inlinedHtml = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
         const text = htmlToPlaintext.email(inlinedHtml);
 
