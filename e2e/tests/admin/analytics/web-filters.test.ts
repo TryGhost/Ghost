@@ -45,7 +45,7 @@ test.describe('Ghost Admin - Web Filters', () => {
             await webTrafficPage.openFilterPopover();
             await webTrafficPage.selectFilterField('Source');
 
-            const directOption = webTrafficPage.getFilterValue('Direct');
+            const directOption = webTrafficPage.getFilterOptionValue('Direct');
             await expect(directOption).toBeVisible();
             await expect(directOption).toContainText(/\d+/);
         });
@@ -77,8 +77,7 @@ test.describe('Ghost Admin - Web Filters', () => {
 
             await webTrafficPage.clickSourceToFilter('direct');
 
-            const url = new URL(page.url());
-            expect(url.searchParams.has('source')).toBe(true);
+            expect(webTrafficPage.getSearchParams().has('source')).toBe(true);
         });
 
         test('can remove filter', async ({page, browser, baseURL}) => {
