@@ -155,3 +155,31 @@ export const MultiSeries: Story = {
         }
     }
 };
+
+// Multi-series data with zero values
+const multiSeriesZeroData: GhAreaChartDataItem[] = [
+    {date: '2024-01-01', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-02', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-03', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-04', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-05', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-06', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0},
+    {date: '2024-01-07', value: 0, formattedValue: '', label: '', visits: 0, pageviews: 0}
+];
+
+export const MultiSeriesWithZeroValues: Story = {
+    args: {
+        data: multiSeriesZeroData,
+        range: 7,
+        id: 'multi-series-zero-chart',
+        className: 'h-[300px]',
+        series: webAnalyticsSeries
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Edge case: Multi-series chart with all zero values. The chart gracefully handles this by setting Y-axis range to [0, 1] to prevent a degenerate domain where min equals max.'
+            }
+        }
+    }
+};

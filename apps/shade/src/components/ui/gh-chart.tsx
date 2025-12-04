@@ -161,12 +161,15 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
             });
         });
 
-        // Apply the same padding logic as single-series (2% padding)
-        const padding = 0.02;
-        const paddedMax = max === -Infinity ? 0 : max + (max * padding);
-
-        // Always start at 0 for multi-series charts
-        yRange = [0, paddedMax];
+        // Handle case when max is 0 or -Infinity (all values are zero or no data)
+        if (max <= 0) {
+            yRange = [0, 1];
+        } else {
+            // Apply the same padding logic as single-series (2% padding)
+            const padding = 0.02;
+            const paddedMax = max + (max * padding);
+            yRange = [0, paddedMax];
+        }
     } else {
         yRange = [getYRange(data).min, getYRange(data).max];
     }
