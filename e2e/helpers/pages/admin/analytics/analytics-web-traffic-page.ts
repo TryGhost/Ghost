@@ -46,106 +46,64 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.locationsCard = page.getByTestId('visitors-card');
     }
 
-    /**
-     * Open the filter popover by clicking the Filter button
-     */
     async openFilterPopover() {
         await this.filterButton.click();
     }
 
-    /**
-     * Get a locator for a filter field option in the dropdown
-     */
     getFilterOption(name: string): Locator {
         return this.page.getByRole('option', {name, exact: true});
     }
 
-    /**
-     * Get a locator for a filter value option in the dropdown
-     */
     getFilterValue(name: string): Locator {
         return this.page.getByRole('option', {name, exact: true});
     }
 
-    /**
-     * Select a filter field from the dropdown
-     */
     async selectFilterField(label: string) {
         await this.getFilterOption(label).click();
     }
 
-    /**
-     * Select a filter value from the dropdown
-     */
     async selectFilterValue(label: string) {
         await this.getFilterValue(label).click();
     }
 
-    /**
-     * Add a filter by selecting a field and value from the filter popover
-     */
     async addFilter(fieldLabel: string, valueLabel: string) {
         await this.openFilterPopover();
         await this.selectFilterField(fieldLabel);
         await this.selectFilterValue(valueLabel);
     }
 
-    /**
-     * Get a locator for a specific active filter pill
-     */
     getActiveFilter(fieldLabel: string): Locator {
         return this.filterContainer.locator('[data-slot="filter-item"]').filter({hasText: fieldLabel});
     }
 
-    /**
-     * Remove a specific filter by clicking its remove button
-     */
     async removeFilter(fieldLabel: string) {
         const filterItem = this.getActiveFilter(fieldLabel);
         await filterItem.locator('[data-slot="filters-remove"]').click();
     }
 
-    /**
-     * Clear all filters using the Clear button
-     */
     async clearAllFilters() {
         await this.clearFiltersButton.click();
     }
 
-    /**
-     * Check if a filter is currently active
-     */
     async hasActiveFilter(fieldLabel: string): Promise<boolean> {
         return await this.getActiveFilter(fieldLabel).isVisible();
     }
 
-    /**
-     * Click on a source row to add it as a filter
-     */
     async clickSourceToFilter(sourceIdentifier: string) {
         const row = this.page.getByTestId(`source-row-${sourceIdentifier}`);
         await row.click();
     }
 
-    /**
-     * Click on a location row to add it as a filter
-     */
     async clickLocationToFilter(locationCode: string) {
         const row = this.page.getByTestId(`location-row-${locationCode}`);
         await row.click();
     }
 
-    /**
-     * Get the current URL with filter parameters
-     */
     getFilterParamsFromUrl(): URLSearchParams {
         const url = new URL(this.page.url());
         return url.searchParams;
     }
 
-    /**
-     * Navigate to the page with specific filter parameters pre-set in URL
-     */
     async gotoWithFilters(filters: Record<string, string>) {
         const params = new URLSearchParams(filters);
         await this.goto(`${this.pageUrl}?${params.toString()}`);
