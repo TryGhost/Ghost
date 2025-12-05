@@ -1,30 +1,96 @@
 import NiceModal from '@ebay/nice-modal-react';
+import validator from 'validator';
 import {useEffect, useRef, useState} from 'react';
 
-import {Button, HtmlEditor, Modal, TextField} from '@tryghost/admin-x-design-system';
+import MemberEmailEditor from './member-email-editor';
+import {Button, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 
 interface WelcomeEmailModalProps {
     emailType?: 'free' | 'paid';
+    automatedEmail?: AutomatedEmail;
 }
 
-const getDefaultContent = () => {
-    return `<p><strong>Welcome! It's great to have you here.</strong></p>
-<p>You'll start getting updates right in your inbox. You can also log in any time to read the full archive or catch up on new posts as they go live.</p>
-<p>A quick heads-up: if the newsletter doesn't show up, check your <em>spam folder</em> or your Promotions tab and mark this address as not spam.</p>
-<p>And remember: everything is always available on <a href="https://example.com">publisherweekly.org</a>.</p>
-<p>Thanks for joining — feel free to share it with a friend or two if you think they'd enjoy it.</p>`;
-};
-
-const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free'}) => {
+const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
     const {data: currentUser} = useCurrentUser();
+    const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
-    const [emailContent, setEmailContent] = useState(getDefaultContent());
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Form state for editable fields
+    const [formData, setFormData] = useState({
+        subject: automatedEmail?.subject || 'Welcome',
+        lexical: automatedEmail?.lexical || '',
+        sender_name: automatedEmail?.sender_name || '',
+        sender_email: automatedEmail?.sender_email || '',
+        sender_reply_to: automatedEmail?.sender_reply_to || ''
+    });
+    const [isSaving, setIsSaving] = useState(false);
+    const [errors, setErrors] = useState<{sender_email?: string; sender_reply_to?: string}>({});
+
+    // Track if form has changes
+    const hasChanges = automatedEmail && (
+        formData.subject !== (automatedEmail.subject || '') ||
+        formData.lexical !== (automatedEmail.lexical || '') ||
+        formData.sender_name !== (automatedEmail.sender_name || '') ||
+        formData.sender_email !== (automatedEmail.sender_email || '') ||
+        formData.sender_reply_to !== (automatedEmail.sender_reply_to || '')
+    );
+
+    const updateFormData = (key: keyof typeof formData, value: string) => {
+        setFormData(prev => ({...prev, [key]: value}));
+        // Clear error when user starts typing
+        if (key === 'sender_email' || key === 'sender_reply_to') {
+            setErrors(prev => ({...prev, [key]: undefined}));
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: typeof errors = {};
+
+        if (formData.sender_email && !validator.isEmail(formData.sender_email)) {
+            newErrors.sender_email = 'Enter a valid email address';
+        }
+
+        if (formData.sender_reply_to && !validator.isEmail(formData.sender_reply_to)) {
+            newErrors.sender_reply_to = 'Enter a valid email address';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSave = async () => {
+        if (!automatedEmail || !validateForm()) {
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await editAutomatedEmail({
+                ...automatedEmail,
+                subject: formData.subject,
+                lexical: formData.lexical || null,
+                sender_name: formData.sender_name || null,
+                sender_email: formData.sender_email || null,
+                sender_reply_to: formData.sender_reply_to || null
+            });
+            modal.remove();
+        } catch (error) {
+            showToast({
+                type: 'error',
+                message: 'Failed to save welcome email'
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     // Update test email when current user data loads
     useEffect(() => {
@@ -105,39 +171,70 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             </div>
                             <Button
                                 color="black"
-                                label="Save"
+                                disabled={!hasChanges || isSaving}
+                                label={isSaving ? 'Saving...' : 'Save'}
+                                onClick={handleSave}
                             />
                         </div>
                     </div>
                     <div className='flex items-center'>
                         <div className='w-20 font-semibold'>From:</div>
-                        <div>
-                            Publisher Weekly
-                            <span className='ml-1 text-grey-700'>{`<test@example.com>`}</span>
+                        <div className='flex grow items-center gap-2'>
+                            <TextField
+                                className='!h-[34px]'
+                                maxLength={191}
+                                placeholder='Sender name'
+                                value={formData.sender_name}
+                                onChange={e => updateFormData('sender_name', e.target.value)}
+                            />
+                            <TextField
+                                className='!h-[34px] grow'
+                                error={Boolean(errors.sender_email)}
+                                hint={errors.sender_email}
+                                maxLength={191}
+                                placeholder='noreply@example.com'
+                                value={formData.sender_email}
+                                onChange={e => updateFormData('sender_email', e.target.value)}
+                            />
                         </div>
                     </div>
 
-                    {/* Only display if it's not the same as sender email */}
-                    <div className='flex items-center py-1'>
+                    <div className='flex items-center'>
                         <div className='w-20 font-semibold'>Reply-to:</div>
-                        <span className='text-grey-700'>hello@example.com</span>
+                        <div className='grow'>
+                            <TextField
+                                className='!h-[34px] w-full'
+                                error={Boolean(errors.sender_reply_to)}
+                                hint={errors.sender_reply_to}
+                                maxLength={191}
+                                placeholder='reply@example.com'
+                                value={formData.sender_reply_to}
+                                onChange={e => updateFormData('sender_reply_to', e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <div className='-mt-1 flex items-center'>
                         <div className='w-20 font-semibold'>Subject:</div>
                         <div className='grow'>
-                            <TextField className='!h-[34px] w-full' value={'Welcome to Publisher Weekly'}/>
+                            <TextField
+                                className='!h-[34px] w-full'
+                                maxLength={300}
+                                value={formData.subject}
+                                onChange={e => updateFormData('subject', e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
                 <div className='bg-grey-50 p-6'>
                     <div className='mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
-                        <HtmlEditor
-                            nodes='BASIC_NODES'
+                        <MemberEmailEditor
+                            key={automatedEmail?.id || 'new'}
+                            nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
                             singleParagraph={false}
-                            value={emailContent}
-                            onChange={setEmailContent}
+                            value={formData.lexical}
+                            onChange={lexical => updateFormData('lexical', lexical)}
                         />
                     </div>
                 </div>
