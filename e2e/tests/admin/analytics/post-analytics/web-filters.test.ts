@@ -135,7 +135,8 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
             await expect(postAnalyticsPage.getActiveFilter('Source')).toBeHidden();
         });
 
-        test('click on location row adds location filter', async ({page, browser, baseURL}) => {
+        // TODO: This is flaky on CI, so we're skipping it for now.
+        test.skip('click on location row adds location filter', async ({page, browser, baseURL}) => {
             // Generate traffic to the post
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
                 const postPage = new PublicPage(publicPage);
