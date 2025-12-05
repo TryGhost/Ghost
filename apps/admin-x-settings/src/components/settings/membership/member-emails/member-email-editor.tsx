@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {KoenigEditorBase, type NodeType} from '@tryghost/admin-x-design-system';
 
 export interface MemberEmailsEditorProps {
@@ -7,6 +7,7 @@ export interface MemberEmailsEditorProps {
     nodes?: NodeType;
     singleParagraph?: boolean;
     className?: string;
+    onChange?: (value: string) => void;
 }
 
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
@@ -14,8 +15,17 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     placeholder,
     nodes = 'DEFAULT_NODES',
     singleParagraph = false,
-    className
+    className,
+    onChange
 }) => {
+    // Koenig's onChange passes the Lexical state as a plain object,
+    // but the API expects a JSON string
+    const handleChange = useCallback((data: unknown) => {
+        if (onChange && data && typeof data === 'object') {
+            onChange(JSON.stringify(data));
+        }
+    }, [onChange]);
+
     return (
         <KoenigEditorBase
             className={className}
@@ -24,6 +34,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             nodes={nodes}
             placeholder={placeholder}
             singleParagraph={singleParagraph}
+            onChange={handleChange}
         >
             {() => null}
         </KoenigEditorBase>
