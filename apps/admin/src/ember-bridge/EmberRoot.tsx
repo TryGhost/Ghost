@@ -24,5 +24,5 @@ export const EmberRoot = React.memo(function EmberRoot() {
         };
     }, []);
 
-    return <div ref={ref} hidden={!isFallbackPresent} className="h-[calc(100svh-var(--mobile-navbar-height))] w-full sidebar:h-screen overflow-auto"></div>;
+    return <div ref={ref} hidden={!isFallbackPresent} className="h-full w-full"></div>;
 });

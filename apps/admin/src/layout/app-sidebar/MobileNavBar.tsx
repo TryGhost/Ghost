@@ -40,8 +40,8 @@ export function MobileNavBar() {
     }
 
     return (
-        <div className="sticky flex justify-center max-w-[100vw] bottom-0 w-full h-[var(--mobile-navbar-height)] bg-sidebar/80 backdrop-blur-md border-t border-sidebar-border px-5 z-50">
-            <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px]">
+        <div className="fixed sidebar:hidden bottom-0 left-0 right-0 h-[var(--mobile-navbar-height)] bg-sidebar/80 backdrop-blur-md border-t border-sidebar-border z-50 safe-area-inset-bottom">
+            <div className="grid grid-cols-4 items-center w-full justify-items-center max-w-[300px] h-full mx-auto px-5">
                 <MobileNavBarButton
                     activeOnSubpath
                     to="analytics"
