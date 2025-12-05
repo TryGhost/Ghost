@@ -5,10 +5,9 @@ import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience-select';
-import {useAppContext} from '@src/app';
-import {useGlobalData} from '@src/providers/global-data-provider';
+import {useAppContext} from '@src/providers/posts-app-context';
+import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
 
@@ -111,14 +110,7 @@ const buildFilterParams = (
 
         const value = filter.values[0] as string;
 
-        if (filter.field === 'post') {
-            // Determine if the value is a post_uuid or a pathname
-            if (value.startsWith('/')) {
-                params.pathname = value;
-            } else {
-                params.post_uuid = value;
-            }
-        } else if (filter.field === 'audience') {
+        if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
         } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
@@ -131,7 +123,7 @@ const buildFilterParams = (
 
 // Generic hook to fetch filter options from Tinybird
 // Handles the common pattern: fetch data, transform to options, ensure selected value is included
-const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = []) => {
+const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [], postUuid?: string) => {
     const {statsConfig, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -154,8 +146,13 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
             limit: '50'
         };
 
+        // Add post_uuid for post-specific filtering
+        if (postUuid) {
+            baseParams.post_uuid = postUuid;
+        }
+
         return buildFilterParams(currentFilters, fieldKey, baseParams);
-    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey]);
+    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey, postUuid]);
 
     const {data, loading} = useTinybirdQuery({
         endpoint: definition?.endpoint || '',
@@ -192,74 +189,10 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
     return {options, loading};
 };
 
-// Hook to fetch posts/pages options from Ghost API (which queries Tinybird and enriches with titles)
-// This uses a different API pattern so it can't use the generic hook
-const usePostOptions = (currentFilters: Filter[] = []) => {
-    const {range} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // Derive audience from filters (URL is the source of truth)
-    const audience = useMemo(() => {
-        const audienceFilter = currentFilters.find(f => f.field === 'audience');
-        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [currentFilters]);
-
-    // Build query params including filters from other fields (excluding post to avoid circular filtering)
-    const queryParams = useMemo(() => {
-        const baseParams: Record<string, string> = {
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            member_status: getAudienceQueryParam(audience)
-        };
-
-        if (timezone) {
-            baseParams.timezone = timezone;
-        }
-
-        return buildFilterParams(currentFilters, 'post', baseParams);
-    }, [startDate, endDate, timezone, audience, currentFilters]);
-
-    // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
-    const {data: topContentData, isLoading} = useTopContent({
-        searchParams: queryParams
-    });
-
-    const options = useMemo(() => {
-        const stats = topContentData?.stats;
-
-        // Deduplicate items - prefer post_uuid for posts/pages, use pathname for other content
-        const seen = new Set<string>();
-        return (stats || [])
-            .filter((item) => {
-                // Create a unique key - prefer post_uuid if available, otherwise use pathname
-                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
-                const uniqueKey = hasValidPostUuid ? `uuid:${item.post_uuid}` : `path:${item.pathname}`;
-
-                if (seen.has(uniqueKey)) {
-                    return false;
-                }
-                seen.add(uniqueKey);
-                return true;
-            })
-            .map((item) => {
-                const visits = item.visits || 0;
-                // Use post_uuid as the filter value if available, otherwise use pathname
-                const hasValidPostUuid = item.post_uuid && item.post_uuid !== '' && item.post_uuid !== 'undefined';
-                const filterValue = hasValidPostUuid ? item.post_uuid! : item.pathname;
-
-                return {
-                    label: item.title || item.pathname || '(Untitled)',
-                    value: filterValue,
-                    icon: <VisitCountBadge visits={visits} />
-                };
-            });
-    }, [topContentData]);
-
-    return {options, loading: isLoading};
-};
-
 function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
+    const {post} = useGlobalData();
+    const postUuid = post?.uuid;
 
     // Track screen width for responsive popover alignment
     const [isMobile, setIsMobile] = useState(false);
@@ -291,18 +224,15 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     }, [appSettings?.paidMembersEnabled]);
 
     // Fetch options for all Tinybird-backed fields using the generic hook
-    // Options are contextual - filtered based on currently applied filters
-    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters);
-    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters);
-    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters);
-    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters);
-    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters);
-    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters);
-    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters);
-    const {options: locationOptions} = useTinybirdFilterOptions('location', filters);
-
-    // Fetch options for posts - data is contextual based on current filters
-    const {options: postOptions, loading: postLoading} = usePostOptions(filters);
+    // Options are contextual - filtered based on currently applied filters and post_uuid
+    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters, postUuid);
+    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters, postUuid);
+    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters, postUuid);
+    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid);
+    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid);
+    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid);
+    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid);
+    const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid);
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -310,6 +240,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     ], []);
 
     // Grouped fields - memoized to avoid recreation on every render
+    // Note: No 'post' filter in this context since we're already viewing a specific post
     const groupedFields: FilterFieldConfig[] = useMemo(() => {
         const utmFields: FilterFieldConfig[] = utmTrackingEnabled ? [
             {
@@ -402,21 +333,6 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         autoCloseOnSelect: true
                     },
                     {
-                        key: 'post',
-                        label: 'Post or page',
-                        type: 'select',
-                        icon: <LucideIcon.PenLine />,
-                        options: postOptions,
-                        searchable: true,
-                        isLoading: postLoading,
-                        operators: supportedOperators,
-                        defaultOperator: 'is',
-                        className: 'w-80',
-                        popoverContentClassName: 'w-80',
-                        hideOperatorSelect: true,
-                        selectedOptionsClassName: 'hidden'
-                    },
-                    {
                         key: 'source',
                         label: 'Source',
                         type: 'select',
@@ -463,7 +379,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, deviceOptions, locationOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, audienceOptions, sourceOptions, deviceOptions, locationOptions]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
@@ -502,6 +418,6 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             )}
         </div>
     );
-};
+}
 
 export default StatsFilter;
