@@ -3,7 +3,8 @@ const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {setupGhost, setupMailgun, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
-const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
+const {allowStripe, mockMail, mockGeojs} = require('../../utils/e2e-framework-mock-manager');
+const {getEmailVerificationCode, getEmailLink} = require('../utils');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
@@ -45,17 +46,18 @@ const webhookSecretPromise = getWebhookSecret();
  *  >}
  * @property {import('@playwright/test').Page} sharedPage
  */
+// @ts-expect-error Playwright's JS fixture typing is stricter here; runtime is correct
 module.exports = base.test.extend({
-    baseURL: async ({port, baseURL}, use) => {
+    baseURL: [async ({port, baseURL}, use) => {
         // Replace the port in baseURL with the one we got from the port fixture
         const url = new URL(baseURL);
         url.port = port.toString();
         await use(url.toString());
-    },
+    }, {scope: 'test'}],
 
-    storageState: async ({ghost}, use) => {
+    storageState: [async ({ghost}, use) => {
         await use(ghost.state);
-    },
+    }, {scope: 'test'}],
 
     sharedPage: [async ({browser}, use) => {
         const page = await browser.newPage();
@@ -64,38 +66,20 @@ module.exports = base.test.extend({
 
     // eslint-disable-next-line no-empty-pattern
     verificationToken: [async ({}, use) => {
-        const getToken = async () => {
-            const tryGetToken = () => {
-                try {
-                    const email = assert.sentEmail({
-                        subject: /[0-9]{6} is your Ghost sign in verification code/
-                    });
-                    return email.subject.match(/[0-9]{6}/)[0];
-                } catch (error) {
-                    return null;
-                }
-            };
-
-            const timeout = ms => new Promise((resolve) => {
-                setTimeout(resolve, ms);
-            });
-            let timeoutMs = 10;
-            let timeoutRetries = 5;
-
-            while (timeoutRetries > 0) {
-                const token = tryGetToken();
-                if (token) {
-                    return token;
-                }
-                await timeout(timeoutMs);
-                timeoutMs *= 2;
-                timeoutRetries -= 1;
-            }
-
-            return null;
-        };
-
+        const getToken = async () => getEmailVerificationCode(/[0-9]{6} is your Ghost sign in verification code/);
         await use({getToken});
+    }, {scope: 'worker'}],
+
+    // eslint-disable-next-line no-empty-pattern
+    otcToken: [async ({}, use) => {
+        const getToken = async () => getEmailVerificationCode(/Sign in to (.*) with code [0-9]{6}/);
+        await use({getToken});
+    }, {scope: 'worker'}],
+
+    // eslint-disable-next-line no-empty-pattern
+    magicLinkUrl: [async ({}, use) => {
+        const getUrl = async () => getEmailLink({subject: /Secure sign in link for (.*)/, urlPattern: /https?:\/\/(.*)\/members\/\?token=(.*)/});
+        await use({getUrl});
     }, {scope: 'worker'}],
 
     // eslint-disable-next-line no-empty-pattern
@@ -162,7 +146,7 @@ module.exports = base.test.extend({
             }
         });
 
-        mockMail();
+        const mailReceiver = mockMail();
 
         const {startGhost} = require('../../utils/e2e-framework');
         const server = await startGhost({
@@ -192,7 +176,8 @@ module.exports = base.test.extend({
         try {
             await use({
                 server,
-                state
+                state,
+                mailReceiver
             });
         } finally {
             const {stopGhost} = require('../../utils/e2e-utils');
