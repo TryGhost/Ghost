@@ -52,4 +52,31 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         expect(paidWelcomeEmail).toBeDefined();
         expect(paidWelcomeEmail?.status).toBe('active');
     });
+
+    test('can disable free welcome emails', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        await welcomeEmailsSection.goto();
+
+        // First enable the welcome email
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await expect(welcomeEmailsSection.freeWelcomeEmailToggle).toHaveAttribute('aria-checked', 'true');
+        await expect(welcomeEmailsSection.freeWelcomeEmailEditButton).toBeVisible();
+
+        // Now disable it
+        await welcomeEmailsSection.disableFreeWelcomeEmail();
+
+        await expect(welcomeEmailsSection.freeWelcomeEmailToggle).toHaveAttribute('aria-checked', 'false');
+        await expect(welcomeEmailsSection.freeWelcomeEmailEditButton).toBeHidden();
+
+        // TODO: Update test once full E2E functionality is added for welcome emails
+        // We shouldn't assert via API directly, but for now this verifies the toggle works as expected
+        const response = await page.request.get('/ghost/api/admin/automated_emails/');
+        expect(response.ok()).toBe(true);
+
+        const data = await response.json() as AutomatedEmailsResponse;
+        const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
+        expect(freeWelcomeEmail).toBeDefined();
+        expect(freeWelcomeEmail?.status).toBe('inactive');
+    });
 });
