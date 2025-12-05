@@ -6,6 +6,7 @@ import {useSearchParams} from '@tryghost/admin-x-framework';
 const SUPPORTED_FILTER_FIELDS = [
     'audience',
     'source',
+    'device',
     'location',
     'utm_source',
     'utm_medium',

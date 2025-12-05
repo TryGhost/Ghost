@@ -81,6 +81,17 @@ const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
             return location !== '' && !UNKNOWN_LOCATION_VALUES.includes(location);
         },
         transformValue: v => ({value: v, label: getCountryName(v)})
+    },
+    device: {
+        endpoint: 'api_top_devices',
+        valueKey: 'device',
+        transformValue: v => ({
+            value: v,
+            label: v === 'mobile-ios' ? 'iOS' :
+                v === 'mobile-android' ? 'Android' :
+                    v === 'desktop' ? 'Desktop' :
+                        v === 'bot' ? 'Bot' : v
+        })
     }
 };
 
@@ -102,7 +113,7 @@ const buildFilterParams = (
         if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
-        } else if (filter.field === 'source' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
             params[filter.field] = value;
         }
     });
@@ -220,6 +231,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid);
     const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid);
     const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid);
+    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid);
     const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid);
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
@@ -336,6 +348,18 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         selectedOptionsClassName: 'hidden'
                     },
                     {
+                        key: 'device',
+                        label: 'Device',
+                        type: 'select',
+                        icon: <LucideIcon.Monitor className="size-4" />,
+                        placeholder: 'Select device',
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: deviceOptions,
+                        selectedOptionsClassName: 'hidden'
+                    },
+                    {
                         key: 'location',
                         label: 'Location',
                         type: 'select',
@@ -355,7 +379,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, audienceOptions, sourceOptions, locationOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, audienceOptions, sourceOptions, deviceOptions, locationOptions]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
