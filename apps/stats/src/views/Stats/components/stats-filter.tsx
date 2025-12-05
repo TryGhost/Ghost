@@ -479,6 +479,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
             <Filters
                 addButtonIcon={<LucideIcon.FunnelPlus />}
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+                allowMultiple={false}
                 className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
                 fields={groupedFields}
                 filters={filters}

@@ -153,5 +153,27 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
 
             await expect(postAnalyticsPage.getActiveFilter('Location')).toBeVisible();
         });
+
+        test('applied filter is hidden from dropdown', async ({page, browser, baseURL}) => {
+            // Generate traffic to the post
+            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+                const postPage = new PublicPage(publicPage);
+                await postPage.goto(`/${postSlug}/`);
+            });
+
+            const postAnalyticsPage = new PostAnalyticsWebTrafficPage(page);
+            await postAnalyticsPage.gotoForPost(postId);
+            await expect(postAnalyticsPage.topSourcesCard).toContainText('Direct');
+
+            // Apply source filter
+            await postAnalyticsPage.clickSourceToFilter('direct');
+            await expect(postAnalyticsPage.getActiveFilter('Source')).toBeVisible();
+
+            // Open filter dropdown and verify Source is no longer available
+            await postAnalyticsPage.openFilterPopover();
+            await expect(postAnalyticsPage.getFilterOption('Audience')).toBeVisible();
+            await expect(postAnalyticsPage.getFilterOption('Source')).toBeHidden();
+            await expect(postAnalyticsPage.getFilterOption('Location')).toBeVisible();
+        });
     });
 });
