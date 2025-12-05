@@ -82,7 +82,7 @@ let
 
   yarn-offline-cache = pkgs.fetchYarnDeps {
     yarnLock = "${src}/yarn.lock";
-    hash = "sha256-D3pEF29EwEzfXtNST1+6s30+PKKdMDC06Z6/2JHj0Tw=";
+    hash = "sha256-Sd3a+jmBwgX/wZnct5DhH/FA1izYestdvE5BF6GDqeU=";
   };
 
   development-base = pkgs.stdenv.mkDerivation (
@@ -412,7 +412,17 @@ in
         "NX_DAEMON=true"
         "GHOST_DEV_IS_DOCKER=true"
         "LD_LIBRARY_PATH=${commonEnv.LD_LIBRARY_PATH}"
-        "PATH=/home/ghost/node_modules/.bin:/usr/bin:/bin:${nodejs}/bin:${pkgs.yarn}/bin:${pkgs.stripe-cli}/bin"
+        "PATH=/home/ghost/node_modules/.bin:${lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.findutils
+          pkgs.gnugrep
+          pkgs.which
+          pkgs.procps
+          nodejs
+          pkgs.yarn
+          pkgs.stripe-cli
+        ]}"
       ];
 
       ExposedPorts = {
