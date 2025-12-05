@@ -7,6 +7,7 @@ import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from 
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 
 // Default welcome email content in Lexical JSON format
@@ -67,6 +68,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
     const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const handleError = useHandleError();
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
 
@@ -84,22 +86,26 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             ? `Welcome to ${siteTitle || 'our site'}`
             : 'Welcome to your paid subscription';
 
-        if (!existing) {
-            // First toggle ON - create with defaults
-            const defaultContent = emailType === 'free' ? DEFAULT_FREE_LEXICAL_CONTENT : DEFAULT_PAID_LEXICAL_CONTENT;
-            await addAutomatedEmail({
-                name: emailType === 'free' ? 'Welcome Email (Free)' : 'Welcome Email (Paid)',
-                slug: slug,
-                subject: defaultSubject,
-                status: 'active',
-                lexical: defaultContent
-            });
-        } else if (existing.status === 'active') {
-            // Toggle OFF
-            await editAutomatedEmail({...existing, status: 'inactive'});
-        } else {
-            // Toggle ON (re-enable)
-            await editAutomatedEmail({...existing, status: 'active'});
+        try {
+            if (!existing) {
+                // First toggle ON - create with defaults
+                const defaultContent = emailType === 'free' ? DEFAULT_FREE_LEXICAL_CONTENT : DEFAULT_PAID_LEXICAL_CONTENT;
+                await addAutomatedEmail({
+                    name: emailType === 'free' ? 'Welcome Email (Free)' : 'Welcome Email (Paid)',
+                    slug: slug,
+                    subject: defaultSubject,
+                    status: 'active',
+                    lexical: defaultContent
+                });
+            } else if (existing.status === 'active') {
+                // Toggle OFF
+                await editAutomatedEmail({...existing, status: 'inactive'});
+            } else {
+                // Toggle ON (re-enable)
+                await editAutomatedEmail({...existing, status: 'active'});
+            }
+        } catch (e) {
+            handleError(e);
         }
     };
 
