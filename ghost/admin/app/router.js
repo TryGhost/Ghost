@@ -22,6 +22,7 @@ Router.map(function () {
 
     this.route('whatsnew');
     this.route('site');
+    this.route('help');
     this.route('dashboard'); // redirects to stats-x
     this.route('launch');
 
