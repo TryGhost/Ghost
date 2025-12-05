@@ -40,7 +40,7 @@ async function markEntryCompleted({db, entryId}) {
         });
 }
 
-async function processEntry({db, entry, mailConfig}) {
+async function processEntry({db, entry}) {
     const handler = EVENT_HANDLERS[entry.event_type];
     if (!handler) {
         logging.warn(`${OUTBOX_LOG_KEY} No handler for event type: ${entry.event_type}`);
@@ -51,7 +51,7 @@ async function processEntry({db, entry, mailConfig}) {
     let payload;
     try {
         payload = JSON.parse(entry.payload);
-        await handler.handle({payload, mailConfig});
+        await handler.handle({payload});
     } catch (err) {
         const errorMessage = err?.message ?? 'Unknown error';
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
@@ -76,12 +76,12 @@ async function processEntry({db, entry, mailConfig}) {
     return {success: true};
 }
 
-async function processEntries({db, entries, mailConfig}) {
+async function processEntries({db, entries}) {
     let processed = 0;
     let failed = 0;
 
     for (const entry of entries) {
-        const result = await processEntry({db, entry, mailConfig});
+        const result = await processEntry({db, entry});
         if (result.success) {
             processed += 1;
         } else {
