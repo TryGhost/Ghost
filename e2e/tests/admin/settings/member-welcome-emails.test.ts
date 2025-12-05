@@ -4,6 +4,10 @@ import {expect, test} from '@/helpers/playwright';
 interface AutomatedEmail {
     slug: string;
     status: string;
+    subject?: string;
+    sender_name?: string | null;
+    sender_email?: string | null;
+    sender_reply_to?: string | null;
 }
 
 interface AutomatedEmailsResponse {
@@ -78,5 +82,77 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
         expect(freeWelcomeEmail).toBeDefined();
         expect(freeWelcomeEmail?.status).toBe('inactive');
+    });
+
+    test('can edit free welcome email subject', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        // Enable free welcome email first
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+
+        // Open the modal and edit the subject
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill('Custom Welcome Subject');
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        // TODO: Update test once full E2E functionality is added for welcome emails
+        // We shouldn't assert via API directly, but for now this verifies the toggle works as expected
+        const response = await page.request.get('/ghost/api/admin/automated_emails/');
+        expect(response.ok()).toBe(true);
+
+        const data = await response.json() as AutomatedEmailsResponse;
+        const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
+        expect(freeWelcomeEmail).toBeDefined();
+        expect(freeWelcomeEmail?.subject).toBe('Custom Welcome Subject');
+    });
+
+    test('can edit free welcome email sender details', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        // Enable free welcome email first
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+
+        // Open the modal and edit sender details
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.modalSenderNameInput.clear();
+        await welcomeEmailsSection.modalSenderNameInput.fill('Test Sender');
+        await welcomeEmailsSection.modalSenderEmailInput.clear();
+        await welcomeEmailsSection.modalSenderEmailInput.fill('sender@example.com');
+        await welcomeEmailsSection.modalReplyToInput.clear();
+        await welcomeEmailsSection.modalReplyToInput.fill('reply@example.com');
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        // Verify via API that the sender details were saved
+        const response = await page.request.get('/ghost/api/admin/automated_emails/');
+        expect(response.ok()).toBe(true);
+
+        const data = await response.json() as AutomatedEmailsResponse;
+        const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
+        expect(freeWelcomeEmail?.sender_name).toBe('Test Sender');
+        expect(freeWelcomeEmail?.sender_email).toBe('sender@example.com');
+        expect(freeWelcomeEmail?.sender_reply_to).toBe('reply@example.com');
+    });
+
+    test('edited welcome email persists after page reload', async ({page}) => {
+        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
+
+        // Enable and edit free welcome email
+        await welcomeEmailsSection.goto();
+        await welcomeEmailsSection.enableFreeWelcomeEmail();
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await welcomeEmailsSection.modalSubjectInput.clear();
+        await welcomeEmailsSection.modalSubjectInput.fill('Persisted Subject');
+        await welcomeEmailsSection.saveWelcomeEmail();
+
+        // Reload the page
+        await page.reload();
+        await welcomeEmailsSection.section.waitFor({state: 'visible'});
+
+        // Re-open the modal and verify the subject persisted
+        await welcomeEmailsSection.openFreeWelcomeEmailModal();
+        await expect(welcomeEmailsSection.modalSubjectInput).toHaveValue('Persisted Subject');
     });
 });
