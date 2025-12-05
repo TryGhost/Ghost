@@ -28,10 +28,12 @@ export const SourcesTable: React.FC<SourcesTableProps> = ({dataTableHeader, data
             <DataListBody>
                 {data?.map((row) => {
                     const isClickable = !!onSourceClick;
+                    const sourceId = row.source ? row.source.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'direct';
                     return (
                         <DataListRow
                             key={row.source}
                             className={`group/row ${isClickable ? 'cursor-pointer' : ''}`}
+                            data-testid={`source-row-${sourceId}`}
                             onClick={isClickable ? () => onSourceClick(row.source) : undefined}
                         >
                             <DataListBar style={{
@@ -174,7 +176,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
     const isLoading = isPostLoading;
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist' data-testid="top-sources-card">
             <div className='flex items-center justify-between p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{cardTitle}</CardTitle>

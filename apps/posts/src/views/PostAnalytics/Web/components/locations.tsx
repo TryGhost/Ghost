@@ -57,10 +57,12 @@ const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data, onLoc
                 {data.map((row) => {
                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
                     const isClickable = onLocationClick && row.location !== 'Unknown';
+                    const locationId = row.location ? row.location.toLowerCase() : 'unknown';
                     return (
                         <DataListRow
                             key={row.location || 'unknown'}
                             className={isClickable ? 'cursor-pointer' : ''}
+                            data-testid={`location-row-${locationId}`}
                             onClick={isClickable ? () => onLocationClick(row.location) : undefined}
                         >
                             <DataListBar style={{
@@ -99,7 +101,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading, onLocationClick}) 
             {isLoading ? '' :
                 <>
                     {(data && data.length > 0) &&
-                <Card className='group/datalist'>
+                <Card className='group/datalist' data-testid="locations-card">
                     <div className='flex items-center justify-between p-6'>
                         <CardHeader className='p-0'>
                             <CardTitle>Locations</CardTitle>
