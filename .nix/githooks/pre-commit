@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Pre-commit hook: validates fetchYarnDeps hash when yarn.lock changes
+#
+# Install: ln -sf ../../.nix/githooks/pre-commit .git/hooks/pre-commit
+# Or configure git: git config core.hooksPath .nix/githooks
+
+set -euo pipefail
+
+# Parse arguments
+SYSTEM=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --system)
+      SYSTEM="$2"
+      shift 2
+      ;;
+    --system=*)
+      SYSTEM="${1#*=}"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+# Skip if yarn.lock not in staged files
+git diff --cached --name-only | grep -q '^yarn.lock$' || exit 0
+
+# Skip gracefully if nix not available
+if ! command -v nix >/dev/null 2>&1; then
+  echo "⚠️  yarn.lock changed but nix not installed - skipping hash validation"
+  echo "   CI will validate the fetchYarnDeps hash"
+  exit 0
+fi
+
+# Detect system if not specified via --system
+if [[ -z "$SYSTEM" ]]; then
+  SYSTEM=$(nix eval --raw --expr builtins.currentSystem 2>/dev/null || echo "x86_64-linux")
+fi
+
+echo "Validating fetchYarnDeps hash (yarn.lock changed)..."
+
+# Validate hash by building yarn-offline-cache (~4s when cached)
+if ! nix build ".#packages.${SYSTEM}.yarn-offline-cache" --no-link 2>&1; then
+  echo ""
+  echo "❌ yarn.lock changed but fetchYarnDeps hash is stale"
+  echo ""
+  echo "   Run: nix run .#update-yarn-hash"
+  echo ""
+  exit 1
+fi
+
+echo "✅ fetchYarnDeps hash is valid"

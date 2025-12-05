@@ -80,7 +80,7 @@ let
       ;
   };
 
-  yarnOfflineCache = pkgs.fetchYarnDeps {
+  yarn-offline-cache = pkgs.fetchYarnDeps {
     yarnLock = "${src}/yarn.lock";
     hash = "sha256-D3pEF29EwEzfXtNST1+6s30+PKKdMDC06Z6/2JHj0Tw=";
   };
@@ -92,7 +92,7 @@ let
       inherit src;
 
       nativeBuildInputs = nativeBuildInputs ++ [ pkgs.yarnConfigHook ];
-      offlineCache = yarnOfflineCache;
+      offlineCache = yarn-offline-cache;
 
       configurePhase = ''
         runHook preConfigure
@@ -365,6 +365,7 @@ let
 in
 {
   inherit
+    yarn-offline-cache
     development-base
     shade-builder
     admin-x-design-system-builder

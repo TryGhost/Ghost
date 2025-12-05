@@ -58,7 +58,16 @@
           in
           {
             type = "app";
-            program = toString (app + "/bin/precache-package");
+            program = "${app}/bin/precache-package";
+          };
+
+        update-yarn-hash =
+          let
+            app = import ./.nix/update-yarn-hash { inherit pkgs; };
+          in
+          {
+            type = "app";
+            program = "${app}/bin/update-yarn-hash";
           };
       });
 
@@ -128,6 +137,7 @@
             {
               # Docker image and individual builders for faster iteration
               dockerImage = dockerBuilds.dockerImage;
+              yarn-offline-cache = dockerBuilds.yarn-offline-cache;
               shade-builder = dockerBuilds.shade-builder;
               development-base = dockerBuilds.development-base;
               ghost-app = dockerBuilds.ghost-app;
