@@ -3,7 +3,7 @@ import validator from 'validator';
 import {useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
-import {Button, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
