@@ -33,6 +33,7 @@ class ContentStatsService {
      * @param {string} [options.tb_version] - Tinybird version for API URL
      * @param {string} [options.post_uuid] - Post UUID filter
      * @param {string} [options.pathname] - Pathname filter (e.g. '/team')
+     * @param {string} [options.device] - Device type filter (e.g. 'desktop', 'mobile-ios', 'mobile-android', 'bot')
      * @param {string} [options.location] - Location/country code filter (e.g. 'US')
      * @param {string} [options.source] - Source filter
      * @param {string} [options.utm_source] - UTM source filter
@@ -91,6 +92,11 @@ class ContentStatsService {
         // Only add pathname if defined
         if (options.pathname) {
             tinybirdOptions.pathname = options.pathname;
+        }
+
+        // Only add device if defined
+        if (options.device) {
+            tinybirdOptions.device = options.device;
         }
 
         // Only add location if defined
