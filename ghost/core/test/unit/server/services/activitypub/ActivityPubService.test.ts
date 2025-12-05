@@ -6,7 +6,7 @@ import nock from 'nock';
 
 async function getKnexInstance() {
     const knexInstance = knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
