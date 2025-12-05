@@ -28,7 +28,7 @@ declare global {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type KoenigInstance = { [key: string]: any };
 
-export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
@@ -58,7 +58,7 @@ export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     return {read};
 };
 
-export type EditorResource = ReturnType<typeof loadKoenig>;
+type EditorResource = ReturnType<typeof loadKoenig>;
 
 interface KoenigWrapperProps extends KoenigEditorBaseProps {
     editor: EditorResource
