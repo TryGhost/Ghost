@@ -82,7 +82,7 @@ let
 
   yarn-offline-cache = pkgs.fetchYarnDeps {
     yarnLock = "${src}/yarn.lock";
-    hash = "sha256-D3pEF29EwEzfXtNST1+6s30+PKKdMDC06Z6/2JHj0Tw=";
+    hash = "sha256-9wpfTZ8KOvPZAy3dMx+r0vraTycL9DNmY6ilGHIRb0U=";
   };
 
   development-base = pkgs.stdenv.mkDerivation (
