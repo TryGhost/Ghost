@@ -184,7 +184,7 @@ class OEmbedService {
                 headers: {
                     'user-agent': USER_AGENT
                 },
-                timeout: 2000,
+                timeout: 10000,
                 followRedirect: true,
                 ...options
             });
@@ -281,6 +281,7 @@ class OEmbedService {
         };
 
         const metascraper = require('metascraper')([
+            require('metascraper-amazon')(),
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
