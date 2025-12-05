@@ -60,6 +60,7 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
 
             await expect(postAnalyticsPage.getFilterOption('Audience')).toBeVisible();
             await expect(postAnalyticsPage.getFilterOption('Source')).toBeVisible();
+            await expect(postAnalyticsPage.getFilterOption('Device')).toBeVisible();
             await expect(postAnalyticsPage.getFilterOption('Location')).toBeVisible();
             await expect(postAnalyticsPage.getFilterOption('UTM Source')).toBeVisible();
             await expect(postAnalyticsPage.getFilterOption('UTM Medium')).toBeVisible();
