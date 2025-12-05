@@ -28,7 +28,7 @@ SQL >
 
 NODE sessions_filtered_by_session_attributes
 DESCRIPTION >
-    Further filter by session-level attributes (source, utm_*). This is necessary because these attributes are specific to the first hit in a session,
+    Further filter by session-level attributes (source, device, utm_*). These attributes are specific to the first hit in a session,
     whereas other filters are on hits.
 
 SQL >
@@ -54,6 +54,7 @@ SQL >
             and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today()
         {% end %}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
+        {% if defined(device) %} and device = {{ String(device, description="Device type to filter on", required=False) }} {% end %}
         {% if defined(utm_source) %} and utm_source = {{ String(utm_source, description="UTM source to filter on", required=False) }} {% end %}
         {% if defined(utm_medium) %} and utm_medium = {{ String(utm_medium, description="UTM medium to filter on", required=False) }} {% end %}
         {% if defined(utm_campaign) %} and utm_campaign = {{ String(utm_campaign, description="UTM campaign to filter on", required=False) }} {% end %}
