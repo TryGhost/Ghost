@@ -37,6 +37,24 @@ const hexToRgba = (hex: string, alpha: number) => {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+// Simple spinner color logic based on actual button background colors
+const getSpinnerColorForButton = (backgroundColor: 'light' | 'dark' | 'accent') => {
+    // Based on actual button styling:
+    // Light mode: button has dark background → needs light spinner
+    // Dark mode: button has white background → needs dark spinner  
+    // Accent mode: button has dark background → needs light spinner
+    switch (backgroundColor) {
+        case 'light':
+            return 'light'; // Dark button background in light mode
+        case 'dark': 
+            return 'dark';  // White button background in dark mode
+        case 'accent':
+            return 'light'; // Dark button background in accent mode
+        default:
+            return 'dark';
+    }
+};
+
 const ProfileCard: React.FC<ProfileCardProps> = memo(({
     isScreenshot = false,
     format = 'vertical',
@@ -403,7 +421,12 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                             </a>
                         </div>
                         <Button className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`} onClick={handleCopy}>
-                            {isProcessing ? <LoadingIndicator color={`${backgroundColor === 'dark' ? 'dark' : 'light'}`} size='sm' /> : <LucideIcon.Copy />}
+                            {isProcessing ? (
+                                <LoadingIndicator
+                                    color={getSpinnerColorForButton(backgroundColor)}
+                                    size='sm'
+                                />
+                            ) : <LucideIcon.Copy />}
                             {!isProcessing && 'Copy image'}
                         </Button>
                     </div>
