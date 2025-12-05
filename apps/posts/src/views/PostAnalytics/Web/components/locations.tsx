@@ -18,6 +18,7 @@ interface ProcessedLocationData {
 interface LocationsProps {
     data: ProcessedLocationData[];
     isLoading: boolean;
+    onLocationClick?: (location: string) => void;
 }
 
 // Normalize country code for flag display
@@ -40,9 +41,10 @@ const normalizeCountryCode = (code: string): string => {
 interface LocationsTableProps {
     data: ProcessedLocationData[];
     tableHeader: boolean;
+    onLocationClick?: (location: string) => void;
 }
 
-const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data}) => {
+const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data, onLocationClick}) => {
     return (
         <DataList>
             {tableHeader &&
@@ -54,8 +56,15 @@ const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data}) => {
             <DataListBody>
                 {data.map((row) => {
                     const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                    const isClickable = onLocationClick && row.location !== 'Unknown';
+                    const locationId = row.location ? row.location.toLowerCase() : 'unknown';
                     return (
-                        <DataListRow key={row.location || 'unknown'}>
+                        <DataListRow
+                            key={row.location || 'unknown'}
+                            className={isClickable ? 'cursor-pointer' : ''}
+                            data-testid={`location-row-${locationId}`}
+                            onClick={isClickable ? () => onLocationClick(row.location) : undefined}
+                        >
                             <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
@@ -84,7 +93,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({tableHeader, data}) => {
     );
 };
 
-const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
+const Locations:React.FC<LocationsProps> = ({data, isLoading, onLocationClick}) => {
     const topLocations = data.slice(0, 10);
 
     return (
@@ -92,7 +101,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
             {isLoading ? '' :
                 <>
                     {(data && data.length > 0) &&
-                <Card className='group/datalist'>
+                <Card className='group/datalist' data-testid="locations-card">
                     <div className='flex items-center justify-between p-6'>
                         <CardHeader className='p-0'>
                             <CardTitle>Locations</CardTitle>
@@ -105,6 +114,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                         <LocationsTable
                             data={topLocations}
                             tableHeader={false}
+                            onLocationClick={onLocationClick}
                         />
                     </CardContent>
                     {data.length > 10 &&
@@ -122,6 +132,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                                         <LocationsTable
                                             data={data}
                                             tableHeader={true}
+                                            onLocationClick={onLocationClick}
                                         />
                                     </div>
                                 </SheetContent>
