@@ -818,5 +818,52 @@ describe('MembersCSVImporter', function () {
             assert.ok(stripeUtilsStub.archivePrice.calledOnce);
             assert.ok(stripeUtilsStub.archivePrice.calledWith(newStripePriceId));
         });
+
+        it('should treat whitespace-only names as null', async function () {
+            const importer = buildMockImporterInstance();
+
+            // Create a CSV with whitespace-only names
+            const csvContent = 'email,name\n' +
+                             'member1@example.com, \n' + // single space
+                             'member2@example.com,"  "\n' + // multiple spaces
+                             'member3@example.com,\t\n' + // tab character
+                             'member4@example.com," \t \n"\n' + // mixed whitespace
+                             'member5@example.com,Valid Name\n'; // valid name for comparison
+
+            const testCsvPath = path.join(csvPath, 'test-whitespace-names.csv');
+            await fs.writeFile(testCsvPath, csvContent);
+
+            const result = await importer.perform(testCsvPath);
+
+            // Check that whitespace-only names were converted to null
+            assert.equal(memberCreateStub.callCount, 5);
+
+            // Member 1: single space should become null
+            assert.equal(memberCreateStub.args[0][0].email, 'member1@example.com');
+            assert.equal(memberCreateStub.args[0][0].name, null, 'Single space should be converted to null');
+
+            // Member 2: multiple spaces should become null
+            assert.equal(memberCreateStub.args[1][0].email, 'member2@example.com');
+            assert.equal(memberCreateStub.args[1][0].name, null, 'Multiple spaces should be converted to null');
+
+            // Member 3: tab should become null
+            assert.equal(memberCreateStub.args[2][0].email, 'member3@example.com');
+            assert.equal(memberCreateStub.args[2][0].name, null, 'Tab character should be converted to null');
+
+            // Member 4: mixed whitespace should become null
+            assert.equal(memberCreateStub.args[3][0].email, 'member4@example.com');
+            assert.equal(memberCreateStub.args[3][0].name, null, 'Mixed whitespace should be converted to null');
+
+            // Member 5: valid name should be preserved (but trimmed)
+            assert.equal(memberCreateStub.args[4][0].email, 'member5@example.com');
+            assert.equal(memberCreateStub.args[4][0].name, 'Valid Name', 'Valid name should be preserved');
+
+            assert.equal(result.total, 5);
+            assert.equal(result.imported, 5);
+            assert.equal(result.errors.length, 0);
+
+            // Clean up test file
+            await fs.remove(testCsvPath);
+        });
     });
 });
