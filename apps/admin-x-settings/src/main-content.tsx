@@ -51,7 +51,9 @@ const MainContent: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!canAccessSettings(currentUser) && route !== `staff/${currentUser.slug}`) {
+        // Redirect users who can't access settings to their profile
+        // But don't redirect if route is empty (navigating away from settings)
+        if (!canAccessSettings(currentUser) && route && route !== `staff/${currentUser.slug}`) {
             updateRoute(`staff/${currentUser.slug}`);
         }
     }, [currentUser, route, updateRoute]);
