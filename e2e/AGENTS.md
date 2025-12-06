@@ -105,7 +105,7 @@ const post = await postFactory.create({userId: user.id});
 
 ### DON'T ❌
 - Hard-coded waits (`waitForTimeout`)
-- networkidle in waits** (`networkidle`) 
+- networkidle in waits (`networkidle`)
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test
