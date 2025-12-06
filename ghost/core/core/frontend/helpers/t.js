@@ -11,6 +11,10 @@
 // {{tags prefix=(t " on ")}}
 
 const {themeI18n} = require('../services/handlebars');
+const {themeI18next} = require('../services/handlebars');
+const labs = require('../../shared/labs');
+const settingsCache = require('../../shared/settings-cache');
+const debug = require('@tryghost/debug')('i18n:t');
 
 module.exports = function t(text, options = {}) {
     if (!text || text.length === 0) {
@@ -26,5 +30,27 @@ module.exports = function t(text, options = {}) {
         }
     }
 
-    return themeI18n.t(text, bindings);
+    if (labs.isSet('themeTranslation')) {
+        // Use the new translation package when feature flag is enabled
+        debug('using new translation service');
+        if (!themeI18next._i18n) {
+            debug('themeI18next will be initialized');
+            themeI18next.init({
+                activeTheme: settingsCache.get('active_theme'),
+                locale: settingsCache.get('locale')
+            });
+        }
+        return themeI18next.t(text, bindings);
+    } else {
+        debug('using old translation service');
+        // Use the existing translation package when feature flag is disabled
+        if (!themeI18n._strings) {
+            debug('themeI18n will be initialized');
+            themeI18n.init({
+                activeTheme: settingsCache.get('active_theme'),
+                locale: settingsCache.get('locale')
+            });
+        }
+        return themeI18n.t(text, bindings);
+    }
 };
