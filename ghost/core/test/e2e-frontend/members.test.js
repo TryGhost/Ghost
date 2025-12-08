@@ -661,7 +661,7 @@ describe('Front-end members behavior', function () {
 
                 const mainCookieCleared = setCookieHeaders.some(cookie => cookie.startsWith('ghost-members-ssr=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
 
-                const sigCookieCleared = setCookieHeaders.some(cookie => cookie.includes('ghost-members-ssr.sig=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
+                const sigCookieCleared = setCookieHeaders.some(cookie => cookie.startsWith('ghost-members-ssr.sig=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
 
                 assert.ok(sigCookieCleared, 'ghost-members-ssr.sig cookie should be cleared with expiry in the past');
                 assert.ok(mainCookieCleared, 'ghost-members-ssr cookie should be cleared with expiry in the past (this is the fix)');
