@@ -1195,7 +1195,7 @@ function SelectOptionsPopover<T = unknown>({
                     ) : (
                         <>
                             {selectedOptions.length > 0 && (
-                                <div className={cn('-space-x-1.5 flex items-center', field.selectedOptionsClassName)}>
+                                <div className={cn('-space-x-0.5 flex items-center', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
