@@ -64,6 +64,10 @@
         ]
       },
       "build": {
+        "outputs": [
+          "{projectRoot}/dist",
+          "{workspaceRoot}/ghost/core/core/built/admin"
+        ],
         "dependsOn": [
           "build",
           {

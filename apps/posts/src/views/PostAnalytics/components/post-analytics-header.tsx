@@ -1,6 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import moment from 'moment-timezone';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
@@ -198,44 +198,44 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-50 -mb-8 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
                 {!isPostLoading && (
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
                             <PageMenuItem value="Overview" onClick={() => {
                                 navigate(`/posts/analytics/${postId}`);
                             }}>
-                                    Overview
+                                <LucideIcon.Gauge />
+                                Overview
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/web`);
                             }}>
-                                    Web traffic
+                                <LucideIcon.Globe />
+                                Web traffic
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/newsletter`);
                             }}>
-                                    Newsletter
+                                <LucideIcon.Mail />
+                                Newsletter
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Growth') && (
                             <PageMenuItem value="Growth" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/growth`);
                             }}>
-                                    Growth
+                                <LucideIcon.Sprout />
+                                Growth
                             </PageMenuItem>
                         )}
                     </PageMenu>
                 )}
-                {children &&
-                    <NavbarActions>
-                        {children}
-                    </NavbarActions>
-                }
+                {children}
             </Navbar>
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

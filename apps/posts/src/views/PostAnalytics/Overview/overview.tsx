@@ -113,7 +113,7 @@ const Overview: React.FC = () => {
         <>
             <PostAnalyticsHeader currentTab='Overview' />
             <PostAnalyticsContent>
-                <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
+                <div className='flex flex-col gap-6 lg:grid lg:grid-cols-2'>
                     {showWebSection && (
                         <WebOverview
                             chartData={processedChartData}
@@ -143,7 +143,7 @@ const Overview: React.FC = () => {
                                 navigate(`/posts/analytics/${postId}/growth`);
                             }}>View more</Button>
                         </div>
-                        <CardContent className='flex flex-col gap-8 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
+                        <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
                             {kpiIsLoading ?
                                 Array.from({length: 3}, (_, i) => (
                                     <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>

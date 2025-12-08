@@ -313,7 +313,8 @@ export const formatPercentage = (value: number) => {
     } else if (percentage < 1) {
         return `${percentage.toFixed(1)}%`;
     }
-    return `${Math.round(percentage)}%`;
+    const rounded = Math.round(percentage);
+    return `${new Intl.NumberFormat('en-US').format(rounded)}%`;
 };
 
 // Format cents to Dollars

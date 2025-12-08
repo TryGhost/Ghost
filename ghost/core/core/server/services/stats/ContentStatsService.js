@@ -31,6 +31,16 @@ class ContentStatsService {
      * @param {string} [options.member_status] - Member status filter (defaults to 'all')
      * @param {string} [options.post_type] - Post type filter ('post' or 'page')
      * @param {string} [options.tb_version] - Tinybird version for API URL
+     * @param {string} [options.post_uuid] - Post UUID filter
+     * @param {string} [options.pathname] - Pathname filter (e.g. '/team')
+     * @param {string} [options.device] - Device type filter (e.g. 'desktop', 'mobile-ios', 'mobile-android', 'bot')
+     * @param {string} [options.location] - Location/country code filter (e.g. 'US')
+     * @param {string} [options.source] - Source filter
+     * @param {string} [options.utm_source] - UTM source filter
+     * @param {string} [options.utm_medium] - UTM medium filter
+     * @param {string} [options.utm_campaign] - UTM campaign filter
+     * @param {string} [options.utm_content] - UTM content filter
+     * @param {string} [options.utm_term] - UTM term filter
      * @returns {Promise<Object>} The enriched top pages data
      */
     async getTopContent(options = {}) {
@@ -73,6 +83,48 @@ class ContentStatsService {
             postType: options.post_type,
             tbVersion: options.tb_version
         };
+
+        // Only add post_uuid if defined
+        if (options.post_uuid) {
+            tinybirdOptions.postUuid = options.post_uuid;
+        }
+
+        // Only add pathname if defined
+        if (options.pathname) {
+            tinybirdOptions.pathname = options.pathname;
+        }
+
+        // Only add device if defined
+        if (options.device) {
+            tinybirdOptions.device = options.device;
+        }
+
+        // Only add location if defined
+        if (options.location) {
+            tinybirdOptions.location = options.location;
+        }
+
+        // Only add source if defined (allow empty string for "Direct" traffic)
+        if (options.source !== undefined) {
+            tinybirdOptions.source = options.source;
+        }
+
+        // Only add UTM parameters if they are defined (not undefined/null)
+        if (options.utm_source) {
+            tinybirdOptions.utmSource = options.utm_source;
+        }
+        if (options.utm_medium) {
+            tinybirdOptions.utmMedium = options.utm_medium;
+        }
+        if (options.utm_campaign) {
+            tinybirdOptions.utmCampaign = options.utm_campaign;
+        }
+        if (options.utm_content) {
+            tinybirdOptions.utmContent = options.utm_content;
+        }
+        if (options.utm_term) {
+            tinybirdOptions.utmTerm = options.utm_term;
+        }
 
         return await this.tinybirdClient.fetch('api_top_pages', tinybirdOptions);
     }

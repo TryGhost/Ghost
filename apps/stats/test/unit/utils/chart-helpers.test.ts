@@ -301,12 +301,12 @@ describe('chart-helpers', () => {
                 expect(result[1].value).toBe(275); // Average of 250, 300
             });
 
-            it('handles sum aggregation with outliers', () => {
+            it('handles sum aggregation with high-traffic days', () => {
                 const data = [
                     {date: '2024-01-01', value: 100},
-                    {date: '2024-01-15', value: 15000}, // Outlier - excluded from sum
+                    {date: '2024-01-15', value: 15000}, // High traffic day - should be included
                     {date: '2024-01-31', value: 200},
-                    {date: '2024-02-15', value: 20000}, // Outlier - excluded from sum
+                    {date: '2024-02-15', value: 20000}, // High traffic day - should be included
                     {date: '2024-02-28', value: 300}
                 ];
 
@@ -317,16 +317,12 @@ describe('chart-helpers', () => {
                 // Then verify the full sanitization
                 const result = sanitizeChartData(data, 400, 'value', 'sum') as (ChartDataItem & {_isOutlier: boolean})[];
 
-                // Should have one point per month with sums (excluding outliers)
+                // Should have one point per month with sums (all values included)
                 expect(result.length).toBe(2);
                 expect(result[0].date.startsWith('2024-01')).toBe(true);
-                expect(result[0].value).toBe(300); // Sum of 100, 200 (15000 excluded)
+                expect(result[0].value).toBe(15300); // Sum of 100, 15000, 200
                 expect(result[1].date.startsWith('2024-02')).toBe(true);
-                expect(result[1].value).toBe(300); // Just 300 (20000 excluded)
-
-                // The final points aren't marked as outliers since the outliers were excluded from sums
-                expect(result[0]._isOutlier).toBe(false);
-                expect(result[1]._isOutlier).toBe(false);
+                expect(result[1].value).toBe(20300); // Sum of 20000, 300
             });
 
             it('uses aggregateByMonthSimple for exact monthly aggregation', () => {
@@ -542,6 +538,31 @@ describe('chart-helpers', () => {
                 const longData = createDateRange(200);
                 const longResult = sanitizeChartData(longData, -1);
                 expect(longResult.length).toBeLessThan(longData.length); // Should aggregate monthly
+            });
+
+            it('preserves total sum when aggregating monthly for high-traffic sites', () => {
+                // Regression test for NY-799: high-traffic days were being excluded from YTD totals
+                // This simulates a site with a viral day (20,546 views) that should NOT be excluded
+                const data: ChartDataItem[] = [
+                    {date: '2024-01-01', value: 1000},
+                    {date: '2024-01-02', value: 1200},
+                    {date: '2024-01-03', value: 20546}, // High traffic day - must be included
+                    {date: '2024-01-04', value: 1500},
+                    {date: '2024-01-05', value: 1100},
+                    {date: '2024-02-01', value: 900},
+                    {date: '2024-02-02', value: 1000},
+                    {date: '2024-02-03', value: 15000}, // Another high traffic day
+                    {date: '2024-02-04', value: 800}
+                ];
+
+                const expectedTotal = data.reduce((sum, item) => sum + item.value, 0);
+
+                // Simulate YTD aggregation (range > 150 days triggers monthly)
+                const result = sanitizeChartData(data, 400, 'value', 'sum');
+
+                // The sum of all monthly aggregated values should equal the original total
+                const aggregatedTotal = result.reduce((sum, item) => sum + item.value, 0);
+                expect(aggregatedTotal).toBe(expectedTotal);
             });
         });
 
