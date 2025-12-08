@@ -66,6 +66,7 @@ services:
       - ghost-dev-media:/home/ghost/ghost/core/content/media
       - ghost-dev-files:/home/ghost/ghost/core/content/files
       - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+      - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
@@ -122,10 +123,27 @@ services:
       ghost-dev:
         condition: service_healthy
 
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: ghost-dev-stripe
+    entrypoint: ["/entrypoint.sh"]
+    volumes:
+      - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config
+    environment:
+      - GHOST_URL=http://ghost-dev:2368
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID}
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      interval: 1s
+      retries: 120
 
 volumes:
   mysql-data:
   redis-data:
+  shared-config:
   ghost-dev-data:
   ghost-dev-images:
   ghost-dev-media:
