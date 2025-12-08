@@ -19,15 +19,13 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
 }> = ({profile, update, isLoading, onOpenChange}) => {
     const onFollow = () => {
         update(profile.id, {
-            followedByMe: true,
-            followerCount: profile.followerCount + 1
+            followedByMe: true
         });
     };
 
     const onUnfollow = () => {
         update(profile.id, {
-            followedByMe: false,
-            followerCount: profile.followerCount - 1
+            followedByMe: false
         });
     };
 

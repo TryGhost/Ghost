@@ -44,15 +44,13 @@ const SuggestedProfiles: React.FC = () => {
 
     const handleFollow = (profile: Account) => {
         updateSuggestedProfile(profile.id, {
-            followedByMe: true,
-            followerCount: profile.followerCount + 1
+            followedByMe: true
         });
     };
 
     const handleUnfollow = (profile: Account) => {
         updateSuggestedProfile(profile.id, {
-            followedByMe: false,
-            followerCount: profile.followerCount - 1
+            followedByMe: false
         });
     };
 
