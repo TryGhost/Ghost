@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import React, {Suspense, useCallback, useMemo} from 'react';
-import {useDesignSystem, useFocusContext} from '../../providers/DesignSystemProvider';
-import ErrorBoundary from '../ErrorBoundary';
+import {useDesignSystem, useFocusContext} from '../../providers/design-system-provider';
+import ErrorBoundary from '../error-boundary';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>

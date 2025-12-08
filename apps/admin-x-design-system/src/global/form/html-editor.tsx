@@ -1,8 +1,8 @@
 import React, {useCallback} from 'react';
-import KoenigEditorBase, {type KoenigInstance, type NodeType} from './KoenigEditorBase';
+import KoenigEditorBase, {type KoenigInstance, type NodeType} from './koenig-editor-base';
 
 // Re-export for backwards compatibility
-export type {FetchKoenigLexical} from './KoenigEditorBase';
+export type {FetchKoenigLexical} from './koenig-editor-base';
 
 export interface HtmlEditorProps {
     value?: string
