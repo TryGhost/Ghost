@@ -59,13 +59,14 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
     // The complicated transitions are here so that we animate visibility: hidden (step-start/step-end), which is required for screen readers to know what is visible (they ignore opacity: 0)
     return (
         <>
-            <form className={`relative flex w-full rounded-[.5rem] border bg-white p-[3px] text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 ${error ? '!border-red-500' : 'border-grey-300'}`} onSubmit={submitHandler}>
+            <form className={`relative flex w-full rounded-[.5rem] border bg-white p-[3px] text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 ${error ? '!border-red-500' : 'border-grey-300'}`} noValidate={true} onSubmit={submitHandler}>
                 <input
+                    autoComplete="email"
                     className={`w-full px-2 py-1 focus-visible:outline-none disabled:bg-white xs:p-2`}
                     data-testid="input"
                     disabled={loading || success}
                     placeholder={t('Your email address')}
-                    type="text"
+                    type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                 />
