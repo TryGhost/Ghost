@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, DragIndicator, NoValueLabel, type SortableItemContainerProps, SortableList, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface NewslettersListProps {
@@ -17,8 +17,11 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     isDragging,
     style,
     children,
+    separator,
     ...props
 }) => {
+    void separator; // we don't use the separator prop and it will error if it gets passed to the DragIndicator component
+
     const {updateRoute} = useRouting();
 
     const showDetails = () => {
@@ -64,13 +67,13 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
             </TableCell>
             <TableCell className='hidden md:visible! md:table-cell! md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    <span>{numberWithCommas(newsletter.count?.active_members || 0) }</span>
+                    <span>{formatNumber(newsletter.count?.active_members || 0) }</span>
                     <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
             <TableCell className='hidden md:visible! md:table-cell! md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    <span>{numberWithCommas(newsletter.count?.posts || 0)}</span>
+                    <span>{formatNumber(newsletter.count?.posts || 0)}</span>
                     <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-grey-700'>Delivered</span>
                 </div>
             </TableCell>
