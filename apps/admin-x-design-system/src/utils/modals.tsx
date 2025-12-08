@@ -1,5 +1,5 @@
 import NiceModal from '@ebay/nice-modal-react';
-import ConfirmationModal, {ConfirmationModalProps} from '../global/modal/ConfirmationModal';
+import ConfirmationModal, {ConfirmationModalProps} from '../global/modal/confirmation-modal';
 
 export function confirmIfDirty(dirty: boolean, action: () => void, options: Partial<ConfirmationModalProps> = {}) {
     if (!dirty) {
