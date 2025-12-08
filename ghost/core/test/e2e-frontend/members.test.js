@@ -659,7 +659,7 @@ describe('Front-end members behavior', function () {
 
                 const setCookieHeaders = response.headers['set-cookie'] || [];
 
-                const mainCookieCleared = setCookieHeaders.some(cookie => cookie.includes('ghost-members-ssr=') && !cookie.includes('ghost-members-ssr.sig') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
+                const mainCookieCleared = setCookieHeaders.some(cookie => cookie.startsWith('ghost-members-ssr=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
 
                 const sigCookieCleared = setCookieHeaders.some(cookie => cookie.includes('ghost-members-ssr.sig=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
 
