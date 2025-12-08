@@ -16,6 +16,19 @@ const SuggestedProfiles: React.FC = () => {
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 10);
     const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
 
+    const updateScrollButtons = () => {
+        const container = scrollContainerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const canScrollL = container.scrollLeft > 0;
+        const canScrollR = container.scrollLeft < container.scrollWidth - container.clientWidth;
+
+        setCanScrollLeft(canScrollL);
+        setCanScrollRight(canScrollR);
+    };
+
     useEffect(() => {
         updateScrollButtons();
     }, [suggestedProfilesData]);
@@ -41,19 +54,6 @@ const SuggestedProfiles: React.FC = () => {
             followedByMe: false,
             followerCount: profile.followerCount - 1
         });
-    };
-
-    const updateScrollButtons = () => {
-        const container = scrollContainerRef.current;
-        if (!container) {
-            return;
-        }
-
-        const canScrollL = container.scrollLeft > 0;
-        const canScrollR = container.scrollLeft < container.scrollWidth - container.clientWidth;
-
-        setCanScrollLeft(canScrollL);
-        setCanScrollRight(canScrollR);
     };
 
     const scrollLeft = () => {

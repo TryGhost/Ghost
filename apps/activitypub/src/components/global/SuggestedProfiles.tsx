@@ -81,6 +81,10 @@ export const SuggestedProfiles: React.FC<{
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 5);
     const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
 
+    if (!isLoadingSuggestedProfiles && (!suggestedProfilesData || suggestedProfilesData.length === 0)) {
+        return null;
+    }
+
     return (
         <div className='mb-[-15px] flex flex-col gap-3 pt-2'>
             <div className='flex flex-col'>
