@@ -139,9 +139,17 @@ const InboxList:React.FC<InboxListProps> = ({
                         <div className='mt-[24vh]'>
                             <EmptyIndicator
                                 actions={
-                                    <Button onClick={() => navigate('/explore')}>
-                                        Find accounts to follow &rarr;
-                                    </Button>
+                                    hasTopics ? (
+                                        <Button onClick={() => navigate('/explore')}>
+                                            Find accounts to follow &rarr;
+                                        </Button>
+                                    ) : (
+                                        <Button asChild>
+                                            <a href="https://explore.ghost.org/social-web" rel="noopener noreferrer" target="_blank">
+                                                Find accounts to follow &rarr;
+                                            </a>
+                                        </Button>
+                                    )
                                 }
                                 description="Start following publishers to see their long-form posts here."
                                 title="Your Reader is empty"
