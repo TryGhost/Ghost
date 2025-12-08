@@ -167,7 +167,7 @@ test.describe('Form', async () => {
             // Check error message is visible on the page
             const errorMessage = frame.getByTestId('error-message');
             await expect(errorMessage).toHaveCount(1);
-            expect(await errorMessage.innerText()).toBe('Please enter a valid email address');
+            await expect(errorMessage).toHaveText('Please enter a valid email address');
 
             expect(lastApiRequest.body).toBeNull();
 
@@ -204,7 +204,7 @@ test.describe('Form', async () => {
             // Check error message is visible on the page
             const errorMessage = frame.getByTestId('error-message');
             await expect(errorMessage).toHaveCount(1);
-            expect(await errorMessage.innerText()).toBe('Something went wrong, please try again.');
+            await expect(errorMessage).toHaveText('Something went wrong, please try again.');
         });
 
         test('Shows error message on 4xx status codes', async ({page}) => {
@@ -228,7 +228,7 @@ test.describe('Form', async () => {
             // Check error message is visible on the page
             const errorMessage = frame.getByTestId('error-message');
             await expect(errorMessage).toHaveCount(1);
-            expect(await errorMessage.innerText()).toBe('Something went wrong, please try again.');
+            await expect(errorMessage).toHaveText('Something went wrong, please try again.');
         });
     });
 });
