@@ -127,6 +127,7 @@ services:
     image: stripe/stripe-cli:latest
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
+    profiles: ["stripe"]
     volumes:
       - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
       - shared-config:/mnt/shared-config
