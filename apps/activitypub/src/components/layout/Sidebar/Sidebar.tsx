@@ -27,8 +27,8 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
     const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
     const {topicsQuery} = useTopicsForUser();
-    const {data: topicsData} = topicsQuery;
-    const hasTopics = topicsData && topicsData.topics.length > 0;
+    const {data: topicsData, isLoading} = topicsQuery;
+    const hasTopics = !isLoading && topicsData && topicsData.topics.length > 0;
 
     // Reset count when on notifications page
     React.useEffect(() => {
