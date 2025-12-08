@@ -105,6 +105,7 @@ export interface Notification {
         url: string;
         handle: string;
         avatarUrl: string | null;
+        followedByMe?: boolean;
     },
     post: null | {
         id: string;
