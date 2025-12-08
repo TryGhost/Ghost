@@ -10,7 +10,7 @@ import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useLocation} from '@tryghost/admin-x-framework';
-import {useNotificationsCountForUser, useResetNotificationsCountForUser} from '@src/hooks/use-activity-pub-queries';
+import {useNotificationsCountForUser, useResetNotificationsCountForUser, useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 
 interface SidebarProps {
     isMobileSidebarOpen: boolean;
@@ -26,6 +26,9 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const basePath = useAppBasePath();
     const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
     const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
+    const {topicsQuery} = useTopicsForUser();
+    const {data: topicsData} = topicsQuery;
+    const hasTopics = topicsData && topicsData.topics.length > 0;
 
     // Reset count when on notifications page
     React.useEffect(() => {
@@ -73,10 +76,24 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/explore'>
-                            <LucideIcon.Globe size={18} strokeWidth={1.5} />
-                            Explore
-                        </SidebarMenuLink>
+                        {hasTopics ? (
+                            <SidebarMenuLink to='/explore'>
+                                <LucideIcon.Globe size={18} strokeWidth={1.5} />
+                                Explore
+                            </SidebarMenuLink>
+                        ) : (
+                            <Button
+                                className='inline-flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left text-md font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-925/70'
+                                variant='ghost'
+                                asChild
+                            >
+                                <a href="https://explore.ghost.org/social-web" rel="noopener noreferrer" target="_blank">
+                                    <LucideIcon.Globe size={18} strokeWidth={1.5} />
+                                    Explore
+                                    <LucideIcon.ExternalLink className='ml-auto' size={14} strokeWidth={1.5} />
+                                </a>
+                            </Button>
+                        )}
                         <SidebarMenuLink to='/profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
