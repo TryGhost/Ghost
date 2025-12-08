@@ -13,6 +13,7 @@ import BackButton from '@src/components/global/BackButton';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@src/components/feed/FeedItem';
 import FeedItemStats from '@src/components/feed/FeedItemStats';
+import FollowButton from '@src/components/global/FollowButton';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
 import articleBodyStyles from '@src/components/articleBodyStyles';
@@ -807,22 +808,30 @@ export const Reader: React.FC<ReaderProps> = ({
                                 <div className='flex items-center'>
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
-                                <ProfilePreviewHoverCard actor={actor} isCurrentUser={object.authored}>
-                                    <div className='col-[2/3] mx-auto flex w-full cursor-pointer items-center gap-3 max-md:hidden'>
-                                        <div className='relative z-10 pt-0.5'>
-                                            <APAvatar author={actor}/>
-                                        </div>
-                                        <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
-                                            <div className='flex w-full'>
-                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
+                                <div className='col-[2/3] mx-auto flex w-full items-center justify-between gap-3 max-md:hidden'>
+                                    <ProfilePreviewHoverCard actor={actor} isCurrentUser={object.authored}>
+                                        <div className='flex cursor-pointer items-center gap-3'>
+                                            <div className='relative z-10 pt-0.5'>
+                                                <APAvatar author={actor}/>
                                             </div>
-                                            <div className='flex w-full'>
-                                                {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
-                                                <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
+                                            <div className='relative z-10 mt-0.5 flex min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
+                                                <div className='flex w-full'>
+                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
+                                                </div>
+                                                <div className='flex w-full'>
+                                                    {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                                    <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </ProfilePreviewHoverCard>
+                                    </ProfilePreviewHoverCard>
+                                    {!object.authored && !isLoadingContent && (
+                                        <FollowButton
+                                            following={actor.followedByMe ?? false}
+                                            handle={getUsername(actor)}
+                                        />
+                                    )}
+                                </div>
                                 <div className='col-[3/4] flex items-center justify-end gap-2'>
                                     <Customizer
                                         backgroundColor={backgroundColor}
