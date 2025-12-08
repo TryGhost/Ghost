@@ -151,19 +151,11 @@ const SuggestedProfiles: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <span className='w-full truncate font-semibold text-black dark:text-white'>
+                                    <span className='mb-6 w-full truncate font-semibold text-black dark:text-white'>
                                         {isLoadingSuggestedProfiles ? (
                                             <Skeleton className='h-5 w-32' />
                                         ) : (
                                             profile?.name || ''
-                                        )}
-                                    </span>
-
-                                    <span className='mb-4 truncate text-sm text-gray-700 dark:text-gray-600'>
-                                        {isLoadingSuggestedProfiles ? (
-                                            <Skeleton className='h-4 w-20' />
-                                        ) : (
-                                            `${abbreviateNumber(profile?.followerCount || 0)} ${(profile?.followerCount || 0) === 1 ? 'follower' : 'followers'}`
                                         )}
                                     </span>
 
