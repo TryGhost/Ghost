@@ -37,7 +37,7 @@ class StaffServiceEmails {
                 attributionTitle = 'Homepage';
             }
 
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
             const templateData = {
                 memberData,
@@ -94,7 +94,7 @@ class StaffServiceEmails {
                 attributionTitle = 'Homepage';
             }
 
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
             const templateData = {
                 memberData,
@@ -149,7 +149,7 @@ class StaffServiceEmails {
                 cancellationReason: subscription.cancellationReason || ''
             };
 
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
             const templateData = {
                 memberData,
@@ -182,7 +182,7 @@ class StaffServiceEmails {
      * @param {string} recipient.slug
      */
     async getSharedData(recipient) {
-        let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`);
+        let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}/email-notifications`);
 
         return {
             siteTitle: this.settingsCache.get('title'),
@@ -227,7 +227,7 @@ class StaffServiceEmails {
         for (const user of users) {
             const to = user.email;
 
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
@@ -282,7 +282,7 @@ class StaffServiceEmails {
         for (const user of users) {
             const to = user.email;
 
-            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}/email-notifications`);
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),

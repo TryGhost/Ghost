@@ -46,7 +46,7 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
 
     // Has staff admin url
     mailStub.calledWith(
-        sinon.match.has('html', sinon.match('https://admin.ghost.example/#/settings/staff/ghost'))
+        sinon.match.has('html', sinon.match('https://admin.ghost.example/#/settings/staff/ghost/email-notifications'))
     ).should.be.true();
 }
 
