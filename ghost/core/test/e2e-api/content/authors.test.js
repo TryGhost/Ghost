@@ -72,7 +72,7 @@ describe('Authors Content API', function () {
                     return expectedAuthor;
                 };
 
-                assert.equal(mustFind('joe-bloggs').count.posts, 4);
+                assert.equal(mustFind('joe-bloggs').count.posts, 6);
                 assert.equal(mustFind('slimer-mcectoplasm').count.posts, 1);
                 assert.equal(mustFind('ghost').count.posts, 7);
 
