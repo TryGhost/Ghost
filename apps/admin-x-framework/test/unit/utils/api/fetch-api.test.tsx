@@ -1,8 +1,8 @@
 import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import {FrameworkProvider} from '../../../../src/providers/FrameworkProvider';
-import {useFetchApi} from '../../../../src/utils/api/fetchApi';
-import {withMockFetch} from '../../../utils/mockFetch';
+import {FrameworkProvider} from '../../../../src/providers/framework-provider';
+import {useFetchApi} from '../../../../src/utils/api/fetch-api';
+import {withMockFetch} from '../../../utils/mock-fetch';
 
 const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
     <FrameworkProvider

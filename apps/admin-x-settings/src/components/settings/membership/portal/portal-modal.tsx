@@ -12,7 +12,7 @@ import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framewor
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/email-verification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]

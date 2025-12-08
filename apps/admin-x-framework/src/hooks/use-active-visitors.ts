@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {StatsConfig} from '../providers/FrameworkProvider';
-import {useTinybirdQuery} from './useTinybirdQuery';
+import {StatsConfig} from '../providers/framework-provider';
+import {useTinybirdQuery} from './use-tinybird-query';
 
 interface UseActiveVisitorsOptions {
     postUuid?: string;
@@ -43,7 +43,7 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     });
 
     const currentCount = data?.[0]?.active_visitors;
-    
+
     // Update last known count when we get new data
     useEffect(() => {
         if (enabled && currentCount !== undefined && typeof currentCount === 'number') {
@@ -60,4 +60,4 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
         isLoading: isInitialLoading,
         error: enabled ? error : null
     };
-}; 
+};

@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo, useRef, useEffect, createContext, useContext} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams, Navigate as ReactRouterNavigate} from 'react-router';
-import {useFramework} from './FrameworkProvider';
-import {NavigationStackProvider} from './NavigationStackProvider';
+import {useFramework} from './framework-provider';
+import {NavigationStackProvider} from './navigation-stack-provider';
 import {ErrorPage} from '@tryghost/shade';
 
 /**

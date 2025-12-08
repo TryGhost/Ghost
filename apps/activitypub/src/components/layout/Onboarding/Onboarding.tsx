@@ -1,7 +1,7 @@
 import React from 'react';
 import {ApOnboardingSettings, parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
 import {Outlet} from '@tryghost/admin-x-framework';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEditUser} from '@tryghost/admin-x-framework/api/users';
 
 export const useOnboardingStatus = () => {

@@ -1,6 +1,6 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {useFramework} from './FrameworkProvider';
+import {useFramework} from './framework-provider';
 
 /**
  * OBSOLETE DO NOT USE FOR NEW REACT APPS IN GHOST!

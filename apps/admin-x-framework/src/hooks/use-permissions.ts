@@ -1,4 +1,4 @@
-import {useCurrentUser} from '../api/currentUser';
+import {useCurrentUser} from '../api/current-user';
 import {UserRoleType} from '../api/roles';
 
 export const usePermission = (userRoles:string[]) => {
