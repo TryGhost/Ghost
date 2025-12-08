@@ -92,7 +92,8 @@ const QUERY_KEYS = {
     notifications: (handle: string) => ['notifications', handle],
     notificationsCount: (handle: string) => ['notifications_count', handle],
     blockedAccounts: (handle: string) => ['blocked_accounts', handle],
-    blockedDomains: (handle: string) => ['blocked_domains', handle]
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
+    topics: () => ['topics']
 };
 
 function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
@@ -2676,36 +2677,31 @@ export function useExploreProfilesForUserByTopic(handle: string, topic: string) 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
-        excludeFollowing: true,
-        excludeCurrentUser: true
-    });
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
         async queryFn() {
-            const accounts = await fetchAndFilterAccounts();
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            const response = await api.getRecommendations(limit);
 
-            const randomAccounts = accounts
-                .sort(() => Math.random() - 0.5)
-                .slice(0, limit);
+            const accounts = response.accounts;
 
             // Cache account data for follow mutations
-            if (randomAccounts.length > 0) {
-                randomAccounts.forEach((account: Account) => {
+            if (accounts.length > 0) {
+                accounts.forEach((account) => {
                     queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
                 });
             }
 
-            return randomAccounts.length > 0 ? randomAccounts : null;
+            return accounts.length > 0 ? accounts : null;
         },
         retry: false,
-        staleTime: 60 * 60 * 1000,
-        enabled: !isLoading && isFollowingDataComplete
+        staleTime: 60 * 60 * 1000
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
-        queryClient.setQueryData(queryKey, (current: Account[] | undefined) => {
+        queryClient.setQueryData(queryKey, (current: Account[] | null | undefined) => {
             if (!current) {
                 return current;
             }
@@ -2721,6 +2717,21 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
+}
+
+export function useTopicsForUser() {
+    const topicsQuery = useQuery({
+        queryKey: QUERY_KEYS.topics(),
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getTopics();
+        },
+        staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours (topics change infrequently)
+        retry: false
+    });
+
+    return {topicsQuery};
 }
 
 type BlueskyDetails = {
