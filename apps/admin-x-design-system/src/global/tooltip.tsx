@@ -26,7 +26,7 @@ const Tooltip: React.FC<TooltipProps> = ({content, size = 'sm', children, contai
     return (
         <TooltipPrimitive.Provider delayDuration={0}>
             <TooltipPrimitive.Root>
-                <TooltipPrimitive.Trigger className={containerClassName} onClick={event => event.preventDefault()}>
+                <TooltipPrimitive.Trigger className={containerClassName} asChild onClick={event => event.preventDefault()}>
                     {children}
                 </TooltipPrimitive.Trigger>
                 <TooltipPrimitive.Content align={origin} className={tooltipClassName} sideOffset={4} onPointerDownOutside={event => event.preventDefault()}>
