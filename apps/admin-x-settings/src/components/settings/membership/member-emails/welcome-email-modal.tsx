@@ -121,7 +121,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             afterClose={() => {
                 updateRoute('memberemails');
             }}
-            dirty={Boolean(hasChanges)}
+            dirty={hasChanges}
             footer={false}
             header={false}
             testId='welcome-email-modal'
