@@ -30,6 +30,9 @@ module.exports = {
         'react/no-array-index-key': 'error',
         'react/jsx-key': 'off',
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         'tailwindcss/classnames-order': ['error', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: 'tailwind.config.cjs'}],
         'tailwindcss/enforces-shorthand': ['warn', {config: 'tailwind.config.cjs'}],
