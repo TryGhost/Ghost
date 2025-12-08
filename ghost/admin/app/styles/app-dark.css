@@ -243,13 +243,13 @@ input:focus,
 
 /* Buttons
 /* ---------------------------------------------------------------------- */
-.gh-btn {
+body .gh-btn {
     color: var(--black);
     text-shadow: none;
 }
 
-.gh-btn-primary,
-.gh-btn-black {
+body .gh-btn-primary,
+body .gh-btn-black {
     color: var(--white);
 }
 
@@ -276,9 +276,9 @@ input:focus,
     border-right: none !important;
 }
 
-.gh-btn-blue,
-.gh-btn-green,
-.gh-btn-red {
+body .gh-btn-blue,
+body .gh-btn-green,
+body .gh-btn-red {
     color: #fff;
 }
 
@@ -288,7 +288,7 @@ input:focus,
     color: white;
 }
 
-.gh-btn-white {
+body .gh-btn-white {
     background: var(--transparent);
 }
 

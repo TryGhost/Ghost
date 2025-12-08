@@ -3,7 +3,7 @@
 
 /* Base button style */
 /* Should only be applied to <a> tags */
-.gh-btn {
+body .gh-btn {
     display: inline-block;
     outline: none;
     border: 1px solid var(--whitegrey-d1);
@@ -71,8 +71,8 @@ fieldset[disabled] .gh-btn {
 
 /* Primary button
 /* ---------------------------------------------------------- */
-.gh-btn-primary,
-.gh-btn-black {
+body .gh-btn-primary,
+body .gh-btn-black {
     color: var(--white);
     background: var(--black);
     border: none;
@@ -88,7 +88,7 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 
 /* The background of the button creates 1px gradient border */
-.gh-btn-blue {
+body .gh-btn-blue {
     color: #fff;
     fill: #fff;
     background: var(--blue);
@@ -112,7 +112,7 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 
 /* The background of the button creates 1px gradient border */
-.gh-btn-green {
+body .gh-btn-green {
     color: #fff;
     fill: #fff;
     background: var(--green);
@@ -134,7 +134,7 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 
 /* The background of the button creates 1px gradient border */
-.gh-btn-red {
+body .gh-btn-red {
     color: #fff;
     fill: #fff;
     box-shadow: none;
@@ -157,7 +157,7 @@ fieldset[disabled] .gh-btn {
 /* ---------------------------------------------------------- */
 
 /* The background of the button creates 1px gradient border */
-.gh-btn-outline {
+body .gh-btn-outline {
     color: var(--darkgrey);
     border: 1px solid var(--lightgrey-l1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -215,7 +215,7 @@ fieldset[disabled] .gh-btn {
 /* Special Buttons
 /* ---------------------------------------------------------- */
 
-.gh-btn-white {
+body .gh-btn-white {
     border: none;
     background: var(--white);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
