@@ -388,7 +388,6 @@ const Notifications: React.FC = () => {
                                                                         {group.type === 'follow' && !actor.followedByMe && (
                                                                             <FollowButton
                                                                                 following={false}
-                                                                                followsYou={actor.followsMe}
                                                                                 handle={actor.handle}
                                                                                 variant="link"
                                                                             />
@@ -421,7 +420,6 @@ const Notifications: React.FC = () => {
                                                             {group.actors.length === 1 && (group.type === 'follow' || group.type === 'reply' || group.type === 'mention') && !group.actors[0].followedByMe && (
                                                                 <FollowButton
                                                                     following={false}
-                                                                    followsYou={group.actors[0].followsMe}
                                                                     handle={group.actors[0].handle}
                                                                     variant="link"
                                                                 />

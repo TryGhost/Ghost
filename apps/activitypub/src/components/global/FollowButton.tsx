@@ -9,7 +9,6 @@ interface FollowButtonProps {
     handle: string;
     type?: 'primary' | 'secondary';
     variant?: 'default' | 'link';
-    followsYou?: boolean;
     onFollow?: () => void;
     onUnfollow?: () => void;
     'data-testid'?: string;
@@ -22,7 +21,6 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     following,
     handle,
     variant = 'default',
-    followsYou = false,
     onFollow = noop,
     onUnfollow = noop,
     'data-testid': testId
@@ -63,7 +61,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
-    const buttonText = isFollowing ? 'Following' : (followsYou ? 'Follow back' : 'Follow');
+    const buttonText = isFollowing ? 'Following' : 'Follow';
 
     if (variant === 'link') {
         return (
