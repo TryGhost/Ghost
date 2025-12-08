@@ -121,18 +121,16 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             afterClose={() => {
                 updateRoute('memberemails');
             }}
+            dirty={hasChanges}
             footer={false}
             header={false}
             testId='welcome-email-modal'
-            onCancel={() => {
-                modal.remove();
-            }}
             onOk={() => {
                 modal.remove();
             }}
         >
             <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto'>
-                <div className='sticky top-0 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
+                <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
                     <div className='mb-2 flex items-center justify-between'>
                         <h3 className='font-semibold'>{emailType === 'paid' ? 'Paid' : 'Free'} members welcome email</h3>
                         <div className='flex items-center gap-2'>
