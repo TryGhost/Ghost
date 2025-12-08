@@ -10,11 +10,13 @@ export const FormView: React.FC<FormProps & {
     backgroundColor?: string
     textColor?: string
 }> = ({isMinimal, title, description, icon, backgroundColor, textColor, error, ...formProps}) => {
+    const errorMessageId = React.useId();
+
     if (isMinimal) {
         return (
             <>
-                <Form error={error} isMinimal={isMinimal} {...formProps} />
-                {error && <p className='text-red-500' data-testid="error-message">{error}</p>}
+                <Form error={error} errorMessageId={errorMessageId} isMinimal={isMinimal} {...formProps} />
+                {error && <p className='text-red-500' data-testid="error-message" id={errorMessageId}>{error}</p>}
             </>
         );
     }
@@ -29,8 +31,8 @@ export const FormView: React.FC<FormProps & {
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
             {description && <p className='mb-4 text-center font-medium md:mb-5'>{description}</p>}
             <div className='relative w-full max-w-[440px]'>
-                <Form error={error} {...formProps} />
-                <p className={`h-5 w-full text-left text-red-500 ${error ? 'visible' : 'invisible'}`} data-testid="error-message">{error}</p>
+                <Form error={error} errorMessageId={errorMessageId} {...formProps} />
+                <p className={`h-5 w-full text-left text-red-500 ${error ? 'visible' : 'invisible'}`} data-testid="error-message" id={errorMessageId}>{error}</p>
             </div>
 
         </div>
@@ -44,10 +46,11 @@ type FormProps = {
     loading: boolean
     success: boolean
     error?: string
+    errorMessageId?: string
     onSubmit: (values: { email: string }) => void
 }
 
-const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonColor, buttonTextColor, onSubmit}) => {
+const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, errorMessageId, buttonColor, buttonTextColor, onSubmit}) => {
     const [email, setEmail] = React.useState('');
     const {t} = useAppContext();
 
@@ -61,6 +64,8 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
         <>
             <form className={`relative flex w-full rounded-[.5rem] border bg-white p-[3px] text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 ${error ? '!border-red-500' : 'border-grey-300'}`} noValidate={true} onSubmit={submitHandler}>
                 <input
+                    aria-describedby={error && errorMessageId ? errorMessageId : undefined}
+                    aria-invalid={!!error}
                     autoComplete="email"
                     className={`w-full px-2 py-1 focus-visible:outline-none disabled:bg-white xs:p-2`}
                     data-testid="input"
