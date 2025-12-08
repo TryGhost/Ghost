@@ -1,4 +1,8 @@
-module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain, siteUrl}) => `
+module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain, siteUrl}) => {
+    // Using the closest gray to pure black to fix bug caused by Apple mail's automatic color conversion in dark mode
+    const safeAccentColor = (accentColor === '#000000' || accentColor === '#000') ? '#010101' : accentColor;
+
+    return `
 <!doctype html>
    <html>
   <head>
@@ -125,7 +129,7 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
                                 <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                                   <tbody>
                                     <tr>
-                                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: ${accentColor}; border-radius: 5px; text-align: center;"> <a href="${url}" target="_blank" style="display: inline-block; color: #ffffff; background-color: ${accentColor}; border: solid 1px ${accentColor}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: ${accentColor};">${t('Sign in')}</a> </td>
+                                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: ${safeAccentColor}; border-radius: 5px; text-align: center;"> <a href="${url}" target="_blank" style="display: inline-block; color: #ffffff; background-color: ${safeAccentColor}; border: solid 1px ${safeAccentColor}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: ${safeAccentColor};">${t('Sign in')}</a> </td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -165,3 +169,4 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
   </body>
 </html>
 `;
+};
