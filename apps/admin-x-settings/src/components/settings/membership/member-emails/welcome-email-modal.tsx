@@ -121,18 +121,16 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             afterClose={() => {
                 updateRoute('memberemails');
             }}
+            dirty={Boolean(hasChanges)}
             footer={false}
             header={false}
             testId='welcome-email-modal'
-            onCancel={() => {
-                modal.remove();
-            }}
             onOk={() => {
                 modal.remove();
             }}
         >
             <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto'>
-                <div className='sticky top-0 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
+                <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
                     <div className='mb-2 flex items-center justify-between'>
                         <h3 className='font-semibold'>{emailType === 'paid' ? 'Paid' : 'Free'} members welcome email</h3>
                         <div className='flex items-center gap-2'>
@@ -227,7 +225,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     </div>
                 </div>
                 <div className='bg-grey-50 p-6'>
-                    <div className='mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
+                    <div className='-z-10 mx-auto max-w-[600px] rounded border border-grey-200 bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold'>
                         <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
                             nodes='DEFAULT_NODES'
