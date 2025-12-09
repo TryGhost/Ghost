@@ -972,9 +972,34 @@ module.exports = class MemberRepository {
             options.batch_id = ObjectId().toHexString();
         }
 
+        const context = options?.context || {};
+        const source = this._resolveContextSource(context);
+        const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
+        let isPaidWelcomeEmailActive = false;
+        if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
+            const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
+            isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
+        }
+
         const memberModel = await this._Member.findOne({
             id: data.id
         }, {...options, forUpdate: true});
+
+        const queuePaidWelcomeEmail = async (subscriptionModel) => {
+            await this._Outbox.add({
+                id: ObjectId().toHexString(),
+                event_type: MemberCreatedEvent.name,
+                payload: JSON.stringify({
+                    memberId: memberModel.id,
+                    email: memberModel.get('email'),
+                    name: memberModel.get('name'),
+                    source,
+                    timestamp: subscriptionModel.get('created_at'),
+                    memberStatus: 'paid'
+                })
+            }, options);
+            this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+        };
 
         const memberStripeCustomerModel = await memberModel.related('stripeCustomers').query({
             where: {
@@ -1190,6 +1215,9 @@ module.exports = class MemberRepository {
                         batchId: options.batch_id
                     });
                     this.dispatchEvent(subscriptionActivatedEvent, options);
+                    if (isPaidWelcomeEmailActive) {
+                        await queuePaidWelcomeEmail(updatedStripeCustomerSubscriptionModel);
+                    }
                 }
 
                 // Dispatch cancellation event, i.e. send paid cancellation staff notification, if:
@@ -1278,6 +1306,9 @@ module.exports = class MemberRepository {
                     batchId: options.batch_id
                 });
                 this.dispatchEvent(subscriptionActivatedEvent, options);
+                if (isPaidWelcomeEmailActive) {
+                    await queuePaidWelcomeEmail(newStripeCustomerSubscriptionModel);
+                }
             }
         }
 
