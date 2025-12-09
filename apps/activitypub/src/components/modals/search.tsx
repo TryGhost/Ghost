@@ -27,7 +27,9 @@ interface AccountSearchResultItemProps {
 
 const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({account, update, onOpenChange}) => {
+    isSelected?: boolean;
+    onRefSet?: (ref: HTMLDivElement | null) => void;
+}> = ({account, update, onOpenChange, isSelected = false, onRefSet}) => {
     const currentAccountQuery = useAccountForUser('index', 'me');
     const {data: currentUser} = currentAccountQuery;
     const isCurrentUser = account.handle === currentUser?.handle;
@@ -48,9 +50,10 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
 
     return (
         <ProfilePreviewHoverCard actor={account as unknown as ActorProperties} align='center' isCurrentUser={isCurrentUser} side='left'>
-            <div>
+            <div ref={onRefSet}>
                 <ActivityItem
                     key={account.id}
+                    isSelected={isSelected}
                     onClick={() => {
                         onOpenChange?.(false);
                         navigate(`/profile/${account.handle}`);
@@ -138,23 +141,29 @@ const TopicSearchResults: React.FC<TopicSearchResultsProps> = ({topics, onOpenCh
 interface SearchResultsProps {
     results: AccountSearchResult[];
     onUpdate: (id: string, updated: Partial<AccountSearchResult>) => void;
+    selectedIndex: number;
+    itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
 }
 
 const SearchResults: React.FC<SearchResultsProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({results, onUpdate, onOpenChange}) => {
+}> = ({results, onUpdate, onOpenChange, selectedIndex, itemRefs}) => {
     if (!results.length) {
         return null;
     }
 
     return (
         <div>
-            {results.map(account => (
+            {results.map((account, index) => (
                 <AccountSearchResultItem
                     key={account.id}
                     account={account}
+                    isSelected={index === selectedIndex}
                     update={onUpdate}
                     onOpenChange={onOpenChange}
+                    onRefSet={(ref) => {
+                        itemRefs.current[index] = ref;
+                    }}
                 />
             ))}
         </div>
@@ -169,6 +178,8 @@ interface SearchProps {
 
 const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
+    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const navigate = useNavigateWithBasePath();
     const [debouncedQuery] = useDebounce(query, 300);
     const shouldSearch = query.length >= 2;
     const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', shouldSearch ? debouncedQuery : '');
@@ -182,6 +193,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
     const [lastResultState, setLastResultState] = useState<'results' | 'none' | null>(null);
+    const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
     // Filter topics client-side (no additional API call needed)
     const matchingTopics = useMemo(() => {
@@ -218,9 +230,11 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
         if (data?.accounts && data.accounts.length > 0) {
             setDisplayResults(data.accounts);
             setLastResultState('results');
+            setSelectedIndex(0);
         } else {
             setDisplayResults([]);
             setLastResultState('none');
+            setSelectedIndex(0);
         }
     }, [data?.accounts, isFetched, shouldSearch]);
 
@@ -235,6 +249,80 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
             queryInputRef.current.focus();
         }
     }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!showSearchResults || displayResults.length === 0) {
+                return;
+            }
+
+            switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setSelectedIndex(prev => (prev + 1) % displayResults.length);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setSelectedIndex(prev => (prev - 1 + displayResults.length) % displayResults.length);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (displayResults[selectedIndex]) {
+                    onOpenChange?.(false);
+                    navigate(`/profile/${displayResults[selectedIndex].handle}`);
+                }
+                break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showSearchResults, displayResults, selectedIndex, onOpenChange, navigate]);
+
+    // Scroll selected item into view
+    useEffect(() => {
+        const selectedElement = itemRefs.current[selectedIndex];
+        if (!selectedElement) {
+            return;
+        }
+
+        const scrollContainer = selectedElement.closest('[class*="overflow"]') ||
+                                selectedElement.parentElement?.parentElement?.parentElement;
+
+        if (!scrollContainer || !('scrollTop' in scrollContainer)) {
+            return;
+        }
+
+        if (selectedIndex === 0) {
+            scrollContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        } else {
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const elementRect = selectedElement.getBoundingClientRect();
+            const stickyHeaderHeight = 72;
+            const topSpacing = 18;
+            const bottomSpacing = 18;
+
+            const isAboveViewport = elementRect.top < containerRect.top + stickyHeaderHeight + topSpacing;
+            const isBelowViewport = elementRect.bottom > containerRect.bottom - bottomSpacing;
+
+            if (isAboveViewport) {
+                const scrollOffset = scrollContainer.scrollTop - (containerRect.top + stickyHeaderHeight + topSpacing - elementRect.top);
+                scrollContainer.scrollTo({
+                    top: scrollOffset,
+                    behavior: 'smooth'
+                });
+            } else if (isBelowViewport) {
+                const scrollOffset = scrollContainer.scrollTop + (elementRect.bottom - containerRect.bottom + bottomSpacing);
+                scrollContainer.scrollTo({
+                    top: scrollOffset,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [selectedIndex]);
 
     return (
         <>
@@ -270,7 +358,9 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                             onOpenChange={onOpenChange}
                         />
                         <SearchResults
+                            itemRefs={itemRefs}
                             results={displayResults}
+                            selectedIndex={selectedIndex}
                             onOpenChange={onOpenChange}
                             onUpdate={updateResult}
                         />
