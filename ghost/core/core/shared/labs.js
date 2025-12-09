@@ -52,7 +52,8 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'welcomeEmails',
     'adminForward',
-    'domainWarmup'
+    'domainWarmup',
+    'themeTranslation'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
