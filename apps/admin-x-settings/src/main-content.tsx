@@ -22,7 +22,7 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 
 const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
-    const {route, updateRoute, loadingModal} = useRouting();
+    const {loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
 
     const navigateAway = (escLocation: string) => {
@@ -50,12 +50,8 @@ const MainContent: React.FC = () => {
         toast.remove();
     }, []);
 
-    useEffect(() => {
-        if (!canAccessSettings(currentUser) && route !== `staff/${currentUser.slug}`) {
-            updateRoute(`staff/${currentUser.slug}`);
-        }
-    }, [currentUser, route, updateRoute]);
-
+    // Contributors/Authors only see their profile modal (rendered via routing)
+    // Don't render the main settings content for them
     if (!canAccessSettings(currentUser)) {
         return null;
     }
