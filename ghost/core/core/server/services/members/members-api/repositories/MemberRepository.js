@@ -370,7 +370,7 @@ module.exports = class MemberRepository {
                             name: newMember.get('name'),
                             source,
                             timestamp,
-                            memberStatus: 'free'
+                            status: 'free'
                         })
                     }, {transacting});
                 }

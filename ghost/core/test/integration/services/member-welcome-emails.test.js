@@ -78,7 +78,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(payload.email, 'welcome-test@example.com');
             assert.equal(payload.name, 'Welcome Test Member');
             assert.equal(payload.source, 'member');
-            assert.equal(payload.memberStatus, 'free');
+            assert.equal(payload.status, 'free');
         });
 
         it('does NOT create outbox entry when config is not set', async function () {
@@ -199,7 +199,7 @@ describe('Member Welcome Emails Integration', function () {
                     memberId: 'member1',
                     email: 'inactive@example.com',
                     name: 'Inactive Template Member',
-                    memberStatus: 'free'
+                    status: 'free'
                 }),
                 status: OUTBOX_STATUSES.PENDING
             });
@@ -222,7 +222,7 @@ describe('Member Welcome Emails Integration', function () {
                     memberId: 'member1',
                     email: 'notemplate@example.com',
                     name: 'No Template Member',
-                    memberStatus: 'free'
+                    status: 'free'
                 }),
                 status: OUTBOX_STATUSES.PENDING
             });

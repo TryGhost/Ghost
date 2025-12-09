@@ -84,7 +84,7 @@ describe('Process Outbox Job', function () {
                 email: 'test@example.com',
                 name: 'Test Member',
                 source: 'member',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING
         });
@@ -117,7 +117,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member1',
                 email: 'test1@example.com',
                 name: 'Test Member 1',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING
         });
@@ -128,7 +128,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member2',
                 email: 'test2@example.com',
                 name: 'Test Member 2',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING
         });
@@ -139,7 +139,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member3',
                 email: 'test3@example.com',
                 name: 'Test Member 3',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING
         });
@@ -161,7 +161,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member1',
                 email: 'test1@example.com',
                 name: 'Test Member 1',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PROCESSING
         });
@@ -172,7 +172,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member2',
                 email: 'test2@example.com',
                 name: 'Test Member 2',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.FAILED
         });
@@ -196,7 +196,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member1',
                 email: 'retry@example.com',
                 name: 'Retry Member',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING,
             retry_count: 0
@@ -222,7 +222,7 @@ describe('Process Outbox Job', function () {
                 memberId: 'member1',
                 email: 'maxretry@example.com',
                 name: 'Max Retry Member',
-                memberStatus: 'free'
+                status: 'free'
             }),
             status: OUTBOX_STATUSES.PENDING,
             retry_count: 1
