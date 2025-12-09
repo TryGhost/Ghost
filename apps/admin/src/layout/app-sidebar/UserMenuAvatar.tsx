@@ -5,7 +5,7 @@ import {
     AvatarImage,
     LucideIcon
 } from "@tryghost/shade"
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 
 type UserMenuAvatarProps = React.ComponentProps<typeof Avatar>;
 

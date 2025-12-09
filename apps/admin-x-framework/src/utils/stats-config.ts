@@ -1,4 +1,4 @@
-import {StatsConfig} from '../providers/FrameworkProvider';
+import {StatsConfig} from '../providers/framework-provider';
 import {getTinybirdToken} from '../api/tinybird';
 
 export const getStatEndpointUrl = (config?: StatsConfig | null, endpointName?: string, params = '') => {

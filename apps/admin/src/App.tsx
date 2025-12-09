@@ -1,5 +1,5 @@
 import { Outlet } from "@tryghost/admin-x-framework";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { EmberProvider, EmberFallback, EmberRoot } from "./ember-bridge";
 import { AdminLayout } from "./layout/AdminLayout";
 import { useEmberAuthSync, useEmberDataSync } from "./ember-bridge";

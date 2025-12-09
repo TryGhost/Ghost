@@ -7,7 +7,7 @@ import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integration
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
+import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSettingsApp} from '../../../providers/settings-app-provider';
 

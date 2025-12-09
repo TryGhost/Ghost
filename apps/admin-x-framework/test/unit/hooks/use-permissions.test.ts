@@ -1,12 +1,12 @@
 import {renderHook} from '@testing-library/react';
-import {usePermission} from '../../../src/hooks/usePermissions';
+import {usePermission} from '../../../src/hooks/use-permissions';
 
 // Mock the currentUser API
-vi.mock('../../../src/api/currentUser', () => ({
+vi.mock('../../../src/api/current-user', () => ({
     useCurrentUser: vi.fn()
 }));
 
-import {useCurrentUser} from '../../../src/api/currentUser';
+import {useCurrentUser} from '../../../src/api/current-user';
 
 const mockUseCurrentUser = useCurrentUser as any;
 

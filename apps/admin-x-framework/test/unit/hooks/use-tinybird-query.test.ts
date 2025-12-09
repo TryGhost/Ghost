@@ -1,5 +1,5 @@
 import {renderHook} from '@testing-library/react';
-import {useTinybirdQuery} from '../../../src/hooks/useTinybirdQuery';
+import {useTinybirdQuery} from '../../../src/hooks/use-tinybird-query';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import React from 'react';
 
@@ -11,11 +11,11 @@ vi.mock('../../../src/utils/stats-config', () => ({
     getStatEndpointUrl: vi.fn()
 }));
 
-vi.mock('../../../src/hooks/useTinybirdToken', () => ({
+vi.mock('../../../src/hooks/use-tinybird-token', () => ({
     useTinybirdToken: vi.fn()
 }));
 
-import {useTinybirdToken} from '../../../src/hooks/useTinybirdToken';
+import {useTinybirdToken} from '../../../src/hooks/use-tinybird-token';
 import {getStatEndpointUrl} from '../../../src/utils/stats-config';
 import {useQuery} from '@tinybirdco/charts';
 

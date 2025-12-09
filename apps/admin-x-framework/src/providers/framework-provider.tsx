@@ -1,8 +1,8 @@
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactNode, createContext, useContext, useMemo} from 'react';
-import queryClient from '../utils/queryClient';
-import {ExternalLink} from './RoutingProvider';
+import queryClient from '../utils/query-client';
+import {ExternalLink} from './routing-provider';
 
 // Stats-specific configuration
 export interface StatsConfig {
@@ -31,7 +31,7 @@ export interface FrameworkProviderProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
-    
+
     // Optional QueryClient configuration for apps that need different defaults
     queryClientOptions?: {
         staleTime?: number;
@@ -67,7 +67,7 @@ export function FrameworkProvider({children, queryClientOptions, ...props}: Fram
         if (!queryClientOptions) {
             return queryClient;
         }
-        
+
         return new QueryClient({
             defaultOptions: {
                 queries: {

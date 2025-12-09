@@ -1,6 +1,6 @@
 import {ShadeAppProps} from '@tryghost/shade';
 import {ReactNode, createContext, useContext} from 'react';
-import {TopLevelFrameworkProps} from './FrameworkProvider';
+import {TopLevelFrameworkProps} from './framework-provider';
 
 // Shared app settings type for all Ghost Admin apps
 export interface AppSettings {

@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery} from '../utils/api/hooks';
-import {insertToQueryCache, updateQueryCache} from '../utils/api/updateQueries';
+import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type AutomatedEmail = {
     id: string;

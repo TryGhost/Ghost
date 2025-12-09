@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
 import ThemeSettings from './design-and-branding/theme-settings';
 import useQueryParams from '../../../hooks/use-query-params';
-import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
+import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';

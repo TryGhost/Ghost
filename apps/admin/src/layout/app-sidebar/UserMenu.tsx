@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     Switch
 } from "@tryghost/shade"
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-preferences";
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";

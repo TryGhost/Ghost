@@ -1,7 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
-import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
-import {usersDataType} from './currentUser';
+import {deleteFromQueryCache, updateQueryCache} from '../utils/api/update-queries';
+import {usersDataType} from './current-user';
 import {UserRole} from './roles';
 
 // Types

@@ -3,7 +3,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
+import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
 import {ConfirmationModal, Form, ImageUpload, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';

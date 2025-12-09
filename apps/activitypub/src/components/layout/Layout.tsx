@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import {Navigate, ScrollRestoration} from '@tryghost/admin-x-framework';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentPage} from '@src/hooks/use-current-page';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
 import {useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 

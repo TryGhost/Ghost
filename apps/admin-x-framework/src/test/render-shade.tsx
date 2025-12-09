@@ -1,7 +1,7 @@
 import {ShadeAppProps} from '@tryghost/shade';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {TopLevelFrameworkProps} from '../providers/FrameworkProvider';
+import {TopLevelFrameworkProps} from '../providers/framework-provider';
 
 export default function renderShadeApp<Props extends object>(
     App: React.ComponentType<Props & {

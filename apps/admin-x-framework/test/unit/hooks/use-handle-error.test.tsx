@@ -1,7 +1,7 @@
 import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import useHandleError from '../../../src/hooks/useHandleError';
-import {FrameworkProvider} from '../../../src/providers/FrameworkProvider';
+import useHandleError from '../../../src/hooks/use-handle-error';
+import {FrameworkProvider} from '../../../src/providers/framework-provider';
 import {APIError, ValidationError} from '../../../src/utils/errors';
 
 // Mock external dependencies
@@ -58,7 +58,7 @@ const createWrapper = (sentryDSN?: string): React.FC<{children: ReactNode}> => {
 describe('useHandleError', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        
+
         // Setup mocks
         (Sentry.withScope as any).mockImplementation((callback: any) => {
             const scope = {
@@ -67,10 +67,10 @@ describe('useHandleError', () => {
             };
             callback(scope);
         });
-        
+
         (showToast as any).mockImplementation(mockShowToast);
         (toast.remove as any).mockImplementation(mockToastRemove);
-        
+
         // Reset console.error mock
         vi.spyOn(console, 'error').mockImplementation(() => {});
     });
@@ -83,7 +83,7 @@ describe('useHandleError', () => {
     it('returns a function', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         expect(typeof result.current).toBe('function');
     });
 
@@ -120,13 +120,13 @@ describe('useHandleError', () => {
     it('adds API error context to Sentry', () => {
         const wrapper = createWrapper('https://sentry.dsn');
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const mockResponse = new Response(null, {status: 404});
         Object.defineProperty(mockResponse, 'url', {
             value: 'https://api.example.com/test',
             writable: false
         });
-        
+
         const error = new APIError(mockResponse);
 
         let scopeUsed: any;
@@ -167,7 +167,7 @@ describe('useHandleError', () => {
     it('does not show toast for 418 status (test indicator)', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const mockResponse = new Response(null, {status: 418});
         const error = new APIError(mockResponse);
 
@@ -179,7 +179,7 @@ describe('useHandleError', () => {
     it('shows validation error message from context', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const mockResponse = new Response();
         const errorData = {
             errors: [{
@@ -194,7 +194,7 @@ describe('useHandleError', () => {
                 property: 'fieldName'
             }]
         };
-        
+
         const error = new ValidationError(mockResponse, errorData);
 
         result.current(error);
@@ -208,7 +208,7 @@ describe('useHandleError', () => {
     it('shows validation error message when no context available', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const mockResponse = new Response();
         const errorData = {
             errors: [{
@@ -223,7 +223,7 @@ describe('useHandleError', () => {
                 property: 'fieldName'
             }]
         };
-        
+
         const error = new ValidationError(mockResponse, errorData);
 
         result.current(error);
@@ -237,7 +237,7 @@ describe('useHandleError', () => {
     it('shows API error message', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const error = new APIError(undefined, undefined, 'API Error occurred');
 
         result.current(error);
@@ -251,7 +251,7 @@ describe('useHandleError', () => {
     it('shows generic error message for unknown errors', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
-        
+
         const error = new Error('Unknown error');
 
         result.current(error);

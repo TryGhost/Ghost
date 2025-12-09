@@ -1,7 +1,7 @@
 import { useQuery, useMutation, type UseQueryResult, type UseMutationResult, type UseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { useQueryClient } from "@tryghost/admin-x-framework";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useEditUser, type User } from "@tryghost/admin-x-framework/api/users";
 import { isoDatetimeToDate } from "@/schemas/primitives";
 import { deepMerge, type DeepPartial } from "@/utils/deep-merge";

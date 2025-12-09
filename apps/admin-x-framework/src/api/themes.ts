@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from '../utils/api/hooks';
-import {customThemeSettingsDataType} from './customThemeSettings';
+import {customThemeSettingsDataType} from './custom-theme-settings';
 
 // Types
 

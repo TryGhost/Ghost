@@ -8,7 +8,7 @@ import {
     SidebarMenu,
     SidebarMenuBadge
 } from "@tryghost/shade"
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./NavMenuItem";
 import NavSubMenu from "./NavSubMenu";

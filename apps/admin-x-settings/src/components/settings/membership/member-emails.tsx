@@ -5,10 +5,10 @@ import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
+import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 // Default welcome email content in Lexical JSON format
 // Uses __GHOST_URL__ placeholder which Ghost replaces with the actual site URL

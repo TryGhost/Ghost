@@ -6,7 +6,7 @@ import {
     SidebarGroupContent,
     SidebarMenu
 } from "@tryghost/shade"
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canAccessSettings } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./NavMenuItem";
 

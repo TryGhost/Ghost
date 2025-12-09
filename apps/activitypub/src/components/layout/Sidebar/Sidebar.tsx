@@ -7,7 +7,7 @@ import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
 import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useLocation} from '@tryghost/admin-x-framework';
 import {useNotificationsCountForUser, useResetNotificationsCountForUser, useTopicsForUser} from '@src/hooks/use-activity-pub-queries';

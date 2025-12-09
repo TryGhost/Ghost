@@ -2,8 +2,8 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import {getTinybirdToken} from '../../../src/api/tinybird';
-import {FrameworkProvider} from '../../../src/providers/FrameworkProvider';
-import {withMockFetch} from '../../utils/mockFetch';
+import {FrameworkProvider} from '../../../src/providers/framework-provider';
+import {withMockFetch} from '../../utils/mock-fetch';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -82,13 +82,13 @@ describe('getTinybirdToken', () => {
         }, async (mock) => {
             const {result} = renderHook(() => getTinybirdToken(), {wrapper});
             await waitFor(() => expect(result.current.isLoading).toBe(false));
-            
+
             expect(mock.calls.length).toBe(1);
             expect(result.current.data).toEqual({tinybird: {token: 'initial-token'}});
-            
+
             // Verify that the query has React Query properties indicating background refresh is configured
             expect(typeof result.current.refetch).toBe('function');
-            
+
             // Test that manual refetch works (proves the refresh infrastructure is in place)
             await result.current.refetch();
             expect(mock.calls.length).toBe(2);
@@ -103,13 +103,13 @@ describe('getTinybirdToken', () => {
             // First call
             const {result: result1} = renderHook(() => getTinybirdToken(), {wrapper});
             await waitFor(() => expect(result1.current.isLoading).toBe(false));
-            
+
             expect(mock.calls.length).toBe(1);
 
             // Second call immediately after should use cache
             const {result: result2} = renderHook(() => getTinybirdToken(), {wrapper});
             await waitFor(() => expect(result2.current.isLoading).toBe(false));
-            
+
             // Should still be only 1 request due to built-in stale time
             expect(mock.calls.length).toBe(1);
             expect(result2.current.data).toEqual({tinybird: {token: 'stale-test-token'}});
