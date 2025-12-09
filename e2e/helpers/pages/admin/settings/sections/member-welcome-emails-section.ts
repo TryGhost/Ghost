@@ -11,10 +11,8 @@ export class MemberWelcomeEmailsSection extends BasePage {
     // Modal locators
     readonly welcomeEmailModal: Locator;
     readonly modalSubjectInput: Locator;
-    readonly modalSenderNameInput: Locator;
-    readonly modalSenderEmailInput: Locator;
-    readonly modalReplyToInput: Locator;
     readonly modalSaveButton: Locator;
+    readonly modalSavedButton: Locator;
     readonly modalLexicalEditor: Locator;
 
     constructor(page: Page) {
@@ -27,11 +25,9 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
         // Modal locators
         this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
-        this.modalSubjectInput = this.welcomeEmailModal.locator('input').nth(3); // Subject is the 4th input
-        this.modalSenderNameInput = this.welcomeEmailModal.locator('input').nth(0); // Sender name is 1st input
-        this.modalSenderEmailInput = this.welcomeEmailModal.locator('input').nth(1); // Sender email is 2nd input
-        this.modalReplyToInput = this.welcomeEmailModal.locator('input').nth(2); // Reply-to is 3rd input
+        this.modalSubjectInput = this.welcomeEmailModal.locator('input').first();
         this.modalSaveButton = this.welcomeEmailModal.getByRole('button', {name: 'Save'});
+        this.modalSavedButton = this.welcomeEmailModal.getByRole('button', {name: 'Saved'});
         this.modalLexicalEditor = this.welcomeEmailModal.locator('[contenteditable="true"]');
     }
 
@@ -95,6 +91,6 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
     async saveWelcomeEmail(): Promise<void> {
         await this.modalSaveButton.click();
-        await this.welcomeEmailModal.waitFor({state: 'hidden'});
+        await this.modalSavedButton.waitFor({state: 'visible'});
     }
 }
