@@ -22,9 +22,12 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     // but the API expects a JSON string
     const handleChange = useCallback((data: unknown) => {
         if (onChange && data && typeof data === 'object') {
-            onChange(JSON.stringify(data));
+            const stringified = JSON.stringify(data);
+            if (stringified !== value) {
+                onChange(stringified);
+            }
         }
-    }, [onChange]);
+    }, [onChange, value]);
 
     return (
         <KoenigEditorBase
