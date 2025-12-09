@@ -4,6 +4,11 @@
 
 const cheerio = require('cheerio');
 const {agentProvider, fixtureManager} = require('../utils/e2e-framework');
+const config = require('../../core/shared/config');
+
+// i18n singletons - need to reset basePath when content folder changes between tests
+const themeI18n = require('../../core/frontend/services/theme-engine/i18n');
+const themeI18next = require('../../core/frontend/services/theme-engine/i18next');
 
 describe('Theme i18n', function () {
     let frontendAgent;
@@ -51,6 +56,13 @@ describe('Theme i18n', function () {
         adminAgent = agents.adminAgent;
         ghostServer = agents.ghostServer;
 
+        // Reset i18n singletons basePath to use current test content folder
+        // This is needed because the singletons capture basePath at module load time
+        // and it may point to a different content folder from a previous test
+        const themesPath = config.getContentPath('themes');
+        themeI18n.basePath = themesPath;
+        themeI18next.basePath = themesPath;
+
         await fixtureManager.init();
         await adminAgent.loginAsOwner();
 
@@ -66,7 +78,7 @@ describe('Theme i18n', function () {
 
     describe('Legacy translation service (themeI18n)', function () {
         before(async function () {
-            await setLocale('en', {});
+            await setLocale('en', {themeTranslation: false});
         });
 
         it('translates keys in English', async function () {
