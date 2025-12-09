@@ -1,6 +1,6 @@
 import {renderHook} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {useTinybirdToken} from '../../../src/hooks/useTinybirdToken';
+import {useTinybirdToken} from '../../../src/hooks/use-tinybird-token';
 import {getTinybirdToken} from '../../../src/api/tinybird';
 import React from 'react';
 
@@ -23,7 +23,7 @@ describe('useTinybirdToken', () => {
             }
         });
         wrapper = ({children}) => React.createElement(QueryClientProvider, {client: queryClient}, children);
-        
+
         vi.clearAllMocks();
     });
 
@@ -61,7 +61,7 @@ describe('useTinybirdToken', () => {
 
     it('uses built-in query options without requiring consumer configuration', () => {
         const mockRefetch = vi.fn();
-        
+
         mockGetTinybirdToken.mockReturnValue({
             data: {tinybird: {token: 'cached-token'}},
             isLoading: false,
@@ -71,13 +71,13 @@ describe('useTinybirdToken', () => {
 
         // First render
         renderHook(() => useTinybirdToken(), {wrapper});
-        
-        // Second render in same QueryClient context 
+
+        // Second render in same QueryClient context
         renderHook(() => useTinybirdToken(), {wrapper});
-        
+
         // Verify that getTinybirdToken is called with default enabled: true
         expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
-        
+
         // Verify both calls used the default enabled option
         expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{enabled: true}]);
         expect(mockGetTinybirdToken.mock.calls[1]).toEqual([{enabled: true}]);
@@ -114,7 +114,7 @@ describe('useTinybirdToken', () => {
 
     it('passes through API errors', () => {
         const apiError = new Error('Network error');
-        
+
         mockGetTinybirdToken.mockReturnValue({
             data: null,
             isLoading: false,
@@ -130,7 +130,7 @@ describe('useTinybirdToken', () => {
 
     it('exposes refetch function', () => {
         const mockRefetch = vi.fn();
-        
+
         mockGetTinybirdToken.mockReturnValue({
             data: {tinybird: {token: 'test-token'}},
             isLoading: false,
@@ -145,7 +145,7 @@ describe('useTinybirdToken', () => {
 
     it('refreshes token when stale time expires', () => {
         vi.useFakeTimers();
-        
+
         let queryState = {
             data: {tinybird: {token: 'initial-token'}},
             isLoading: false,
@@ -186,7 +186,7 @@ describe('useTinybirdToken', () => {
 
     it('continues background refresh every 2 hours', () => {
         vi.useFakeTimers();
-        
+
         let fetchCount = 0;
         let queryState = {
             data: {tinybird: {token: 'token-v1'}},
@@ -220,7 +220,7 @@ describe('useTinybirdToken', () => {
             data: {tinybird: {token: 'token-v2'}},
             isFetching: false
         };
-        
+
         rerender();
 
         // Should have updated to new token after background refresh

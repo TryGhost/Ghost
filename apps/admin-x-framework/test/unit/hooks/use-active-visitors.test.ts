@@ -1,6 +1,6 @@
 import {renderHook, act} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {useActiveVisitors} from '../../../src/hooks/useActiveVisitors';
+import {useActiveVisitors} from '../../../src/hooks/use-active-visitors';
 import React from 'react';
 
 // Mock the @tinybirdco/charts module
@@ -14,13 +14,13 @@ vi.mock('../../../src/utils/stats-config', () => ({
 }));
 
 // Mock the useTinybirdToken hook
-vi.mock('../../../src/hooks/useTinybirdToken', () => ({
+vi.mock('../../../src/hooks/use-tinybird-token', () => ({
     useTinybirdToken: vi.fn()
 }));
 
 import {useQuery} from '@tinybirdco/charts';
 import {getStatEndpointUrl} from '../../../src/utils/stats-config';
-import {useTinybirdToken} from '../../../src/hooks/useTinybirdToken';
+import {useTinybirdToken} from '../../../src/hooks/use-tinybird-token';
 
 const mockUseQuery = vi.mocked(useQuery);
 const mockGetStatEndpointUrl = vi.mocked(getStatEndpointUrl);
@@ -39,7 +39,7 @@ describe('useActiveVisitors', () => {
             }
         });
         wrapper = ({children}) => React.createElement(QueryClientProvider, {client: queryClient}, children);
-        
+
         mockUseQuery.mockReturnValue({
             data: null,
             loading: false,
@@ -374,7 +374,7 @@ describe('useActiveVisitors', () => {
     it('cleans up interval on unmount', () => {
         // Spy on clearInterval before creating the hook
         const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
-        
+
         const {unmount} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
         unmount();

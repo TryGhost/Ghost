@@ -1,14 +1,14 @@
 import {renderHook} from '@testing-library/react';
-import useFilterableApi from '../../../src/hooks/useFilterableApi';
+import useFilterableApi from '../../../src/hooks/use-filterable-api';
 
 // Mock the fetchApi module
-vi.mock('../../../src/utils/api/fetchApi', () => ({
+vi.mock('../../../src/utils/api/fetch-api', () => ({
     useFetchApi: vi.fn(),
     apiUrl: vi.fn()
 }));
 
 // Import the mocked modules
-import * as fetchApiModule from '../../../src/utils/api/fetchApi';
+import * as fetchApiModule from '../../../src/utils/api/fetch-api';
 
 // Get mocks without calling hooks at top level
 const mockFetchApi = vi.fn();
@@ -30,7 +30,7 @@ describe('useFilterableApi', () => {
         // Reset mock call history but keep implementations
         mockFetchApi.mockClear();
         mockApiUrl.mockClear();
-        
+
         mockApiUrl.mockImplementation((path: any, params: any) => {
             const searchParams = new URLSearchParams(params);
             return `${path}?${searchParams.toString()}`;
@@ -252,7 +252,7 @@ describe('useFilterableApi', () => {
 
         // Load all data first
         await result.current.loadData('');
-        
+
         // Filter with uppercase - should match lowercase
         const filteredData = await result.current.loadData('JANE');
 
@@ -357,7 +357,7 @@ describe('useFilterableApi', () => {
             }));
 
             const data = await result.current.loadData('');
-            
+
             // The hook returns undefined when responseKey is not found
             expect(data).toBeUndefined();
         });
@@ -564,7 +564,7 @@ describe('useFilterableApi', () => {
             }));
 
             const data = await result.current.loadData('');
-            
+
             expect(data).toEqual(mockData);
         });
 
@@ -587,7 +587,7 @@ describe('useFilterableApi', () => {
             }));
 
             const data = await result.current.loadData('');
-            
+
             expect(data).toEqual(mockData);
         });
     });

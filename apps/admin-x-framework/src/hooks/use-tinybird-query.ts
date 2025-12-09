@@ -1,6 +1,6 @@
 import {useQuery} from '@tinybirdco/charts';
-import {useTinybirdToken} from './useTinybirdToken';
-import {StatsConfig} from '../providers/FrameworkProvider';
+import {useTinybirdToken} from './use-tinybird-token';
+import {StatsConfig} from '../providers/framework-provider';
 import {getStatEndpointUrl} from '../utils/stats-config';
 
 export interface UseTinybirdQueryOptions {
@@ -30,9 +30,9 @@ export const useTinybirdQuery = (options: UseTinybirdQueryOptions) => {
     });
 
     return {
-        data, 
-        meta, 
-        loading: tokenQuery.isLoading || loading, 
+        data,
+        meta,
+        loading: tokenQuery.isLoading || loading,
         error: error ?? tokenQuery.error
     };
 };

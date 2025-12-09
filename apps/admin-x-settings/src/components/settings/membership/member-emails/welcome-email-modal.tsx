@@ -4,10 +4,10 @@ import {useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import {Button, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
-import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automatedEmails';
+import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 interface WelcomeEmailModalProps {
     emailType?: 'free' | 'paid';

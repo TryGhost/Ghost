@@ -1,5 +1,5 @@
 import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
-import {StatsConfig} from '../../../src/providers/FrameworkProvider';
+import {StatsConfig} from '../../../src/providers/framework-provider';
 import {getTinybirdToken} from '../../../src/api/tinybird';
 
 // Mock getTinybirdToken

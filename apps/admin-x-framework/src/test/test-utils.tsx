@@ -1,7 +1,7 @@
 import React, {ReactElement, ReactNode} from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {render, renderHook, RenderOptions, RenderHookOptions, RenderResult} from '@testing-library/react';
-import {FrameworkProvider, TopLevelFrameworkProps} from '../providers/FrameworkProvider';
+import {FrameworkProvider, TopLevelFrameworkProps} from '../providers/framework-provider';
 
 /**
  * Creates a test QueryClient with sensible defaults for testing
@@ -176,11 +176,11 @@ export function setupConsoleFiltering(options: ConsoleFilterOptions = {}) {
     // eslint-disable-next-line no-console
     console.error = (...args) => {
         const message = args[0]?.toString() || '';
-        
+
         if (defaultSuppressedMessages.some(suppressedMessage => message.includes(suppressedMessage))) {
             return;
         }
-        
+
         originalConsoleError(...args);
     };
 
@@ -239,10 +239,10 @@ export function mockTimers() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const vitest = require('vitest');
     vitest.vi.useFakeTimers();
-    
+
     return {
         advanceTime: (ms: number) => vitest.vi.advanceTimersByTime(ms),
         cleanup: () => vitest.vi.useRealTimers(),
         runAllTimers: () => vitest.vi.runAllTimers()
     };
-} 
+}

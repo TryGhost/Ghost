@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import {useEffect} from 'react';
-import useHandleError from '../hooks/useHandleError';
-import {apiUrl, useFetchApi} from '../utils/api/fetchApi';
+import useHandleError from '../hooks/use-handle-error';
+import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {UsersResponseType} from './users';
 
 export const usersDataType = 'UsersResponseType';

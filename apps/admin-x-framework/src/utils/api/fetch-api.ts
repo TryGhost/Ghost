@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/react';
-import {useFramework} from '../../providers/FrameworkProvider';
+import {useFramework} from '../../providers/framework-provider';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {getGhostPaths} from '../helpers';
-import handleResponse from './handleResponse';
+import handleResponse from './handle-response';
 
 export interface RequestOptions {
     method?: string;
@@ -24,13 +24,13 @@ export const useFetchApi = () => {
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache'
         };
-        
+
         // Only include version header if ghostVersion is provided
         // This allows forward admin deployments to skip version checks
         if (ghostVersion) {
             defaultHeaders['x-ghost-version'] = ghostVersion;
         }
-        
+
         if (typeof options.body === 'string') {
             defaultHeaders['content-type'] = 'application/json';
         }

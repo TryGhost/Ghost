@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
-import {useFramework} from '../providers/FrameworkProvider';
+import {useFramework} from '../providers/framework-provider';
 import {APIError, ValidationError} from '../utils/errors';
 
 /**

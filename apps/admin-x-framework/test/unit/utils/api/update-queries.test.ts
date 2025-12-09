@@ -1,4 +1,4 @@
-import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../../../../src/utils/api/updateQueries';
+import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../../../../src/utils/api/update-queries';
 
 describe('cache update functions', () => {
     describe('insertToQueryCache', () => {
