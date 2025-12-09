@@ -36,12 +36,13 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
+    const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
-        enabled: options.permissions ? usePermission(options.permissions) : true,
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url, {...options}),
-        ...query
+        queryFn: () => fetchApi(url, {...options})
     });
 
     const data = useMemo(() => (
@@ -70,13 +71,13 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
     const url = apiUrl(options.path, paginatedSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = options.permissions ? usePermission(options.permissions) : true;
+    const hasPermission = usePermission(options.permissions);
 
     const result = useQuery<ResponseData>({
-        enabled: hasPermission,
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url),
-        ...query
+        queryFn: () => fetchApi(url)
     });
 
     const data = useMemo(() => (
@@ -118,16 +119,16 @@ type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseDa
 export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = options.permissions ? usePermission(options.permissions) : true;
+    const hasPermission = usePermission(options.permissions);
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
-        enabled: hasPermission,
+        ...query,
+        enabled: hasPermission && (query.enabled ?? true),
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
-        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
-        ...query
+        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {})
     });
 
     const data = useMemo(() => result.data && options.returnData(result.data), [result.data]);

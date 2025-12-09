@@ -96,7 +96,12 @@ describe('usePermissions', () => {
         expect(result.current).toBe(false);
     });
 
-    it('handles empty required roles array', () => {
+    // eslint-disable-next-line ghost/mocha/no-setup-in-describe
+    it.each([
+        {value: [] as string[], description: 'empty array'},
+        {value: undefined, description: 'undefined'},
+        {value: null, description: 'null'}
+    ])('returns true when no permissions are required ($description)', ({value}) => {
         mockUseCurrentUser.mockReturnValue({
             data: {
                 id: '1',
@@ -107,9 +112,9 @@ describe('usePermissions', () => {
             }
         });
 
-        const {result} = renderHook(() => usePermission([]));
+        const {result} = renderHook(() => usePermission(value));
 
-        expect(result.current).toBe(false);
+        expect(result.current).toBe(true);
     });
 
     it('handles case sensitivity correctly', () => {

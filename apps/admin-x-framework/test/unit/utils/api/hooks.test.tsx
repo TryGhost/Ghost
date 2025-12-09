@@ -6,11 +6,11 @@ import {createInfiniteQuery, createMutation, createPaginatedQuery, createQuery, 
 import {withMockFetch} from '../../../utils/mock-fetch';
 
 // Mock the currentUser API for permission tests
-vi.mock('../../../../src/api/currentUser', () => ({
+vi.mock('../../../../src/api/current-user', () => ({
     useCurrentUser: vi.fn()
 }));
 
-import {useCurrentUser} from '../../../../src/api/currentUser';
+import {useCurrentUser} from '../../../../src/api/current-user';
 
 const mockUseCurrentUser = useCurrentUser as any;
 
