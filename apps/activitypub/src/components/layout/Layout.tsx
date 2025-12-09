@@ -6,8 +6,9 @@ import Sidebar from './Sidebar';
 import {Navigate, ScrollRestoration} from '@tryghost/admin-x-framework';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentPage} from '@src/hooks/use-current-page';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
+import {useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
     const {isOnboarded} = useOnboardingStatus();
@@ -16,6 +17,9 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     const containerRef = useRef<HTMLDivElement>(null);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const currentPage = useCurrentPage();
+    const {topicsQuery} = useTopicsForUser();
+    const {data: topicsData} = topicsQuery;
+    const hasTopics = topicsData && topicsData.topics.length > 0;
 
     const {isNewNoteModalOpen, setIsNewNoteModalOpen} = useKeyboardShortcuts();
 
@@ -44,7 +48,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
                         <div className='block grid-cols-[auto_320px] items-start lg:grid'>
                             <div className='z-0 min-w-0'>
                                 <Header
-                                    showBorder={!(currentPage === 'reader' || (currentPage === 'explore'))}
+                                    showBorder={!(currentPage === 'reader' && hasTopics) && !(currentPage === 'explore')}
                                     onToggleMobileSidebar={toggleMobileSidebar}
                                 />
                                 <div className='px-[min(4vw,32px)]'>

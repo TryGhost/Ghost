@@ -9,6 +9,8 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const config = require('../../../../../shared/config');
+const StartOutboxProcessingEvent = require('../../../outbox/events/StartOutboxProcessingEvent');
+const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -53,6 +55,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
+     * @param {any} deps.AutomatedEmail
      */
     constructor({
         Member,
@@ -72,7 +75,8 @@ module.exports = class MemberRepository {
         productRepository,
         offerRepository,
         tokenService,
-        newslettersService
+        newslettersService,
+        AutomatedEmail
     }) {
         this._Member = Member;
         this._MemberNewsletter = MemberNewsletter;
@@ -92,6 +96,7 @@ module.exports = class MemberRepository {
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
+        this._AutomatedEmail = AutomatedEmail;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {
@@ -338,28 +343,34 @@ module.exports = class MemberRepository {
 
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
+
         if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source)) {
+            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
+            const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
+            
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
                     ...memberStatusData,
                     labels
                 }, {...memberAddOptions, transacting});
+                
+                if (isFreeWelcomeEmailActive) {
+                    const timestamp = eventData.created_at || newMember.get('created_at');
 
-                const timestamp = eventData.created_at || newMember.get('created_at');
-
-                await this._Outbox.add({
-                    id: ObjectId().toHexString(),
-                    event_type: MemberCreatedEvent.name,
-                    payload: JSON.stringify({
-                        memberId: newMember.id,
-                        email: newMember.get('email'),
-                        name: newMember.get('name'),
-                        source,
-                        timestamp
-                    })
-                }, {transacting});
-
+                    await this._Outbox.add({
+                        id: ObjectId().toHexString(),
+                        event_type: MemberCreatedEvent.name,
+                        payload: JSON.stringify({
+                            memberId: newMember.id,
+                            email: newMember.get('email'),
+                            name: newMember.get('name'),
+                            source,
+                            timestamp
+                        })
+                    }, {transacting});
+                }
+                    
                 return newMember;
             };
 
@@ -367,6 +378,10 @@ module.exports = class MemberRepository {
                 member = await runMemberCreation(memberAddOptions.transacting);
             } else {
                 member = await this._Member.transaction(runMemberCreation);
+            }
+
+            if (isFreeWelcomeEmailActive) {
+                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
             }
         } else {
             member = await this._Member.add({

@@ -1,15 +1,7 @@
-const jobs = require('./jobs');
+const service = require('./service');
+const constants = require('./constants');
 
-class MemberWelcomeEmailsServiceWrapper {
-    init() {
-        if (this.initialized) {
-            return;
-        }
-
-        jobs.scheduleMemberWelcomeEmailJob();
-
-        this.initialized = true;
-    }
-}
-
-module.exports = new MemberWelcomeEmailsServiceWrapper();
+module.exports = {
+    service,
+    ...constants
+};

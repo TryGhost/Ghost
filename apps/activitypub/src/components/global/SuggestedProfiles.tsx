@@ -19,15 +19,13 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
 }> = ({profile, update, isLoading, onOpenChange}) => {
     const onFollow = () => {
         update(profile.id, {
-            followedByMe: true,
-            followerCount: profile.followerCount + 1
+            followedByMe: true
         });
     };
 
     const onUnfollow = () => {
         update(profile.id, {
-            followedByMe: false,
-            followerCount: profile.followerCount - 1
+            followedByMe: false
         });
     };
 
@@ -80,6 +78,10 @@ export const SuggestedProfiles: React.FC<{
 }> = ({onOpenChange}) => {
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 5);
     const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
+
+    if (!isLoadingSuggestedProfiles && (!suggestedProfilesData || suggestedProfilesData.length === 0)) {
+        return null;
+    }
 
     return (
         <div className='mb-[-15px] flex flex-col gap-3 pt-2'>

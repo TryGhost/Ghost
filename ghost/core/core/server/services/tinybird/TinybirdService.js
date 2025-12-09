@@ -55,7 +55,8 @@ const TINYBIRD_PIPES = [
     'api_top_utm_mediums',
     'api_top_utm_campaigns',
     'api_top_utm_contents',
-    'api_top_utm_terms'
+    'api_top_utm_terms',
+    'api_top_devices'
 ];
 
 /**

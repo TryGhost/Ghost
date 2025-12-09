@@ -45,7 +45,7 @@ const features: Feature[] = [{
     flag: 'welcomeEmails'
 }, {
     title: 'New Admin Experience',
-    description: 'Try the new React-based admin interface. Only available on ghost.io',
+    description: 'Preview the next version of the admin interface',
     flag: 'adminForward'
 }, {
     title: 'Domain Warmup',

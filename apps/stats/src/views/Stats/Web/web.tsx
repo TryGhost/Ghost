@@ -1,6 +1,7 @@
-import AudienceSelect, {getAudienceQueryParam} from '../components/audience-select';
+import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
-import React, {useEffect, useMemo, useState} from 'react';
+import LocationsCard from '../Locations/components/locations-card';
+import React, {useCallback, useMemo} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
@@ -8,10 +9,11 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {ALL_AUDIENCES, AUDIENCE_BITS, STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {Card, CardContent, Filter, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
 interface SourcesData {
@@ -49,54 +51,37 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience: globalAudience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
-    const [utmFilters, setUtmFilters] = useState<Filter[]>([]);
 
-    // Initialize filters based on current audience state when component mounts or audience changes
-    // Only create audience filter if audience is not the default "all audiences" state
-    useEffect(() => {
-        const isDefaultAudience = audience === ALL_AUDIENCES;
-        
-        setUtmFilters((prevFilters) => {
-            // Check if audience filter already exists
-            const hasAudienceFilter = prevFilters.some(f => f.field === 'audience');
-            
-            // If audience is not default and filter doesn't exist, create it
-            if (!isDefaultAudience && !hasAudienceFilter) {
-                const audienceValues: string[] = [];
-                if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
-                    audienceValues.push('undefined');
-                }
-                if ((audience & AUDIENCE_BITS.FREE) !== 0) {
-                    audienceValues.push('free');
-                }
-                if ((audience & AUDIENCE_BITS.PAID) !== 0) {
-                    audienceValues.push('paid');
-                }
-                
-                if (audienceValues.length > 0) {
-                    return [...prevFilters, createFilter('audience', 'is', audienceValues)];
-                }
-            }
-            
-            // If audience is default and filter exists, remove it
-            if (isDefaultAudience && hasAudienceFilter) {
-                return prevFilters.filter(f => f.field !== 'audience');
-            }
-            
-            // No changes needed
-            return prevFilters;
-        });
-    }, [audience]); // Only depend on audience, not utmFilters to avoid loops
+    // Use URL-synced filter state for bookmarking and sharing
+    const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
 
     // Check if UTM tracking is enabled in labs
     const utmTrackingEnabled = data?.labs?.utmTracking || false;
 
+    // Derive audience from filters when UTM tracking is enabled, otherwise use global state
+    // This makes the URL the single source of truth for filters
+    const audience = useMemo(() => {
+        if (!utmTrackingEnabled) {
+            return globalAudience;
+        }
+        const audienceFilter = utmFilters.find(f => f.field === 'audience');
+        return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
+    }, [utmTrackingEnabled, globalAudience, utmFilters]);
+
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
     const siteIcon = data?.icon as string | undefined;
+
+    // Scroll to top of the scrollable container
+    const scrollToTop = useCallback(() => {
+        const scrollContainer = document.querySelector('.overflow-y-scroll');
+        if (scrollContainer) {
+            scrollContainer.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    }, []);
 
     // Convert filters to query parameters for Tinybird API
     // Note: Currently only 'is' operator is supported by Tinybird pipes
@@ -121,9 +106,15 @@ const Web: React.FC = () => {
                 const value = String(values[0]);
 
                 // Map filter field names to Tinybird parameter names
-                // UTM fields map directly, but post needs mapping to post_uuid
+                // UTM fields map directly, but post needs special handling
                 if (fieldKey === 'post') {
-                    params.post_uuid = value;
+                    // Determine if the value is a post_uuid or a pathname
+                    // Pathnames start with '/' while UUIDs don't
+                    if (value.startsWith('/')) {
+                        params.pathname = value;
+                    } else {
+                        params.post_uuid = value;
+                    }
                 } else {
                     params[fieldKey] = value;
                 }
@@ -132,6 +123,25 @@ const Web: React.FC = () => {
 
         return params;
     }, [utmFilters]);
+
+    // Generic handler for click-to-filter on any field (source, location, etc.)
+    const handleFilterClick = useCallback((field: string, value: string) => {
+        setUtmFilters((prevFilters) => {
+            const existingFilter = prevFilters.find(f => f.field === field);
+            if (existingFilter) {
+                // Update the existing filter
+                return prevFilters.map((f) => {
+                    return f.field === field ? {...f, values: [value]} : f;
+                });
+            }
+            // Add a new filter
+            return [...prevFilters, createFilter(field, 'is', [value])];
+        });
+        scrollToTop();
+    }, [setUtmFilters, scrollToTop]);
+
+    const handleLocationClick = useCallback((location: string) => handleFilterClick('location', location), [handleFilterClick]);
+    const handleSourceClick = useCallback((source: string) => handleFilterClick('source', source), [handleFilterClick]);
 
     // Prepare query parameters - memoized to prevent unnecessary refetches
     const params = useMemo(() => ({
@@ -143,16 +153,6 @@ const Web: React.FC = () => {
         ...filterParams
     }), [statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
 
-    const queryParams: Record<string, string> = {
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        member_status: getAudienceQueryParam(audience)
-    };
-
-    if (timezone) {
-        queryParams.timezone = timezone;
-    }
-
     // Get KPI data
     const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
@@ -163,6 +163,13 @@ const Web: React.FC = () => {
     // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
+        statsConfig,
+        params
+    });
+
+    // Get top locations data
+    const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
+        endpoint: 'api_top_locations',
         statsConfig,
         params
     });
@@ -179,19 +186,35 @@ const Web: React.FC = () => {
         );
     }
 
+    // Check if filters are applied
+    const hasFilters = utmFilters.length > 0;
+
     return (
         <StatsLayout>
             <StatsHeader>
-                {!utmTrackingEnabled && <AudienceSelect />}
-                <DateRangeSelect />
+                {!utmTrackingEnabled ?
+                    <NavbarActions>
+                        <AudienceSelect />
+                        <DateRangeSelect />
+                    </NavbarActions>
+                    :
+                    <>
+                        {hasFilters &&
+                        <NavbarActions>
+                            <DateRangeSelect />
+                        </NavbarActions>
+                        }
+                        <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                            <StatsFilter
+                                filters={utmFilters}
+                                utmTrackingEnabled={utmTrackingEnabled}
+                                onChange={setUtmFilters}
+                            />
+                            {!hasFilters && <DateRangeSelect />}
+                        </NavbarActions>
+                    </>
+                }
             </StatsHeader>
-            {utmTrackingEnabled && (
-                <StatsFilter
-                    filters={utmFilters}
-                    utmTrackingEnabled={utmTrackingEnabled}
-                    onChange={setUtmFilters}
-                />
-            )}
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
                     <CardContent>
@@ -202,7 +225,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='flex min-h-[460px] grid-cols-2 flex-col gap-8 lg:grid'>
+                <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
                         range={range}
                         totalVisitors={totalVisitors}
@@ -216,8 +239,15 @@ const Web: React.FC = () => {
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
+                        onSourceClick={utmTrackingEnabled ? handleSourceClick : undefined}
                     />
                 </div>
+                <LocationsCard
+                    data={locationsData}
+                    isLoading={isLocationsLoading}
+                    range={range}
+                    onLocationClick={utmTrackingEnabled ? handleLocationClick : undefined}
+                />
             </StatsView>
         </StatsLayout>
     );

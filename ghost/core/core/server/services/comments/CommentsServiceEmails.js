@@ -45,7 +45,7 @@ class CommentsServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.notificationFromAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${author.get('slug')}`)
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${author.get('slug')}/email-notifications`)
             };
 
             const {
@@ -160,7 +160,7 @@ class CommentsServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
             toEmail: to,
-            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}`)
+            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`)
         };
 
         const {html, text} = await this.commentsServiceEmailRenderer.renderEmailTemplate('report', templateData);

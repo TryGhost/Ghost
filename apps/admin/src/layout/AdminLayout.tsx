@@ -3,7 +3,7 @@ import {
     SidebarInset,
     SidebarProvider,
 } from "@tryghost/shade";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { useSidebarVisibility } from "@/ember-bridge/EmberBridge";
 import AppSidebar from "./app-sidebar";

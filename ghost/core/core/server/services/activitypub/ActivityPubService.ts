@@ -83,7 +83,7 @@ export class ActivityPubService {
         try {
             const token = await this.getOwnerUserToken();
 
-            const res = await fetch(new URL('.ghost/activitypub/v1/site', this.siteUrl), {
+            const res = await fetch(new URL('.ghost/activitypub/v1/site/', this.siteUrl), {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -182,7 +182,7 @@ export class ActivityPubService {
         try {
             const token = await this.getOwnerUserToken();
 
-            await fetch(new URL('.ghost/activitypub/v1/site', this.siteUrl), {
+            await fetch(new URL('.ghost/activitypub/v1/site/', this.siteUrl), {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`

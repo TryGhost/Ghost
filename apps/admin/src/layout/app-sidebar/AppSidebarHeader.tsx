@@ -6,7 +6,7 @@ import {
     SidebarHeader
 } from "@tryghost/shade"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
-import { useCurrentUser } from "@tryghost/admin-x-framework/api/currentUser";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 
 const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';

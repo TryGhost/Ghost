@@ -1,7 +1,7 @@
 import {DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {TopLevelFrameworkProps} from '../providers/FrameworkProvider';
+import {TopLevelFrameworkProps} from '../providers/framework-provider';
 
 export default function renderStandaloneApp<Props extends object>(
     App: React.ComponentType<Props & {
