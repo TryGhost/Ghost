@@ -189,7 +189,7 @@ services:
 
   analytics:
     profiles: [ analytics, all ]
-    image: ghost/traffic-analytics:1.0.20
+    image: ghost/traffic-analytics:1.0.21
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
