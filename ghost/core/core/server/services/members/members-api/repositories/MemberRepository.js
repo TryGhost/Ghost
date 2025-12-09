@@ -369,7 +369,8 @@ module.exports = class MemberRepository {
                             email: newMember.get('email'),
                             name: newMember.get('name'),
                             source,
-                            timestamp
+                            timestamp,
+                            memberStatus: 'free'
                         })
                     }, {transacting});
                 }
