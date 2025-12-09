@@ -8,6 +8,7 @@
  */
 export async function fetchKoenigLexical(): Promise<unknown> {
     // Import the ESM module directly - Vite will handle React deduplication
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const koenig = await import('@tryghost/koenig-lexical');
     return koenig;
 }
