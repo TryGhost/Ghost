@@ -32,7 +32,7 @@ export interface Account {
 
 export type AccountSearchResult = Pick<
     Account,
-    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount' | 'blockedByMe' | 'domainBlockedByMe'
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'blockedByMe' | 'domainBlockedByMe'
 >;
 
 export type ExploreAccount = Pick<
