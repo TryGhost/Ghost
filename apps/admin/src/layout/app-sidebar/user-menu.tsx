@@ -15,9 +15,9 @@ import { useUserPreferences, useEditUserPreferences } from "@/hooks/user-prefere
 import { useWhatsNew } from "@/whats-new/hooks/use-whats-new";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
-import { UserMenuItem } from "./UserMenuItem";
-import { UserMenuAvatar } from "./UserMenuAvatar";
-import { UserMenuHeader } from "./UserMenuHeader";
+import { UserMenuItem } from "./user-menu-item";
+import { UserMenuAvatar } from "./user-menu-avatar";
+import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
 
 function UserMenuProfile() {

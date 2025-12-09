@@ -9,7 +9,7 @@ import {
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 import { isOwnerUser } from "@tryghost/admin-x-framework/api/users";
-import { NavMenuItem } from "./NavMenuItem";
+import { NavMenuItem } from "./nav-menu-item";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
