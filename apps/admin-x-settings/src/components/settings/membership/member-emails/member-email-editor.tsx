@@ -1,11 +1,9 @@
 import React, {useCallback} from 'react';
-import {KoenigEditorBase, type NodeType} from '@tryghost/admin-x-design-system';
+import {KoenigEditorBase} from '@tryghost/admin-x-design-system';
 
 export interface MemberEmailsEditorProps {
     value?: string;
     placeholder?: string;
-    nodes?: NodeType;
-    singleParagraph?: boolean;
     className?: string;
     onChange?: (value: string) => void;
 }
@@ -13,8 +11,6 @@ export interface MemberEmailsEditorProps {
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes = 'DEFAULT_NODES',
-    singleParagraph = false,
     className,
     onChange
 }) => {
@@ -31,9 +27,9 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             className={className}
             emojiPicker={false}
             initialEditorState={value}
-            nodes={nodes}
+            nodes='BASIC_NODES'
             placeholder={placeholder}
-            singleParagraph={singleParagraph}
+            singleParagraph={false}
             onChange={handleChange}
         >
             {() => null}
