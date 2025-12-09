@@ -669,5 +669,49 @@ describe('MemberRepository', function () {
 
             sinon.assert.notCalled(Outbox.add);
         });
+
+        it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            const StripeCustomer = {
+                upsert: sinon.stub().resolves()
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                StripeCustomer,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // Stub linkSubscription to avoid needing all the stripe-related mocks
+            sinon.stub(repo, 'linkSubscription').resolves();
+            sinon.stub(repo, 'upsertCustomer').resolves();
+
+            // Create a member with a stripeCustomer (i.e., signing up for paid subscription)
+            await repo.create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                stripeCustomer: {
+                    id: 'cus_123',
+                    name: 'Test Member',
+                    email: 'test@example.com',
+                    subscriptions: {
+                        data: [{
+                            id: 'sub_123',
+                            customer: 'cus_123',
+                            status: 'active'
+                        }]
+                    }
+                }
+            }, {});
+
+            // The free welcome email should NOT be sent when stripeCustomer is present
+            sinon.assert.notCalled(Outbox.add);
+        });
     });
 });

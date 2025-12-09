@@ -355,7 +355,10 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
                 
-                if (isFreeWelcomeEmailActive) {
+                // Only send the free welcome email if:
+                // 1. The free welcome email is active
+                // 2. The member is not signing up for a paid subscription (no stripeCustomer)
+                if (isFreeWelcomeEmailActive && !stripeCustomer) {
                     const timestamp = eventData.created_at || newMember.get('created_at');
 
                     await this._Outbox.add({
@@ -380,7 +383,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if (isFreeWelcomeEmailActive) {
+            if (isFreeWelcomeEmailActive && !stripeCustomer) {
                 this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
             }
         } else {
