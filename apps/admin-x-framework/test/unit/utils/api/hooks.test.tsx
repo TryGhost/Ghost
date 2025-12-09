@@ -5,6 +5,15 @@ import {FrameworkProvider} from '../../../../src/providers/framework-provider';
 import {createInfiniteQuery, createMutation, createPaginatedQuery, createQuery, createQueryWithId} from '../../../../src/utils/api/hooks';
 import {withMockFetch} from '../../../utils/mock-fetch';
 
+// Mock the currentUser API for permission tests
+vi.mock('../../../../src/api/currentUser', () => ({
+    useCurrentUser: vi.fn()
+}));
+
+import {useCurrentUser} from '../../../../src/api/currentUser';
+
+const mockUseCurrentUser = useCurrentUser as any;
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -37,6 +46,21 @@ const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
 );
 
 describe('API hooks', () => {
+    beforeEach(() => {
+        // Default: user with admin role for most tests
+        mockUseCurrentUser.mockReturnValue({
+            data: {
+                id: '1',
+                name: 'Test User',
+                roles: [{name: 'Administrator', id: '1'}]
+            }
+        });
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe('createQuery', () => {
         afterEach(() => {
             queryClient.clear();
@@ -153,6 +177,61 @@ describe('API hooks', () => {
                 await waitFor(() => expect(result.current.isLoading).toBe(false));
 
                 expect(result.current.data).toEqual(2);
+            });
+        });
+
+        it('does not make a request when user lacks required permissions', async () => {
+            // User is a Contributor, but query requires Administrator
+            mockUseCurrentUser.mockReturnValue({
+                data: {
+                    id: '1',
+                    name: 'Test User',
+                    roles: [{name: 'Contributor', id: '4'}]
+                }
+            });
+
+            await withMockFetch({json: {test: 1}}, async (mock) => {
+                const useTestQuery = createQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    permissions: ['Owner', 'Administrator']
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                // Should remain in a non-fetching state since query is disabled
+                await waitFor(() => expect(result.current.fetchStatus).toBe('idle'));
+
+                // No API call should have been made
+                expect(mock.calls.length).toBe(0);
+                expect(result.current.data).toBeUndefined();
+            });
+        });
+
+        it('makes request when user has required permissions', async () => {
+            // User is an Administrator
+            mockUseCurrentUser.mockReturnValue({
+                data: {
+                    id: '1',
+                    name: 'Test User',
+                    roles: [{name: 'Administrator', id: '1'}]
+                }
+            });
+
+            await withMockFetch({json: {test: 1}}, async (mock) => {
+                const useTestQuery = createQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    permissions: ['Owner', 'Administrator']
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+                // API call should have been made
+                expect(mock.calls.length).toBe(1);
+                expect(result.current.data).toEqual({test: 1});
             });
         });
     });
@@ -293,6 +372,34 @@ describe('API hooks', () => {
                 expect(mock.calls[3][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?page=5');
             });
         });
+
+        it('does not make a request when user lacks required permissions', async () => {
+            // User is a Contributor, but query requires Administrator
+            mockUseCurrentUser.mockReturnValue({
+                data: {
+                    id: '1',
+                    name: 'Test User',
+                    roles: [{name: 'Contributor', id: '4'}]
+                }
+            });
+
+            await withMockFetch({json: {test: 1}}, async (mock) => {
+                const useTestQuery = createPaginatedQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    permissions: ['Owner', 'Administrator']
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                // Should remain in a non-fetching state since query is disabled
+                await waitFor(() => expect(result.current.fetchStatus).toBe('idle'));
+
+                // No API call should have been made
+                expect(mock.calls.length).toBe(0);
+                expect(result.current.data).toBeUndefined();
+            });
+        });
     });
 
     describe('createInfiniteQuery', () => {
@@ -342,6 +449,38 @@ describe('API hooks', () => {
                 expect(mock.calls[1][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?page=2');
 
                 await waitFor(() => expect(result.current.data).toEqual([1, 1]));
+            });
+        });
+
+        it('does not make a request when user lacks required permissions', async () => {
+            // User is a Contributor, but query requires Administrator
+            mockUseCurrentUser.mockReturnValue({
+                data: {
+                    id: '1',
+                    name: 'Test User',
+                    roles: [{name: 'Contributor', id: '4'}]
+                }
+            });
+
+            await withMockFetch({json: {test: 1}}, async (mock) => {
+                const useTestQuery = createInfiniteQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    permissions: ['Owner', 'Administrator'],
+                    returnData: (originalData) => {
+                        const {pages} = originalData as InfiniteData<{test: number}>;
+                        return pages.map(page => page.test);
+                    }
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                // Should remain in a non-fetching state since query is disabled
+                await waitFor(() => expect(result.current.fetchStatus).toBe('idle'));
+
+                // No API call should have been made
+                expect(mock.calls.length).toBe(0);
+                expect(result.current.data).toBeUndefined();
             });
         });
     });
