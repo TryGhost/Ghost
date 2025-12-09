@@ -92,46 +92,58 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
 interface TopicSearchResultItemProps {
     topic: {slug: string; name: string};
     onOpenChange?: (open: boolean) => void;
+    isSelected?: boolean;
+    onRefSet?: (ref: HTMLDivElement | null) => void;
 }
 
-const TopicSearchResultItem: React.FC<TopicSearchResultItemProps> = ({topic, onOpenChange}) => {
+const TopicSearchResultItem: React.FC<TopicSearchResultItemProps> = ({topic, onOpenChange, isSelected = false, onRefSet}) => {
     const navigate = useNavigateWithBasePath();
 
     return (
-        <ActivityItem
-            onClick={() => {
-                onOpenChange?.(false);
-                navigate(`/explore/${topic.slug}`);
-            }}
-        >
-            <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900'>
-                <LucideIcon.Globe className='text-gray-700 dark:text-gray-500' size={18} strokeWidth={1.5} />
-            </div>
-            <div className='flex flex-col'>
-                <span className='font-semibold text-black dark:text-white'>{topic.name}</span>
-                <span className='text-sm text-gray-700 dark:text-gray-600'>Topic</span>
-            </div>
-        </ActivityItem>
+        <div ref={onRefSet}>
+            <ActivityItem
+                isSelected={isSelected}
+                onClick={() => {
+                    onOpenChange?.(false);
+                    navigate(`/explore/${topic.slug}`);
+                }}
+            >
+                <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900'>
+                    <LucideIcon.Globe className='text-gray-700 dark:text-gray-500' size={18} strokeWidth={1.5} />
+                </div>
+                <div className='flex flex-col'>
+                    <span className='font-semibold text-black dark:text-white'>{topic.name}</span>
+                    <span className='text-sm text-gray-700 dark:text-gray-600'>Topic</span>
+                </div>
+            </ActivityItem>
+        </div>
     );
 };
 
 interface TopicSearchResultsProps {
     topics: {slug: string; name: string}[];
     onOpenChange?: (open: boolean) => void;
+    selectedIndex: number;
+    itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
+    startIndex: number;
 }
 
-const TopicSearchResults: React.FC<TopicSearchResultsProps> = ({topics, onOpenChange}) => {
+const TopicSearchResults: React.FC<TopicSearchResultsProps> = ({topics, onOpenChange, selectedIndex, itemRefs, startIndex}) => {
     if (!topics.length) {
         return null;
     }
 
     return (
         <div>
-            {topics.map(topic => (
+            {topics.map((topic, index) => (
                 <TopicSearchResultItem
                     key={topic.slug}
+                    isSelected={selectedIndex === startIndex + index}
                     topic={topic}
                     onOpenChange={onOpenChange}
+                    onRefSet={(ref) => {
+                        itemRefs.current[startIndex + index] = ref;
+                    }}
                 />
             ))}
         </div>
@@ -143,11 +155,12 @@ interface SearchResultsProps {
     onUpdate: (id: string, updated: Partial<AccountSearchResult>) => void;
     selectedIndex: number;
     itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
+    startIndex: number;
 }
 
 const SearchResults: React.FC<SearchResultsProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({results, onUpdate, onOpenChange, selectedIndex, itemRefs}) => {
+}> = ({results, onUpdate, onOpenChange, selectedIndex, itemRefs, startIndex}) => {
     if (!results.length) {
         return null;
     }
@@ -158,11 +171,11 @@ const SearchResults: React.FC<SearchResultsProps & {
                 <AccountSearchResultItem
                     key={account.id}
                     account={account}
-                    isSelected={index === selectedIndex}
+                    isSelected={selectedIndex === startIndex + index}
                     update={onUpdate}
                     onOpenChange={onOpenChange}
                     onRefSet={(ref) => {
-                        itemRefs.current[index] = ref;
+                        itemRefs.current[startIndex + index] = ref;
                     }}
                 />
             ))}
@@ -216,6 +229,9 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
         });
     }, [query, shouldSearch, topicsData?.topics]);
 
+    // Total number of navigable items (topics + accounts)
+    const totalItems = matchingTopics.length + displayResults.length;
+
     useEffect(() => {
         if (!shouldSearch) {
             setDisplayResults([]);
@@ -252,24 +268,35 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (!showSearchResults || displayResults.length === 0) {
+            if (!showSearchResults || totalItems === 0) {
                 return;
             }
 
             switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setSelectedIndex(prev => (prev + 1) % displayResults.length);
+                setSelectedIndex(prev => (prev + 1) % totalItems);
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                setSelectedIndex(prev => (prev - 1 + displayResults.length) % displayResults.length);
+                setSelectedIndex(prev => (prev - 1 + totalItems) % totalItems);
                 break;
             case 'Enter':
                 e.preventDefault();
-                if (displayResults[selectedIndex]) {
+                // Check if selected item is a topic or an account
+                if (selectedIndex < matchingTopics.length) {
+                    // It's a topic
+                    const topic = matchingTopics[selectedIndex];
                     onOpenChange?.(false);
-                    navigate(`/profile/${displayResults[selectedIndex].handle}`);
+                    navigate(`/explore/${topic.slug}`);
+                } else {
+                    // It's an account
+                    const accountIndex = selectedIndex - matchingTopics.length;
+                    const account = displayResults[accountIndex];
+                    if (account) {
+                        onOpenChange?.(false);
+                        navigate(`/profile/${account.handle}`);
+                    }
                 }
                 break;
             }
@@ -277,7 +304,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [showSearchResults, displayResults, selectedIndex, onOpenChange, navigate]);
+    }, [showSearchResults, totalItems, selectedIndex, matchingTopics, displayResults, onOpenChange, navigate]);
 
     // Scroll selected item into view
     useEffect(() => {
@@ -354,6 +381,9 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 {showSearchResults && (
                     <div className='mt-[-14px] pb-2'>
                         <TopicSearchResults
+                            itemRefs={itemRefs}
+                            selectedIndex={selectedIndex}
+                            startIndex={0}
                             topics={matchingTopics}
                             onOpenChange={onOpenChange}
                         />
@@ -361,6 +391,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                             itemRefs={itemRefs}
                             results={displayResults}
                             selectedIndex={selectedIndex}
+                            startIndex={matchingTopics.length}
                             onOpenChange={onOpenChange}
                             onUpdate={updateResult}
                         />
