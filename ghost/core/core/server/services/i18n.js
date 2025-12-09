@@ -16,7 +16,7 @@ module.exports.init = function () {
     }
 
     module.exports = i18nInstance = i18n(locale, 'ghost');
-
+    /*  TODO: dead code  (i18n is now always on)
     events.on('settings.labs.edited', () => {
         if (labs.isSet('i18n')) {
             debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
@@ -25,7 +25,7 @@ module.exports.init = function () {
             debug('labs i18n disabled, updating i18n to en');
             i18nInstance.changeLanguage('en');
         }
-    });
+    }); */
 
     events.on('settings.locale.edited', (model) => {
         if (labs.isSet('i18n')) {
