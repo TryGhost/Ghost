@@ -232,6 +232,8 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     // Total number of navigable items (topics + accounts)
     const totalItems = matchingTopics.length + displayResults.length;
 
+    const lastKeyPressRef = useRef(0);
+
     useEffect(() => {
         if (!shouldSearch) {
             setDisplayResults([]);
@@ -268,9 +270,24 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter') {
+                return;
+            }
+
             if (!showSearchResults || totalItems === 0) {
                 return;
             }
+
+            // Throttle rapid key presses to prevent race conditions
+            const now = Date.now();
+
+            if (e.key !== 'Enter' && now - lastKeyPressRef.current < 50) {
+                e.preventDefault();
+
+                return;
+            }
+
+            lastKeyPressRef.current = now;
 
             switch (e.key) {
             case 'ArrowDown':
