@@ -15,7 +15,6 @@ interface AccountSearchResult {
     name: string;
     handle: string;
     avatarUrl: string;
-    followerCount: number;
     followedByMe: boolean;
     blockedByMe: boolean;
     domainBlockedByMe: boolean;
@@ -35,15 +34,13 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
 
     const onFollow = () => {
         update(account.id, {
-            followedByMe: true,
-            followerCount: account.followerCount + 1
+            followedByMe: true
         });
     };
 
     const onUnfollow = () => {
         update(account.id, {
-            followedByMe: false,
-            followerCount: account.followerCount - 1
+            followedByMe: false
         });
     };
 
