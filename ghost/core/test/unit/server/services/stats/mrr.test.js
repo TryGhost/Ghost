@@ -26,6 +26,7 @@ describe('MrrStatsService', function () {
         const yesterdayDate = testToday.clone().subtract(1, 'days').format('YYYY-MM-DD');
         const dayBeforeYesterdayDate = testToday.clone().subtract(2, 'days').format('YYYY-MM-DD');
         const twoDaysBeforeYesterdayDate = testToday.clone().subtract(3, 'days').format('YYYY-MM-DD');
+        const ninetyDaysAgoDate = testToday.clone().subtract(90, 'days').format('YYYY-MM-DD');
 
         // Helper functions for better test readability
 
@@ -84,15 +85,27 @@ describe('MrrStatsService', function () {
 
         /**
          * Get MRR history and return structured result
+         * @param {Object} [options]
+         * @param {string} [options.dateFrom] - Optional start date
          */
-        async function getMrrHistory() {
-            const result = await mrrStatsService.getHistory();
+        async function getMrrHistory(options = {}) {
+            const result = await mrrStatsService.getHistory(options);
             return {
                 data: result.data,
                 totals: result.meta.totals,
                 meta: result.meta,
                 count: result.data.length
             };
+        }
+
+        /**
+         * Find entry for a specific date and currency
+         * @param {Array} data - History data array
+         * @param {string} date - Date to find
+         * @param {string} currency - Currency to find
+         */
+        function findEntry(data, date, currency = 'usd') {
+            return data.find(entry => entry.date === date && entry.currency === currency);
         }
 
         before(function () {
@@ -127,12 +140,19 @@ describe('MrrStatsService', function () {
         it('Handles no data', async function () {
             const history = await getMrrHistory();
 
-            history.count.should.eql(1);
-            assertMrrEntry(history.data[0], todayDate, 0, 'usd');
+            // Should return 91 days (90 days back + today) with a single currency
+            history.count.should.eql(91);
+
+            // First entry should be 90 days ago with 0 MRR
+            assertMrrEntry(history.data[0], ninetyDaysAgoDate, 0, 'usd');
+
+            // Last entry should be today with 0 MRR
+            assertMrrEntry(history.data[history.count - 1], todayDate, 0, 'usd');
+
             assertTotals(history.totals, [{mrr: 0}]);
         });
 
-        it('Always returns at least one value', async function () {
+        it('Always returns at least one value per currency', async function () {
             await addCurrentSubscriptions([
                 {mrr: 1, currency: 'usd'},
                 {mrr: 2, currency: 'eur'}
@@ -140,11 +160,23 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(2);
+            // Should return 91 days * 2 currencies = 182 entries
+            history.count.should.eql(182);
+
+            // First day should have both currencies
+            const firstDayEur = findEntry(history.data, ninetyDaysAgoDate, 'eur');
+            const firstDayUsd = findEntry(history.data, ninetyDaysAgoDate, 'usd');
 
             // Currencies are always sorted ascending
-            assertMrrEntry(history.data[0], todayDate, 2, 'eur');
-            assertMrrEntry(history.data[1], todayDate, 1, 'usd');
+            assertMrrEntry(firstDayEur, ninetyDaysAgoDate, 2, 'eur');
+            assertMrrEntry(firstDayUsd, ninetyDaysAgoDate, 1, 'usd');
+
+            // Last day should also have both currencies
+            const lastDayEur = findEntry(history.data, todayDate, 'eur');
+            const lastDayUsd = findEntry(history.data, todayDate, 'usd');
+
+            assertMrrEntry(lastDayEur, todayDate, 2, 'eur');
+            assertMrrEntry(lastDayUsd, todayDate, 1, 'usd');
 
             assertTotals(history.totals, [
                 {mrr: 2, currency: 'eur'},
@@ -160,9 +192,17 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(2);
-            assertMrrEntry(history.data[0], yesterdayDate, 0);
-            assertMrrEntry(history.data[1], todayDate, 5);
+            // Should return 91 days
+            history.count.should.eql(91);
+
+            // Yesterday should be 0 (before the event)
+            const yesterdayEntry = findEntry(history.data, yesterdayDate);
+            assertMrrEntry(yesterdayEntry, yesterdayDate, 0);
+
+            // Today should be 5 (after the event)
+            const todayEntry = findEntry(history.data, todayDate);
+            assertMrrEntry(todayEntry, todayDate, 5);
+
             assertTotals(history.totals, [{mrr: 5}]);
         });
 
@@ -179,10 +219,21 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(3);
-            assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 0);
-            assertMrrEntry(history.data[1], yesterdayDate, 2);
-            assertMrrEntry(history.data[2], todayDate, 7);
+            // Should return 91 days
+            history.count.should.eql(91);
+
+            // Day before yesterday should be 0
+            const dayBeforeYesterdayEntry = findEntry(history.data, dayBeforeYesterdayDate);
+            assertMrrEntry(dayBeforeYesterdayEntry, dayBeforeYesterdayDate, 0);
+
+            // Yesterday should be 2
+            const yesterdayEntry = findEntry(history.data, yesterdayDate);
+            assertMrrEntry(yesterdayEntry, yesterdayDate, 2);
+
+            // Today should be 7
+            const todayEntry = findEntry(history.data, todayDate);
+            assertMrrEntry(todayEntry, todayDate, 7);
+
             assertTotals(history.totals, [{mrr: 7}]);
         });
 
@@ -204,19 +255,26 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(6);
+            // Should return 91 days * 2 currencies = 182 entries
+            history.count.should.eql(182);
 
             // Day before yesterday
-            assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 200, 'eur');
-            assertMrrEntry(history.data[1], dayBeforeYesterdayDate, 0, 'usd');
+            const dayBeforeYesterdayEur = findEntry(history.data, dayBeforeYesterdayDate, 'eur');
+            const dayBeforeYesterdayUsd = findEntry(history.data, dayBeforeYesterdayDate, 'usd');
+            assertMrrEntry(dayBeforeYesterdayEur, dayBeforeYesterdayDate, 200, 'eur');
+            assertMrrEntry(dayBeforeYesterdayUsd, dayBeforeYesterdayDate, 0, 'usd');
 
             // Yesterday
-            assertMrrEntry(history.data[2], yesterdayDate, 400, 'eur');
-            assertMrrEntry(history.data[3], yesterdayDate, 2, 'usd');
+            const yesterdayEur = findEntry(history.data, yesterdayDate, 'eur');
+            const yesterdayUsd = findEntry(history.data, yesterdayDate, 'usd');
+            assertMrrEntry(yesterdayEur, yesterdayDate, 400, 'eur');
+            assertMrrEntry(yesterdayUsd, yesterdayDate, 2, 'usd');
 
             // Today
-            assertMrrEntry(history.data[4], todayDate, 1200, 'eur');
-            assertMrrEntry(history.data[5], todayDate, 7, 'usd');
+            const todayEur = findEntry(history.data, todayDate, 'eur');
+            const todayUsd = findEntry(history.data, todayDate, 'usd');
+            assertMrrEntry(todayEur, todayDate, 1200, 'eur');
+            assertMrrEntry(todayUsd, todayDate, 7, 'usd');
 
             assertTotals(history.totals, [
                 {mrr: 1200, currency: 'eur'},
@@ -235,9 +293,16 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            // Invalid currency event should be ignored
-            history.count.should.eql(1);
-            assertMrrEntry(history.data[0], yesterdayDate, 7);
+            // Should return 91 days, invalid currency event should be ignored
+            history.count.should.eql(91);
+
+            // All days should have MRR of 7 (no valid events)
+            const firstEntry = findEntry(history.data, ninetyDaysAgoDate);
+            assertMrrEntry(firstEntry, ninetyDaysAgoDate, 7);
+
+            const lastEntry = findEntry(history.data, todayDate);
+            assertMrrEntry(lastEntry, todayDate, 7);
+
             assertTotals(history.totals, [{mrr: 7}]);
         });
 
@@ -252,10 +317,21 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(3);
-            assertMrrEntry(history.data[0], dayBeforeYesterdayDate, 0);
-            assertMrrEntry(history.data[1], yesterdayDate, 2);
-            assertMrrEntry(history.data[2], todayDate, 7);
+            // Should return 91 days
+            history.count.should.eql(91);
+
+            // Day before yesterday should be 0
+            const dayBeforeYesterdayEntry = findEntry(history.data, dayBeforeYesterdayDate);
+            assertMrrEntry(dayBeforeYesterdayEntry, dayBeforeYesterdayDate, 0);
+
+            // Yesterday should be 2
+            const yesterdayEntry = findEntry(history.data, yesterdayDate);
+            assertMrrEntry(yesterdayEntry, yesterdayDate, 2);
+
+            // Today should be 7 (future event ignored)
+            const todayEntry = findEntry(history.data, todayDate);
+            assertMrrEntry(todayEntry, todayDate, 7);
+
             assertTotals(history.totals, [{mrr: 7}]);
         });
 
@@ -270,19 +346,24 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            history.count.should.eql(4);
+            // Should return 91 days
+            history.count.should.eql(91);
 
             // Two days before yesterday: calculated backward from current MRR
-            assertMrrEntry(history.data[0], twoDaysBeforeYesterdayDate, 5);
+            const twoDaysBeforeYesterdayEntry = findEntry(history.data, twoDaysBeforeYesterdayDate);
+            assertMrrEntry(twoDaysBeforeYesterdayEntry, twoDaysBeforeYesterdayDate, 5);
 
             // Day before yesterday: should not be 1000
-            assertMrrEntry(history.data[1], dayBeforeYesterdayDate, 7);
+            const dayBeforeYesterdayEntry = findEntry(history.data, dayBeforeYesterdayDate);
+            assertMrrEntry(dayBeforeYesterdayEntry, dayBeforeYesterdayDate, 7);
 
             // Yesterday: negative MRR should be shown as 0
-            assertMrrEntry(history.data[2], yesterdayDate, 0);
+            const yesterdayEntry = findEntry(history.data, yesterdayDate);
+            assertMrrEntry(yesterdayEntry, yesterdayDate, 0);
 
             // Today: back to positive
-            assertMrrEntry(history.data[3], todayDate, 7);
+            const todayEntry = findEntry(history.data, todayDate);
+            assertMrrEntry(todayEntry, todayDate, 7);
 
             assertTotals(history.totals, [{mrr: 7}]);
         });
@@ -292,6 +373,7 @@ describe('MrrStatsService', function () {
             const hundredDaysAgo = testToday.clone().subtract(100, 'days').format('YYYY-MM-DD HH:mm:ss');
             // Event from 60 days ago (within 90-day window)
             const sixtyDaysAgo = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+            const sixtyDaysAgoDate = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD');
 
             await addMrrEvents([
                 {date: hundredDaysAgo, delta: 100},
@@ -303,10 +385,16 @@ describe('MrrStatsService', function () {
 
             const history = await getMrrHistory();
 
-            // Should start from day before recentDate (oldest event within 90 days)
+            // Should return 91 days
+            history.count.should.eql(91);
+
+            // First entry should be 90 days ago with baseline MRR
             // MRR at start = current (170) - recent events (50 + 20) = 100
-            const expectedStartDate = testToday.clone().subtract(61, 'days').format('YYYY-MM-DD');
-            assertMrrEntry(history.data[0], expectedStartDate, 100);
+            assertMrrEntry(history.data[0], ninetyDaysAgoDate, 100);
+
+            // MRR should jump at the 60-day mark when the event occurred
+            const sixtyDaysAgoEntry = findEntry(history.data, sixtyDaysAgoDate);
+            assertMrrEntry(sixtyDaysAgoEntry, sixtyDaysAgoDate, 150);
 
             // Should end at today with full MRR
             const lastEntry = history.data[history.data.length - 1];
@@ -315,6 +403,7 @@ describe('MrrStatsService', function () {
 
         it('Includes all events when dateFrom is specified early enough', async function () {
             const oneHundredTwentyDaysAgo = testToday.clone().subtract(120, 'days').format('YYYY-MM-DD HH:mm:ss');
+            const oneHundredTwentyDaysAgoDate = testToday.clone().subtract(120, 'days').format('YYYY-MM-DD');
 
             await addMrrEvents([
                 {date: oneHundredTwentyDaysAgo, delta: 100},
@@ -328,9 +417,21 @@ describe('MrrStatsService', function () {
             const startDate = testToday.clone().subtract(150, 'days').format('YYYY-MM-DD');
             const history = await mrrStatsService.getHistory({dateFrom: startDate});
 
-            // Should start from day before first event with 0 MRR
-            const expectedFirstDate = testToday.clone().subtract(121, 'days').format('YYYY-MM-DD');
-            assertMrrEntry(history.data[0], expectedFirstDate, 0);
+            // With complete range backfilling, first entry should be the dateFrom date with baseline MRR
+            // Baseline MRR = current (180) - all deltas (100 + 50 + 30) = 0
+            assertMrrEntry(history.data[0], startDate, 0);
+
+            // Should have data for every day from startDate to today (151 days)
+            history.data.length.should.eql(151);
+
+            // MRR should remain at 0 until the first event
+            const dayBeforeFirstEvent = testToday.clone().subtract(121, 'days').format('YYYY-MM-DD');
+            const dayBeforeFirstEventEntry = history.data.find(entry => entry.date === dayBeforeFirstEvent);
+            assertMrrEntry(dayBeforeFirstEventEntry, dayBeforeFirstEvent, 0);
+
+            // MRR should jump to 100 on the first event date
+            const firstEventEntry = history.data.find(entry => entry.date === oneHundredTwentyDaysAgoDate);
+            assertMrrEntry(firstEventEntry, oneHundredTwentyDaysAgoDate, 100);
 
             // Should show progression through all events
             const lastEntry = history.data[history.data.length - 1];
@@ -341,9 +442,10 @@ describe('MrrStatsService', function () {
         it('Filters events based on custom dateFrom parameter', async function () {
             const fourMonthsAgo = testToday.clone().subtract(120, 'days').format('YYYY-MM-DD HH:mm:ss');
             const twoMonthsAgo = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+            const twoMonthsAgoDate = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD');
 
             await addMrrEvents([
-                {date: fourMonthsAgo, delta: 100}, // Should be excluded
+                {date: fourMonthsAgo, delta: 100}, // Should be excluded from fetch
                 {date: twoMonthsAgo, delta: 50}, // Should be included
                 {date: today, delta: 30} // Should be included
             ]);
@@ -354,12 +456,100 @@ describe('MrrStatsService', function () {
             const threeMonthsAgo = testToday.clone().subtract(90, 'days').format('YYYY-MM-DD');
             const history = await mrrStatsService.getHistory({dateFrom: threeMonthsAgo});
 
-            // MRR at start = current (180) - included events (50 + 30) = 100
-            const expectedStartDate = testToday.clone().subtract(61, 'days').format('YYYY-MM-DD');
-            assertMrrEntry(history.data[0], expectedStartDate, 100);
+            // With complete range backfilling, first entry should be the dateFrom date
+            // Baseline MRR = current (180) - included deltas (50 + 30) = 100
+            assertMrrEntry(history.data[0], threeMonthsAgo, 100);
+
+            // Should have data for every day from threeMonthsAgo to today (91 days)
+            history.data.length.should.eql(91);
+
+            // MRR should remain at 100 until the first included event
+            const dayBeforeFirstEvent = testToday.clone().subtract(61, 'days').format('YYYY-MM-DD');
+            const dayBeforeFirstEventEntry = history.data.find(entry => entry.date === dayBeforeFirstEvent);
+            assertMrrEntry(dayBeforeFirstEventEntry, dayBeforeFirstEvent, 100);
+
+            // MRR should jump to 150 on the first included event date
+            const firstEventEntry = history.data.find(entry => entry.date === twoMonthsAgoDate);
+            assertMrrEntry(firstEventEntry, twoMonthsAgoDate, 150);
 
             const lastEntry = history.data[history.data.length - 1];
             assertMrrEntry(lastEntry, todayDate, 180);
+        });
+
+        it('Backfills entire date range when no events exist in range (fixes NY-328)', async function () {
+            // This test reproduces the bug where MRR chart shows $0 when there are no
+            // recent MRR events but there is existing MRR from earlier events.
+            // Bug: If a site has stable MRR with no changes in the selected period,
+            // the chart would show $0 because no events existed in the range.
+
+            // Event from 60 days ago - outside the 30-day range we'll request
+            const sixtyDaysAgo = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+
+            await addMrrEvents([
+                {date: sixtyDaysAgo, delta: 500} // Only event, outside the 30-day window
+            ]);
+
+            await addCurrentSubscriptions([{mrr: 500}]);
+
+            // Request last 30 days - no events in this period
+            const thirtyDaysAgo = testToday.clone().subtract(30, 'days').format('YYYY-MM-DD');
+            const history = await mrrStatsService.getHistory({dateFrom: thirtyDaysAgo});
+
+            // Should have data for every day from thirtyDaysAgo to today (31 days)
+            history.data.length.should.eql(31);
+
+            // First entry should be the dateFrom date with the existing MRR (not $0!)
+            // Baseline MRR = current (500) - included deltas (none in range) = 500
+            assertMrrEntry(history.data[0], thirtyDaysAgo, 500);
+
+            // All entries should show MRR of 500 since there were no changes
+            for (const entry of history.data) {
+                entry.mrr.should.eql(500);
+            }
+
+            const lastEntry = history.data[history.data.length - 1];
+            assertMrrEntry(lastEntry, todayDate, 500);
+        });
+
+        it('Backfills with correct MRR when multiple currencies exist and no events in range', async function () {
+            // Multiple currencies, no events in the 30-day window
+            const sixtyDaysAgo = testToday.clone().subtract(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+
+            await addMrrEvents([
+                {date: sixtyDaysAgo, delta: 100, currency: 'usd'},
+                {date: sixtyDaysAgo, delta: 5000, currency: 'eur'}
+            ]);
+
+            await addCurrentSubscriptions([
+                {mrr: 100, currency: 'usd'},
+                {mrr: 5000, currency: 'eur'}
+            ]);
+
+            const thirtyDaysAgo = testToday.clone().subtract(30, 'days').format('YYYY-MM-DD');
+            const history = await mrrStatsService.getHistory({dateFrom: thirtyDaysAgo});
+
+            // Should have 31 days * 2 currencies = 62 entries
+            history.data.length.should.eql(62);
+
+            // First two entries should be EUR and USD on dateFrom with correct values
+            const firstDayEntries = history.data.filter(e => e.date === thirtyDaysAgo);
+            firstDayEntries.length.should.eql(2);
+
+            const eurEntry = firstDayEntries.find(e => e.currency === 'eur');
+            const usdEntry = firstDayEntries.find(e => e.currency === 'usd');
+
+            eurEntry.mrr.should.eql(5000);
+            usdEntry.mrr.should.eql(100);
+
+            // Last day should have the same values since no changes occurred
+            const lastDayEntries = history.data.filter(e => e.date === todayDate);
+            lastDayEntries.length.should.eql(2);
+
+            const lastEurEntry = lastDayEntries.find(e => e.currency === 'eur');
+            const lastUsdEntry = lastDayEntries.find(e => e.currency === 'usd');
+
+            lastEurEntry.mrr.should.eql(5000);
+            lastUsdEntry.mrr.should.eql(100);
         });
     });
 });

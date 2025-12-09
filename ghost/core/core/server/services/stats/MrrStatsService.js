@@ -55,9 +55,10 @@ class MrrStatsService {
 
     /**
      * Returns a list of the MRR history for each day and currency, including the current MRR per currency as meta data.
-     * The respons is in ascending date order, and currencies for the same date are always in ascending order.
+     * The response is in ascending date order, and currencies for the same date are always in ascending order.
+     * All dates in the requested range are included with forward-filled MRR values.
      * @param {Object} [options]
-     * @param {string} [options.dateFrom] - Start date to fetch history from
+     * @param {string} [options.dateFrom] - Start date to fetch history from (defaults to 90 days ago)
      * @returns {Promise<MrrHistory>}
      */
     async getHistory(options = {}) {
@@ -66,63 +67,97 @@ class MrrStatsService {
 
         const rows = await this.fetchAllDeltas(options.dateFrom);
 
-        rows.sort((rowA, rowB) => {
-            const dateA = new Date(rowA.date);
-            const dateB = new Date(rowB.date);
-        
-            return dateA - dateB || rowA.currency.localeCompare(rowB.currency);
-        });
-
         // Get today in UTC (default timezone)
         const today = moment().format('YYYY-MM-DD');
 
-        const results = [];
+        // Calculate start date - use provided dateFrom or default to 90 days ago
+        const startDate = options.dateFrom
+            ? options.dateFrom
+            : moment.utc().subtract(90, 'days').format('YYYY-MM-DD');
 
-        // Create a map of the totals by currency for fast lookup and editing
+        const startDateMoment = moment.utc(startDate).startOf('day');
+        const endDateMoment = moment.utc(today).startOf('day');
 
+        // Create a map of the totals by currency for fast lookup
         /** @type {Object.<string, number>}*/
         const currentTotals = {};
         for (const total of totals) {
             currentTotals[total.currency] = total.mrr;
         }
 
-        // Loop in reverse order (needed to have correct sorted result)
-        for (let i = rows.length - 1; i >= 0; i -= 1) {
-            const row = rows[i];
+        // Get sorted list of currencies
+        const currencies = totals.map(t => t.currency).sort();
 
-            if (currentTotals[row.currency] === undefined) {
-                // Skip unexpected currencies that are not in the totals
-                continue;
-            }
-
-            // Convert JSDates to YYYY-MM-DD (in UTC)
+        // Create a map of deltas by date and currency for fast lookup
+        /** @type {Object.<string, Object.<string, number>>}*/
+        const deltasMap = {};
+        for (const row of rows) {
             const date = moment(row.date).format('YYYY-MM-DD');
-
             if (date > today) {
-                // Skip results that are in the future for some reason
-                continue;
+                continue; // Skip future dates
             }
-
-            results.unshift({
-                date,
-                mrr: Math.max(0, currentTotals[row.currency]),
-                currency: row.currency
-            });
-
-            currentTotals[row.currency] -= row.delta;
+            if (currentTotals[row.currency] === undefined) {
+                continue; // Skip unexpected currencies
+            }
+            if (!deltasMap[date]) {
+                deltasMap[date] = {};
+            }
+            deltasMap[date][row.currency] = row.delta;
         }
 
-        // Now also add the oldest days we have left over and do not have deltas
-        const oldestDate = rows.length > 0 ? moment(rows[0].date).add(-1, 'days').format('YYYY-MM-DD') : today;
+        // Work backwards from current totals to build historical MRR for event dates
+        const runningTotals = {...currentTotals};
 
-        // Note that we also need to loop the totals in reverse order because we need to unshift
-        for (let i = totals.length - 1; i >= 0; i -= 1) {
-            const total = totals[i];
-            results.unshift({
-                date: oldestDate,
-                mrr: Math.max(0, currentTotals[total.currency]),
-                currency: total.currency
-            });
+        /** @type {Object.<string, Object.<string, number>>}*/
+        const historicalMrrMap = {};
+
+        // Get all dates with deltas, sorted descending (newest first)
+        const datesWithDeltas = Object.keys(deltasMap).sort().reverse();
+
+        for (const date of datesWithDeltas) {
+            // Store the MRR for this date (before subtracting the delta)
+            historicalMrrMap[date] = {};
+            for (const currency of currencies) {
+                historicalMrrMap[date][currency] = Math.max(0, runningTotals[currency]);
+            }
+
+            // Subtract the deltas for this date to get the MRR for the previous period
+            const deltas = deltasMap[date];
+            for (const currency of Object.keys(deltas)) {
+                runningTotals[currency] -= deltas[currency];
+            }
+        }
+
+        // runningTotals now contains the MRR before the first delta (the baseline)
+        const baselineMrr = {...runningTotals};
+
+        // Generate complete date range from startDate to today
+        const results = [];
+        const currentDate = moment(startDateMoment);
+
+        // Track the last known MRR for each currency (for forward-filling)
+        const lastKnownMrr = {...baselineMrr};
+
+        while (currentDate.isSameOrBefore(endDateMoment)) {
+            const dateStr = currentDate.format('YYYY-MM-DD');
+
+            if (historicalMrrMap[dateStr]) {
+                // Use actual event data and update our last known MRR
+                for (const currency of currencies) {
+                    lastKnownMrr[currency] = historicalMrrMap[dateStr][currency];
+                }
+            }
+
+            // Add entry for each currency on this date
+            for (const currency of currencies) {
+                results.push({
+                    date: dateStr,
+                    mrr: Math.max(0, lastKnownMrr[currency] || 0),
+                    currency
+                });
+            }
+
+            currentDate.add(1, 'day');
         }
 
         return {

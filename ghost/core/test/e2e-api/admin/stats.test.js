@@ -53,20 +53,31 @@ describe('Stats API', function () {
     });
 
     it('Can fetch MRR history', async function () {
-        await agent
+        const {body} = await agent
             .get(`/stats/mrr`)
             .expectStatus(200)
-            .matchBodySnapshot({
-                stats: [{
-                    date: anyISODate
-                }, {
-                    date: anyISODate
-                }]
-            })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyContentLength
             });
+
+        // Verify structure of MRR history response
+        assert(body.stats, 'Response should have stats array');
+        assert(Array.isArray(body.stats), 'stats should be an array');
+        assert(body.stats.length > 0, 'stats should have at least one entry');
+
+        // Verify each entry has required fields
+        for (const entry of body.stats) {
+            assert(entry.date, 'Each entry should have a date');
+            assert(typeof entry.mrr === 'number', 'Each entry should have numeric mrr');
+            assert(entry.currency, 'Each entry should have a currency');
+        }
+
+        // Verify meta totals
+        assert(body.meta, 'Response should have meta object');
+        assert(body.meta.totals, 'Response should have meta.totals array');
+        assert(Array.isArray(body.meta.totals), 'meta.totals should be an array');
     });
 
     describe('Subscriptions history', function () {
