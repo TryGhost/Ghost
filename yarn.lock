@@ -9187,6 +9187,11 @@
   dependencies:
     semver "^7.7.0"
 
+"@tryghost/koenig-lexical@*":
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.3.tgz#eb9aa0e729669d1b5d129ebc83fbbcf2dacd4bc2"
+  integrity sha512-nNo/d1DT3bdJZ9v6cezwrjbpvomntW1SQr9XiH0aOUKAJYk8UhObWKuw0r/jtGutgn5rGwV3rrIuHuuE60J9yQ==
+
 "@tryghost/koenig-lexical@1.7.2":
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.2.tgz#03de94b698b1071f17a1a8a053fe060ed9c4f785"

@@ -1,5 +1,6 @@
 import { App } from "@tryghost/admin-x-settings/src/app";
 import { createPortal } from "react-dom";
+import { fetchKoenigLexical } from "../utils/fetchKoenigLexical";
 
 export function Settings() {
     return createPortal(
@@ -14,7 +15,7 @@ export function Settings() {
             <App
                 designSystem={{
                     darkMode: false,
-                    fetchKoenigLexical: async () => {},
+                    fetchKoenigLexical,
                 }}
             />
         </div>,
