@@ -180,15 +180,15 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
     const hasSuggestedProfiles = isLoadingSuggestedProfiles || (suggestedProfilesData && suggestedProfilesData.length > 0);
 
-    // Get dynamic topics from API
     const {topicsQuery} = useTopicsForUser();
     const {data: topicsData} = topicsQuery;
-    const topics = topicsData?.topics || [];
 
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
 
     // Filter topics client-side (no additional API call needed)
     const matchingTopics = useMemo(() => {
+        const topics = topicsData?.topics || [];
+
         if (!shouldSearch || topics.length === 0) {
             return [];
         }
@@ -204,7 +204,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
             return topic.name.toLowerCase().startsWith(normalizedQuery) ||
                    topic.slug.toLowerCase().startsWith(normalizedQuery);
         });
-    }, [query, shouldSearch, topics]);
+    }, [query, shouldSearch, topicsData?.topics]);
 
     useEffect(() => {
         if (data?.accounts && data.accounts.length > 0) {
@@ -249,8 +249,8 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 {showNoResults && (
                     <div className='flex h-full items-center justify-center pb-14'>
                         <NoValueLabel>
-                            <NoValueLabelIcon><LucideIcon.SearchX /></NoValueLabelIcon>
-                            No results matching your search
+                            <NoValueLabelIcon><LucideIcon.UserRound /></NoValueLabelIcon>
+                            No users matching this handle or account URL
                         </NoValueLabel>
                     </div>
                 )}
