@@ -1,7 +1,7 @@
 import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '../components/stats-filter';
 import StatsHeader from '../layout/stats-header';
@@ -13,6 +13,7 @@ import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNu
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getScrollParent} from '@tryghost/shade';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -55,6 +56,8 @@ const Web: React.FC = () => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
 
@@ -77,7 +80,7 @@ const Web: React.FC = () => {
 
     // Scroll to top of the scrollable container
     const scrollToTop = useCallback(() => {
-        const scrollContainer = document.querySelector('.overflow-y-scroll');
+        const scrollContainer = getScrollParent(containerRef.current);
         if (scrollContainer) {
             scrollContainer.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -190,7 +193,7 @@ const Web: React.FC = () => {
     const hasFilters = utmFilters.length > 0;
 
     return (
-        <StatsLayout>
+        <StatsLayout ref={containerRef}>
             <StatsHeader>
                 {!utmTrackingEnabled ?
                     <NavbarActions>
