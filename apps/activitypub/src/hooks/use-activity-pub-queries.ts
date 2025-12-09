@@ -24,7 +24,7 @@ import {
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
 import {toast} from 'sonner';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -92,7 +92,8 @@ const QUERY_KEYS = {
     notifications: (handle: string) => ['notifications', handle],
     notificationsCount: (handle: string) => ['notifications_count', handle],
     blockedAccounts: (handle: string) => ['blocked_accounts', handle],
-    blockedDomains: (handle: string) => ['blocked_domains', handle]
+    blockedDomains: (handle: string) => ['blocked_domains', handle],
+    topics: () => ['topics']
 };
 
 function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
@@ -2401,218 +2402,6 @@ export function useResetNotificationsCountForUser(handle: string) {
     });
 }
 
-function useFilteredAccountsFromJSON(options: {
-    excludeFollowing?: boolean;
-    excludeCurrentUser?: boolean;
-} = {}) {
-    const {
-        excludeFollowing = true,
-        excludeCurrentUser = false
-    } = options;
-    const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
-    const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
-    const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
-    const currentAccountQuery = useAccountForUser('index', 'me');
-    const {data: currentUser, isLoading: isLoadingCurrentUser} = currentAccountQuery;
-
-    useEffect(() => {
-        if (hasNextPage && !isLoadingFollowing) {
-            fetchNextPage();
-        }
-    }, [hasNextPage, fetchNextPage, isLoadingFollowing, followingData?.pages]);
-
-    useEffect(() => {
-        if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
-            fetchNextBlockedAccounts();
-        }
-    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts, blockedAccountsData?.pages]);
-
-    useEffect(() => {
-        if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
-            fetchNextBlockedDomains();
-        }
-    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains, blockedDomainsData?.pages]);
-
-    const followingIds = useMemo(() => {
-        const ids = new Set<string>();
-        if (followingData?.pages) {
-            followingData.pages.forEach((page) => {
-                page.accounts.forEach((account) => {
-                    ids.add(account.id);
-                });
-            });
-        }
-        return ids;
-    }, [followingData]);
-
-    const blockedAccountIds = useMemo(() => {
-        const ids = new Set<string>();
-        if (blockedAccountsData?.pages) {
-            blockedAccountsData.pages.forEach((page) => {
-                page.accounts?.forEach((account: Account) => {
-                    ids.add(account.id);
-                });
-            });
-        }
-        return ids;
-    }, [blockedAccountsData]);
-
-    const blockedDomains = useMemo(() => {
-        const domains = new Set<string>();
-        if (blockedDomainsData?.pages) {
-            blockedDomainsData.pages.forEach((page) => {
-                page.domains?.forEach((domain: Account | string) => {
-                    if (typeof domain === 'string') {
-                        domains.add(domain);
-                    } else if (domain.url) {
-                        try {
-                            const url = new URL(domain.url);
-                            domains.add(url.hostname);
-                        } catch {
-                            // Ignore invalid URLs
-                        }
-                    }
-                });
-            });
-        }
-        return domains;
-    }, [blockedDomainsData]);
-
-    const fetchAndFilterAccounts = useCallback(async () => {
-        try {
-            const response = await fetch('https://storage.googleapis.com/prd-activitypub-populate-explore-json/explore/accounts.json');
-            if (!response.ok) {
-                throw new Error('Failed to fetch explore accounts');
-            }
-
-            const data = await response.json();
-            const accounts = data.accounts as Account[];
-
-            const filteredAccounts = accounts.filter((account) => {
-                if (excludeFollowing && followingIds.has(account.id)) {
-                    return false;
-                }
-
-                if (blockedAccountIds.has(account.id)) {
-                    return false;
-                }
-
-                if (excludeCurrentUser && currentUser && account.handle === currentUser.handle) {
-                    return false;
-                }
-
-                const parts = account.handle.split('@').filter(part => part.length > 0);
-                const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
-                if (accountDomain && blockedDomains.has(accountDomain)) {
-                    return false;
-                }
-
-                return true;
-            });
-
-            const accountsWithDefaults = filteredAccounts.map(account => ({
-                ...account,
-                followedByMe: followingIds.has(account.id),
-                blockedByMe: false,
-                domainBlockedByMe: false
-            }));
-
-            return accountsWithDefaults;
-        } catch (error) {
-            return [];
-        }
-    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
-
-    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
-
-    // Track if we have finished loading all following data
-    const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
-
-    return {
-        fetchAndFilterAccounts,
-        isLoading,
-        isFollowingDataComplete
-    };
-}
-
-export function useExploreProfilesForUser(handle: string) {
-    const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.exploreProfiles(handle);
-    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
-        excludeFollowing: false
-    });
-
-    const fetchExploreProfilesFromJSON = useCallback(async () => {
-        const accounts = await fetchAndFilterAccounts();
-
-        // Cache account data for follow mutations
-        accounts.forEach((account: Account) => {
-            queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
-        });
-
-        const results = {
-            uncategorized: {
-                categoryName: 'Recommended',
-                sites: accounts
-            }
-        };
-
-        return {
-            results,
-            nextPage: undefined
-        };
-    }, [fetchAndFilterAccounts, queryClient]);
-
-    const exploreProfilesQuery = useInfiniteQuery({
-        queryKey,
-        queryFn: () => fetchExploreProfilesFromJSON(),
-        getNextPageParam: () => undefined,
-        staleTime: 60 * 60 * 1000,
-        enabled: !isLoading && isFollowingDataComplete
-    });
-
-    const updateExploreProfile = (id: string, updated: Partial<Account>) => {
-        queryClient.setQueryData(queryKey, (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            const updatedPages = current.pages.map((page) => {
-                const updatedResults = Object.entries(page.results).reduce((acc, [categoryKey, category]) => {
-                    const updatedSites = category.sites.map((profile) => {
-                        if (profile.id === id) {
-                            return {...profile, ...updated};
-                        }
-                        return profile;
-                    });
-
-                    acc[categoryKey] = {
-                        ...category,
-                        sites: updatedSites
-                    };
-
-                    return acc;
-                }, {} as Record<string, { categoryName: string; sites: Account[] }>);
-
-                return {
-                    ...page,
-                    results: updatedResults
-                };
-            });
-
-            return {
-                ...current,
-                pages: updatedPages
-            };
-        });
-    };
-
-    return {
-        exploreProfilesQuery,
-        updateExploreProfile
-    };
-}
-
 export function useExploreProfilesForUserByTopic(handle: string, topic: string) {
     const queryClient = useQueryClient();
     const queryKey = [...QUERY_KEYS.exploreProfiles(handle), topic];
@@ -2676,36 +2465,31 @@ export function useExploreProfilesForUserByTopic(handle: string, topic: string) 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
-        excludeFollowing: true,
-        excludeCurrentUser: true
-    });
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
         async queryFn() {
-            const accounts = await fetchAndFilterAccounts();
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            const response = await api.getRecommendations(limit);
 
-            const randomAccounts = accounts
-                .sort(() => Math.random() - 0.5)
-                .slice(0, limit);
+            const accounts = response.accounts;
 
             // Cache account data for follow mutations
-            if (randomAccounts.length > 0) {
-                randomAccounts.forEach((account: Account) => {
+            if (accounts.length > 0) {
+                accounts.forEach((account) => {
                     queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
                 });
             }
 
-            return randomAccounts.length > 0 ? randomAccounts : null;
+            return accounts.length > 0 ? accounts : null;
         },
         retry: false,
-        staleTime: 60 * 60 * 1000,
-        enabled: !isLoading && isFollowingDataComplete
+        staleTime: 60 * 60 * 1000
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
-        queryClient.setQueryData(queryKey, (current: Account[] | undefined) => {
+        queryClient.setQueryData(queryKey, (current: Account[] | null | undefined) => {
             if (!current) {
                 return current;
             }
@@ -2721,6 +2505,21 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
+}
+
+export function useTopicsForUser() {
+    const topicsQuery = useQuery({
+        queryKey: QUERY_KEYS.topics(),
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getTopics();
+        },
+        staleTime: 24 * 60 * 60 * 1000, // Cache for 24 hours (topics change infrequently)
+        retry: false
+    });
+
+    return {topicsQuery};
 }
 
 type BlueskyDetails = {

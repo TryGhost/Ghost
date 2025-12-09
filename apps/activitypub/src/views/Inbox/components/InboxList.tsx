@@ -8,6 +8,7 @@ import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 
 export type InboxListProps = {
     isLoading: boolean,
@@ -32,6 +33,9 @@ const InboxList:React.FC<InboxListProps> = ({
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
     const params = useParams();
+    const {topicsQuery} = useTopicsForUser();
+    const {data: topicsData} = topicsQuery;
+    const hasTopics = topicsData && topicsData.topics.length > 0;
 
     useEffect(() => {
         setIsReaderOpen(!!params.postId);
@@ -72,7 +76,7 @@ const InboxList:React.FC<InboxListProps> = ({
 
     return (
         <Layout>
-            <TopicFilter currentTopic={currentTopic} excludeTopics={['top']} onTopicChange={onTopicChange} />
+            {hasTopics && <TopicFilter currentTopic={currentTopic} excludeTopics={['top']} onTopicChange={onTopicChange} />}
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
@@ -135,9 +139,17 @@ const InboxList:React.FC<InboxListProps> = ({
                         <div className='mt-[24vh]'>
                             <EmptyIndicator
                                 actions={
-                                    <Button onClick={() => navigate('/explore')}>
-                                        Find accounts to follow &rarr;
-                                    </Button>
+                                    hasTopics ? (
+                                        <Button onClick={() => navigate('/explore')}>
+                                            Find accounts to follow &rarr;
+                                        </Button>
+                                    ) : (
+                                        <Button asChild>
+                                            <a href="https://explore.ghost.org/social-web" rel="noopener noreferrer" target="_blank">
+                                                Find accounts to follow &rarr;
+                                            </a>
+                                        </Button>
+                                    )
                                 }
                                 description="Start following publishers to see their long-form posts here."
                                 title="Your Reader is empty"

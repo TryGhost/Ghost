@@ -6,7 +6,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
-import {useAccountForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 import {useDebounce} from 'use-debounce';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
@@ -127,6 +127,9 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const shouldSearch = query.length >= 2;
     const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', shouldSearch ? debouncedQuery : '');
     const {data, isFetching, isFetched} = searchQuery;
+    const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 5);
+    const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
+    const hasSuggestedProfiles = isLoadingSuggestedProfiles || (suggestedProfilesData && suggestedProfilesData.length > 0);
 
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
 
@@ -184,7 +187,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                         onUpdate={updateResult}
                     />
                 )}
-                {showSuggested && (
+                {showSuggested && hasSuggestedProfiles && (
                     <>
                         <H4>More people to follow</H4>
                         <SuggestedProfiles

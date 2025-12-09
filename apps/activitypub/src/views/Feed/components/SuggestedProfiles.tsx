@@ -2,7 +2,7 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import ProfilePreviewHoverCard from '@components/global/ProfilePreviewHoverCard';
 import {Account} from '@src/api/activitypub';
-import {Button, H4, LucideIcon, Separator, Skeleton, abbreviateNumber} from '@tryghost/shade';
+import {Button, H4, LucideIcon, Separator, Skeleton} from '@tryghost/shade';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
@@ -15,6 +15,19 @@ const SuggestedProfiles: React.FC = () => {
 
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 10);
     const {data: suggestedProfilesData = [], isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
+
+    const updateScrollButtons = () => {
+        const container = scrollContainerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const canScrollL = container.scrollLeft > 0;
+        const canScrollR = container.scrollLeft < container.scrollWidth - container.clientWidth;
+
+        setCanScrollLeft(canScrollL);
+        setCanScrollRight(canScrollR);
+    };
 
     useEffect(() => {
         updateScrollButtons();
@@ -31,29 +44,14 @@ const SuggestedProfiles: React.FC = () => {
 
     const handleFollow = (profile: Account) => {
         updateSuggestedProfile(profile.id, {
-            followedByMe: true,
-            followerCount: profile.followerCount + 1
+            followedByMe: true
         });
     };
 
     const handleUnfollow = (profile: Account) => {
         updateSuggestedProfile(profile.id, {
-            followedByMe: false,
-            followerCount: profile.followerCount - 1
+            followedByMe: false
         });
-    };
-
-    const updateScrollButtons = () => {
-        const container = scrollContainerRef.current;
-        if (!container) {
-            return;
-        }
-
-        const canScrollL = container.scrollLeft > 0;
-        const canScrollR = container.scrollLeft < container.scrollWidth - container.clientWidth;
-
-        setCanScrollLeft(canScrollL);
-        setCanScrollRight(canScrollR);
     };
 
     const scrollLeft = () => {
@@ -153,19 +151,11 @@ const SuggestedProfiles: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <span className='w-full truncate font-semibold text-black dark:text-white'>
+                                    <span className='mb-6 w-full truncate font-semibold text-black dark:text-white'>
                                         {isLoadingSuggestedProfiles ? (
                                             <Skeleton className='h-5 w-32' />
                                         ) : (
                                             profile?.name || ''
-                                        )}
-                                    </span>
-
-                                    <span className='mb-4 truncate text-sm text-gray-700 dark:text-gray-600'>
-                                        {isLoadingSuggestedProfiles ? (
-                                            <Skeleton className='h-4 w-20' />
-                                        ) : (
-                                            `${abbreviateNumber(profile?.followerCount || 0)} ${(profile?.followerCount || 0) === 1 ? 'follower' : 'followers'}`
                                         )}
                                     </span>
 

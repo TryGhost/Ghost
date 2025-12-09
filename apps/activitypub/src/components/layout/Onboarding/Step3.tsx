@@ -16,7 +16,7 @@ import readerCover from '@assets/images/onboarding/cover-reader.png';
 import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
 import tangleCover from '@assets/images/onboarding/cover-tangle.png';
 import {Avatar, AvatarFallback, AvatarImage, Button, H1, LucideIcon, Separator} from '@tryghost/shade';
-import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
+import {useAccountForUser, useTopicsForUser} from '@src/hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from './Onboarding';
 
@@ -302,6 +302,9 @@ const Step3: React.FC = () => {
     const [isHovering, setIsHovering] = useState(false);
     const {setOnboarded} = useOnboardingStatus();
     const navigate = useNavigateWithBasePath();
+    const {topicsQuery} = useTopicsForUser();
+    const {data: topicsData} = topicsQuery;
+    const hasTopics = topicsData && topicsData.topics.length > 0;
 
     useEffect(() => {
         if (isHovering) {
@@ -317,7 +320,7 @@ const Step3: React.FC = () => {
 
     const handleComplete = async () => {
         await setOnboarded(true);
-        navigate('/explore');
+        navigate(hasTopics ? '/explore' : '/');
     };
 
     return (
