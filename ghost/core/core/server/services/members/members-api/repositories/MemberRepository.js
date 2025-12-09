@@ -347,7 +347,8 @@ module.exports = class MemberRepository {
         if (config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source)) {
             const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
             const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            
+            const isFreeSignup = !stripeCustomer;
+
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -358,7 +359,7 @@ module.exports = class MemberRepository {
                 // Only send the free welcome email if:
                 // 1. The free welcome email is active
                 // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if (isFreeWelcomeEmailActive && !stripeCustomer) {
+                if (isFreeWelcomeEmailActive && isFreeSignup) {
                     const timestamp = eventData.created_at || newMember.get('created_at');
 
                     await this._Outbox.add({
@@ -384,7 +385,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if (isFreeWelcomeEmailActive && !stripeCustomer) {
+            if (isFreeWelcomeEmailActive && isFreeSignup) {
                 this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
             }
         } else {
