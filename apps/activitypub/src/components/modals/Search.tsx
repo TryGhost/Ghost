@@ -2,11 +2,11 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import ProfilePreviewHoverCard from '../global/ProfilePreviewHoverCard';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, Input, LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
-import {useAccountForUser, useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useSearchForUser, useSuggestedProfilesForUser, useTopicsForUser} from '@hooks/use-activity-pub-queries';
 import {useDebounce} from 'use-debounce';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
@@ -89,6 +89,55 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     );
 };
 
+interface TopicSearchResultItemProps {
+    topic: {slug: string; name: string};
+    onOpenChange?: (open: boolean) => void;
+}
+
+const TopicSearchResultItem: React.FC<TopicSearchResultItemProps> = ({topic, onOpenChange}) => {
+    const navigate = useNavigateWithBasePath();
+
+    return (
+        <ActivityItem
+            onClick={() => {
+                onOpenChange?.(false);
+                navigate(`/explore/${topic.slug}`);
+            }}
+        >
+            <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900'>
+                <LucideIcon.Globe className='text-gray-700 dark:text-gray-500' size={18} strokeWidth={1.5} />
+            </div>
+            <div className='flex flex-col'>
+                <span className='font-semibold text-black dark:text-white'>{topic.name}</span>
+                <span className='text-sm text-gray-700 dark:text-gray-600'>Topic</span>
+            </div>
+        </ActivityItem>
+    );
+};
+
+interface TopicSearchResultsProps {
+    topics: {slug: string; name: string}[];
+    onOpenChange?: (open: boolean) => void;
+}
+
+const TopicSearchResults: React.FC<TopicSearchResultsProps> = ({topics, onOpenChange}) => {
+    if (!topics.length) {
+        return null;
+    }
+
+    return (
+        <div>
+            {topics.map(topic => (
+                <TopicSearchResultItem
+                    key={topic.slug}
+                    topic={topic}
+                    onOpenChange={onOpenChange}
+                />
+            ))}
+        </div>
+    );
+};
+
 interface SearchResultsProps {
     results: AccountSearchResult[];
     onUpdate: (id: string, updated: Partial<AccountSearchResult>) => void;
@@ -102,7 +151,7 @@ const SearchResults: React.FC<SearchResultsProps & {
     }
 
     return (
-        <div className='mt-[-14px] pb-2'>
+        <div>
             {results.map(account => (
                 <AccountSearchResultItem
                     key={account.id}
@@ -131,7 +180,31 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
     const hasSuggestedProfiles = isLoadingSuggestedProfiles || (suggestedProfilesData && suggestedProfilesData.length > 0);
 
+    const {topicsQuery} = useTopicsForUser();
+    const {data: topicsData} = topicsQuery;
+
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
+
+    // Filter topics client-side (no additional API call needed)
+    const matchingTopics = useMemo(() => {
+        const topics = topicsData?.topics || [];
+
+        if (!shouldSearch || topics.length === 0) {
+            return [];
+        }
+
+        const normalizedQuery = query.toLowerCase();
+
+        return topics.filter((topic) => {
+            // Exclude "following" meta-topic from search results
+            if (topic.slug === 'following') {
+                return false;
+            }
+
+            return topic.name.toLowerCase().startsWith(normalizedQuery) ||
+                   topic.slug.toLowerCase().startsWith(normalizedQuery);
+        });
+    }, [query, shouldSearch, topicsData?.topics]);
 
     useEffect(() => {
         if (data?.accounts && data.accounts.length > 0) {
@@ -142,9 +215,10 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     }, [data?.accounts, isFetching, shouldSearch]);
 
     const showLoading = isFetching && shouldSearch;
-    const showNoResults = !isFetching && isFetched && displayResults.length === 0 && shouldSearch && debouncedQuery === query;
-    const showSuggested = query.length < 2 || (showLoading && displayResults.length === 0);
-    const showSearchResults = shouldSearch && displayResults.length > 0;
+    const hasAnyResults = matchingTopics.length > 0 || displayResults.length > 0;
+    const showNoResults = !isFetching && isFetched && !hasAnyResults && shouldSearch && debouncedQuery === query;
+    const showSuggested = query.length < 2 || (showLoading && !hasAnyResults);
+    const showSearchResults = shouldSearch && hasAnyResults;
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -181,11 +255,17 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                     </div>
                 )}
                 {showSearchResults && (
-                    <SearchResults
-                        results={displayResults}
-                        onOpenChange={onOpenChange}
-                        onUpdate={updateResult}
-                    />
+                    <div className='mt-[-14px] pb-2'>
+                        <TopicSearchResults
+                            topics={matchingTopics}
+                            onOpenChange={onOpenChange}
+                        />
+                        <SearchResults
+                            results={displayResults}
+                            onOpenChange={onOpenChange}
+                            onUpdate={updateResult}
+                        />
+                    </div>
                 )}
                 {showSuggested && hasSuggestedProfiles && (
                     <>
