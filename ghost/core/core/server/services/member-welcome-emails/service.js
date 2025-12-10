@@ -101,6 +101,47 @@ class MemberWelcomeEmailService {
         const row = await AutomatedEmail.findOne({slug});
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
     }
+
+    async sendTestEmail({email, automatedEmailId}) {
+        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending test welcome email to ${email}`);
+
+        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
+
+        if (!automatedEmail) {
+            throw new errors.NotFoundError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
+        const lexical = automatedEmail.get('lexical');
+        const subject = automatedEmail.get('subject');
+
+        const siteSettings = {
+            title: settingsCache.get('title') || 'Ghost',
+            url: urlUtils.urlFor('home', true),
+            accentColor: settingsCache.get('accent_color') || '#15212A'
+        };
+
+        const testMember = {
+            name: 'Jamie Larson',
+            email: email
+        };
+
+        const {html, text, subject: renderedSubject} = await this.#renderer.render({
+            lexical,
+            subject,
+            member: testMember,
+            siteSettings
+        });
+
+        await this.#mailer.send({
+            to: email,
+            subject: `[Test] ${renderedSubject}`,
+            html,
+            text,
+            forceTextContent: true
+        });
+    }
 }
 
 class MemberWelcomeEmailServiceWrapper {

@@ -1,7 +1,8 @@
 // Filename must match the docName specified in ../../../automated-emails.js
 /* eslint-disable ghost/filenames/match-regex */
 
-const {ValidationError} = require('@tryghost/errors');
+const validator = require('@tryghost/validator');
+const {ValidationError, BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
@@ -12,7 +13,8 @@ const messages = {
     invalidStatus: `Status must be one of: ${ALLOWED_STATUSES.join(', ')}`,
     invalidLexical: 'Lexical must be a valid JSON string',
     invalidSlug: `Slug must be one of: ${ALLOWED_SLUGS.join(', ')}`,
-    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`
+    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
+    invalidEmailReceived: 'The server did not receive a valid email'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -63,5 +65,14 @@ module.exports = {
     },
     async edit(apiConfig, frame) {
         await validateAutomatedEmail(frame);
+    },
+    sendTestEmail(apiConfig, frame) {
+        const email = frame.data.email;
+
+        if (typeof email !== 'string' || !validator.isEmail(email)) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidEmailReceived)
+            });
+        }
     }
 };
