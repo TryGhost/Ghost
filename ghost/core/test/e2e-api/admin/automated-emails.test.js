@@ -1,5 +1,7 @@
 const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const sinon = require('sinon');
+const mailService = require('../../../core/server/services/mail');
 
 const matchAutomatedEmail = {
     id: anyObjectId,
@@ -302,6 +304,110 @@ describe('Automated Emails API', function () {
             await agent
                 .delete('automated_emails/abcd1234abcd1234abcd1234')
                 .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
+
+    describe('SendTestEmail', function () {
+        let automatedEmailId;
+
+        const validLexical = JSON.stringify({
+            root: {
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Welcome!',
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        });
+
+        beforeEach(async function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+            await agent.loginAsOwner();
+            const automatedEmail = await createAutomatedEmail({
+                status: 'active',
+                lexical: validLexical
+            });
+            automatedEmailId = automatedEmail.id;
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can send test email', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({email: 'test@ghost.org'})
+                .expectStatus(204)
+                .expectEmptyBody()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email for non-existent automated email', async function () {
+            await agent
+                .post('automated_emails/abcd1234abcd1234abcd1234/test/')
+                .body({email: 'test@ghost.org'})
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without email in body', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({})
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email with invalid email format', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({email: 'not-a-valid-email'})
+                .expectStatus(400)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId

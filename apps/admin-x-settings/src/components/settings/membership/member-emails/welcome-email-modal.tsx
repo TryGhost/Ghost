@@ -1,13 +1,15 @@
 import NiceModal from '@ebay/nice-modal-react';
+import validator from 'validator';
 import {useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import {Button, Hint, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
-import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useEditAutomatedEmail, useSendTestWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../../../components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -46,9 +48,13 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {updateRoute} = useRouting();
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: sendTestEmail} = useSendTestWelcomeEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [testEmail, setTestEmail] = useState(currentUser?.email || '');
+    const [testEmailError, setTestEmailError] = useState('');
+    const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent'>('idle');
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const sendStateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const handleError = useHandleError();
     const {settings} = useGlobalData();
     const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
@@ -120,6 +126,36 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         };
     }, []);
 
+    useEffect(() => () => clearTimeout(sendStateTimeoutRef.current!), []);
+
+    const handleSendTestEmail = async () => {
+        setTestEmailError('');
+
+        if (!validator.isEmail(testEmail)) {
+            setTestEmailError('Please enter a valid email address');
+            return;
+        }
+
+        setSendState('sending');
+
+        try {
+            await handleSave({fakeWhenUnchanged: true});
+            await sendTestEmail({id: automatedEmail.id, email: testEmail});
+            setSendState('sent');
+            clearTimeout(sendStateTimeoutRef.current!);
+            sendStateTimeoutRef.current = setTimeout(() => setSendState('idle'), 2500);
+        } catch (error) {
+            setSendState('idle');
+            let message;
+            if (error instanceof JSONError && error.data && error.data.errors[0]) {
+                message = error.data.errors[0].context || error.data.errors[0].message;
+            } else if (error instanceof Error) {
+                message = error.message;
+            }
+            setTestEmailError(message || 'Failed to send test email');
+        }
+    };
+
     const senderEmail = automatedEmail?.sender_email || defaultEmailAddress;
     const replyToEmail = automatedEmail?.sender_reply_to || defaultEmailAddress;
 
@@ -152,22 +188,22 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             <label className='mb-2 block text-sm font-semibold'>Send test email</label>
                                             <TextField
                                                 className='!h-[36px]'
+                                                error={Boolean(testEmailError)}
+                                                hint={testEmailError}
                                                 placeholder='you@yoursite.com'
                                                 value={testEmail}
-                                                onChange={e => setTestEmail(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className='flex justify-end'>
-                                            <Button
-                                                className='w-full'
-                                                color="black"
-                                                label="Send"
-                                                onClick={() => {
-                                                    // Handle send test email logic here
-                                                    setShowTestDropdown(false);
+                                                onChange={(e) => {
+                                                    setTestEmail(e.target.value);
                                                 }}
                                             />
                                         </div>
+                                        <Button
+                                            className='w-full'
+                                            color={sendState === 'sent' ? 'green' : 'black'}
+                                            disabled={sendState === 'sending'}
+                                            label={sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
+                                            onClick={handleSendTestEmail}
+                                        />
                                     </div>
                                 )}
                             </div>
