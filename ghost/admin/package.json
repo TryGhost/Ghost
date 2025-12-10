@@ -124,7 +124,7 @@
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
     "fs-extra": "11.3.0",
-    "glob": "8.1.0",
+    "glob": "10.5.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
     "liquid-fire": "0.34.0",
