@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { z } from 'zod';
 import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
-import { NavMenuItem } from './NavMenuItem';
+import { NavMenuItem } from './nav-menu-item';
 import { useEmberRouting } from '@/ember-bridge';
 
 const customViewSchema = z.object({
@@ -35,19 +35,19 @@ interface NavCustomViewsProps {
 export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
     const { data: settingsData } = useBrowseSettings();
     const routing = useEmberRouting();
-    
+
     const customViews = useMemo(() => {
         const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
-        
+
         try {
             const parsed: unknown = JSON.parse(sharedViewsJson);
             const result = customViewsArraySchema.safeParse(parsed);
-            
+
             if (!result.success) {
                 console.error('Failed to validate shared_views setting:', result.error);
                 return [];
             }
-            
+
             return result.data.filter(view => view.route === route);
         } catch (e) {
             console.error('Failed to parse shared_views setting:', e);
@@ -64,11 +64,11 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
             {customViews.map((view) => {
                 const viewUrl = routing.getRouteUrl(route, view.filter);
                 const isActive = routing.isRouteActive(route, view.filter);
-                
+
                 return (
                     <NavMenuItem key={viewUrl}>
-                        <NavMenuItem.Link 
-                            className="pl-9" 
+                        <NavMenuItem.Link
+                            className="pl-9"
                             to={viewUrl}
                             isActive={isActive}
                         >

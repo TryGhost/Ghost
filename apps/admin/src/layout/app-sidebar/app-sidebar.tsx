@@ -4,9 +4,9 @@ import {
     Sidebar
 } from "@tryghost/shade"
 
-import AppSidebarHeader from "./AppSidebarHeader";
-import AppSidebarFooter from "./AppSidebarFooter";
-import AppSidebarContent from "./AppSidebarContent";
+import AppSidebarHeader from "./app-sidebar-header";
+import AppSidebarFooter from "./app-sidebar-footer";
+import AppSidebarContent from "./app-sidebar-content";
 
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (

@@ -5,7 +5,7 @@ import {
     SidebarTrigger,
     useSidebar,
 } from "@tryghost/shade";
-import { useIsActiveLink } from "./useIsActiveLink";
+import { useIsActiveLink } from "./use-is-active-link";
 
 const ICON_STROKE_WIDTH = 1.5;
 

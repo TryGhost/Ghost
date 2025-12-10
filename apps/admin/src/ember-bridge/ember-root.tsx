@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef } from "react";
-import { useEmberContext } from "./EmberContext";
+import { useEmberContext } from "./ember-context";
 
 export const EmberRoot = React.memo(function EmberRoot() {
     const ref = useRef<HTMLDivElement>(null);

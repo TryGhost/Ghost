@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, beforeEach, afterEach, vi, test as baseTest } from "vitest";
 import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
 import type { QueryClient } from "@tanstack/react-query";
-import type { StateBridge, StateBridgeEventMap } from "./EmberBridge";
+import type { StateBridge, StateBridgeEventMap } from "./ember-bridge";
 
 const queryTest = baseTest.extend<{
     queryClient: QueryClient;
@@ -59,15 +59,15 @@ declare global {
     }
 }
 
-let useEmberDataSync: typeof import('./EmberBridge').useEmberDataSync;
-let useEmberAuthSync: typeof import('./EmberBridge').useEmberAuthSync;
-let useSidebarVisibility: typeof import('./EmberBridge').useSidebarVisibility;
-let useEmberRouting: typeof import('./EmberBridge').useEmberRouting;
+let useEmberDataSync: typeof import('./ember-bridge').useEmberDataSync;
+let useEmberAuthSync: typeof import('./ember-bridge').useEmberAuthSync;
+let useSidebarVisibility: typeof import('./ember-bridge').useSidebarVisibility;
+let useEmberRouting: typeof import('./ember-bridge').useEmberRouting;
 
 beforeEach(async () => {
     vi.resetModules();
     vi.useRealTimers();
-    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility, useEmberRouting } = await import('./EmberBridge'));
+    ({ useEmberDataSync, useEmberAuthSync, useSidebarVisibility, useEmberRouting } = await import('./ember-bridge'));
     delete window.EmberBridge;
 });
 
