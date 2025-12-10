@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 
 export interface EmberBridge {
     state: StateBridge;
@@ -42,9 +43,10 @@ export interface EmberAuthChangeEvent {
 }
 
 export interface SubscriptionState {
-    subscription: {
+    subscription?: {
         isActiveTrial: boolean;
         trial_end: string | null;
+        status: string;
     };
 }
 
@@ -278,5 +280,34 @@ export function useEmberRouting(): EmberRouting {
         getRouteUrl: bridge.getRouteUrl,
         isRouteActive: bridge.isRouteActive
     };
+}
+
+/**
+ * Hook to get the forceUpgrade state.
+ *
+ * Returns true when the site is in force upgrade mode (requires billing action).
+ *
+ * Force upgrade state is determined by:
+ * 1. Config hostSettings.forceUpgrade (set by server, requires restart to change)
+ * 2. Subscription status (if subscription becomes 'active', forceUpgrade is cleared)
+ */
+export function useForceUpgrade(): boolean {
+    const { data: config } = useBrowseConfig();
+    const subscriptionStatus = useSubscriptionStatus();
+
+    const configForceUpgrade = config?.config?.hostSettings?.forceUpgrade;
+
+    // If config doesn't have forceUpgrade, we're not in force upgrade mode
+    if (!configForceUpgrade) {
+        return false;
+    }
+
+    // If subscription has become active, billing was completed successfully
+    // The server config hasn't restarted yet, but we can clear forceUpgrade locally
+    if (subscriptionStatus?.subscription?.status === 'active') {
+        return false;
+    }
+
+    return true;
 }
 

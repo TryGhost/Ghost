@@ -19,6 +19,7 @@ export interface GhostConfig {
     memberWelcomeEmailTestInbox?: string;
     hostSettings__billing__enabled?: string;
     hostSettings__billing__url?: string;
+    hostSettings__forceUpgrade?: string;
 }
 
 export interface GhostInstanceFixture {
