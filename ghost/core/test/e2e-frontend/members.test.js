@@ -664,7 +664,7 @@ describe('Front-end members behavior', function () {
                 const sigCookieCleared = setCookieHeaders.some(cookie => cookie.startsWith('ghost-members-ssr.sig=') && cookie.includes('expires=Thu, 01 Jan 1970 00:00:00 GMT'));
 
                 assert.ok(sigCookieCleared, 'ghost-members-ssr.sig cookie should be cleared with expiry in the past');
-                assert.ok(mainCookieCleared, 'ghost-members-ssr cookie should be cleared with expiry in the past (this is the fix)');
+                assert.ok(mainCookieCleared, 'ghost-members-ssr cookie should be cleared with expiry in the past');
             });
 
             it('an invalid token causes a set-cookie logout when requesting the identity', async function () {
