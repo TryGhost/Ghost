@@ -12,6 +12,7 @@ const db = require('../../../core/server/data/db');
 const settingsCache = require('../../../core/shared/settings-cache');
 const events = require('../../../core/server/lib/common/events');
 const configUtils = require('../../utils/configUtils');
+const urlUtilsHelper = require('../../utils/urlUtils');
 const context = testUtils.context.owner;
 const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
@@ -1310,6 +1311,128 @@ describe('Post Model', function () {
                         lexicalString.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
                         lexicalString.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
                         lexicalString.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    });
+                });
+            });
+
+            describe('URL transformations with CDN config', function () {
+                const siteUrl = 'http://127.0.0.1:2369';
+                const cdnUrl = 'https://cdn.example.com/c/site-uuid';
+
+                beforeEach(function () {
+                    urlUtilsHelper.stubUrlUtilsWithCdn({
+                        assetBaseUrls: {
+                            media: cdnUrl,
+                            files: cdnUrl
+                        }
+                    }, sinon);
+                });
+
+                describe('Mobiledoc', function () {
+                    it('transforms file card src to files CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
+                        fileCard[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
+                    });
+
+                    it('transforms video card src to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
+                        videoCard[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
+                    });
+
+                    it('transforms audio card src to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
+                        audioCard[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
+                    });
+
+                    it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledocString = post.get('mobiledoc');
+                        mobiledocString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                    });
+
+                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                    });
+
+                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
+                        galleryCard[1].images.forEach((image) => {
+                            image.src.should.startWith(siteUrl);
+                            image.src.should.containEql('/content/images/');
+                        });
+                    });
+
+                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
+                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                    });
+
+                    it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
+                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                    });
+                });
+
+                describe('Lexical', function () {
+                    it('transforms file URLs to files CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/files/document.pdf`);
+                    });
+
+                    it('transforms video/audio URLs to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/video.mp4`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
+                    });
+
+                    it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                    });
+
+                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                    });
+
+                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-2.jpg`);
+                    });
+
+                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    });
+
+                    it('transforms video/audio thumbnails to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
                     });
                 });
             });
