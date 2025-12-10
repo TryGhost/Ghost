@@ -33,7 +33,7 @@ describe('Search Index Content API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(11)
+                    posts: new Array(13)
                         .fill(searchIndexPostMatcher)
                 });
 
@@ -85,7 +85,7 @@ describe('Search Index Content API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    tags: new Array(6)
+                    tags: new Array(7)
                         .fill(searchIndexTagMatcher)
                 });
         });

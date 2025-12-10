@@ -131,7 +131,7 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.page.should.equal(1);
                                 paginationResult.meta.pagination.limit.should.equal('all');
                                 paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(108);
+                                paginationResult.data.length.should.equal(110);
 
                                 done();
                             }).catch(done);
@@ -165,7 +165,7 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.page.should.equal(2);
                                 paginationResult.meta.pagination.limit.should.equal(15);
                                 paginationResult.meta.pagination.pages.should.equal(2);
-                                paginationResult.data.length.should.equal(10);
+                                paginationResult.data.length.should.equal(11);
 
                                 done();
                             }).catch(done);

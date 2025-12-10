@@ -25,7 +25,7 @@ describe('Tag API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(6);
+        jsonResponse.tags.should.have.length(7);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
         testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
@@ -34,16 +34,20 @@ describe('Tag API', function () {
         jsonResponse.meta.pagination.should.have.property('page', 1);
         jsonResponse.meta.pagination.should.have.property('limit', 15);
         jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 6);
+        jsonResponse.meta.pagination.should.have.property('total', 7);
         jsonResponse.meta.pagination.should.have.property('next', null);
         jsonResponse.meta.pagination.should.have.property('prev', null);
 
         // returns 404 because this tag has no published posts
         jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);
-        jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
 
-        should.exist(jsonResponse.tags[0].count.posts);
-        jsonResponse.tags[0].count.posts.should.equal(1);
+        // Find specific tags by slug to verify URL generation
+        const kitchenSinkTag = jsonResponse.tags.find(t => t.slug === 'kitchen-sink');
+
+        // kitchen-sink has published posts, so it should have a valid URL
+        kitchenSinkTag.url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
+        should.exist(kitchenSinkTag.count.posts);
+        kitchenSinkTag.count.posts.should.equal(2);
     });
 
     it('Can paginate tags', async function () {

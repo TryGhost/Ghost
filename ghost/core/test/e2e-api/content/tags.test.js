@@ -35,7 +35,7 @@ describe('Tags Content API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
-        jsonResponse.tags.should.have.length(4);
+        jsonResponse.tags.should.have.length(5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
@@ -47,7 +47,7 @@ describe('Tags Content API', function () {
             jsonResponse.tags[3].name.should.eql('kitchen sink');
         } else {
             jsonResponse.tags[0].name.should.eql('Getting Started');
-            jsonResponse.tags[3].name.should.eql('kitchen sink');
+            jsonResponse.tags[4].name.should.eql('kitchen sink');
         }
 
         should.exist(res.body.tags[0].url);
@@ -66,7 +66,7 @@ describe('Tags Content API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse.tags);
         localUtils.API.checkResponse(jsonResponse, 'tags');
-        jsonResponse.tags.should.have.length(4);
+        jsonResponse.tags.should.have.length(5);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
@@ -97,7 +97,7 @@ describe('Tags Content API', function () {
         const jsonResponse = res.body;
 
         should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.be.an.Array().with.lengthOf(4);
+        jsonResponse.tags.should.be.an.Array().with.lengthOf(5);
 
         // Each tag should have the correct count
         _.find(jsonResponse.tags, {name: 'Getting Started'}).count.posts.should.eql(7);

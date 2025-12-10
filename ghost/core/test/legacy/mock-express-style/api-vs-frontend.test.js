@@ -1311,7 +1311,7 @@ describe('Frontend behavior tests', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
 
-                        $('.post-card').length.should.equal(4);
+                        $('.post-card').length.should.equal(6);
                     });
             });
 

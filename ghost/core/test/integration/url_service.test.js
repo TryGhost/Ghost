@@ -51,7 +51,7 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts') {
-                    generator.getUrls().length.should.eql(2);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'pages') {
@@ -59,7 +59,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(3);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'authors') {
@@ -152,7 +152,7 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts' && generator.filter === 'type:post') {
-                    generator.getUrls().length.should.eql(2);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:true') {
@@ -164,7 +164,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(3);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'authors') {
@@ -246,7 +246,7 @@ describe('Integration: services/url/UrlService', function () {
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:false') {
-                    generator.getUrls().length.should.eql(2);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'posts' && generator.filter === 'featured:true') {
@@ -258,7 +258,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.resourceType === 'tags') {
-                    generator.getUrls().length.should.eql(3);
+                    generator.getUrls().length.should.eql(4);
                 }
 
                 if (generator.resourceType === 'authors') {

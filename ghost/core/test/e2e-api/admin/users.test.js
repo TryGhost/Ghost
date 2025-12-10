@@ -111,7 +111,7 @@ describe('User API', function () {
                     ...userMatcher,
                     roles: anyArray,
                     count: {
-                        posts: 8
+                        posts: 10
                     }
                 }]
             })

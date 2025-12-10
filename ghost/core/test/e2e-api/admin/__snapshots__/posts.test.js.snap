@@ -7,9 +7,9 @@ Object {
       "limit": 2,
       "next": 2,
       "page": 1,
-      "pages": 7,
+      "pages": 8,
       "prev": null,
-      "total": 13,
+      "total": 15,
     },
   },
   "posts": Array [
@@ -554,9 +554,9 @@ Object {
       "limit": 2,
       "next": 2,
       "page": 1,
-      "pages": 7,
+      "pages": 8,
       "prev": null,
-      "total": 13,
+      "total": 15,
     },
   },
   "posts": Array [
@@ -1835,7 +1835,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "2716",
+  "content-length": "3172",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1854,6 +1854,8 @@ Object {
 6194d3ce51e2700162531a73,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,0,0
 6194d3ce51e2700162531a72,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0
 6194d3ce51e2700162531a71,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0
+618ba1ffbe2896088840a6f1,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0
+618ba1ffbe2896088840a700,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0
 618ba1ffbe2896088840a6e7,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,0,0
 618ba1ffbe2896088840a6e3,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,0,0
 618ba1ffbe2896088840a6e1,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,,,,,0,0
@@ -1909,7 +1911,7 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "2716",
+  "content-length": "3172",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1925,6 +1927,8 @@ Object {
 618ba1ffbe2896088840a6e1,Ghostly Kitchen Sink,http://127.0.0.1:2369/ghostly-kitchen-sink/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,\\"kitchen sink, bacon\\",Public,,,,,0,0
 618ba1ffbe2896088840a6e3,Short and Sweet,http://127.0.0.1:2369/short-and-sweet/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,chorizo,Public,,,,,0,0
 618ba1ffbe2896088840a6e7,\\"Not so short, bit complex\\",http://127.0.0.1:2369/not-so-short-bit-complex/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,true,,Public,,,,,0,0
+618ba1ffbe2896088840a700,Post with all media types - Mobiledoc,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0
+618ba1ffbe2896088840a6f1,Post with all media types - Lexical,http://127.0.0.1:2369/404/,Joe Bloggs,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Tag with images,Public,,,,,0,0
 6194d3ce51e2700162531a71,Setting up apps and custom integrations,http://127.0.0.1:2369/integrations/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0
 6194d3ce51e2700162531a72,How to grow your business around an audience,http://127.0.0.1:2369/grow/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Public,,,,,0,0
 6194d3ce51e2700162531a73,Selling premium memberships with recurring revenue,http://127.0.0.1:2369/sell/,Ghost,published only,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,2050-01-01T00:00:00.000Z,false,Getting Started,Paid members-only,,,,,0,0
