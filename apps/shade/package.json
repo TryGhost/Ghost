@@ -108,7 +108,7 @@
         "sonner": "2.0.7",
         "tailwind-merge": "2.6.0",
         "validator": "13.12.0",
-        "zod": "4.1.12"
+        "zod": "4.1.13"
     },
     "peerDependencies": {
         "react": "^18.2.0",
