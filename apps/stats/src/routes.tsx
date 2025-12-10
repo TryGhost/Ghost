@@ -1,8 +1,4 @@
-import Growth from './views/Stats/Growth';
-import Newsletters from './views/Stats/Newsletters';
-import Overview from './views/Stats/Overview';
-import Web from './views/Stats/Web';
-import {RouteObject} from '@tryghost/admin-x-framework';
+import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from './hooks/withFeatureFlag';
 
 export const APP_ROUTE_PREFIX = '/';
@@ -17,19 +13,19 @@ export const routes: RouteObject[] = [
         children: [
             {
                 index: true,
-                element: <Overview />
+                lazy: lazyComponent(() => import('./views/Stats/Overview'))
             },
             {
                 path: 'web',
-                element: <Web />
+                lazy: lazyComponent(() => import('./views/Stats/Web'))
             },
             {
                 path: 'growth',
-                element: <Growth />
+                lazy: lazyComponent(() => import('./views/Stats/Growth'))
             },
             {
                 path: 'newsletters',
-                element: <Newsletters />
+                lazy: lazyComponent(() => import('./views/Stats/Newsletters'))
             }
         ]
     }
