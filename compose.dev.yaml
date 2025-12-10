@@ -98,6 +98,9 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_healthy
+      stripe:
+        condition: service_healthy
+        required: false
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
       timeout: 5s
@@ -133,9 +136,7 @@ services:
       - shared-config:/mnt/shared-config
     environment:
       - GHOST_URL=http://ghost-dev:2368
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
     healthcheck:
       test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
       interval: 1s
