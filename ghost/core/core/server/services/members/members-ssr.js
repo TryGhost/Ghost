@@ -145,6 +145,11 @@ class MembersSSR {
         const cookies = this._getCookies(req, res);
         const value = cookies.get(this.sessionCookieName, {signed: true});
         if (!value) {
+            // Clear orphaned cookie (cookies library only clears .sig on invalid signature)
+            const unsignedValue = cookies.get(this.sessionCookieName, {signed: false});
+            if (unsignedValue) {
+                cookies.set(this.sessionCookieName, null, {...this.sessionCookieOptions, signed: false});
+            }
             throw new BadRequestError({
                 message: `Cookie ${this.sessionCookieName} not found`
             });
