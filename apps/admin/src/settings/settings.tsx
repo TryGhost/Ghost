@@ -1,7 +1,7 @@
 import { App } from "@tryghost/admin-x-settings/src/app";
 import { createPortal } from "react-dom";
 
-export function Settings() {
+export default function Settings() {
     return createPortal(
         <div
             className="shade shade-admin"

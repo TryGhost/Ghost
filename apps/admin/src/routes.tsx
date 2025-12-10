@@ -1,4 +1,4 @@
-import { type RouteObject, Outlet, redirect } from "@tryghost/admin-x-framework";
+import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
 import { FeatureFlagsProvider } from "@tryghost/activitypub/src/lib/feature-flags";
@@ -11,9 +11,6 @@ import { routes as postRoutes } from "@tryghost/posts/src/routes";
 // Stats (aka analytics)
 import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provider";
 import { routes as statsRoutes } from "@tryghost/stats/src/routes";
-
-// Settings
-import { Settings } from "./settings/settings";
 
 // Ember
 import { EmberFallback } from "./ember-bridge";
@@ -59,7 +56,7 @@ export const routes: RouteObject[] = [
     },
     {
         path: `settings/*`,
-        element: <Settings />,
+        lazy: lazyComponent(() => import("./settings/settings")),
     },
     {
         path: "*",
