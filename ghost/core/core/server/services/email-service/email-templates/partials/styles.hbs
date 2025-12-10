@@ -356,27 +356,17 @@ h6 + .kg-paywall .kg-paywall-hr td {
 }
 
 /* Apply custom content text color to main content elements */
-.post-content-row > td > p,
-.post-content-row .post-content > p,
-.post-content-row .post-content-sans-serif > p,
-.post-content-row > td > blockquote:not(.kg-blockquote-alt),
-.post-content-row .post-content > blockquote:not(.kg-blockquote-alt),
-.post-content-row .post-content-sans-serif > blockquote:not(.kg-blockquote-alt),
-.post-content-row > td > blockquote:not(.kg-blockquote-alt) p,
-.post-content-row .post-content > blockquote:not(.kg-blockquote-alt) p,
-.post-content-row .post-content-sans-serif > blockquote:not(.kg-blockquote-alt) p,
-.post-content-row .kg-cta-bg-none .kg-cta-text p,
-.post-content-row .kg-cta-bg-white .kg-cta-text p,
-.post-content-row .kg-product-description-wrapper p {
+.post-content-row p {
     color: {{#if backgroundIsDark}}#ffffff{{else}}#15212A{{/if}} !important;
 }
-
-
 
 /* Exclude paragraphs inside cards from custom text color (except CTA cards which are handled separately) */
 .post-content-row .kg-card:not(.kg-cta-card) p,
 .post-content-row .kg-toggle-content p,
-.post-content-row .kg-callout-text {
+.post-content-row .kg-callout-text,
+.post-content-row .kg-cta-sponsor-label p,
+.post-content-row .kg-header-card p,
+.post-content-row .kg-header-card td {
     color: inherit !important;
 }
 
@@ -1722,6 +1712,10 @@ img.kg-cta-image {
     margin: 0;
     font-size: 17px;
     line-height: 1.4;
+    opacity: 0.7;
+}
+
+.kg-product-description-wrapper li {
     opacity: 0.7;
 }
 
