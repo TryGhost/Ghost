@@ -15,7 +15,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
             <div className="mt-2 text-gray-700 text-sm mb-4">
                 Choose a plan to access the full power of Ghost right away, you have <span className="font-semibold text-black">{trialDaysRemaining} days</span> free trial remaining.
             </div>
-            <Button>Upgrade now</Button>
+            <Button asChild><a href="#/pro/billing/plans">Upgrade now</a></Button>
         </Banner>
     )
 }

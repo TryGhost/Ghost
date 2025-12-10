@@ -15,8 +15,10 @@ export interface User {
 }
 
 export interface GhostConfig {
-    memberWelcomeEmailSendInstantly: string;
-    memberWelcomeEmailTestInbox: string;
+    memberWelcomeEmailSendInstantly?: string;
+    memberWelcomeEmailTestInbox?: string;
+    hostSettings__billing__enabled?: string;
+    hostSettings__billing__url?: string;
 }
 
 export interface GhostInstanceFixture {

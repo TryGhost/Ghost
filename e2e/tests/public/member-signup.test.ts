@@ -52,7 +52,7 @@ test.describe('Ghost Public - Member Signup', () => {
         const automatedEmailFactory = createAutomatedEmailFactory(page.request);
         await automatedEmailFactory.create();
 
-        const emailInbox = config!.memberWelcomeEmailTestInbox;
+        const emailInbox = config!.memberWelcomeEmailTestInbox!;
         const homePage = new HomePage(page);
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
