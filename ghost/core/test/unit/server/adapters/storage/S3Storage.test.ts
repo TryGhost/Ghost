@@ -181,12 +181,125 @@ describe('S3Storage', function () {
         }, /missing expected storagePath/);
     });
 
-    it('serve middleware short-circuits to next handler', function (done) {
-        const {storage} = createStorage();
+    describe('serve middleware', function () {
+        it('redirects to CDN URL with 301 status', function () {
+            const {storage} = createStorage();
 
-        const middleware = storage.serve();
-        middleware({} as any, {} as any, () => {
-            done();
+            const middleware = storage.serve();
+            const req = {path: '/2024/06/video.mp4'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(
+                res.redirect,
+                301,
+                'https://cdn.example.com/configurable/prefix/content/files/2024/06/video.mp4'
+            );
+            sinon.assert.notCalled(next);
+        });
+
+        it('redirects without tenant prefix when not configured', function () {
+            const {storage} = createStorage({tenantPrefix: ''});
+
+            const middleware = storage.serve();
+            const req = {path: '/2024/06/podcast.mp3'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(
+                res.redirect,
+                301,
+                'https://cdn.example.com/content/files/2024/06/podcast.mp3'
+            );
+            sinon.assert.notCalled(next);
+        });
+
+        it('handles deeply nested paths', function () {
+            const {storage} = createStorage();
+
+            const middleware = storage.serve();
+            const req = {path: '/2024/06/subfolder/another/video.mp4'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(
+                res.redirect,
+                301,
+                'https://cdn.example.com/configurable/prefix/content/files/2024/06/subfolder/another/video.mp4'
+            );
+        });
+
+        it('preserves URL-encoded characters in path', function () {
+            const {storage} = createStorage({tenantPrefix: ''});
+
+            const middleware = storage.serve();
+            const req = {path: '/2024/06/my%20file%20(1).mp4'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(
+                res.redirect,
+                301,
+                'https://cdn.example.com/content/files/2024/06/my%20file%20(1).mp4'
+            );
+        });
+
+        it('falls through to next middleware for empty path', function () {
+            const {storage} = createStorage();
+
+            const middleware = storage.serve();
+            const req = {path: ''};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.calledOnce(next);
+        });
+
+        it('falls through to next middleware for root path', function () {
+            const {storage} = createStorage();
+
+            const middleware = storage.serve();
+            const req = {path: '/'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.notCalled(res.redirect);
+            sinon.assert.calledOnce(next);
+        });
+
+        it('strips leading slashes from path when building redirect URL', function () {
+            const {storage} = createStorage({tenantPrefix: ''});
+
+            const middleware = storage.serve();
+            const req = {path: '///2024/06/file.mp4'};
+            const res = {redirect: sinon.stub()};
+            const next = sinon.stub();
+
+            middleware(req as any, res as any, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(
+                res.redirect,
+                301,
+                'https://cdn.example.com/content/files/2024/06/file.mp4'
+            );
         });
     });
 
