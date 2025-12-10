@@ -5,13 +5,14 @@ interface ActivityItemProps {
     url?: string | null;
     onClick?: () => void;
     'data-testid'?: string;
+    isSelected?: boolean;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClick, 'data-testid': testId}) => {
+const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClick, 'data-testid': testId, isSelected = false}) => {
     const childrenArray = React.Children.toArray(children);
 
     const Item = (
-        <div className='relative flex w-full max-w-[620px] cursor-pointer flex-col before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950' data-testid={testId} onClick={() => {
+        <div className={`relative flex w-full max-w-[620px] cursor-pointer flex-col before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:transition-opacity hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950 ${isSelected ? 'z-10 before:opacity-100' : 'before:opacity-0'}`} data-testid={testId} onClick={() => {
             if (!url && onClick) {
                 onClick();
             }
