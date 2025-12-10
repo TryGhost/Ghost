@@ -145,9 +145,9 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 top: container.scrollTop - (containerRect.top + STICKY_HEADER_HEIGHT - elementRect.top),
                 behavior: 'smooth'
             });
-        } else if (elementRect.bottom > containerRect.bottom) {
+        } else if (elementRect.bottom > containerRect.bottom - STICKY_HEADER_HEIGHT) {
             container.scrollTo({
-                top: container.scrollTop + (elementRect.bottom - containerRect.bottom),
+                top: container.scrollTop + (elementRect.bottom - containerRect.bottom + STICKY_HEADER_HEIGHT),
                 behavior: 'smooth'
             });
         }
