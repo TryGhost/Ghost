@@ -61,7 +61,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(4).fill(newsletterSnapshot)
+                newsletters: new Array(5).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -88,7 +88,7 @@ describe('Newsletters API', function () {
             .get(`newsletters/?include=count.members,count.active_members,count.posts`)
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(4).fill(newsletterSnapshot)
+                newsletters: new Array(5).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -324,15 +324,15 @@ describe('Newsletters API', function () {
                             details: {
                                 name: 'newsletters',
                                 limit: 0,
-                                total: 3
+                                total: 4
                             }
                         }]
                     });
 
-                // Reset the limit back to 3 for other tests
+                // Reset the limit back to 4 for other tests
                 configUtils.set('hostSettings:limits', {
                     newsletters: {
-                        max: 3,
+                        max: 4,
                         error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
                     }
                 });
@@ -343,7 +343,7 @@ describe('Newsletters API', function () {
             before(async function () {
                 configUtils.set('hostSettings:limits', {
                     newsletters: {
-                        max: 3,
+                        max: 4,
                         error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
                     }
                 });
@@ -356,7 +356,7 @@ describe('Newsletters API', function () {
             it('Adding newsletter fails', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const newsletter = {
                     name: 'Naughty newsletter'
@@ -373,14 +373,14 @@ describe('Newsletters API', function () {
                         }]
                     })
                     .expect(({body}) => {
-                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 4 newsletters. Please upgrade to add more.');
                     });
             });
 
             it('Adding newsletter fails without transaction', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const newsletter = {
                     name: 'Naughty newsletter'
@@ -399,14 +399,14 @@ describe('Newsletters API', function () {
                         }]
                     })
                     .expect(({body}) => {
-                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 4 newsletters. Please upgrade to add more.');
                     });
             });
 
             it('Adding an archived newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const newsletter = {
                     name: 'Archived newsletter',
@@ -430,7 +430,7 @@ describe('Newsletters API', function () {
             it('Editing an active newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const activeNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(activeNewsletter, 'This test expects to have an active newsletter in the test fixtures');
@@ -455,7 +455,7 @@ describe('Newsletters API', function () {
             it('Editing an archived newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
@@ -480,7 +480,7 @@ describe('Newsletters API', function () {
             it('Unarchiving a newsletter fails', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
@@ -500,14 +500,14 @@ describe('Newsletters API', function () {
                         }]
                     })
                     .expect(({body}) => {
-                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 4 newsletters. Please upgrade to add more.');
                     });
             });
 
             it('Archiving a newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+                assert.equal(newsletterCount, 4, 'This test expects to have 4 current active newsletters');
 
                 const activeNewsletter = allNewsletters.find(n => n.get('status') === 'active');
 
@@ -531,7 +531,7 @@ describe('Newsletters API', function () {
             it('Adding a newsletter now doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
                 const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
-                assert.equal(newsletterCount, 2, 'This test expects to have 2 current active newsletters');
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
 
                 const newsletter = {
                     name: 'Naughty newsletter'
