@@ -56,6 +56,11 @@ const features: Feature[] = [{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
+},
+{
+    title: 'Email Size Warnings',
+    description: 'Enable warnings in editor when content exceeds email cut-off size',
+    flag: 'emailSizeWarnings'
 }];
 
 const AlphaFeatures: React.FC = () => {
