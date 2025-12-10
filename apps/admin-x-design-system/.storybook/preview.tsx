@@ -4,7 +4,7 @@ import '../styles.css';
 import './storybook.css';
 
 import type { Preview } from "@storybook/react";
-import DesignSystemProvider from '../src/providers/DesignSystemProvider';
+import DesignSystemProvider from '../src/providers/design-system-provider';
 import adminxTheme from './adminx-theme';
 
 // import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';

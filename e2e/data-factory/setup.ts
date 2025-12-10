@@ -1,3 +1,4 @@
+import {AutomatedEmailFactory} from './factories/automated-email-factory';
 import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 import {HttpClient} from './persistence/adapters/http-client';
 import {MemberFactory} from './factories/member-factory';
@@ -35,5 +36,13 @@ export function createMemberFactory(httpClient: HttpClient): MemberFactory {
         'members'
     );
     return new MemberFactory(adapter);
+}
+
+export function createAutomatedEmailFactory(httpClient: HttpClient): AutomatedEmailFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'automated_emails'
+    );
+    return new AutomatedEmailFactory(adapter);
 }
 

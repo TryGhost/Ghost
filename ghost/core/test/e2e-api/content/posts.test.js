@@ -66,7 +66,7 @@ describe('Posts Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(11)
+                posts: new Array(13)
                     .fill(postMatcher)
             });
 
@@ -74,25 +74,25 @@ describe('Posts Content API', function () {
         assert.equal(res.body.posts[6].slug, 'integrations', 'Default order "published_at desc" check');
 
         // kitchen sink
-        assert.equal(res.body.posts[9].slug, fixtureManager.get('posts', 1).slug);
+        assert.equal(res.body.posts[11].slug, fixtureManager.get('posts', 1).slug);
 
-        let urlParts = new URL(res.body.posts[9].feature_image);
+        let urlParts = new URL(res.body.posts[11].feature_image);
         assert.equal(urlParts.protocol, 'http:');
         assert.equal(urlParts.host, '127.0.0.1:2369');
 
-        urlParts = new URL(res.body.posts[9].url);
+        urlParts = new URL(res.body.posts[11].url);
         assert.equal(urlParts.protocol, 'http:');
         assert.equal(urlParts.host, '127.0.0.1:2369');
 
-        const $ = cheerio.load(res.body.posts[9].html);
+        const $ = cheerio.load(res.body.posts[11].html);
         urlParts = new URL($('img').attr('src'));
         assert.equal(urlParts.protocol, 'http:');
         assert.equal(urlParts.host, '127.0.0.1:2369');
 
-        assert.equal(res.body.posts[7].slug, 'not-so-short-bit-complex');
-        assert.match(res.body.posts[7].html, /<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
-        assert.equal(res.body.posts[9].slug, 'ghostly-kitchen-sink');
-        assert.match(res.body.posts[9].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
+        assert.equal(res.body.posts[9].slug, 'not-so-short-bit-complex');
+        assert.match(res.body.posts[9].html, /<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
+        assert.equal(res.body.posts[11].slug, 'ghostly-kitchen-sink');
+        assert.match(res.body.posts[11].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
     });
 
     it('Cannot request mobiledoc or lexical formats', async function () {
@@ -100,7 +100,7 @@ describe('Posts Content API', function () {
             .get(`posts/?formats=mobiledoc,lexical`)
             .expectStatus(200)
             .matchBodySnapshot({
-                posts: new Array(11).fill(postMatcher)
+                posts: new Array(13).fill(postMatcher)
             });
     });
 
@@ -109,7 +109,7 @@ describe('Posts Content API', function () {
             .get(`posts/?fields=mobiledoc,lexical,published_at,created_at,updated_at,uuid`)
             .expectStatus(200)
             .matchBodySnapshot({
-                posts: new Array(11).fill(postMatcher)
+                posts: new Array(13).fill(postMatcher)
             });
     });
 
@@ -173,7 +173,7 @@ describe('Posts Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(11)
+                posts: new Array(13)
                     .fill(postMatcher)
             });
 
@@ -192,7 +192,7 @@ describe('Posts Content API', function () {
         });
 
         assert.equal(ghostPrimaryAuthors.length, 7, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
-        assert.equal(joePrimaryAuthors.length, 4, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
+        assert.equal(joePrimaryAuthors.length, 6, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
     });
 
     it('Can request fields of posts', async function () {
@@ -215,7 +215,7 @@ describe('Posts Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(11)
+                posts: new Array(13)
                     .fill(postMatcherShallowIncludes)
             });
     });
@@ -230,7 +230,7 @@ describe('Posts Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(11)
+                posts: new Array(13)
                     .fill(postMatcher)
             });
     });

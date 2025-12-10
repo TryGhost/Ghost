@@ -468,6 +468,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
+        let AutomatedEmail;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -520,6 +521,15 @@ describe('MemberRepository', function () {
                 getDefaultNewsletters: sinon.stub().resolves([]),
                 getAll: sinon.stub().resolves([])
             };
+
+            AutomatedEmail = {
+                findOne: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {lexical: '{"root":{}}', status: 'active'};
+                        return data[key];
+                    })
+                })
+            };
         });
 
         afterEach(function () {
@@ -535,6 +545,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -560,6 +571,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -577,6 +589,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -602,6 +615,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -621,6 +635,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -628,6 +643,75 @@ describe('MemberRepository', function () {
 
             const outboxOptions = Outbox.add.firstCall.args[1];
             assert.ok(outboxOptions.transacting);
+        });
+
+        it('does NOT create outbox entry when welcome email is inactive', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            AutomatedEmail.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {lexical: '{"root":{}}', status: 'inactive'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            const StripeCustomer = {
+                upsert: sinon.stub().resolves()
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                StripeCustomer,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // Stub linkSubscription to avoid needing all the stripe-related mocks
+            sinon.stub(repo, 'linkSubscription').resolves();
+            sinon.stub(repo, 'upsertCustomer').resolves();
+
+            // Create a member with a stripeCustomer (i.e., signing up for paid subscription)
+            await repo.create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                stripeCustomer: {
+                    id: 'cus_123',
+                    name: 'Test Member',
+                    email: 'test@example.com',
+                    subscriptions: {
+                        data: [{
+                            id: 'sub_123',
+                            customer: 'cus_123',
+                            status: 'active'
+                        }]
+                    }
+                }
+            }, {});
+
+            // The free welcome email should NOT be sent when stripeCustomer is present
+            sinon.assert.notCalled(Outbox.add);
         });
     });
 });

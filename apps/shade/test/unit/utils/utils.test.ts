@@ -202,12 +202,44 @@ describe('utils', function () {
         it('formats a decimal as a percentage', function () {
             let formatted = formatPercentage(0.123);
             assert.equal(formatted, '12%');
-            
+
             formatted = formatPercentage(0.789);
             assert.equal(formatted, '79%');
-            
+
             formatted = formatPercentage(1);
             assert.equal(formatted, '100%');
+        });
+
+        it('formats zero percentage', function () {
+            const formatted = formatPercentage(0);
+            assert.equal(formatted, '0%');
+        });
+
+        it('formats very small percentages with 2 decimal places', function () {
+            let formatted = formatPercentage(0.0005);
+            assert.equal(formatted, '0.05%');
+
+            formatted = formatPercentage(0.0009);
+            assert.equal(formatted, '0.09%');
+        });
+
+        it('formats small percentages with 1 decimal place', function () {
+            let formatted = formatPercentage(0.005);
+            assert.equal(formatted, '0.5%');
+
+            formatted = formatPercentage(0.009);
+            assert.equal(formatted, '0.9%');
+        });
+
+        it('formats large percentages with thousand separators', function () {
+            let formatted = formatPercentage(10);
+            assert.equal(formatted, '1,000%');
+
+            formatted = formatPercentage(12.34567);
+            assert.equal(formatted, '1,235%');
+
+            formatted = formatPercentage(100);
+            assert.equal(formatted, '10,000%');
         });
     });
 }); 

@@ -46,13 +46,13 @@ describe('api/endpoints/content/tags', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
-                jsonResponse.tags.should.have.length(4);
+                jsonResponse.tags.should.have.length(5);
                 localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
                 jsonResponse.meta.pagination.should.have.property('page', 1);
                 jsonResponse.meta.pagination.should.have.property('limit', 15);
                 jsonResponse.meta.pagination.should.have.property('pages', 4);
-                jsonResponse.meta.pagination.should.have.property('total', 56);
+                jsonResponse.meta.pagination.should.have.property('total', 57);
                 jsonResponse.meta.pagination.should.have.property('next', 2);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 

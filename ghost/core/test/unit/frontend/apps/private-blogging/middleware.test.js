@@ -280,6 +280,32 @@ describe('Private Blogging', function () {
                 res.redirect.args[0][0].should.be.equal('/test');
             });
 
+            it('doLoginToPrivateSite should preserve query string including UTM parameters', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('/?utm_source=twitter&utm_campaign=test')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                res.redirect.called.should.be.true();
+                res.redirect.args[0][0].should.be.equal('/?utm_source=twitter&utm_campaign=test');
+            });
+
+            it('doLoginToPrivateSite should preserve query string on paths', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('/welcome/?ref=newsletter&utm_medium=email')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                res.redirect.called.should.be.true();
+                res.redirect.args[0][0].should.be.equal('/welcome/?ref=newsletter&utm_medium=email');
+            });
+
             it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
                 req.body = {password: 'rightpassword'};
                 req.session = {};

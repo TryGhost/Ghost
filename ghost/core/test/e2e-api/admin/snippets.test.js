@@ -41,7 +41,7 @@ describe('Snippets API', function () {
             .get('snippets')
             .expectStatus(200)
             .matchBodySnapshot({
-                snippets: new Array(2).fill(matchSnippet)
+                snippets: new Array(4).fill(matchSnippet)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -199,7 +199,7 @@ describe('Snippets API', function () {
             .get('snippets?formats=lexical&filter=lexical:-null')
             .expectStatus(200)
             .matchBodySnapshot({
-                snippets: new Array(1).fill(matchSnippet)
+                snippets: new Array(2).fill(matchSnippet)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

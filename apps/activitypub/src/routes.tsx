@@ -1,17 +1,17 @@
-import BlueskySharing from '@views/Preferences/components/BlueskySharing';
-import Error from '@components/layout/Error';
-import Explore from '@views/Explore';
-import Feed from './views/Feed/Feed';
-import Inbox from '@views/Inbox';
-import Moderation from '@views/Preferences/components/Moderation';
-import Note from './views/Feed/Note';
-import Notifications from '@views/Notifications';
-import Onboarding from '@components/layout/Onboarding';
-import OnboardingStep1 from '@components/layout/Onboarding/Step1';
-import OnboardingStep2 from '@components/layout/Onboarding/Step2';
-import OnboardingStep3 from '@components/layout/Onboarding/Step3';
-import Preferences from '@views/Preferences';
-import Profile from '@views/Profile';
+import AppError from '@components/layout/error';
+import BlueskySharing from '@views/preferences/components/bluesky-sharing';
+import Explore from '@views/explore';
+import Feed from './views/feed/feed';
+import Inbox from '@views/inbox';
+import Moderation from '@views/preferences/components/moderation';
+import Note from './views/feed/note';
+import Notifications from '@views/notifications';
+import Onboarding from '@components/layout/onboarding';
+import OnboardingStep1 from '@components/layout/onboarding/step-1';
+import OnboardingStep2 from '@components/layout/onboarding/step-2';
+import OnboardingStep3 from '@components/layout/onboarding/step-3';
+import Preferences from '@views/preferences';
+import Profile from '@views/profile';
 import {Navigate, Outlet, RouteObject} from '@tryghost/admin-x-framework';
 
 const basePath = import.meta.env.VITE_TEST ? '' : 'activitypub';
@@ -27,7 +27,7 @@ export const routes: CustomRouteObject[] = [
         // Root route that defines the app's base path
         path: basePath,
         element: <Outlet />,
-        errorElement: <Error />, // This will catch all errors in child routes
+        errorElement: <AppError />, // This will catch all errors in child routes
         handle: 'activitypub-basepath',
         children: [
             {
@@ -147,7 +147,7 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: '*',
-                element: <Error />
+                element: <AppError />
             }
         ]
     }
