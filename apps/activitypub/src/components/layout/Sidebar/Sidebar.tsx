@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
     const {topicsQuery} = useTopicsForUser();
     const {data: topicsData, isLoading} = topicsQuery;
-    const hasTopics = !isLoading && topicsData && topicsData.topics.length > 0;
+    const showExternalExplore = !isLoading && topicsData && topicsData.topics.length === 0;
 
     // Reset count when on notifications page
     React.useEffect(() => {
@@ -76,12 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>
-                        {hasTopics ? (
-                            <SidebarMenuLink to='/explore'>
-                                <LucideIcon.Globe size={18} strokeWidth={1.5} />
-                                Explore
-                            </SidebarMenuLink>
-                        ) : (
+                        {showExternalExplore ? (
                             <Button
                                 className='inline-flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left text-md font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-925/70'
                                 variant='ghost'
@@ -93,6 +88,11 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                                     <LucideIcon.ExternalLink className='ml-auto' size={14} strokeWidth={1.5} />
                                 </a>
                             </Button>
+                        ) : (
+                            <SidebarMenuLink to='/explore'>
+                                <LucideIcon.Globe size={18} strokeWidth={1.5} />
+                                Explore
+                            </SidebarMenuLink>
                         )}
                         <SidebarMenuLink to='/profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
