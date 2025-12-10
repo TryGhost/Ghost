@@ -39,7 +39,7 @@ const STICKY_HEADER_HEIGHT = 80;
 
 const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const queryInputRef = useRef<HTMLInputElement>(null);
-    const selectedItemRef = useRef<HTMLDivElement>(null);
+    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
     const lastKeyPressRef = useRef(0);
 
     const navigate = useNavigateWithBasePath();
@@ -125,7 +125,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     // Scroll selected item into view
     useEffect(() => {
-        const element = selectedItemRef.current;
+        const element = itemRefs.current[selectedIndex];
         if (!element) {
             return;
         }
@@ -154,7 +154,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     }, [selectedIndex]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (!showSearchResults) {
+        if (!showSearchResults || searchResults.length === 0) {
             return;
         }
 
@@ -174,10 +174,12 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                 setSelectedIndex(prev => (prev - 1 + searchResults.length) % searchResults.length);
             }
         } else if (e.key === 'Enter') {
-            e.preventDefault();
-
             const item = searchResults[selectedIndex];
+            if (!item) {
+                return;
+            }
 
+            e.preventDefault();
             onOpenChange?.(false);
 
             if (item.type === 'topic') {
@@ -225,7 +227,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                                 return (
                                     <div
                                         key={item.data.slug}
-                                        ref={isSelected ? selectedItemRef : undefined}
+                                        ref={el => itemRefs.current[index] = el}
                                     >
                                         <ActivityItem
                                             isSelected={isSelected}
@@ -257,7 +259,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                                     isCurrentUser={isCurrentUser}
                                     side='left'
                                 >
-                                    <div ref={isSelected ? selectedItemRef : undefined}>
+                                    <div ref={el => itemRefs.current[index] = el}>
                                         <ActivityItem
                                             isSelected={isSelected}
                                             onClick={() => {
