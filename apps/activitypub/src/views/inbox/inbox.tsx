@@ -1,4 +1,4 @@
-import Error from '@components/layout/error';
+import AppError from '@components/layout/error';
 import InboxList from './components/inbox-list';
 import React, {useState} from 'react';
 import {Topic} from '@src/components/topic-filter';
@@ -17,7 +17,7 @@ const Inbox: React.FC = () => {
     const topicNotFound = error && isApiError(error) && error.statusCode === 404 && topic !== 'following';
 
     if (error && isApiError(error) && !topicNotFound) {
-        return <Error errorCode={error.code} statusCode={error.statusCode}/>;
+        return <AppError errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
     const activities = topicNotFound ? [] : (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));

@@ -3,7 +3,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 
 import APAvatar from '@components/global/ap-avatar';
-import ErrorPage from '@components/layout/error';
+import AppError from '@components/layout/error';
 import FeedItemStats from '@components/feed/feed-item-stats';
 import FollowButton from '@components/global/follow-button';
 import Layout from '@components/layout';
@@ -283,7 +283,7 @@ const Notifications: React.FC = () => {
     };
 
     if (error && isApiError(error)) {
-        return <ErrorPage errorCode={error.code} statusCode={error.statusCode}/>;
+        return <AppError errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
     return (

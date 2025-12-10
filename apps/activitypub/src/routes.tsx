@@ -1,5 +1,5 @@
+import AppError from '@components/layout/error';
 import BlueskySharing from '@views/preferences/components/bluesky-sharing';
-import ErrorPage from '@components/layout/error';
 import Explore from '@views/explore';
 import Feed from './views/feed/feed';
 import Inbox from '@views/inbox';
@@ -27,7 +27,7 @@ export const routes: CustomRouteObject[] = [
         // Root route that defines the app's base path
         path: basePath,
         element: <Outlet />,
-        errorElement: <ErrorPage />, // This will catch all errors in child routes
+        errorElement: <AppError />, // This will catch all errors in child routes
         handle: 'activitypub-basepath',
         children: [
             {
@@ -147,7 +147,7 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: '*',
-                element: <ErrorPage />
+                element: <AppError />
             }
         ]
     }

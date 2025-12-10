@@ -1,4 +1,4 @@
-import Error from '@components/layout/error';
+import AppError from '@components/layout/error';
 import FeedList from './components/feed-list';
 import React from 'react';
 import {isApiError} from '@src/api/activitypub';
@@ -16,7 +16,7 @@ const Feed: React.FC = () => {
     const {data: user} = useUserDataForUser('index');
 
     if (error && isApiError(error)) {
-        return <Error errorCode={error.code} statusCode={error.statusCode}/>;
+        return <AppError errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
     return <FeedList

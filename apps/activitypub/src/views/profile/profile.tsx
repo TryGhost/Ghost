@@ -1,5 +1,5 @@
 import ActorList from './components/actor-list';
-import ErrorPage from '@components/layout/error';
+import AppError from '@components/layout/error';
 import Likes from './components/likes';
 import Posts from './components/posts';
 import ProfilePage from './components/profile-page';
@@ -146,7 +146,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     }, [params.handle, refetch]);
 
     if (accountError && isApiError(accountError) && accountError.statusCode !== 404) {
-        return <ErrorPage errorCode={accountError.code} statusCode={accountError.statusCode} />;
+        return <AppError errorCode={accountError.code} statusCode={accountError.statusCode} />;
     }
 
     const customFields = Object.keys(account?.customFields || {}).map((key) => {

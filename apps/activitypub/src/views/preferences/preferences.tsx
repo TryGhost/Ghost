@@ -1,4 +1,4 @@
-import Error from '@components/layout/error';
+import AppError from '@components/layout/error';
 import Layout from '@components/layout';
 import Profile from './components/profile';
 import React from 'react';
@@ -10,7 +10,7 @@ const Preferences: React.FC = () => {
     const {data: account, isLoading: isLoadingAccount, error: accountError} = useAccountForUser('index', 'me');
 
     if (accountError && isApiError(accountError)) {
-        return <Error errorCode={accountError.code} statusCode={accountError.statusCode} />;
+        return <AppError errorCode={accountError.code} statusCode={accountError.statusCode} />;
     }
 
     return (
