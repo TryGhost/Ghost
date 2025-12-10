@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEmberContext } from './EmberContext';
+import { useEmberContext } from './ember-context';
 
 
 /**

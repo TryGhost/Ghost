@@ -13,9 +13,9 @@ import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
 import { getSettingValue } from "@tryghost/admin-x-framework/api/settings";
 import { hasAdminAccess } from "@tryghost/admin-x-framework/api/users";
 import { useNotificationsCountForUser } from "@tryghost/activitypub/src/hooks/use-activity-pub-queries";
-import NetworkIcon from "./icons/NetworkIcon";
-import { NavMenuItem } from "./NavMenuItem";
-import { useIsActiveLink } from "./useIsActiveLink";
+import NetworkIcon from "./icons/network-icon";
+import { NavMenuItem } from "./nav-menu-item";
+import { useIsActiveLink } from "./use-is-active-link";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -23,15 +23,15 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
     const url = site.data?.site.url;
-    
-    
+
+
     // The network app has its own notification state, so we don't want to show
-    // multiple indicators when you have navigated there. 
+    // multiple indicators when you have navigated there.
     const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(currentUser?.slug || '', networkEnabled);
     const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
     const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
     const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
-        
+
     // Only show NavMain for admin users
     if (!currentUser || !hasAdminAccess(currentUser)) {
         return null;

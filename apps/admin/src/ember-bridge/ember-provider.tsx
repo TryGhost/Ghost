@@ -1,5 +1,5 @@
 import { useState, useCallback, type ReactNode } from "react";
-import { EmberContext, type EmberContextType } from "./EmberContext";
+import { EmberContext, type EmberContextType } from "./ember-context";
 
 
 interface EmberProviderProps {

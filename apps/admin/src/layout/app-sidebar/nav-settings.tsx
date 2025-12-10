@@ -8,7 +8,7 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canAccessSettings } from "@tryghost/admin-x-framework/api/users";
-import { NavMenuItem } from "./NavMenuItem";
+import { NavMenuItem } from "./nav-menu-item";
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();

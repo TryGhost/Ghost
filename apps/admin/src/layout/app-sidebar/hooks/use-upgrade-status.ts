@@ -1,4 +1,4 @@
-import { useSubscriptionStatus } from "@/ember-bridge/EmberBridge";
+import { useSubscriptionStatus } from "@/ember-bridge/ember-bridge";
 
 export interface UpgradeStatus {
     showUpgradeBanner: boolean;

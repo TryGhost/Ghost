@@ -10,11 +10,11 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
-import { NavMenuItem } from "./NavMenuItem";
-import NavSubMenu from "./NavSubMenu";
-import { useMemberCount } from "./hooks/useMemberCount";
+import { NavMenuItem } from "./nav-menu-item";
+import NavSubMenu from "./nav-sub-menu";
+import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
-import { NavCustomViews } from "./NavCustomViews";
+import { NavCustomViews } from "./nav-custom-views";
 import { useEmberRouting } from "@/ember-bridge";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
@@ -47,7 +47,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 className={`transition-all ${postsExpanded && 'rotate-[90deg]'}`}
                             />
                         </Button>
-                        <NavMenuItem.Link 
+                        <NavMenuItem.Link
                             to={routing.getRouteUrl('posts')}
                             isActive={routing.isRouteActive('posts')}
                         >
@@ -68,8 +68,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {/* Posts submenu */}
                     <NavSubMenu isExpanded={postsExpanded} id="posts-submenu">
                         <NavMenuItem>
-                            <NavMenuItem.Link 
-                                className="pl-9" 
+                            <NavMenuItem.Link
+                                className="pl-9"
                                 to="posts?type=draft"
                                 isActive={routing.isRouteActive('posts', {type: 'draft'})}
                             >
@@ -78,8 +78,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link 
-                                className="pl-9" 
+                            <NavMenuItem.Link
+                                className="pl-9"
                                 to="posts?type=scheduled"
                                 isActive={routing.isRouteActive('posts', {type: 'scheduled'})}
                             >
@@ -88,8 +88,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
 
                         <NavMenuItem>
-                            <NavMenuItem.Link 
-                                className="pl-9" 
+                            <NavMenuItem.Link
+                                className="pl-9"
                                 to="posts?type=published"
                                 isActive={routing.isRouteActive('posts', {type: 'published'})}
                             >
@@ -101,7 +101,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavSubMenu>
 
                     <NavMenuItem>
-                        <NavMenuItem.Link 
+                        <NavMenuItem.Link
                             to={routing.getRouteUrl('pages')}
                             isActive={routing.isRouteActive('pages')}
                         >
@@ -112,7 +112,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     {showTags && (
                         <NavMenuItem>
-                            <NavMenuItem.Link 
+                            <NavMenuItem.Link
                                 to="tags"
                                 isActive={routing.isRouteActive(['tags', 'tag', 'tag.new'])}
                             >
@@ -124,7 +124,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
                     {showMembers && (
                         <NavMenuItem>
-                            <NavMenuItem.Link 
+                            <NavMenuItem.Link
                                 to={routing.getRouteUrl('members')}
                                 isActive={routing.isRouteActive(['members', 'member', 'member.new'])}
                             >

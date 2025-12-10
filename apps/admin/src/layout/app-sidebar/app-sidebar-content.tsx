@@ -4,11 +4,11 @@ import {
 
 import WhatsNewBanner from "@/whats-new/components/whats-new-banner";
 
-import NavMain from "./NavMain";
-import NavContent from "./NavContent";
-import NavGhostPro from "./NavGhostPro";
-import NavSettings from "./NavSettings";
-import UpgradeBanner from "./UpgradeBanner";
+import NavMain from "./nav-main";
+import NavContent from "./nav-content";
+import NavGhostPro from "./nav-ghost-pro";
+import NavSettings from "./nav-settings";
+import UpgradeBanner from "./upgrade-banner";
 import { useUpgradeStatus } from "./hooks/use-upgrade-status";
 
 function AppSidebarContent() {

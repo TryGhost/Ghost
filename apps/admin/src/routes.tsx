@@ -13,7 +13,7 @@ import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provid
 import { routes as statsRoutes } from "@tryghost/stats/src/routes";
 
 // Settings
-import { Settings } from "./settings/Settings";
+import { Settings } from "./settings/settings";
 
 // Ember
 import { EmberFallback } from "./ember-bridge";

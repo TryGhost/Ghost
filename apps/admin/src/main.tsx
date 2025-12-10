@@ -1,13 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.tsx";
+import App from "./app.tsx";
 import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
 import { ShadeApp } from "@tryghost/shade";
 
 import { routes } from "./routes.tsx";
 import { navigateTo } from "./utils/navigation";
-import { AppProvider } from "./providers/AppProvider";
+import { AppProvider } from "./providers/app-provider";
 
 const framework = {
     ghostVersion: "",

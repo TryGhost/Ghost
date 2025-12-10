@@ -4,7 +4,7 @@ import {
     SidebarMenuItem,
     useSidebar
 } from '@tryghost/shade';
-import { useIsActiveLink } from './useIsActiveLink';
+import { useIsActiveLink } from './use-is-active-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
     return (

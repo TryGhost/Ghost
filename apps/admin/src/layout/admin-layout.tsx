@@ -5,10 +5,10 @@ import {
 } from "@tryghost/shade";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
-import { useSidebarVisibility } from "@/ember-bridge/EmberBridge";
+import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
 import AppSidebar from "./app-sidebar";
-import { MobileNavBar } from "./app-sidebar/MobileNavBar";
-import { ContributorUserMenu } from "./app-sidebar/UserMenu";
+import { MobileNavBar } from "./app-sidebar/mobile-nav-bar";
+import { ContributorUserMenu } from "./app-sidebar/user-menu";
 
 interface AdminLayoutProps {
     children: React.ReactNode;

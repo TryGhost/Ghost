@@ -7,7 +7,7 @@ import {
     SidebarMenuItem
 } from "@tryghost/shade"
 import WhatsNewDialog from "@/whats-new/components/whats-new-dialog";
-import { UserMenu } from "./UserMenu";
+import { UserMenu } from "./user-menu";
 
 function AppSidebarFooter({ ...props }: React.ComponentProps<typeof SidebarFooter>) {
     const [isWhatsNewDialogOpen, setIsWhatsNewDialogOpen] = useState(false);
