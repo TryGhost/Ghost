@@ -181,6 +181,7 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     const {data: topicsData} = topicsQuery;
 
     const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
+    const [lastResultState, setLastResultState] = useState<'results' | 'none' | null>(null);
 
     // Filter topics client-side (no additional API call needed)
     const matchingTopics = useMemo(() => {
@@ -204,18 +205,29 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     }, [query, shouldSearch, topicsData?.topics]);
 
     useEffect(() => {
+        if (!shouldSearch) {
+            setDisplayResults([]);
+            setLastResultState(null);
+            return;
+        }
+
+        if (!isFetched) {
+            return;
+        }
+
         if (data?.accounts && data.accounts.length > 0) {
             setDisplayResults(data.accounts);
-        } else if (!isFetching && shouldSearch) {
+            setLastResultState('results');
+        } else {
             setDisplayResults([]);
+            setLastResultState('none');
         }
-    }, [data?.accounts, isFetching, shouldSearch]);
+    }, [data?.accounts, isFetched, shouldSearch]);
 
     const showLoading = isFetching && shouldSearch;
-    const hasAnyResults = matchingTopics.length > 0 || displayResults.length > 0;
-    const showNoResults = !isFetching && isFetched && !hasAnyResults && shouldSearch && debouncedQuery === query;
-    const showSuggested = query.length < 2 || (showLoading && !hasAnyResults);
-    const showSearchResults = shouldSearch && hasAnyResults;
+    const showSuggested = query.length < 2 || (!lastResultState && shouldSearch && matchingTopics.length === 0);
+    const showNoResults = !showSuggested && lastResultState === 'none' && matchingTopics.length === 0;
+    const showSearchResults = !showSuggested && (displayResults.length > 0 || matchingTopics.length > 0);
 
     // Focus the query input on initial render
     useEffect(() => {
