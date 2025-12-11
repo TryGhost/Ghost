@@ -1,5 +1,7 @@
+require('should');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
+const config = require('../../../core/shared/config');
 
 const matchSnippet = {
     id: anyObjectId,
@@ -246,5 +248,38 @@ describe('Snippets API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    describe('URL transformations', function () {
+        const siteUrl = config.get('url');
+
+        it('Can read Mobiledoc snippet with all URLs as absolute site URLs', async function () {
+            const res = await agent
+                .get('snippets/?formats=mobiledoc&filter=name:\'Snippet with all media types - Mobiledoc\'')
+                .expectStatus(200);
+
+            const snippet = res.body.snippets[0];
+            const mobiledoc = JSON.parse(snippet.mobiledoc);
+
+            mobiledoc.cards.find(c => c[0] === 'image')[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+            mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
+            mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
+            mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
+            snippet.mobiledoc.should.not.containEql('__GHOST_URL__');
+        });
+
+        it('Can read Lexical snippet with all URLs as absolute site URLs', async function () {
+            const res = await agent
+                .get('snippets/?formats=lexical&filter=name:\'Snippet with all media types - Lexical\'')
+                .expectStatus(200);
+
+            const snippet = res.body.snippets[0];
+
+            snippet.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            snippet.lexical.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
+            snippet.lexical.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
+            snippet.lexical.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
+            snippet.lexical.should.not.containEql('__GHOST_URL__');
+        });
     });
 });
