@@ -62,6 +62,7 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('outbox').del();
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
         await configUtils.restore();
     });
 
