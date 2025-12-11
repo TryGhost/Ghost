@@ -554,7 +554,7 @@ describe('MemberRepository', function () {
             sinon.assert.calledOnce(Outbox.add);
             const outboxCall = Outbox.add.firstCall.args[0];
             assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-            
+
             const payload = JSON.parse(outboxCall.payload);
             assert.equal(payload.memberId, 'member_id_123');
             assert.equal(payload.email, 'test@example.com');
@@ -852,8 +852,17 @@ describe('MemberRepository', function () {
             sinon.restore();
         });
 
-        it('creates outbox entry when new subscription is immediately active', async function () {
+        it('creates outbox entry when member status changes to paid', async function () {
             sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
 
             const repo = new MemberRepository({
                 Member,
@@ -882,74 +891,25 @@ describe('MemberRepository', function () {
 
             sinon.assert.calledOnce(Outbox.add);
             const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
-            assert.equal(payload.memberStatus, 'paid');
-        });
-
-        it('creates outbox entry when incomplete subscription becomes active (3D Secure)', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
-            const existingSubscriptionModel = {
-                id: 'existing_sub_id',
-                get: sinon.stub().callsFake((key) => {
-                    const data = {
-                        status: 'incomplete',
-                        mrr: 0,
-                        plan_id: 'price_123',
-                        cancel_at_period_end: false,
-                        offer_id: null,
-                        stripe_price_id: 'price_123',
-                        created_at: new Date()
-                    };
-                    return data[key];
-                })
-            };
-
-            StripeCustomerSubscription.edit.resolves({
-                id: 'existing_sub_id',
-                get: sinon.stub().callsFake((key) => {
-                    const data = {
-                        status: 'active',
-                        mrr: 500,
-                        plan_id: 'price_123',
-                        cancel_at_period_end: false,
-                        created_at: new Date()
-                    };
-                    return data[key];
-                })
-            });
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                AutomatedEmail,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(existingSubscriptionModel);
-
-            await repo.linkSubscription({
-                id: 'member_id_123',
-                subscription: subscriptionData
-            }, {
-                transacting: {
-                    executionPromise: Promise.resolve()
-                },
-                context: {}
-            });
-
-            sinon.assert.calledOnce(Outbox.add);
-            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
-            assert.equal(payload.memberStatus, 'paid');
+            assert.equal(payload.status, 'paid');
+            assert.equal(payload.memberId, 'member_id_123');
+            assert.equal(payload.email, 'test@example.com');
+            assert.equal(payload.name, 'Test Member');
+            assert.equal(payload.source, 'member');
+            assert.ok(payload.timestamp);
         });
 
         it('does NOT create outbox entry when config is not set', async function () {
             sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
 
             const repo = new MemberRepository({
                 Member,
@@ -981,6 +941,15 @@ describe('MemberRepository', function () {
 
         it('does NOT create outbox entry for disallowed sources', async function () {
             sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
 
             const repo = new MemberRepository({
                 Member,
@@ -1021,6 +990,15 @@ describe('MemberRepository', function () {
         it('does NOT create outbox entry when paid welcome email is inactive', async function () {
             sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
             AutomatedEmail.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
                     const data = {lexical: '{"root":{}}', status: 'inactive'};
@@ -1054,47 +1032,6 @@ describe('MemberRepository', function () {
             });
 
             sinon.assert.notCalled(Outbox.add);
-        });
-
-        it('includes correct payload fields (memberId, email, name, source, timestamp, memberStatus: paid)', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                AutomatedEmail,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                id: 'member_id_123',
-                subscription: subscriptionData
-            }, {
-                transacting: {
-                    executionPromise: Promise.resolve()
-                },
-                context: {}
-            });
-
-            sinon.assert.calledOnce(Outbox.add);
-            const outboxCall = Outbox.add.firstCall.args[0];
-            assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-
-            const payload = JSON.parse(outboxCall.payload);
-            assert.equal(payload.memberId, 'member_id_123');
-            assert.equal(payload.email, 'test@example.com');
-            assert.equal(payload.name, 'Test Member');
-            assert.equal(payload.source, 'member');
-            assert.equal(payload.memberStatus, 'paid');
-            assert.ok(payload.timestamp);
         });
     });
 });
