@@ -8,7 +8,7 @@ const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES, WELCOME_EMAIL_SOURCES} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -97,9 +97,30 @@ class MemberWelcomeEmailService {
         if (!slug) {
             return false;
         }
-        
+
         const row = await AutomatedEmail.findOne({slug});
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
+    }
+
+    /**
+     * Determines if a welcome email should be sent for a given member status and source
+     * @param {string} memberStatus - 'free' or 'paid'
+     * @param {string} source - The source of the member creation/update (e.g., 'member', 'import', 'admin', 'api')
+     * @returns {Promise<boolean>}
+     */
+    async shouldSendWelcomeEmail(memberStatus, source) {
+        // Check if the feature is enabled via config
+        if (!config.get('memberWelcomeEmailTestInbox')) {
+            return false;
+        }
+
+        // Check if the source is allowed to trigger welcome emails
+        if (!WELCOME_EMAIL_SOURCES.includes(source)) {
+            return false;
+        }
+
+        // Check if the welcome email template is active
+        return await this.isMemberWelcomeEmailActive(memberStatus);
     }
 }
 

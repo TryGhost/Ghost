@@ -5,6 +5,11 @@ const MEMBER_WELCOME_EMAIL_SLUGS = {
     paid: 'member-welcome-email-paid'
 };
 
+// Sources that are allowed to trigger welcome emails
+// Only 'member' source (self-signup) should trigger welcome emails
+// Excludes: 'import', 'admin', 'api' to prevent emails during bulk operations
+const WELCOME_EMAIL_SOURCES = ['member'];
+
 const MESSAGES = {
     NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
     INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
@@ -15,5 +20,6 @@ const MESSAGES = {
 module.exports = {
     MEMBER_WELCOME_EMAIL_LOG_KEY,
     MEMBER_WELCOME_EMAIL_SLUGS,
-    MESSAGES
+    MESSAGES,
+    WELCOME_EMAIL_SOURCES
 };
