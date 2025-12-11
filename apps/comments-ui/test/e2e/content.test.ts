@@ -97,10 +97,10 @@ test.describe('Deleted and Hidden Content', async () => {
         });
 
         await expect (frame.getByText('This is comment 2')).not.toBeVisible();
-        await expect (frame.getByText('This comment has been hidden')).toBeVisible();
+        await expect (frame.getByText('[Comment removed by moderator]').first()).toBeVisible();
 
         await expect (frame.getByText('This is comment 4')).not.toBeVisible();
-        await expect (frame.getByText('This comment has been removed')).toBeVisible();
+        await expect (frame.getByText('[Comment removed by moderator]').nth(1)).toBeVisible();
     });
 
     test('hides replies that are hidden or deleted', async ({page}) => {
@@ -132,8 +132,8 @@ test.describe('Deleted and Hidden Content', async () => {
 
         await expect (frame.getByText('This is reply 1')).toBeVisible();
         await expect (frame.getByText('This is reply 2')).not.toBeVisible();
-        // parent comment is hidden but shows text
-        await expect (frame.getByText('This comment has been hidden')).toBeVisible();
+        // parent comment is hidden but shows tombstone text
+        await expect (frame.getByText('[Comment removed by moderator]')).toBeVisible();
     });
 });
 

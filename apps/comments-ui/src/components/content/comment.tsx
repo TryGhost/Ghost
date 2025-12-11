@@ -165,11 +165,9 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
         : <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
 
-    const notPublishedMessage = comment.status === 'hidden' ?
-        t('This comment has been hidden.') :
-        comment.status === 'deleted' ?
-            t('This comment has been removed.') :
-            '';
+    const notPublishedMessage = (comment.status === 'hidden' || comment.status === 'deleted') ?
+        t('[Comment removed by moderator]') :
+        '';
 
     // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
     // so we need to check for a match of either the comment id or the parent id

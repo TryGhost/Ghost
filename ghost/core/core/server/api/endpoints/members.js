@@ -510,6 +510,122 @@ const controller = {
         async query(frame) {
             return await membersService.api.events.getEventTimeline(frame.options);
         }
+    },
+
+    banFromComments: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const memberId = frame.options.id;
+
+            // Get the member to verify it exists
+            const member = await models.Member.findOne({id: memberId});
+            if (!member) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                });
+            }
+
+            // Check if already banned
+            if (member.get('commenting_enabled') === false) {
+                return membersService.api.memberBREADService.read({id: memberId});
+            }
+
+            // Set commenting_enabled to false
+            await models.Member.edit({commenting_enabled: false}, {id: memberId});
+
+            // Hide all published comments by this member and mark them as hidden_at_ban
+            await models.Comment.getFilteredCollectionQuery({
+                filter: `member_id:'${memberId}'+status:published`
+            })
+                .select('comments.id')
+                .then(async (rows) => {
+                    if (rows.length > 0) {
+                        const ids = rows.map(row => row.id);
+                        await models.Comment.bulkEdit(ids, 'comments', {
+                            data: {status: 'hidden', hidden_at_ban: true}
+                        });
+                    }
+                });
+
+            return membersService.api.memberBREADService.read({id: memberId});
+        }
+    },
+
+    unbanFromComments: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        data: [
+            'restore_comments'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const memberId = frame.options.id;
+            const restoreComments = frame.data.restore_comments !== false; // Default to true
+
+            // Get the member to verify it exists
+            const member = await models.Member.findOne({id: memberId});
+            if (!member) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                });
+            }
+
+            // Check if already unbanned
+            if (member.get('commenting_enabled') === true) {
+                return membersService.api.memberBREADService.read({id: memberId});
+            }
+
+            // Set commenting_enabled to true
+            await models.Member.edit({commenting_enabled: true}, {id: memberId});
+
+            // If restore_comments is true, restore comments that were hidden by the ban
+            if (restoreComments) {
+                await models.Comment.getFilteredCollectionQuery({
+                    filter: `member_id:'${memberId}'+hidden_at_ban:true`
+                })
+                    .select('comments.id')
+                    .then(async (rows) => {
+                        if (rows.length > 0) {
+                            const ids = rows.map(row => row.id);
+                            await models.Comment.bulkEdit(ids, 'comments', {
+                                data: {status: 'published', hidden_at_ban: false}
+                            });
+                        }
+                    });
+            }
+
+            return membersService.api.memberBREADService.read({id: memberId});
+        }
     }
 };
 

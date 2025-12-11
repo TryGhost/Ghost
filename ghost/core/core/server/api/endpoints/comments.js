@@ -98,6 +98,112 @@ const controller = {
             return result;
         }
     },
+    browseAll: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'include',
+            'page',
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'debug'
+        ],
+        validation: {},
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const result = await commentsService.controller.adminBrowse(frame);
+            return result;
+        }
+    },
+    bulkEdit: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        data: [
+            'action'
+        ],
+        validation: {
+            options: {
+                filter: {
+                    required: true
+                }
+            },
+            data: {
+                action: {
+                    required: true,
+                    values: ['hide', 'show', 'delete']
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const bulkData = frame.data?.bulk ?? frame.data ?? {};
+            const {action} = bulkData;
+            const statusMap = {
+                hide: 'hidden',
+                show: 'published',
+                delete: 'deleted'
+            };
+            const newStatus = statusMap[action];
+
+            // Get comment IDs matching the filter
+            const filterOptions = {
+                filter: frame.options.filter,
+                context: frame.options.context,
+                isAdmin: true
+            };
+
+            const commentRows = await models.Comment.getFilteredCollectionQuery(filterOptions)
+                .select('comments.id')
+                .distinct();
+
+            const commentIds = commentRows.map(row => row.id);
+
+            if (commentIds.length === 0) {
+                return {
+                    bulk: {
+                        action: action,
+                        meta: {
+                            stats: {
+                                successful: 0,
+                                unsuccessful: 0
+                            },
+                            errors: []
+                        }
+                    }
+                };
+            }
+
+            const result = await models.Comment.bulkEdit(commentIds, 'comments', {
+                data: {status: newStatus},
+                context: frame.options.context
+            });
+
+            return {
+                bulk: {
+                    action: action,
+                    meta: {
+                        stats: {
+                            successful: result.successful,
+                            unsuccessful: result.unsuccessful
+                        },
+                        errors: result.errors
+                    }
+                }
+            };
+        }
+    },
     add: {
         statusCode: 201,
         headers: {

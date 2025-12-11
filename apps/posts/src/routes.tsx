@@ -1,3 +1,4 @@
+import Comments from '@views/Comments/comments';
 import Growth from '@views/PostAnalytics/Growth/growth';
 import Newsletter from '@views/PostAnalytics/Newsletter/newsletter';
 import Overview from '@views/PostAnalytics/Overview/overview';
@@ -61,6 +62,10 @@ export const routes: RouteObject[] = [
                         element: null
                     }
                 ]
+            },
+            {
+                path: 'comments',
+                element: <Comments />
             },
 
             // Error handling

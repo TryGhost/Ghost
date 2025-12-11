@@ -699,7 +699,7 @@ test.describe('Actions', async () => {
         await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(2);
-        await expect(frame.getByText('This comment has been removed')).toBeVisible();
+        await expect(frame.getByText('[Comment removed by moderator]')).toBeVisible();
         await expect(frame.getByTestId('replies-line')).toBeVisible();
     });
 

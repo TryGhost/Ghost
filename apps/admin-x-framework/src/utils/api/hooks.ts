@@ -149,7 +149,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     path: (payload: Payload) => string;
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
-    searchParams?: (payload: Payload) => { [key: string]: string; };
+    searchParams?: (payload: Payload) => { [key: string]: string; } | undefined;
     invalidateQueries?: { dataType: string; } | {
         filters?: InvalidateQueryFilters<unknown>,
         options?: InvalidateOptions,
