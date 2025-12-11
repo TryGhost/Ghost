@@ -1,9 +1,11 @@
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
+const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
+const urlUtilsHelper = require('../../utils/urlUtils');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
@@ -484,6 +486,11 @@ describe('Posts Content API', function () {
 
     describe('URL transformations', function () {
         const siteUrl = config.get('url');
+        const cdnUrl = 'https://cdn.example.com';
+
+        afterEach(function () {
+            sinon.restore();
+        });
 
         it('Can read Mobiledoc post with all URLs as absolute site URLs', async function () {
             const res = await agent
@@ -501,7 +508,6 @@ describe('Posts Content API', function () {
             assert(post.html.includes(`${siteUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${siteUrl}/content/media/snippet-video.mp4`));
             assert(post.html.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
-
             assert(!post.html.includes('__GHOST_URL__'));
         });
 
@@ -521,7 +527,60 @@ describe('Posts Content API', function () {
             assert(post.html.includes(`${siteUrl}/content/files/snippet-document.pdf`));
             assert(post.html.includes(`${siteUrl}/content/media/snippet-video.mp4`));
             assert(post.html.includes(`${siteUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.html.includes('__GHOST_URL__'));
+        });
 
+        it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const res = await agent
+                .get('posts/?filter=slug:post-with-all-media-types-mobiledoc')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+
+            // Images stay on site URL
+            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
+            // Media/files use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
+            assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
+            assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
+            // Inserted snippet images stay on site URL
+            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            // Inserted snippet media/files use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+            assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+            assert(post.html.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
+            assert(!post.html.includes('__GHOST_URL__'));
+        });
+
+        it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const res = await agent
+                .get('posts/?filter=slug:post-with-all-media-types-lexical')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+
+            // Images stay on site URL
+            assert.equal(post.feature_image, `${siteUrl}/content/images/feature.jpg`);
+            assert(post.html.includes(`${siteUrl}/content/images/inline.jpg`));
+            // Media/files use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/files/document.pdf`));
+            assert(post.html.includes(`${cdnUrl}/content/media/video.mp4`));
+            assert(post.html.includes(`${cdnUrl}/content/media/audio.mp3`));
+            // Inserted snippet images stay on site URL
+            assert(post.html.includes(`${siteUrl}/content/images/snippet-inline.jpg`));
+            // Inserted snippet media/files use CDN URL
+            assert(post.html.includes(`${cdnUrl}/content/files/snippet-document.pdf`));
+            assert(post.html.includes(`${cdnUrl}/content/media/snippet-video.mp4`));
+            assert(post.html.includes(`${cdnUrl}/content/media/snippet-audio.mp3`));
             assert(!post.html.includes('__GHOST_URL__'));
         });
     });
