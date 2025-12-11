@@ -12,6 +12,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
     LucideIcon,
     Table,
@@ -23,7 +24,7 @@ import {
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {forwardRef, useRef, useState} from 'react';
-import {useInfiniteVirtualScroll} from '../../Tags/components/VirtualTable/useInfiniteVirtualScroll';
+import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -85,13 +86,15 @@ function CommentsList({
     totalItems,
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage
+    fetchNextPage,
+    onAddFilter
 }: {
     items: Comment[];
     totalItems: number;
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
+    onAddFilter?: (field: string, value: string, operator?: string) => void;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
@@ -202,14 +205,6 @@ function CommentsList({
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            {item.post?.url && (
-                                                <DropdownMenuItem asChild>
-                                                    <a href={item.post.url} rel="noopener noreferrer" target="_blank">
-                                                        <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                                        View post
-                                                    </a>
-                                                </DropdownMenuItem>
-                                            )}
                                             {item.status === 'published' && (
                                                 <DropdownMenuItem onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff className="mr-2 size-4" />
@@ -231,6 +226,29 @@ function CommentsList({
                                                     Delete comment
                                                 </DropdownMenuItem>
                                             )}
+                                            {(item.member?.id || item.post?.id) && onAddFilter && (
+                                                <DropdownMenuSeparator />
+                                            )}
+                                            {item.member?.id && onAddFilter && (
+                                                <DropdownMenuItem onClick={() => onAddFilter('author', item.member!.id)}>
+                                                    <LucideIcon.User className="mr-2 size-4" />
+                                                    Filter by author
+                                                </DropdownMenuItem>
+                                            )}
+                                            {item.post?.id && onAddFilter && (
+                                                <DropdownMenuItem onClick={() => onAddFilter('post', item.post!.id)}>
+                                                    <LucideIcon.FileText className="mr-2 size-4" />
+                                                    Filter by post
+                                                </DropdownMenuItem>
+                                            )}
+                                            {item.post?.url && (
+                                                <DropdownMenuItem asChild>
+                                                    <a href={item.post.url} rel="noopener noreferrer" target="_blank">
+                                                        <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                                        View post
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -241,7 +259,7 @@ function CommentsList({
                 </TableBody>
             </Table>
 
-            <AlertDialog open={!!commentToDelete} onOpenChange={(open) => !open && setCommentToDelete(null)}>
+            <AlertDialog open={!!commentToDelete} onOpenChange={open => !open && setCommentToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete comment?</AlertDialogTitle>
@@ -252,7 +270,7 @@ function CommentsList({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-red-600 text-white hover:bg-red-700"
+                            className="hover:bg-red-700 bg-red-600 text-white"
                             onClick={confirmDelete}
                         >
                             Delete
