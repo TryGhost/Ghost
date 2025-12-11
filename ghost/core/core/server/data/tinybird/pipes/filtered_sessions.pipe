@@ -12,8 +12,8 @@ SQL >
     from _mv_hits
     where
          site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
-        {% if defined(date_from) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
-        {% if defined(date_to) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+        {% if defined(date_from) %} and timestamp >= toDateTime({{ Date(date_from) }}, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) {% else %} and timestamp >= toDateTime(timestampAdd(today(), interval -7 day), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) {% end %}
+        {% if defined(date_to) %} and timestamp < toDateTime({{ Date(date_to) }}, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) + interval 1 day {% else %} and timestamp < toDateTime(dateAdd(day, 1, today()), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) {% end %}
         {% if defined(member_status) %}
             and member_status IN (
                 select arrayJoin(
@@ -41,17 +41,17 @@ SQL >
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         {% if defined(date_from) %}
             {# Filter from specified start date #}
-            and toDate(toTimezone(first_pageview,{{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) >= {{ Date(date_from) }}
+            and first_pageview >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% else %}
             {# Default to last 7 days if no start date provided #}
-            and toDate(toTimezone(first_pageview,{{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) >= timestampAdd(today(), interval -7 day)
+            and first_pageview >= toDateTime(timestampAdd(today(), interval -7 day), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% end %}
         {% if defined(date_to) %}
             {# Filter to specified end date #}
-            and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }}
+            and first_pageview < toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}) + interval 1 day
         {% else %}
             {# Default to today if no end date provided #}
-            and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today()
+            and first_pageview < toDateTime(dateAdd(day, 1, today()), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% end %}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
         {% if defined(device) %} and device = {{ String(device, description="Device type to filter on", required=False) }} {% end %}
