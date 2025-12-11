@@ -245,7 +245,7 @@ const Growth: React.FC = () => {
                                                                 {(post.paid_members > 0 && '+')}{formatNumber(post.paid_members)}
                                                             </TableCell>
                                                             <TableCell className='text-right font-mono text-sm'>
-                                                                {(post.mrr > 0 && '+')}{currencySymbol}{formatNumber(Math.round(centsToDollars(post.mrr)))}
+                                                                {(post.mrr > 0 && '+')}{currencySymbol}{formatNumber(centsToDollars(post.mrr))}
                                                             </TableCell>
                                                         </>
                                                     }

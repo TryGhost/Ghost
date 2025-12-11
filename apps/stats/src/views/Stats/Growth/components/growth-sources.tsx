@@ -67,7 +67,7 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
                             +{formatNumber(row.paid_members)}
                         </TableCell>
                         <TableCell className='text-right font-mono text-sm'>
-                            +{currencySymbol}{formatNumber(Math.round(centsToDollars(row.mrr)))}
+                            +{currencySymbol}{formatNumber(centsToDollars(row.mrr))}
                         </TableCell>
                     </>
                     }
