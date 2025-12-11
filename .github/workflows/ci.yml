@@ -1475,7 +1475,11 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      # TODO: Check we can remove this once we update Node to v24
+      - name: Install v11 of NPM # We need this to install packages via OIDC.
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: npm install -g npm@11
 
       - name: Publish to npm
         if: steps.version_check.outputs.version_changed == 'true'
