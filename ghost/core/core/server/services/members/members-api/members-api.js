@@ -17,6 +17,7 @@ const WellKnownController = require('./controllers/WellKnownController');
 const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
 const MagicLink = require('../../lib/magic-link/MagicLink');
 const DomainEvents = require('@tryghost/domain-events');
+const {service: memberWelcomeEmailService} = require('../../member-welcome-emails');
 
 module.exports = function MembersAPI({
     tokenConfig: {
@@ -62,8 +63,7 @@ module.exports = function MembersAPI({
         Settings,
         Comment,
         MemberFeedback,
-        Outbox,
-        AutomatedEmail
+        Outbox
     },
     tiersService,
     stripeAPIService,
@@ -91,13 +91,16 @@ module.exports = function MembersAPI({
         stripeAPIService
     });
 
+    // Initialize the member welcome email service if not already initialized
+    memberWelcomeEmailService.init();
+
     const memberRepository = new MemberRepository({
         stripeAPIService,
         tokenService,
         newslettersService,
         labsService,
         productRepository,
-        AutomatedEmail,
+        memberWelcomeEmailService: memberWelcomeEmailService.api,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
