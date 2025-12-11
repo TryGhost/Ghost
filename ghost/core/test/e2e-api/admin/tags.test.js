@@ -1,8 +1,10 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
+const urlUtilsHelper = require('../../utils/urlUtils');
 
 describe('Tag API', function () {
     let request;
@@ -173,5 +175,47 @@ describe('Tag API', function () {
             .expect(404);
 
         res.body.errors[0].message.should.eql('Resource not found error, cannot delete tag.');
+    });
+
+    describe('URL transformations', function () {
+        const siteUrl = config.get('url');
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can read tag with all image URLs as absolute site URLs', async function () {
+            const res = await request
+                .get(localUtils.API.getApiQuery('tags/slug/tag-with-images/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const tag = res.body.tags[0];
+
+            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
+
+        it('Transforms image URLs to absolute site URLs even when CDN is configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: 'https://cdn.example.com', files: 'https://cdn.example.com'}
+            }, sinon);
+
+            const res = await request
+                .get(localUtils.API.getApiQuery('tags/slug/tag-with-images/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const tag = res.body.tags[0];
+
+            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
     });
 });
