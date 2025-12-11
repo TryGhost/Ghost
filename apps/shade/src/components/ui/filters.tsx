@@ -741,6 +741,10 @@ export interface FilterFieldConfig<T = unknown> {
     offLabel?: string;
     // Input event handlers
     onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    // Search event handler for select/multiselect fields
+    onSearchChange?: (searchTerm: string) => void;
+    // Controlled search value for select/multiselect fields
+    searchValue?: string;
     // Shows loading indicator in the dropdown
     isLoading?: boolean;
     // Default operator to use when creating a filter for this field
@@ -998,10 +1002,17 @@ function SelectOptionsPopover<T = unknown>({
     inline = false
 }: SelectOptionsPopoverProps<T>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState(field.searchValue || '');
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
+
+    // Sync searchInput with controlled searchValue
+    useEffect(() => {
+        if (field.searchValue !== undefined) {
+            setSearchInput(field.searchValue);
+        }
+    }, [field.searchValue]);
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = (field.value !== undefined ? (field.value as T[]) : values) || [];
@@ -1059,11 +1070,15 @@ function SelectOptionsPopover<T = unknown>({
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
+        field.onSearchChange?.(value);
     };
 
     const handleClose = () => {
         setOpen(false);
-        setTimeout(() => setSearchInput(''), 200);
+        // Only clear search if not controlled
+        if (field.searchValue === undefined) {
+            setTimeout(() => setSearchInput(''), 200);
+        }
         onClose?.();
     };
 
@@ -1177,7 +1192,7 @@ function SelectOptionsPopover<T = unknown>({
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen) {
+                if (!isOpen && field.searchValue === undefined) {
                     setTimeout(() => setSearchInput(''), 200);
                 }
             }}
@@ -1308,11 +1323,19 @@ function SelectOptionsPopover<T = unknown>({
 
 function FilterValueSelector<T = unknown>({field, values, onChange, operator}: FilterValueSelectorProps<T>) {
     const [open, setOpen] = useState(false);
-    const [searchInput, setSearchInput] = useState('');
+    const [searchInput, setSearchInput] = useState(field.searchValue || '');
     const context = useFilterContext();
+
+    // Sync searchInput with controlled searchValue
+    useEffect(() => {
+        if (field.searchValue !== undefined) {
+            setSearchInput(field.searchValue);
+        }
+    }, [field.searchValue]);
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
+        field.onSearchChange?.(value);
     };
 
     // Focus the search input when the popover opens
@@ -1632,7 +1655,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
             open={open}
             onOpenChange={(isOpen) => {
                 setOpen(isOpen);
-                if (!isOpen) {
+                if (!isOpen && field.searchValue === undefined) {
                     setTimeout(() => setSearchInput(''), 200);
                 }
             }}
