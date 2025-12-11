@@ -31,8 +31,10 @@ function getDomain() {
  */
 function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
     if (!requestedFromAddress) {
-        // Use the default config
-        requestedFromAddress = emailAddress.service.defaultFromEmail;
+        // Use the default config - stringify the email object for getAddressFromString
+        // defaultFromEmail returns an object {address, name}, but getAddressFromString expects a string
+        const defaultEmail = emailAddress.service.defaultFromEmail;
+        requestedFromAddress = EmailAddressParser.stringify(defaultEmail);
     }
 
     // Clean up email addresses (checks whether sending is allowed + email address is valid)
