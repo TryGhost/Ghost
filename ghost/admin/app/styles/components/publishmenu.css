@@ -1061,18 +1061,19 @@
     flex-grow: 1;
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post) {
     width: 56px;
     background: var(--whitegrey-l1);
     border-color: transparent;
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post, .copy-link, .copy-preview-link):hover {
     background: var(--whitegrey);
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post) span {
     font-size: 0;
+    padding: 0;
 }
 
 .modal-post-success .modal-footer .gh-btn svg {
@@ -1114,7 +1115,7 @@
         flex-direction: column;
     }
 
-    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .edit-post) {
         width: auto;
     }
 }
