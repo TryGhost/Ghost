@@ -15,7 +15,7 @@ SQL >
         {% if defined(date_from) %} 
             and timestamp >= toDateTime({{ Date(date_from) }}, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) 
         {% else %} 
-            and timestamp >= toDateTime(timestampAdd(today(), interval -7 day), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) 
+            and timestamp >= toDateTime(dateAdd(day, -7, today()), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) 
         {% end %}
         {% if defined(date_to) %} 
             and timestamp < toDateTime({{ Date(date_to) }}, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}) + interval 1 day 
@@ -52,7 +52,7 @@ SQL >
             and first_pageview >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% else %}
             {# Default to last 7 days if no start date provided #}
-            and first_pageview >= toDateTime(timestampAdd(today(), interval -7 day), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
+            and first_pageview >= toDateTime(dateAdd(day, -7, today()), {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
         {% end %}
         {% if defined(date_to) %}
             {# Filter to specified end date #}
