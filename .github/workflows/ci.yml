@@ -1407,6 +1407,8 @@ jobs:
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    permissions:
+      id-token: write
     strategy:
       matrix:
         include:
@@ -1484,8 +1486,6 @@ jobs:
       - name: Publish to npm
         if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
       - name: Replace version placeholders in cdn-paths
