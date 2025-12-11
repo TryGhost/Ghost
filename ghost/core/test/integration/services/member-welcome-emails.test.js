@@ -246,7 +246,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(entriesAfterJob.models[0].get('message'));
         });
 
-        it('does not send email when paid template is inactive but entry has memberStatus paid', async function () {
+        it('does not send email when paid template is inactive but entry has status paid', async function () {
             await db.knex('automated_emails')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid)
                 .update({status: 'inactive'});
@@ -257,7 +257,7 @@ describe('Member Welcome Emails Integration', function () {
                     memberId: 'paid_member_1',
                     email: 'paid-inactive@example.com',
                     name: 'Paid Inactive Template Member',
-                    memberStatus: 'paid'
+                    status: 'paid'
                 }),
                 status: OUTBOX_STATUSES.PENDING
             });
@@ -271,7 +271,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(entriesAfterJob.models[0].get('message').includes('inactive'));
         });
 
-        it('does not send email when no paid template exists but entry has memberStatus paid', async function () {
+        it('does not send email when no paid template exists but entry has status paid', async function () {
             await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
 
             await models.Outbox.add({
@@ -280,7 +280,7 @@ describe('Member Welcome Emails Integration', function () {
                     memberId: 'paid_member_2',
                     email: 'paid-notemplate@example.com',
                     name: 'Paid No Template Member',
-                    memberStatus: 'paid'
+                    status: 'paid'
                 }),
                 status: OUTBOX_STATUSES.PENDING
             });
