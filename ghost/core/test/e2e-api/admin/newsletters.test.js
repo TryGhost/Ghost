@@ -6,6 +6,7 @@ const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const urlUtilsHelper = require('../../utils/urlUtils');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -1644,6 +1645,33 @@ describe('Newsletters API', function () {
             await before.refresh();
             before.set('sender_email', beforeEmail);
             await before.save();
+        });
+    });
+
+    describe('URL transformations', function () {
+        const siteUrl = configUtils.config.getSiteUrl();
+
+        it('Can read newsletter with header_image as absolute site URL', async function () {
+            const res = await agent
+                .get('newsletters/?filter=slug:new-newsletter')
+                .expectStatus(200);
+
+            const newsletter = res.body.newsletters[0];
+
+            assert.equal(newsletter.header_image, `${siteUrl}content/images/newsletter-header.jpg`);
+        });
+
+        it('Can read newsletter with header_image as absolute site URL even when CDN is configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: 'https://cdn.example.com', files: 'https://cdn.example.com'}
+            }, sinon);
+
+            const res = await agent
+                .get('newsletters/?filter=slug:new-newsletter')
+                .expectStatus(200);
+
+            const newsletter = res.body.newsletters[0];
+            assert.equal(newsletter.header_image, `${siteUrl}content/images/newsletter-header.jpg`);
         });
     });
 });
