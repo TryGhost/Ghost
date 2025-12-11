@@ -1646,4 +1646,17 @@ describe('Newsletters API', function () {
             await before.save();
         });
     });
+
+    describe('URL transformations', function () {
+        it('Can read newsletter with header_image as absolute site URL', async function () {
+            const res = await agent
+                .get('newsletters/?filter=slug:new-newsletter')
+                .expectStatus(200);
+
+            const newsletter = res.body.newsletters[0];
+            const siteUrl = configUtils.config.getSiteUrl();
+
+            assert.equal(newsletter.header_image, `${siteUrl}content/images/newsletter-header.jpg`);
+        });
+    });
 });

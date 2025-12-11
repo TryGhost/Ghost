@@ -174,4 +174,22 @@ describe('Tag API', function () {
 
         res.body.errors[0].message.should.eql('Resource not found error, cannot delete tag.');
     });
+
+    describe('URL transformations', function () {
+        it('Can read tag with all image URLs as absolute site URLs', async function () {
+            const res = await request
+                .get(localUtils.API.getApiQuery('tags/slug/tag-with-images/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const tag = res.body.tags[0];
+            const siteUrl = config.get('url');
+
+            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
+    });
 });
