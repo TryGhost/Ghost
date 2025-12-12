@@ -37,16 +37,31 @@ SQL >
 NODE sessions_filtered_by_session_attributes
 DESCRIPTION >
     Further filter by session-level attributes (source, device, utm_*). These attributes are specific to the first hit in a session,
-    whereas other filters are on hits.
+    whereas other filters are on hits. Reads from AggregatingMergeTree MV using -Merge combinators.
 
 SQL >
     %
     select session_id
-    from mv_session_data sd
+    from (
+        SELECT
+            site_uuid,
+            session_id,
+            minMerge(first_pageview) as first_pageview,
+            argMinMerge(source) as source,
+            argMinMerge(device) as device,
+            argMinMerge(utm_source) as utm_source,
+            argMinMerge(utm_medium) as utm_medium,
+            argMinMerge(utm_campaign) as utm_campaign,
+            argMinMerge(utm_term) as utm_term,
+            argMinMerge(utm_content) as utm_content
+        FROM _mv_session_data
+        WHERE site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        GROUP BY site_uuid, session_id
+    ) sd
     inner join sessions_filtered_by_hit_attributes sfha
       on sfha.session_id = sd.session_id
     where
-        site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        1 = 1
         {% if defined(date_from) %}
             {# Filter from specified start date #}
             and first_pageview >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})

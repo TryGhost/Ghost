@@ -56,6 +56,22 @@ SQL >
         {% end %}
 
 
+NODE session_data
+DESCRIPTION >
+    Read session data from AggregatingMergeTree MV using -Merge combinators
+
+SQL >
+    %
+    SELECT
+        site_uuid,
+        session_id,
+        countMerge(pageviews) as pageviews,
+        minMerge(first_pageview) as first_pageview,
+        maxMerge(last_pageview) as last_pageview
+    FROM _mv_session_data
+    WHERE site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+    GROUP BY site_uuid, session_id
+
 NODE session_metrics
 DESCRIPTION >
     Calculate session-level metrics (visits, pageviews, bounce rate, avg session duration)
@@ -70,15 +86,13 @@ SQL >
             {% else %}
                 toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
             {% end %}
-            session_id,
+            sd.session_id,
             pageviews,
-            is_bounce,
-            duration as session_sec
-        from mv_session_data sd
+            pageviews = 1 as is_bounce,
+            last_pageview - first_pageview as session_sec
+        from session_data sd
             inner join filtered_sessions fs
                 on fs.session_id = sd.session_id
-        where
-            site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
 
 
 NODE data
