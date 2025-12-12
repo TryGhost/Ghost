@@ -23,30 +23,35 @@ test.describe('Ghost Admin - Analytics Overview', () => {
     test('records multiple pageviews in single session correctly', async ({page, browser, baseURL}) => {
         const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
 
+        const waitForViewCount = async (expectedCount: string) => {
+            await expect.poll(async () => {
+                await analyticsWebTrafficPage.refreshData();
+                return await analyticsWebTrafficPage.totalViewsTab.textContent();
+            }, {timeout: 10000}).toContain(expectedCount);
+        };
+
         const context = await browser.newContext({baseURL});
         const publicBrowserPage = await context.newPage();
-        const homePage = new HomePage(publicBrowserPage);
 
-        await homePage.goto();
-        await page.waitForTimeout(1000);
-        await analyticsWebTrafficPage.goto();
-        await expect(analyticsWebTrafficPage.totalViewsTab).toContainText('1');
-        await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
+        try {
+            const homePage = new HomePage(publicBrowserPage);
 
-        await homePage.goto();
-        await page.waitForTimeout(1000);
-        await analyticsWebTrafficPage.refreshData();
-        await expect(analyticsWebTrafficPage.totalViewsTab).toContainText('2');
-        await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
+            await homePage.goto();
+            await analyticsWebTrafficPage.goto();
+            await waitForViewCount('1');
+            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
 
-        await homePage.goto();
-        await page.waitForTimeout(1000);
-        await analyticsWebTrafficPage.refreshData();
-        await expect(analyticsWebTrafficPage.totalViewsTab).toContainText('3');
-        await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
+            await homePage.goto();
+            await waitForViewCount('2');
+            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
 
-        await publicBrowserPage.close();
-        await context.close();
+            await homePage.goto();
+            await waitForViewCount('3');
+            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
+        } finally {
+            await publicBrowserPage.close();
+            await context.close();
+        }
     });
 
     test('latest post', async ({page}) => {
