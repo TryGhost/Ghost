@@ -173,7 +173,7 @@ const ObjectId = require('bson-objectid').default;
 
 async function setupPermissionsDb() {
     const knex = Knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
@@ -247,7 +247,7 @@ async function setupPermissionsDb() {
 
 async function setupSettingsDb() {
     const knex = Knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
@@ -706,7 +706,7 @@ describe('migrations/utils/settings', function () {
 
 async function setupNullableTestDb() {
     const knex = Knex({
-        client: 'sqlite3',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },

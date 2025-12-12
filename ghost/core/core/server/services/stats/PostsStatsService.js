@@ -1208,7 +1208,7 @@ class PostsStatsService {
 
             // Filter out any rows without post_uuid and get unique UUIDs
             const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
-            
+
             // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
             const posts = await this.knex('posts as p')
                 .select(

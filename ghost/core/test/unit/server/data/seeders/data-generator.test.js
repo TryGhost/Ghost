@@ -20,7 +20,7 @@ describe('Data Generator', function () {
 
     beforeEach(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'
@@ -101,7 +101,7 @@ describe('Importer', function () {
 
     beforeEach(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'
