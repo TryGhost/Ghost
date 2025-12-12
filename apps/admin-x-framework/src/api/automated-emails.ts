@@ -48,3 +48,9 @@ export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType,
         update: updateQueryCache('automated_emails')
     }
 });
+
+export const useSendTestWelcomeEmail = createMutation<unknown, {id: string; email: string}>({
+    method: 'POST',
+    path: ({id}) => `/automated_emails/${id}/test/`,
+    body: ({email}) => ({email})
+});
