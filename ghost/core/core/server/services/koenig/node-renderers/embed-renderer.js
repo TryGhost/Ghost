@@ -29,15 +29,15 @@ function renderTemplate(node, document, options) {
     if (isEmail && isVideoWithThumbnail) {
         const emailTemplateMaxWidth = 600;
         const thumbnailAspectRatio = metadata.thumbnail_width / metadata.thumbnail_height;
-        const spacerWidth = Math.round(emailTemplateMaxWidth / 4);
         const spacerHeight = Math.round(emailTemplateMaxWidth / thumbnailAspectRatio);
+        const spacerSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg==`;
         const html = `
             <!--[if !mso !vml]-->
             <a class="kg-video-preview" href="${url}" aria-label="Play video" style="mso-hide: all">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${metadata.thumbnail_url}" role="presentation" style="background: url('${metadata.thumbnail_url}') left top / cover; mso-hide: all">
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
-                            <img src="https://img.spacergif.org/v1/${spacerWidth}x${spacerHeight}/0a/spacer.png" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
+                            <img src="${spacerSrc}" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
                         </td>
                         <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all;">
                             <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all"></div></div>
