@@ -296,6 +296,14 @@ export const useGrowthStats = (range: number) => {
                         ...mostRecentBeforeRange,
                         date: dateFromMoment.format('YYYY-MM-DD')
                     });
+                } else if (result.length > 0) {
+                    // No data before range, use the earliest data point in the range
+                    // to fill in the start date (representing MRR at range start)
+                    const earliestInRange = [...result].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                    result.unshift({
+                        ...earliestInRange,
+                        date: dateFromMoment.format('YYYY-MM-DD')
+                    });
                 }
             }
 
