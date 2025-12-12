@@ -1,6 +1,29 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
+export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+
+export interface NavItem {
+    name: string;
+    path: RegExp;
+    directUrl: string;
+    roles: UserRole[];
+}
+
+/**
+ * Navigation items in the sidebar with their expected paths and role visibility.
+ * Used for navigation tests and force upgrade redirect validation.
+ */
+export const NAV_ITEMS: NavItem[] = [
+    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
+    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
+    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
+    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
+    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
+    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
+    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
+];
+
 /**
  * SidebarPage uses semantic, accessibility-first locators.
  * This approach tests the UI as users interact with it, not implementation details.
