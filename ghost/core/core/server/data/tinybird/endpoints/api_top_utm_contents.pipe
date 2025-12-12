@@ -12,7 +12,7 @@ SQL >
     WHERE site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
     GROUP BY site_uuid, session_id
 
-NODE top_utm_content
+NODE top_utm_contents
 SQL >
     %
     select
