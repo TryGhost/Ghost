@@ -56,6 +56,10 @@ const features: Feature[] = [{
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
+}, {
+    title: 'Comment moderation',
+    description: 'Enable the Comments moderation page and member commenting controls',
+    flag: 'commentModeration'
 }];
 
 const AlphaFeatures: React.FC = () => {

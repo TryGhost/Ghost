@@ -41,6 +41,7 @@
     "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
     "docker:reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
+    "docker:seed:comments": "docker exec ghost-dev node /home/ghost/ghost/core/scripts/seed-comments.js",
     "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost",
     "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up --attach=ghost --force-recreate --no-log-prefix",
     "docker:dev:object-storage": "docker compose -f compose.yml -f compose.object-storage.yml --profile object-storage up --attach=ghost --force-recreate --no-log-prefix",

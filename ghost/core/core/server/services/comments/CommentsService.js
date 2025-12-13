@@ -177,8 +177,11 @@ class CommentsService {
     }
 
     async getAdminComments(options) {
-        this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null});
+        // Note: We don't check if comments are enabled for admin browse
+        // Admins should be able to moderate existing comments even if commenting is disabled
+        const {includeNested, ...restOptions} = options;
+        const findPageOptions = includeNested ? restOptions : {...restOptions, parentId: null};
+        const page = await this.models.Comment.findPage(findPageOptions);
 
         return page;
     }

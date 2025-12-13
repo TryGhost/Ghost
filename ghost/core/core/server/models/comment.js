@@ -137,6 +137,19 @@ const Comment = ghostBookshelf.Model.extend({
         }
 
         return null;
+    },
+
+    filterRelations() {
+        return {
+            member: {
+                tableName: 'members',
+                tableNameAs: 'member',
+                type: 'manyToMany',
+                joinTable: 'comments',
+                joinFrom: 'id',
+                joinTo: 'member_id'
+            }
+        };
     }
 }, {
 

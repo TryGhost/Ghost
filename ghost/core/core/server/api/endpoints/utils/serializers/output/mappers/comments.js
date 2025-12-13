@@ -7,6 +7,7 @@ const commentFields = [
     'id',
     'in_reply_to_id',
     'in_reply_to_snippet',
+    'parent_id',
     'status',
     'html',
     'created_at',
@@ -27,7 +28,8 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'commenting_enabled'
 ];
 
 const postFields = [

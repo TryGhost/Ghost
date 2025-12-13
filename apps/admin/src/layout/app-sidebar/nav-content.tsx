@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 
 import {
     Button,
@@ -10,6 +10,7 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { useBrowseSettings, getSettingValue } from "@tryghost/admin-x-framework/api/settings";
 import { NavMenuItem } from "./nav-menu-item";
 import NavSubMenu from "./nav-sub-menu";
 import { useMemberCount } from "./hooks/use-member-count";
@@ -19,12 +20,22 @@ import { useEmberRouting } from "@/ember-bridge";
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
+    const { data: settingsData } = useBrowseSettings();
     const [postsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+
+    const showComments = useMemo(() => {
+        if (!showMembers) {
+            return false;
+        }
+        const labsJSON = getSettingValue<string>(settingsData?.settings, 'labs') || '{}';
+        const labs = JSON.parse(labsJSON);
+        return labs.commentModeration === true;
+    }, [showMembers, settingsData?.settings]);
 
     return (
         <SidebarGroup {...props}>
@@ -134,6 +145,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             {memberCount != null && (
                                 <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
                             )}
+                        </NavMenuItem>
+                    )}
+
+                    {showComments && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="comments"
+                                isActive={routing.isRouteActive('comments')}
+                            >
+                                <LucideIcon.MessageSquare />
+                                <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                            </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
                 </SidebarMenu>
