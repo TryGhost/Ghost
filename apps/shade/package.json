@@ -56,7 +56,7 @@
         "rollup-plugin-node-builtins": "2.1.2",
         "sinon": "18.0.1",
         "storybook": "9.1.10",
-        "tailwindcss": "3.4.18",
+        "tailwindcss": "3.4.19",
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.8.3",
         "vite": "5.4.20",
