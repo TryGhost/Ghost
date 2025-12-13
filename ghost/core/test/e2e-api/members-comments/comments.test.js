@@ -103,6 +103,7 @@ const dbFns = {
 
 const commentMatcher = {
     id: anyObjectId,
+    parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -118,6 +119,19 @@ const labsCommentMatcher = {
     ...commentMatcher,
     in_reply_to_id: nullable(anyObjectId)
 };
+
+// Tombstone for deleted comments - minimal data only
+const tombstoneMatcher = {
+    id: anyObjectId,
+    parent_id: nullable(anyObjectId)
+};
+
+function tombstoneMatcherWithReplies(replies = 0) {
+    return {
+        ...tombstoneMatcher,
+        replies: new Array(replies).fill(commentMatcher)
+    };
+}
 
 /**
  * @param {Object} [options]
@@ -664,10 +678,11 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
+                    // Deleted parent returned as tombstone with nested reply
+                    const result = await testGetComments(`/api/comments/post/${postId}/`, [tombstoneMatcherWithReplies(1)]);
                     should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
+                    should(result.body.comments[0].status).eql('deleted');
+                    should(result.body.comments[0].replies.length).eql(1);
                     should(result.body.meta.pagination.total).eql(1);
                 });
 
@@ -781,8 +796,9 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments[0].count.replies).eql(1);
+                    // Deleted parent returned as tombstone, only 1 published reply visible
+                    const result = await testGetComments(`/api/comments/post/${postId}/`, [tombstoneMatcherWithReplies(1)]);
+                    should(result.body.comments[0].replies.length).eql(1);
                 });
             });
 
