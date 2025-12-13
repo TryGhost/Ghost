@@ -422,6 +422,51 @@
     font-weight: 400;
 }
 
+.gh-editor-email-size-warning {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.gh-editor-email-size-warning svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-editor-email-size-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    width: 200px;
+    padding: 12px;
+    background: var(--white);
+    border-radius: 4px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, .32), 0 8px 16px -4px rgba(0, 0, 0, .3);
+    z-index: 1000;
+}
+
+.gh-editor-email-size-warning:hover .gh-editor-email-size-popup {
+    display: flex;
+}
+
+.gh-editor-email-size-popup-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-editor-email-size-popup-text {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--midgrey);
+}
+
 .gh-editor-feedback-trigger {
     position: absolute;
     left: 30px;

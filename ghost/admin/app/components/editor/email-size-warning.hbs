@@ -1,0 +1,15 @@
+{{#if this.isEnabled}}
+    {{! Watch for post.updatedAt changes to trigger recalculation after saves }}
+    <span {{did-update this.checkEmailSize @post.updatedAtUTC}}>
+        {{#if this.warningLevel}}
+            <span class="gh-editor-email-size-warning gh-editor-email-size-warning--{{this.warningLevel}}">
+                {{svg-jar "email" class=(concat "fill-" this.warningLevel)}}
+                <div class="gh-editor-email-size-popup">
+                    <span class="gh-editor-email-size-popup-title">Looks like this is a long post</span>
+                    <span class="gh-editor-email-size-popup-text">Email newsletters may get cut off in the inbox behind a "View entire message" link when they're over 100kb.</span>
+                    <span class="gh-editor-email-size-popup-title">You've used: <span class={{this.warningLevel}}>{{this.emailSizeKb}}kb</span></span>
+                </div>
+            </span>
+        {{/if}}
+    </span>
+{{/if}}
