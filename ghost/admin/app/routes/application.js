@@ -234,9 +234,12 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         // Preload settings to avoid a delay when opening
-        setTimeout(() => {
-            importComponent(AdminXSettings.packageName);
-        }, 1000);
+        // Skip preloading when running in AdminForward mode (React handles its own loading)
+        if (!this.feature.inAdminForward) {
+            setTimeout(() => {
+                importComponent(AdminXSettings.packageName);
+            }, 1000);
+        }
     }
 
 });

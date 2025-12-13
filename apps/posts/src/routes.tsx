@@ -1,12 +1,5 @@
-import Growth from '@views/PostAnalytics/Growth/growth';
-import Newsletter from '@views/PostAnalytics/Newsletter/newsletter';
-import Overview from '@views/PostAnalytics/Overview/overview';
-import PostAnalytics from '@views/PostAnalytics/post-analytics';
-import PostAnalyticsProvider from './providers/post-analytics-context';
-import Tags from '@views/Tags/tags';
-import Web from '@views/PostAnalytics/Web/web';
 import {ErrorPage} from '@tryghost/shade';
-import {RouteObject} from '@tryghost/admin-x-framework';
+import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
 export const APP_ROUTE_PREFIX = '/';
@@ -22,30 +15,40 @@ export const routes: RouteObject[] = [
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
             {
-
                 // Post Analytics
                 path: 'posts/analytics/:postId',
-                element: (
-                    <PostAnalyticsProvider>
-                        <PostAnalytics />
-                    </PostAnalyticsProvider>
-                ),
+                lazy: async () => {
+                    const [
+                        {default: PostAnalyticsProvider},
+                        {default: PostAnalytics}
+                    ] = await Promise.all([
+                        import('./providers/post-analytics-context'),
+                        import('./views/PostAnalytics/post-analytics')
+                    ]);
+                    return {
+                        element: (
+                            <PostAnalyticsProvider>
+                                <PostAnalytics />
+                            </PostAnalyticsProvider>
+                        )
+                    };
+                },
                 children: [
                     {
                         path: '',
-                        element: <Overview />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Overview/overview'))
                     },
                     {
                         path: 'web',
-                        element: <Web />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Web/web'))
                     },
                     {
                         path: 'growth',
-                        element: <Growth />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Growth/growth'))
                     },
                     {
                         path: 'newsletter',
-                        element: <Newsletter />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Newsletter/newsletter'))
                     }
                 ]
             },
@@ -54,7 +57,7 @@ export const routes: RouteObject[] = [
                 children: [
                     {
                         index: true,
-                        element: <Tags />
+                        lazy: lazyComponent(() => import('@views/Tags/tags'))
                     },
                     {
                         path: ':tagSlug',
