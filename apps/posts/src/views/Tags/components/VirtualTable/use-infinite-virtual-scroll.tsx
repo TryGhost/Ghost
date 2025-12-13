@@ -1,4 +1,4 @@
-import {getScrollParent} from './get-scroll-parent';
+import {getScrollParent} from '@tryghost/shade';
 import {useEffect} from 'react';
 import {useVirtualizer} from '@tanstack/react-virtual';
 
