@@ -32393,10 +32393,10 @@ test-exclude@^7.0.1:
     glob "^10.4.1"
     minimatch "^9.0.4"
 
-testem@3.16.0, testem@^3.2.0:
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.16.0.tgz#9f54304a53bf0f4ca218c2229f33f9620a2a457b"
-  integrity sha512-TKQ3CuG/u+vDa7IUQgRQHN753wjDlgYMWE45KF5WkXyWjTNxXHPrY0qPBmHWI+kDYWc3zsJqzbS7pdzt5sc33A==
+testem@3.17.0, testem@^3.2.0:
+  version "3.17.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.17.0.tgz#57ddb5de2d0478f592e2f33719873a39d1ff2bd2"
+  integrity sha512-j91I0w9pCVg6P1NU95gUsAujd7RBuAZGcwqQiB0smmXFZvRLaFZ+yZoTE/qK/QRl/x6GBNckM+GDDU59KsHsJg==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
