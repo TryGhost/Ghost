@@ -93,6 +93,29 @@ module.exports = class CommentsController {
     }
 
     /**
+     * Browse all comments across the site (admin only, no post_id required)
+     * Used for admin moderation page showing comments from all posts
+     *
+     * Controller responsibility: Parse frame into clean domain parameters.
+     * The frame should not pass beyond this layer.
+     *
+     * @param {Frame} frame
+     */
+    async adminBrowseAll(frame) {
+        // Query params can be strings or booleans depending on how the request is made
+        const includeNestedParam = frame.options.include_nested;
+        const includeNested = includeNestedParam !== 'false' && includeNestedParam !== false;
+
+        return await this.service.getAdminAllComments({
+            includeNested,
+            filter: frame.options.filter,
+            order: frame.options.order || 'created_at desc',
+            page: frame.options.page,
+            limit: frame.options.limit
+        });
+    }
+
+    /**
      * @param {Frame} frame
      */
     async replies(frame) {
