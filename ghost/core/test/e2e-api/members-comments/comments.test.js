@@ -120,19 +120,6 @@ const labsCommentMatcher = {
     in_reply_to_id: nullable(anyObjectId)
 };
 
-// Tombstone for deleted comments - minimal data only
-const tombstoneMatcher = {
-    id: anyObjectId,
-    parent_id: nullable(anyObjectId)
-};
-
-function tombstoneMatcherWithReplies(replies = 0) {
-    return {
-        ...tombstoneMatcher,
-        replies: new Array(replies).fill(commentMatcher)
-    };
-}
-
 /**
  * @param {Object} [options]
  * @param {number} [options.replies]
@@ -678,12 +665,7 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    // Deleted parent returned as tombstone with nested reply
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [tombstoneMatcherWithReplies(1)]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].status).eql('deleted');
-                    should(result.body.comments[0].replies.length).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
                 });
 
                 it('excludes deleted comments if all replies are hidden or deleted', async function () {
@@ -796,8 +778,8 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    // Deleted parent returned as tombstone, only 1 published reply visible
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [tombstoneMatcherWithReplies(1)]);
+                    // Deleted parent returned with full data, only 1 published reply visible
+                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
                     should(result.body.comments[0].replies.length).eql(1);
                 });
             });

@@ -48,25 +48,6 @@ const commentMapper = (model, frame) => {
 
     const isPublicRequest = utils.isMembersAPI(frame);
 
-    // Deleted comments are tombstones - just enough info to show "Reply to deleted comment"
-    if (jsonModel.status === 'deleted') {
-        const tombstone = {
-            id: jsonModel.id,
-            parent_id: jsonModel.parent_id || null,
-            status: 'deleted'
-        };
-        // Include post relation if loaded
-        if (jsonModel.post) {
-            url.forPost(jsonModel.post.id, jsonModel.post, frame);
-            tombstone.post = _.pick(jsonModel.post, postFields);
-        }
-        // Include replies if present (for tree structure), recursively mapped
-        if (jsonModel.replies) {
-            tombstone.replies = jsonModel.replies.map(reply => commentMapper(reply, frame));
-        }
-        return tombstone;
-    }
-
     if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
         jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
     } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
@@ -113,6 +94,11 @@ const commentMapper = (model, frame) => {
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
+    }
+
+    // Deleted comments should never expose their content
+    if (jsonModel.status === 'deleted') {
+        response.html = null;
     }
 
     return response;

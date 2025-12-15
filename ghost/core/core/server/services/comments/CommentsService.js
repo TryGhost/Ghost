@@ -202,16 +202,15 @@ class CommentsService {
             order,
             page,
             limit,
-            // If includeNested is false, only return top-level comments
             parentId: includeNested ? undefined : null,
-            // Admin context: see hidden comments with full content, and all statuses including deleted
-            isAdmin: true
+            isAdmin: true,
+            browseAll: true
         });
     }
 
     async getAdminComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null});
+        const page = await this.models.Comment.findPage({...options, parentId: null, isAdmin: true});
 
         return page;
     }
