@@ -13,6 +13,7 @@ Object {
       "adminForward": true,
       "announcementBar": true,
       "audienceFeedback": true,
+      "commentModeration": true,
       "contentVisibility": true,
       "contentVisibilityAlpha": true,
       "customFonts": true,
