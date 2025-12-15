@@ -54,7 +54,8 @@ const PRIVATE_FEATURES = [
     'adminForward',
     'domainWarmup',
     'themeTranslation',
-    'commentModeration'
+    'commentModeration',
+    'emailSizeWarnings'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

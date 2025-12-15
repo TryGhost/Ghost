@@ -94,6 +94,7 @@ export default class FeatureService extends Service {
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('tagsX') tagsX;
     @feature('utmTracking') utmTracking;
+    @feature('emailSizeWarnings') emailSizeWarnings;
 
     _user = null;
 
@@ -131,7 +132,7 @@ export default class FeatureService extends Service {
         if (this.config.environment === 'development') {
             return;
         }
-        
+
         const cookieName = 'ghost-admin-forward';
         const hasAdminForwardCookie = !!getCookie(cookieName);
 
