@@ -284,3 +284,38 @@ p .gh-preview-email-address {
         display: none
     }
 }
+
+.gh-email-preview-clip-container {
+    display: flex;
+    background-color: var(--whitegrey-l2);
+    border-bottom: 1px solid var(--whitegrey);
+    padding: 20px;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.gh-email-preview-clip-container svg {
+    margin-top: 2px;
+    width: 16px;
+    min-width: 16px;
+    height: auto;
+}
+
+.gh-email-preview-clip-container svg path {
+    fill: var(--yellow-d1);
+}
+
+.gh-email-preview-clip-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+.gh-email-preview-clip-description {
+    font-size: 1.3rem;
+    text-wrap: pretty;
+}
+
+.gh-email-preview-clip-used {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
