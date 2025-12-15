@@ -9,7 +9,7 @@ const UniqueChecker = require('./UniqueChecker');
 
 class OffersAPI {
     /**
-     * @param {import('./OfferRepository')} repository
+     * @param {import('../OfferBookshelfRepository')} repository
      */
     constructor(repository) {
         this.repository = repository;
@@ -42,16 +42,21 @@ class OffersAPI {
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
     async createOffer(data, options = {}) {
-        return this.repository.createTransaction(async (transaction) => {
+        const run = async (transaction) => {
             const saveOptions = {...options, transacting: transaction};
             const uniqueChecker = new UniqueChecker(this.repository, transaction);
-
             const offer = await Offer.create(data, uniqueChecker);
 
             await this.repository.save(offer, saveOptions);
 
             return OfferMapper.toDTO(offer);
-        });
+        };
+
+        if (options.transacting) {
+            return run(options.transacting);
+        }
+
+        return this.repository.createTransaction(run);
     }
 
     /**

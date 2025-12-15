@@ -28,6 +28,7 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {OfferDuration} duration
  * @prop {OfferCurrency} [currency]
  * @prop {OfferStatus} status
+ * @prop {string|null} [stripeCouponId]
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
  * @prop {string} createdAt
@@ -48,6 +49,7 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {number} duration_in_months
  * @prop {string} currency
  * @prop {string} status
+ * @prop {string|null} [stripe_coupon_id]
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
  * @prop {Date} created_at
@@ -192,6 +194,10 @@ class Offer {
         return this.props.lastRedeemed;
     }
 
+    get stripeCouponId() {
+        return this.props.stripeCouponId;
+    }
+
     /**
      * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
@@ -290,6 +296,7 @@ class Offer {
         const status = OfferStatus.create(data.status || 'active');
         const createdAt = isNew ? OfferCreatedAt.create() : OfferCreatedAt.create(data.created_at);
         const lastRedeemed = data.last_redeemed ? new Date(data.last_redeemed).toISOString() : null;
+        const stripeCouponId = data.stripe_coupon_id ?? null;
 
         if (isNew && data.redemptionCount !== undefined) {
             // TODO correct error
@@ -354,6 +361,7 @@ class Offer {
             duration,
             currency,
             tier,
+            stripeCouponId,
             redemptionCount,
             status,
             createdAt,

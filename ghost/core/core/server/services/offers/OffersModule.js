@@ -6,15 +6,18 @@ const OfferCodeChangeEvent = require('./domain/events/OfferCodeChangeEvent');
 const OfferCreatedEvent = require('./domain/events/OfferCreatedEvent');
 const Offer = require('./domain/models/Offer');
 const OffersAPI = require('./application/OffersAPI');
+const OffersImportService = require('./OffersImportService');
 
 class OffersModule {
     /**
      * @param {OffersAPI} offersAPI
+     * @param {OffersImportService} importService
      * @param {import('@tryghost/express-dynamic-redirects')} redirectManager
      * @param {any} repository
      */
-    constructor(offersAPI, redirectManager, repository) {
+    constructor(offersAPI, importService, redirectManager, repository) {
         this.api = offersAPI;
+        this.importService = importService;
         this.repository = repository;
         this.redirectManager = redirectManager;
     }
@@ -62,7 +65,11 @@ class OffersModule {
      */
     static create(deps) {
         const offersAPI = new OffersAPI(deps.repository);
-        return new OffersModule(offersAPI, deps.redirectManager, deps.repository);
+        const importService = new OffersImportService({
+            offersAPI,
+            offerRepository: deps.repository
+        });
+        return new OffersModule(offersAPI, importService, deps.redirectManager, deps.repository);
     }
 
     static events = {

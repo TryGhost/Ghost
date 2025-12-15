@@ -41,6 +41,25 @@ describe('Offer', function () {
             );
         });
 
+        it('Stores stripe_coupon_id when provided', async function () {
+            const offer = await Offer.create({
+                name: 'My Offer',
+                code: 'offer-code',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'percent',
+                amount: 10,
+                duration: 'forever',
+                tier: {
+                    id: ObjectID()
+                },
+                stripe_coupon_id: 'coupon_123'
+            }, mockUniqueChecker);
+
+            offer.stripeCouponId.should.equal('coupon_123');
+        });
+
         it('Creates a valid instance of a trial Offer', async function () {
             const offer = await Offer.create({
                 name: 'My Trial Offer',

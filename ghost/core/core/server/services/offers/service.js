@@ -25,11 +25,13 @@ module.exports = {
         });
 
         this.api = offersModule.api;
+        this.importService = offersModule.importService;
 
         await offersModule.init();
     },
 
     api: null,
+    importService: null,
 
     get middleware() {
         return redirectManager.handleRequest;

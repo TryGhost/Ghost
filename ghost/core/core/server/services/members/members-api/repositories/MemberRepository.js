@@ -11,7 +11,6 @@ const crypto = require('crypto');
 const config = require('../../../../../shared/config');
 const StartOutboxProcessingEvent = require('../../../outbox/events/StartOutboxProcessingEvent');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
-
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -53,6 +52,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.labsService
      * @param {any} deps.productRepository
      * @param {any} deps.offerRepository
+     * @param {any} deps.offersImportService
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
      * @param {any} deps.AutomatedEmail
@@ -74,6 +74,7 @@ module.exports = class MemberRepository {
         labsService,
         productRepository,
         offerRepository,
+        offersImportService,
         tokenService,
         newslettersService,
         AutomatedEmail
@@ -93,6 +94,7 @@ module.exports = class MemberRepository {
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
         this._offerRepository = offerRepository;
+        this._offersImportService = offersImportService;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
@@ -355,7 +357,7 @@ module.exports = class MemberRepository {
                     ...memberStatusData,
                     labels
                 }, {...memberAddOptions, transacting});
-                
+
                 // Only send the free welcome email if:
                 // 1. The free welcome email is active
                 // 2. The member is not signing up for a paid subscription (no stripeCustomer)
@@ -375,7 +377,7 @@ module.exports = class MemberRepository {
                         })
                     }, {transacting});
                 }
-                    
+
                 return newMember;
             };
 
@@ -460,7 +462,7 @@ module.exports = class MemberRepository {
                     });
                 }
             }
-        }       
+        }
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             batchId: options.batch_id,
@@ -1036,22 +1038,26 @@ module.exports = class MemberRepository {
             logging.error(e);
         }
 
-        let stripeCouponId = stripeSubscriptionData.discount && stripeSubscriptionData.discount.coupon ? stripeSubscriptionData.discount.coupon.id : null;
+        let stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
-        let offer = null;
 
-        if (stripeCouponId) {
-            // Get the offer from our database
-            offer = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
-            if (offer) {
-                offerId = offer.id;
-            } else {
-                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${stripeSubscriptionData.id}.`);
+        if (stripeCouponId && !offerId && ghostProduct) {
+            const cadence = _.get(subscriptionPriceData, 'recurring.interval', 'month');
+            const ensuredOfferId = await this._offersImportService.ensureOfferForCoupon({
+                coupon: stripeSubscriptionData.discount.coupon,
+                cadence,
+                tier: {
+                    id: ghostProduct.get('id'),
+                    name: ghostProduct.get('name')
+                },
+                transacting: options.transacting
+            });
+
+            if (ensuredOfferId) {
+                offerId = ensuredOfferId;
             }
-        } else if (offerId) {
-            offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
         }
 
         const subscriptionData = {

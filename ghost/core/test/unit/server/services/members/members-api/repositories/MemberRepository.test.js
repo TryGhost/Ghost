@@ -460,6 +460,75 @@ describe('MemberRepository', function () {
                 return false;
             })).should.be.true();
         });
+
+        it('creates an offer from a Stripe coupon when missing and uses caller transaction', async function () {
+            const offersImportService = {
+                ensureOfferForCoupon: sinon.stub().resolves('offer_new')
+            };
+
+            const offerRepositoryWithCoupon = {
+                getById: sinon.stub().resolves(null)
+            };
+
+            const productRepositoryWithTier = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        if (key === 'id') {
+                            return 'tier_1';
+                        }
+                        if (key === 'name') {
+                            return 'Tier One';
+                        }
+                        return null;
+                    }),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        discount: {
+                            coupon: {
+                                id: 'coupon_abc',
+                                percent_off: 20,
+                                duration: 'forever'
+                            }
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository: productRepositoryWithTier,
+                offerRepository: offerRepositoryWithCoupon,
+                offersImportService,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const transacting = {
+                executionPromise: Promise.resolve()
+            };
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: {...subscriptionData, discount: {coupon: {id: 'coupon_abc'}}}
+            }, {
+                transacting,
+                context: {}
+            });
+
+            offersImportService.ensureOfferForCoupon.calledOnce.should.be.true();
+            offersImportService.ensureOfferForCoupon.firstCall.args[0].transacting.should.equal(transacting);
+            StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
+        });
     });
 
     describe('create - outbox integration', function () {
@@ -554,7 +623,7 @@ describe('MemberRepository', function () {
             sinon.assert.calledOnce(Outbox.add);
             const outboxCall = Outbox.add.firstCall.args[0];
             assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-            
+
             const payload = JSON.parse(outboxCall.payload);
             assert.equal(payload.memberId, 'member_id_123');
             assert.equal(payload.email, 'test@example.com');

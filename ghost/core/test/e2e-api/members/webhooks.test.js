@@ -32,6 +32,10 @@ async function getMember(memberId) {
     // eslint-disable-next-line dot-notation
     return await models['Member'].where('id', memberId).fetch({require: true});
 }
+async function getOfferByStripeCoupon(stripeCouponId) {
+    // eslint-disable-next-line dot-notation
+    return await models['Offer'].findOne({stripe_coupon_id: stripeCouponId});
+}
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
@@ -1680,17 +1684,22 @@ describe('Members API', function () {
             });
         });
 
-        it('Silently ignores an invalid offer id in metadata', async function () {
+        it('Supports creating an offer from a Stripe coupon', async function () {
             const interval = 'month';
             const unit_amount = 500;
             const mrr_with = 400;
+
+            const stripeCouponId = 'stripe-coupon-id';
+
+            const existingOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.equal(existingOffer, null, `No offer should exist with coupon ID: ${stripeCouponId}`);
 
             const discount = {
                 id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                 object: 'discount',
                 checkout_session: null,
                 coupon: {
-                    id: 'unknownCoupon', // this one is unknown in Ghost
+                    id: stripeCouponId,
                     object: 'coupon',
                     amount_off: null,
                     created: 1649774041,
@@ -1786,6 +1795,10 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
+            // Get offer by stripe coupon, it should now exist
+            const createdOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.notEqual(createdOffer, null, `An offer should now have been created with coupon ID: ${stripeCouponId}`);
+
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
                 subscription_id: subscription.id,
@@ -1796,12 +1809,14 @@ describe('Members API', function () {
                 plan_currency: 'usd',
                 current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
                 mrr: mrr_with,
-                offer_id: null
+                offer_id: createdOffer.id
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
             member.subscriptions[0].should.match({
-                offer: null
+                offer: {
+                    id: createdOffer.id
+                }
             });
 
             await assertMemberEvents({
@@ -2304,7 +2319,7 @@ describe('Members API', function () {
                 subscribed: false,
                 stripe_customer_id: customer_id
             };
-    
+
             // create our free member
             const res = await adminAgent
                 .post(`/members/`)
