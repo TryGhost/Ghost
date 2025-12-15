@@ -88,14 +88,18 @@
                     />
                 </form>
             </div>
-            <div class="gh-email-preview-clip-container">
-                {{svg-jar "email"}}
-                <div>
-                    <div class="gh-email-preview-clip-title">Looks like this is a long post</div>
-                    <div class="gh-email-preview-clip-description">Email newsletters may get cut off in the inbox behind a “View entire message” link when they’re over 100kB. </div>
-                    <div class="gh-email-preview-clip-used">You’ve used: <span class="yellow-d1">92kB</span></div>
-                </div>
-            </div>
+            <Editor::EmailSizeWarning @post={{@post}} as |warningLevel emailSizeKb| >
+                {{#if warningLevel}}
+                    <div class="gh-email-preview-clip-container">
+                        {{svg-jar "email-warning"}}
+                        <div>
+                            <div class="gh-email-preview-clip-title">Looks like this is a long post</div>
+                            <div class="gh-email-preview-clip-description">Email newsletters may get cut off in the inbox behind a “View entire message” link when they’re over 100kB. </div>
+                            <div class="gh-email-preview-clip-used">You’ve used: <span class="yellow-d1">{{emailSizeKb}}kB</span></div>
+                        </div>
+                    </div>
+                {{/if}}
+            </Editor::EmailSizeWarning>
             <iframe
                 class="gh-pe-iframe"
                 title="Email preview"
