@@ -20,6 +20,9 @@ module.exports = {
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']

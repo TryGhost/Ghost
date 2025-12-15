@@ -5,13 +5,14 @@ import react from "@vitejs/plugin-react-swc";
 
 import { emberAssetsPlugin } from "./vite-ember-assets";
 import { ghostBackendProxyPlugin } from "./vite-backend-proxy";
+import { deepLinksPlugin } from "./vite-deep-links";
 
 const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/cards");
 
 // https://vite.dev/config/
 export default defineConfig({
     base: process.env.GHOST_CDN_URL ?? "/ghost",
-    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), tsconfigPaths()],
+    plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths()],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },

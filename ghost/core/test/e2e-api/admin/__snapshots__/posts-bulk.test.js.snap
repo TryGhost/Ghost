@@ -20,7 +20,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 11,
+        "successful": 13,
         "unsuccessful": 0,
       },
     },
@@ -33,7 +33,7 @@ Object {
   "bulk": Object {
     "meta": Object {
       "stats": Object {
-        "successful": 11,
+        "successful": 13,
         "unsuccessful": 0,
       },
     },
@@ -60,7 +60,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 13,
+        "successful": 15,
         "unsuccessful": 0,
       },
       "unsuccessfulData": Array [],
@@ -75,7 +75,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 13,
+        "successful": 15,
         "unsuccessful": 0,
       },
       "unsuccessfulData": Array [],
@@ -90,7 +90,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 13,
+        "successful": 15,
         "unsuccessful": 0,
       },
       "unsuccessfulData": Array [],
@@ -105,7 +105,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 13,
+        "successful": 15,
         "unsuccessful": 0,
       },
       "unsuccessfulData": Array [],
@@ -120,7 +120,7 @@ Object {
     "meta": Object {
       "errors": Array [],
       "stats": Object {
-        "successful": 11,
+        "successful": 13,
         "unsuccessful": 0,
       },
       "unsuccessfulData": Array [],

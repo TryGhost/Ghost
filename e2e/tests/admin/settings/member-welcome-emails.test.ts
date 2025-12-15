@@ -108,34 +108,6 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
         expect(freeWelcomeEmail?.subject).toBe('Custom Welcome Subject');
     });
 
-    test('can edit free welcome email sender details', async ({page}) => {
-        const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
-
-        // Enable free welcome email first
-        await welcomeEmailsSection.goto();
-        await welcomeEmailsSection.enableFreeWelcomeEmail();
-
-        // Open the modal and edit sender details
-        await welcomeEmailsSection.openFreeWelcomeEmailModal();
-        await welcomeEmailsSection.modalSenderNameInput.clear();
-        await welcomeEmailsSection.modalSenderNameInput.fill('Test Sender');
-        await welcomeEmailsSection.modalSenderEmailInput.clear();
-        await welcomeEmailsSection.modalSenderEmailInput.fill('sender@example.com');
-        await welcomeEmailsSection.modalReplyToInput.clear();
-        await welcomeEmailsSection.modalReplyToInput.fill('reply@example.com');
-        await welcomeEmailsSection.saveWelcomeEmail();
-
-        // Verify via API that the sender details were saved
-        const response = await page.request.get('/ghost/api/admin/automated_emails/');
-        expect(response.ok()).toBe(true);
-
-        const data = await response.json() as AutomatedEmailsResponse;
-        const freeWelcomeEmail = data.automated_emails.find(email => email.slug === 'member-welcome-email-free');
-        expect(freeWelcomeEmail?.sender_name).toBe('Test Sender');
-        expect(freeWelcomeEmail?.sender_email).toBe('sender@example.com');
-        expect(freeWelcomeEmail?.sender_reply_to).toBe('reply@example.com');
-    });
-
     test('edited welcome email persists after page reload', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 

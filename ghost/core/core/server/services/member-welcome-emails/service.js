@@ -41,7 +41,7 @@ class MemberWelcomeEmailService {
         }
     }
 
-    async send({member, memberStatus = 'free'}) {
+    async send({member, memberStatus}) {
         const name = member?.name ? `${member.name} at ` : '';
         logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member?.email}`);
 
