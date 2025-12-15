@@ -4,6 +4,7 @@
         "default": ["{projectRoot}/**/*", "{workspaceRoot}/ghost/tsconfig.json"]
     },
     "parallel": 4,
+    "useDaemonProcess": false,
     "targetDefaults": {
         "build": {
             "dependsOn": ["^build"],
