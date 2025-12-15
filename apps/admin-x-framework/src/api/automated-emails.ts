@@ -49,8 +49,8 @@ export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType,
     }
 });
 
-export const useSendTestWelcomeEmail = createMutation<unknown, {id: string; email: string}>({
+export const useSendTestWelcomeEmail = createMutation<unknown, {id: string; email: string; subject: string; lexical: string}>({
     method: 'POST',
     path: ({id}) => `/automated_emails/${id}/test/`,
-    body: ({email}) => ({email})
+    body: ({email, subject, lexical}) => ({email, subject, lexical})
 });

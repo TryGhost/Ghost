@@ -59,7 +59,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {settings} = useGlobalData();
     const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
 
-    const {formState, saveState, updateForm, handleSave, okProps, errors} = useForm({
+    const {formState, saveState, updateForm, handleSave, okProps, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
             lexical: automatedEmail?.lexical || ''
@@ -136,14 +136,24 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             return;
         }
 
+        // check that subject and lexical are valid
+        if (!validate()) {
+            setTestEmailError('Please complete the required fields');
+            return;
+        }
+
         setSendState('sending');
 
         try {
-            await handleSave({fakeWhenUnchanged: true});
-            await sendTestEmail({id: automatedEmail.id, email: testEmail});
+            await sendTestEmail({
+                id: automatedEmail.id,
+                email: testEmail,
+                subject: formState.subject,
+                lexical: formState.lexical
+            });
             setSendState('sent');
             clearTimeout(sendStateTimeoutRef.current!);
-            sendStateTimeoutRef.current = setTimeout(() => setSendState('idle'), 2500);
+            sendStateTimeoutRef.current = setTimeout(() => setSendState('idle'), 2000);
         } catch (error) {
             setSendState('idle');
             let message;
@@ -188,8 +198,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             <label className='mb-2 block text-sm font-semibold'>Send test email</label>
                                             <TextField
                                                 className='!h-[36px]'
-                                                error={Boolean(testEmailError)}
-                                                hint={testEmailError}
                                                 placeholder='you@yoursite.com'
                                                 value={testEmail}
                                                 onChange={(e) => {
@@ -204,6 +212,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             label={sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
                                             onClick={handleSendTestEmail}
                                         />
+                                        {testEmailError && <Hint className='mt-2' color='red'>{testEmailError}</Hint>}
                                     </div>
                                 )}
                             </div>
