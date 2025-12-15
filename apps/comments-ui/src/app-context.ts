@@ -27,7 +27,7 @@ export type Comment = {
     member: Member | null,
     edited_at: string,
     created_at: string,
-    html: string
+    html: string | null
 }
 
 export type OpenCommentForm = {

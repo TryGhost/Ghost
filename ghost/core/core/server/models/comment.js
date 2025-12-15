@@ -63,18 +63,24 @@ const Comment = ghostBookshelf.Model.extend({
 
     // Called by our filtered-collection bookshelf plugin
     applyCustomQuery(options) {
-        const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+        const excludedStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
 
         this.query((qb) => {
-            qb.where(function () {
-                this.whereNotIn('comments.status', excludedCommentStatuses)
-                    .orWhereExists(function () {
-                        this.select(1)
-                            .from('comments as replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .whereNotIn('replies.status', excludedCommentStatuses);
-                    });
-            });
+            if (options.browseAll) {
+                // Browse All: simply exclude statuses, no thread structure preservation
+                qb.whereNotIn('comments.status', excludedStatuses);
+            } else {
+                // Default: preserve thread structure by including deleted parents with replies
+                qb.where(function () {
+                    this.whereNotIn('comments.status', excludedStatuses)
+                        .orWhereExists(function () {
+                            this.select(1)
+                                .from('comments as replies')
+                                .whereRaw('replies.parent_id = comments.id')
+                                .whereNotIn('replies.status', excludedStatuses);
+                        });
+                });
+            }
         });
     },
 
@@ -317,9 +323,9 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-        // The comment model additionally supports having a parentId and isAdmin option
         options.push('parentId');
         options.push('isAdmin');
+        options.push('browseAll');
 
         return options;
     }

@@ -294,58 +294,32 @@ Object {
 }
 `;
 
-exports[`Admin Comments API Browse All Includes deleted comments for admin 1: [body] 1`] = `
+exports[`Admin Comments API Browse All Excludes deleted comments even when they have published replies 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
-      "count": Object {
-        "likes": 0,
-        "replies": 0,
-      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
-      "html": "<p>Published</p>",
+      "html": "<p>Published reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
       "in_reply_to_snippet": null,
-      "liked": false,
       "member": Object {
         "avatar_image": null,
-        "email": "member1@test.com",
+        "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
+        "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [],
+      "post": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "title": "Ghostly Kitchen Sink",
+        "url": Any<String>,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
       "status": "published",
-    },
-    Object {
-      "count": Object {
-        "likes": 0,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": Nullable<StringMatching>,
-      "html": "<p>Deleted</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": false,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [],
-      "status": "deleted",
     },
   ],
   "meta": Object {
@@ -355,7 +329,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 2,
+      "total": 1,
     },
   },
 }
@@ -387,83 +361,6 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "status": "hidden",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API Browse All Includes member relation by default 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": 0,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": Nullable<StringMatching>,
-      "html": "<p>This is a comment</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": false,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [],
-      "status": "published",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API Browse All Includes post relation when requested 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": Nullable<StringMatching>,
-      "html": "<p>This is a comment</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "member": null,
-      "parent_id": Nullable<StringMatching>,
-      "post": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "title": "HTML Ipsum",
-        "url": Any<String>,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "status": "published",
     },
   ],
   "meta": Object {
@@ -519,58 +416,6 @@ Object {
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "title": "Ghostly Kitchen Sink",
-        "url": Any<String>,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "status": "published",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 2,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API Browse All Returns deleted parent as tombstone when it has published replies 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "parent_id": null,
-      "post": Object {
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "title": "Ghostly Kitchen Sink",
-        "url": Any<String>,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "status": "deleted",
-    },
-    Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": Nullable<StringMatching>,
-      "html": "<p>Published reply</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member2@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
@@ -981,22 +826,6 @@ Object {
 }
 `;
 
-exports[`Admin Comments API browse by post does not return deleted comments with only deleted replies 1: [body] 1`] = `
-Object {
-  "comments": Array [],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 0,
-    },
-  },
-}
-`;
-
 exports[`Admin Comments API browse by post does not return deleted replies 1: [body] 1`] = `
 Object {
   "comments": Array [
@@ -1083,105 +912,9 @@ Object {
 }
 `;
 
-exports[`Admin Comments API browse by post includes all replies in count for admin 1: [body] 1`] = `
+exports[`Admin Comments API browse by post excludes deleted comments when all replies are also deleted 1: [body] 1`] = `
 Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 3,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "Comment 1",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 1",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "hidden",
-        },
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 2",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "deleted",
-        },
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 3",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "published",
-        },
-      ],
-      "status": "published",
-    },
-  ],
+  "comments": Array [],
   "meta": Object {
     "pagination": Object {
       "limit": 15,
@@ -1189,7 +922,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 1,
+      "total": 0,
     },
   },
 }
@@ -1281,207 +1014,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API browse by post returns all replies including deleted for admin 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 3,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "Comment 1",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 1",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "deleted",
-        },
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 2",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "hidden",
-        },
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 3",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "published",
-        },
-      ],
-      "status": "published",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API browse by post returns deleted comments as tombstones if they have published replies 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "parent_id": null,
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 1",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member1@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": "Mr Egg",
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "published",
-        },
-      ],
-      "status": "deleted",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API browse by post returns deleted comments for admin 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "Comment 1",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [],
-      "status": "deleted",
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Admin Comments API browse by post returns deleted comments with deleted replies for admin 1: [body] 1`] = `
+exports[`Admin Comments API browse by post returns deleted comments if they have published replies 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -1491,7 +1024,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "Comment 1",
+      "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
       "in_reply_to_snippet": null,
@@ -1505,7 +1038,6 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "replies": Array [
         Object {
           "count": Object {
@@ -1527,8 +1059,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "deleted",
+          "status": "published",
         },
       ],
       "status": "deleted",
@@ -1573,75 +1104,6 @@ Object {
       "parent_id": Nullable<StringMatching>,
       "replies": Array [],
       "status": "published",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API get by id includes deleted replies for admin 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 1,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "<p>This is a comment</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "in_reply_to_id": null,
-      "in_reply_to_snippet": null,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "email": "member1@test.com",
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "parent_id": Nullable<StringMatching>,
-      "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "replies": Array [
-        Object {
-          "count": Object {
-            "likes": 0,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "Reply 1",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": false,
-          "member": Object {
-            "avatar_image": null,
-            "email": "member2@test.com",
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": null,
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "post_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "status": "deleted",
-        },
-      ],
-      "status": "published",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API get by id returns deleted comment as tombstone 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "parent_id": null,
-      "replies": Array [],
-      "status": "deleted",
     },
   ],
 }
