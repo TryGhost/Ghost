@@ -19,7 +19,7 @@ export const useFeatureFlag = (flagName: string, fallbackPath: string) => {
 
     try {
         labs = JSON.parse(labsJSON);
-    } catch (error) {
+    } catch {
         // If JSON parsing fails, fall back to empty object
         labs = {};
     }

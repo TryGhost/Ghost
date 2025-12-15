@@ -93,7 +93,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 onOpenChange(false);
             }
             toast.success(replyTo ? 'Reply posted' : 'Note posted');
-        } catch (error) {
+        } catch {
             if (replyTo) {
                 onReplyError?.();
             }

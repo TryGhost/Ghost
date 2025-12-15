@@ -4,7 +4,7 @@ import {useAppContext} from '../app-context';
 import {useEffect, useState} from 'react';
 
 // TODO: figure out what this type should be?
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Props = {};
 
 const PopupBox: React.FC<Props> = () => {
