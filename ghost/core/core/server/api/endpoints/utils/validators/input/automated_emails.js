@@ -14,7 +14,9 @@ const messages = {
     invalidLexical: 'Lexical must be a valid JSON string',
     invalidSlug: `Slug must be one of: ${ALLOWED_SLUGS.join(', ')}`,
     invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
-    invalidEmailReceived: 'The server did not receive a valid email'
+    invalidEmailReceived: 'The server did not receive a valid email',
+    subjectRequired: 'Subject is required',
+    lexicalRequired: 'Email content is required'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -68,10 +70,24 @@ module.exports = {
     },
     sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;
+        const subject = frame.data.subject;
+        const lexical = frame.data.lexical;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmailReceived)
+            });
+        }
+
+        if (typeof subject !== 'string' || !subject.trim()) {
+            throw new BadRequestError({
+                message: tpl(messages.subjectRequired)
+            });
+        }
+
+        if (typeof lexical !== 'string' || !lexical.trim()) {
+            throw new BadRequestError({
+                message: tpl(messages.lexicalRequired)
             });
         }
     }

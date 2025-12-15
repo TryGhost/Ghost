@@ -102,9 +102,10 @@ class MemberWelcomeEmailService {
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
     }
 
-    async sendTestEmail({email, automatedEmailId}) {
+    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
         logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending test welcome email to ${email}`);
 
+        // Still validate the automated email exists (for permission purposes)
         const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
 
         if (!automatedEmail) {
@@ -112,9 +113,6 @@ class MemberWelcomeEmailService {
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
         }
-
-        const lexical = automatedEmail.get('lexical');
-        const subject = automatedEmail.get('subject');
 
         const siteSettings = {
             title: settingsCache.get('title') || 'Ghost',

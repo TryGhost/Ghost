@@ -34,6 +34,7 @@ describe('Automated Emails API', function () {
     });
 
     beforeEach(async function () {
+        await dbUtils.truncate('brute');
         await dbUtils.truncate('automated_emails');
     });
 
@@ -362,7 +363,11 @@ describe('Automated Emails API', function () {
         it('Can send test email', async function () {
             await agent
                 .post(`automated_emails/${automatedEmailId}/test/`)
-                .body({email: 'test@ghost.org'})
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
                 .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
@@ -374,7 +379,11 @@ describe('Automated Emails API', function () {
         it('Cannot send test email for non-existent automated email', async function () {
             await agent
                 .post('automated_emails/abcd1234abcd1234abcd1234/test/')
-                .body({email: 'test@ghost.org'})
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
                 .expectStatus(404)
                 .matchBodySnapshot({
                     errors: [{
@@ -406,7 +415,49 @@ describe('Automated Emails API', function () {
         it('Cannot send test email with invalid email format', async function () {
             await agent
                 .post(`automated_emails/${automatedEmailId}/test/`)
-                .body({email: 'not-a-valid-email'})
+                .body({
+                    email: 'not-a-valid-email',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without subject', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    lexical: validLexical
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Cannot send test email without lexical', async function () {
+            await agent
+                .post(`automated_emails/${automatedEmailId}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject'
+                })
                 .expectStatus(400)
                 .matchBodySnapshot({
                     errors: [{

@@ -122,7 +122,9 @@ const controller = {
             'id'
         ],
         data: [
-            'email'
+            'email',
+            'subject',
+            'lexical'
         ],
         validation: {
             options: {
@@ -138,6 +140,8 @@ const controller = {
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.sendTestEmail({
                 email: frame.data.email,
+                subject: frame.data.subject,
+                lexical: frame.data.lexical,
                 automatedEmailId: frame.options.id
             });
         }
