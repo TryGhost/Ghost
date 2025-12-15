@@ -7,7 +7,7 @@ import {
 
 export type Comment = {
     id: string;
-    html: string;
+    html: string | null;
     status: 'published' | 'hidden' | 'deleted';
     created_at: string;
     updated_at: string;
