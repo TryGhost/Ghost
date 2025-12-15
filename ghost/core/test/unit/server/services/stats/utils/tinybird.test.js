@@ -110,30 +110,11 @@ describe('Tinybird Client', function () {
                     token: 'local-token'
                 }
             });
-            
+
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
-            
+
             url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
             options.headers.Authorization.should.equal('Bearer mock-jwt-token');
-        });
-        
-        it('ignores version config when local is enabled', function () {
-            // Update config mock to return local config with version
-            mockConfig.get.withArgs('tinybird:stats').returns({
-                endpoint: 'https://api.tinybird.co',
-                token: 'tb-token',
-                version: 'v2',
-                local: {
-                    enabled: true,
-                    endpoint: 'http://localhost:8000',
-                    token: 'local-token'
-                }
-            });
-
-            const {url} = tinybirdClient.buildRequest('test_pipe', {});
-
-            // Should not contain _v2 in the URL when local is enabled
-            url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
         });
     });
 

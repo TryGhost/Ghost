@@ -35,7 +35,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         // Use version from config if provided for constructing the URL
         // Pattern: api_kpis -> api_kpis_v2 (single underscore + version)
         const version = statsConfig?.version;
-        const pipeUrl = (version && !localEnabled) ?
+        const pipeUrl = version ?
             `/v0/pipes/${pipeName}_${version}.json` :
             `/v0/pipes/${pipeName}.json`;
         
