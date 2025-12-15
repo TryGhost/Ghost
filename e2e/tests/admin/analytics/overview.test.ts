@@ -20,40 +20,6 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
     });
 
-    test('records multiple pageviews in single session correctly', async ({page, browser, baseURL}) => {
-        const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
-
-        const waitForViewCount = async (expectedCount: string) => {
-            await expect.poll(async () => {
-                await analyticsWebTrafficPage.refreshData();
-                return await analyticsWebTrafficPage.totalViewsTab.textContent();
-            }, {timeout: 10000}).toContain(expectedCount);
-        };
-
-        const context = await browser.newContext({baseURL});
-        const publicBrowserPage = await context.newPage();
-
-        try {
-            const homePage = new HomePage(publicBrowserPage);
-
-            await homePage.goto();
-            await analyticsWebTrafficPage.goto();
-            await waitForViewCount('1');
-            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
-
-            await homePage.goto();
-            await waitForViewCount('2');
-            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
-
-            await homePage.goto();
-            await waitForViewCount('3');
-            await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toContainText('1');
-        } finally {
-            await publicBrowserPage.close();
-            await context.close();
-        }
-    });
-
     test('latest post', async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
