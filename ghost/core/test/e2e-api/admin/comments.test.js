@@ -439,43 +439,7 @@ describe(`Admin Comments API`, function () {
                 });
         });
 
-        it('returns deleted comments as tombstones if they have published replies', async function () {
-            await dbFns.addCommentWithReplies({
-                member_id: fixtureManager.get('members', 0).id,
-                html: 'Comment 1',
-                status: 'deleted',
-                replies: [{
-                    member_id: fixtureManager.get('members', 0).id,
-                    html: 'Reply 1',
-                    status: 'published'
-                }]
-            });
-
-            // Tombstone - just id, parent_id, status (per-post browse doesn't load post relation)
-            const tombstoneMatcher = {
-                id: anyObjectId
-            };
-
-            // Reply has full content including member
-            const replyMatcher = {
-                id: anyObjectId,
-                parent_id: anyObjectId,
-                created_at: anyISODateTime,
-                member: {
-                    id: anyObjectId,
-                    uuid: anyUuid
-                }
-            };
-
-            // Parent is tombstone with nested reply that has full content
-            await adminApi.get('/comments/post/' + postId + '/')
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    comments: [{...tombstoneMatcher, replies: [replyMatcher]}]
-                });
-        });
-
-        it('does not return deleted comments with only deleted replies', async function () {
+        it('excludes deleted comments when all replies are also deleted', async function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 html: 'Comment 1',
@@ -491,6 +455,38 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     comments: []
+                });
+        });
+
+        it('returns deleted comments if they have published replies', async function () {
+            await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'deleted',
+                replies: [{
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'Reply 1',
+                    status: 'published'
+                }]
+            });
+
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid
+                }
+            };
+
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher]
+                    }]
                 });
         });
 
@@ -626,25 +622,6 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get(`/comments/${comment.id}/`);
             assert.equal(res.body.comments[0].html, 'Comment 1');
-        });
-
-        it('returns deleted comment as tombstone', async function () {
-            const comment = await dbFns.addComment({
-                member_id: fixtureManager.get('members', 0).id,
-                html: 'Comment 1',
-                status: 'deleted'
-            });
-
-            // Tombstone - just id, parent_id, status (no post relation loaded for this endpoint)
-            const tombstoneMatcher = {
-                id: anyObjectId
-            };
-
-            await adminApi.get(`/comments/${comment.id}/`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    comments: [tombstoneMatcher]
-                });
         });
 
         it('includes published replies', async function () {
@@ -1317,7 +1294,7 @@ describe(`Admin Comments API`, function () {
                 });
         });
 
-        it('Returns deleted parent as tombstone when it has published replies', async function () {
+        it('Excludes deleted comments even when they have published replies', async function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 html: '<p>Deleted parent</p>',
@@ -1329,21 +1306,11 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            // Tombstone has id, parent_id, status, post (no member, no html)
-            const tombstoneMatcher = {
-                id: anyObjectId,
-                post: {
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    url: anyString
-                }
-            };
-
-            // Parent appears as tombstone, reply appears as separate item in flat list
+            // Only the reply is returned - admin always excludes deleted comments
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [tombstoneMatcher, commentMatcher]
+                    comments: [commentMatcher]
                 });
         });
 
