@@ -2,6 +2,8 @@ import {Meta, createQuery} from '../utils/api/hooks';
 
 export type Member = {
     id: string;
+    name?: string;
+    email?: string;
 };
 
 export interface MembersResponseType {
