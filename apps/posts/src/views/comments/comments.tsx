@@ -11,54 +11,59 @@ function buildCommentsFilter(filters: Filter[]): string | undefined {
     const parts: string[] = [];
     
     for (const filter of filters) {
+        if (!filter.values[0]) {
+            continue;
+        }
+
         switch (filter.field) {
-        case 'status':
-            if (filter.values[0]) {
-                parts.push(`status:${filter.values[0]}`);
-            }
+        case 'status': 
+            parts.push(`status:${filter.values[0]}`);
             break;
-        case 'created_at':
+
+        case 'created_at': 
             if (filter.operator === 'before' && filter.values[0]) {
                 parts.push(`created_at:<'${filter.values[0]}'`);
             } else if (filter.operator === 'after' && filter.values[0]) {
                 parts.push(`created_at:>'${filter.values[0]}'`);
             } else if (filter.operator === 'is' && filter.values[0]) {
-                parts.push(`created_at:'${filter.values[0]}'`);
-            } else if (filter.operator === 'between' && filter.values[0] && filter.values[1]) {
-                parts.push(`created_at:>='${filter.values[0]}'+created_at:<='${filter.values[1]}'`);
+                // Match all items from the selected day in the user's timezone
+                const dateValue = String(filter.values[0]); // Format: YYYY-MM-DD
+                    
+                // Create Date objects in user's local timezone, then convert to UTC
+                const startOfDay = new Date(dateValue + 'T00:00:00').toISOString();
+                const endOfDay = new Date(dateValue + 'T23:59:59.999').toISOString();
+                    
+                parts.push(`created_at:>='${startOfDay}'+created_at:<='${endOfDay}'`);
             }
             break;
-        case 'body':
-            if (filter.values[0]) {
-                const value = filter.values[0] as string;
-                // Escape single quotes in the value
-                const escapedValue = value.replace(/'/g, '\\\'');
-                
-                if (filter.operator === 'contains') {
-                    parts.push(`html:~'${escapedValue}'`);
-                } else if (filter.operator === 'not_contains') {
-                    parts.push(`html:-~'${escapedValue}'`);
-                }
+
+        case 'body': 
+            const value = filter.values[0] as string;
+            // Escape single quotes in the value
+            const escapedValue = value.replace(/'/g, '\\\'');
+                    
+            if (filter.operator === 'contains') {
+                parts.push(`html:~'${escapedValue}'`);
+            } else if (filter.operator === 'not_contains') {
+                parts.push(`html:-~'${escapedValue}'`);
             }
             break;
-        case 'post':
-            if (filter.values[0]) {
-                if (filter.operator === 'is_not') {
-                    parts.push(`post_id:-${filter.values[0]}`);
-                } else {
-                    // Default to 'is' operator
-                    parts.push(`post_id:${filter.values[0]}`);
-                }
+
+        case 'post': 
+            if (filter.operator === 'is_not') {
+                parts.push(`post_id:-${filter.values[0]}`);
+            } else {
+                // Default to 'is' operator
+                parts.push(`post_id:${filter.values[0]}`);
             }
             break;
-        case 'author':
-            if (filter.values[0]) {
-                if (filter.operator === 'is_not') {
-                    parts.push(`member_id:-${filter.values[0]}`);
-                } else {
-                    // Default to 'is' operator
-                    parts.push(`member_id:${filter.values[0]}`);
-                }
+
+        case 'author': 
+            if (filter.operator === 'is_not') {
+                parts.push(`member_id:-${filter.values[0]}`);
+            } else {
+                // Default to 'is' operator
+                parts.push(`member_id:${filter.values[0]}`);
             }
             break;
         }

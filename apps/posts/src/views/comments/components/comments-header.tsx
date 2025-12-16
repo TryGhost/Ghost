@@ -40,7 +40,8 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
     const memberOptions = useMemo(() => {
         const options = membersData?.members?.map(member => ({
             value: member.id,
-            label: member.name || member.email || '(Unknown)'
+            label: member.name || 'Unknown name',
+            detail: member.email ?? '(Unknown email)'
         })) || [];
         
         // If there's an active author filter and the value isn't in the options, add it
@@ -51,7 +52,8 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             if (!existsInOptions) {
                 options.unshift({
                     value: filterValue,
-                    label: `ID: ${filterValue}`
+                    label: `ID: ${filterValue}`,
+                    detail: ''
                 });
             }
         }
@@ -115,8 +117,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             icon: <LucideIcon.Circle className="size-4" />,
             options: [
                 {value: 'published', label: 'Published'},
-                {value: 'hidden', label: 'Hidden'},
-                {value: 'deleted', label: 'Deleted'}
+                {value: 'hidden', label: 'Hidden'}
             ]
         },
         {
@@ -124,7 +125,12 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             label: 'Date',
             type: 'date',
             className: 'w-32',
-            icon: <LucideIcon.Calendar className="size-4" />
+            icon: <LucideIcon.Calendar className="size-4" />,
+            operators: [
+                {value: 'is', label: 'is'},
+                {value: 'before', label: 'before'},
+                {value: 'after', label: 'after'}
+            ]
         }
     ], [postOptions, postsLoading, postSearch, memberOptions, membersLoading, memberSearch]);
 

@@ -203,7 +203,7 @@ describe('useForm', () => {
                 await act(async () => {
                     await result.current!.handleSave();
                 });
-            } catch (e) {
+            } catch {
                 // Expected to throw
             }
 
@@ -230,7 +230,7 @@ describe('useForm', () => {
                 await act(async () => {
                     await result.current!.handleSave();
                 });
-            } catch (e) {
+            } catch {
                 // Expected to throw
             }
 
