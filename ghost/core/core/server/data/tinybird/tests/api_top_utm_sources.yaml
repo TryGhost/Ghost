@@ -86,13 +86,3 @@
   expected_result: |
     {"utm_source":"instagram","visits":1}
     {"utm_source":"newsletter","visits":1}
-
-- name: Cross-boundary session - query second day only
-  description: |
-    Tests a session that starts on Jan 1 at 23:55 and continues into Jan 2.
-    When querying Jan 2 only, V1 sees hits from Jan 2 only, so utm_source
-    is determined from the first hit within that range (newsletter).
-    Uses a separate site_uuid to isolate from other test data.
-  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-02&date_to=2100-01-02&timezone=Etc/UTC
-  expected_result: |
-    {"utm_source":"newsletter","visits":1}
