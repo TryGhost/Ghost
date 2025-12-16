@@ -309,7 +309,7 @@
       NOTE: V2 currently FAILS this test because it filters by first_pageview (Jan 1)
       instead of filtering hits by timestamp. This test documents the expected v1 behavior.
       Uses a separate site_uuid to isolate from other test data.
-  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-02&date_to=2100-01-02
+  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-01&date_to=2100-01-02
   expected_result: |
       {"date":"2100-01-01 00:00:00","visits":1,"pageviews":1,"bounce_rate":0,"avg_session_sec":300}
       {"date":"2100-01-02 00:00:00","visits":0,"pageviews":2,"bounce_rate":0,"avg_session_sec":0}

@@ -333,3 +333,16 @@
     {"date":"2100-01-02 21:00:00","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
     {"date":"2100-01-02 22:00:00","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
     {"date":"2100-01-02 23:00:00","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
+
+- name: Cross-boundary session - across both days
+  description: |
+    Tests a session that starts on Jan 1 at 23:55 and continues into Jan 2.
+    When querying Jan 2 only, this should see the hits that occurred on Jan 2
+    (2 pageviews at 00:05 and 00:10), counting as 1 visit.
+    NOTE: V2 currently FAILS this test because it filters by first_pageview (Jan 1)
+    instead of filtering hits by timestamp. This test documents the expected v1 behavior.
+    Uses a separate site_uuid to isolate from other test data.
+  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-01&date_to=2100-01-02
+  expected_result: |
+    {"date":"2100-01-01","visits":1,"pageviews":3,"bounce_rate":0,"avg_session_sec":900}
+    {"date":"2100-01-02","visits":0,"pageviews":0,"bounce_rate":0,"avg_session_sec":0}
