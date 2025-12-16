@@ -124,7 +124,12 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             label: 'Date',
             type: 'date',
             className: 'w-32',
-            icon: <LucideIcon.Calendar className="size-4" />
+            icon: <LucideIcon.Calendar className="size-4" />,
+            operators: [
+                {value: 'is', label: 'is'},
+                {value: 'before', label: 'before'},
+                {value: 'after', label: 'after'}
+            ]
         }
     ], [postOptions, postsLoading, postSearch, memberOptions, membersLoading, memberSearch]);
 
