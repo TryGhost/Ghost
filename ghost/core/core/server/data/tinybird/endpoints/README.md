@@ -7,7 +7,7 @@
 Ghost analytics distinguishes between two types of attributes:
 
 #### Session-Level Attributes
-These are captured from the **first hit** (earliest timestamp) in a session using `argMinState(field, timestamp)` in the `_mv_session_data` materialized view (an `AggregatingMergeTree` table):
+These are captured from the **first hit** (earliest timestamp) in a session using `argMin(field, timestamp)` in the `mv_session_data` materialized view:
 
 - `source` - Referring domain
 - `utm_source` - UTM source parameter
@@ -39,7 +39,7 @@ Finds sessions where **at least one hit** matches the hit-level filter criteria 
 ```sql
 NODE sessions_filtered_by_session_attributes
 ```
-Further filters by session-level attributes (source, utm_*) by reading from `_mv_session_data` using `-Merge` combinators (e.g., `argMinMerge(source)`). These filters check attributes from the **first hit only**.
+Further filters by session-level attributes (source, utm_*) by joining with `mv_session_data`. These filters check attributes from the **first hit only**.
 
 **Stage 3: Final Output**
 ```sql

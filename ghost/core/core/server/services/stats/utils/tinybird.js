@@ -19,6 +19,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
      * @param {string} [options.postType] - Post type filter
+     * @param {string} [options.tbVersion] - Tinybird version for API URL
      * @returns {Object} Object with URL and request options
      */
     const buildRequest = (pipeName, options = {}) => {
@@ -32,11 +33,9 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         const tokenData = tinybirdService.getToken();
         const token = tokenData?.token;
 
-        // Use version from config if provided for constructing the URL
-        // Pattern: api_kpis -> api_kpis_v2 (single underscore + version)
-        const version = statsConfig?.version;
-        const pipeUrl = version ?
-            `/v0/pipes/${pipeName}_${version}.json` :
+        // Use tbVersion if provided for constructing the URL
+        const pipeUrl = (options.tbVersion && !localEnabled) ? 
+            `/v0/pipes/${pipeName}__v${options.tbVersion}.json` : 
             `/v0/pipes/${pipeName}.json`;
         
         const tinybirdUrl = `${endpoint}${pipeUrl}`;
@@ -64,7 +63,7 @@ const create = ({config, request, settingsCache, tinybirdService}) => {
         }
         // Add any other options that might be needed
         Object.entries(options).forEach(([key, value]) => {
-            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType'].includes(key) && value !== undefined && value !== null) {
+            if (!['dateFrom', 'dateTo', 'timezone', 'memberStatus', 'postType', 'tbVersion'].includes(key) && value !== undefined && value !== null) {
                 // Convert camelCase to snake_case for Tinybird API
                 const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
                 // Handle arrays by converting them to comma-separated strings for Tinybird
