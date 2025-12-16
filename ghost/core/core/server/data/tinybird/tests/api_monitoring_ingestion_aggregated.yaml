@@ -9,13 +9,13 @@
   description: Test with specific start and end dates
   parameters: start_date=2100-01-01&end_date=2100-01-07
   expected_result: |
-    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+    {"total_events":10,"avg_latency_ms":225,"p50_latency_ms":175,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
 
 - name: single_day_range
   description: Test with single day date range
   parameters: start_date=2100-01-01&end_date=2100-01-01
   expected_result: |
-    {"total_events":3,"avg_latency_ms":217,"p50_latency_ms":100,"p95_latency_ms":460,"min_latency_ms":50,"max_latency_ms":500}
+    {"total_events":4,"avg_latency_ms":188,"p50_latency_ms":100,"p95_latency_ms":440,"min_latency_ms":50,"max_latency_ms":500}
 
 - name: filtered_by_site_uuid
   description: Test filtering by specific site UUID
@@ -33,7 +33,7 @@
   description: Test with only end date specified
   parameters: end_date=2100-01-07
   expected_result: |
-    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+    {"total_events":10,"avg_latency_ms":225,"p50_latency_ms":175,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
 
 - name: future_date_range
   description: Test with future dates that should return no data
@@ -45,7 +45,7 @@
   description: Test with wide date range spanning multiple months
   parameters: start_date=2099-12-01&end_date=2100-02-28
   expected_result: |
-    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+    {"total_events":10,"avg_latency_ms":225,"p50_latency_ms":175,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
 
 - name: site_and_date_combination
   description: Test combination of site filtering with specific dates
@@ -57,7 +57,7 @@
   description: Test aggregation without site UUID grouping
   parameters: start_date=2100-01-01&end_date=2100-01-07
   expected_result: |
-    {"total_events":9,"avg_latency_ms":239,"p50_latency_ms":200,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
+    {"total_events":10,"avg_latency_ms":225,"p50_latency_ms":175,"p95_latency_ms":500,"min_latency_ms":50,"max_latency_ms":500}
 
 - name: non_existent_site
   description: Test with non-existent site UUID
