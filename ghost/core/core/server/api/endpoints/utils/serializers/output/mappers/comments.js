@@ -5,6 +5,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const commentFields = [
     'id',
+    'parent_id',
     'in_reply_to_id',
     'in_reply_to_snippet',
     'status',
@@ -93,6 +94,11 @@ const commentMapper = (model, frame) => {
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
+    }
+
+    // Deleted comments should never expose their content
+    if (jsonModel.status === 'deleted') {
+        response.html = null;
     }
 
     return response;

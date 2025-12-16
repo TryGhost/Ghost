@@ -41,6 +41,8 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    // Comments - browseAll must come before :id routes
+    router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));

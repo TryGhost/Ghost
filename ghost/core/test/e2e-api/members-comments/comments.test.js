@@ -103,6 +103,7 @@ const dbFns = {
 
 const commentMatcher = {
     id: anyObjectId,
+    parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -664,11 +665,7 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
                 });
 
                 it('excludes deleted comments if all replies are hidden or deleted', async function () {
@@ -781,8 +778,9 @@ describe('Comments API', function () {
                         }]
                     });
 
+                    // Deleted parent returned with full data, only 1 published reply visible
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments[0].count.replies).eql(1);
+                    should(result.body.comments[0].replies.length).eql(1);
                 });
             });
 

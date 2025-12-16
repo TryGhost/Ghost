@@ -176,9 +176,41 @@ class CommentsService {
         return page;
     }
 
+    /**
+     * @typedef {Object} AdminBrowseAllOptions
+     * @property {boolean} includeNested - If true, include replies in flat list; if false, only top-level comments
+     * @property {string[]} [withRelated] - Relations to include (e.g. ['member', 'post'])
+     * @property {string} [filter] - NQL filter string
+     * @property {string} order - Order string (e.g. 'created_at desc')
+     * @property {number} [page] - Page number
+     * @property {number} [limit] - Results per page
+     */
+
+    /**
+     * Browse all comments across the site for admin moderation.
+     * Does not check if comments are enabled - admins can moderate existing comments.
+     *
+     * Service responsibility: Business logic and data access.
+     * Receives clean, typed parameters - no frame/HTTP knowledge.
+     *
+     * @param {AdminBrowseAllOptions} options
+     */
+    async getAdminAllComments({includeNested, filter, order, page, limit}) {
+        return await this.models.Comment.findPage({
+            withRelated: ['member', 'post'],
+            filter,
+            order,
+            page,
+            limit,
+            parentId: includeNested ? undefined : null,
+            isAdmin: true,
+            browseAll: true
+        });
+    }
+
     async getAdminComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null});
+        const page = await this.models.Comment.findPage({...options, parentId: null, isAdmin: true});
 
         return page;
     }
