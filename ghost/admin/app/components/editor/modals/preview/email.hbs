@@ -88,8 +88,8 @@
                     />
                 </form>
             </div>
-            <Editor::EmailSizeWarning @post={{@post}} as |warningLevel emailSizeKb| >
-                {{#if warningLevel}}
+            <Editor::EmailSizeWarning @post={{@post}} as |overLimit emailSizeKb| >
+                {{#if overLimit}}
                     <div class="gh-email-preview-clip-container">
                         {{svg-jar "email-warning"}}
                         <div>
