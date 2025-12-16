@@ -9,19 +9,15 @@ export default class EmailSizeWarningComponent extends Component {
     @service feature;
     @service settings;
 
-    @tracked warningLevel = null;
+    @tracked overLimit = false;
     @tracked emailSizeKb = null;
 
     get isEnabled() {
         return this.feature.emailSizeWarnings
             && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && this.post
-            && !this.post.email
-            && !this.post.isNew;
-    }
-
-    get post() {
-        return this.args.post;
+            && this.args.post
+            && !this.args.post.email
+            && !this.args.post.isNew;
     }
 
     constructor() {
@@ -40,8 +36,8 @@ export default class EmailSizeWarningComponent extends Component {
 
     @task({restartable: true})
     *checkEmailSizeTask() {
-        const result = yield this.emailSizeWarning.fetchEmailSize(this.post);
-        this.warningLevel = result.warningLevel;
+        const result = yield this.emailSizeWarning.fetchEmailSize(this.args.post);
+        this.overLimit = result.overLimit;
         this.emailSizeKb = result.emailSizeKb;
     }
 }
