@@ -117,8 +117,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             icon: <LucideIcon.Circle className="size-4" />,
             options: [
                 {value: 'published', label: 'Published'},
-                {value: 'hidden', label: 'Hidden'},
-                {value: 'deleted', label: 'Deleted'}
+                {value: 'hidden', label: 'Hidden'}
             ]
         },
         {
