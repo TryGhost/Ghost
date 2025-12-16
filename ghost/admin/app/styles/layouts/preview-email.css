@@ -302,7 +302,7 @@ p .gh-preview-email-address {
 }
 
 .gh-email-preview-clip-container svg path {
-    fill: var(--yellow-d1);
+    stroke: var(--yellow-d1);
 }
 
 .gh-email-preview-clip-title {

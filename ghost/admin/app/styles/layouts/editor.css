@@ -459,7 +459,7 @@
 }
 
 .gh-editor-email-size-warning svg path {
-    stroke: currentColor !important;
+    stroke: var(--yellow) !important;
 }
 
 .gh-editor-email-size-popup {
