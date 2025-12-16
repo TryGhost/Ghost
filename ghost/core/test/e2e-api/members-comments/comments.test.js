@@ -1120,6 +1120,28 @@ describe('Comments API', function () {
                 emailMockReceiver.assertSentEmailCount(0);
             });
 
+            it('Does not expose reports count in public API', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                // Add multiple reports to this comment
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 1).id
+                });
+
+                // Verify the reports count is NOT included in public API response
+                const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
+                should(res.body.comments[0].count.reports).be.undefined();
+                // Verify other counts are still there
+                should(res.body.comments[0].count.likes).eql(0);
+            });
+
             it('Can edit a comment on a post', async function () {
                 const comment = await dbFns.addComment({
                     member_id: loggedInMember.id
