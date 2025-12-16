@@ -665,6 +665,7 @@ function FilterRemoveButton({className, icon = <X />, ...props}: FilterRemoveBut
 export interface FilterOption<T = unknown> {
     value: T;
     label: string;
+    detail?: string;
     icon?: React.ReactNode;
     metadata?: Record<string, unknown>;
 }
@@ -1130,7 +1131,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1146,7 +1150,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...effectiveValues, option.value] as T[];
@@ -1174,7 +1178,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
@@ -1217,7 +1224,13 @@ function SelectOptionsPopover<T = unknown>({
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].label
+                                ? selectedOptions[0].detail 
+                                    ? (
+                                        <>
+                                            <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
+                                            <span className="truncate text-sm text-muted-foreground" title={selectedOptions[0].detail}>{selectedOptions[0].detail}</span>
+                                        </>
+                                    ) : <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1271,7 +1284,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground">{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1287,7 +1303,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...values, option.value] as T[];
@@ -1307,7 +1323,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground">{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
