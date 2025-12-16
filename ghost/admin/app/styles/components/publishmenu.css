@@ -448,6 +448,15 @@
     line-height: 1.35em;
 }
 
+.gh-publish-setting-email-warning {
+    transition: all 0.3s ease;
+}
+
+.gh-publish-setting-email-warning.open {
+    transform: translateY(-12px);
+    margin-bottom: 12px;
+}
+
 @media (max-width: 560px) {
     .gh-publish-setting-trigger {
         font-size: 1.7rem;

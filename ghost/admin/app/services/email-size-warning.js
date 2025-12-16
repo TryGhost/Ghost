@@ -2,8 +2,7 @@ import Service, {inject as service} from '@ember/service';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 
-const YELLOW_THRESHOLD = 90 * 1024; // 90KB
-const RED_THRESHOLD = 100 * 1024; // 100KB
+const LIMIT_THRESHOLD = 100 * 1024; // 100KB
 
 // Rewritten URLs in real emails have a fixed format:
 // {siteUrl}/r/{8-char-hex}?m={36-char-uuid}
@@ -31,11 +30,11 @@ export default class EmailSizeWarningService extends Service {
      * Multiple concurrent calls for the same post version will share a single API request.
      *
      * @param {Object} post - The post model
-     * @returns {Promise<{warningLevel: string|null, emailSizeKb: number|null}>}
+     * @returns {Promise<{overLimit: boolean, emailSizeKb: number|null}>}
      */
     fetchEmailSize(post) {
         if (!post?.id || post.isNew) {
-            return Promise.resolve({warningLevel: null, emailSizeKb: null});
+            return Promise.resolve({overLimit: null, emailSizeKb: null});
         }
 
         const postId = post.id;
@@ -108,7 +107,7 @@ export default class EmailSizeWarningService extends Service {
     *_fetchTask(post) {
         yield this._loadNewsletter();
         if (!this._newsletter) {
-            return {warningLevel: null, emailSizeKb: null};
+            return {overLimit: false, emailSizeKb: null};
         }
 
         try {
@@ -127,20 +126,18 @@ export default class EmailSizeWarningService extends Service {
                 const estimatedSizeBytes = Math.max(0, previewSizeBytes + linkAdjustment);
 
                 const emailSizeKb = Math.round(estimatedSizeBytes / 1024);
-                let warningLevel = null;
+                let overLimit = false;
 
-                if (estimatedSizeBytes >= RED_THRESHOLD) {
-                    warningLevel = 'red';
-                } else if (estimatedSizeBytes >= YELLOW_THRESHOLD) {
-                    warningLevel = 'yellow';
+                if (estimatedSizeBytes >= LIMIT_THRESHOLD) {
+                    overLimit = true;
                 }
 
-                return {warningLevel, emailSizeKb};
+                return {overLimit, emailSizeKb};
             }
         } catch (error) {
             console.error('Email size check failed:', error); // eslint-disable-line no-console
         }
 
-        return {warningLevel: null, emailSizeKb: null};
+        return {overLimit: false, emailSizeKb: null};
     }
 }

@@ -1,19 +1,22 @@
 {{#if this.isEnabled}}
-    {{! Watch for post.updatedAt changes to trigger recalculation after saves }}
-    <span {{did-update this.checkEmailSize @post.updatedAtUTC}} class="gh-editor-email-size-warning-container">
-        <span class="gh-editor-email-size-warning gh-editor-email-size-warning--{{this.warningLevel}}" data-warning-active={{if this.warningLevel "true" "false"}}>
-            {{#if this.warningLevel}}
-                <span class="{{concat "gh-editor-email-warning-icon-" this.warningLevel}}">
+    {{#if (has-block)}}
+        <div {{did-update this.checkEmailSize @post.updatedAtUTC}}>
+            {{yield this.overLimit this.emailSizeKb}}
+        </div>
+    {{else}}
+        <span {{did-update this.checkEmailSize @post.updatedAtUTC}} class="gh-editor-email-size-warning-container">
+            <span class="gh-editor-email-size-warning gh-editor-email-size-warning--{{this.overLimit}}" data-warning-active={{if this.overLimit "true" "false"}}>
+                {{#if this.overLimit}}
                     {{svg-jar "email-warning"}}
-                </span>
+                {{/if}}
+            </span>
+            {{#if this.overLimit}}
+                <div class="gh-editor-email-size-popup">
+                    <div class="gh-editor-email-size-popup-title">Looks like this is a long post</div>
+                    <div class="gh-editor-email-size-popup-text">Emails may get clipped in the inbox behind a "View entire message" link when they're over 100kB.</div>
+                    <div class="gh-editor-email-size-popup-used">You've used: <span class="yellow">{{this.emailSizeKb}}kB</span></div>
+                </div>
             {{/if}}
         </span>
-        {{#if this.warningLevel}}
-            <div class="gh-editor-email-size-popup">
-                <div class="gh-editor-email-size-popup-title">Looks like this is a long post</div>
-                <div class="gh-editor-email-size-popup-text">Email newsletters may get cut off in the inbox behind a "View entire message" link when they're over 100kB.</div>
-                <div class="gh-editor-email-size-popup-used">You've used: <span class={{this.warningLevel}}>{{this.emailSizeKb}}kB</span></div>
-            </div>
-        {{/if}}
-    </span>
+    {{/if}}
 {{/if}}
