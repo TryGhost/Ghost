@@ -295,7 +295,7 @@ p .gh-preview-email-address {
 }
 
 .gh-email-preview-clip-container svg {
-    margin-top: 2px;
+    margin-top: 3px;
     width: 16px;
     min-width: 16px;
     height: auto;
@@ -307,7 +307,8 @@ p .gh-preview-email-address {
 
 .gh-email-preview-clip-title {
     font-weight: 600;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
 }
 
 .gh-email-preview-clip-description {
