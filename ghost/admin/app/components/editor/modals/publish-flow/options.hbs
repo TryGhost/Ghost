@@ -37,6 +37,13 @@
                 />
             </div>
         {{/liquid-if}}
+
+        {{#if @publishOptions.willEmail}}
+            <p class="gh-box gh-content-box pa gh-publish-setting-email-warning {{if (eq this.openSection "publishType") "open"}}">
+                <div class="gh-email-preview-clip-title">Looks like this is a long post</div>
+                <div class="gh-email-preview-clip-description">Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB. <span class="gh-email-preview-clip-used">You’ve used: <span class="yellow-d1">101kB</span></span></div>
+            </p>
+        {{/if}}
     </div>
 
     {{#unless @publishOptions.emailUnavailable}}
