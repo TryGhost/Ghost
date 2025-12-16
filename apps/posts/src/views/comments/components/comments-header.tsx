@@ -121,6 +121,16 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             ]
         },
         {
+            key: 'reported',
+            label: 'Reported',
+            type: 'select',
+            icon: <LucideIcon.Flag className="size-4" />,
+            options: [
+                {value: 'true', label: 'Yes'},
+                {value: 'false', label: 'No'}
+            ]
+        },
+        {
             key: 'created_at',
             label: 'Date',
             type: 'date',

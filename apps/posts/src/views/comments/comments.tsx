@@ -66,6 +66,14 @@ function buildCommentsFilter(filters: Filter[]): string | undefined {
                 parts.push(`member_id:${filter.values[0]}`);
             }
             break;
+
+        case 'reported':
+            if (filter.values[0] === 'true') {
+                parts.push('count.reports:>0');
+            } else if (filter.values[0] === 'false') {
+                parts.push('count.reports:0');
+            }
+            break;
         }
     }
     
