@@ -14,10 +14,10 @@ module.exports = class ExplorePingService {
      * }}} deps.posts
      * @param {{stats: {
      *   getTotalMembers: () => Promise<number>
-     *   getMRRHistory: () => Promise<number>
      * }}} deps.members
+     * @param {{api: {mrr: {getCurrentMrr: () => Promise<{currency: string, mrr: number}[]>}}}} deps.statsService
      */
-    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members}) {
+    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members, statsService}) {
         this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
@@ -26,6 +26,7 @@ module.exports = class ExplorePingService {
         this.request = request;
         this.posts = posts;
         this.members = members;
+        this.statsService = statsService;
     }
 
     async constructPayload() {
@@ -61,9 +62,18 @@ module.exports = class ExplorePingService {
         if (this.settingsCache.get('explore_ping_growth')) {
             try {
                 const totalMembers = await this.members.stats.getTotalMembers();
-                const mrr = await this.members.stats.getMRRHistory();
                 payload.members_total = totalMembers;
-                payload.mrr = mrr;
+
+                // Only send real MRR data when Stripe is in live mode
+                // When using test keys (stripe_connect_livemode is false/null), send empty array
+                const isStripeLiveMode = this.settingsCache.get('stripe_connect_livemode') === true;
+                if (isStripeLiveMode && this.statsService?.api?.mrr) {
+                    const mrrByCurrency = await this.statsService.api.mrr.getCurrentMrr();
+                    // Return array of {currency, mrr} objects
+                    payload.mrr = mrrByCurrency;
+                } else {
+                    payload.mrr = [];
+                }
             } catch (err) {
                 this.logging.warn('Failed to fetch member statistics', {
                     error: err.message,

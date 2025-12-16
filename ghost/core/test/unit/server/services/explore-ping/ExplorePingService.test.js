@@ -12,6 +12,7 @@ describe('ExplorePingService', function () {
     let requestStub;
     let postsStub;
     let membersStub;
+    let statsServiceStub;
 
     beforeEach(function () {
         // Setup stubs
@@ -25,6 +26,7 @@ describe('ExplorePingService', function () {
         settingsCacheStub.get.withArgs('explore_ping_growth').returns(false);
         settingsCacheStub.get.withArgs('facebook').returns('my-profile');
         settingsCacheStub.get.withArgs('twitter').returns('my-handle');
+        settingsCacheStub.get.withArgs('stripe_connect_livemode').returns(null);
 
         configStub = {
             get: sinon.stub()
@@ -58,8 +60,17 @@ describe('ExplorePingService', function () {
 
         membersStub = {
             stats: {
-                getTotalMembers: sinon.stub().resolves(50),
-                getMRRHistory: sinon.stub().resolves(1000)
+                getTotalMembers: sinon.stub().resolves(50)
+            }
+        };
+
+        statsServiceStub = {
+            api: {
+                mrr: {
+                    getCurrentMrr: sinon.stub().resolves([
+                        {currency: 'usd', mrr: 1000}
+                    ])
+                }
             }
         };
 
@@ -71,7 +82,8 @@ describe('ExplorePingService', function () {
             ghostVersion: ghostVersionStub,
             request: requestStub,
             posts: postsStub,
-            members: membersStub
+            members: membersStub,
+            statsService: statsServiceStub
         });
     });
 
@@ -108,9 +120,7 @@ describe('ExplorePingService', function () {
         });
 
         it('does not include member stats when setting is disabled', async function () {
-            membersStub.stats.getTotalMembers.resolves(null);
-            membersStub.stats.getMRRHistory.resolves(null);
-
+            // When explore_ping_growth is disabled (default), member stats should not be included
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, undefined);
             assert.equal(payload.mrr, undefined);
@@ -122,7 +132,8 @@ describe('ExplorePingService', function () {
             settingsCacheStub.get.withArgs('explore_ping_growth').returns(true);
         });
 
-        it('constructs correct payload', async function () {
+        it('returns empty mrr array when Stripe is in test mode (livemode is null)', async function () {
+            // stripe_connect_livemode is null by default (test mode)
             const payload = await explorePingService.constructPayload();
 
             assert.deepEqual(payload, {
@@ -136,8 +147,52 @@ describe('ExplorePingService', function () {
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z',
                 members_total: 50,
-                mrr: 1000
+                mrr: []
             });
+        });
+
+        it('returns empty mrr array when Stripe is in test mode (livemode is false)', async function () {
+            settingsCacheStub.get.withArgs('stripe_connect_livemode').returns(false);
+            const payload = await explorePingService.constructPayload();
+
+            assert.deepEqual(payload.mrr, []);
+            assert.equal(payload.members_total, 50);
+        });
+
+        it('returns MRR array by currency when Stripe is in live mode', async function () {
+            settingsCacheStub.get.withArgs('stripe_connect_livemode').returns(true);
+            const payload = await explorePingService.constructPayload();
+
+            assert.deepEqual(payload, {
+                ghost: '4.0.0',
+                site_uuid: '123e4567-e89b-12d3-a456-426614174000',
+                url: 'https://example.com',
+                theme: 'alto',
+                facebook: 'my-profile',
+                twitter: 'my-handle',
+                posts_total: 100,
+                posts_last: '2023-01-01T00:00:00.000Z',
+                posts_first: '2020-01-01T00:00:00.000Z',
+                members_total: 50,
+                mrr: [{currency: 'usd', mrr: 1000}]
+            });
+        });
+
+        it('returns MRR for multiple currencies when Stripe is in live mode', async function () {
+            settingsCacheStub.get.withArgs('stripe_connect_livemode').returns(true);
+            statsServiceStub.api.mrr.getCurrentMrr.resolves([
+                {currency: 'usd', mrr: 1000},
+                {currency: 'eur', mrr: 500},
+                {currency: 'gbp', mrr: 250}
+            ]);
+
+            const payload = await explorePingService.constructPayload();
+
+            assert.deepEqual(payload.mrr, [
+                {currency: 'usd', mrr: 1000},
+                {currency: 'eur', mrr: 500},
+                {currency: 'gbp', mrr: 250}
+            ]);
         });
 
         it('returns null for post stats if getTotalPostsPublished throws an error', async function () {
@@ -149,21 +204,32 @@ describe('ExplorePingService', function () {
             assert.equal(payload.posts_first, null);
         });
 
-        it('returns null for members_total if no members data available', async function () {
-            membersStub.stats.getTotalMembers.resolves(null);
-            membersStub.stats.getMRRHistory.resolves(null);
-
-            const payload = await explorePingService.constructPayload();
-            assert.equal(payload.members_total, null);
-            assert.equal(payload.mrr, null);
-        });
-
         it('returns null for members_total if getTotalMembers throws an error', async function () {
             membersStub.stats.getTotalMembers.rejects(new Error('Test error'));
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, null);
             assert.equal(payload.mrr, null);
+        });
+
+        it('returns empty mrr array when statsService is not available', async function () {
+            explorePingService = new ExplorePingService({
+                settingsCache: settingsCacheStub,
+                config: configStub,
+                labs: labsStub,
+                logging: loggingStub,
+                ghostVersion: ghostVersionStub,
+                request: requestStub,
+                posts: postsStub,
+                members: membersStub,
+                statsService: null
+            });
+            settingsCacheStub.get.withArgs('stripe_connect_livemode').returns(true);
+
+            const payload = await explorePingService.constructPayload();
+
+            assert.deepEqual(payload.mrr, []);
+            assert.equal(payload.members_total, 50);
         });
     });
 
