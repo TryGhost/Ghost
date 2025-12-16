@@ -40,7 +40,8 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
     const memberOptions = useMemo(() => {
         const options = membersData?.members?.map(member => ({
             value: member.id,
-            label: member.name || member.email || '(Unknown)'
+            label: member.name || 'Unknown name',
+            detail: member.email ?? '(Unknown email)'
         })) || [];
         
         // If there's an active author filter and the value isn't in the options, add it
@@ -51,7 +52,8 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             if (!existsInOptions) {
                 options.unshift({
                     value: filterValue,
-                    label: `ID: ${filterValue}`
+                    label: `ID: ${filterValue}`,
+                    detail: ''
                 });
             }
         }
