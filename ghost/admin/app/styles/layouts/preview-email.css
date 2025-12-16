@@ -308,12 +308,17 @@ p .gh-preview-email-address {
 .gh-email-preview-clip-title {
     font-weight: 600;
     font-size: 1.4rem;
+    color: var(--black);
+}
+
+.gh-email-preview-clip-title.mb {
     margin-bottom: 4px;
 }
 
 .gh-email-preview-clip-description {
     font-size: 1.3rem;
     text-wrap: pretty;
+    color: var(--middarkgrey)
 }
 
 .gh-email-preview-clip-used {

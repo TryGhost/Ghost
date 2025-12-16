@@ -93,9 +93,8 @@
                     <div class="gh-email-preview-clip-container">
                         {{svg-jar "email-warning"}}
                         <div>
-                            <div class="gh-email-preview-clip-title">Looks like this is a long post</div>
+                            <div class="gh-email-preview-clip-title">This email is <span class="yellow-d1">{{emailSizeKb}}kB</span></div>
                             <div class="gh-email-preview-clip-description">Emails may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.</div>
-                            <div class="gh-email-preview-clip-used">You’ve used: <span class="yellow-d1">{{emailSizeKb}}kB</span></div>
                         </div>
                     </div>
                 {{/if}}
