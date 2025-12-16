@@ -90,7 +90,6 @@ export type TranslationFunction = (key: string, replacements?: Record<string, st
 
 export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
-    // eslint-disable-next-line @typescript-eslint/ban-types
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
     openFormCount: number
@@ -116,7 +115,7 @@ export const useLabs = () => {
     try {
         const context = useAppContext();
         return context.labs || {};
-    } catch (e) {
+    } catch {
         return {};
     }
 };

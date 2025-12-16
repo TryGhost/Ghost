@@ -396,7 +396,7 @@ function updateNotificationsLikedCache(queryClient: QueryClient, handle: string,
                         };
                     })
                 };
-            } catch (error) {
+            } catch {
                 return current;
             }
         }
@@ -442,7 +442,7 @@ function updateNotificationsRepostCache(queryClient: QueryClient, handle: string
                         };
                     })
                 };
-            } catch (error) {
+            } catch {
                 return current;
             }
         }
@@ -487,7 +487,7 @@ function updateNotificationsReplyCountCache(queryClient: QueryClient, handle: st
                         };
                     })
                 };
-            } catch (error) {
+            } catch {
                 return current;
             }
         }
