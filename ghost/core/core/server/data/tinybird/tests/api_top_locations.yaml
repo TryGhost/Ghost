@@ -84,3 +84,13 @@
     {"location":"FR","visits":2}
     {"location":"ES","visits":2}
     {"location":"DE","visits":1}
+
+- name: Cross-boundary session - query second day only
+  description: |
+    Tests a session that starts on Jan 1 at 23:55 and continues into Jan 2.
+    When querying Jan 2 only, V1 sees hits from Jan 2 only, so the location
+    is determined from those hits (US).
+    Uses a separate site_uuid to isolate from other test data.
+  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-02&date_to=2100-01-02&timezone=Etc/UTC
+  expected_result: |
+    {"location":"US","visits":1}

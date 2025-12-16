@@ -133,3 +133,17 @@
     {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":8}
     {"post_uuid":"","pathname":"\/","visits":7}
     {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1dd","pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Cross-boundary session - query second day only
+  description: |
+    Tests a session that starts on Jan 1 at 23:55 and continues into Jan 2.
+    When querying Jan 2 only, V1 includes the session because it has hits on Jan 2.
+    V1 counts visits to ALL pages the session visited, including the Jan 1 page.
+    NOTE: V2 currently FAILS this test because it filters by first_pageview (Jan 1)
+    instead of filtering hits by timestamp, so it returns no results.
+    Uses a separate site_uuid to isolate from other test data.
+  parameters: site_uuid=mock_site_uuid_cross_boundary&date_from=2100-01-02&date_to=2100-01-02&timezone=Etc/UTC
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","pathname":"\/about\/","visits":1}
+    {"post_uuid":"","pathname":"\/","visits":1}
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","pathname":"\/blog\/hello-world\/","visits":1}
