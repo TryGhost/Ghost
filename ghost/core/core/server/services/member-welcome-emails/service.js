@@ -21,6 +21,14 @@ class MemberWelcomeEmailService {
         this.#renderer = new MemberWelcomeEmailRenderer();
     }
 
+    #getSiteSettings() {
+        return {
+            title: settingsCache.get('title') || 'Ghost',
+            url: urlUtils.urlFor('home', true),
+            accentColor: settingsCache.get('accent_color') || '#15212A'
+        };
+    }
+
     async loadMemberWelcomeEmails() {
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
@@ -59,12 +67,6 @@ class MemberWelcomeEmailService {
             });
         }
 
-        const siteSettings = {
-            title: settingsCache.get('title') || 'Ghost',
-            url: urlUtils.urlFor('home', true),
-            accentColor: settingsCache.get('accent_color') || '#15212A'
-        };
-
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
@@ -72,7 +74,7 @@ class MemberWelcomeEmailService {
                 name: member.name,
                 email: member.email
             },
-            siteSettings
+            siteSettings: this.#getSiteSettings()
         });
 
         const toEmail = config.get('memberWelcomeEmailTestInbox');
@@ -103,8 +105,6 @@ class MemberWelcomeEmailService {
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
-        logging.info(`${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending test welcome email to ${email}`);
-
         // Still validate the automated email exists (for permission purposes)
         const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
 
@@ -114,11 +114,17 @@ class MemberWelcomeEmailService {
             });
         }
 
-        const siteSettings = {
-            title: settingsCache.get('title') || 'Ghost',
-            url: urlUtils.urlFor('home', true),
-            accentColor: settingsCache.get('accent_color') || '#15212A'
-        };
+        if (!lexical) {
+            throw new errors.ValidationError({
+                message: MESSAGES.MISSING_EMAIL_CONTENT
+            });
+        }
+            
+        if (!subject) {
+            throw new errors.ValidationError({
+                message: MESSAGES.MISSING_EMAIL_SUBJECT
+            });
+        }
 
         const testMember = {
             name: 'Jamie Larson',
@@ -129,7 +135,7 @@ class MemberWelcomeEmailService {
             lexical,
             subject,
             member: testMember,
-            siteSettings
+            siteSettings: this.#getSiteSettings()
         });
 
         await this.#mailer.send({
