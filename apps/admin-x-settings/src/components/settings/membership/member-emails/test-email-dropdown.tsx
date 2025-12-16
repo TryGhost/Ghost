@@ -26,7 +26,13 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     const [testEmailError, setTestEmailError] = useState('');
     const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent'>('idle');
     const sendStateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    useEffect(() => () => clearTimeout(sendStateTimeoutRef.current ?? undefined), []);
+    useEffect(() => {
+        return () => {
+            if (sendStateTimeoutRef.current) {
+                clearTimeout(sendStateTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Update test email when current user data loads
     useEffect(() => {
@@ -59,7 +65,9 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
                 lexical
             });
             setSendState('sent');
-            clearTimeout(sendStateTimeoutRef.current!);
+            if (sendStateTimeoutRef.current) {
+                clearTimeout(sendStateTimeoutRef.current);
+            }
             sendStateTimeoutRef.current = setTimeout(() => setSendState('idle'), 2000);
         } catch (error) {
             setSendState('idle');
@@ -76,9 +84,10 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     return (
         <div className='absolute right-0 top-full z-10 mt-2 w-[260px] rounded border border-grey-200 bg-white p-4 shadow-lg'>
             <div className='mb-3'>
-                <label className='mb-2 block text-sm font-semibold'>Send test email</label>
+                <label className='mb-2 block text-sm font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <TextField
                     className='!h-[36px]'
+                    id='test-email-input'
                     placeholder='you@yoursite.com'
                     value={testEmail}
                     onChange={(e) => {
