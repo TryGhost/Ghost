@@ -126,7 +126,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         };
     }, []);
 
-    useEffect(() => () => clearTimeout(sendStateTimeoutRef.current!), []);
+    useEffect(() => () => clearTimeout(sendStateTimeoutRef.current ?? undefined), []);
 
     const handleSendTestEmail = async () => {
         setTestEmailError('');

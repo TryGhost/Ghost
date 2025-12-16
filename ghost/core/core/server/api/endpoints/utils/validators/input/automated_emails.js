@@ -2,7 +2,7 @@
 /* eslint-disable ghost/filenames/match-regex */
 
 const validator = require('@tryghost/validator');
-const {ValidationError, BadRequestError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
@@ -74,20 +74,28 @@ module.exports = {
         const lexical = frame.data.lexical;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
-            throw new BadRequestError({
+            throw new ValidationError({
                 message: tpl(messages.invalidEmailReceived)
             });
         }
 
         if (typeof subject !== 'string' || !subject.trim()) {
-            throw new BadRequestError({
+            throw new ValidationError({
                 message: tpl(messages.subjectRequired)
             });
         }
 
         if (typeof lexical !== 'string' || !lexical.trim()) {
-            throw new BadRequestError({
+            throw new ValidationError({
                 message: tpl(messages.lexicalRequired)
+            });
+        }
+
+        try {
+            JSON.parse(lexical);
+        } catch (e) {
+            throw new ValidationError({
+                message: tpl(messages.invalidLexical)
             });
         }
     }
