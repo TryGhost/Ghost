@@ -137,13 +137,15 @@ function CommentsList({
                                 data-testid="comment-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
-                                    {item.html ? (
-                                        <div dangerouslySetInnerHTML={{__html: item.html}} className="prose block text-base" />
-                                    ) : (
-                                        <span className="text-muted-foreground">
-                                            Deleted comment
-                                        </span>
-                                    )}
+                                    {item.status === 'hidden' 
+                                        ? (
+                                            <div title="This comment is hidden">
+                                                <LucideIcon.EyeOff className="float-left size-5 pr-2 text-muted-foreground" />
+                                                <div dangerouslySetInnerHTML={{__html: item.html || ''}} className="prose block text-base text-muted-foreground" />
+                                            </div>
+                                        ) : (
+                                            <div dangerouslySetInnerHTML={{__html: item.html || ''}} className="prose block text-base" />
+                                        )}
                                 </TableCell>
                                 <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
                                     {item.member?.id ? (
