@@ -22,7 +22,7 @@ import {
     TableRow
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
-import {forwardRef, useRef, useState} from 'react';
+import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 
 const SpacerRow = ({height}: { height: number }) => (
@@ -59,6 +59,68 @@ function formatDate(dateString: string): string {
         hour: 'numeric',
         minute: 'numeric'
     }).format(date);
+}
+
+function CommentContent({html, item}: {html: string; item: Comment}) {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isClamped, setIsClamped] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    useEffect(() => {
+        const checkIfClamped = () => {
+            if (contentRef.current) {
+                // Check if the content is clamped by comparing scrollHeight with clientHeight
+                setIsClamped(contentRef.current.scrollHeight > contentRef.current.clientHeight);
+            }
+        };
+
+        checkIfClamped();
+        // Recheck on window resize
+        window.addEventListener('resize', checkIfClamped);
+        return () => window.removeEventListener('resize', checkIfClamped);
+    }, [html]);
+
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-start">
+                <div
+                    dangerouslySetInnerHTML={{__html: html}}
+                    ref={contentRef}
+                    className={`prose flex-1 text-base [&_*]:m-0 [&_*]:inline ${isExpanded ? '' : 'line-clamp-2'} ${item.status === 'hidden' && 'opacity-50'}`}
+                />
+                <div className='flex items-center gap-4'>
+                    {item.status === 'hidden' && (
+                        <div className='flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+                            <LucideIcon.EyeOff size={12} strokeWidth={1.5} />
+                            Comment hidden
+                        </div>
+                    )}
+                    {isClamped && !isExpanded && (
+                        <Button
+                            className="shrink-0 gap-0.5 p-0 text-muted-foreground hover:bg-transparent"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setIsExpanded(true)}
+                        >
+                        Show more
+                            <LucideIcon.ChevronDown />
+                        </Button>
+                    )}
+                    {isExpanded && (
+                        <Button
+                            className="gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setIsExpanded(false)}
+                        >
+                        Show less
+                            <LucideIcon.ChevronUp />
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function CommentsList({
@@ -137,21 +199,13 @@ function CommentsList({
                                 data-testid="comment-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
-                                    {item.status === 'hidden' 
-                                        ? (
-                                            <div title="This comment is hidden">
-                                                <LucideIcon.EyeOff className="float-left size-5 pr-2 text-muted-foreground" />
-                                                <div dangerouslySetInnerHTML={{__html: item.html || ''}} className="prose block text-base text-muted-foreground" />
-                                            </div>
-                                        ) : (
-                                            <div dangerouslySetInnerHTML={{__html: item.html || ''}} className="prose block text-base" />
-                                        )}
-                                    {(item.count?.reports && item.count.reports > 0) ? (
-                                        <div className="text-amber-600 dark:text-amber-500 mt-1 flex items-center gap-1 text-sm">
-                                            <LucideIcon.Flag className="size-3.5" />
-                                            <span>{item.count.reports} {item.count.reports === 1 ? 'report' : 'reports'}</span>
-                                        </div>
-                                    ) : null}
+                                    {item.html ? (
+                                        <CommentContent html={item.html} item={item} />
+                                    ) : (
+                                        <span className="text-muted-foreground">
+                                            Deleted comment
+                                        </span>
+                                    )}
                                 </TableCell>
                                 <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
                                     {item.member?.id ? (
@@ -183,7 +237,7 @@ function CommentsList({
                                 </TableCell>
                                 <TableCell className="col-start-1 col-end-1 row-start-4 row-end-4 p-0 lg:table-cell lg:p-4">
                                     <span className="text-sm text-muted-foreground">
-                                        {item.created_at && 
+                                        {item.created_at &&
                                             formatDate(item.created_at)
                                         }
                                     </span>
