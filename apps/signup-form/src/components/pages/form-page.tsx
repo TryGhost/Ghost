@@ -33,7 +33,7 @@ export const FormPage: React.FC = () => {
                     email
                 });
             }
-        } catch (_) {
+        } catch {
             setLoading(false);
             setError(t(`Something went wrong, please try again.`));
         }

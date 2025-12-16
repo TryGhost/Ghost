@@ -314,7 +314,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             if (settings.settings.labs) {
                 Object.assign(labs, settings.settings.labs);
             }
-        } catch (e) {
+        } catch {
             labs = {};
         }
 

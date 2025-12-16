@@ -84,7 +84,7 @@ export async function addAnalyticsEvent(eventProps: AnalyticsEventProps) {
         try {
             const data = JSON.parse(bodyText);
             errorMessage = data.message || JSON.stringify(data);
-        } catch (_) {
+        } catch {
             errorMessage = bodyText;
         }
 

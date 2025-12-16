@@ -45,7 +45,7 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
 
     try {
         parsedUrl = new URL(url, baseUrl);
-    } catch (e) {
+    } catch {
         return {save: url, display: url};
     }
 

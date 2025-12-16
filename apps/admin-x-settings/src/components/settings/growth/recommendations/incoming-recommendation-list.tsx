@@ -22,7 +22,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
         let cleanedDomain = incomingRecommendation.url;
         try {
             cleanedDomain = new URL(incomingRecommendation.url).hostname.replace(/^www\./, '');
-        } catch (_) {
+        } catch {
             // Ignore invalid urls
         }
 

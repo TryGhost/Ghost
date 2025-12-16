@@ -109,7 +109,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             dismissAllToasts();
             try {
                 await handleSave({force: true});
-            } catch (e) {
+            } catch {
                 showToast({
                     type: 'error',
                     title: 'Something went wrong when adding this recommendation, please try again.'

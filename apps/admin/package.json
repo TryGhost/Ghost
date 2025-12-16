@@ -38,7 +38,7 @@
     "jsdom": "24.1.0",
     "sirv": "3.0.2",
     "typescript": "5.8.3",
-    "typescript-eslint": "8.46.1",
+    "typescript-eslint": "8.49.0",
     "vite": "7.1.12",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "4.0.5"

@@ -52,7 +52,7 @@ const BlueskySharing: React.FC = () => {
             setLoading(true);
             try {
                 await enableBlueskyMutation.mutateAsync();
-            } catch (error) {
+            } catch {
                 setLoading(false);
                 toast.error('Something went wrong, please try again.');
             }

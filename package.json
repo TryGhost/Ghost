@@ -92,7 +92,7 @@
     "chokidar": "3.6.0",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
-    "eslint-plugin-ghost": "3.4.3",
+    "eslint-plugin-ghost": "3.4.4",
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.7",

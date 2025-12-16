@@ -22,7 +22,7 @@ export const imageUrlToDataUrl = async (url: string): Promise<string> => {
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
-    } catch (error) {
+    } catch {
         // Return original URL as fallback if conversion fails
         return url;
     }

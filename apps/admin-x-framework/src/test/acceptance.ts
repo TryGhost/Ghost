@@ -127,7 +127,7 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     let labs: LabsSettings;
     try {
         labs = JSON.parse(labsSetting.value);
-    } catch (e) {
+    } catch {
         throw new Error('Failed to parse labs settings');
     }
 
