@@ -2,6 +2,14 @@ import {Factory} from '@/data-factory';
 import {faker} from '@faker-js/faker';
 import {generateId, generateUuid} from '@/data-factory';
 
+export interface Tier {
+    id: string;
+    name: string;
+    slug: string;
+    type: 'free' | 'paid';
+    active: boolean;
+}
+
 export interface Member {
     id: string;
     uuid: string;
@@ -17,6 +25,7 @@ export interface Member {
     last_seen_at: Date | null;
     last_commented_at: Date | null;
     newsletters: string[];
+    tiers?: Partial<Tier>[];
 }
 
 export class MemberFactory extends Factory<Partial<Member>, Member> {
