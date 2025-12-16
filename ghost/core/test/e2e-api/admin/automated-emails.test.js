@@ -400,7 +400,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post(`automated_emails/${automatedEmailId}/test/`)
                 .body({})
-                .expectStatus(400)
+                .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId
@@ -420,7 +420,7 @@ describe('Automated Emails API', function () {
                     subject: 'Test Subject',
                     lexical: validLexical
                 })
-                .expectStatus(400)
+                .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId
@@ -439,7 +439,7 @@ describe('Automated Emails API', function () {
                     email: 'test@ghost.org',
                     lexical: validLexical
                 })
-                .expectStatus(400)
+                .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId
@@ -458,7 +458,7 @@ describe('Automated Emails API', function () {
                     email: 'test@ghost.org',
                     subject: 'Test Subject'
                 })
-                .expectStatus(400)
+                .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
                         id: anyErrorId
