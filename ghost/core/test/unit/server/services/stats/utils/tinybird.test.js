@@ -70,14 +70,20 @@ describe('Tinybird Client', function () {
             options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
 
-        it('uses tbVersion if provided', function () {
-            const {url} = tinybirdClient.buildRequest('test_pipe', {
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31',
-                tbVersion: '2'
+        it('uses version from config if provided', function () {
+            // Update config mock to include version
+            mockConfig.get.withArgs('tinybird:stats').returns({
+                endpoint: 'https://api.tinybird.co',
+                token: 'tb-token',
+                version: 'v2'
             });
 
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe__v2.json?');
+            const {url} = tinybirdClient.buildRequest('test_pipe', {
+                dateFrom: '2023-01-01',
+                dateTo: '2023-01-31'
+            });
+
+            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe_v2.json?');
         });
 
         it('overrides defaults with provided options', function () {
@@ -104,31 +110,11 @@ describe('Tinybird Client', function () {
                     token: 'local-token'
                 }
             });
-            
+
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
-            
+
             url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
             options.headers.Authorization.should.equal('Bearer mock-jwt-token');
-        });
-        
-        it('ignores tbVersion when local is enabled', function () {
-            // Update config mock to return local config
-            mockConfig.get.withArgs('tinybird:stats').returns({
-                endpoint: 'https://api.tinybird.co',
-                token: 'tb-token',
-                local: {
-                    enabled: true,
-                    endpoint: 'http://localhost:8000',
-                    token: 'local-token'
-                }
-            });
-            
-            const {url} = tinybirdClient.buildRequest('test_pipe', {
-                tbVersion: '2'
-            });
-            
-            // Should not contain __v2 in the URL
-            url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
         });
     });
 

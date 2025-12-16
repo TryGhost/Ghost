@@ -1,0 +1,28 @@
+TOKEN "stats_page" READ
+TOKEN "axis" READ
+
+NODE session_data
+SQL >
+    %
+    SELECT
+        site_uuid,
+        session_id,
+        argMinMerge(source) as source
+    FROM _mv_session_data_v2
+    WHERE site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+    GROUP BY site_uuid, session_id
+
+NODE top_sources
+SQL >
+    %
+    select
+        source,
+        count() as visits
+    from session_data sd
+      inner join filtered_sessions_v2 fs
+         on fs.session_id = sd.session_id
+    group by source
+    order by visits desc
+    limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
+
+TYPE ENDPOINT
