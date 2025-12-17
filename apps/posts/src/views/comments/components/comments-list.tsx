@@ -102,13 +102,11 @@ function CommentContent({item}: {item: Comment}) {
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
-                    className={`prose flex-1 text-base ${isExpanded ? '[&_p]:mb-2' : 'line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
+                    className={`prose flex-1 text-base leading-[1.45em] ${isExpanded ? '[&_p]:mb-[0.85em]' : 'mb-1 line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
                 />
-                <div className='flex items-center gap-4'>
-                    {isClamped && (
-                        <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
-                    )}
-                </div>
+                {isClamped && (
+                    <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
+                )}
             </div>
         </div>
     );
@@ -183,9 +181,15 @@ function CommentsList({
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
                                     <div className='flex flex-col gap-2'>
                                         <div className="flex flex-wrap items-center">
-                                            <div className='flex items-center gap-2'>
-                                                {item.member?.id ? (
-                                                    <>
+                                            {item.member?.id && onAddFilter ? (
+                                                <>
+                                                    <Button
+                                                        className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
+                                                        variant='link'
+                                                        onClick={() => {
+                                                            onAddFilter('author', item.member!.id);
+                                                        }}
+                                                    >
                                                         <Avatar size="xs">
                                                             {item.member.avatar_image && (
                                                                 <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
@@ -194,19 +198,14 @@ function CommentsList({
                                                                 <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
                                                             </AvatarFallback>
                                                         </Avatar>
-                                                        <a
-                                                            className="truncate font-semibold text-primary hover:opacity-70"
-                                                            href={`#/members/${item.member.id}`}
-                                                        >
-                                                            {item.member.name || 'Unknown'}
-                                                        </a>
-                                                    </>
-                                                ) : (
-                                                    <span className="block truncate font-semibold">
-                                                        {item.member?.name || 'Unknown'}
-                                                    </span>
-                                                )}
-                                            </div>
+                                                        {item.member.name || 'Unknown'}
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <span className="block truncate font-semibold">
+                                                    {item.member?.name || 'Unknown'}
+                                                </span>
+                                            )}
 
                                             <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
 
@@ -218,13 +217,14 @@ function CommentsList({
                                                 </span>
                                                 <span>on</span>
 
-                                                {item.post?.id && item.post?.title ? (
-                                                    <a
-                                                        className="block truncate font-medium  text-primary hover:opacity-70"
-                                                        href={`#/editor/post/${item.post.id}`}
+                                                {item.post?.id && item.post?.title && onAddFilter ? (
+                                                    <Button
+                                                        className="block h-auto truncate p-0 font-medium  text-primary hover:opacity-70"
+                                                        variant="link"
+                                                        onClick={() => onAddFilter('post', item.post!.id)}
                                                     >
                                                         {item.post.title}
-                                                    </a>
+                                                    </Button>
                                                 ) : (
                                                     <span className="text-muted-foreground">
                                                     Unknown post
@@ -275,16 +275,12 @@ function CommentsList({
                                                         </a>
                                                     </DropdownMenuItem>
                                                 )}
-                                                {item.post?.id && onAddFilter && (
-                                                    <DropdownMenuItem onClick={() => onAddFilter('post', item.post!.id)}>
-                                                        <LucideIcon.FileText className="mr-2 size-4" />
-                                                    Filter by post
-                                                    </DropdownMenuItem>
-                                                )}
                                                 {item.member?.id && onAddFilter && (
-                                                    <DropdownMenuItem onClick={() => onAddFilter('author', item.member!.id)}>
-                                                        <LucideIcon.User className="mr-2 size-4" />
-                                                    Filter by author
+                                                    <DropdownMenuItem asChild>
+                                                        <a href={`#/members/${item.member.id}`}>
+                                                            <LucideIcon.User className="mr-2 size-4" />
+                                                            View member
+                                                        </a>
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
