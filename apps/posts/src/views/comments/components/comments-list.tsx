@@ -9,7 +9,6 @@ import {
     AlertDialogTitle,
     Avatar,
     AvatarFallback,
-    AvatarImage,
     Button,
     DropdownMenu,
     DropdownMenuContent,
