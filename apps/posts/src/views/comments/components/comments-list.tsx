@@ -26,6 +26,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
+    formatNumber,
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
@@ -104,12 +105,12 @@ function CommentContent({item}: {item: Comment}) {
     }, [item.html]);
 
     return (
-        <div className="mt-1 flex flex-col gap-2">
+        <div className={`mt-1 flex flex-col gap-2`}>
             <div className="flex max-w-[720px] flex-col items-start">
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
-                    className={`prose flex-1 text-base leading-[1.45em] ${isExpanded ? '[&_p]:mb-[0.85em]' : 'mb-1 line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
+                    className={`prose flex-1 text-base leading-[1.45em] ${isExpanded ? '-mb-1 [&_p]:mb-[0.85em]' : 'line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
                 />
                 {isClamped && (
                     <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
@@ -164,11 +165,8 @@ function CommentsList({
             >
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
-                        <TableHead className="px-4">Comment</TableHead>
-                        <TableHead className="w-20 px-4 text-right">Replies</TableHead>
-                        <TableHead className="w-20 px-4 text-right">Likes</TableHead>
-                        <TableHead className="w-20 px-4 text-right">Reports</TableHead>
-                        <TableHead className="w-64 px-4"></TableHead>
+                        <TableHead className="h-0 px-4 py-0"></TableHead>
+                        <TableHead className="h-0 w-36 px-4 py-0"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="flex flex-col lg:table-row-group">
@@ -188,19 +186,19 @@ function CommentsList({
                                 className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
                                 data-testid="comment-list-row"
                             >
-                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
-                                    <div className='flex flex-col gap-2'>
+                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-4 md:relative lg:table-cell">
+                                    <div className='flex flex-col gap-3'>
                                         <div className="flex flex-wrap items-center">
                                             {item.member?.id ? (
                                                 <>
                                                     <Button
-                                                        className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
+                                                        className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70 ${item.status === 'hidden' && 'text-muted-foreground'}`}
                                                         variant='link'
                                                         onClick={() => {
                                                             onAddFilter('author', item.member!.id);
                                                         }}
                                                     >
-                                                        <Avatar className='size-4'>
+                                                        <Avatar className={`size-5 ${item.status === 'hidden' && 'opacity-40'}`}>
                                                             {item.member.avatar_image && (
                                                                 <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
                                                             )}
@@ -251,69 +249,113 @@ function CommentsList({
                                                 )}
                                             </div>
 
+                                            {item.status === 'hidden' && (
+                                                <>
+                                                    <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
+                                                    <div className='mr-2 flex items-center gap-1 text-muted-foreground'>
+                                                        Hidden from members
+                                                    </div>
+                                                </>
+                                            )}
+
                                         </div>
                                         <CommentContent item={item} />
-                                    </div>
-                                </TableCell>
-                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.replies && 'text-muted-foreground'}`}>
-                                    {item.count?.replies}
-                                </TableCell>
-                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.likes && 'text-muted-foreground'}`}>
-                                    {item.count?.likes}
-                                </TableCell>
-                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.reports && 'text-muted-foreground'}`}>
-                                    {item.count?.reports}
-                                </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-3">
-                                    <div className="flex flex-row flex-nowrap justify-end gap-2">
-                                        {item.status === 'hidden' && (
-                                            <div className='mr-2 flex items-center gap-1 text-xs font-medium text-muted-foreground'>
-                                                <LucideIcon.EyeOff size={12} strokeWidth={1.5} />
-                                                Hidden
-                                            </div>
-                                        )}
-                                        {item.status === 'published' && (
-                                            <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
-                                                <LucideIcon.EyeOff/>
-                                                Hide
-                                            </Button>
-                                        )}
-                                        {item.status === 'hidden' && (
-                                            <Button size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
-                                                <LucideIcon.Eye/>
-                                                Show
-                                            </Button>
-                                        )}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    className="relative z-10"
-                                                    size="sm"
-                                                    variant="outline"
-                                                >
-                                                    <LucideIcon.MoreVertical />
+                                        <div className="flex flex-row flex-nowrap items-center gap-2">
+                                            {item.status === 'published' && (
+                                                <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
+                                                    <LucideIcon.EyeOff/>
+                                                    Hide
                                                 </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                {item.post?.url && (
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={item.post.url} rel="noopener noreferrer" target="_blank">
-                                                            <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                                        View post
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {item.member?.id && (
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={`#/members/${item.member.id}`}>
-                                                            <LucideIcon.User className="mr-2 size-4" />
-                                                            View member
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                            )}
+                                            {item.status === 'hidden' && (
+                                                <Button size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
+                                                    <LucideIcon.Eye/>
+                                                    Show
+                                                </Button>
+                                            )}
+                                            <div className='ml-4 flex items-center gap-3'>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${!item.count?.replies && 'text-muted-foreground/70'}`}>
+                                                                <LucideIcon.Reply size={16} strokeWidth={1.5} />
+                                                                <span>{formatNumber(item.count?.replies)}</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Replies
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${!item.count?.likes && 'text-muted-foreground/70'}`}>
+                                                                <LucideIcon.Heart size={16} strokeWidth={1.5} />
+                                                                <span>{formatNumber(item.count?.likes)}</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Likes
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'text-yellow-600' : 'text-muted-foreground/70'}`}>
+                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={1.5} />
+                                                                <span>{formatNumber(item.count?.reports)}</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Reports
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        className="relative z-10 ml-1"
+                                                        size="sm"
+                                                        variant="ghost"
+                                                    >
+                                                        <LucideIcon.Ellipsis />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="start">
+                                                    {item.post?.url && (
+                                                        <DropdownMenuItem asChild>
+                                                            <a href={item.post.url} rel="noopener noreferrer" target="_blank">
+                                                                <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                                            View post
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {item.member?.id && (
+                                                        <DropdownMenuItem asChild>
+                                                            <a href={`#/members/${item.member.id}`}>
+                                                                <LucideIcon.User className="mr-2 size-4" />
+                                                                View member
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
                                     </div>
+                                </TableCell>
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                    {item.post?.feature_image ? (
+                                        <img
+                                            alt={item.post.title || 'Post feature image'}
+                                            className="hidden aspect-video w-32 rounded object-cover lg:block"
+                                            src={item.post.feature_image}
+                                        />
+                                    ) : null}
                                 </TableCell>
                             </TableRow>
                         );
