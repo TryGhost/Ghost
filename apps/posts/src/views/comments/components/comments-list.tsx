@@ -97,22 +97,19 @@ function CommentContent({html, item}: {html: string; item: Comment}) {
     return (
         <div className="flex flex-col gap-2">
             <div className="flex flex-col items-start">
-                <div
-                    dangerouslySetInnerHTML={{__html: html}}
-                    ref={contentRef}
-                    className={`prose flex-1 text-base [&_*]:m-0 [&_*]:inline ${isExpanded ? '' : 'line-clamp-2'} ${item.status === 'hidden' && 'opacity-50'}`}
-                />
-                <div className='flex items-center gap-4'>
-                    {item.status === 'hidden' && (
-                        <div className='flex items-center gap-1 text-xs font-medium text-muted-foreground'>
-                            <LucideIcon.EyeOff size={12} strokeWidth={1.5} />
-                            Comment hidden
+
+                {item.status === 'hidden'
+                    ? (
+                        <div title="This comment is hidden">
+                            <LucideIcon.EyeOff className="float-left size-5 pr-2 text-muted-foreground" />
+                            <div dangerouslySetInnerHTML={{__html: item.html || ''}} className={`prose flex-1 text-base text-muted-foreground [&_*]:m-0 [&_*]:inline ${isExpanded ? '' : 'line-clamp-2'}`} />
                         </div>
+                    ) : (
+                        <div dangerouslySetInnerHTML={{__html: item.html || ''}} className={`prose flex-1 text-base [&_*]:m-0 [&_*]:inline ${isExpanded ? '' : 'line-clamp-2'}`} />
                     )}
-                    {isClamped && (
-                        <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
-                    )}
-                </div>
+                {isClamped && (
+                    <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
+                )}
             </div>
         </div>
     );
