@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
-import {HttpClient as APIRequest} from '@/data-factory';
+import {HttpClient as APIRequest, Member} from '@/data-factory';
 
-export interface MemberImportData {
-    email: string;
-    name?: string;
-    note?: string;
-    subscribed_to_emails?: boolean;
-    labels?: string[];
-    created_at?: string; // ISO 8601 format for backdating
-    complimentary_plan?: boolean;
-    stripe_customer_id?: string;
-    tiers?: string;
-}
+type MemberImportData = Pick<Member,
+    'email' |
+    'name' |
+    'note' |
+    'subscribed_to_emails' |
+    'complimentary_plan' |
+    'tiers' |
+    'labels' |
+    'created_at' |
+    'stripe_customer_id'
+>;
 
 export interface MemberImportStats {
     imported: number;
@@ -120,7 +120,7 @@ export class MembersImportService {
             'created_at',
             'complimentary_plan',
             'stripe_customer_id',
-            'tiers'
+            'import_tier'
         ];
 
         const rows = members.map((member) => {
@@ -134,7 +134,7 @@ export class MembersImportService {
                 member.created_at || '',
                 member.complimentary_plan !== undefined ? String(member.complimentary_plan) : '',
                 member.stripe_customer_id || '',
-                this.escapeCSVField(member.tiers || '')
+                member.tiers?.[0]?.name ?? ''
             ].join(',');
         });
 
