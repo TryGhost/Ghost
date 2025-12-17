@@ -21,7 +21,12 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow
+    TableRow,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+    formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {forwardRef, useEffect, useRef, useState} from 'react';
@@ -210,11 +215,20 @@ function CommentsList({
                                             <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
 
                                             <div className='flex flex-wrap items-baseline gap-1 text-muted-foreground'>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {item.created_at &&
-                                                    formatDate(item.created_at)
-                                                    }
-                                                </span>
+                                                {item.created_at && (
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="cursor-default text-sm text-muted-foreground">
+                                                                    {formatTimestamp(item.created_at)}
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                {formatDate(item.created_at)}
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                )}
                                                 <span>on</span>
 
                                                 {item.post?.id && item.post?.title && onAddFilter ? (
