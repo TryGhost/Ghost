@@ -371,13 +371,13 @@ class Offer {
     }
 
     /**
-     * @param {object} coupon
-     * @param {string} coupon.id
-     * @param {number} [coupon.percent_off]
-     * @param {number} [coupon.amount_off]
-     * @param {string} [coupon.currency]
-     * @param {string} coupon.duration
-     * @param {number} [coupon.duration_in_months]
+     * @param {object} stripeCoupon
+     * @param {string} stripeCoupon.id
+     * @param {number} [stripeCoupon.percent_off]
+     * @param {number} [stripeCoupon.amount_off]
+     * @param {string} [stripeCoupon.currency]
+     * @param {string} stripeCoupon.duration
+     * @param {number} [stripeCoupon.duration_in_months]
      * @param {string} cadence
      * @param {TierProps} tier
      * @param {UniqueChecker} uniqueChecker

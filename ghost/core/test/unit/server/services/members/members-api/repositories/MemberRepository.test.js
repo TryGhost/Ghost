@@ -238,7 +238,7 @@ describe('MemberRepository', function () {
         let MemberProductEvent;
         let stripeAPIService;
         let productRepository;
-        let offerRepository;
+        let offersAPI;
         let labsService;
         let subscriptionData;
         let subscriptionCreatedNotifySpy;
@@ -332,9 +332,9 @@ describe('MemberRepository', function () {
                 isSet: sinon.stub().returns(true)
             };
 
-            offerRepository = {
-                getById: sinon.stub().resolves({
-                    id: 'offer_123'
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({
+                    id: 'offer_new'
                 })
             };
         });
@@ -377,7 +377,7 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
+                offersAPI,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -426,7 +426,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -462,7 +461,7 @@ describe('MemberRepository', function () {
         });
 
         it('creates an offer from a Stripe coupon', async function () {
-            const offersAPI = {
+            offersAPI = {
                 ensureOfferForStripeCoupon: sinon.stub().resolves({id: 'offer_new'})
             };
 

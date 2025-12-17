@@ -33,7 +33,7 @@ const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer
 
 /**
  * @typedef {object} BaseOptions
- * @prop {import('knex').Knex.Transaction} [transacting]
+ * @prop {import('knex').Knex.Transaction} transacting
  */
 
 /**

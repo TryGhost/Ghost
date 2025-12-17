@@ -244,7 +244,6 @@ function createApiInstance(config) {
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
         offersAPI: offersService.api,
-        offersImportService: offersService.importService,
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service,
