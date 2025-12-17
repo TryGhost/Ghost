@@ -61,6 +61,20 @@ function formatDate(dateString: string): string {
     }).format(date);
 }
 
+function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
+    return (
+        <Button
+            className="shrink-0 gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
+            size="sm"
+            variant="ghost"
+            onClick={onClick}
+        >
+            {expanded ? 'Show less' : 'Show more'}
+            {expanded ? <LucideIcon.ChevronUp /> : <LucideIcon.ChevronDown />}
+        </Button>
+    );
+}
+
 function CommentContent({html, item}: {html: string; item: Comment}) {
     const contentRef = useRef<HTMLDivElement>(null);
     const [isClamped, setIsClamped] = useState(false);
@@ -95,27 +109,8 @@ function CommentContent({html, item}: {html: string; item: Comment}) {
                             Comment hidden
                         </div>
                     )}
-                    {isClamped && !isExpanded && (
-                        <Button
-                            className="shrink-0 gap-0.5 p-0 text-muted-foreground hover:bg-transparent"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setIsExpanded(true)}
-                        >
-                        Show more
-                            <LucideIcon.ChevronDown />
-                        </Button>
-                    )}
-                    {isExpanded && (
-                        <Button
-                            className="gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setIsExpanded(false)}
-                        >
-                        Show less
-                            <LucideIcon.ChevronUp />
-                        </Button>
+                    {isClamped && (
+                        <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
                     )}
                 </div>
             </div>
