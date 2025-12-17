@@ -7,6 +7,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
     Button,
     DropdownMenu,
     DropdownMenuContent,
@@ -181,20 +184,32 @@ function CommentsList({
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
                                     <div className='flex flex-col gap-2'>
                                         <div className="flex flex-wrap items-center">
-                                            {item.member?.id ? (
-                                                <a
-                                                    className="truncate font-semibold text-primary hover:underline"
-                                                    href={`#/members/${item.member.id}`}
-                                                >
-                                                    {item.member.name || 'Unknown'}
-                                                </a>
-                                            ) : (
-                                                <span className="block truncate font-semibold">
-                                                    {item.member?.name || 'Unknown'}
-                                                </span>
-                                            )}
+                                            <div className='flex items-center gap-2'>
+                                                {item.member?.id ? (
+                                                    <>
+                                                        <Avatar size="xs">
+                                                            {item.member.avatar_image && (
+                                                                <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
+                                                            )}
+                                                            <AvatarFallback>
+                                                                <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <a
+                                                            className="truncate font-semibold text-primary hover:opacity-70"
+                                                            href={`#/members/${item.member.id}`}
+                                                        >
+                                                            {item.member.name || 'Unknown'}
+                                                        </a>
+                                                    </>
+                                                ) : (
+                                                    <span className="block truncate font-semibold">
+                                                        {item.member?.name || 'Unknown'}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                            <LucideIcon.Dot className='text-muted-foreground/50' />
+                                            <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
 
                                             <div className='flex flex-wrap items-baseline gap-1 text-muted-foreground'>
                                                 <span className="text-sm text-muted-foreground">
@@ -206,7 +221,7 @@ function CommentsList({
 
                                                 {item.post?.id && item.post?.title ? (
                                                     <a
-                                                        className="block truncate text-primary hover:underline"
+                                                        className="block truncate font-medium  text-primary hover:opacity-70"
                                                         href={`#/editor/post/${item.post.id}`}
                                                     >
                                                         {item.post.title}
