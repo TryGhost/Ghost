@@ -67,51 +67,20 @@ export const IconAsFallback: Story = {
 export const DifferentSizes: Story = {
     render: () => (
         <div className="flex items-center gap-4">
-            <Avatar size="xs">
-                <AvatarFallback size="xs">XS</AvatarFallback>
+            <Avatar className="size-6">
+                <AvatarFallback className="text-xs">XS</AvatarFallback>
             </Avatar>
-            <Avatar size="sm">
-                <AvatarFallback size="sm">SM</AvatarFallback>
+            <Avatar>
+                <AvatarFallback>SM</AvatarFallback>
             </Avatar>
-            <Avatar size="default">
-                <AvatarFallback size="default">MD</AvatarFallback>
+            <Avatar className="size-12">
+                <AvatarFallback>MD</AvatarFallback>
             </Avatar>
-            <Avatar size="lg">
-                <AvatarFallback size="lg">LG</AvatarFallback>
-            </Avatar>
-            <Avatar size="xl">
-                <AvatarFallback size="xl">XL</AvatarFallback>
+            <Avatar className="size-16">
+                <AvatarFallback>LG</AvatarFallback>
             </Avatar>
         </div>
     )
-};
-
-export const ExtraSmall: Story = {
-    args: {
-        size: 'xs',
-        children: <AvatarFallback size="xs">XS</AvatarFallback>
-    }
-};
-
-export const Small: Story = {
-    args: {
-        size: 'sm',
-        children: <AvatarFallback size="sm">SM</AvatarFallback>
-    }
-};
-
-export const Large: Story = {
-    args: {
-        size: 'lg',
-        children: <AvatarFallback size="lg">LG</AvatarFallback>
-    }
-};
-
-export const ExtraLarge: Story = {
-    args: {
-        size: 'xl',
-        children: <AvatarFallback size="xl">XL</AvatarFallback>
-    }
 };
 
 export const MultipleAvatars: Story = {

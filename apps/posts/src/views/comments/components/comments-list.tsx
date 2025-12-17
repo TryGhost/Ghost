@@ -197,7 +197,7 @@ function CommentsList({
                                                             onAddFilter('author', item.member!.id);
                                                         }}
                                                     >
-                                                        <Avatar size="xs">
+                                                        <Avatar className='size-4'>
                                                             {item.member.avatar_image && (
                                                                 <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
                                                             )}
