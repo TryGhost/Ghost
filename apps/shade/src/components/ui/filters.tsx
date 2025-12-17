@@ -1910,6 +1910,7 @@ interface FiltersProps<T = unknown> {
     popoverContentClassName?: string;
     popoverAlign?: 'start' | 'center' | 'end';
     keyboardShortcut?: string;
+    onActiveFieldChange?: (fieldKey: string | null) => void;
 }
 
 export function Filters<T = unknown>({
@@ -1932,11 +1933,17 @@ export function Filters<T = unknown>({
     allowMultiple = true,
     popoverContentClassName,
     popoverAlign = 'start',
-    keyboardShortcut
+    keyboardShortcut,
+    onActiveFieldChange
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Notify parent when active field changes
+    useEffect(() => {
+        onActiveFieldChange?.(selectedFieldKeyForOptions);
+    }, [selectedFieldKeyForOptions, onActiveFieldChange]);
 
     // Keyboard shortcut handler
     useEffect(() => {
