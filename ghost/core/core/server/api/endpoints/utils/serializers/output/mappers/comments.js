@@ -35,7 +35,8 @@ const postFields = [
     'id',
     'uuid',
     'title',
-    'url'
+    'url',
+    'feature_image'
 ];
 
 const countFields = [
