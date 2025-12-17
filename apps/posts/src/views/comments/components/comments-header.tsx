@@ -20,7 +20,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             value: post.id,
             label: post.title || '(Untitled)'
         })) || [];
-        
+
         // If there's an active post filter and the value isn't in the options, add it
         const postFilter = filters.find(f => f.field === 'post');
         if (postFilter && postFilter.values[0]) {
@@ -33,7 +33,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
                 });
             }
         }
-        
+
         return options;
     }, [postsData, filters]);
 
@@ -43,7 +43,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
             label: member.name || 'Unknown name',
             detail: member.email ?? '(Unknown email)'
         })) || [];
-        
+
         // If there's an active author filter and the value isn't in the options, add it
         const authorFilter = filters.find(f => f.field === 'author');
         if (authorFilter && authorFilter.values[0]) {
@@ -57,7 +57,7 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
                 });
             }
         }
-        
+
         return options;
     }, [membersData, filters]);
 
@@ -140,12 +140,12 @@ const CommentsHeader: React.FC<CommentsHeaderProps> = ({filters, onFiltersChange
         onFiltersChange([]);
     }, [onFiltersChange]);
 
-    const className = cn('-mb-4 flex flex-row justify-between pt-4', 
-        !hasFilters && '[grid-area:actions]',
-        hasFilters && 'col-start-1 col-end-3 row-start-3 ');
+    const className = cn('flex flex-row justify-between',
+        !hasFilters && '[grid-area:actions] ',
+        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-7 ');
 
     return (
-        <Header variant="inline-nav">
+        <Header className='!pb-6' variant="inline-nav">
             <Header.Title>Comments</Header.Title>
             <div className={className}>
                 <Filters
