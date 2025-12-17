@@ -29,6 +29,7 @@ export type Comment = {
     count?: {
         replies?: number;
         likes?: number;
+        reports?: number;
     };
 };
 

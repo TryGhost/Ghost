@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const nql = require('@tryghost/nql');
+const {splitFilter} = require('@tryghost/mongo-utils');
 
 /**
  * @typedef {import('@tryghost/api-framework').Frame} Frame
@@ -37,6 +39,53 @@ module.exports = class CommentsController {
                 message: tpl(messages.memberNotFound)
             });
         }
+    }
+
+    /**
+     * Extract count.reports from filter string.
+     * Returns the remaining filter, a reportCount option, and a mongoTransformer.
+     *
+     * @param {string} [filterString]
+     * @returns {{filter: string|undefined, reportCount: {op: string, value: number}|undefined, mongoTransformer: Function|undefined}}
+     */
+    #extractReportCountFilter(filterString) {
+        if (!filterString || !filterString.includes('count.reports')) {
+            return {filter: filterString, reportCount: undefined, mongoTransformer: undefined};
+        }
+
+        const parsed = nql(filterString).parse();
+        const [countReportsFilter, remainingFilter] = splitFilter(parsed, ['count.reports']);
+
+        // Convert count.reports to reportCount option
+        let reportCount;
+        if (countReportsFilter?.['count.reports'] !== undefined) {
+            const val = countReportsFilter['count.reports'];
+            if (typeof val === 'number') {
+                reportCount = {op: '=', value: val};
+            } else if (val.$gt !== undefined) {
+                reportCount = {op: '>', value: val.$gt};
+            } else if (val.$gte !== undefined) {
+                reportCount = {op: '>=', value: val.$gte};
+            } else if (val.$lt !== undefined) {
+                reportCount = {op: '<', value: val.$lt};
+            } else if (val.$lte !== undefined) {
+                reportCount = {op: '<=', value: val.$lte};
+            } else if (val.$ne !== undefined) {
+                reportCount = {op: '!=', value: val.$ne};
+            }
+        }
+
+        // If there's remaining filter, use transformer to replace parsed result
+        // Otherwise, no filter needed
+        if (remainingFilter && Object.keys(remainingFilter).length > 0) {
+            return {
+                filter: filterString, // Keep original string for NQL to parse
+                reportCount,
+                mongoTransformer: () => remainingFilter // Replace with our pre-split result
+            };
+        }
+
+        return {filter: undefined, reportCount, mongoTransformer: undefined};
     }
 
     /**
@@ -106,9 +155,14 @@ module.exports = class CommentsController {
         const includeNestedParam = frame.options.include_nested;
         const includeNested = includeNestedParam !== 'false' && includeNestedParam !== false;
 
+        // Extract count.reports from filter (it needs special handling as raw SQL)
+        const {filter, reportCount, mongoTransformer} = this.#extractReportCountFilter(frame.options.filter);
+
         return await this.service.getAdminAllComments({
             includeNested,
-            filter: frame.options.filter,
+            filter,
+            mongoTransformer,
+            reportCount,
             order: frame.options.order || 'created_at desc',
             page: frame.options.page,
             limit: frame.options.limit

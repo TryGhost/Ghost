@@ -146,6 +146,12 @@ function CommentsList({
                                         ) : (
                                             <div dangerouslySetInnerHTML={{__html: item.html || ''}} className="prose block text-base" />
                                         )}
+                                    {(item.count?.reports && item.count.reports > 0) ? (
+                                        <div className="text-amber-600 dark:text-amber-500 mt-1 flex items-center gap-1 text-sm">
+                                            <LucideIcon.Flag className="size-3.5" />
+                                            <span>{item.count.reports} {item.count.reports === 1 ? 'report' : 'reports'}</span>
+                                        </div>
+                                    ) : null}
                                 </TableCell>
                                 <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
                                     {item.member?.id ? (

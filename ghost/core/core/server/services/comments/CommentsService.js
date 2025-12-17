@@ -181,6 +181,8 @@ class CommentsService {
      * @property {boolean} includeNested - If true, include replies in flat list; if false, only top-level comments
      * @property {string[]} [withRelated] - Relations to include (e.g. ['member', 'post'])
      * @property {string} [filter] - NQL filter string
+     * @property {Function} [mongoTransformer] - Function to transform parsed NQL filter
+     * @property {{op: string, value: number}} [reportCount] - Filter by report count (op: '=', '>', '>=', '<', '<=', '!=')
      * @property {string} order - Order string (e.g. 'created_at desc')
      * @property {number} [page] - Page number
      * @property {number} [limit] - Results per page
@@ -195,10 +197,12 @@ class CommentsService {
      *
      * @param {AdminBrowseAllOptions} options
      */
-    async getAdminAllComments({includeNested, filter, order, page, limit}) {
+    async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post'],
+            withRelated: ['member', 'post', 'count.replies', 'count.likes', 'count.reports'],
             filter,
+            mongoTransformer,
+            reportCount,
             order,
             page,
             limit,
