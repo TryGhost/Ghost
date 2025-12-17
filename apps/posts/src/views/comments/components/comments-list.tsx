@@ -255,14 +255,14 @@ function CommentsList({
                                         <CommentContent item={item} />
                                     </div>
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                                    4
+                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.replies && 'text-muted-foreground'}`}>
+                                    {item.count?.replies}
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                                    19
+                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.likes && 'text-muted-foreground'}`}>
+                                    {item.count?.likes}
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                                    2
+                                <TableCell className={`col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4 ${!item.count?.reports && 'text-muted-foreground'}`}>
+                                    {item.count?.reports}
                                 </TableCell>
                                 <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-3">
                                     <div className="flex flex-row flex-nowrap justify-end gap-2">
