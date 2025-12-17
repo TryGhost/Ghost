@@ -70,6 +70,7 @@ body.react-admin [data-header="header-title"] {
 
 body.react-admin [data-header="header"] {
     padding-top: 24px;
+    /* padding-bottom: 18px; */
 }
 
 body.react-admin [data-navbar="navbar"] {
