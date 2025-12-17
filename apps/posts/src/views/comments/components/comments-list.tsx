@@ -11,7 +11,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
     LucideIcon,
     Table,
@@ -141,10 +140,6 @@ function CommentsList({
     const {mutate: showComment} = useShowComment();
     const {mutate: deleteComment} = useDeleteComment();
     const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
-
-    const handleDeleteClick = (comment: Comment) => {
-        setCommentToDelete(comment);
-    };
 
     const confirmDelete = () => {
         if (commentToDelete) {
