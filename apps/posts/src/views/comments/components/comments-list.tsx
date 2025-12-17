@@ -252,7 +252,7 @@ function CommentsList({
                                         <CommentContent item={item} />
                                     </div>
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <div className="flex flex-row flex-nowrap justify-end gap-2">
                                         {item.status === 'hidden' && (
                                             <div className='mr-2 flex items-center gap-1 text-xs font-medium text-muted-foreground'>
