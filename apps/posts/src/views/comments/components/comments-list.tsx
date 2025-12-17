@@ -66,7 +66,7 @@ function formatDate(dateString: string): string {
 function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
     return (
         <Button
-            className="mt-1 shrink-0 gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
+            className="shrink-0 gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
             size="sm"
             variant="ghost"
             onClick={onClick}
@@ -97,12 +97,12 @@ function CommentContent({item}: {item: Comment}) {
     }, [item.html]);
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="mt-1 flex flex-col gap-2">
             <div className="flex max-w-[720px] flex-col items-start">
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
-                    className={`prose flex-1 text-base [&_*]:m-0 [&_*]:inline ${isExpanded ? '' : 'line-clamp-2'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
+                    className={`prose flex-1 text-base ${isExpanded ? '[&_p]:mb-2' : 'line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
                 />
                 <div className='flex items-center gap-4'>
                     {isClamped && (
@@ -160,8 +160,7 @@ function CommentsList({
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
                         <TableHead className="h-0 px-4 py-0"></TableHead>
-                        <TableHead className="h-0 w-24 px-4 py-0"></TableHead>
-                        <TableHead className="h-0 w-40 px-4 py-0"></TableHead>
+                        <TableHead className="h-0 w-64 px-4 py-0"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="flex flex-col lg:table-row-group">
@@ -237,17 +236,14 @@ function CommentsList({
                                         <CommentContent item={item} />
                                     </div>
                                 </TableCell>
-
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                                    {item.status === 'hidden' && (
-                                        <div className='flex items-center gap-1 text-xs font-medium text-muted-foreground'>
-                                            <LucideIcon.EyeOff size={12} strokeWidth={1.5} />
-                                            Hidden
-                                        </div>
-                                    )}
-                                </TableCell>
                                 <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <div className="flex flex-row flex-nowrap justify-end gap-2">
+                                        {item.status === 'hidden' && (
+                                            <div className='mr-2 flex items-center gap-1 text-xs font-medium text-muted-foreground'>
+                                                <LucideIcon.EyeOff size={12} strokeWidth={1.5} />
+                                                Hidden
+                                            </div>
+                                        )}
                                         {item.status === 'published' && (
                                             <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                 <LucideIcon.EyeOff/>
