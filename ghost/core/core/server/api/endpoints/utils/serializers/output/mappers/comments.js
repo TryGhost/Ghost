@@ -36,13 +36,6 @@ const postFields = [
     'uuid',
     'title',
     'url',
-];
-
-const postFieldsAdmin = [
-    'id',
-    'uuid',
-    'title',
-    'url',
     'feature_image'
 ];
 
@@ -93,7 +86,7 @@ const commentMapper = (model, frame) => {
     if (jsonModel.post) {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
-        response.post = _.pick(jsonModel.post, isPublicRequest ? postFields : postFieldsAdmin);
+        response.post = _.pick(jsonModel.post, postFields);
     }
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {
