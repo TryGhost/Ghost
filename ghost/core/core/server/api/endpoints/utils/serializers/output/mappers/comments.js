@@ -43,6 +43,12 @@ const countFields = [
     'likes'
 ];
 
+const countFieldsAdmin = [
+    'replies',
+    'likes',
+    'reports'
+];
+
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
@@ -87,7 +93,7 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, countFields);
+        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
     }
 
     if (isPublicRequest) {

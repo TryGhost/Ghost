@@ -1194,7 +1194,7 @@ describe(`Admin Comments API`, function () {
     });
 
     describe('Browse All', function () {
-        // Matcher for comments (always includes member and post)
+        // Matcher for comments (always includes member, post, and counts for admin)
         const commentMatcher = {
             id: anyObjectId,
             parent_id: nullable(anyObjectId),
@@ -1208,6 +1208,11 @@ describe(`Admin Comments API`, function () {
                 id: anyObjectId,
                 uuid: anyUuid,
                 url: anyString
+            },
+            count: {
+                likes: anyNumber,
+                replies: anyNumber,
+                reports: anyNumber
             }
         };
 
@@ -1394,6 +1399,137 @@ describe(`Admin Comments API`, function () {
                 .matchBodySnapshot({
                     comments: [commentMatcher]
                 });
+        });
+
+        it('Includes reports count for comments with reports', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment with reports</p>'
+            });
+
+            // Add reports to the comment
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+
+            const res = await adminApi.get('/comments/');
+            assert.equal(res.body.comments[0].count.reports, 2);
+        });
+
+        it('Returns zero reports count for comments without reports', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment without reports</p>'
+            });
+
+            const res = await adminApi.get('/comments/');
+            assert.equal(res.body.comments[0].count.reports, 0);
+        });
+
+        it('Can filter for reported comments using count.reports:>0', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add a report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:>0'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Reported comment</p>');
+        });
+
+        it('Can filter for non-reported comments using count.reports:0', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add a report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:0'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Non-reported comment</p>');
+        });
+
+        it('Can filter for highly reported comments using count.reports:>=2', async function () {
+            const highlyReportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Highly reported comment</p>'
+            });
+            const singleReportComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Single report comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add multiple reports to one comment
+            await models.CommentReport.add({
+                comment_id: highlyReportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentReport.add({
+                comment_id: highlyReportedComment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            // Add single report to another
+            await models.CommentReport.add({
+                comment_id: singleReportComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:>=2'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Highly reported comment</p>');
+            assert.equal(res.body.comments[0].count.reports, 2);
+        });
+
+        it('Can combine count.reports filter with other filters', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported published</p>',
+                status: 'published'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported published</p>',
+                status: 'published'
+            });
+
+            // Add report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const filter = encodeURIComponent('count.reports:>0+status:published');
+            const res = await adminApi.get('/comments/?filter=' + filter);
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Reported published</p>');
         });
     });
 });
