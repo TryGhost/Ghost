@@ -8,7 +8,7 @@ SQL >
     select
         case when post_uuid = 'undefined' then '' else post_uuid end as post_uuid,
         pathname,
-        uniqExact(session_id) as visits
+        uniq(session_id) as visits
     from _mv_hits h
     inner join filtered_sessions fs
         on fs.session_id = h.session_id
