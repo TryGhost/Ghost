@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-api-schema",
-  "version": "4.5.12",
+  "version": "4.5.13",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/SDK.git",
