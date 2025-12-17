@@ -5,6 +5,76 @@ import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+describe('COMMENT_HASH_PREFIX', function () {
+    it('exports the correct prefix', function () {
+        expect(helpers.COMMENT_HASH_PREFIX).toEqual('ghost-comments-');
+    });
+});
+
+describe('buildCommentPermalink', function () {
+    it('builds permalink with hash', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post', 'abc123'))
+            .toEqual('https://example.com/post#ghost-comments-abc123');
+    });
+
+    it('removes existing hash from base URL', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post#existing', 'abc123'))
+            .toEqual('https://example.com/post#ghost-comments-abc123');
+    });
+
+    it('preserves trailing slash in base URL', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post/', 'abc123'))
+            .toEqual('https://example.com/post/#ghost-comments-abc123');
+    });
+
+    it('handles URL with both trailing slash and hash', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post/#old-hash', 'abc123'))
+            .toEqual('https://example.com/post/#ghost-comments-abc123');
+    });
+
+    it('handles URL with query parameters', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post?ref=twitter', 'abc123'))
+            .toEqual('https://example.com/post?ref=twitter#ghost-comments-abc123');
+    });
+});
+
+describe('parseCommentIdFromHash', function () {
+    it('extracts comment ID from valid hash', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-abc123'))
+            .toEqual('abc123');
+    });
+
+    it('handles uppercase hex characters', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-ABC123DEF'))
+            .toEqual('ABC123DEF');
+    });
+
+    it('returns null for hash without prefix', function () {
+        expect(helpers.parseCommentIdFromHash('#some-other-hash'))
+            .toBeNull();
+    });
+
+    it('returns null for empty hash', function () {
+        expect(helpers.parseCommentIdFromHash(''))
+            .toBeNull();
+    });
+
+    it('returns null for hash with only prefix', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-'))
+            .toBeNull();
+    });
+
+    it('returns null for hash with non-hex characters in ID', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-xyz123'))
+            .toBeNull();
+    });
+
+    it('returns null when prefix is not at start', function () {
+        expect(helpers.parseCommentIdFromHash('#other-ghost-comments-abc123'))
+            .toBeNull();
+    });
+});
+
 describe('flattenComments', function () {
     it('flattens comments and replies', function () {
         const comments: any[] = [
