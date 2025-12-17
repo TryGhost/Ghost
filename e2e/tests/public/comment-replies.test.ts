@@ -27,31 +27,35 @@ test.describe('Ghost Public - Comments', () => {
         await settingsService.setCommentsEnabled('all');
     });
 
-    test('show more comments', async ({page}) => {
+    test('show replies and load more replies', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
 
-        const comments = Array.from({length: 25}, (_, index) => {
+        const comment = await commentFactory.create({
+            html: 'Test comment 1',
+            post_id: post.id,
+            member_id: member.id
+        });
+
+        const replies = Array.from({length: 5}, (_, index) => {
             return {
-                html: `Test comment ${index + 1}`,
+                html: `reply ${index + 1} to comment 1`,
                 post_id: post.id,
                 member_id: member.id,
-                created_at: new Date(Date.now() - index * 1000).toISOString()
+                parent_id: comment.id
             };
         });
 
-        await commentFactory.createMany(comments);
+        await commentFactory.createMany(replies);
 
         const postPage = new PostPage(page);
         await postPage.gotoPost(post.slug);
         await postPage.comments.waitForCommentsToLoad();
 
-        await expect(postPage.comments.comments.last()).toContainText('Test comment 20');
-        await expect(postPage.comments.showMoreCommentsButton).toBeVisible();
-        await expect(postPage.comments.showMoreCommentsButton).toContainText('Load more (5)');
-
-        await postPage.comments.showMoreCommentsButton.click();
-        await expect(postPage.comments.comments).toHaveCount(25);
-        await expect(postPage.comments.comments.last()).toContainText('Test comment 25');
+        await expect(postPage.comments.comments.last()).toContainText('reply 3 to comment 1');
+        await expect(postPage.comments.showMoreRepliesButton).toBeVisible();
+        await expect(postPage.comments.showMoreRepliesButton).toContainText('Show 2 more replies');
+        await postPage.comments.showMoreRepliesButton.click();
+        await expect(postPage.comments.comments.last()).toContainText('reply 5 to comment 1');
     });
 });

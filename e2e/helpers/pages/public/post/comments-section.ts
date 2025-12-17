@@ -17,6 +17,9 @@ export class CommentsSection {
     readonly comments: Locator;
     readonly commentContent: Locator;
 
+    readonly showMoreRepliesButton: Locator;
+    readonly showMoreCommentsButton: Locator;
+
     constructor(page: Page) {
         this.page = page;
         this.commentsIframe = this.page.locator('iframe[title="comments-frame"]');
@@ -35,6 +38,8 @@ export class CommentsSection {
         this.commentCountText = this.commentsFrame.getByTestId('count');
         this.comments = this.commentsFrame.getByTestId('animated-comment');
         this.commentContent = this.commentsFrame.getByTestId('comment-content');
+        this.showMoreRepliesButton = this.commentsFrame.getByTestId('reply-pagination-button');
+        this.showMoreCommentsButton = this.commentsFrame.getByTestId('pagination-component');
     }
 
     async waitForCommentsToLoad(): Promise<void> {
