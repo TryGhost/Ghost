@@ -199,9 +199,9 @@ function CommentsList({
                                                         }}
                                                     >
                                                         <Avatar className={`size-5 ${item.status === 'hidden' && 'opacity-40'}`}>
-                                                            {item.member.avatar_image && (
+                                                            {/* {item.member.avatar_image && (
                                                                 <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
-                                                            )}
+                                                            )} */}
                                                             <AvatarFallback>
                                                                 <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
                                                             </AvatarFallback>
