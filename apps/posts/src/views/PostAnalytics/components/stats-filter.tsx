@@ -247,14 +247,14 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     // Fetch options for all Tinybird-backed fields using the generic hook
     // Options are contextual - filtered based on currently applied filters and post_uuid
     // Lazy loading: only fetch when field is active or has applied filter
-    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters, postUuid, {enabled: shouldFetchOptions('utm_source')});
-    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters, postUuid, {enabled: shouldFetchOptions('utm_medium')});
-    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters, postUuid, {enabled: shouldFetchOptions('utm_campaign')});
-    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid, {enabled: shouldFetchOptions('utm_content')});
-    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid, {enabled: shouldFetchOptions('utm_term')});
-    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid, {enabled: shouldFetchOptions('source')});
-    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid, {enabled: shouldFetchOptions('device')});
-    const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid, {enabled: shouldFetchOptions('location')});
+    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, postUuid, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, postUuid, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, postUuid, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, postUuid, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, postUuid, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, postUuid, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, postUuid, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, postUuid, {enabled: shouldFetchOptions('location')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -275,6 +275,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmSourceOptions,
+                isLoading: utmSourceLoading,
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             },
@@ -288,6 +289,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmMediumOptions,
+                isLoading: utmMediumLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -303,6 +305,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmCampaignOptions,
+                isLoading: utmCampaignLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -318,6 +321,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmContentOptions,
+                isLoading: utmContentLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -333,6 +337,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 defaultOperator: 'is',
                 hideOperatorSelect: true,
                 options: utmTermOptions,
+                isLoading: utmTermLoading,
                 className: 'w-60',
                 popoverContentClassName: 'w-60',
                 searchable: true,
@@ -364,6 +369,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: sourceOptions,
+                        isLoading: sourceLoading,
                         className: 'w-60',
                         popoverContentClassName: 'w-60',
                         searchable: true,
@@ -379,6 +385,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: deviceOptions,
+                        isLoading: deviceLoading,
                         selectedOptionsClassName: 'hidden'
                     },
                     {
@@ -391,6 +398,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                         defaultOperator: 'is',
                         hideOperatorSelect: true,
                         options: locationOptions,
+                        isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
                     }
@@ -401,7 +409,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 fields: utmFields
             }] : [])
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmMediumOptions, utmCampaignOptions, utmContentOptions, utmTermOptions, supportedOperators, audienceOptions, sourceOptions, deviceOptions, locationOptions]);
+    }, [utmTrackingEnabled, utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
