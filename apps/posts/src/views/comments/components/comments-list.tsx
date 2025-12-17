@@ -164,8 +164,11 @@ function CommentsList({
             >
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
-                        <TableHead className="h-0 px-4 py-0"></TableHead>
-                        <TableHead className="h-0 w-64 px-4 py-0"></TableHead>
+                        <TableHead className="px-4">Comment</TableHead>
+                        <TableHead className="w-20 px-4 text-right">Replies</TableHead>
+                        <TableHead className="w-20 px-4 text-right">Likes</TableHead>
+                        <TableHead className="w-20 px-4 text-right">Reports</TableHead>
+                        <TableHead className="w-64 px-4"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="flex flex-col lg:table-row-group">
@@ -252,7 +255,16 @@ function CommentsList({
                                         <CommentContent item={item} />
                                     </div>
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                    4
+                                </TableCell>
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                    19
+                                </TableCell>
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top font-mono text-sm md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                    2
+                                </TableCell>
+                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-3">
                                     <div className="flex flex-row flex-nowrap justify-end gap-2">
                                         {item.status === 'hidden' && (
                                             <div className='mr-2 flex items-center gap-1 text-xs font-medium text-muted-foreground'>
