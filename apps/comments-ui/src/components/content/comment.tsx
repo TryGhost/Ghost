@@ -1,14 +1,14 @@
 import EditForm from './forms/edit-form';
 import LikeButton from './buttons/like-button';
 import MoreButton from './buttons/more-button';
+import React, {useCallback} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import {Avatar, BlankAvatar} from './avatar';
-import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
+import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
 import {Transition} from '@headlessui/react';
-import {findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
-import {useCallback} from 'react';
+import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
@@ -18,6 +18,7 @@ type AnimatedCommentProps = {
 
 const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
     const {commentsIsLoading} = useAppContext();
+
     return (
         <Transition
             className={`${commentsIsLoading ? 'animate-pulse' : ''}`}
@@ -267,7 +268,8 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, dispatchAction, t} = useAppContext();
+    const {comments, dispatchAction, t, pageUrl} = useAppContext();
+    const labs = useLabs();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 
     const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -292,13 +294,19 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
-
     const className = 'font-medium text-neutral-900/60 break-all transition-colors dark:text-white/70';
+    const linkClassName = `${className} hover:text-neutral-900/75 dark:hover:text-white/85`;
 
-    return (
-        linkToReply
-            ? <a className={`${className} hover:text-neutral-900/75 dark:hover:text-white/85`} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
-            : <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>
+    if (!linkToReply) {
+        return <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>;
+    }
+
+    // With labs flag: use permalink URL, let hashchange listener handle scroll
+    // Without labs flag: use onClick handler for direct scroll behavior
+    return labs?.commentPermalinks ? (
+        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(pageUrl, comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
+    ) : (
+        <a className={linkClassName} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
     );
 };
 
@@ -308,10 +316,26 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {member, t} = useAppContext();
+    const {member, t, pageUrl} = useAppContext();
+    const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const isReplyToReply = comment.in_reply_to_id && comment.in_reply_to_snippet;
+
+    const timestampElement = labs?.commentPermalinks ? (
+        <a
+            className="hover:underline"
+            href={buildCommentPermalink(pageUrl, comment.id)}
+            target="_parent"
+            title={formatExplicitTime(comment.created_at)}
+        >
+            <span className="mx-[0.3em]">·</span>{createdAtRelative}
+        </a>
+    ) : (
+        <span title={formatExplicitTime(comment.created_at)}>
+            <span className="mx-[0.3em]">·</span>{createdAtRelative}
+        </span>
+    );
 
     return (
         <>
@@ -320,7 +344,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
                 <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                     <span>
                         <MemberExpertise comment={comment}/>
-                        <span title={formatExplicitTime(comment.created_at)}><span className="mx-[0.3em]">·</span>{createdAtRelative}</span>
+                        {timestampElement}
                         <EditedInfo comment={comment} />
                     </span>
                 </div>

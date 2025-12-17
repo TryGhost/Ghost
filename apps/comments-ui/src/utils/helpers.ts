@@ -1,5 +1,19 @@
 import {Comment, Member, TranslationFunction} from '../app-context';
 
+// Canonical source for comment permalink hash format
+export const COMMENT_HASH_PREFIX = 'ghost-comments-';
+
+export function buildCommentPermalink(baseUrl: string, commentId: string): string {
+    const cleanUrl = baseUrl.replace(/#.*$/, '');
+    return `${cleanUrl}#${COMMENT_HASH_PREFIX}${commentId}`;
+}
+
+export function parseCommentIdFromHash(hash: string): string | null {
+    const regex = new RegExp(`^#${COMMENT_HASH_PREFIX}([a-f0-9]+)$`, 'i');
+    const match = hash.match(regex);
+    return match ? match[1] : null;
+}
+
 export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
 }

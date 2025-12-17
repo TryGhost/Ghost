@@ -481,12 +481,17 @@ function closeCommentForm({data: id, state}: {data: string, state: EditableAppCo
     return {openCommentForms: state.openCommentForms.filter(f => f.id !== id)};
 };
 
+function setScrollTarget({data: commentId}: {data: string | null}) {
+    return {commentIdToScrollTo: commentId};
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
-    setCommentFormHasUnsavedChanges
+    setCommentFormHasUnsavedChanges,
+    setScrollTarget
 };
 
 export type SyncActionType = keyof typeof SyncActions;

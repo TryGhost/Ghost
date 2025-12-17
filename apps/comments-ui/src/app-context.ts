@@ -15,6 +15,7 @@ export type Member = {
 export type Comment = {
     id: string,
     post_id: string,
+    parent_id?: string,
     in_reply_to_id: string,
     in_reply_to_snippet: string,
     replies: Comment[],
@@ -83,7 +84,9 @@ export type EditableAppContext = {
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
-    commentIdToHighlight: string | null
+    commentIdToHighlight: string | null,
+    commentIdToScrollTo: string | null,
+    pageUrl: string
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
