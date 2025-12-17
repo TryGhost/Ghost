@@ -9,6 +9,8 @@ export interface SettingsResponse {
     settings: Setting[];
 }
 
+export type CommentsEnabled = 'all' | 'paid' | 'off';
+
 export class SettingsService {
     private readonly request: APIRequest;
     private readonly adminEndpoint: string;
@@ -36,6 +38,16 @@ export class SettingsService {
         const data = {settings: updatedSettings};
         const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
 
+        return await response.json() as SettingsResponse;
+    }
+
+    /**
+     * Set comments enabled setting
+     * @param value - 'all' (all members), 'paid' (paid members only), or 'off' (disabled)
+     */
+    async setCommentsEnabled(value: CommentsEnabled) {
+        const data = {settings: [{key: 'comments_enabled', value}]};
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
         return await response.json() as SettingsResponse;
     }
 }
