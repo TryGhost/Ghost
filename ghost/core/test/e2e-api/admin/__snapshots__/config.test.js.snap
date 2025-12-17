@@ -14,6 +14,7 @@ Object {
       "announcementBar": true,
       "audienceFeedback": true,
       "commentModeration": true,
+      "commentPermalinks": true,
       "contentVisibility": true,
       "contentVisibilityAlpha": true,
       "customFonts": true,
