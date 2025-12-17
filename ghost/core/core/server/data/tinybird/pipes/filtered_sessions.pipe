@@ -37,10 +37,11 @@ SQL >
 NODE sessions_filtered_by_session_attributes
 DESCRIPTION >
     Further filter by session-level attributes (source, device, utm_*). These attributes are specific to the first hit in a session,
-    whereas other filters are on hits.
+    whereas other filters are on hits. If no session-level filters are provided, skip the join with mv_session_data entirely.
 
 SQL >
     %
+    {% if defined(source) or defined(device) or defined(utm_source) or defined(utm_medium) or defined(utm_campaign) or defined(utm_term) or defined(utm_content) %}
     select session_id
     from mv_session_data sd
     inner join sessions_filtered_by_hit_attributes sfha
@@ -68,3 +69,8 @@ SQL >
         {% if defined(utm_campaign) %} and utm_campaign = {{ String(utm_campaign, description="UTM campaign to filter on", required=False) }} {% end %}
         {% if defined(utm_term) %} and utm_term = {{ String(utm_term, description="UTM term to filter on", required=False) }} {% end %}
         {% if defined(utm_content) %} and utm_content = {{ String(utm_content, description="UTM content to filter on", required=False) }} {% end %}
+    {% else %}
+    {# No session-level filters, skip the join with mv_session_data #}
+    select session_id
+    from sessions_filtered_by_hit_attributes
+    {% end %}
