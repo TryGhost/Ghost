@@ -461,13 +461,9 @@ describe('MemberRepository', function () {
             })).should.be.true();
         });
 
-        it('creates an offer from a Stripe coupon when missing and uses caller transaction', async function () {
-            const offersImportService = {
-                ensureOfferForCoupon: sinon.stub().resolves('offer_new')
-            };
-
-            const offerRepositoryWithCoupon = {
-                getById: sinon.stub().resolves(null)
+        it('creates an offer from a Stripe coupon', async function () {
+            const offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({id: 'offer_new'})
             };
 
             const productRepositoryWithTier = {
@@ -486,17 +482,19 @@ describe('MemberRepository', function () {
                 update: sinon.stub().resolves({})
             };
 
+            const stripeCoupon = {
+                id: 'coupon_abc',
+                percent_off: 20,
+                duration: 'forever'
+            };
+
             const repo = new MemberRepository({
                 stripeAPIService: {
                     ...stripeAPIService,
                     getSubscription: sinon.stub().resolves({
                         ...subscriptionData,
                         discount: {
-                            coupon: {
-                                id: 'coupon_abc',
-                                percent_off: 20,
-                                duration: 'forever'
-                            }
+                            coupon: stripeCoupon
                         }
                     })
                 },
@@ -504,8 +502,7 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository: productRepositoryWithTier,
-                offerRepository: offerRepositoryWithCoupon,
-                offersImportService,
+                offersAPI,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -525,8 +522,12 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            offersImportService.ensureOfferForCoupon.calledOnce.should.be.true();
-            offersImportService.ensureOfferForCoupon.firstCall.args[0].transacting.should.equal(transacting);
+            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            // Verify the coupon, cadence, tier, and options are passed correctly
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[1].should.equal('month');
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
             StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
         });
     });

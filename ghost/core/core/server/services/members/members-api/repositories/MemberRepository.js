@@ -51,8 +51,7 @@ module.exports = class MemberRepository {
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
      * @param {any} deps.productRepository
-     * @param {any} deps.offerRepository
-     * @param {any} deps.offersImportService
+     * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
      * @param {any} deps.AutomatedEmail
@@ -73,8 +72,7 @@ module.exports = class MemberRepository {
         stripeAPIService,
         labsService,
         productRepository,
-        offerRepository,
-        offersImportService,
+        offersAPI,
         tokenService,
         newslettersService,
         AutomatedEmail
@@ -93,8 +91,7 @@ module.exports = class MemberRepository {
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
-        this._offerRepository = offerRepository;
-        this._offersImportService = offersImportService;
+        this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
@@ -1044,20 +1041,17 @@ module.exports = class MemberRepository {
         let offerId = data.offerId || null;
 
         if (stripeCouponId && !offerId && ghostProduct) {
-            const cadence = _.get(subscriptionPriceData, 'recurring.interval', 'month');
-            const ensuredOfferId = await this._offersImportService.ensureOfferForCoupon({
-                coupon: stripeSubscriptionData.discount.coupon,
-                cadence,
-                tier: {
-                    id: ghostProduct.get('id'),
-                    name: ghostProduct.get('name')
-                },
-                transacting: options.transacting
-            });
+            const coupon = stripeSubscriptionData.discount.coupon;
+            const cadence = _.get(subscriptionPriceData, 'recurring.interval');
+            const tier = {id: ghostProduct.get('id'), name: ghostProduct.get('name')};
 
-            if (ensuredOfferId) {
-                offerId = ensuredOfferId;
-            }
+            const offer = await this._offersAPI.ensureOfferForStripeCoupon(
+                coupon,
+                cadence,
+                tier,
+                options
+            );
+            offerId = offer.id;
         }
 
         const subscriptionData = {

@@ -14,6 +14,7 @@ const OfferStatus = require('./OfferStatus');
 const OfferCreatedEvent = require('../events/OfferCreatedEvent');
 const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
 const OfferCreatedAt = require('./OfferCreatedAt');
+const StripeCoupon = require('./StripeCoupon');
 
 /**
  * @typedef {object} OfferProps
@@ -37,7 +38,7 @@ const OfferCreatedAt = require('./OfferCreatedAt');
 
 /**
  * @typedef {object} OfferCreateProps
- * @prop {string|ObjectID} id
+ * @prop {string|ObjectID} [id]
  * @prop {string} name
  * @prop {string} code
  * @prop {string} display_title
@@ -46,14 +47,14 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {string} type
  * @prop {number} amount
  * @prop {string} duration
- * @prop {number} duration_in_months
- * @prop {string} currency
- * @prop {string} status
- * @prop {string|null} [stripe_coupon_id]
- * @prop {number} redemptionCount
+ * @prop {number} [duration_in_months]
+ * @prop {string|null} [currency]
+ * @prop {string} [status]
+ * @prop {string} [stripe_coupon_id]
+ * @prop {number} [redemptionCount]
  * @prop {TierProps|OfferTier} tier
- * @prop {Date} created_at
- * @prop {Date|null} last_redeemed
+ * @prop {Date} [created_at]
+ * @prop {Date} [last_redeemed]
  */
 
 /**
@@ -367,6 +368,67 @@ class Offer {
             createdAt,
             lastRedeemed
         }, {isNew});
+    }
+
+    /**
+     * @param {object} coupon
+     * @param {string} coupon.id
+     * @param {number} [coupon.percent_off]
+     * @param {number} [coupon.amount_off]
+     * @param {string} [coupon.currency]
+     * @param {string} coupon.duration
+     * @param {number} [coupon.duration_in_months]
+     * @param {string} cadence
+     * @param {TierProps} tier
+     * @param {UniqueChecker} uniqueChecker
+     * @returns {Promise<Offer>}
+     */
+    static async createFromStripeCoupon(stripeCoupon, cadence, tier, uniqueChecker) {
+        const coupon = StripeCoupon.create(stripeCoupon);
+
+        let name;
+        let type;
+        let amount;
+        let currency = null;
+
+        const durationText = coupon.duration_in_months
+            ? `for ${coupon.duration_in_months} months`
+            : coupon.duration;
+
+        if (coupon.percent_off) {
+            type = 'percent';
+            amount = coupon.percent_off;
+            name = `${coupon.percent_off}% off ${durationText} (${coupon.id})`;
+        } else if (coupon.amount_off) {
+            type = 'fixed';
+            amount = coupon.amount_off;
+            currency = coupon.currency;
+            name = `${currency.toUpperCase()} ${amount / 100} off ${durationText} (${coupon.id})`;
+        }
+
+        // Create the offer as archived, so that it can't be used for new signups
+        const status = 'archived';
+
+        const data = {
+            name,
+            code: coupon.id,
+            display_title: name,
+            display_description: '',
+            type,
+            amount,
+            cadence,
+            duration: coupon.duration,
+            duration_in_months: coupon.duration_in_months,
+            currency,
+            status,
+            tier: {
+                id: tier.id,
+                name: tier.name
+            },
+            stripe_coupon_id: coupon.id
+        };
+
+        return this.create(data, uniqueChecker);
     }
 }
 

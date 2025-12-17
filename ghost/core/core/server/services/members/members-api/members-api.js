@@ -69,7 +69,6 @@ module.exports = function MembersAPI({
     tiersService,
     stripeAPIService,
     offersAPI,
-    offersImportService,
     labsService,
     newslettersService,
     memberAttributionService,
@@ -112,8 +111,7 @@ module.exports = function MembersAPI({
         StripeCustomer,
         StripeCustomerSubscription,
         Outbox,
-        offerRepository: offersAPI.repository,
-        offersImportService
+        offersAPI
     });
 
     const eventRepository = new EventRepository({

@@ -1795,9 +1795,12 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-            // Get offer by stripe coupon, it should now exist
+            // Offer should now exist and have expected name, code and status
             const createdOffer = await getOfferByStripeCoupon(stripeCouponId);
             assert.notEqual(createdOffer, null, `An offer should now have been created with coupon ID: ${stripeCouponId}`);
+            assert.equal(createdOffer.get('code'), stripeCouponId, 'Offer code should match Stripe coupon ID');
+            assert.equal(createdOffer.get('active'), false, 'Imported offer should be archived (not active)');
+            assert.equal(createdOffer.get('name'), '20% off forever (stripe-coupon-id)', 'Offer name should be auto-generated from coupon');
 
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
