@@ -63,6 +63,10 @@ const features: Feature[] = [{
     title: 'Email Size Warnings',
     description: 'Enable warnings in editor when content exceeds email cut-off size',
     flag: 'emailSizeWarnings'
+}, {
+    title: 'Comment Permalinks',
+    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
+    flag: 'commentPermalinks'
 }];
 
 const AlphaFeatures: React.FC = () => {
