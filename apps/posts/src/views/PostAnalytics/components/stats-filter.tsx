@@ -121,9 +121,19 @@ const buildFilterParams = (
     return params;
 };
 
+interface UseTinybirdFilterOptionsConfig {
+    enabled?: boolean;
+}
+
 // Generic hook to fetch filter options from Tinybird
 // Handles the common pattern: fetch data, transform to options, ensure selected value is included
-const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [], postUuid?: string) => {
+const useTinybirdFilterOptions = (
+    fieldKey: string,
+    currentFilters: Filter[] = [],
+    postUuid?: string,
+    config: UseTinybirdFilterOptionsConfig = {}
+) => {
+    const {enabled = true} = config;
     const {statsConfig, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -158,7 +168,7 @@ const useTinybirdFilterOptions = (fieldKey: string, currentFilters: Filter[] = [
         endpoint: definition?.endpoint || '',
         statsConfig,
         params,
-        enabled: !!definition
+        enabled: enabled && !!definition
     });
 
     const options = useMemo(() => {
@@ -194,6 +204,9 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
     const {post} = useGlobalData();
     const postUuid = post?.uuid;
 
+    // Track which filter field is currently being selected (lazy loading)
+    const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
+
     // Track screen width for responsive popover alignment
     const [isMobile, setIsMobile] = useState(false);
 
@@ -223,16 +236,25 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
         return appSettings?.paidMembersEnabled ? options : options.filter(opt => opt.value !== 'paid');
     }, [appSettings?.paidMembersEnabled]);
 
+    // Helper: determine if a filter field should fetch options
+    // Enable fetching when the field is active OR has an applied filter value (for label display)
+    const shouldFetchOptions = useCallback((fieldKey: string) => {
+        const isActive = activeFilterField === fieldKey;
+        const hasAppliedFilter = filters.some(f => f.field === fieldKey);
+        return isActive || hasAppliedFilter;
+    }, [activeFilterField, filters]);
+
     // Fetch options for all Tinybird-backed fields using the generic hook
     // Options are contextual - filtered based on currently applied filters and post_uuid
-    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters, postUuid);
-    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters, postUuid);
-    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters, postUuid);
-    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid);
-    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid);
-    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid);
-    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid);
-    const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid);
+    // Lazy loading: only fetch when field is active or has applied filter
+    const {options: utmSourceOptions} = useTinybirdFilterOptions('utm_source', filters, postUuid, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions} = useTinybirdFilterOptions('utm_medium', filters, postUuid, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions} = useTinybirdFilterOptions('utm_campaign', filters, postUuid, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions} = useTinybirdFilterOptions('utm_content', filters, postUuid, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions} = useTinybirdFilterOptions('utm_term', filters, postUuid, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions} = useTinybirdFilterOptions('source', filters, postUuid, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions} = useTinybirdFilterOptions('device', filters, postUuid, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions} = useTinybirdFilterOptions('location', filters, postUuid, {enabled: shouldFetchOptions('location')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -402,6 +424,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 keyboardShortcut="f"
                 popoverAlign={isMobile ? 'start' : (hasFilters ? 'start' : 'end')}
                 showSearchInput={false}
+                onActiveFieldChange={setActiveFilterField}
                 onChange={onChange || (() => {})}
                 {...props}
             />
