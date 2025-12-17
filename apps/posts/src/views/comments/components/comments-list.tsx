@@ -59,13 +59,15 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
+    const formatted = new Intl.DateTimeFormat('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
         hour: 'numeric',
         minute: 'numeric'
     }).format(date);
+    // Remove comma between day and year (e.g., "Dec 17, 2025" -> "Dec 17 2025")
+    return formatted.replace(/(\d+),(\s+\d{4})/, '$1$2');
 }
 
 function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
