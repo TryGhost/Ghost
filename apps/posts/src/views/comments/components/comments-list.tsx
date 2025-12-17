@@ -132,7 +132,7 @@ function CommentsList({
     hasNextPage?: boolean;
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
-    onAddFilter?: (field: string, value: string, operator?: string) => void;
+    onAddFilter: (field: string, value: string, operator?: string) => void;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
@@ -188,7 +188,7 @@ function CommentsList({
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:p-4">
                                     <div className='flex flex-col gap-2'>
                                         <div className="flex flex-wrap items-center">
-                                            {item.member?.id && onAddFilter ? (
+                                            {item.member?.id ? (
                                                 <>
                                                     <Button
                                                         className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
@@ -291,7 +291,7 @@ function CommentsList({
                                                         </a>
                                                     </DropdownMenuItem>
                                                 )}
-                                                {item.member?.id && onAddFilter && (
+                                                {item.member?.id && (
                                                     <DropdownMenuItem asChild>
                                                         <a href={`#/members/${item.member.id}`}>
                                                             <LucideIcon.User className="mr-2 size-4" />
