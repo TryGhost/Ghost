@@ -30,6 +30,7 @@ import {
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
+import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">
@@ -131,7 +132,8 @@ function CommentsList({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    onAddFilter
+    onAddFilter,
+    isLoading
 }: {
     items: Comment[];
     totalItems: number;
@@ -139,8 +141,13 @@ function CommentsList({
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
     onAddFilter: (field: string, value: string, operator?: string) => void;
+    isLoading?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
+    
+    // Restore scroll position when navigating back from filtered views
+    useScrollRestoration({parentRef, isLoading});
+    
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
         totalItems,
