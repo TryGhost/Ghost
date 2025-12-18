@@ -75,6 +75,7 @@ const Comments: React.FC = () => {
                         fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
+                        isLoading={isFetching && !isFetchingNextPage}
                         items={data?.comments ?? []}
                         totalItems={data?.meta?.pagination?.total ?? 0}
                         onAddFilter={handleAddFilter}
