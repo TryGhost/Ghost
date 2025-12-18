@@ -12,7 +12,8 @@ ENV GHOST_BACKEND=ghost-dev:2368 \
     SEARCH_DEV_SERVER=host.docker.internal:4178 \
     ANNOUNCEMENT_DEV_SERVER=host.docker.internal:4177 \
     LEXICAL_DEV_SERVER=host.docker.internal:4173 \
-    ANALYTICS_PROXY_TARGET=analytics:3000
+    ANALYTICS_PROXY_TARGET=analytics:3000 \
+    ACTIVITYPUB_PROXY_TARGET=host.docker.internal:8080
 
 COPY Caddyfile /etc/caddy/Caddyfile
 EXPOSE 80 2368

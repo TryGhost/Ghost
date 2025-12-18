@@ -1,6 +1,6 @@
 {
     admin off
-} 
+}
 
 :80 {
     # Compact log format for development
@@ -43,6 +43,37 @@
             header_up X-Forwarded-Host {host}
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
+        }
+    }
+
+    # ActivityPub API - proxy activityPub requests to activityPub service (running in separate project)
+    # Requires activityPub containers to be running via the ActivityPub project's docker-compose
+    handle /.ghost/activitypub/* {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # WebFinger - required for ActivityPub federation
+    handle /.well-known/webfinger {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # NodeInfo - required for ActivityPub federation
+    handle /.well-known/nodeinfo {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
         }
     }
 
@@ -138,16 +169,22 @@
         }
     }
 
+    # JWKS endpoint - must go to Ghost backend for JWT verification
+    handle /ghost/.well-known/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
     # Admin interface - served from admin dev server
     # This includes /ghost/, etc. (but /ghost/assets/* is handled above)
-    # Also handles WebSocket upgrade requests for live reload
-    handle /ghost/* {
+    # Also handles WebSocket upgrade requests for HMR
+    handle /ghost* {
         reverse_proxy {env.ADMIN_DEV_SERVER} {
-            header_up Host {http.reverse_proxy.upstream.hostport}
             header_up X-Forwarded-Host {host}
-            # Enable WebSocket support
-            header_up Connection {>Connection}
-            header_up Upgrade {>Upgrade}
         }
     }
 
