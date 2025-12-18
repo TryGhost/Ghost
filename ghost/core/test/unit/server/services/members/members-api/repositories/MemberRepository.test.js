@@ -238,7 +238,7 @@ describe('MemberRepository', function () {
         let MemberProductEvent;
         let stripeAPIService;
         let productRepository;
-        let offerRepository;
+        let offersAPI;
         let labsService;
         let subscriptionData;
         let subscriptionCreatedNotifySpy;
@@ -332,9 +332,9 @@ describe('MemberRepository', function () {
                 isSet: sinon.stub().returns(true)
             };
 
-            offerRepository = {
-                getById: sinon.stub().resolves({
-                    id: 'offer_123'
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({
+                    id: 'offer_new'
                 })
             };
         });
@@ -377,7 +377,7 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
+                offersAPI,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -426,7 +426,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -459,6 +458,76 @@ describe('MemberRepository', function () {
                 }
                 return false;
             })).should.be.true();
+        });
+
+        it('creates an offer from a Stripe coupon', async function () {
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({id: 'offer_new'})
+            };
+
+            const productRepositoryWithTier = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        if (key === 'id') {
+                            return 'tier_1';
+                        }
+                        if (key === 'name') {
+                            return 'Tier One';
+                        }
+                        return null;
+                    }),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            const stripeCoupon = {
+                id: 'coupon_abc',
+                percent_off: 20,
+                duration: 'forever'
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        discount: {
+                            coupon: stripeCoupon
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository: productRepositoryWithTier,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const transacting = {
+                executionPromise: Promise.resolve()
+            };
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: {...subscriptionData, discount: {coupon: {id: 'coupon_abc'}}}
+            }, {
+                transacting,
+                context: {}
+            });
+
+            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            // Verify the coupon, cadence, tier, and options are passed correctly
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[1].should.equal('month');
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
+            StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
         });
     });
 
@@ -554,7 +623,7 @@ describe('MemberRepository', function () {
             sinon.assert.calledOnce(Outbox.add);
             const outboxCall = Outbox.add.firstCall.args[0];
             assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-            
+
             const payload = JSON.parse(outboxCall.payload);
             assert.equal(payload.memberId, 'member_id_123');
             assert.equal(payload.email, 'test@example.com');
