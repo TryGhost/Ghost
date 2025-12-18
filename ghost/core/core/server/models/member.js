@@ -16,7 +16,8 @@ const Member = ghostBookshelf.Model.extend({
             transient_id: crypto.randomUUID(),
             email_count: 0,
             email_opened_count: 0,
-            enable_comment_notifications: true
+            enable_comment_notifications: true,
+            can_comment: true
         };
     },
 
