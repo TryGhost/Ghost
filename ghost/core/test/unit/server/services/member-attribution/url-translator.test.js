@@ -4,8 +4,12 @@ const UrlTranslator = require('../../../../../core/server/services/member-attrib
 
 const models = {
     Post: {
-        findOne({id}) {
+        findOne({id}, options = {}) {
             if (id === 'invalid') {
+                return null;
+            }
+            // Simulate real Post model behavior: without proper filter, only published posts are found
+            if (id === 'sent-post' && options.filter !== 'status:[published,sent]') {
                 return null;
             }
             return {id: 'post_id', get: () => 'Title'};
@@ -262,6 +266,14 @@ describe('UrlTranslator', function () {
 
         it('returns null for not found tag', async function () {
             should(await translator.getResourceById('invalid', 'tag')).eql(null);
+        });
+
+        it('returns email-only posts with sent status', async function () {
+            // Email-only posts have status 'sent' instead of 'published'
+            // The filter should include both statuses so attribution works
+            should(await translator.getResourceById('sent-post', 'post')).match({
+                id: 'post_id'
+            });
         });
     });
 
