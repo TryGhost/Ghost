@@ -112,8 +112,10 @@ function CommentContent({item}: {item: Comment}) {
                     ref={contentRef}
                     className={cn(
                         'prose flex-1 text-base leading-[1.45em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
-                        (!isExpanded && 'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
-                        (isExpanded && '-mb-1 [&_p]:mb-[0.85em]'),
+                        (!isExpanded ?
+                            '-mb-1 [&_p]:mb-[0.85em]'
+                            :
+                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
                         (item.status === 'hidden' && 'text-muted-foreground')
                     )}
                 />
