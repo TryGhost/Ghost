@@ -1049,15 +1049,18 @@ function SelectOptionsPopover<T = unknown>({
 
         if (optionsFromField.length > 0) {
             setCachedSelectedOptions((prev) => {
-                // Merge new options with existing cached ones, avoiding duplicates
-                const merged = [...prev];
-                for (const opt of optionsFromField) {
-                    if (!merged.some(m => m.value === opt.value)) {
-                        merged.push(opt);
+                // Build result by iterating over selected values
+                const result: FilterOption<T>[] = [];
+                for (const value of effectiveValues) {
+                    // Prefer new option, fall back to cached option
+                    const option = optionsFromField.find(opt => opt.value === value) 
+                        ?? prev.find(opt => opt.value === value);
+                    if (option) {
+                        result.push(option);
                     }
                 }
-                // Remove options that are no longer selected
-                return merged.filter(m => effectiveValues.includes(m.value));
+                
+                return result;
             });
         }
     }, [optionsFromField, effectiveValues]);
