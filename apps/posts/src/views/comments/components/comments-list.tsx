@@ -116,7 +116,7 @@ function CommentContent({item}: {item: Comment}) {
                             '-mb-1 [&_p]:mb-[0.85em]'
                             :
                             'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
-                        (item.status === 'hidden' && 'text-muted-foreground')
+                        (item.status === 'hidden' && 'text-muted-foreground [&_blockquote]:border-foreground-muted')
                     )}
                 />
                 {isClamped && (
