@@ -9,7 +9,6 @@ import {
     AlertDialogTitle,
     Avatar,
     AvatarFallback,
-    AvatarImage,
     Button,
     DropdownMenu,
     DropdownMenuContent,
@@ -113,7 +112,7 @@ function CommentContent({item}: {item: Comment}) {
                     ref={contentRef}
                     className={cn(
                         'prose flex-1 text-base leading-[1.45em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
-                        (!isExpanded && 'line-clamp-2 [&_p]:m-0 [&_p]:inline'),
+                        (!isExpanded && 'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
                         (isExpanded && '-mb-1 [&_p]:mb-[0.85em]'),
                         (item.status === 'hidden' && 'text-muted-foreground')
                     )}
@@ -205,9 +204,9 @@ function CommentsList({
                                                         }}
                                                     >
                                                         <Avatar className={`size-5 ${item.status === 'hidden' && 'opacity-40'}`}>
-                                                            {item.member.avatar_image && (
+                                                            {/* {item.member.avatar_image && (
                                                                 <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
-                                                            )}
+                                                            )} */}
                                                             <AvatarFallback>
                                                                 <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
                                                             </AvatarFallback>
@@ -311,8 +310,8 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'text-yellow-600 dark:text-yellow' : 'text-muted-foreground/70'}`}>
-                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={1.5} />
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-medium text-yellow-600 dark:text-yellow' : 'text-muted-foreground/70'}`}>
+                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
                                                                 <span>{formatNumber(item.count?.reports)}</span>
                                                             </div>
                                                         </TooltipTrigger>
