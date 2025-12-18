@@ -178,6 +178,7 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
+        can_comment: json.can_comment,
         attribution: serializeAttribution(json.attribution),
         unsubscribe_url: json.unsubscribe_url
     };
