@@ -8,10 +8,9 @@ SQL >
         utm_medium,
         count() as visits
     from mv_session_data sd
-      inner join filtered_sessions fs
-         on fs.session_id = sd.session_id
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        and session_id IN (select distinct session_id from filtered_sessions)
         and utm_medium != ''
     group by utm_medium
     order by visits desc
