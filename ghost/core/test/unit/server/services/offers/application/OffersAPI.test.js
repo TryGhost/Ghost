@@ -147,6 +147,42 @@ describe('OffersAPI', function () {
             assert.equal(getByStripeCouponIdStub.calledTwice, true);
         });
 
+        it('throws readable error when duplicate entry occurs but offer not found', async function () {
+            const getByStripeCouponIdStub = sinon.stub();
+            // First call returns null (offer doesn't exist)
+            // Second call (after ER_DUP_ENTRY) also returns null (unexpected!)
+            getByStripeCouponIdStub.onFirstCall().resolves(null);
+            getByStripeCouponIdStub.onSecondCall().resolves(null);
+
+            const repository = createMockRepository({
+                getByStripeCouponId: getByStripeCouponIdStub,
+                existsByCode: sinon.stub().resolves(false),
+                existsByName: sinon.stub().resolves(false)
+            });
+
+            // Simulate duplicate entry error
+            const dupError = new Error('Duplicate entry');
+            dupError.code = 'ER_DUP_ENTRY';
+            repository.save.rejects(dupError);
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+            const coupon = createMockCoupon('coupon_missing');
+            const tier = {id: new ObjectID().toHexString(), name: 'Test Tier'};
+
+            try {
+                await api.ensureOfferForStripeCoupon(coupon, 'month', tier);
+                assert.fail('Expected InternalServerError to be thrown');
+            } catch (err) {
+                // Should throw InternalServerError with readable message
+                assert.equal(err.constructor.name, 'InternalServerError');
+                assert.match(err.message, /Tried to create duplicate offer for the Stripe coupon/);
+                assert.match(err.message, /coupon_missing/);
+
+                // Should have checked twice for the offer
+                assert.equal(getByStripeCouponIdStub.calledTwice, true);
+            }
+        });
+
         it('throws non-duplicate errors without retry', async function () {
             const repository = createMockRepository({
                 getByStripeCouponId: sinon.stub().resolves(null),

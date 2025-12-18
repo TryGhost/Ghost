@@ -6,6 +6,13 @@ const OfferDescription = require('../domain/models/OfferDescription');
 const OfferStatus = require('../domain/models/OfferStatus');
 const OfferMapper = require('./OfferMapper');
 const UniqueChecker = require('./UniqueChecker');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    offerNotFoundAfterDuplicateError: 'Tried to create duplicate offer for the Stripe coupon {couponId}, but could not find offer in database'
+};
 
 class OffersAPI {
     /**
@@ -159,6 +166,13 @@ class OffersAPI {
                     if (createdOffer) {
                         return OfferMapper.toDTO(createdOffer);
                     }
+
+                    const error = new errors.InternalServerError({
+                        message: tpl(messages.offerNotFoundAfterDuplicateError, {couponId: coupon.id}),
+                        err
+                    });
+                    logging.error(error);
+                    throw error;
                 }
                 throw err;
             }
