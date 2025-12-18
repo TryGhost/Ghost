@@ -78,6 +78,16 @@ class LinkRedirectsService {
     }
 
     /**
+     * Returns the full path prefix including subdirectory (e.g., /blog/r/)
+     * Used for building full URLs
+     * @return {string}
+     **/
+    redirectPrefix() {
+        const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
+        return fullURLWithRedirectPrefix;
+    }
+
+    /**
      * @param {import('express').Request} req
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
@@ -86,18 +96,6 @@ class LinkRedirectsService {
      */
     async handleRequest(req, res, next) {
         try {
-            // skip handling if original url doesn't match the prefix
-            const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
-            // @NOTE: below is equivalent to doing:
-            //          router.get('/r/'), (req, res) ...
-            //        To make it cleaner we should rework it to:
-            //          linkRedirects.service.handleRequest(router);
-            //        and mount routes on top like for example sitemapHandler does
-            //        Cleanup issue: https://github.com/TryGhost/Toolbox/issues/516
-            if (!req.originalUrl.startsWith(fullURLWithRedirectPrefix)) {
-                return next();
-            }
-
             const url = new URL(req.originalUrl, this.#baseURL);
             const link = await this.#linkRedirectRepository.getByURL(url);
 

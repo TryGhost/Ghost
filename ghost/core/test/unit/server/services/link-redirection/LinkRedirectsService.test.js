@@ -65,6 +65,28 @@ describe('LinkRedirectsService', function () {
         });
     });
 
+    describe('redirectPrefix', function () {
+        it('returns the full path including subdirectory', function () {
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository: {},
+                config: {
+                    baseURL: new URL('https://localhost:2368/blog/')
+                }
+            });
+            assert.equal(instance.redirectPrefix(), '/blog/r/');
+        });
+
+        it('returns path without subdirectory when none configured', function () {
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository: {},
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+            assert.equal(instance.redirectPrefix(), '/r/');
+        });
+    });
+
     describe('handleRequest', function () {
         it('redirects if found', async function () {
             const linkRedirectRepository = {
