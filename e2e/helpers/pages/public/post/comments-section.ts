@@ -17,6 +17,13 @@ export class CommentsSection {
     readonly comments: Locator;
     readonly commentContent: Locator;
 
+    readonly showMoreRepliesButton: Locator;
+    readonly showMoreCommentsButton: Locator;
+    readonly sortingButton: Locator;
+
+    readonly cancelReplyButton: Locator;
+    readonly addReplyButton: Locator;
+
     constructor(page: Page) {
         this.page = page;
         this.commentsIframe = this.page.locator('iframe[title="comments-frame"]');
@@ -35,6 +42,18 @@ export class CommentsSection {
         this.commentCountText = this.commentsFrame.getByTestId('count');
         this.comments = this.commentsFrame.getByTestId('animated-comment');
         this.commentContent = this.commentsFrame.getByTestId('comment-content');
+        this.showMoreRepliesButton = this.commentsFrame.getByTestId('reply-pagination-button');
+        this.showMoreCommentsButton = this.commentsFrame.getByTestId('pagination-component');
+
+        this.sortingButton = this.commentsFrame.getByRole('button', {name: /^(Best|Newest|Oldest)$/});
+
+        this.cancelReplyButton = this.commentsFrame.getByRole('button', {name: 'Cancel'});
+        this.addReplyButton = this.commentsFrame.getByRole('button', {name: 'Add reply'});
+    }
+
+    async sortBy(sorting: 'Best' | 'Newest' | 'Oldest'): Promise<void> {
+        await this.sortingButton.click();
+        await this.commentsFrame.getByRole('menuitem', {name: sorting}).click();
     }
 
     async waitForCommentsToLoad(): Promise<void> {
@@ -55,5 +74,22 @@ export class CommentsSection {
         await this.writeComment(text);
         await this.submitComment();
         await this.comments.waitFor({state: 'visible', timeout: 10000});
+    }
+
+    getCommentByText(text: string): Locator {
+        return this.commentsFrame
+            .getByTestId('comment-content')
+            .getByText(text, {exact: true});
+    }
+
+    async replyToComment(commentText: string, replyText: string): Promise<void> {
+        const comment = this.getCommentByText(commentText).locator('../..');
+        await comment.getByRole('button', {name: 'Reply'}).click();
+        await this.commentsFrame.getByTestId('reply-form').getByTestId('editor').fill(replyText);
+        await this.addReplyButton.click();
+    }
+
+    async likeComment(text: string): Promise<void> {
+        await this.getCommentByText(text).getByTestId('like-button').click();
     }
 }
