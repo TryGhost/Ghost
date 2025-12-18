@@ -18,7 +18,7 @@ const Comments: React.FC = () => {
             const filtered = prevFilters.filter(f => f.field !== field);
             // Add the new filter
             return [...filtered, createFilter(field, operator, [value])];
-        });
+        }, {replace: false});
     }, [setFilters]);
     
     const {
