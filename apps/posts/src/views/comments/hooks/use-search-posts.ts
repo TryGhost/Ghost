@@ -11,7 +11,7 @@ export function useSearchPosts(searchTerm: string) {
     return useBrowsePosts({
         searchParams: {
             ...(filter && {filter}),
-            limit: '20',
+            limit: '100',
             fields: 'id,title',
             order: 'published_at DESC'
         }
