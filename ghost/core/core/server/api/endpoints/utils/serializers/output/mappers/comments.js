@@ -19,7 +19,8 @@ const memberFields = [
     'uuid',
     'name',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment'
 ];
 
 const memberFieldsAdmin = [
@@ -28,7 +29,8 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment'
 ];
 
 const postFields = [

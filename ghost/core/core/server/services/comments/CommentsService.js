@@ -11,7 +11,8 @@ const messages = {
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
-    cannotEditComment: 'You do not have permission to edit comments'
+    cannotEditComment: 'You do not have permission to edit comments',
+    memberCannotComment: 'You do not have permission to comment.'
 };
 
 class CommentsService {
@@ -61,6 +62,12 @@ class CommentsService {
 
     /** @private */
     checkCommentAccess(memberModel) {
+        if (memberModel.get('can_comment') === false) {
+            throw new errors.NoPermissionError({
+                message: tpl(messages.memberCannotComment)
+            });
+        }
+
         if (this.enabled === 'paid' && memberModel.get('status') === 'free') {
             throw new errors.NoPermissionError({
                 message: tpl(messages.cannotCommentOnPost)

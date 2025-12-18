@@ -505,6 +505,7 @@ module.exports = class MemberRepository {
             'products',
             'newsletters',
             'enable_comment_notifications',
+            'can_comment',
             'last_seen_at',
             'last_commented_at',
             'expertise',

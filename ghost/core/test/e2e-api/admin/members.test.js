@@ -2397,6 +2397,86 @@ describe('Members API', function () {
         });
     });
 
+    describe('can_comment', function () {
+        let testMember;
+
+        beforeEach(async function () {
+            testMember = await createMember({
+                email: 'can-comment-test@test.com',
+                name: 'Test Member for can_comment'
+            });
+        });
+
+        afterEach(async function () {
+            await models.Member.destroy({id: testMember.id});
+        });
+
+        it('New members can comment by default', async function () {
+            should(testMember.get('can_comment')).be.true();
+        });
+
+        it('Can ban a member from commenting', async function () {
+            // Verify member can comment by default
+            should(testMember.get('can_comment')).be.true();
+
+            // Ban member from commenting
+            const {body} = await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{can_comment: false}]})
+                .expectStatus(200);
+
+            // Verify response includes can_comment: false
+            should(body.members[0].can_comment).be.false();
+
+            // Verify database was updated
+            await testMember.refresh();
+            should(testMember.get('can_comment')).be.false();
+        });
+
+        it('Can unban a member from commenting', async function () {
+            // First ban the member
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{can_comment: false}]})
+                .expectStatus(200);
+
+            await testMember.refresh();
+            should(testMember.get('can_comment')).be.false();
+
+            // Now unban the member
+            const {body} = await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{can_comment: true}]})
+                .expectStatus(200);
+
+            // Verify response includes can_comment: true
+            should(body.members[0].can_comment).be.true();
+
+            // Verify database was updated
+            await testMember.refresh();
+            should(testMember.get('can_comment')).be.true();
+        });
+
+        it('Returns can_comment in member read response', async function () {
+            const {body} = await agent
+                .get(`/members/${testMember.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0]).have.property('can_comment');
+            should(body.members[0].can_comment).be.true();
+        });
+
+        it('Returns can_comment in member browse response', async function () {
+            const {body} = await agent
+                .get(`/members/?filter=email:can-comment-test@test.com`)
+                .expectStatus(200);
+
+            should(body.members.length).be.greaterThan(0);
+            should(body.members[0]).have.property('can_comment');
+            should(body.members[0].can_comment).be.true();
+        });
+    });
+
     // Log out
     it('Can log out', async function () {
         const member = await createMember({

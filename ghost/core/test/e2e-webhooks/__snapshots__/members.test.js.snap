@@ -15,6 +15,7 @@ Object {
   "member": Object {
     "current": Object {
       "avatar_image": null,
+      "can_comment": true,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail@example.com",
@@ -61,6 +62,7 @@ Object {
   "member": Object {
     "current": Object {},
     "previous": Object {
+      "can_comment": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail2@example.com",
       "email_count": 0,
@@ -102,6 +104,7 @@ Object {
   "member": Object {
     "current": Object {
       "avatar_image": null,
+      "can_comment": true,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "testemail3@example.com",

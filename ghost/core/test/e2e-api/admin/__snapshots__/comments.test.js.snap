@@ -17,6 +17,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -64,6 +65,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -94,6 +96,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -141,6 +144,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -188,6 +192,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -235,6 +240,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -265,6 +271,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -312,6 +319,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -359,6 +367,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -406,6 +415,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -453,6 +463,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -483,6 +494,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -530,6 +542,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -560,6 +573,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member2@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -607,6 +621,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -654,6 +669,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -684,6 +700,7 @@ Object {
       "in_reply_to_snippet": null,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -731,6 +748,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": "Mr Egg",
@@ -748,7 +766,7 @@ exports[`Admin Comments API Hide Can hide comments 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "427",
+  "content-length": "446",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -773,6 +791,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": "Mr Egg",
@@ -790,7 +809,7 @@ exports[`Admin Comments API Hide Can hide comments 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "402",
+  "content-length": "421",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -815,6 +834,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
@@ -832,7 +852,7 @@ exports[`Admin Comments API Hide Can hide replies 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "443",
+  "content-length": "462",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -857,6 +877,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
@@ -874,7 +895,7 @@ exports[`Admin Comments API Hide Can hide replies 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "420",
+  "content-length": "439",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -946,6 +967,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -967,6 +989,7 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -989,6 +1012,7 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1049,6 +1073,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1070,6 +1095,7 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1092,6 +1118,7 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1136,6 +1163,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1157,6 +1185,7 @@ Object {
           "liked": false,
           "member": Object {
             "avatar_image": null,
+            "can_comment": true,
             "email": "member1@test.com",
             "expertise": null,
             "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1201,6 +1230,7 @@ Object {
       "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
+        "can_comment": true,
         "email": "member1@test.com",
         "expertise": null,
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
