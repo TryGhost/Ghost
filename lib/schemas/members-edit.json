@@ -50,6 +50,23 @@
           },
           "labels": {
             "$ref": "members#/definitions/member-labels"
+          },
+          "can_comment": {
+            "type": "boolean"
+          },
+          "comment_ban": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+                  "expires_at": { "type": ["string", "null"], "format": "date-time" }
+                },
+                "required": ["reason"]
+              },
+              { "type": "null" }
+            ]
           }
         }
       }
