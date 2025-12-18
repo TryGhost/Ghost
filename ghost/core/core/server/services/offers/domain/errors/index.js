@@ -23,6 +23,7 @@ class InvalidOfferCadence extends InvalidPropError {}
 class InvalidOfferDuration extends InvalidPropError {}
 class InvalidOfferCoupon extends InvalidPropError {}
 class InvalidOfferStatus extends InvalidPropError {}
+class InvalidStripeCoupon extends InvalidPropError {}
 
 module.exports = {
     InvalidOfferName,
@@ -36,5 +37,6 @@ module.exports = {
     InvalidOfferDuration,
     InvalidOfferTierName,
     InvalidOfferCoupon,
-    InvalidOfferStatus
+    InvalidOfferStatus,
+    InvalidStripeCoupon
 };
