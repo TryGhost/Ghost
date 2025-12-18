@@ -7,8 +7,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    Avatar,
-    AvatarFallback,
     Button,
     DropdownMenu,
     DropdownMenuContent,
@@ -205,14 +203,15 @@ function CommentsList({
                                                             onAddFilter('author', item.member!.id);
                                                         }}
                                                     >
-                                                        <Avatar className={`size-5 ${item.status === 'hidden' && 'opacity-40'}`}>
-                                                            {/* {item.member.avatar_image && (
-                                                                <AvatarImage alt={item.member.name} src={item.member.avatar_image} />
-                                                            )} */}
-                                                            <AvatarFallback>
+                                                        {/* TODO: replace temporary avatar with Avatar component once fallback is handled */}
+                                                        <div className='relative flex size-5 items-center justify-center overflow-hidden rounded-full bg-accent'>
+                                                            {item.member.avatar_image && (
+                                                                <div className='absolute inset-0'><img src={item.member.avatar_image} /></div>
+                                                            )}
+                                                            <div>
                                                                 <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
-                                                            </AvatarFallback>
-                                                        </Avatar>
+                                                            </div>
+                                                        </div>
                                                         {item.member.name || 'Unknown'}
                                                     </Button>
                                                 </>
