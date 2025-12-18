@@ -90,7 +90,7 @@ export const TabList: React.FC<TabListProps> = ({
         <TabsPrimitive.List className={`${stickyHeader ? 'sticky top-0 z-50 bg-white dark:bg-black' : ''}`}>
             <div className={containerClasses} role='tablist'>
                 {tabs.map(tab => (
-                    <div>
+                    <div key={tab.id}>
                         <TabButton
                             border={buttonBorder}
                             counter={tab.counter}
@@ -162,7 +162,7 @@ function TabView<ID extends string = string>({
             />
             {tabs.map((tab) => {
                 return (
-                    <TabsPrimitive.Content className={tab.tabWrapperClassName} value={tab.id}>
+                    <TabsPrimitive.Content key={tab.id} className={tab.tabWrapperClassName} value={tab.id}>
                         <div className={tab.containerClassName}>{tab.contents}</div>
                     </TabsPrimitive.Content>
                 );
