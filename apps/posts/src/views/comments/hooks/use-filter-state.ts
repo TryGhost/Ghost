@@ -145,10 +145,15 @@ function filtersToSearchParams(filters: Filter[]): URLSearchParams {
 
 type SetFiltersAction = Filter[] | ((prevFilters: Filter[]) => Filter[]);
 
+interface SetFiltersOptions {
+    /** Whether to replace the current history entry (default: true) */
+    replace?: boolean;
+}
+
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
-    setFilters: (action: SetFiltersAction) => void;
+    setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
     clearFilters: () => void;
 }
 
@@ -166,12 +171,13 @@ export function useFilterState(): UseFilterStateReturn {
     }, [searchParams]);
 
     // Update URL when filters change
-    const setFilters = useCallback((action: SetFiltersAction) => {
+    const setFilters = useCallback((action: SetFiltersAction, options: SetFiltersOptions = {}) => {
         const newFilters = typeof action === 'function' ? action(filters) : action;
         const newParams = filtersToSearchParams(newFilters);
 
-        // Update URL with replace to avoid creating history entries
-        setSearchParams(newParams, {replace: true});
+        // Update URL - replace by default, but allow pushing to history
+        const replace = options.replace ?? true;
+        setSearchParams(newParams, {replace});
     }, [filters, setSearchParams]);
 
     // Clear all filter params from URL
