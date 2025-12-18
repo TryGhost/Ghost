@@ -47,7 +47,7 @@
     }
 
     # ActivityPub API - proxy activityPub requests to activityPub service (running in separate project)
-    # Requires activityPub containers to be running via the ActivityPub project's docker-compose
+    # Requires activitypub containers to be running via the ActivityPub project's docker-compose
     handle /.ghost/activitypub/* {
         reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
             header_up Host {host}

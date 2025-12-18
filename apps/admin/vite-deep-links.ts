@@ -16,19 +16,6 @@ export function deepLinksPlugin(): Plugin {
 
         return () => {
             server.middlewares.use((req, res, next) => {
-                // Skip WebSocket upgrade requests (used for HMR)
-                if (req.headers.upgrade?.toLowerCase() === 'websocket') {
-                    next();
-                    return;
-                }
-
-                // Skip root path with query string only (e.g. /ghost/?token=xxx for Vite HMR)
-                const urlPath = req.originalUrl?.split('?')[0];
-                if (urlPath === `${base}/` || urlPath === base) {
-                    next();
-                    return;
-                }
-
                 const match = req.originalUrl?.match(pathRegex);
 
                 if (match) {
