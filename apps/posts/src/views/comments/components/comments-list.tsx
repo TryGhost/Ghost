@@ -25,6 +25,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
+    cn,
     formatNumber,
     formatTimestamp
 } from '@tryghost/shade';
@@ -109,7 +110,14 @@ function CommentContent({item}: {item: Comment}) {
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
-                    className={`prose flex-1 text-base leading-[1.45em] ${isExpanded ? '-mb-1 [&_p]:mb-[0.85em]' : 'line-clamp-2 [&_*]:m-0 [&_*]:inline'} ${item.status === 'hidden' && 'text-muted-foreground'}`}
+                    className={cn(
+                        'prose flex-1 text-base leading-[1.45em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
+                        (isExpanded ?
+                            '-mb-1 [&_p]:mb-[0.85em]'
+                            :
+                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
+                        (item.status === 'hidden' && 'text-muted-foreground')
+                    )}
                 />
                 {isClamped && (
                     <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
@@ -304,8 +312,8 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'text-yellow-600' : 'text-muted-foreground/70'}`}>
-                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={1.5} />
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-medium text-yellow-600 dark:text-yellow' : 'text-muted-foreground/70'}`}>
+                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
                                                                 <span>{formatNumber(item.count?.reports)}</span>
                                                             </div>
                                                         </TooltipTrigger>
