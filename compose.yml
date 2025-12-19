@@ -294,6 +294,7 @@ services:
       - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
       - shared-config:/mnt/shared-config
     environment:
+      - GHOST_URL=http://server:2368
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
