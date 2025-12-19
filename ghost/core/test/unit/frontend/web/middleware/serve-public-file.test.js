@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
-const servePublicFile = require('../../../../../core/frontend/web/middleware/serve-public-file');
+const {servePublicFile} = require('../../../../../core/frontend/web/routers/serve-public-file');
 
 describe('servePublicFile', function () {
     let res;
