@@ -5,6 +5,7 @@ export * from './subscribed';
 export * from './last-seen';
 export * from './created-at';
 export * from './signup-attribution';
+export * from './location';
 export * from './tier';
 export * from './status';
 export * from './plan-interval';
