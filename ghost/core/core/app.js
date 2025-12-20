@@ -2,12 +2,14 @@ const sentry = require('./shared/sentry');
 const express = require('./shared/express');
 const config = require('./shared/config');
 const logging = require('@tryghost/logging');
-const urlService = require('./server/services/url');
 
 const fs = require('fs');
 const path = require('path');
 
+let _urlService;
+
 const isMaintenanceModeEnabled = (req) => {
+    const urlService = _urlService || (_urlService = require('./server/services/url'));
     if (req.app.get('maintenance') || config.get('maintenance').enabled || !urlService.hasFinished()) {
         return true;
     }
