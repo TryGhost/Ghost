@@ -202,7 +202,6 @@ function CommentsList({
                                     <div className='flex flex-col gap-3'>
                                         <div className="flex flex-wrap items-center">
                                             {item.member?.id ? (
-                                                <>
                                                     <Button
                                                         className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70 ${item.status === 'hidden' && 'text-muted-foreground'}`}
                                                         variant='link'
@@ -220,8 +219,7 @@ function CommentsList({
                                                             </div>
                                                         </div>
                                                         {item.member.name || 'Unknown'}
-                                                    </Button>
-                                                </>
+                                                    </Button> 
                                             ) : (
                                                 <span className="block truncate font-semibold">
                                                     {item.member?.name || 'Unknown'}
