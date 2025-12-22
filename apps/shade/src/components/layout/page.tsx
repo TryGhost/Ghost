@@ -1,8 +1,8 @@
 import {cn} from '@/lib/utils';
 import * as React from 'react';
 
-export interface PageProps
-    extends React.HTMLAttributes<HTMLDivElement> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface PageProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Page = React.forwardRef<HTMLDivElement, PageProps>(
     ({className, ...props}, ref) => {

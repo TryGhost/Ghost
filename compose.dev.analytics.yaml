@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.20
+    image: ghost/traffic-analytics:1.0.23
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -58,13 +58,27 @@ services:
         condition: service_healthy
 
   ghost-dev:
+    volumes:
+      # Mount shared-config volume to access Tinybird tokens created by tb-cli
+      - shared-config:/mnt/shared-config:ro
     environment:
       # Analytics configuration
       analytics__url: http://analytics:3000
       analytics__enabled: "true"
+      # Tinybird configuration
+      # These static values are set here; workspaceId and adminToken are sourced from
+      # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
+      TB_HOST: http://tinybird-local:7181
+      TB_LOCAL_HOST: tinybird-local
+      tinybird__stats__endpoint: http://tinybird-local:7181
+      tinybird__stats__endpointBrowser: http://localhost:7181
+      tinybird__tracker__endpoint: http://localhost:2368/.ghost/analytics/api/v1/page_hit
+      tinybird__tracker__datasource: analytics_events
     depends_on:
       analytics:
         condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
 
 volumes:
   shared-config:

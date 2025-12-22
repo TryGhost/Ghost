@@ -1,20 +1,55 @@
 @import "@tryghost/shade/styles.css";
 
-/* Ensure the Ember app renders in the correct position */
+/* Base layout - grid structure for alerts and main content */
+body.react-admin {
+    height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 100%;
+    overflow: hidden; /* Prevent body scroll */
+}
+
+/* Alerts show at the top and push content down */
+body.react-admin #ember-alerts-wormhole {
+    grid-row: 1;
+    grid-column: 1;
+    z-index: 0; /* Hide alerts when settings app modal is open */
+}
+
+/* Main app container - pass through to children (.shade.shade-admin) */
+body.react-admin #root {
+    display: contents;
+}
+
+/* Ensure ShadeApp takes full grid space */
+body.react-admin #root .shade.shade-admin {
+    grid-row: 2;
+    grid-column: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* iOS safe area handling for mobile navbar */
+body.react-admin .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ensure the Ember app renders in the correct position and takes full width/height */
 body.react-admin #ember-app {
     width: 100%;
     height: 100%;
 }
 
+/* Override Ember's fixed positioning to work within our flex layout */
 body.react-admin #ember-app .gh-app {
     position: static;
+    width: 100%;
+    height: 100%;
 }
 
-
-/* Hide the nav menu and tab bar on mobile when running in React admin shell */
-body.react-admin #ember-app .gh-nav,
-body.react-admin #ember-app .gh-mobile-nav-bar {
-    display: none;
+/* Remove Ember's overflow since we handle scrolling at the SidebarInset level */
+body.react-admin .gh-main {
+    overflow-y: visible;
 }
 
 /* Temporary overrides until Ember transition is finished */
@@ -35,6 +70,7 @@ body.react-admin [data-header="header-title"] {
 
 body.react-admin [data-header="header"] {
     padding-top: 24px;
+    /* padding-bottom: 18px; */
 }
 
 body.react-admin [data-navbar="navbar"] {

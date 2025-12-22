@@ -7,7 +7,7 @@ type ConfigService = {
 }
 
 type EmailModel = {
-    findOne: (options: {filter: string; order: string}) => Promise<EmailRecord | null>;
+    findPage: (options: {filter: string; order: string; limit: number}) => Promise<{data: EmailRecord[]}>;
 };
 
 type EmailRecord = {
@@ -15,37 +15,23 @@ type EmailRecord = {
     get(field: string): unknown;
 };
 
-type WarmupScalingTable = {
-    base: {
-        limit: number;
-        value: number;
-    },
-    thresholds: {
-        limit: number;
-        scale: number;
-    }[];
-    defaultScale: number;
-}
+type WarmupVolumeOptions = {
+    start: number;
+    end: number;
+    totalDays: number;
+};
 
-const WARMUP_SCALING_TABLE: WarmupScalingTable = {
-    base: {
-        limit: 100,
-        value: 200
-    },
-    thresholds: [{
-        limit: 100_000,
-        scale: 2
-    }, {
-        limit: 400_000,
-        scale: 1.5
-    }],
-    defaultScale: 1.25
+const DefaultWarmupOptions: WarmupVolumeOptions = {
+    start: 200,
+    end: 200000,
+    totalDays: 42
 };
 
 export class DomainWarmingService {
     #emailModel: EmailModel;
     #labs: LabsService;
     #config: ConfigService;
+    #warmupConfig: WarmupVolumeOptions;
 
     constructor(dependencies: {
         models: {Email: EmailModel};
@@ -55,6 +41,8 @@ export class DomainWarmingService {
         this.#emailModel = dependencies.models.Email;
         this.#labs = dependencies.labs;
         this.#config = dependencies.config;
+
+        this.#warmupConfig = DefaultWarmupOptions;
     }
 
     /**
@@ -73,49 +61,39 @@ export class DomainWarmingService {
         return Boolean(fallbackDomain && fallbackAddress);
     }
 
+    async #getDaysSinceFirstEmail(): Promise<number> {
+        const res = await this.#emailModel.findPage({
+            filter: 'csd_email_count:-null',
+            order: 'created_at ASC',
+            limit: 1
+        });
+
+        if (!res.data.length) {
+            return 0;
+        }
+
+        return Math.floor((Date.now() - new Date(res.data[0].get('created_at') as string).getTime()) / (1000 * 60 * 60 * 24));
+    }
+
     /**
      * Get the maximum amount of emails that should be sent from the warming sending domain in today's newsletter
      * @param emailCount The total number of emails to be sent in this newsletter
      * @returns The number of emails that should be sent from the warming sending domain (remaining emails to be sent from fallback domain)
      */
     async getWarmupLimit(emailCount: number): Promise<number> {
-        const lastCount = await this.#getHighestCount();
-
-        return Math.min(emailCount, this.#getTargetLimit(lastCount));
-    }
-
-    /**
-     * @returns The highest number of messages sent from the CSD in a single email (excluding today)
-     */
-    async #getHighestCount(): Promise<number> {
-        const email = await this.#emailModel.findOne({
-            filter: `created_at:<${new Date().toISOString().split('T')[0]}`,
-            order: 'csd_email_count DESC'
-        });
-
-        if (!email) {
-            return 0;
+        const day = await this.#getDaysSinceFirstEmail();
+        if (day >= this.#warmupConfig.totalDays) {
+            return Infinity;
         }
 
-        const count = email.get('csd_email_count');
-        return count || 0;
-    }
+        const limit = Math.round(
+            this.#warmupConfig.start *
+            Math.pow(
+                this.#warmupConfig.end / this.#warmupConfig.start,
+                day / (this.#warmupConfig.totalDays - 1)
+            )
+        );
 
-    /**
-     * @param lastCount Highest number of messages sent from the CSD in a single email
-     * @returns The limit for sending from the warming sending domain for the next email
-     */
-    #getTargetLimit(lastCount: number): number {
-        if (lastCount <= WARMUP_SCALING_TABLE.base.limit) {
-            return WARMUP_SCALING_TABLE.base.value;
-        }
-
-        for (const threshold of WARMUP_SCALING_TABLE.thresholds.sort((a, b) => a.limit - b.limit)) {
-            if (lastCount <= threshold.limit) {
-                return Math.ceil(lastCount * threshold.scale);
-            }
-        }
-
-        return Math.ceil(lastCount * WARMUP_SCALING_TABLE.defaultScale);
+        return Math.min(emailCount, limit);
     }
 }

@@ -238,7 +238,7 @@ describe('MemberRepository', function () {
         let MemberProductEvent;
         let stripeAPIService;
         let productRepository;
-        let offerRepository;
+        let offersAPI;
         let labsService;
         let subscriptionData;
         let subscriptionCreatedNotifySpy;
@@ -332,9 +332,9 @@ describe('MemberRepository', function () {
                 isSet: sinon.stub().returns(true)
             };
 
-            offerRepository = {
-                getById: sinon.stub().resolves({
-                    id: 'offer_123'
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({
+                    id: 'offer_new'
                 })
             };
         });
@@ -377,7 +377,7 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
+                offersAPI,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -426,7 +426,6 @@ describe('MemberRepository', function () {
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
                 productRepository,
-                offerRepository,
                 labsService,
                 Member,
                 OfferRedemption: mockOfferRedemption
@@ -460,6 +459,76 @@ describe('MemberRepository', function () {
                 return false;
             })).should.be.true();
         });
+
+        it('creates an offer from a Stripe coupon', async function () {
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().resolves({id: 'offer_new'})
+            };
+
+            const productRepositoryWithTier = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        if (key === 'id') {
+                            return 'tier_1';
+                        }
+                        if (key === 'name') {
+                            return 'Tier One';
+                        }
+                        return null;
+                    }),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            const stripeCoupon = {
+                id: 'coupon_abc',
+                percent_off: 20,
+                duration: 'forever'
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        discount: {
+                            coupon: stripeCoupon
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository: productRepositoryWithTier,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const transacting = {
+                executionPromise: Promise.resolve()
+            };
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: {...subscriptionData, discount: {coupon: {id: 'coupon_abc'}}}
+            }, {
+                transacting,
+                context: {}
+            });
+
+            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            // Verify the coupon, cadence, tier, and options are passed correctly
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[1].should.equal('month');
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
+            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
+            StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
+        });
     });
 
     describe('create - outbox integration', function () {
@@ -468,6 +537,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
+        let AutomatedEmail;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -520,6 +590,15 @@ describe('MemberRepository', function () {
                 getDefaultNewsletters: sinon.stub().resolves([]),
                 getAll: sinon.stub().resolves([])
             };
+
+            AutomatedEmail = {
+                findOne: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {lexical: '{"root":{}}', status: 'active'};
+                        return data[key];
+                    })
+                })
+            };
         });
 
         afterEach(function () {
@@ -535,6 +614,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -543,7 +623,7 @@ describe('MemberRepository', function () {
             sinon.assert.calledOnce(Outbox.add);
             const outboxCall = Outbox.add.firstCall.args[0];
             assert.equal(outboxCall.event_type, 'MemberCreatedEvent');
-            
+
             const payload = JSON.parse(outboxCall.payload);
             assert.equal(payload.memberId, 'member_id_123');
             assert.equal(payload.email, 'test@example.com');
@@ -560,6 +640,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -577,6 +658,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -602,6 +684,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -621,6 +704,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
+                AutomatedEmail,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -628,6 +712,75 @@ describe('MemberRepository', function () {
 
             const outboxOptions = Outbox.add.firstCall.args[1];
             assert.ok(outboxOptions.transacting);
+        });
+
+        it('does NOT create outbox entry when welcome email is inactive', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            AutomatedEmail.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {lexical: '{"root":{}}', status: 'inactive'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            const StripeCustomer = {
+                upsert: sinon.stub().resolves()
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberStatusEvent,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                newslettersService,
+                AutomatedEmail,
+                StripeCustomer,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // Stub linkSubscription to avoid needing all the stripe-related mocks
+            sinon.stub(repo, 'linkSubscription').resolves();
+            sinon.stub(repo, 'upsertCustomer').resolves();
+
+            // Create a member with a stripeCustomer (i.e., signing up for paid subscription)
+            await repo.create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                stripeCustomer: {
+                    id: 'cus_123',
+                    name: 'Test Member',
+                    email: 'test@example.com',
+                    subscriptions: {
+                        data: [{
+                            id: 'sub_123',
+                            customer: 'cus_123',
+                            status: 'active'
+                        }]
+                    }
+                }
+            }, {});
+
+            // The free welcome email should NOT be sent when stripeCustomer is present
+            sinon.assert.notCalled(Outbox.add);
         });
     });
 });

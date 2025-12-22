@@ -1,5 +1,6 @@
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {HomePage, PublicPage} from '@/public-pages';
+import {createAutomatedEmailFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import {extractMagicLink} from '@/helpers/services/email/utils';
 import {signupViaPortal} from '@/helpers/playwright/flows/signup';
@@ -48,7 +49,10 @@ test.describe('Ghost Public - Member Signup', () => {
     });
 
     test('received welcome email', async ({page, config}) => {
-        const emailInbox = config!.memberWelcomeEmailTestInbox;
+        const automatedEmailFactory = createAutomatedEmailFactory(page.request);
+        await automatedEmailFactory.create();
+
+        const emailInbox = config!.memberWelcomeEmailTestInbox!;
         const homePage = new HomePage(page);
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
@@ -63,7 +67,7 @@ test.describe('Ghost Public - Member Signup', () => {
 
         latestMessage = await retrieveLatestEmailMessage(emailInbox);
 
-        expect(latestMessage.From.Name).toContain('Ghost');
+        expect(latestMessage.From.Name).toContain('Test Blog');
         expect(latestMessage.From.Address).toContain('test@example.com');
         expect(latestMessage.Subject).toContain('Welcome to Test Blog!');
         expect(latestMessage.Text).toContain('Welcome to Test Blog!');

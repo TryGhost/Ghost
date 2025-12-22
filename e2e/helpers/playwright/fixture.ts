@@ -4,7 +4,7 @@ import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright
 import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
-import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
@@ -15,8 +15,10 @@ export interface User {
 }
 
 export interface GhostConfig {
-    memberWelcomeEmailSendInstantly: string;
-    memberWelcomeEmailTestInbox: string;
+    memberWelcomeEmailSendInstantly?: string;
+    memberWelcomeEmailTestInbox?: string;
+    hostSettings__billing__enabled?: string;
+    hostSettings__billing__url?: string;
 }
 
 export interface GhostInstanceFixture {

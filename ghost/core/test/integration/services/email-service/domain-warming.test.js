@@ -51,14 +51,20 @@ describe('Domain Warming Integration Tests', function () {
     }
 
     // Helper: Set fake time to specific day
+    // Uses a fixed base date to ensure consistent day progression
+    const baseDate = new Date();
+    baseDate.setHours(12, 0, 0, 0);
+
     function setDay(daysFromNow = 0) {
         if (clock) {
             clock.restore();
         }
-        const time = new Date();
+        const time = new Date(baseDate.getTime());
         time.setDate(time.getDate() + daysFromNow);
-        time.setHours(12, 0, 0, 0);
-        clock = sinon.useFakeTimers(time.getTime());
+        clock = sinon.useFakeTimers({
+            now: time.getTime(),
+            shouldAdvanceTime: true
+        });
     }
 
     // Helper: Count recipients by domain type
@@ -189,16 +195,12 @@ describe('Domain Warming Integration Tests', function () {
             const email2 = await sendEmail('Test Post Day 2');
             const email2Count = email2.get('email_count');
             const csdCount2 = email2.get('csd_email_count');
-            const expectedLimit = Math.min(email2Count, csdCount1 * 2);
 
-            assert.equal(csdCount2, expectedLimit);
+            // Time-based warmup: limit = start * (end/start)^(day/(totalDays-1))
+            // Day 1: 200 * (200000/200)^(1/41) ≈ 237
+            const expectedLimit = Math.min(email2Count, 237);
 
-            // Verify doubling behavior
-            if (email2Count >= csdCount1 * 2) {
-                assert.equal(csdCount2, csdCount1 * 2, 'Limit should double when enough recipients exist');
-            } else {
-                assert.equal(csdCount2, email2Count, 'Limit should equal total when recipients < limit');
-            }
+            assert.equal(csdCount2, expectedLimit, 'Day 2 should use time-based warmup limit');
 
             const {customDomainCount} = await countRecipientsByDomain(email2.id);
             assert.equal(customDomainCount, expectedLimit, `Should send ${expectedLimit} emails from custom domain on day 2`);
@@ -218,28 +220,30 @@ describe('Domain Warming Integration Tests', function () {
         it('handles progression through multiple days correctly', async function () {
             await createMembers(500, 'multi');
 
-            setDay(0); // Day 1
+            // Time-based warmup formula: start * (end/start)^(day/(totalDays-1))
+            // With start=200, end=200000, totalDays=42
+
+            // Day 0: Base limit of 200
+            setDay(0);
             const email1 = await sendEmail('Test Post Multi Day 1');
             const csdCount1 = email1.get('csd_email_count');
 
-            assert.ok(csdCount1 > 0, 'Day 1: Should send some via custom domain');
-            assert.ok(email1.get('email_count') >= 500, 'Day 1: Should have at least 500 recipients');
+            assert.ok(email1.get('email_count') >= 500, 'Day 0: Should have at least 500 recipients');
+            assert.equal(csdCount1, 200, 'Day 0: Should use base limit of 200');
 
-            setDay(1); // Day 2
+            // Day 1: 200 * (1000)^(1/41) ≈ 237
+            setDay(1);
             const email2 = await sendEmail('Test Post Multi Day 2');
             const csdCount2 = email2.get('csd_email_count');
 
-            assert.ok(csdCount2 > 0, 'Day 2: Should send some via custom domain');
-            assert.equal(csdCount2, csdCount1 * 2, `Day 2: Should double (got ${csdCount2}, expected ${csdCount1 * 2})`);
+            assert.equal(csdCount2, 237, 'Day 1: Should scale to 237');
 
-            setDay(2); // Day 3
+            // Day 2: 200 * (1000)^(2/41) ≈ 280
+            setDay(2);
             const email3 = await sendEmail('Test Post Multi Day 3');
             const csdCount3 = email3.get('csd_email_count');
 
-            assert.ok(csdCount3 > 0, 'Day 3: Should send some via custom domain');
-            assert.ok(csdCount3 >= csdCount2, 'Day 3: Should be >= day 2');
-            assert.ok(csdCount3 === csdCount2 || csdCount3 === csdCount2 * 2 || csdCount3 === email3.get('email_count'),
-                `Day 3: Should be same, doubled, or total (got ${csdCount3})`);
+            assert.equal(csdCount3, 280, 'Day 2: Should scale to 280');
         });
 
         it('respects total email count when it is less than warmup limit', async function () {
@@ -289,6 +293,15 @@ describe('Domain Warming Integration Tests', function () {
 
             let previousCsdCount = 0;
 
+            // Time-based warmup: limit = start * (end/start)^(day/(totalDays-1))
+            // With start=200, end=200000, totalDays=42
+            const getExpectedLimit = (day) => {
+                const start = 200;
+                const end = 200000;
+                const totalDays = 42;
+                return Math.round(start * Math.pow(end / start, day / (totalDays - 1)));
+            };
+
             for (let day = 0; day < 5; day++) {
                 setDay(day);
 
@@ -296,18 +309,14 @@ describe('Domain Warming Integration Tests', function () {
                 const csdCount = email.get('csd_email_count');
                 const totalCount = email.get('email_count');
 
-                assert.ok(csdCount > 0, `Day ${day + 1}: Should send via custom domain`);
-                assert.ok(csdCount <= totalCount, `Day ${day + 1}: CSD count should not exceed total`);
+                assert.ok(csdCount > 0, `Day ${day}: Should send via custom domain`);
+                assert.ok(csdCount <= totalCount, `Day ${day}: CSD count should not exceed total`);
+
+                const expectedLimit = Math.min(totalCount, getExpectedLimit(day));
+                assert.equal(csdCount, expectedLimit, `Day ${day}: Should match time-based warmup limit`);
 
                 if (previousCsdCount > 0) {
-                    assert.ok(csdCount >= previousCsdCount, `Day ${day + 1}: Should not decrease`);
-
-                    if (csdCount === totalCount) {
-                        assert.equal(csdCount, totalCount, `Day ${day + 1}: Reached full capacity`);
-                    } else {
-                        assert.ok(csdCount === previousCsdCount || csdCount === previousCsdCount * 2,
-                            `Day ${day + 1}: Should maintain or double (got ${csdCount}, previous ${previousCsdCount})`);
-                    }
+                    assert.ok(csdCount >= previousCsdCount, `Day ${day}: Should not decrease from previous day`);
                 }
 
                 previousCsdCount = csdCount;

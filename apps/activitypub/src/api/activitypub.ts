@@ -32,13 +32,26 @@ export interface Account {
 
 export type AccountSearchResult = Pick<
     Account,
-    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount' | 'blockedByMe' | 'domainBlockedByMe'
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'blockedByMe' | 'domainBlockedByMe'
 >;
 
 export type ExploreAccount = Pick<
     Account,
     'id' | 'name' | 'handle' | 'avatarUrl' | 'bio' | 'url' | 'followedByMe'
 >;
+
+export interface TopicData {
+    slug: string;
+    name: string;
+}
+
+export interface GetTopicsResponse {
+    topics: TopicData[];
+}
+
+export interface GetRecommendationsResponse {
+    accounts: ExploreAccount[];
+}
 
 export interface SearchResults {
     accounts: AccountSearchResult[];
@@ -105,6 +118,7 @@ export interface Notification {
         url: string;
         handle: string;
         avatarUrl: string | null;
+        followedByMe?: boolean;
     },
     post: null | {
         id: string;
@@ -240,7 +254,7 @@ export class ActivityPubAPI {
             const response = await this.fetch(this.authApiUrl);
             const json = await response.json();
             return json?.identities?.[0]?.token || null;
-        } catch (err) {
+        } catch {
             // TODO: Ping sentry?
             return null;
         }
@@ -474,6 +488,25 @@ export class ActivityPubAPI {
     async getExploreAccounts(topic: string, next?: string): Promise<PaginatedExploreAccountsResponse> {
         const endpoint = `.ghost/activitypub/v1/explore/${topic}`;
         return this.getPaginatedExploreAccounts(endpoint, next);
+    }
+
+    async getTopics(): Promise<GetTopicsResponse> {
+        const url = new URL('.ghost/activitypub/v1/topics', this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return {
+            topics: (json && 'topics' in json && Array.isArray(json.topics)) ? json.topics : []
+        };
+    }
+
+    async getRecommendations(limit?: number): Promise<GetRecommendationsResponse> {
+        const url = new URL('.ghost/activitypub/v1/recommendations', this.apiUrl);
+        if (limit) {
+            url.searchParams.set('limit', limit.toString());
+        }
+        const json = await this.fetchJSON(url);
+        return {
+            accounts: (json && 'accounts' in json && Array.isArray(json.accounts)) ? json.accounts : []
+        };
     }
 
     async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {

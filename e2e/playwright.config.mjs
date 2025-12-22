@@ -3,14 +3,16 @@ import os from 'os';
 dotenv.config();
 
 /*
- * Determine the number of workers to use based on CPU cores.
- * Heuristic: half the number of CPU cores, with a minimum of 1 worker.
- * Rationale: Each worker runs in its own process (1 core) and gets its own Ghost instance (1 core) = 2 cores per worker.
- * Possible to use more workers, but total test time actually increases, presumably due to context switching.
+ * 1/3 of the number of CPU cores seems to strike a good balance. Each worker
+ * runs in its own process (1 core) and gets its own Ghost instance (1 core)
+ * while leaving some head room for DBs, frontend dev servers, etc.
+ *
+ * It's possible to use more workers, but then the total test time and flakiness
+ * goes up dramatically.
  */
 const getWorkerCount = () => {
     const cpuCount = os.cpus().length;
-    return Math.floor(cpuCount / 2) || 1;
+    return Math.floor(cpuCount / 3) || 1;
 };
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
@@ -20,7 +22,7 @@ const config = {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: process.env.CI ? 4 : parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
+    workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
     fullyParallel: true,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['blob']] : [['list', {printSteps: true}], ['html']],
     use: {

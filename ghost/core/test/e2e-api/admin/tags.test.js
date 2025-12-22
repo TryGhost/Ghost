@@ -1,8 +1,10 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
+const urlUtilsHelper = require('../../utils/urlUtils');
 
 describe('Tag API', function () {
     let request;
@@ -25,7 +27,7 @@ describe('Tag API', function () {
         const jsonResponse = res.body;
         should.exist(jsonResponse);
         should.exist(jsonResponse.tags);
-        jsonResponse.tags.should.have.length(6);
+        jsonResponse.tags.should.have.length(7);
         localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['count', 'url']);
 
         testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
@@ -34,16 +36,20 @@ describe('Tag API', function () {
         jsonResponse.meta.pagination.should.have.property('page', 1);
         jsonResponse.meta.pagination.should.have.property('limit', 15);
         jsonResponse.meta.pagination.should.have.property('pages', 1);
-        jsonResponse.meta.pagination.should.have.property('total', 6);
+        jsonResponse.meta.pagination.should.have.property('total', 7);
         jsonResponse.meta.pagination.should.have.property('next', null);
         jsonResponse.meta.pagination.should.have.property('prev', null);
 
         // returns 404 because this tag has no published posts
         jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);
-        jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
 
-        should.exist(jsonResponse.tags[0].count.posts);
-        jsonResponse.tags[0].count.posts.should.equal(1);
+        // Find specific tags by slug to verify URL generation
+        const kitchenSinkTag = jsonResponse.tags.find(t => t.slug === 'kitchen-sink');
+
+        // kitchen-sink has published posts, so it should have a valid URL
+        kitchenSinkTag.url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
+        should.exist(kitchenSinkTag.count.posts);
+        kitchenSinkTag.count.posts.should.equal(2);
     });
 
     it('Can paginate tags', async function () {
@@ -169,5 +175,47 @@ describe('Tag API', function () {
             .expect(404);
 
         res.body.errors[0].message.should.eql('Resource not found error, cannot delete tag.');
+    });
+
+    describe('URL transformations', function () {
+        const siteUrl = config.get('url');
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can read tag with all image URLs as absolute site URLs', async function () {
+            const res = await request
+                .get(localUtils.API.getApiQuery('tags/slug/tag-with-images/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const tag = res.body.tags[0];
+
+            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
+
+        it('Transforms image URLs to absolute site URLs even when CDN is configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: 'https://cdn.example.com', files: 'https://cdn.example.com'}
+            }, sinon);
+
+            const res = await request
+                .get(localUtils.API.getApiQuery('tags/slug/tag-with-images/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            const tag = res.body.tags[0];
+
+            tag.feature_image.should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.og_image.should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.twitter_image.should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
     });
 });

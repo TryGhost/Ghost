@@ -12,6 +12,7 @@ const db = require('../../../core/server/data/db');
 const settingsCache = require('../../../core/shared/settings-cache');
 const events = require('../../../core/server/lib/common/events');
 const configUtils = require('../../utils/configUtils');
+const urlUtilsHelper = require('../../utils/urlUtils');
 const context = testUtils.context.owner;
 const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
@@ -131,7 +132,7 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.page.should.equal(1);
                                 paginationResult.meta.pagination.limit.should.equal('all');
                                 paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(108);
+                                paginationResult.data.length.should.equal(110);
 
                                 done();
                             }).catch(done);
@@ -165,7 +166,7 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.page.should.equal(2);
                                 paginationResult.meta.pagination.limit.should.equal(15);
                                 paginationResult.meta.pagination.pages.should.equal(2);
-                                paginationResult.data.length.should.equal(10);
+                                paginationResult.data.length.should.equal(11);
 
                                 done();
                             }).catch(done);
@@ -1194,6 +1195,246 @@ describe('Post Model', function () {
                 const knexResult = await db.knex('posts').where({id: createdPost.id});
                 const [knexPost] = knexResult;
                 knexPost.lexical.should.equal('{"root":{"children":[{"type":"image","src":"__GHOST_URL__/content/images/card.jpg"},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"local link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"__GHOST_URL__/local"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"external link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com/external"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}', 'knex result');
+            });
+
+            describe('URL transformations without CDN config', function () {
+                const siteUrl = 'http://127.0.0.1:2369';
+
+                describe('Mobiledoc', function () {
+                    let post, postsMeta, mobiledoc;
+
+                    before(async function () {
+                        post = await models.Post.findOne({
+                            slug: 'post-with-all-media-types-mobiledoc'
+                        }, {withRelated: ['posts_meta']});
+                        should.exist(post, 'Post with all media types (Mobiledoc) should exist');
+                        postsMeta = post.related('posts_meta');
+                        mobiledoc = JSON.parse(post.get('mobiledoc'));
+                    });
+
+                    it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
+                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                    });
+
+                    it('transforms all media card URLs to absolute site URLs', function () {
+                        // Image card
+                        const imageCard = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('inline.jpg'));
+                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+
+                        // Gallery card
+                        const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
+                        galleryCard[1].images[0].src.should.equal(`${siteUrl}/content/images/gallery-1.jpg`);
+                        galleryCard[1].images[1].src.should.equal(`${siteUrl}/content/images/gallery-2.jpg`);
+                        galleryCard[1].images[2].src.should.equal(`${siteUrl}/content/images/gallery-3.jpg`);
+
+                        // File card
+                        const fileCard = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('document.pdf'));
+                        fileCard[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
+
+                        // Video card
+                        const videoCard = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('video.mp4') && !card[1].src.includes('snippet'));
+                        videoCard[1].src.should.equal(`${siteUrl}/content/media/video.mp4`);
+                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+
+                        // Audio card
+                        const audioCard = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('audio.mp3') && !card[1].src.includes('snippet'));
+                        audioCard[1].src.should.equal(`${siteUrl}/content/media/audio.mp3`);
+                        audioCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/audio-thumb.jpg`);
+
+                        // Link markup
+                        const linkMarkup = mobiledoc.markups.find(markup => markup[0] === 'a');
+                        linkMarkup[1][1].should.equal(`${siteUrl}/snippet-link`);
+                    });
+
+                    it('transforms inserted snippet URLs to absolute site URLs', function () {
+                        // Snippet image
+                        const snippetImage = mobiledoc.cards.find(card => card[0] === 'image' && card[1].src.includes('snippet-inline'));
+                        snippetImage[1].src.should.equal(`${siteUrl}/content/images/snippet-inline.jpg`);
+
+                        // Snippet file
+                        const snippetFile = mobiledoc.cards.find(card => card[0] === 'file' && card[1].src.includes('snippet-document'));
+                        snippetFile[1].src.should.equal(`${siteUrl}/content/files/snippet-document.pdf`);
+
+                        // Snippet video
+                        const snippetVideo = mobiledoc.cards.find(card => card[0] === 'video' && card[1].src.includes('snippet-video'));
+                        snippetVideo[1].src.should.equal(`${siteUrl}/content/media/snippet-video.mp4`);
+                        snippetVideo[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+
+                        // Snippet audio
+                        const snippetAudio = mobiledoc.cards.find(card => card[0] === 'audio' && card[1].src.includes('snippet-audio'));
+                        snippetAudio[1].src.should.equal(`${siteUrl}/content/media/snippet-audio.mp3`);
+                        snippetAudio[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    });
+                });
+
+                describe('Lexical', function () {
+                    let post, postsMeta, lexicalString;
+
+                    before(async function () {
+                        post = await models.Post.findOne({
+                            slug: 'post-with-all-media-types-lexical'
+                        }, {withRelated: ['posts_meta']});
+                        should.exist(post, 'Post with all media types (Lexical) should exist');
+                        postsMeta = post.related('posts_meta');
+                        lexicalString = post.get('lexical');
+                    });
+
+                    it('transforms feature_image, og_image, and twitter_image to absolute site URLs', function () {
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                        postsMeta.get('og_image').should.equal(`${siteUrl}/content/images/og.jpg`);
+                        postsMeta.get('twitter_image').should.equal(`${siteUrl}/content/images/twitter.jpg`);
+                    });
+
+                    it('transforms all media URLs to absolute site URLs', function () {
+                        // Verify all expected URLs are present as absolute URLs
+                        lexicalString.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-2.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-3.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/files/document.pdf`);
+                        lexicalString.should.containEql(`${siteUrl}/content/media/video.mp4`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/media/audio.mp3`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/snippet-link`);
+
+                        // Verify no __GHOST_URL__ placeholders remain
+                        lexicalString.should.not.containEql('__GHOST_URL__');
+                    });
+
+                    it('transforms inserted snippet URLs to absolute site URLs', function () {
+                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
+                        lexicalString.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    });
+                });
+            });
+
+            describe('URL transformations with CDN config', function () {
+                const siteUrl = 'http://127.0.0.1:2369';
+                const cdnUrl = 'https://cdn.example.com/c/site-uuid';
+
+                beforeEach(function () {
+                    urlUtilsHelper.stubUrlUtilsWithCdn({
+                        assetBaseUrls: {
+                            media: cdnUrl,
+                            files: cdnUrl
+                        }
+                    }, sinon);
+                });
+
+                describe('Mobiledoc', function () {
+                    it('transforms file card src to files CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const fileCard = mobiledoc.cards.find(card => card[0] === 'file');
+                        fileCard[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
+                    });
+
+                    it('transforms video card src to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
+                        videoCard[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
+                    });
+
+                    it('transforms audio card src to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const audioCard = mobiledoc.cards.find(card => card[0] === 'audio');
+                        audioCard[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
+                    });
+
+                    it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledocString = post.get('mobiledoc');
+                        mobiledocString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+                        mobiledocString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                    });
+
+                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                    });
+
+                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const galleryCard = mobiledoc.cards.find(card => card[0] === 'gallery');
+                        galleryCard[1].images.forEach((image) => {
+                            image.src.should.startWith(siteUrl);
+                            image.src.should.containEql('/content/images/');
+                        });
+                    });
+
+                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const imageCard = mobiledoc.cards.find(card => card[0] === 'image');
+                        imageCard[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+                    });
+
+                    it('transforms video thumbnailSrc to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'}, {withRelated: ['tags']});
+                        const mobiledoc = JSON.parse(post.get('mobiledoc'));
+                        const videoCard = mobiledoc.cards.find(card => card[0] === 'video');
+                        videoCard[1].thumbnailSrc.should.equal(`${siteUrl}/content/images/video-thumb.jpg`);
+                    });
+                });
+
+                describe('Lexical', function () {
+                    it('transforms file URLs to files CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/files/document.pdf`);
+                    });
+
+                    it('transforms video/audio URLs to media CDN URL', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/video.mp4`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
+                    });
+
+                    it('transforms inserted snippet file/media URLs to CDN URLs', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+                        lexicalString.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+                    });
+
+                    it('transforms feature_image to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        post.get('feature_image').should.equal(`${siteUrl}/content/images/feature.jpg`);
+                    });
+
+                    it('transforms gallery images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/gallery-2.jpg`);
+                    });
+
+                    it('transforms inline images to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    });
+
+                    it('transforms video/audio thumbnails to absolute site URL(NOT CDN)', async function () {
+                        const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'}, {withRelated: ['tags']});
+                        const lexicalString = post.get('lexical');
+                        lexicalString.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                        lexicalString.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                    });
+                });
             });
         });
 

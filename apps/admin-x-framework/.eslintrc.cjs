@@ -28,6 +28,9 @@ module.exports = {
         }],
         'react/button-has-type': 'error',
         'react/no-array-index-key': 'error',
-        'react/jsx-key': 'off'
+        'react/jsx-key': 'off',
+
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
     }
 };

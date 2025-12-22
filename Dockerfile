@@ -1,7 +1,7 @@
 # Development Dockerfile for Ghost Monorepo
 # Not intended for production use. See https://github.com/tryghost/ghost-docker for production-ready self-hosting setup.
 
-ARG NODE_VERSION=22.13.1
+ARG NODE_VERSION=22.18.0
 
 # --------------------
 # Base Image
@@ -58,11 +58,9 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 
-# Copy patches directory so patch-package can apply patches during yarn install
-COPY patches patches
-
+COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
-    yarn install --frozen-lockfile --prefer-offline
+    bash .github/scripts/install-deps.sh
 
 # --------------------
 # Shade Builder
@@ -212,9 +210,6 @@ COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
 COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
-COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
-COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
-RUN rm -rf apps/admin/dist
-COPY --from=admin-react-builder /home/ghost/apps/admin/dist apps/admin/dist
+COPY --from=admin-react-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
 
 CMD ["yarn", "dev"]

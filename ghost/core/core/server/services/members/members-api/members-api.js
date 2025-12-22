@@ -8,6 +8,7 @@ const TokenService = require('./services/TokenService');
 const GeolocationService = require('./services/GeolocationService');
 const MemberBREADService = require('./services/MemberBREADService');
 const MemberRepository = require('./repositories/MemberRepository');
+
 const EventRepository = require('./repositories/EventRepository');
 const ProductRepository = require('./repositories/ProductRepository');
 const RouterController = require('./controllers/RouterController');
@@ -62,7 +63,8 @@ module.exports = function MembersAPI({
         Settings,
         Comment,
         MemberFeedback,
-        Outbox
+        Outbox,
+        AutomatedEmail
     },
     tiersService,
     stripeAPIService,
@@ -96,6 +98,7 @@ module.exports = function MembersAPI({
         newslettersService,
         labsService,
         productRepository,
+        AutomatedEmail,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
@@ -108,7 +111,7 @@ module.exports = function MembersAPI({
         StripeCustomer,
         StripeCustomerSubscription,
         Outbox,
-        offerRepository: offersAPI.repository
+        offersAPI
     });
 
     const eventRepository = new EventRepository({

@@ -33,6 +33,19 @@
         }
     }
 
+    # Analytics API - proxy analytics requests to analytics service
+    # Handles paths like /.ghost/analytics/* or /blog/.ghost/analytics/*
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy {env.ANALYTICS_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Forwarded-Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+
     # Public app dev server assets - must come BEFORE general /ghost/* handler
     # Ghost is configured to load these from /ghost/assets/* via compose.dev.yaml
     handle /ghost/assets/* {
@@ -112,6 +125,16 @@
                 header_up Host {http.reverse_proxy.upstream.hostport}
                 header_up X-Forwarded-Host {host}
             }
+        }
+    }
+
+    # Auth frame - must go to Ghost backend for comment admin authentication
+    handle /ghost/auth-frame/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
         }
     }
 

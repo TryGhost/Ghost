@@ -98,7 +98,7 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
 
     try {
         parsedUrl = new URL(url, baseUrl);
-    } catch (e) {
+    } catch {
         return {save: url, display: url};
     }
 
@@ -313,7 +313,8 @@ export const formatPercentage = (value: number) => {
     } else if (percentage < 1) {
         return `${percentage.toFixed(1)}%`;
     }
-    return `${Math.round(percentage)}%`;
+    const rounded = Math.round(percentage);
+    return `${new Intl.NumberFormat('en-US').format(rounded)}%`;
 };
 
 // Format cents to Dollars

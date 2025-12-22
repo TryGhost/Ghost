@@ -30,3 +30,16 @@ export const STATS_LABEL_MAPPINGS = {
 };
 
 export const STATS_DEFAULT_SOURCE_ICON_URL = 'https://static.ghost.org/v5.0.0/images/globe-icon.svg';
+
+// Values that represent unknown locations in the data
+export const UNKNOWN_LOCATION_VALUES = ['NULL', 'ᴺᵁᴸᴸ', '', 'Others', 'Other'];
+
+// Audience bitmask values for filtering stats by visitor type
+export const AUDIENCE_BITS = {
+    PUBLIC: 1 << 0, // 1
+    FREE: 1 << 1, // 2
+    PAID: 1 << 2 // 4
+};
+
+// All audiences selected (PUBLIC | FREE | PAID = 7)
+export const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;

@@ -94,6 +94,7 @@ export default class FeatureService extends Service {
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('tagsX') tagsX;
     @feature('utmTracking') utmTracking;
+    @feature('emailSizeWarnings') emailSizeWarnings;
 
     _user = null;
 
@@ -127,9 +128,8 @@ export default class FeatureService extends Service {
     }
 
     _reconcileAdminForwardState() {
-        // Only proceed if we're on a *.ghost.io or *.ghost.is domain
-        const hostname = window.location.hostname;
-        if (!hostname.endsWith('.ghost.io') && !hostname.endsWith('.ghost.is')) {
+        // Skip in dev since we only serve one admin version at a time
+        if (this.config.environment === 'development') {
             return;
         }
 

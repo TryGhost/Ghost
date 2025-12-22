@@ -41,6 +41,8 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    // Comments - browseAll must come before :id routes
+    router.get('/comments', mw.authAdminApi, http(api.comments.browseAll));
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
@@ -176,6 +178,13 @@ module.exports = function apiRoutes() {
     router.post('/labels', mw.authAdminApi, http(api.labels.add));
     router.put('/labels/:id', mw.authAdminApi, http(api.labels.edit));
     router.del('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
+
+    // ## Automated Emails
+    router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));
+    router.get('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.read));
+    router.post('/automated_emails', mw.authAdminApi, http(api.automatedEmails.add));
+    router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
+    router.del('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.destroy));
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));

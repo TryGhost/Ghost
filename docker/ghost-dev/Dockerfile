@@ -1,7 +1,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.13.1
+ARG NODE_VERSION=22.18.0
 
 FROM node:$NODE_VERSION-bullseye-slim
 
@@ -21,16 +21,21 @@ WORKDIR /home/ghost
 COPY package.json yarn.lock ./
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
-COPY patches patches
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime
+COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
-    yarn install --frozen-lockfile
+    bash .github/scripts/install-deps.sh
+
+# Copy entrypoint script that optionally loads Tinybird config
+COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows node --watch to pick up file changes for hot-reload
 WORKDIR /home/ghost/ghost/core
 
+ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["node", "--watch", "--import=tsx", "index.js"]
 
