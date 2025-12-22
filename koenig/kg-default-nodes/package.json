@@ -43,7 +43,7 @@
     "rollup": "4.53.5",
     "rollup-plugin-svg": "2.0.0",
     "should": "13.2.3",
-    "sinon": "21.0.0"
+    "sinon": "21.0.1"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
