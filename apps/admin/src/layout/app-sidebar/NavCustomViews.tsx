@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { z } from 'zod';
 import { useBrowseSettings, getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { NavMenuItem } from './NavMenuItem';
+import { useEmberRouting } from '@/ember-bridge';
 
 const customViewSchema = z.object({
     name: z.string(),
@@ -11,15 +12,6 @@ const customViewSchema = z.object({
     filter: z.record(z.string(), z.string().nullable())
 });
 const customViewsArraySchema = z.array(customViewSchema);
-type CustomView = z.infer<typeof customViewSchema>;
-
-function buildQueryString(filter: CustomView['filter']): string {
-    const params = new URLSearchParams(
-        Object.entries(filter)
-            .filter((entry): entry is [string, string] => entry[1] != null)
-    );
-    return params.toString();
-}
 
 function getColorHex(color: string): string {
     const colorMap: Record<string, string> = {
@@ -42,6 +34,7 @@ interface NavCustomViewsProps {
 
 export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
     const { data: settingsData } = useBrowseSettings();
+    const routing = useEmberRouting();
     
     const customViews = useMemo(() => {
         const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
@@ -68,20 +61,28 @@ export function NavCustomViews({ route = 'posts' }: NavCustomViewsProps) {
 
     return (
         <>
-            {customViews.map((view, index) => (
-                <NavMenuItem key={`${view.name}-${view.color}-${index}`}>
-                    <NavMenuItem.Link 
-                        className="pl-9" 
-                        to={`${route}?${buildQueryString(view.filter)}`}
-                    >
-                        <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
-                        <span 
-                            className="size-2 rounded-full shrink-0 mx-0.5" 
-                            style={{ backgroundColor: getColorHex(view.color) }}
-                        />
-                    </NavMenuItem.Link>
-                </NavMenuItem>
-            ))}
+            {customViews.map((view) => {
+                const viewUrl = routing.getRouteUrl(route, view.filter);
+                const isActive = routing.isRouteActive(route, view.filter);
+                
+                return (
+                    <NavMenuItem key={viewUrl}>
+                        <NavMenuItem.Link 
+                            className="pl-9" 
+                            to={viewUrl}
+                            isActive={isActive}
+                        >
+                            <NavMenuItem.Label className="grow">{view.name}</NavMenuItem.Label>
+                            <span
+                                className="size-2 rounded-full shrink-0 mx-0.5"
+                                style={{backgroundColor: getColorHex(view.color)}}
+                                data-color={view.color}
+                                aria-hidden="true"
+                            />
+                        </NavMenuItem.Link>
+                    </NavMenuItem>
+                );
+            })}
         </>
     );
 }

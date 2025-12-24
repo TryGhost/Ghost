@@ -213,6 +213,11 @@ export default class MagicLinkPage extends React.Component {
             const numericValue = value.replace(/[^0-9]/g, '');
             this.setState({
                 [fieldName]: numericValue
+            }, () => {
+                // Auto-submit when 6 characters are entered
+                if (numericValue.length === 6) {
+                    this.doVerifyOTC();
+                }
             });
         } else {
             this.setState({

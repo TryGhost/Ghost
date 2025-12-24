@@ -3,7 +3,6 @@ import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {resolveAsset} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -25,7 +24,6 @@ const ZapierModal = NiceModal.create(() => {
     const {zapierTemplates} = useSettingsApp();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {config} = useGlobalData();
-    const {adminRoot} = getGhostPaths();
 
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const handleError = useHandleError();
@@ -118,9 +116,9 @@ const ZapierModal = NiceModal.create(() => {
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
-                                    <img className='size-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
+                                    <img className='size-8 object-contain dark:invert' role='presentation' src={template.ghostImage} />
                                     <Icon name="arrow-right" size="xs" />
-                                    <img className='size-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
+                                    <img className='size-8 object-contain' role='presentation' src={template.appImage} />
                                 </div>
                                 <span className='text-sm'>{template.title}</span>
                             </div>

@@ -132,7 +132,8 @@ class EmailServiceWrapper {
 
         const domainWarmingService = new DomainWarmingService({
             models: {Email},
-            labs
+            labs,
+            config: configService
         });
 
         const batchSendingService = new BatchSendingService({

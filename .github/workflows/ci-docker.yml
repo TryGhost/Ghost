@@ -19,7 +19,7 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
-  NODE_VERSION: 22.13.1
+  NODE_VERSION: 22.18.0
 
 jobs:
 
@@ -106,7 +106,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --prefer-offline --frozen-lockfile
+        run: bash .github/scripts/install-deps.sh
 
     outputs:
       dependency_cache_key: ${{ env.cachekey }}

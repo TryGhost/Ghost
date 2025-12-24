@@ -4,6 +4,7 @@ import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
+import SearchModal from '../components/modals/search';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
@@ -31,6 +32,8 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
+shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
 
 // make globals available for any pulled in UMD components
 // - avoids external components needing to bundle React and running into multiple version errors
@@ -49,6 +52,7 @@ export default Route.extend(ShortcutsRoute, {
     ui: service(),
     whatsNew: service(),
     billing: service(),
+    modals: service(),
 
     shortcuts,
 
@@ -68,14 +72,14 @@ export default Route.extend(ShortcutsRoute, {
 
     async beforeModel(transition) {
         await this.session.setup();
-        
+
         // Intercept home route when unauthenticated to prevent decorator binding issues
         // Check AFTER session setup to ensure isAuthenticated is accurate
         if (transition.to?.name === 'home' && !this.session.isAuthenticated) {
             transition.abort();
             return this.transitionTo('signin');
         }
-        
+
         return this.prepareApp();
     },
 
@@ -177,6 +181,26 @@ export default Route.extend(ShortcutsRoute, {
 
             // fallback to 500 error page
             return true;
+        },
+
+        openSearchModal() {
+            // Don't open the search modal if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            return this.modals.open(SearchModal);
+        },
+
+        openSettings() {
+            // Don't open the settings screen if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            this.router.transitionTo('settings-x');
         }
     },
 
