@@ -3,6 +3,12 @@ const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
 
 /**
+ * @typedef {object} MailClient
+ * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
+ * @prop {() => number} getMaximumRecipients
+ */
+
+/**
  * @typedef {object} Recipient
  * @prop {string} email
  * @prop {Replacement[]} replacements
@@ -27,20 +33,20 @@ const debug = require('@tryghost/debug')('email-service:mailgun-provider-service
  * @prop {string} id
  */
 
-class MailgunEmailProvider {
-    #mailgunClient;
+class BulkEmailProvider {
+    #mailClient;
     #errorHandler;
 
     /**
      * @param {object} dependencies
-     * @param {import('@tryghost/mailgun-client/lib/MailgunClient')} dependencies.mailgunClient - mailgun client to send emails
+     * @param {import('../../../../core/core/server/services/lib/MailgunClient')|import('@tryghost/postmark-client/lib/PostmarkClient')} [dependencies.mailClient] - mailgun client to send emails
      * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
      */
     constructor({
-        mailgunClient,
+        mailClient,
         errorHandler
     }) {
-        this.#mailgunClient = mailgunClient;
+        this.#mailClient = mailClient;
         this.#errorHandler = errorHandler;
     }
 
@@ -72,7 +78,7 @@ class MailgunEmailProvider {
      * @param {string} error.message
      * @param {string} error.details
      * @returns {string}
-    */
+     */
     #createMailgunErrorMessage(error) {
         const message = (error?.message || 'Mailgun Error') + (error?.details ? (': ' + error.details) : '');
         return message.slice(0, 2000);
@@ -83,7 +89,7 @@ class MailgunEmailProvider {
      * @param {import('./SendingService').EmailData} data
      * @param {EmailSendingOptions} options
      * @returns {Promise<EmailProviderSuccessResponse>}
-    */
+     */
     async send(data, options) {
         const {
             subject,
@@ -133,7 +139,7 @@ class MailgunEmailProvider {
 
             // send the email using Mailgun
             // uses empty replacements array as we've already replaced all tokens with Mailgun variables
-            const response = await this.#mailgunClient.send(
+            const response = await this.#mailClient.send(
                 messageData,
                 recipientData,
                 []
@@ -148,26 +154,51 @@ class MailgunEmailProvider {
             };
         } catch (e) {
             let ghostError;
-            if (e.error && e.messageData) {
-                const {error, messageData} = e;
 
-                // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
-                ghostError = new errors.EmailError({
-                    statusCode: error.status,
-                    message: this.#createMailgunErrorMessage(error),
-                    errorDetails: JSON.stringify({error, messageData}),
-                    context: `Mailgun Error ${error.status}: ${error.details}`,
-                    help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
-                    code: 'BULK_EMAIL_SEND_FAILED'
-                });
+            if (this.#mailClient.constructor.name === 'MailgunClient') {
+                if (e.error && e.messageData) {
+                    const {error, messageData} = e;
+
+                    // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
+                    ghostError = new errors.EmailError({
+                        statusCode: error.status,
+                        message: this.#createMailgunErrorMessage(error),
+                        errorDetails: JSON.stringify({error, messageData}),
+                        context: `Mailgun Error ${error.status}: ${error.details}`,
+                        help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                } else {
+                    ghostError = new errors.EmailError({
+                        statusCode: undefined,
+                        message: this.#createMailgunErrorMessage(e),
+                        errorDetails: undefined,
+                        context: e.context || 'Mailgun Error',
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                }
+            } else if (this.#mailClient.constructor.name === 'PostmarkClient') {
+                // @TODO: handle postmark errors
             } else {
-                ghostError = new errors.EmailError({
-                    statusCode: undefined,
-                    message: this.#createMailgunErrorMessage(e),
-                    errorDetails: undefined,
-                    context: e.context || 'Mailgun Error',
-                    code: 'BULK_EMAIL_SEND_FAILED'
-                });
+                if (e.error && e.messageData) {
+                    const {error, messageData} = e;
+
+                    ghostError = new errors.EmailError({
+                        statusCode: e.error.status,
+                        message: this.#createMailgunErrorMessage(error),
+                        errorDetails: JSON.stringify({error, messageData}),
+                        context: e.context || 'Bulk mail Error',
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                } else {
+                    ghostError = new errors.EmailError({
+                        statusCode: undefined,
+                        message: this.#createMailgunErrorMessage(e),
+                        errorDetails: undefined,
+                        context: e.context || 'Bulk mail Error',
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                }
             }
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
@@ -177,7 +208,7 @@ class MailgunEmailProvider {
     }
 
     getMaximumRecipients() {
-        return this.#mailgunClient.getBatchSize();
+        return this.#mailClient.getBatchSize();
     }
 
     /**
@@ -186,8 +217,8 @@ class MailgunEmailProvider {
      * @returns {number}
      */
     getTargetDeliveryWindow() {
-        return this.#mailgunClient.getTargetDeliveryWindow();
+        return this.#mailClient.getTargetDeliveryWindow();
     }
 }
 
-module.exports = MailgunEmailProvider;
+module.exports = BulkEmailProvider;
