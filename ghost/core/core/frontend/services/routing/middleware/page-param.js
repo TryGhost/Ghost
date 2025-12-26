@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../shared/url-utils');
+const config = require('../../../../shared/config');
 
 const messages = {
     pageNotFound: 'Page not found.'
@@ -8,6 +9,7 @@ const messages = {
 
 /**
  * @description Middleware, which validates and interprets the page param e.g. /page/1
+ * The name of the page parameter may have been modified in the config to something other than 'page'.
  * @param {Object} req
  * @param {Object} res
  * @param {Function} next
@@ -15,8 +17,9 @@ const messages = {
  * @returns {*}
  */
 module.exports = function handlePageParam(req, res, next, page) {
+    const pageParam = config.get('pagination:pageParameter');
     // routeKeywords.page: 'page'
-    const pageRegex = new RegExp('/page/(.*)?/');
+    const pageRegex = new RegExp('/' + pageParam + '/(.*)?/');
 
     page = parseInt(page, 10);
 
@@ -28,7 +31,7 @@ module.exports = function handlePageParam(req, res, next, page) {
             message: tpl(messages.pageNotFound)
         }));
     } else {
-        req.params.page = page;
+        req.params[pageParam] = page;
         return next();
     }
 };
