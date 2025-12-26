@@ -36,7 +36,7 @@ describe('services/koenig/node-renderers/video-renderer', function () {
             assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="/content/images/2022/11/koenig-lexical-custom.jpg">
                     <div class="kg-video-container">
-                        <video src="/content/images/2022/11/koenig-lexical.mp4" poster="https://img.spacergif.org/v1/200x100/0a/spacer.png" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
+                        <video src="/content/images/2022/11/koenig-lexical.mp4" poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg==" width="200" height="100" playsinline="" preload="metadata" style="background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
                         <div class="kg-video-overlay">
                             <button class="kg-video-large-play-icon" aria-label="Play video">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ describe('services/koenig/node-renderers/video-renderer', function () {
                             <tbody>
                                 <tr style="mso-hide: all">
                                     <td width="25%" style="visibility: hidden; mso-hide: all">
-                                        <img src="https://img.spacergif.org/v1/150x300/0a/spacer.png" alt="" width="100%" border="0" style="display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;" />
+                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg==" alt="" width="100%" border="0" style="display: block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;" />
                                     </td>
                                     <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all">
                                         <div class="kg-video-play-button" style="mso-hide: all">

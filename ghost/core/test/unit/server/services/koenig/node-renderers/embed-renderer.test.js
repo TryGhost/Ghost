@@ -85,7 +85,7 @@ describe('services/koenig/node-renderers/embed-renderer', function () {
                                 <tr style="mso-hide: all">
                                     <td width="25%" style="visibility: hidden; mso-hide: all">
                                         <img
-                                            src="https://img.spacergif.org/v1/150x450/0a/spacer.png"
+                                            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFAwG7pWc1vwAAAABJRU5ErkJggg=="
                                             alt=""
                                             width="100%"
                                             border="0"
