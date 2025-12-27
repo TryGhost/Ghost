@@ -139,7 +139,7 @@ async function ping(post) {
         const indexNowUrl = new URL(INDEXNOW_ENDPOINT);
         indexNowUrl.searchParams.set('url', url);
         indexNowUrl.searchParams.set('key', key);
-        indexNowUrl.searchParams.set('keyLocation', `${siteUrl}${key}.txt`);
+        indexNowUrl.searchParams.set('keyLocation', urlUtils.urlJoin(siteUrl, `${key}.txt`));
 
         const options = {
             timeout: {

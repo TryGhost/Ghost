@@ -14,8 +14,10 @@
  *
  * Route collision note:
  * The pattern /[a-f0-9]{32}.txt is unlikely to collide with user content
- * since pages/posts don't have .txt extensions. The middleware runs after
- * theme static assets, so legitimate .txt files in themes take precedence.
+ * since pages/posts don't have .txt extensions. The middleware runs before
+ * theme static assets, so IndexNow key files take precedence over any
+ * theme .txt files with matching names (which is the intended behavior
+ * for system-generated verification files).
  *
  * @see ghost/core/core/server/services/indexnow.js - Main IndexNow service
  */
