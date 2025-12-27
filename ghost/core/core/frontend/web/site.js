@@ -114,6 +114,9 @@ module.exports = function setupSiteApp(routerConfig) {
         }
     });
 
+    // Serve IndexNow API key verification file (/{key}.txt)
+    siteApp.use(mw.serveIndexNowKey);
+
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
 
