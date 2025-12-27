@@ -26,6 +26,7 @@ Object {
       "explore": true,
       "i18n": true,
       "importMemberTier": true,
+      "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
       "stripeAutomaticTax": true,
