@@ -27,6 +27,7 @@ module.exports = {
     twitter_title: 'twitter_title',
     twitter_description: 'twitter_description',
     members_support_address: 'members_support_address',
+    members_transactional_address: 'members_transactional_address',
     members_enabled: 'members_enabled',
     donations_enabled: 'donations_enabled',
     allow_self_signup: 'allow_self_signup',

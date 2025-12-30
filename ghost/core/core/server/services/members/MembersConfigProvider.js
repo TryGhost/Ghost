@@ -35,6 +35,14 @@ class MembersConfigProvider {
     }
 
     /**
+     * Gets the transactional email address for member-related emails (signup, signin, etc.)
+     * Falls back to support address if no transactional address is configured
+     */
+    getEmailTransactionalAddress() {
+        return this._settingsHelpers.getMembersTransactionalAddress();
+    }
+
+    /**
      * @deprecated Use settingsHelpers.isStripeConnected instead
      */
     isStripeConnected() {

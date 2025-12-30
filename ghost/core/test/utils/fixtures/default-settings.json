@@ -277,6 +277,11 @@
             "flags": "PUBLIC,RO",
             "type": "string"
         },
+        "members_transactional_address": {
+            "defaultValue": "",
+            "flags": "PUBLIC,RO",
+            "type": "string"
+        },
         "stripe_secret_key": {
             "defaultValue": null,
             "type": "string"

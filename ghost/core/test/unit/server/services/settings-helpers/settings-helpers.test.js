@@ -419,5 +419,79 @@ describe('Settings Helpers', function () {
             assert.equal(isEnabled, true);
         });
     });
+
+    describe('getMembersTransactionalAddress', function () {
+        let fakeSettings;
+        let config;
+        let urlUtils;
+
+        beforeEach(function () {
+            fakeSettings = {
+                get: sinon.stub()
+            };
+            
+            config = configUtils.config;
+            urlUtils = {
+                getSiteUrl: sinon.stub().returns('https://example.com'),
+                urlFor: sinon.stub().returns('https://example.com')
+            };
+        });
+
+        it('should return transactional address when configured', function () {
+            fakeSettings.get.withArgs('members_transactional_address').returns('transactional@example.com');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config, urlUtils, labs: {}, limitService});
+            const result = settingsHelpers.getMembersTransactionalAddress();
+
+            assert.equal(result, 'transactional@example.com');
+        });
+
+        it('should return transactional address with domain when only local part is configured', function () {
+            fakeSettings.get.withArgs('members_transactional_address').returns('transactional');
+            urlUtils.urlFor.returns('https://example.com');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config, urlUtils, labs: {}, limitService});
+            const result = settingsHelpers.getMembersTransactionalAddress();
+
+            assert.equal(result, 'transactional@example.com');
+        });
+
+        it('should fall back to support address when transactional address is empty', function () {
+            fakeSettings.get.withArgs('members_transactional_address').returns('');
+            fakeSettings.get.withArgs('members_support_address').returns('support@example.com');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config, urlUtils, labs: {}, limitService});
+            const result = settingsHelpers.getMembersTransactionalAddress();
+
+            assert.equal(result, 'support@example.com');
+        });
+
+        it('should fall back to support address when transactional address is null', function () {
+            fakeSettings.get.withArgs('members_transactional_address').returns(null);
+            fakeSettings.get.withArgs('members_support_address').returns('support@example.com');
+
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config, urlUtils, labs: {}, limitService});
+            const result = settingsHelpers.getMembersTransactionalAddress();
+
+            assert.equal(result, 'support@example.com');
+        });
+
+        it('should fall back to default email when both transactional and support addresses are empty', function () {
+            fakeSettings.get.withArgs('members_transactional_address').returns('');
+            fakeSettings.get.withArgs('members_support_address').returns('');
+            
+            configUtils.set({
+                mail: {
+                    from: 'default@example.com'
+                }
+            });
+
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
+            const result = settingsHelpers.getMembersTransactionalAddress();
+
+            // Should fall back through the chain to default email
+            assert.equal(result, 'default@example.com');
+        });
+    });
 });
 
