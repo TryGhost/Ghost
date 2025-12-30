@@ -7,7 +7,7 @@ export const validateLocale = (value: string): string | null => {
     const errorMessage = 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private';
 
     if (!value) {
-        return 'Locale is required';
+        return 'Enter a value';
     }
 
     // Trim whitespace
@@ -161,14 +161,17 @@ export const validateLocale = (value: string): string | null => {
 
     // Additional validation for common mistakes
     // Check if any segment looks like a full word rather than a code
-    for (const segment of segments) {
+    // Find the index of 'x' (case-insensitive) for private use detection
+    const xIndex = segments.findIndex(s => s.toLowerCase() === 'x');
+
+    for (let i = 0; i < segments.length; i++) {
+        const segment = segments[i];
         // Skip grandfathered prefixes and private use
         if (['i', 'x', 'sgn', 'art', 'cel', 'no', 'zh'].includes(segment.toLowerCase())) {
             continue;
         }
         // Skip segments in private use (after 'x')
-        const xIndex = segments.indexOf('x');
-        if (xIndex !== -1 && segments.indexOf(segment) > xIndex) {
+        if (xIndex !== -1 && i > xIndex) {
             continue;
         }
         // Reject segments that are obviously too long (but be lenient for private use)

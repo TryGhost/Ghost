@@ -98,7 +98,7 @@ export const WithValidation: Story = {
     }
 };
 
-export const Error: Story = {
+export const ErrorState: Story = {
     args: {
         title: 'Site language',
         options: languageOptions,

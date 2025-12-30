@@ -68,8 +68,7 @@ describe('validateLocale', function () {
     describe('invalid locales', function () {
         it('rejects empty strings', function () {
             const result = validateLocale('');
-            assert.equal(typeof result, 'string');
-            assert.ok(result?.includes('required'));
+            assert.equal(result, 'Enter a value');
         });
 
         it('rejects whitespace-only strings', function () {

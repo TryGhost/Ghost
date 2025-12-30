@@ -35,11 +35,14 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     const {...selectProps} = restProps as Record<string, unknown>;
 
     // Check if the current value is a custom value (not in predefined options)
-    const isInitiallyCustomValue = selectedValue &&
-        !options.some(opt => opt.value === selectedValue) &&
-        selectedValue !== otherOption.value;
+    // Using useMemo to ensure this updates when selectedValue prop changes
+    const isCustomValue = React.useMemo(() => {
+        return selectedValue &&
+            !options.some(opt => opt.value === selectedValue) &&
+            selectedValue !== otherOption.value;
+    }, [selectedValue, options, otherOption.value]);
 
-    const [isOtherSelected, setIsOtherSelected] = useState(isInitiallyCustomValue);
+    const [isOtherSelected, setIsOtherSelected] = useState(!!isCustomValue);
     const [validationError, setValidationError] = useState<string | null>(null);
 
     const handleSelectChange = (option: SelectOption | null) => {
@@ -60,18 +63,17 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
         const value = e.target.value;
 
         // Validate the input
+        let validationResult: string | null = null;
         if (validate) {
-            const validationResult = validate(value);
-            setValidationError(validationResult);
-        } else {
-            setValidationError(null);
+            validationResult = validate(value);
         }
 
-        // Handle empty state
-        if (!value && !allowEmpty) {
-            setValidationError('This field is required');
+        // Handle empty state only if validate didn't already return an error
+        if (!validationResult && !value && !allowEmpty) {
+            validationResult = 'Enter a value';
         }
 
+        setValidationError(validationResult);
         onSelect(value);
     };
 
@@ -92,7 +94,7 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     }, [options, otherOption]);
 
     // Determine if we're in custom input mode
-    const showCustomInput = isOtherSelected || isInitiallyCustomValue;
+    const showCustomInput = isOtherSelected || isCustomValue;
 
     // Prepare common props
     const hasError = error || !!validationError;
