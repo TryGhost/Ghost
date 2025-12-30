@@ -117,5 +117,10 @@ describe('validateLocale', function () {
             assert.notEqual(validateLocale('french'), null);
             assert.notEqual(validateLocale('spanish'), null);
         });
+
+        it('rejects private use prefix without subtag', function () {
+            const result = validateLocale('x');
+            assert.equal(typeof result, 'string');
+        });
     });
 });

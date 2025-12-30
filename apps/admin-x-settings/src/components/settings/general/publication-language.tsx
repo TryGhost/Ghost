@@ -19,9 +19,10 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup({
         onValidate: () => {
-            if (!publicationLanguage) {
+            const localeError = validateLocale(publicationLanguage);
+            if (localeError) {
                 return {
-                    publicationLanguage: 'Enter a value'
+                    publicationLanguage: localeError
                 };
             }
 

@@ -85,6 +85,10 @@ export const validateLocale = (value: string): string | null => {
 
     // Private use tags (x-something)
     if (segments[0].toLowerCase() === 'x') {
+        // Must have at least one subtag after 'x'
+        if (segments.length < 2) {
+            return errorMessage;
+        }
         // All remaining segments must be 1-8 alphanumeric characters
         for (let i = 1; i < segments.length; i++) {
             if (segments[i].length < 1 || segments[i].length > 8) {

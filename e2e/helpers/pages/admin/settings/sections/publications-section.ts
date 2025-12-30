@@ -30,11 +30,14 @@ export class PublicationSection extends BasePage {
         // Try to select from the dropdown first
         await this.localeSelect.click();
 
+        // Wait for dropdown options to be visible before checking
+        await this.page.getByTestId('select-option').first().waitFor({state: 'visible'});
+
         // Check if the language code exists in the dropdown options
         const optionLocator = this.page.getByTestId('select-option').filter({hasText: `(${language.trim()})`});
-        const optionExists = await optionLocator.count() > 0;
+        const optionCount = await optionLocator.count();
 
-        if (optionExists) {
+        if (optionCount > 0) {
             // Select from dropdown
             await optionLocator.first().click();
         } else {
