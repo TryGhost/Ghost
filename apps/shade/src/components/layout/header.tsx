@@ -8,6 +8,7 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
     className?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderAboveProps extends PropsWithChildrenAndClassName {}
 function HeaderAbove({className, children}: HeaderAboveProps) {
     return (
@@ -20,6 +21,7 @@ function HeaderAbove({className, children}: HeaderAboveProps) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderTitleProps extends PropsWithChildrenAndClassName {}
 function HeaderTitle({className, children}: HeaderTitleProps) {
     return (
@@ -35,6 +37,7 @@ function HeaderTitle({className, children}: HeaderTitleProps) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderMetaProps extends PropsWithChildrenAndClassName {}
 function HeaderMeta({className, children}: HeaderMetaProps) {
     return (
@@ -47,6 +50,7 @@ function HeaderMeta({className, children}: HeaderMetaProps) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderActionGroupProps extends PropsWithChildrenAndClassName {}
 function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     return (
@@ -59,6 +63,7 @@ function HeaderActionGroup({className, children}: HeaderActionGroupProps) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderActionsProps extends PropsWithChildrenAndClassName {}
 function HeaderActions({className, children}: HeaderActionsProps) {
     return (
@@ -71,6 +76,7 @@ function HeaderActions({className, children}: HeaderActionsProps) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderNavProps extends PropsWithChildrenAndClassName {}
 function HeaderNav({className, children}: HeaderNavProps) {
     return (
@@ -94,6 +100,7 @@ const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-
         variant: 'default'
     }
 });
+
 interface HeaderProps extends PropsWithChildrenAndClassName, VariantProps<typeof headerVariants> {}
 function Header({className, children, variant}: HeaderProps) {
     return (

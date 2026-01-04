@@ -1,8 +1,8 @@
 import {cn} from '@/lib/utils';
 import React from 'react';
 
-interface ViewHeaderActionsProps extends React.HTMLAttributes<HTMLElement> {
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ViewHeaderActionsProps extends React.HTMLAttributes<HTMLElement> {}
 
 const ViewHeaderActions:React.FC<ViewHeaderActionsProps> = ({children}) => {
     return (

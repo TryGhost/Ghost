@@ -52,7 +52,7 @@ const BlueskySharing: React.FC = () => {
             setLoading(true);
             try {
                 await enableBlueskyMutation.mutateAsync();
-            } catch (error) {
+            } catch {
                 setLoading(false);
                 toast.error('Something went wrong, please try again.');
             }
@@ -158,9 +158,9 @@ const BlueskySharing: React.FC = () => {
                     <div className='mt-3 flex flex-col gap-5'>
                         <p className='text-base'>{!account?.avatarUrl ?
                             'Add a profile image to connect to Bluesky. Profile pictures help prevent spam.' :
-                            'Connect your account to Bluesky to share your content directly to your Bluesky profile. When enabled, new posts you create can be automatically shared to your Bluesky account, expanding your reach across platforms.'
+                            <>Connect your account to <a className="text-purple hover:text-purple-600" href="https://fed.brid.gy" rel="noreferrer" target="_blank">Bridgy Fed</a> to share content directly to a dedicated Bluesky profile and increase your reach across the social web.</>
                         }</p>
-                        <p className='-mt-2 text-base'>Username changes aren&apos;t supported. Make sure you&apos;re happy with your social web handle before connecting.</p>
+                        <p className='-mt-2 text-base'>You can&apos;t change your Bluesky username, so make sure you&apos;re happy with your current social web handle before connecting.</p>
                         {!account?.avatarUrl ? (
                             <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                                 <DialogTrigger>
