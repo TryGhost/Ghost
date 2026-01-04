@@ -923,7 +923,7 @@ Post = ghostBookshelf.Model.extend({
             let authorId = await this.contextUser(options);
             const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
             if (!authorExists) {
-                authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
+                authorId = (await ghostBookshelf.model('User').getOwnerUser()).get('id');
             }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')

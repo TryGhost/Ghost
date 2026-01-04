@@ -6,10 +6,17 @@ const OfferDescription = require('../domain/models/OfferDescription');
 const OfferStatus = require('../domain/models/OfferStatus');
 const OfferMapper = require('./OfferMapper');
 const UniqueChecker = require('./UniqueChecker');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    offerNotFoundAfterDuplicateError: 'Tried to create duplicate offer for the Stripe coupon {couponId}, but could not find offer in database'
+};
 
 class OffersAPI {
     /**
-     * @param {import('./OfferRepository')} repository
+     * @param {import('../OfferBookshelfRepository')} repository
      */
     constructor(repository) {
         this.repository = repository;
@@ -45,7 +52,6 @@ class OffersAPI {
         return this.repository.createTransaction(async (transaction) => {
             const saveOptions = {...options, transacting: transaction};
             const uniqueChecker = new UniqueChecker(this.repository, transaction);
-
             const offer = await Offer.create(data, uniqueChecker);
 
             await this.repository.save(offer, saveOptions);
@@ -121,6 +127,64 @@ class OffersAPI {
 
             return offers.map(OfferMapper.toDTO);
         });
+    }
+
+    /**
+     * @param {object} coupon
+     * @param {string} coupon.id
+     * @param {number} [coupon.percent_off]
+     * @param {number} [coupon.amount_off]
+     * @param {string} [coupon.currency]
+     * @param {string} coupon.duration
+     * @param {number} [coupon.duration_in_months]
+     * @param {string} cadence
+     * @param {object} tier
+     * @param {object} [options]
+     * @param {object} [options.transacting]
+     *
+     * @returns {Promise<OfferMapper.OfferDTO>}
+     */
+    async ensureOfferForStripeCoupon(coupon, cadence, tier, options = {}) {
+        const run = async (transaction) => {
+            const txOptions = {...options, transacting: transaction};
+
+            const existing = await this.repository.getByStripeCouponId(coupon.id, txOptions);
+            if (existing) {
+                return OfferMapper.toDTO(existing);
+            }
+
+            const uniqueChecker = new UniqueChecker(this.repository, transaction);
+            const offer = await Offer.createFromStripeCoupon(coupon, cadence, tier, uniqueChecker);
+
+            try {
+                await this.repository.save(offer, txOptions);
+            } catch (err) {
+                // Handle race condition: another request may have created the offer
+                // between the check and save. If so, return the existing offer.
+                if (err.code === 'ER_DUP_ENTRY' || err.code === 'SQLITE_CONSTRAINT') {
+                    const createdOffer = await this.repository.getByStripeCouponId(coupon.id, txOptions);
+                    if (createdOffer) {
+                        return OfferMapper.toDTO(createdOffer);
+                    }
+
+                    const error = new errors.InternalServerError({
+                        message: tpl(messages.offerNotFoundAfterDuplicateError, {couponId: coupon.id}),
+                        err
+                    });
+                    logging.error(error);
+                    throw error;
+                }
+                throw err;
+            }
+
+            return OfferMapper.toDTO(offer);
+        };
+
+        if (options.transacting) {
+            return run(options.transacting);
+        }
+
+        return this.repository.createTransaction(run);
     }
 }
 

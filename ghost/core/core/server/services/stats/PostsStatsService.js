@@ -4,6 +4,8 @@ const urlUtils = require('../../../shared/url-utils');
 
 // Import source normalization from ReferrersStatsService
 const {normalizeSource} = require('./ReferrersStatsService');
+// Import centralized date utilities
+const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
 
 /**
  * @typedef {Object} StatsServiceOptions
@@ -21,6 +23,7 @@ const {normalizeSource} = require('./ReferrersStatsService');
  * @property {number} [limit=20] - Maximum number of results to return
  * @property {string} [date_from] - Start date filter in YYYY-MM-DD format
  * @property {string} [date_to] - End date filter in YYYY-MM-DD format
+ * @property {string} [timezone='UTC'] - optional timezone for date interpretation
  * @property {string} [post_type] - Filter by post type ('post', 'page')
  */
 
@@ -71,7 +74,7 @@ const {normalizeSource} = require('./ReferrersStatsService');
 /**
  * @typedef {Object} NewsletterSubscriberStats
  * @property {number} total - Total current subscriber count
- * @property {Array<{date: string, value: number}>} deltas - Daily subscription deltas
+ * @property {Array<{date: string, value: number}>} values - Daily subscription cumulative values
  */
 
 class PostsStatsService {
@@ -99,6 +102,7 @@ class PostsStatsService {
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
             const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
             const [orderField, orderDirection = 'desc'] = order.split(' ');
+            const {dateFrom, dateTo} = getDateBoundaries(options);
 
             if (!['free_members', 'paid_members', 'mrr'].includes(orderField)) {
                 throw new errors.BadRequestError({
@@ -142,27 +146,13 @@ class PostsStatsService {
                             const subquery1 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                 .from('members_created_events')
                                 .whereNotNull('attribution_url');
-                            if (options.date_from || options.date_to) {
-                                if (options.date_from) {
-                                    subquery1.where('created_at', '>=', options.date_from);
-                                }
-                                if (options.date_to) {
-                                    subquery1.where('created_at', '<=', options.date_to + ' 23:59:59');
-                                }
-                            }
+                            applyDateFilter(subquery1, dateFrom, dateTo, 'created_at');
                             
                             subquery1.union(function () {
                                 const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                     .from('members_subscription_created_events')
                                     .whereNotNull('attribution_url');
-                                if (options.date_from || options.date_to) {
-                                    if (options.date_from) {
-                                        subquery2.where('created_at', '>=', options.date_from);
-                                    }
-                                    if (options.date_to) {
-                                        subquery2.where('created_at', '<=', options.date_to + ' 23:59:59');
-                                    }
-                                }
+                                applyDateFilter(subquery2, dateFrom, dateTo, 'created_at');
                             })
                                 .as('combined');
                         })
@@ -416,13 +406,13 @@ class PostsStatsService {
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id');
                 })
                 .where('mce.attribution_id', postId)
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .where('msce.id', null);
 
             const paidMembers = await this.knex('members_subscription_created_events as msce')
                 .countDistinct('msce.member_id as paid_members')
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             const mrr = await this.knex('members_subscription_created_events as msce')
                 .sum('mpse.mrr_delta as mrr')
@@ -431,7 +421,7 @@ class PostsStatsService {
                     this.andOn('mpse.member_id', '=', 'msce.member_id');
                 })
                 .where('msce.attribution_id', postId)
-                .where('msce.attribution_type', 'post');
+                .whereIn('msce.attribution_type', ['post', 'page']);
 
             return {
                 data: [
@@ -462,6 +452,7 @@ class PostsStatsService {
         const selectField = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id as post_id';
         const groupByField = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
         const joinCondition = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
+        const {dateFrom, dateTo} = getDateBoundaries(options);
         
         let subquery = knex('members_created_events as mce')
             .select(selectField)
@@ -507,7 +498,7 @@ class PostsStatsService {
             }
         }
 
-        this._applyDateFilter(subquery, options, 'mce.created_at');
+        applyDateFilter(subquery, dateFrom, dateTo, 'mce.created_at');
         return subquery;
     }
 
@@ -523,6 +514,7 @@ class PostsStatsService {
         const knex = this.knex;
         const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
         const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
+        const {dateFrom, dateTo} = getDateBoundaries(options);
         
         let subquery = knex('members_subscription_created_events as msce')
             .select(selectField)
@@ -551,7 +543,7 @@ class PostsStatsService {
             }
         }
 
-        this._applyDateFilter(subquery, options, 'msce.created_at');
+        applyDateFilter(subquery, dateFrom, dateTo, 'msce.created_at');
         return subquery;
     }
 
@@ -566,6 +558,7 @@ class PostsStatsService {
     _buildMrrSubquery(options, groupByUrl = false) {
         const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
         const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
+        const {dateFrom, dateTo} = getDateBoundaries(options);
         
         let subquery = this.knex('members_subscription_created_events as msce')
             .select(selectField)
@@ -599,7 +592,7 @@ class PostsStatsService {
             }
         }
 
-        this._applyDateFilter(subquery, options, 'msce.created_at');
+        applyDateFilter(subquery, dateFrom, dateTo, 'msce.created_at');
         return subquery;
     }
 
@@ -615,6 +608,7 @@ class PostsStatsService {
      */
     _buildFreeReferrersSubquery(postId, options) {
         const knex = this.knex;
+        const {dateFrom, dateTo} = getDateBoundaries(options);
 
         // Simpler approach mirroring _buildFreeMembersSubquery
         let subquery = knex('members_created_events as mce')
@@ -631,7 +625,7 @@ class PostsStatsService {
             .whereNull('msce.id') // Keep only signups where no matching paid conversion (same post/referrer) exists
             .groupBy('mce.referrer_source');
 
-        this._applyDateFilter(subquery, options, 'mce.created_at'); // Filter based on signup time
+        applyDateFilter(subquery, dateFrom, dateTo, 'mce.created_at');
         return subquery;
     }
 
@@ -645,6 +639,7 @@ class PostsStatsService {
     */
     _buildPaidReferrersSubquery(postId, options) {
         const knex = this.knex;
+        const {dateFrom, dateTo} = getDateBoundaries(options);
         let subquery = knex('members_subscription_created_events as msce')
             .select('msce.referrer_source as source')
             .countDistinct('msce.member_id as paid_members')
@@ -652,8 +647,7 @@ class PostsStatsService {
             .where('msce.attribution_type', 'post')
             .groupBy('msce.referrer_source');
 
-        // Apply date filter to the paid conversion event timestamp
-        this._applyDateFilter(subquery, options, 'msce.created_at');
+        applyDateFilter(subquery, dateFrom, dateTo, 'msce.created_at');
         return subquery;
     }
 
@@ -667,6 +661,7 @@ class PostsStatsService {
      */
     _buildMrrReferrersSubquery(postId, options) {
         const knex = this.knex;
+        const {dateFrom, dateTo} = getDateBoundaries(options);
         let subquery = knex('members_subscription_created_events as msce')
             .select('msce.referrer_source as source')
             .sum('mpse.mrr_delta as mrr')
@@ -679,49 +674,8 @@ class PostsStatsService {
             .where('msce.attribution_type', 'post')
             .groupBy('msce.referrer_source');
 
-        // Apply date filter to the paid conversion event timestamp
-        this._applyDateFilter(subquery, options, 'msce.created_at');
+        applyDateFilter(subquery, dateFrom, dateTo, 'msce.created_at');
         return subquery;
-    }
-
-    /**
-     * Apply date filters to a query builder instance
-     * @private
-     * @param {import('knex').Knex.QueryBuilder} query
-     * @param {StatsServiceOptions} options
-     * @param {string} dateColumn - The date column to filter on
-     */
-    _applyDateFilter(query, options, dateColumn) {
-        // Note: Timezone handling might require converting dates before querying,
-        // depending on how created_at is stored (UTC assumed here).
-        if (options.date_from) {
-            try {
-                // Attempt to parse and validate the date
-                const fromDate = new Date(options.date_from);
-                if (!isNaN(fromDate.getTime())) {
-                    query.where(dateColumn, '>=', fromDate);
-                } else {
-                    logging.warn(`Invalid date_from format: ${options.date_from}. Skipping filter.`);
-                }
-            } catch (e) {
-                logging.warn(`Error parsing date_from: ${options.date_from}. Skipping filter.`);
-            }
-        }
-        if (options.date_to) {
-            try {
-                const toDate = new Date(options.date_to);
-                if (!isNaN(toDate.getTime())) {
-                    // Include the whole day for the 'to' date by setting to end of day
-                    const endOfDay = new Date(toDate);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    query.where(dateColumn, '<=', endOfDay);
-                } else {
-                    logging.warn(`Invalid date_to format: ${options.date_to}. Skipping filter.`);
-                }
-            } catch (e) {
-                logging.warn(`Error parsing date_to: ${options.date_to}. Skipping filter.`);
-            }
-        }
     }
 
     /**
@@ -733,6 +687,7 @@ class PostsStatsService {
      * @param {number|string} [options.limit=20] - Maximum number of results to return
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @returns {Promise<{data: NewsletterStatResult[]}>} The newsletter stats for sent/published posts with the specified newsletter_id
      */
     async getNewsletterStats(newsletterId, options = {}) {
@@ -740,6 +695,7 @@ class PostsStatsService {
             const order = options.order || 'date desc';
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
             const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+            const {dateFrom, dateTo} = getDateBoundaries(options);
 
             // Parse order field and direction
             let [orderField, orderDirection = 'desc'] = order.split(' ');
@@ -764,19 +720,6 @@ class PostsStatsService {
                 throw new errors.BadRequestError({
                     message: `Invalid order direction: ${orderDirection}`
                 });
-            }
-
-            // Build date filters if provided
-            let dateFilter = this.knex.raw('1=1');
-            if (options.date_from) {
-                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
-            }
-            if (options.date_to) {
-                // Make date_to inclusive of the entire day by adding 23:59:59
-                const endOfDay = options.date_to + ' 23:59:59';
-                dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
-                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             // Subquery to count clicks from members_click_events
@@ -806,10 +749,11 @@ class PostsStatsService {
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
-                // Show all newsletters that were sent, even if no email record exists or has 0 engagement
-                .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
+
+            // Apply centralized date filtering
+            applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
 
             const results = await query;
 
@@ -829,6 +773,7 @@ class PostsStatsService {
      * @param {number} [options.limit] - Number of results to return (default: 20)
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @returns {Promise<{data: Array}>} The newsletter basic stats (with click data when ordering by click_rate)
      */
     async getNewsletterBasicStats(newsletterId, options = {}) {
@@ -836,6 +781,7 @@ class PostsStatsService {
             const order = options.order || 'date desc';
             const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
             const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+            const {dateFrom, dateTo} = getDateBoundaries(options);
 
             // Parse order field and direction
             let [orderField, orderDirection = 'desc'] = order.split(' ');
@@ -860,19 +806,6 @@ class PostsStatsService {
                 throw new errors.BadRequestError({
                     message: `Invalid order direction: ${orderDirection}`
                 });
-            }
-
-            // Build date filters if provided
-            let dateFilter = this.knex.raw('1=1');
-            if (options.date_from) {
-                dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
-            }
-            if (options.date_to) {
-                // Make date_to inclusive of the entire day by adding 23:59:59
-                const endOfDay = options.date_to + ' 23:59:59';
-                dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
-                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             let query;
@@ -906,10 +839,11 @@ class PostsStatsService {
                     .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
-                    .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
+                    
+                // Apply centralized date filtering
+                applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
             } else {
                 // Build the query without click data for better performance
                 query = this.knex
@@ -925,10 +859,11 @@ class PostsStatsService {
                     .leftJoin('emails as e', 'p.id', 'e.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
-                    .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
+                    
+                // Apply centralized date filtering
+                applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
             }
 
             const results = await query;
@@ -996,10 +931,14 @@ class PostsStatsService {
      * @param {Object} options - Query options
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
-     * @returns {Promise<{data: Array<{total: number, deltas: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
+     * @returns {Promise<{data: Array<{total: number, values: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats with cumulative values
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
+            const timezone = options.timezone || 'UTC';
+            const {dateFrom, dateTo} = getDateBoundaries(options);
+
             // Run both queries in parallel for better performance
             const [totalResult, rawDeltas] = await Promise.all([
                 // Get total subscriber count (optimized query - avoid JOIN)
@@ -1012,7 +951,7 @@ class PostsStatsService {
                             .whereRaw('m.id = mn.member_id')
                             .where('m.email_disabled', 1);
                     }),
-                
+
                 // Get daily deltas (optimized query)
                 this._getNewsletterSubscriberDeltas(newsletterId, options)
             ]);
@@ -1020,25 +959,53 @@ class PostsStatsService {
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
 
-            // Transform raw database results to properly typed objects
-            const deltas = [];
+            // Transform raw database results (daily changes) to cumulative values
+            const values = [];
+            let cumulativeTotal = 0;
+
+            // First pass: collect all daily changes from database
+            const dailyChanges = [];
             for (const row of rawDeltas) {
                 if (row) {
                     // @ts-ignore
                     const dateValue = row.date || '';
                     // @ts-ignore
-                    const deltaValue = row.value || 0;
-                    deltas.push({
+                    const changeValue = row.value || 0;
+                    dailyChanges.push({
                         date: String(dateValue),
-                        value: parseInt(String(deltaValue), 10)
+                        change: parseInt(String(changeValue), 10)
                     });
                 }
             }
 
+            // Calculate the starting point by working backwards from the current total
+            const totalChange = dailyChanges.reduce((sum, item) => sum + item.change, 0);
+            cumulativeTotal = total - totalChange;
+            const startingTotal = cumulativeTotal;
+
+            // Second pass: build cumulative values from daily changes
+            for (const dayData of dailyChanges) {
+                cumulativeTotal += dayData.change;
+                values.push({
+                    date: dayData.date,
+                    value: cumulativeTotal
+                });
+            }
+
+            // Fill in missing dates to ensure the frontend has a complete time series
+            // This is critical for percent change calculations which need consecutive days
+            const completeValues = this._fillMissingDates(
+                values,
+                dateFrom ? dateFrom.split('T')[0] : null,
+                dateTo ? dateTo.split('T')[0] : null,
+                timezone,
+                startingTotal
+            );
+
             return {
                 data: [{
                     total,
-                    deltas
+                    values: completeValues
                 }]
             };
         } catch (error) {
@@ -1046,7 +1013,7 @@ class PostsStatsService {
             return {
                 data: [{
                     total: 0,
-                    deltas: []
+                    values: []
                 }]
             };
         }
@@ -1055,8 +1022,15 @@ class PostsStatsService {
     /**
      * Optimized query to get newsletter subscriber deltas
      * @private
+     * @param {string} newsletterId - ID of the newsletter to get subscriber deltas for
+     * @param {Object} options - Query options
+     * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
+     * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      */
     async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
+        const {dateFrom, dateTo} = getDateBoundaries(options);
+
         // Build optimized deltas query - avoid expensive JOIN
         let deltasQuery = this.knex('members_subscribe_events as mse')
             .select(
@@ -1073,15 +1047,65 @@ class PostsStatsService {
             .groupByRaw('DATE(mse.created_at)')
             .orderBy('date', 'asc');
 
-        // Apply date filters early to reduce dataset
-        if (options.date_from) {
-            deltasQuery.where('mse.created_at', '>=', options.date_from);
-        }
-        if (options.date_to) {
-            deltasQuery.where('mse.created_at', '<=', `${options.date_to} 23:59:59`);
-        }
+        // Apply timezone-aware date filters
+        applyDateFilter(deltasQuery, dateFrom, dateTo, 'mse.created_at');
 
         return await deltasQuery;
+    }
+
+    /**
+     * Fill missing dates in a time series with carried-forward values
+     * @private
+     * @param {Array<{date: string, value: number}>} values - Sparse array of values with dates
+     * @param {string|null} startDate - Start date in YYYY-MM-DD format (ISO)
+     * @param {string|null} endDate - End date in YYYY-MM-DD format (ISO)
+     * @param {string} timezone - Timezone for date interpretation
+     * @param {number} startingValue - The value to use before the first event (default: 0)
+     * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
+     */
+    _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
+        const moment = require('moment-timezone');
+
+        // If no date range provided, return as-is
+        if (!startDate || !endDate) {
+            return values || [];
+        }
+
+        // Determine the date range
+        const rangeStart = moment.tz(startDate, timezone).startOf('day');
+        const rangeEnd = moment.tz(endDate, timezone).startOf('day');
+
+        // Create a map of existing dates for quick lookup
+        const valuesByDate = new Map();
+        if (values && values.length > 0) {
+            values.forEach((item) => {
+                const dateKey = moment.tz(item.date, timezone).startOf('day').format('YYYY-MM-DD');
+                valuesByDate.set(dateKey, item.value);
+            });
+        }
+
+        // Build complete time series with all dates
+        const completeValues = [];
+        let lastValue = startingValue; // Use provided starting value
+        let currentDate = rangeStart.clone();
+
+        while (currentDate.isSameOrBefore(rangeEnd)) {
+            const dateKey = currentDate.format('YYYY-MM-DD');
+
+            if (valuesByDate.has(dateKey)) {
+                // Date has an event - use the calculated value
+                lastValue = valuesByDate.get(dateKey);
+            }
+            // Always add the date (either with event value or carried-forward value)
+            completeValues.push({
+                date: dateKey,
+                value: lastValue
+            });
+
+            currentDate.add(1, 'day');
+        }
+
+        return completeValues;
     }
 
     /**
@@ -1369,12 +1393,17 @@ class PostsStatsService {
      * @private
      * @param {string[]} postIds - Array of post IDs to get attribution counts for
      * @param {Object} options - Date filter options
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @returns {Promise<Array<{post_id: string, free_members: number, paid_members: number}>>}
      */
     async _getMemberAttributionCounts(postIds, options = {}) {
         if (!postIds.length) {
             return [];
         }
+
+        const {dateFrom, dateTo} = getDateBoundaries(options);
 
         try {
             // Build free members query (modeled after _buildFreeMembersSubquery)
@@ -1385,27 +1414,27 @@ class PostsStatsService {
                 .leftJoin('members_subscription_created_events as msce', function () {
                     this.on('mce.member_id', '=', 'msce.member_id')
                         .andOn('mce.attribution_id', '=', 'msce.attribution_id')
-                        .andOnVal('msce.attribution_type', '=', 'post');
+                        .andOnIn('msce.attribution_type', ['post', 'page']);
                 })
-                .where('mce.attribution_type', 'post')
+                .whereIn('mce.attribution_type', ['post', 'page'])
                 .whereIn('mce.attribution_id', postIds)
                 .whereNull('msce.id')
                 .groupBy('mce.attribution_id');
 
             // Apply date filter to free members query
-            this._applyDateFilter(freeMembersQuery, options, 'mce.created_at');
+            applyDateFilter(freeMembersQuery, dateFrom, dateTo, 'mce.created_at');
 
             // Build paid members query (modeled after _buildPaidMembersSubquery)
             // Members whose paid conversion was attributed to this post
             let paidMembersQuery = this.knex('members_subscription_created_events as msce')
                 .select('msce.attribution_id as post_id')
                 .countDistinct('msce.member_id as paid_members')
-                .where('msce.attribution_type', 'post')
+                .whereIn('msce.attribution_type', ['post', 'page'])
                 .whereIn('msce.attribution_id', postIds)
                 .groupBy('msce.attribution_id');
 
             // Apply date filter to paid members query
-            this._applyDateFilter(paidMembersQuery, options, 'msce.created_at');
+            applyDateFilter(paidMembersQuery, dateFrom, dateTo, 'msce.created_at');
 
             // Execute both queries
             const [freeResults, paidResults] = await Promise.all([

@@ -13,7 +13,8 @@ const getInstance = (options) => {
         getAdminUrl: config.getAdminUrl,
         slugs: options.slugs,
         redirectCacheMaxAge: options.redirectCacheMaxAge,
-        baseApiPath: '/ghost/api'
+        baseApiPath: '/ghost/api',
+        assetBaseUrls: options.assetBaseUrls
     };
 
     return new UrlUtils(opts);
@@ -50,12 +51,20 @@ const stubUrlUtilsFromConfig = () => {
     return stubUrlUtils(options, defaultSandbox);
 };
 
-const restore = () => {
+const restore = async () => {
     defaultSandbox.restore();
     // eslint-disable-next-line no-console
-    configUtils.restore().catch(console.error);
+    await configUtils.restore().catch(console.error);
+};
+
+const stubUrlUtilsWithCdn = (options, sandbox = defaultSandbox) => {
+    return stubUrlUtils({
+        assetBaseUrls: options.assetBaseUrls
+    }, sandbox);
 };
 
 module.exports.stubUrlUtilsFromConfig = stubUrlUtilsFromConfig;
+module.exports.stubUrlUtilsWithCdn = stubUrlUtilsWithCdn;
+module.exports.stubUrlUtils = stubUrlUtils;
 module.exports.restore = restore;
 module.exports.getInstance = getInstance;

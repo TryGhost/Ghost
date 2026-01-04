@@ -8,6 +8,7 @@ describe('Sending service', function () {
     describe('send', function () {
         let emailProvider;
         let emailRenderer;
+        let emailAddressService;
         let sendStub;
         let replyTo;
 
@@ -42,6 +43,10 @@ describe('Sending service', function () {
             emailProvider = {
                 send: sendStub
             };
+
+            emailAddressService = {
+                fallbackDomain: undefined
+            };
         });
 
         afterEach(function () {
@@ -51,7 +56,8 @@ describe('Sending service', function () {
         it('calls mailgun client with correct data', async function () {
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             const deliveryTime = new Date();
@@ -74,21 +80,13 @@ describe('Sending service', function () {
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
-            assert(sendStub.calledWith(
+            sinon.assert.calledWithMatch(sendStub,
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -98,6 +96,14 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
@@ -105,13 +111,16 @@ describe('Sending service', function () {
                     openTrackingEnabled: true,
                     deliveryTime
                 }
-            ));
+            );
+            // Verify domain is not included when useFallbackAddress is not set
+            assert.equal(sendStub.getCall(0).args[0].domain, undefined);
         });
 
         it('calls mailgun client without the deliverytime if it is not defined', async function () {
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             const deliveryTime = undefined;
@@ -134,21 +143,13 @@ describe('Sending service', function () {
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
-            assert(sendStub.calledWith(
+            sinon.assert.calledWithMatch(sendStub,
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -158,19 +159,28 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true
                 }
-            ));
+            );
         });
 
         it('defaults to empty string if replacement returns undefined', async function () {
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             const response = await sendingService.send({
@@ -190,21 +200,13 @@ describe('Sending service', function () {
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
-            assert(sendStub.calledWith(
+            sinon.assert.calledWithMatch(sendStub,
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -214,20 +216,29 @@ describe('Sending service', function () {
                                 value: ''
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true
                 }
-            ));
+            );
         });
 
         it('supports cache', async function () {
             const emailBodyCache = new EmailBodyCache();
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             const response = await sendingService.send({
@@ -249,21 +260,13 @@ describe('Sending service', function () {
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
             sinon.assert.calledOnce(emailRenderer.renderBody);
-            assert(sendStub.calledWith(
+            sinon.assert.calledWithMatch(sendStub,
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -273,13 +276,21 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true
                 }
-            ));
+            );
 
             // Do again and see if cache is used
             const response2 = await sendingService.send({
@@ -300,21 +311,13 @@ describe('Sending service', function () {
             });
             assert.equal(response2.id, 'provider-123');
             sinon.assert.calledTwice(sendStub);
-            assert(sendStub.getCall(1).calledWith(
+            sinon.assert.calledWithMatch(sendStub.getCall(1),
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -324,13 +327,21 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true
                 }
-            ));
+            );
 
             // Didn't call renderBody again
             sinon.assert.calledOnce(emailRenderer.renderBody);
@@ -339,7 +350,8 @@ describe('Sending service', function () {
         it('removes invalid recipients before sending', async function () {
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             const response = await sendingService.send({
@@ -363,21 +375,13 @@ describe('Sending service', function () {
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
-            assert(sendStub.calledWith(
+            sinon.assert.calledWithMatch(sendStub,
                 {
                     subject: 'Hi',
                     from: 'ghost@example.com',
                     replyTo: 'ghost+reply@example.com',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
-                    emailId: '123',
-                    replacementDefinitions: [
-                        {
-                            id: 'name',
-                            token: '{{name}}',
-                            getValue: sinon.match.func
-                        }
-                    ],
                     recipients: [
                         {
                             email: 'member@example.com',
@@ -387,19 +391,28 @@ describe('Sending service', function () {
                                 value: 'John'
                             }]
                         }
+                    ],
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
                     ]
                 },
                 {
                     clickTrackingEnabled: true,
                     openTrackingEnabled: true
                 }
-            ));
+            );
         });
 
         it('maps null replyTo to undefined', async function () {
             const sendingService = new SendingService({
                 emailRenderer,
-                emailProvider
+                emailProvider,
+                emailAddressService
             });
 
             replyTo = null;
@@ -422,6 +435,159 @@ describe('Sending service', function () {
             sinon.assert.calledOnce(sendStub);
             const firstCall = sendStub.getCall(0);
             assert.equal(firstCall.args[0].replyTo, undefined);
+        });
+
+        describe('fallback sending domain', function () {
+            // Shared test data to reduce boilerplate
+            const baseEmailData = {
+                post: {},
+                newsletter: {},
+                segment: null,
+                emailId: '123',
+                members: [
+                    {
+                        email: 'member@example.com',
+                        name: 'John'
+                    }
+                ]
+            };
+
+            const baseOptions = {
+                clickTrackingEnabled: true,
+                openTrackingEnabled: true
+            };
+
+            it('uses fallback domain when useFallbackAddress is true and fallback is configured', async function () {
+                emailAddressService.fallbackDomain = 'fallback.example.com';
+
+                const sendingService = new SendingService({
+                    emailRenderer,
+                    emailProvider,
+                    emailAddressService
+                });
+
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: true}
+                );
+
+                assert.equal(response.id, 'provider-123');
+                sinon.assert.calledOnce(sendStub);
+
+                // Verify getFromAddress was called with useFallbackAddress: true
+                sinon.assert.calledWith(
+                    emailRenderer.getFromAddress,
+                    sinon.match.object,
+                    sinon.match.object,
+                    true
+                );
+
+                // Verify domain was passed to email provider
+                sinon.assert.calledWithMatch(sendStub,
+                    {
+                        domainOverride: 'fallback.example.com'
+                    },
+                    {
+                        clickTrackingEnabled: true,
+                        openTrackingEnabled: true,
+                        useFallbackAddress: true
+                    }
+                );
+            });
+
+            it('does not include domain when useFallbackAddress is false', async function () {
+                emailAddressService.fallbackDomain = 'fallback.example.com';
+
+                const sendingService = new SendingService({
+                    emailRenderer,
+                    emailProvider,
+                    emailAddressService
+                });
+
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: false}
+                );
+
+                assert.equal(response.id, 'provider-123');
+                sinon.assert.calledOnce(sendStub);
+
+                // Verify getFromAddress was called with useFallbackAddress: false
+                sinon.assert.calledWith(
+                    emailRenderer.getFromAddress,
+                    sinon.match.object,
+                    sinon.match.object,
+                    false
+                );
+
+                // Verify domain was not included in the message
+                assert.equal(sendStub.getCall(0).args[0].domain, undefined);
+            });
+
+            it('does not include domain when useFallbackAddress is true but fallback domain is not configured', async function () {
+                emailAddressService.fallbackDomain = null;
+
+                const sendingService = new SendingService({
+                    emailRenderer,
+                    emailProvider,
+                    emailAddressService
+                });
+
+                const response = await sendingService.send(
+                    baseEmailData,
+                    {...baseOptions, useFallbackAddress: true}
+                );
+
+                assert.equal(response.id, 'provider-123');
+                sinon.assert.calledOnce(sendStub);
+
+                // Verify getFromAddress was still called with useFallbackAddress: true
+                sinon.assert.calledWith(
+                    emailRenderer.getFromAddress,
+                    sinon.match.object,
+                    sinon.match.object,
+                    true
+                );
+
+                // Verify domain was not included (fallback not configured)
+                assert.equal(sendStub.getCall(0).args[0].domainOverride, null);
+            });
+
+            it('defaults useFallbackAddress to false when not specified', async function () {
+                emailAddressService.fallbackDomain = 'fallback.example.com';
+
+                const sendingService = new SendingService({
+                    emailRenderer,
+                    emailProvider,
+                    emailAddressService
+                });
+
+                const response = await sendingService.send(
+                    baseEmailData,
+                    baseOptions // useFallbackAddress not specified
+                );
+
+                assert.equal(response.id, 'provider-123');
+                sinon.assert.calledOnce(sendStub);
+
+                // Verify getFromAddress was called with false (default)
+                sinon.assert.calledWith(
+                    emailRenderer.getFromAddress,
+                    sinon.match.object,
+                    sinon.match.object,
+                    false
+                );
+
+                // Verify useFallbackAddress defaults to false in options
+                sinon.assert.calledWithMatch(sendStub,
+                    sinon.match.object,
+                    {
+                        clickTrackingEnabled: true,
+                        openTrackingEnabled: true,
+                        useFallbackAddress: false
+                    }
+                );
+            });
         });
     });
 

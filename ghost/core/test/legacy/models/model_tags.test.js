@@ -1,0 +1,57 @@
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+const urlUtilsHelper = require('../../utils/urlUtils');
+const models = require('../../../core/server/models');
+const urlService = require('../../../core/server/services/url');
+
+describe('Tag Model', function () {
+    const siteUrl = 'http://127.0.0.1:2369';
+
+    before(testUtils.teardownDb);
+    before(testUtils.stopGhost);
+    after(testUtils.teardownDb);
+
+    before(testUtils.setup('users:roles', 'posts'));
+
+    beforeEach(function () {
+        sinon.stub(urlService, 'getUrlByResourceId').returns('/test-url/');
+    });
+
+    afterEach(async function () {
+        sinon.restore();
+        await configUtils.restore();
+    });
+
+    describe('URL transformations without CDN config', function () {
+        it('transforms feature_image, og_image, and twitter_image to absolute site URLs', async function () {
+            const tag = await models.Tag.findOne({slug: 'tag-with-images'});
+            should.exist(tag, 'Tag with images should exist');
+            tag.get('feature_image').should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.get('og_image').should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.get('twitter_image').should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
+    });
+
+    describe('URL transformations with CDN config', function () {
+        const cdnUrl = 'https://cdn.example.com/c/site-uuid';
+
+        beforeEach(function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {
+                    media: cdnUrl,
+                    files: cdnUrl
+                }
+            }, sinon);
+        });
+
+        it('transforms feature_image, og_image, and twitter_image to absolute site URLs(NOT CDN)', async function () {
+            const tag = await models.Tag.findOne({slug: 'tag-with-images'});
+            should.exist(tag, 'Tag with images should exist');
+            tag.get('feature_image').should.equal(`${siteUrl}/content/images/tag-feature.jpg`);
+            tag.get('og_image').should.equal(`${siteUrl}/content/images/tag-og.jpg`);
+            tag.get('twitter_image').should.equal(`${siteUrl}/content/images/tag-twitter.jpg`);
+        });
+    });
+});

@@ -25,8 +25,30 @@ const messages = {
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
-    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
+    otcNotSupported: 'OTC verification not supported.',
+    invalidCode: 'Invalid verification code.',
+    failedToVerifyCode: 'Failed to verify code, please try again.'
 };
+
+// helper utility for logic shared between sendMagicLink and verifyOTC
+function extractRefererOrRedirect(req) {
+    const {autoRedirect, redirect} = req.body;
+
+    if (autoRedirect === false) {
+        return null;
+    }
+
+    if (redirect) {
+        try {
+            return new URL(redirect).href;
+        } catch (e) {
+            logging.warn(e);
+        }
+    }
+
+    return req.get('referer') || null;
+}
 
 module.exports = class RouterController {
     /**
@@ -181,6 +203,11 @@ module.exports = class RouterController {
         delete metadata.referrer_source;
         delete metadata.referrer_medium;
         delete metadata.referrer_url;
+        delete metadata.utm_source;
+        delete metadata.utm_medium;
+        delete metadata.utm_campaign;
+        delete metadata.utm_term;
+        delete metadata.utm_content;
 
         if (metadata.urlHistory) {
             // The full attribution history doesn't fit in the Stripe metadata (can't store objects + limited to 50 keys and 500 chars values)
@@ -213,6 +240,27 @@ module.exports = class RouterController {
 
             if (attribution.referrerUrl) {
                 metadata.referrer_url = attribution.referrerUrl;
+            }
+
+            // UTM parameters
+            if (attribution.utmSource) {
+                metadata.utm_source = attribution.utmSource;
+            }
+
+            if (attribution.utmMedium) {
+                metadata.utm_medium = attribution.utmMedium;
+            }
+
+            if (attribution.utmCampaign) {
+                metadata.utm_campaign = attribution.utmCampaign;
+            }
+
+            if (attribution.utmTerm) {
+                metadata.utm_term = attribution.utmTerm;
+            }
+
+            if (attribution.utmContent) {
+                metadata.utm_content = attribution.utmContent;
             }
         }
     }
@@ -558,21 +606,10 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, honeypot, autoRedirect} = req.body;
-        let {emailType, redirect} = req.body;
+        const {email, honeypot} = req.body;
+        let {emailType} = req.body;
 
-        let referrer = req.get('referer');
-        if (autoRedirect === false){
-            referrer = null;
-        }
-        if (redirect) {
-            try {
-                // Validate URL
-                referrer = new URL(redirect).href;
-            } catch (e) {
-                logging.warn(e);
-            }
-        }
+        const referrer = extractRefererOrRedirect(req);
 
         if (!email) {
             throw new errors.BadRequestError({
@@ -626,7 +663,12 @@ module.exports = class RouterController {
             if (emailType === 'signup' || emailType === 'subscribe') {
                 await this._handleSignup(req, normalizedEmail, referrer);
             } else {
-                await this._handleSignin(req, normalizedEmail, referrer);
+                const signIn = await this._handleSignin(req, normalizedEmail, referrer);
+
+                if (signIn.otcRef) {
+                    res.writeHead(201, {'Content-Type': 'application/json'});
+                    return res.end(JSON.stringify({otc_ref: signIn.otcRef}));
+                }
             }
 
             res.writeHead(201);
@@ -642,6 +684,71 @@ module.exports = class RouterController {
             // Let the normal error middleware handle this error
             throw err;
         }
+    }
+
+    async verifyOTC(req, res) {
+        const {otc, otcRef} = req.body;
+
+        if (!otc || !otcRef) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.badRequest),
+                context: 'otc and otcRef are required',
+                code: 'OTC_VERIFICATION_MISSING_PARAMS'
+            });
+        }
+
+        const tokenProvider = this._magicLinkService.tokenProvider;
+        if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.otcNotSupported),
+                code: 'OTC_NOT_SUPPORTED'
+            });
+        }
+
+        const tokenValue = await tokenProvider.getTokenByRef(otcRef);
+        if (!tokenValue) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC_REF'
+            });
+        }
+
+        const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
+        if (!isValidOTC) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC'
+            });
+        }
+
+        const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
+        if (!otcVerificationHash) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
+
+        const referrer = extractRefererOrRedirect(req);
+
+        const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', referrer, otcVerificationHash);
+        if (!redirectUrl) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
+
+        return res.json({redirectUrl});
+    }
+
+    async _createHashFromOTCAndToken(otc, token) {
+        // timestamp for anti-replay protection (5 minute window)
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        const hash = this._magicLinkService.tokenProvider.createOTCVerificationHash(otc, token, timestamp);
+
+        return `${timestamp}:${hash}`;
     }
 
     async _handleSignup(req, normalizedEmail, referrer = null) {
@@ -679,7 +786,13 @@ module.exports = class RouterController {
     }
 
     async _handleSignin(req, normalizedEmail, referrer = null) {
-        const {emailType} = req.body;
+        const {emailType, includeOTC: reqIncludeOTC} = req.body;
+
+        let includeOTC = false;
+
+        if (reqIncludeOTC === true || reqIncludeOTC === 'true') {
+            includeOTC = true;
+        }
 
         const member = await this._memberRepository.get({email: normalizedEmail});
 
@@ -690,7 +803,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, includeOTC});
     }
 
     /**

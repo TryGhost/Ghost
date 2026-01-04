@@ -1,4 +1,8 @@
 const moment = require('moment');
+const errors = require('@tryghost/errors');
+
+// Import centralized date utilities
+const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
 
 // Source normalization mapping - consolidated from frontend apps
 const SOURCE_NORMALIZATION_MAP = new Map([
@@ -251,64 +255,16 @@ class ReferrersStatsService {
     }
 
     /**
-     * Fetch paid conversion sources with date range
-     * @param {string} startDate 
-     * @param {string} endDate 
-     * @returns {Promise<PaidConversionsCountStatDate[]>}
-     **/
-    async fetchPaidConversionSourcesWithRange(startDate, endDate) {
-        const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
-        
-        const rows = await knex('members_subscription_created_events')
-            .select(knex.raw(`DATE(created_at) as date`))
-            .select(knex.raw(`COUNT(*) as paid_conversions`))
-            .select(knex.raw(`referrer_source as source`))
-            .where('created_at', '>=', startDateTime)
-            .where('created_at', '<=', endDateTime)
-            .groupBy('date', 'referrer_source')
-            .orderBy('date');
-
-        return rows;
-    }
-
-    /**
-     * Fetch signup sources with date range
-     * @param {string} startDate 
-     * @param {string} endDate 
-     * @returns {Promise<SignupCountStatDate[]>}
-     **/
-    async fetchSignupSourcesWithRange(startDate, endDate) {
-        const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
-        
-        const rows = await knex('members_created_events')
-            .select(knex.raw(`DATE(created_at) as date`))
-            .select(knex.raw(`COUNT(*) as signups`))
-            .select(knex.raw(`referrer_source as source`))
-            .where('created_at', '>=', startDateTime)
-            .where('created_at', '<=', endDateTime)
-            .groupBy('date', 'referrer_source')
-            .orderBy('date');
-
-        return rows;
-    }
-
-    /**
      * Fetch MRR sources with date range
-     * @param {string} startDate 
-     * @param {string} endDate 
+     * @param {Object} options
      * @returns {Promise<MrrCountStatDate[]>}
      **/
-    async fetchMrrSourcesWithRange(startDate, endDate) {
+    async fetchMrrSourcesWithRange(options) {
         const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
-        
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+
         // Join subscription created events with paid subscription events to get MRR changes
-        const rows = await knex('members_subscription_created_events as msce')
+        let query = knex('members_subscription_created_events as msce')
             .join('members_paid_subscription_events as mpse', function () {
                 this.on('msce.member_id', '=', 'mpse.member_id')
                     .andOn('msce.subscription_id', '=', 'mpse.subscription_id');
@@ -316,55 +272,144 @@ class ReferrersStatsService {
             .select(knex.raw(`DATE(msce.created_at) as date`))
             .select(knex.raw(`SUM(mpse.mrr_delta) as mrr`))
             .select(knex.raw(`msce.referrer_source as source`))
-            .where('msce.created_at', '>=', startDateTime)
-            .where('msce.created_at', '<=', endDateTime)
             .where('mpse.mrr_delta', '>', 0) // Only positive MRR changes (new subscriptions)
             .whereNotNull('msce.referrer_source') // Only entries with attribution
             .groupBy('date', 'msce.referrer_source')
             .orderBy('date');
 
+        // Apply centralized date filtering
+        applyDateFilter(query, startDateTime, endDateTime, 'msce.created_at');
+
+        const rows = await query;
+
         return rows;
+    }
+
+    /**
+     * Fetch deduplicated member counts by source with date range
+     * Returns both free signups (excluding those who converted) and paid conversions
+     * @param {Object} options
+     * @returns {Promise<{source: string, signups: number, paid_conversions: number}[]>}
+     **/
+    async fetchMemberCountsBySource(options) {
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+
+        // Query 1: Free members who haven't converted to paid within the same time window
+        const freeSignupsQuery = knex('members_created_events as mce')
+            .select('mce.referrer_source as source')
+            .select(knex.raw('COUNT(DISTINCT mce.member_id) as signups'))
+            .leftJoin('members_subscription_created_events as msce', function () {
+                this.on('mce.member_id', '=', 'msce.member_id')
+                    // Only join if the conversion happened within the same time window
+                    .andOn('msce.created_at', '>=', knex.raw('?', [startDateTime]))
+                    .andOn('msce.created_at', '<=', knex.raw('?', [endDateTime]));
+            })
+            .whereNull('msce.id')
+            .groupBy('mce.referrer_source');
+
+        // Apply date filtering to the main query
+        applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
+
+        // Query 2: Paid conversions
+        const paidConversionsQuery = knex('members_subscription_created_events as msce')
+            .select('msce.referrer_source as source')
+            .select(knex.raw('COUNT(DISTINCT msce.member_id) as paid_conversions'))
+            .groupBy('msce.referrer_source');
+
+        // Apply date filtering to the paid conversions query
+        applyDateFilter(paidConversionsQuery, startDateTime, endDateTime, 'msce.created_at');
+
+        // Execute both queries in parallel
+        const [freeResults, paidResults] = await Promise.all([
+            freeSignupsQuery,
+            paidConversionsQuery
+        ]);
+
+        // Combine results by source
+        const sourceMap = new Map();
+
+        // Add free signups
+        freeResults.forEach((row) => {
+            sourceMap.set(row.source, {
+                source: row.source,
+                signups: parseInt(row.signups) || 0,
+                paid_conversions: 0
+            });
+        });
+
+        // Add paid conversions
+        paidResults.forEach((row) => {
+            const existing = sourceMap.get(row.source);
+            if (existing) {
+                existing.paid_conversions = parseInt(row.paid_conversions) || 0;
+            } else {
+                sourceMap.set(row.source, {
+                    source: row.source,
+                    signups: 0,
+                    paid_conversions: parseInt(row.paid_conversions) || 0
+                });
+            }
+        });
+
+        return Array.from(sourceMap.values());
     }
 
     /**
      * Return aggregated attribution sources for a date range, grouped by source only (not by date)
      * This is used for "Top Sources" tables that need server-side sorting
-     * @param {string} startDate - Start date in YYYY-MM-DD format
-     * @param {string} endDate - End date in YYYY-MM-DD format
-     * @param {string} [orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
-     * @param {number} [limit=50] - Maximum number of sources to return
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
+     * @param {string} [options.orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
+     * @param {number} [options.limit=50] - Maximum number of sources to return
      * @returns {Promise<{data: AttributionCountStatWithMrr[], meta: {}}>}
      */
-    async getTopSourcesWithRange(startDate, endDate, orderBy = 'signups desc', limit = 50) {
-        const paidConversionEntries = await this.fetchPaidConversionSourcesWithRange(startDate, endDate);
-        const signupEntries = await this.fetchSignupSourcesWithRange(startDate, endDate);
-        const mrrEntries = await this.fetchMrrSourcesWithRange(startDate, endDate);
+    async getTopSourcesWithRange(options = {}) {
+        const {orderBy = 'signups desc', limit = 50} = options;
+
+        // Get deduplicated member counts and MRR data in parallel
+        const [memberCounts, mrrEntries] = await Promise.all([
+            this.fetchMemberCountsBySource(options),
+            this.fetchMrrSourcesWithRange(options)
+        ]);
 
         // Aggregate by source (not by date + source)
         const sourceMap = new Map();
 
-        // Add signup data
-        signupEntries.forEach((entry) => {
+        // Add member counts (both signups and paid conversions)
+        memberCounts.forEach((entry) => {
             const source = normalizeSource(entry.source);
-            const existing = sourceMap.get(source) || {source, signups: 0, paid_conversions: 0, mrr: 0};
-            existing.signups += entry.signups;
-            sourceMap.set(source, existing);
-        });
-
-        // Add paid conversion data
-        paidConversionEntries.forEach((entry) => {
-            const source = normalizeSource(entry.source);
-            const existing = sourceMap.get(source) || {source, signups: 0, paid_conversions: 0, mrr: 0};
-            existing.paid_conversions += entry.paid_conversions;
-            sourceMap.set(source, existing);
+            const existing = sourceMap.get(source);
+            if (existing) {
+                // Aggregate if the normalized source already exists (e.g., multiple null/empty values)
+                existing.signups += entry.signups;
+                existing.paid_conversions += entry.paid_conversions;
+            } else {
+                sourceMap.set(source, {
+                    source,
+                    signups: entry.signups,
+                    paid_conversions: entry.paid_conversions,
+                    mrr: 0
+                });
+            }
         });
 
         // Add MRR data
         mrrEntries.forEach((entry) => {
             const source = normalizeSource(entry.source);
-            const existing = sourceMap.get(source) || {source, signups: 0, paid_conversions: 0, mrr: 0};
-            existing.mrr += entry.mrr;
-            sourceMap.set(source, existing);
+            const existing = sourceMap.get(source);
+            if (existing) {
+                existing.mrr += entry.mrr;
+            } else {
+                sourceMap.set(source, {
+                    source,
+                    signups: 0,
+                    paid_conversions: 0,
+                    mrr: entry.mrr
+                });
+            }
         });
 
         // Convert to array and sort
@@ -372,10 +417,10 @@ class ReferrersStatsService {
 
         // Apply sorting - only allow descending sorts for sources
         const [field] = orderBy.split(' ');
-        
+
         results.sort((a, b) => {
             let valueA; let valueB;
-            
+
             switch (field) {
             case 'signups':
                 valueA = a.signups;
@@ -403,6 +448,264 @@ class ReferrersStatsService {
 
         // Apply limit
         if (limit && limit > 0) {
+            results = results.slice(0, limit);
+        }
+
+        return {
+            data: results,
+            meta: {}
+        };
+    }
+
+    /**
+     * Fetch free member counts by UTM parameter with date range
+     * Returns members who haven't converted to paid within the same time window
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, signups: number}[]>}
+     **/
+    async fetchMemberCountsByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        // Query: Free members who haven't converted to paid within the same time window
+        const freeSignupsQuery = knex('members_created_events as mce')
+            .select(knex.raw(`mce.${utmField} as utm_value`))
+            .select(knex.raw('COUNT(DISTINCT mce.member_id) as signups'))
+            .leftJoin('members_subscription_created_events as msce', function () {
+                this.on('mce.member_id', '=', 'msce.member_id')
+                    // Filter msce.created_at: only count conversions within the same time window
+                    // This ensures we don't count conversions that happened outside our date range
+                    .andOn('msce.created_at', '>=', knex.raw('?', [startDateTime]))
+                    .andOn('msce.created_at', '<=', knex.raw('?', [endDateTime]));
+            })
+            .whereNull('msce.id')
+            .whereNotNull(`mce.${utmField}`)
+            .groupBy(`mce.${utmField}`);
+
+        // Filter mce.created_at: only include members created within the date range
+        applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            freeSignupsQuery
+                .where('mce.attribution_id', postId)
+                .where('mce.attribution_type', 'post');
+        }
+
+        const results = await freeSignupsQuery;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            signups: parseInt(row.signups) || 0
+        }));
+    }
+
+    /**
+     * Fetch paid conversion counts by UTM parameter with date range
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, paid_conversions: number}[]>}
+     **/
+    async fetchPaidConversionsByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        const paidConversionsQuery = knex('members_subscription_created_events as msce')
+            .select(knex.raw(`msce.${utmField} as utm_value`))
+            .select(knex.raw('COUNT(DISTINCT msce.member_id) as paid_conversions'))
+            .whereNotNull(`msce.${utmField}`)
+            .groupBy(`msce.${utmField}`);
+
+        // Apply date filtering
+        applyDateFilter(paidConversionsQuery, startDateTime, endDateTime, 'msce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            paidConversionsQuery
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+        }
+
+        const results = await paidConversionsQuery;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            paid_conversions: parseInt(row.paid_conversions) || 0
+        }));
+    }
+
+    /**
+     * Fetch MRR by UTM parameter with date range
+     * @param {string} utmField - The UTM field to group by
+     * @param {Object} options - Query options
+     * @returns {Promise<{utm_value: string, mrr: number}[]>}
+     **/
+    async fetchMrrByUtm(utmField, options) {
+        // Validate utm_field for defense-in-depth (even though caller validates)
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid UTM field: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
+        const knex = this.knex;
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
+        const {post_id: postId} = options;
+
+        // Join subscription created events with paid subscription events to get MRR changes
+        let query = knex('members_subscription_created_events as msce')
+            .join('members_paid_subscription_events as mpse', function () {
+                this.on('msce.member_id', '=', 'mpse.member_id')
+                    .andOn('msce.subscription_id', '=', 'mpse.subscription_id');
+            })
+            .select(knex.raw(`msce.${utmField} as utm_value`))
+            .select(knex.raw(`SUM(mpse.mrr_delta) as mrr`))
+            .where('mpse.mrr_delta', '>', 0) // Only positive MRR changes (new subscriptions)
+            .whereNotNull(`msce.${utmField}`)
+            .groupBy(`msce.${utmField}`);
+
+        // Apply date filtering
+        applyDateFilter(query, startDateTime, endDateTime, 'msce.created_at');
+
+        // Apply post filtering if post_id is provided
+        if (postId) {
+            query
+                .where('msce.attribution_id', postId)
+                .where('msce.attribution_type', 'post');
+        }
+
+        const results = await query;
+        return results.map(row => ({
+            utm_value: row.utm_value,
+            mrr: parseInt(row.mrr) || 0
+        }));
+    }
+
+    /**
+     * Get UTM growth stats broken down by UTM parameter
+     * @param {Object} options
+     * @param {string} [options.utm_type='utm_source'] - Which UTM field to group by ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
+     * @param {string} [options.order='free_members desc'] - Sort order
+     * @param {number} [options.limit=50] - Maximum number of results
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
+     * @param {string} [options.post_id] - Optional filter by post ID
+     * @returns {Promise<{data: UtmGrowthStat[], meta: {}}>}
+     */
+    async getUtmGrowthStats(options = {}) {
+        const utmField = options.utm_type || 'utm_source';
+        const limit = options.limit || 50;
+        const postId = options.post_id;
+        const orderBy = options.order || 'free_members desc';
+
+        // Validate utm_type is a valid UTM field
+        const validUtmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        if (!validUtmFields.includes(utmField)) {
+            throw new errors.BadRequestError({
+                message: `Invalid utm_type: ${utmField}. Must be one of: ${validUtmFields.join(', ')}`
+            });
+        }
+
+        // Fetch data from database in parallel
+        const [freeMembers, paidConversions, mrrData] = await Promise.all([
+            this.fetchMemberCountsByUtm(utmField, options),
+            this.fetchPaidConversionsByUtm(utmField, options),
+            this.fetchMrrByUtm(utmField, options)
+        ]);
+
+        // Combine results by utm_value
+        const utmMap = new Map();
+
+        // Add free members
+        freeMembers.forEach((row) => {
+            utmMap.set(row.utm_value, {
+                utm_value: row.utm_value,
+                utm_type: utmField,
+                free_members: row.signups,
+                paid_members: 0,
+                mrr: 0
+            });
+        });
+
+        // Add paid conversions
+        paidConversions.forEach((row) => {
+            const existing = utmMap.get(row.utm_value);
+            if (existing) {
+                existing.paid_members = row.paid_conversions;
+            } else {
+                utmMap.set(row.utm_value, {
+                    utm_value: row.utm_value,
+                    utm_type: utmField,
+                    free_members: 0,
+                    paid_members: row.paid_conversions,
+                    mrr: 0
+                });
+            }
+        });
+
+        // Add MRR data
+        mrrData.forEach((row) => {
+            const existing = utmMap.get(row.utm_value);
+            if (existing) {
+                existing.mrr = row.mrr;
+            } else {
+                utmMap.set(row.utm_value, {
+                    utm_value: row.utm_value,
+                    utm_type: utmField,
+                    free_members: 0,
+                    paid_members: 0,
+                    mrr: row.mrr
+                });
+            }
+        });
+
+        // Convert to array
+        let results = Array.from(utmMap.values());
+
+        // Apply sorting
+        const [field, direction] = orderBy.split(' ');
+        const validFields = ['free_members', 'paid_members', 'mrr', 'utm_value'];
+
+        if (validFields.includes(field)) {
+            results.sort((a, b) => {
+                let valueA = a[field];
+                let valueB = b[field];
+
+                // Handle string sorting for utm_value
+                if (field === 'utm_value') {
+                    valueA = String(valueA).toLowerCase();
+                    valueB = String(valueB).toLowerCase();
+                }
+
+                if (direction === 'asc') {
+                    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                }
+                // Default to desc
+                return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+            });
+        }
+
+        // Apply limit (but not when filtering by post as per original implementation)
+        if (!postId && limit && limit > 0) {
             results = results.slice(0, limit);
         }
 
@@ -462,4 +765,14 @@ module.exports.normalizeSource = normalizeSource;
  * @property {string} source Attribution Source
  * @property {number} mrr Total MRR from this source (in cents)
  * @property {string} date The date (YYYY-MM-DD) on which these counts were recorded
+ **/
+
+/**
+ * @typedef {object} UtmGrowthStat
+ * @type {Object}
+ * @property {string} utm_value - The UTM parameter value (e.g., 'google', 'facebook')
+ * @property {string} utm_type - The UTM parameter type ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content')
+ * @property {number} free_members - Count of free member signups
+ * @property {number} paid_members - Count of paid member conversions
+ * @property {number} mrr - Total MRR from this UTM parameter (in cents)
  **/

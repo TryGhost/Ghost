@@ -92,6 +92,503 @@ DataGenerator.Content = {
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Welcome to my invisible post!</h1>'),
             status: 'scheduled',
             published_at: moment().add(2, 'days').toDate()
+        },
+        {
+            id: '618ba1ffbe2896088840a700',
+            title: 'Post with all media types - Mobiledoc',
+            slug: 'post-with-all-media-types-mobiledoc',
+            feature_image: '__GHOST_URL__/content/images/feature.jpg',
+            status: 'published',
+            published_at: new Date('2015-01-09'),
+            mobiledoc: JSON.stringify({
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        src: '__GHOST_URL__/content/images/inline.jpg',
+                        alt: 'Inline image',
+                        caption: 'An inline image card'
+                    }],
+                    ['gallery', {
+                        images: [
+                            {
+                                row: 0,
+                                fileName: 'gallery-1.jpg',
+                                src: '__GHOST_URL__/content/images/gallery-1.jpg',
+                                width: 1200,
+                                height: 800
+                            },
+                            {
+                                row: 0,
+                                fileName: 'gallery-2.jpg',
+                                src: '__GHOST_URL__/content/images/gallery-2.jpg',
+                                width: 1200,
+                                height: 800
+                            },
+                            {
+                                row: 0,
+                                fileName: 'gallery-3.jpg',
+                                src: '__GHOST_URL__/content/images/gallery-3.jpg',
+                                width: 1200,
+                                height: 800
+                            }
+                        ],
+                        caption: 'A gallery with three images'
+                    }],
+                    ['file', {
+                        src: '__GHOST_URL__/content/files/document.pdf',
+                        fileName: 'document.pdf',
+                        fileTitle: 'Test Document',
+                        fileCaption: 'A test PDF document'
+                    }],
+                    ['video', {
+                        src: '__GHOST_URL__/content/media/video.mp4',
+                        fileName: 'video.mp4',
+                        width: 1920,
+                        height: 1080,
+                        duration: 120,
+                        thumbnailSrc: '__GHOST_URL__/content/images/video-thumb.jpg',
+                        caption: 'Test video file'
+                    }],
+                    ['audio', {
+                        src: '__GHOST_URL__/content/media/audio.mp3',
+                        title: 'Test Audio',
+                        duration: 180,
+                        thumbnailSrc: '__GHOST_URL__/content/images/audio-thumb.jpg'
+                    }],
+                    ['image', {
+                        src: '__GHOST_URL__/content/images/snippet-inline.jpg',
+                        alt: 'Snippet image',
+                        caption: 'Image in snippet'
+                    }],
+                    ['file', {
+                        src: '__GHOST_URL__/content/files/snippet-document.pdf',
+                        fileName: 'snippet-doc.pdf',
+                        fileTitle: 'Snippet Document',
+                        fileCaption: 'A test document file'
+                    }],
+                    ['video', {
+                        src: '__GHOST_URL__/content/media/snippet-video.mp4',
+                        fileName: 'snippet-video.mp4',
+                        width: 1920,
+                        height: 1080,
+                        duration: 60,
+                        thumbnailSrc: '__GHOST_URL__/content/images/snippet-video-thumb.jpg',
+                        caption: 'Snippet video file'
+                    }],
+                    ['audio', {
+                        src: '__GHOST_URL__/content/media/snippet-audio.mp3',
+                        title: 'Snippet Audio',
+                        duration: 120,
+                        thumbnailSrc: '__GHOST_URL__/content/images/snippet-audio-thumb.jpg'
+                    }]
+                ],
+                markups: [
+                    ['strong'],
+                    ['a', ['href', '__GHOST_URL__/snippet-link']]
+                ],
+                sections: [
+                    [1, 'p', [[0, [], 0, 'This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.']]],
+                    [1, 'p', [[0, [], 0, 'Image card:']]],
+                    [10, 0],
+                    [1, 'p', [[0, [], 0, 'Gallery card:']]],
+                    [10, 1],
+                    [1, 'p', [[0, [], 0, 'File card:']]],
+                    [10, 2],
+                    [1, 'p', [[0, [], 0, 'Video card:']]],
+                    [10, 3],
+                    [1, 'p', [[0, [], 0, 'Audio card:']]],
+                    [10, 4],
+                    [1, 'p', [[0, [0], 1, 'Inserted snippet content below:']]],
+                    [1, 'p', [[0, [], 0, 'This snippet contains '], [0, [1, 0], 2, 'all media types'], [0, [], 0, ' for testing URL transformations in reusable content.']]],
+                    [1, 'p', [[0, [], 0, 'Image card:']]],
+                    [10, 5],
+                    [1, 'p', [[0, [], 0, 'File card:']]],
+                    [10, 6],
+                    [1, 'p', [[0, [], 0, 'Video card:']]],
+                    [10, 7],
+                    [1, 'p', [[0, [], 0, 'Audio card:']]],
+                    [10, 8],
+                    [1, 'p', [[0, [0], 1, 'End of inserted snippet content.']]],
+                    [1, 'p', [[0, [], 0, 'This post tests that all URL transformations work correctly across all media types and inserted snippets.']]]
+                ]
+            })
+        },
+        {
+            id: '618ba1ffbe2896088840a6f1',
+            title: 'Post with all media types - Lexical',
+            slug: 'post-with-all-media-types-lexical',
+            feature_image: '__GHOST_URL__/content/images/feature.jpg',
+            status: 'published',
+            published_at: new Date('2015-01-10'),
+            lexical: JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'image',
+                            version: 1,
+                            src: '__GHOST_URL__/content/images/inline.jpg',
+                            width: 1600,
+                            height: 900,
+                            alt: 'Inline image',
+                            caption: 'An inline image card'
+                        },
+                        {
+                            type: 'gallery',
+                            version: 1,
+                            images: [
+                                {
+                                    row: 0,
+                                    src: '__GHOST_URL__/content/images/gallery-1.jpg',
+                                    width: 1200,
+                                    height: 800,
+                                    alt: 'Gallery image 1',
+                                    caption: '',
+                                    fileName: 'gallery-1.jpg'
+                                },
+                                {
+                                    row: 0,
+                                    src: '__GHOST_URL__/content/images/gallery-2.jpg',
+                                    width: 1200,
+                                    height: 800,
+                                    alt: 'Gallery image 2',
+                                    caption: '',
+                                    fileName: 'gallery-2.jpg'
+                                },
+                                {
+                                    row: 0,
+                                    src: '__GHOST_URL__/content/images/gallery-3.jpg',
+                                    width: 1200,
+                                    height: 800,
+                                    alt: 'Gallery image 3',
+                                    caption: '',
+                                    fileName: 'gallery-3.jpg'
+                                }
+                            ],
+                            caption: 'A gallery with three images'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'File card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'file',
+                            version: 1,
+                            src: '__GHOST_URL__/content/files/document.pdf',
+                            fileName: 'document.pdf',
+                            fileTitle: 'Test Document',
+                            fileCaption: 'A test PDF document',
+                            fileSize: 2048000
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Video card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'video',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/video.mp4',
+                            fileName: 'video.mp4',
+                            width: 1920,
+                            height: 1080,
+                            duration: 120,
+                            thumbnailSrc: '__GHOST_URL__/content/images/video-thumb.jpg',
+                            caption: 'Test video file',
+                            cardWidth: 'regular'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Audio card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'audio',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/audio.mp3',
+                            title: 'Test Audio',
+                            duration: 180,
+                            thumbnailSrc: '__GHOST_URL__/content/images/audio-thumb.jpg'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Inserted snippet content below:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This snippet contains ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 3,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'all media types',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: null,
+                                    target: null,
+                                    title: null,
+                                    url: '__GHOST_URL__/snippet-link'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' for testing URL transformations in reusable content.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Image card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'image',
+                            version: 1,
+                            src: '__GHOST_URL__/content/images/snippet-inline.jpg',
+                            width: 1200,
+                            height: 800,
+                            alt: 'Snippet image',
+                            caption: 'Image in snippet'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'File card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'file',
+                            version: 1,
+                            src: '__GHOST_URL__/content/files/snippet-document.pdf',
+                            fileName: 'snippet-doc.pdf',
+                            fileTitle: 'Snippet Document',
+                            fileCaption: 'A test document file',
+                            fileSize: 1024000
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Video card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'video',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/snippet-video.mp4',
+                            fileName: 'snippet-video.mp4',
+                            width: 1920,
+                            height: 1080,
+                            duration: 60,
+                            thumbnailSrc: '__GHOST_URL__/content/images/snippet-video-thumb.jpg',
+                            caption: 'Snippet video file',
+                            cardWidth: 'regular'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Audio card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'audio',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/snippet-audio.mp3',
+                            title: 'Snippet Audio',
+                            duration: 120,
+                            thumbnailSrc: '__GHOST_URL__/content/images/snippet-audio-thumb.jpg'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'End of inserted snippet content.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This post tests that all URL transformations work correctly across all media types and inserted snippets.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            })
         }
     ],
 
@@ -121,6 +618,15 @@ DataGenerator.Content = {
             id: '6193c6dfe792de832cd08149',
             name: 'injection',
             slug: 'injection'
+        },
+        {
+            id: '6193c6dfe792de832cd08150',
+            name: 'Tag with images',
+            slug: 'tag-with-images',
+            feature_image: '__GHOST_URL__/content/images/tag-feature.jpg',
+            og_image: '__GHOST_URL__/content/images/tag-og.jpg',
+            twitter_image: '__GHOST_URL__/content/images/tag-twitter.jpg',
+            description: 'A tag with all image types for testing URL transformations'
         }
     ],
 
@@ -444,6 +950,24 @@ DataGenerator.Content = {
             show_badge: true,
             sort_order: 2,
             header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'New Newsletter',
+            slug: 'new-newsletter',
+            description: 'Newsletter for testing URL transformations',
+            sender_name: 'Ghost Testing',
+            sender_email: 'test@example.com',
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: false,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 3,
+            header_image: '__GHOST_URL__/content/images/newsletter-header.jpg'
         }
     ],
 
@@ -783,7 +1307,8 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             provider_id: 'email1@testing.mailgun.net',
-            status: 'submitted'
+            status: 'submitted',
+            fallback_sending_domain: false
         }
     ],
 
@@ -869,6 +1394,232 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Test snippet 1',
             mobiledoc: '{}'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Snippet with all media types - Mobiledoc',
+            mobiledoc: JSON.stringify({
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    ['image', {
+                        src: '__GHOST_URL__/content/images/snippet-inline.jpg',
+                        alt: 'Snippet image',
+                        caption: 'Image in snippet'
+                    }],
+                    ['file', {
+                        src: '__GHOST_URL__/content/files/snippet-document.pdf',
+                        fileName: 'snippet-doc.pdf',
+                        fileTitle: 'Snippet Document',
+                        fileCaption: 'A test document file'
+                    }],
+                    ['video', {
+                        src: '__GHOST_URL__/content/media/snippet-video.mp4',
+                        fileName: 'snippet-video.mp4',
+                        width: 1920,
+                        height: 1080,
+                        duration: 60,
+                        thumbnailSrc: '__GHOST_URL__/content/images/snippet-video-thumb.jpg',
+                        caption: 'Snippet video file'
+                    }],
+                    ['audio', {
+                        src: '__GHOST_URL__/content/media/snippet-audio.mp3',
+                        title: 'Snippet Audio',
+                        duration: 120,
+                        thumbnailSrc: '__GHOST_URL__/content/images/snippet-audio-thumb.jpg'
+                    }]
+                ],
+                markups: [
+                    ['a', ['href', '__GHOST_URL__/snippet-link']],
+                    ['strong']
+                ],
+                sections: [
+                    [1, 'p', [[0, [], 0, 'This snippet contains '], [0, [0, 1], 2, 'all media types'], [0, [], 0, ' for testing URL transformations in reusable content.']]],
+                    [1, 'p', [[0, [], 0, 'Image card:']]],
+                    [10, 0],
+                    [1, 'p', [[0, [], 0, 'File card:']]],
+                    [10, 1],
+                    [1, 'p', [[0, [], 0, 'Video card:']]],
+                    [10, 2],
+                    [1, 'p', [[0, [], 0, 'Audio card:']]],
+                    [10, 3]
+                ]
+            })
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Snippet with all media types - Lexical',
+            mobiledoc: '{}',
+            lexical: JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This snippet contains ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 3,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'all media types',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: null,
+                                    target: null,
+                                    title: null,
+                                    url: '__GHOST_URL__/snippet-link'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' for testing URL transformations in reusable content.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Image card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'image',
+                            version: 1,
+                            src: '__GHOST_URL__/content/images/snippet-inline.jpg',
+                            width: 1200,
+                            height: 800,
+                            alt: 'Snippet image',
+                            caption: 'Image in snippet'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'File card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'file',
+                            version: 1,
+                            src: '__GHOST_URL__/content/files/snippet-document.pdf',
+                            fileName: 'snippet-doc.pdf',
+                            fileTitle: 'Snippet Document',
+                            fileCaption: 'A test document file',
+                            fileSize: 1024000
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Video card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'video',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/snippet-video.mp4',
+                            fileName: 'snippet-video.mp4',
+                            width: 1920,
+                            height: 1080,
+                            duration: 60,
+                            thumbnailSrc: '__GHOST_URL__/content/images/snippet-video-thumb.jpg',
+                            caption: 'Snippet video file',
+                            cardWidth: 'regular'
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Audio card:',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'audio',
+                            version: 1,
+                            src: '__GHOST_URL__/content/media/snippet-audio.mp3',
+                            title: 'Snippet Audio',
+                            duration: 120,
+                            thumbnailSrc: '__GHOST_URL__/content/images/snippet-audio-thumb.jpg'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            })
         }
     ],
 
@@ -1410,7 +2161,9 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[4]),
         createPost(DataGenerator.Content.posts[5]),
         createPost(DataGenerator.Content.posts[6]),
-        createPost(DataGenerator.Content.posts[7])
+        createPost(DataGenerator.Content.posts[7]),
+        createPost(DataGenerator.Content.posts[8]),
+        createPost(DataGenerator.Content.posts[9])
     ];
 
     const tags = [
@@ -1418,7 +2171,8 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[1]),
         createTag(DataGenerator.Content.tags[2]),
         createTag(DataGenerator.Content.tags[3]),
-        createTag(DataGenerator.Content.tags[4])
+        createTag(DataGenerator.Content.tags[4]),
+        createTag(DataGenerator.Content.tags[5])
     ];
 
     const roles = [
@@ -1534,6 +2288,18 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             meta_description: 'meta description for draft post'
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[8].id,
+            og_image: '__GHOST_URL__/content/images/og.jpg',
+            twitter_image: '__GHOST_URL__/content/images/twitter.jpg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[9].id,
+            og_image: '__GHOST_URL__/content/images/og.jpg',
+            twitter_image: '__GHOST_URL__/content/images/twitter.jpg'
         }
     ];
 
@@ -1574,6 +2340,18 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             tag_id: DataGenerator.Content.tags[3].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[8].id,
+            tag_id: DataGenerator.Content.tags[5].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[9].id,
+            tag_id: DataGenerator.Content.tags[5].id,
             sort_order: 0
         }
     ];
@@ -1688,6 +2466,18 @@ DataGenerator.forKnex = (function () {
         {
             id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[7].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[8].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[9].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         }
@@ -1807,7 +2597,8 @@ DataGenerator.forKnex = (function () {
     const newsletters = [
         createNewsletter(DataGenerator.Content.newsletters[0]),
         createNewsletter(DataGenerator.Content.newsletters[1]),
-        createNewsletter(DataGenerator.Content.newsletters[2])
+        createNewsletter(DataGenerator.Content.newsletters[2]),
+        createNewsletter(DataGenerator.Content.newsletters[3])
 
     ];
 
@@ -1923,7 +2714,7 @@ DataGenerator.forKnex = (function () {
     const members_click_events = redirects.map((redirect, index) => {
         return {
             id: ObjectId().toHexString(),
-            member_id: members[index].id,
+            member_id: members[index % members.length].id,
             redirect_id: redirect.id,
             created_at: new Date()
         };
@@ -1932,7 +2723,7 @@ DataGenerator.forKnex = (function () {
     const members_feedback = posts.map((redirect, index) => {
         return {
             id: ObjectId().toHexString(),
-            member_id: members[index].id,
+            member_id: members[index % members.length].id,
             post_id: redirect.id,
             score: index % 2,
             created_at: new Date()
@@ -1940,7 +2731,9 @@ DataGenerator.forKnex = (function () {
     });
 
     const snippets = [
-        createBasic(DataGenerator.Content.snippets[0])
+        createBasic(DataGenerator.Content.snippets[0]),
+        createBasic(DataGenerator.Content.snippets[1]),
+        createBasic(DataGenerator.Content.snippets[2])
     ];
 
     const custom_theme_settings = [

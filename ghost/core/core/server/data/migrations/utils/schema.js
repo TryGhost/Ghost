@@ -11,7 +11,7 @@ const {createNonTransactionalMigration, createTransactionalMigration} = require(
  *
  * @returns {Migration}
  */
-function createAddColumnMigration(table, column, columnDefinition) {
+function createAddColumnMigration(table, column, columnDefinition, options = {}) {
     return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
@@ -20,7 +20,8 @@ function createAddColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.addColumn,
             operationVerb: 'Adding',
-            columnDefinition
+            columnDefinition,
+            options
         }),
         // down
         commands.createColumnMigration({
@@ -29,7 +30,8 @@ function createAddColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.dropColumn,
             operationVerb: 'Removing',
-            columnDefinition
+            columnDefinition,
+            options
         })
     );
 }
@@ -41,7 +43,7 @@ function createAddColumnMigration(table, column, columnDefinition) {
  *
  * @returns {Migration}
  */
-function createDropColumnMigration(table, column, columnDefinition) {
+function createDropColumnMigration(table, column, columnDefinition, options = {}) {
     return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
@@ -49,7 +51,9 @@ function createDropColumnMigration(table, column, columnDefinition) {
             column,
             dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.dropColumn,
-            operationVerb: 'Removing'
+            operationVerb: 'Removing',
+            columnDefinition,
+            options
         }),
         // down
         commands.createColumnMigration({
@@ -58,7 +62,8 @@ function createDropColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.addColumn,
             operationVerb: 'Adding',
-            columnDefinition
+            columnDefinition,
+            options
         })
     );
 }
@@ -73,6 +78,19 @@ function createDropColumnMigration(table, column, columnDefinition) {
 function createSetNullableMigration(table, column, options = {}) {
     return createTransactionalMigration(
         async function up(knex) {
+            try {
+                // Check if column is already nullable
+                const isNullable = await isColumnNullable(table, column, knex);
+                if (isNullable) {
+                    logging.warn(`Setting nullable: ${table}.${column} - skipping as column is already nullable`);
+                    return;
+                }
+            } catch (error) {
+                // If we can't check the column status, proceed with the migration
+                // This maintains backward compatibility with implementation before checks were added
+                logging.warn(`Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`);
+            }
+
             logging.info(`Setting nullable: ${table}.${column}`);
             await commands.setNullable(table, column, knex);
         },
@@ -80,7 +98,21 @@ function createSetNullableMigration(table, column, options = {}) {
             if (DatabaseInfo.isSQLite(knex)) {
                 options.disableForeignKeyChecks = false;
             }
-            logging.info(`Dropping nullable:  ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
+
+            try {
+                // Check if column is already not nullable
+                const isNotNullable = await isColumnNotNullable(table, column, knex);
+                if (isNotNullable) {
+                    logging.warn(`Dropping nullable: ${table}.${column} - skipping as column is already not nullable`);
+                    return;
+                }
+            } catch (error) {
+                // If we can't check the column status, proceed with the migration
+                // This maintains backward compatibility with implementation before checks were added
+                logging.warn(`Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`);
+            }
+
+            logging.info(`Dropping nullable: ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
             if (options.disableForeignKeyChecks) {
                 await knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(knex);
             }
@@ -141,6 +173,48 @@ function createRenameColumnMigration(table, from, to) {
 }
 
 /**
+ * Check if a column is already not nullable
+ * @param {string} table
+ * @param {string} column
+ * @param {import('knex').Knex} knex
+ * @returns {Promise<boolean>}
+ */
+async function isColumnNotNullable(table, column, knex) {
+    const client = knex.client.config.client;
+
+    if (client === 'sqlite3') {
+        const response = await knex.raw('PRAGMA table_info(??)', [table]);
+        const columnInfo = response.find(col => col.name === column);
+        return columnInfo && columnInfo.notnull === 1;
+    } else {
+        const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
+        const columnInfo = response[0].find(col => col.Field === column);
+        return columnInfo && columnInfo.Null === 'NO';
+    }
+}
+
+/**
+ * Check if a column is already nullable
+ * @param {string} table
+ * @param {string} column
+ * @param {import('knex').Knex} knex
+ * @returns {Promise<boolean>}
+ */
+async function isColumnNullable(table, column, knex) {
+    const client = knex.client.config.client;
+
+    if (client === 'sqlite3') {
+        const response = await knex.raw('PRAGMA table_info(??)', [table]);
+        const columnInfo = response.find(col => col.name === column);
+        return columnInfo && columnInfo.notnull === 0;
+    } else {
+        const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
+        const columnInfo = response[0].find(col => col.Field === column);
+        return columnInfo && columnInfo.Null === 'YES';
+    }
+}
+
+/**
  * @param {string} table
  * @param {string} column
  * @param {Object} options
@@ -153,6 +227,20 @@ function createDropNullableMigration(table, column, options = {}) {
             if (DatabaseInfo.isSQLite(knex)) {
                 options.disableForeignKeyChecks = false;
             }
+
+            try {
+                // Check if column is already not nullable
+                const isNotNullable = await isColumnNotNullable(table, column, knex);
+                if (isNotNullable) {
+                    logging.warn(`Dropping nullable: ${table}.${column} - skipping as column is already not nullable`);
+                    return;
+                }
+            } catch (error) {
+                // If we can't check the column status, proceed with the migration
+                // This maintains backward compatibility with implementation before checks were added
+                logging.warn(`Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`);
+            }
+
             logging.info(`Dropping nullable: ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
 
             if (options.disableForeignKeyChecks) {
@@ -168,6 +256,19 @@ function createDropNullableMigration(table, column, options = {}) {
             }
         },
         async function down(knex) {
+            try {
+                // Check if column is already nullable
+                const isNullable = await isColumnNullable(table, column, knex);
+                if (isNullable) {
+                    logging.warn(`Setting nullable: ${table}.${column} - skipping as column is already nullable`);
+                    return;
+                }
+            } catch (error) {
+                // If we can't check the column status, proceed with the migration
+                // This maintains backward compatibility with implementation before checks were added
+                logging.warn(`Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`);
+            }
+
             logging.info(`Setting nullable: ${table}.${column}`);
             await commands.setNullable(table, column, knex);
         }

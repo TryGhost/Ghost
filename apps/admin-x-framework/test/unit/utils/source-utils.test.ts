@@ -259,6 +259,17 @@ describe('source-utils', () => {
                 isDirectTraffic: false
             });
         });
+
+        it('handles Direct source explicitly', () => {
+            expect(getFaviconDomain('Direct')).toEqual({
+                domain: null,
+                isDirectTraffic: true
+            });
+            expect(getFaviconDomain('Direct', 'https://example.com')).toEqual({
+                domain: null,
+                isDirectTraffic: true
+            });
+        });
     });
 
     describe('processSources', () => {

@@ -24,7 +24,7 @@ describe('Newsletters Content API', function () {
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({
-                newsletters: Array(3).fill(newsletterSnapshot)
+                newsletters: Array(4).fill(newsletterSnapshot)
             });
     });
 
@@ -36,7 +36,7 @@ describe('Newsletters Content API', function () {
                 etag: matchers.anyEtag
             })
             .matchBodySnapshot({
-                newsletters: Array(3).fill(newsletterSnapshot)
+                newsletters: Array(4).fill(newsletterSnapshot)
             });
     });
 });

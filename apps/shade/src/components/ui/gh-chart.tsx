@@ -21,10 +21,11 @@ interface TooltipProps {
     active?: boolean;
     payload?: TooltipPayload[];
     range?: number;
+    showHours?: boolean;
     color?: string;
 }
 
-const GhCustomTooltipContent = ({active, payload, range, color}: TooltipProps) => {
+const GhCustomTooltipContent = ({active, payload, range, showHours, color}: TooltipProps) => {
     if (!active || !payload?.length) {
         return null;
     }
@@ -34,7 +35,7 @@ const GhCustomTooltipContent = ({active, payload, range, color}: TooltipProps) =
 
     return (
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
+            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0, showHours)}</div>}
             <div className='flex items-start gap-2'>
                 <span className='mt-1.5 inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
                 <div className='flex grow items-start justify-between gap-5'>
@@ -83,6 +84,7 @@ interface GhAreaChartProps {
     showYAxisValues?: boolean;
     showHorizontalLines?: boolean;
     dataFormatter?: (value: number) => string;
+    showHours?: boolean;
 }
 
 const GhAreaChart: React.FC<GhAreaChartProps> = ({
@@ -96,7 +98,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     allowDataOverflow = false,
     showYAxisValues = true,
     showHorizontalLines = true,
-    dataFormatter = formatNumber
+    dataFormatter = formatNumber,
+    showHours = false
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -113,6 +116,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     const isWholeMid = Number.isInteger(midValue);
     const yTicks = isWholeMid ? [yRange[0], midValue, yRange[1]] : yRange;
 
+    const xTickHoursOnly = showHours && range === 1;
+
     return (
         <ChartContainer className={
             cn('w-full', className)
@@ -126,13 +131,13 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                 }}
                 syncId={syncId}
             >
-                <CartesianGrid horizontal={showHorizontalLines} vertical={false} />
+                <CartesianGrid horizontal={showHorizontalLines} stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                     axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                     dataKey="date"
                     interval={0}
-                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range)} />}
-                    tickFormatter={value => formatDisplayDateWithRange(String(value), range)}
+                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range, showHours, xTickHoursOnly)} />}
+                    tickFormatter={value => formatDisplayDateWithRange(String(value), range, showHours)}
                     tickLine={false}
                     tickMargin={10}
                     ticks={data && data.length > 0 ? [data[0].date, data[data.length - 1].date] : []}
@@ -150,7 +155,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
                 />
                 <ChartTooltip
-                    content={<GhCustomTooltipContent color={color} range={range} />}
+                    content={<GhCustomTooltipContent color={color} range={range} showHours={showHours} />}
                     cursor={true}
                     isAnimationActive={false}
                     position={{y: 10}}

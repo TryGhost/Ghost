@@ -1,5 +1,5 @@
 import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
-import {StatsConfig} from '../../../src/providers/FrameworkProvider';
+import {StatsConfig} from '../../../src/providers/framework-provider';
 import {getTinybirdToken} from '../../../src/api/tinybird';
 
 // Mock getTinybirdToken
@@ -100,17 +100,25 @@ describe('stats-config utils', () => {
             };
             expect(getStatEndpointUrl(config, 'analytics')).toBe('https://api.example.com/v0/pipes/analytics.json?');
         });
+
+        it('prefers endpointBrowser over endpoint when both are present', () => {
+            const config: StatsConfig = {
+                endpoint: 'https://api.example.com',
+                endpointBrowser: 'https://browser-api.example.com'
+            };
+            expect(getStatEndpointUrl(config, 'analytics')).toBe('https://browser-api.example.com/v0/pipes/analytics.json?');
+        });
     });
 
     describe('getToken', () => {
         const mockTokenFromApi: string = 'api-fetched-token';
-        
+
         it('returns token from getTinybirdToken when it returns a valid token', () => {
             vi.mocked(getTinybirdToken).mockReturnValue({
                 data: {tinybird: {token: mockTokenFromApi}},
                 refetch: vi.fn()
             } as any);
-            
+
             expect(getToken()).toBe(mockTokenFromApi);
         });
 
@@ -119,7 +127,7 @@ describe('stats-config utils', () => {
                 data: {tinybird: {token: null}},
                 refetch: vi.fn()
             } as any);
-            
+
             expect(getToken()).toBeUndefined();
         });
 
@@ -128,7 +136,7 @@ describe('stats-config utils', () => {
                 data: {tinybird: {token: undefined}},
                 refetch: vi.fn()
             } as any);
-            
+
             expect(getToken()).toBeUndefined();
         });
 
@@ -137,7 +145,7 @@ describe('stats-config utils', () => {
                 data: {tinybird: {token: 123}},
                 refetch: vi.fn()
             } as any);
-            
+
             expect(getToken()).toBeUndefined();
         });
 
@@ -146,7 +154,7 @@ describe('stats-config utils', () => {
                 data: undefined,
                 refetch: vi.fn()
             } as any);
-            
+
             expect(getToken()).toBeUndefined();
         });
     });

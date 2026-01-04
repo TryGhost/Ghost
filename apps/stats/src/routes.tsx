@@ -1,12 +1,7 @@
-import Growth from './views/Stats/Growth';
-import Locations from './views/Stats/Locations';
-import Newsletters from './views/Stats/Newsletters';
-import Overview from './views/Stats/Overview';
-import Web from './views/Stats/Web';
-import {RouteObject} from '@tryghost/admin-x-framework';
+import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from './hooks/withFeatureFlag';
 
-export const APP_ROUTE_PREFIX = '/analytics';
+export const APP_ROUTE_PREFIX = '/';
 
 // Wrap all components with feature flag protection
 //  e.g.
@@ -14,24 +9,24 @@ export const APP_ROUTE_PREFIX = '/analytics';
 
 export const routes: RouteObject[] = [
     {
-        path: '/',
-        index: true,
-        element: <Overview />
-    },
-    {
-        path: '/web/',
-        element: <Web />
-    },
-    {
-        path: '/locations/',
-        element: <Locations />
-    },
-    {
-        path: '/growth/',
-        element: <Growth />
-    },
-    {
-        path: '/newsletters/',
-        element: <Newsletters />
+        path: 'analytics',
+        children: [
+            {
+                index: true,
+                lazy: lazyComponent(() => import('./views/Stats/Overview'))
+            },
+            {
+                path: 'web',
+                lazy: lazyComponent(() => import('./views/Stats/Web'))
+            },
+            {
+                path: 'growth',
+                lazy: lazyComponent(() => import('./views/Stats/Growth'))
+            },
+            {
+                path: 'newsletters',
+                lazy: lazyComponent(() => import('./views/Stats/Newsletters'))
+            }
+        ]
     }
 ];

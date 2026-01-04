@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './card';
 import {Button} from './button';
 import {Eye, User, Coins} from 'lucide-react';
@@ -6,7 +6,14 @@ import {Eye, User, Coins} from 'lucide-react';
 const meta = {
     title: 'Components / Card',
     component: Card,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Flexible containers for displaying content with consistent styling. Includes standard cards for general content and specialized KPI cards for displaying metrics and trends.'
+            }
+        }
+    }
 } satisfies Meta<typeof Card>;
 
 export default meta;

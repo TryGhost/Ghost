@@ -2,7 +2,9 @@ import {createQuery} from '../utils/api/hooks';
 
 export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
 export interface JSONObject { [key: string]: JSONValue }
-export interface JSONArray extends Array<string|number|boolean|Date|JSONObject|JSONValue> {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface JSONArray extends Array<string|number|boolean|Date|JSONObject|JSONValue> {}
 
 export type Config = {
     version: string;
@@ -21,6 +23,15 @@ export type Config = {
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     mail: string;
+    stats?: JSONObject & {
+        endpoint?: string;
+        id?: string;
+    };
+    emailAnalytics?: boolean;
+    tenor?: {
+        googleApiKey?: string | null;
+        contentFilter?: string;
+    };
     hostSettings?: {
         siteId?: string;
         limits?: {

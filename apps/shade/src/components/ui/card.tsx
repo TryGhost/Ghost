@@ -191,12 +191,12 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     );
     return (
         <div className='relative flex flex-col items-start gap-2 lg:flex-row lg:gap-3'>
-            <div className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+            <div className='text-[2.2rem] font-semibold leading-none tracking-tighter' data-testid='kpi-card-header-value'>
                 {value}
             </div>
             {diffDirection && diffDirection !== 'hidden' &&
             <>
-                <div className={diffContainerClassName}>
+                <div className={diffContainerClassName} data-testid='kpi-card-header-diff'>
                     <span className='font-medium leading-none'>{diffValue}</span>
                     {diffDirection === 'up' &&
                         <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
@@ -205,7 +205,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                         <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
                     }
                     {diffTooltip &&
-                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 -translate-y-full rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
+                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
                             {diffTooltip}
                         </div>
                     }
@@ -216,6 +216,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
 
 const EmptyCard = React.forwardRef<

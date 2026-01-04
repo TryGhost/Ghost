@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -50,7 +50,12 @@
       "ghost"
     ],
     "rules": {
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "ghost/filenames/match-regex": [
+        "error",
+        "^[a-z0-9.-]+$",
+        false
+      ]
     },
     "settings": {
       "react": {
@@ -80,7 +85,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "4.7.0",
     "jsdom": "24.1.3",
-    "vite": "5.4.19",
+    "vite": "5.4.20",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "1.6.1"
   }

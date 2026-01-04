@@ -32,22 +32,24 @@ module.exports = class ActivityPubServiceWrapper {
             IdentityTokenServiceWrapper.instance
         );
 
-        const initActivityPubService = async () => {
-            await ActivityPubServiceWrapper.instance.initialiseWebhooks();
-            ActivityPubServiceWrapper.initialised = true;
-        };
-
-        if (settingsCache.get('social_web_enabled')) {
-            await initActivityPubService();
-        } else {
-            const initActivityPubServiceLater = async () => {
-                if (settingsCache.get('social_web_enabled') && !ActivityPubServiceWrapper.initialised) {
-                    await initActivityPubService();
+        async function configureActivityPub() {
+            if (settingsCache.get('social_web_enabled')) {
+                if (!ActivityPubServiceWrapper.initialised) {
+                    await ActivityPubServiceWrapper.instance.enable();
+                    ActivityPubServiceWrapper.initialised = true;
                 }
-            };
-
-            events.on('settings.labs.edited', initActivityPubServiceLater);
-            events.on('settings.social_web.edited', initActivityPubServiceLater);
+            } else {
+                if (ActivityPubServiceWrapper.initialised) {
+                    await ActivityPubServiceWrapper.instance.disable();
+                    ActivityPubServiceWrapper.initialised = false;
+                }
+            }
         }
+
+        events.on('settings.labs.edited', configureActivityPub);
+        events.on('settings.social_web.edited', configureActivityPub);
+        events.on('settings.is_private.edited', configureActivityPub);
+
+        configureActivityPub();
     }
 };

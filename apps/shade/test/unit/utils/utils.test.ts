@@ -124,6 +124,34 @@ describe('utils', function () {
     });
 
     describe('formatDisplayDate function', function () {
+        it('returns an empty string if the date string is an empty string', function () {
+            const formatted = formatDisplayDate('');
+            assert.equal(formatted, '');
+        });
+
+        it('returns an empty string if the date string is an invalid type', function () {
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(123);
+            assert.equal(formatted, '');
+        });
+
+        it('does not throw an error if the date string is a Date object', function () {
+            const date = new Date('2023-04-15');
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(date);
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles a date string with time but without a timezone', function () {
+            const formatted = formatDisplayDate('2023-04-15 12:00:00');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles an ISO8601 date string', function () {
+            const formatted = formatDisplayDate('2023-04-15T12:00:00Z');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
         it('formats a date string to display format', function () {
             // Using a predefined date for testing, bypassing the current date check
             // Test different year formatting without mocking Date
@@ -174,12 +202,44 @@ describe('utils', function () {
         it('formats a decimal as a percentage', function () {
             let formatted = formatPercentage(0.123);
             assert.equal(formatted, '12%');
-            
+
             formatted = formatPercentage(0.789);
             assert.equal(formatted, '79%');
-            
+
             formatted = formatPercentage(1);
             assert.equal(formatted, '100%');
+        });
+
+        it('formats zero percentage', function () {
+            const formatted = formatPercentage(0);
+            assert.equal(formatted, '0%');
+        });
+
+        it('formats very small percentages with 2 decimal places', function () {
+            let formatted = formatPercentage(0.0005);
+            assert.equal(formatted, '0.05%');
+
+            formatted = formatPercentage(0.0009);
+            assert.equal(formatted, '0.09%');
+        });
+
+        it('formats small percentages with 1 decimal place', function () {
+            let formatted = formatPercentage(0.005);
+            assert.equal(formatted, '0.5%');
+
+            formatted = formatPercentage(0.009);
+            assert.equal(formatted, '0.9%');
+        });
+
+        it('formats large percentages with thousand separators', function () {
+            let formatted = formatPercentage(10);
+            assert.equal(formatted, '1,000%');
+
+            formatted = formatPercentage(12.34567);
+            assert.equal(formatted, '1,235%');
+
+            formatted = formatPercentage(100);
+            assert.equal(formatted, '10,000%');
         });
     });
 }); 

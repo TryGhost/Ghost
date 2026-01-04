@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {H1, H2, H3, H4, HeadingProps} from './heading';
 
 const meta = {

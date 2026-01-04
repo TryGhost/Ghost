@@ -44,7 +44,7 @@ describe('Frontend behavior tests', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -256,7 +256,7 @@ describe('Frontend behavior tests', function () {
         });
 
         after(async function () {
-            urlUtils.restore();
+            await urlUtils.restore();
             await configUtils.restore();
         });
 
@@ -363,7 +363,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -468,7 +468,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -521,7 +521,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -613,7 +613,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -689,7 +689,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -836,7 +836,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -941,7 +941,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
                 sinon.restore();
             });
 
@@ -999,7 +999,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -1050,7 +1050,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
                 sinon.restore();
             });
 
@@ -1225,7 +1225,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -1311,7 +1311,7 @@ describe('Frontend behavior tests', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
 
-                        $('.post-card').length.should.equal(4);
+                        $('.post-card').length.should.equal(6);
                     });
             });
 
@@ -1456,7 +1456,7 @@ describe('Frontend behavior tests', function () {
 
         afterEach(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
         });
 
         after(function () {

@@ -1,4 +1,4 @@
-import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
+import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staff-token';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
@@ -201,6 +201,7 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
                 users: [userToEdit]
             }},
@@ -423,6 +424,67 @@ test.describe('User profile', async () => {
         await modal.getByTitle('Email Notifications').click();
 
         await expect(modal.getByLabel(/Tips & donations/)).not.toBeVisible();
+    });
+
+    test('Hides paid subscription notification options when Stripe disabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Email Notifications').click();
+
+        await expect(modal.getByLabel(/New paid members/)).not.toBeVisible();
+        await expect(modal.getByLabel(/Paid member cancellations/)).not.toBeVisible();
+    });
+
+    test('Shows paid subscription notification options when Stripe enabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Email Notifications').click();
+
+        await expect(modal.getByLabel(/New paid members/)).toBeVisible();
+        await expect(modal.getByLabel(/Paid member cancellations/)).toBeVisible();
     });
 
     test('Warns when leaving without saving', async ({page}) => {

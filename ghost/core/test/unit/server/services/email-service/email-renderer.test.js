@@ -353,6 +353,69 @@ describe('Email renderer', function () {
             const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
             assert.equal(replacements[1].getValue(member), memberHmac);
         });
+
+        it('returns uniqueid replacement', function () {
+            const html = 'Hello %%{uniqueid}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{uniqueid\\}%%/g');
+            assert.equal(replacements[0].id, 'uniqueid');
+
+            // Should return a valid UUID
+            const uniqueId = replacements[0].getValue(member);
+            assert.ok(uniqueId);
+            assert.equal(typeof uniqueId, 'string');
+            // UUID v4 format check (8-4-4-4-12 hexadecimal characters)
+            assert.ok(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uniqueId));
+        });
+
+        it('returns different uniqueid values for different calls', function () {
+            const html = 'Hello %%{uniqueid}%%,';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+
+            const uniqueId1 = replacements[0].getValue(member);
+            const uniqueId2 = replacements[0].getValue(member);
+
+            // Each call should return a different UUID
+            assert.notEqual(uniqueId1, uniqueId2);
+        });
+
+        it('handles multiple uniqueid instances in same email', function () {
+            const html = 'Hello %%{uniqueid}%% and %%{uniqueid}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2); // uniqueid + list_unsubscribe
+            assert.equal(replacements[0].token.toString(), '/%%\\{uniqueid\\}%%/g');
+            assert.equal(replacements[0].id, 'uniqueid');
+
+            // Should still be recognized as a single replacement definition
+            const uniqueIdReplacements = replacements.filter(r => r.id === 'uniqueid');
+            assert.equal(uniqueIdReplacements.length, 1);
+        });
+
+        it('does not call uniqueid getValue when not used in email content', function () {
+            // Spy on crypto.randomUUID to verify it's not called
+            const randomUUIDSpy = sinon.spy(crypto, 'randomUUID');
+
+            const html = 'Hello %%{first_name}%%, welcome to our newsletter!';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+
+            // Should only have first_name and list_unsubscribe replacements
+            assert.equal(replacements.length, 2);
+
+            // Verify uniqueid is not included in replacements
+            const uniqueIdReplacements = replacements.filter(r => r.id === 'uniqueid');
+            assert.equal(uniqueIdReplacements.length, 0);
+
+            // Call getValue on all replacements to simulate actual usage
+            replacements.forEach((replacement) => {
+                replacement.getValue(member);
+            });
+
+            // Verify crypto.randomUUID was never called since uniqueid wasn't used
+            assert.equal(randomUUIDSpy.callCount, 0);
+
+            randomUUIDSpy.restore();
+        });
     });
 
     describe('buildReplacementDefinitions with locales', function () {
@@ -1054,6 +1117,43 @@ describe('Email renderer', function () {
             };
             const response = emailRenderer.getReplyToAddress({}, newsletter);
             assert.equal(response, null);
+        });
+
+        it('passes useFallbackAddress parameter to getAddress', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'newsletter'
+            });
+            let capturedOptions;
+            emailAddressService.getAddress = (addresses, options) => {
+                capturedOptions = options;
+                return {
+                    from: addresses.from,
+                    replyTo: {address: 'fallback@fallback.example.com'}
+                };
+            };
+            const response = emailRenderer.getReplyToAddress({}, newsletter, true);
+            assert.equal(capturedOptions.useFallbackAddress, true);
+            assert.equal(response, 'fallback@fallback.example.com');
+        });
+
+        it('defaults useFallbackAddress to false when not provided', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'custom@example.com'
+            });
+            let capturedOptions;
+            emailAddressService.getAddress = (addresses, options) => {
+                capturedOptions = options;
+                return {
+                    from: addresses.from,
+                    replyTo: addresses.replyTo
+                };
+            };
+            emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(capturedOptions.useFallbackAddress, false);
         });
     });
 

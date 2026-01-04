@@ -145,6 +145,14 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 
+    it('should redirect published posts to their live url with ?member_status=paid', async function () {
+        await request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/?member_status=paid')
+            .expect(301)
+            .expect('Location', '/short-and-sweet/')
+            .expect('Cache-Control', testUtils.cacheRules.year)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
     it('should render scheduled email-only posts', async function () {
         const newsletters = await testUtils.fixtures.insertNewsletters();
         const newsletterId = newsletters[0].id;

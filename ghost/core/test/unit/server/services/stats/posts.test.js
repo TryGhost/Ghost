@@ -1,5 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
+const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
 
 /**
@@ -73,15 +74,20 @@ describe('PostsStatsService', function () {
     async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
+
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_created_events').insert({
             id: eventId,
             member_id: memberId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt,
+            created_at: moment(createdAt).utc().toISOString(),
             source: 'member'
         });
     }
@@ -91,16 +97,20 @@ describe('PostsStatsService', function () {
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
 
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_subscription_created_events').insert({
             id: subCreatedEventId,
             member_id: memberId,
             subscription_id: subscriptionId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
 
         await db('members_paid_subscription_events').insert({
@@ -108,14 +118,14 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             subscription_id: subscriptionId,
             mrr_delta: mrr,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
-    async function _createFreeSignup(postId, referrerSource,memberId = null) {
+    async function _createFreeSignup(postId, referrerSource, memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
     }
 
     async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
@@ -143,7 +153,7 @@ describe('PostsStatsService', function () {
             post_id: postId,
             from: `/r/${finalRedirectId}`,
             to: `https://example.com/external-link`,
-            created_at: new Date()
+            created_at: new Date().toISOString()
         });
         return finalRedirectId;
     }
@@ -155,7 +165,7 @@ describe('PostsStatsService', function () {
             id: clickEventId,
             member_id: memberId,
             redirect_id: redirectId,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
@@ -172,6 +182,41 @@ describe('PostsStatsService', function () {
             post_id: postId,
             author_id: authorId,
             sort_order: sortOrder
+        });
+    }
+
+    async function _createNewsletterSubscription(newsletterId, memberId, subscribed, createdAt) {
+        eventIdCounter += 1;
+        const eventId = `newsletter_event_${eventIdCounter}`;
+        await db('members_subscribe_events').insert({
+            id: eventId,
+            newsletter_id: newsletterId,
+            member_id: memberId,
+            subscribed: subscribed ? 1 : 0,
+            created_at: createdAt.toISOString()
+        });
+    }
+
+    async function _createMember(memberId, emailDisabled = false, email = null) {
+        await db('members').insert({
+            id: memberId,
+            email: email || `${memberId}@test.com`,
+            email_disabled: emailDisabled ? 1 : 0
+        });
+    }
+
+    async function _createMemberNewsletterSubscription(memberId, newsletterId) {
+        await db('members_newsletters').insert({
+            id: `mn_${memberId}_${newsletterId}`,
+            member_id: memberId,
+            newsletter_id: newsletterId
+        });
+    }
+
+    async function _createNewsletter(newsletterId, name = null) {
+        await db('newsletters').insert({
+            id: newsletterId,
+            name: name || `Newsletter ${newsletterId}`
         });
     }
 
@@ -417,8 +462,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Only post1 should be returned since post2 has no events in the date range
@@ -428,8 +474,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Both posts should be returned
@@ -585,8 +632,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have the result for referrer_past
@@ -596,8 +644,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have results for both referrers
@@ -647,6 +696,20 @@ describe('PostsStatsService', function () {
 
             const expectedResults = [
                 {post_id: 'post1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
+
+        it('returns growth stats for a page', async function () {
+            await _createFreeSignup('page1', 'referrer_1');
+            await _createPaidSignup('page1', 500, 'referrer_1');
+            await _createPaidConversion('page1', 'page2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('page1');
+
+            const expectedResults = [
+                {post_id: 'page1', free_members: 2, paid_members: 1, mrr: 500}
             ];
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
@@ -1580,6 +1643,433 @@ describe('PostsStatsService', function () {
             otherPosts.forEach((post) => {
                 assert.equal(post.views, 0, `Backfilled post ${post.post_id} should have 0 views`);
             });
+        });
+    });
+
+    describe('getNewsletterSubscriberStats', function () {
+        beforeEach(async function () {
+            // Create newsletters table
+            await db.schema.createTable('newsletters', function (table) {
+                table.string('id').primary();
+                table.string('name');
+            });
+
+            // Create members table
+            await db.schema.createTable('members', function (table) {
+                table.string('id').primary();
+                table.string('email');
+                table.boolean('email_disabled').defaultTo(false);
+            });
+
+            // Create members_newsletters table
+            await db.schema.createTable('members_newsletters', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+            });
+
+            // Create members_subscribe_events table
+            await db.schema.createTable('members_subscribe_events', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+                table.boolean('subscribed');
+                table.dateTime('created_at');
+            });
+        });
+
+        afterEach(async function () {
+            await db.schema.dropTableIfExists('members_subscribe_events');
+            await db.schema.dropTableIfExists('members_newsletters');
+            await db.schema.dropTableIfExists('members');
+            await db.schema.dropTableIfExists('newsletters');
+        });
+
+        it('should return cumulative values instead of deltas', async function () {
+            const newsletterId = 'newsletter1';
+            
+            // Create newsletter
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create members
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current subscriptions (total = 2)
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Subscribe/unsubscribe events
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-03T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-03T01:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data, 'Should have data property');
+            assert.equal(result.data.length, 1, 'Should return one stats object');
+            
+            const stats = result.data[0];
+            assert.equal(stats.total, 2, 'Total subscribers should be 2');
+            assert.ok(Array.isArray(stats.values), 'Should have values array');
+            assert.equal(stats.values.length, 3, 'Should have 3 days of data');
+
+            // Verify cumulative values (not deltas)
+            assert.equal(stats.values[0].date, '2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Day 1: cumulative total of 1');
+
+            assert.equal(stats.values[1].date, '2024-01-02');
+            assert.equal(stats.values[1].value, 2, 'Day 2: cumulative total of 2');
+
+            assert.equal(stats.values[2].date, '2024-01-03');
+            assert.equal(stats.values[2].value, 2, 'Day 3: cumulative total of 2 (one unsubscribe, one resubscribe)');
+        });
+
+        it('should handle empty date range', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data);
+            assert.equal(result.data.length, 1);
+            assert.equal(result.data[0].total, 0);
+            // Should backfill all dates in range even when there are no events
+            assert.equal(result.data[0].values.length, 3, 'Should have 3 days of data');
+            assert.equal(result.data[0].values[0].date, '2024-01-01');
+            assert.equal(result.data[0].values[0].value, 0);
+            assert.equal(result.data[0].values[1].date, '2024-01-02');
+            assert.equal(result.data[0].values[1].value, 0);
+            assert.equal(result.data[0].values[2].date, '2024-01-03');
+            assert.equal(result.data[0].values[2].value, 0);
+        });
+
+        it('should exclude email_disabled members', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1', false);
+            await _createMember('member2', true); // email_disabled
+
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Total should exclude email_disabled member');
+            assert.equal(stats.values.length, 2, 'Should backfill all dates in range');
+            assert.equal(stats.values[0].date, '2024-01-01', 'First date should be 2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Should show 1 on first day (member1 subscribes)');
+            assert.equal(stats.values[1].date, '2024-01-02', 'Second date should be 2024-01-02');
+            assert.equal(stats.values[1].value, 1, 'Should stay 1 on second day (member2 excluded due to email_disabled)');
+        });
+
+        it('should calculate correct starting point for historical data', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 5 members
+            for (let i = 1; i <= 5; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: all 5 are subscribers
+            for (let i = 1; i <= 5; i++) {
+                await _createMemberNewsletterSubscription(`member${i}`, newsletterId);
+            }
+
+            // Historical events showing growth from 3 to 5
+            await _createNewsletterSubscription(newsletterId, 'member4', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member5', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 5, 'Current total should be 5');
+            assert.equal(stats.values[0].value, 4, 'Day 1: should show 4 cumulative (3 initial + 1 new)');
+            assert.equal(stats.values[1].value, 5, 'Day 2: should show 5 cumulative (4 + 1 new)');
+        });
+
+        it('should handle negative growth correctly', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 3 members
+            for (let i = 1; i <= 3; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: only member1 is still subscribed
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+
+            // Historical events showing decline from 3 to 1
+            await _createNewsletterSubscription(newsletterId, 'member2', false, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Current total should be 1');
+            assert.equal(stats.values[0].value, 2, 'Day 1: should show 2 cumulative (3 initial - 1)');
+            assert.equal(stats.values[1].value, 1, 'Day 2: should show 1 cumulative (2 - 1)');
+        });
+
+        it('should handle multiple events on same day', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state: 2 subscribers
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Multiple events on the same day
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T08:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-01T10:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-01T12:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-01T14:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-01',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 1, 'Should have one day of data');
+            assert.equal(stats.values[0].value, 2, 'Net change for the day: +3 -1 = +2, starting from 0 = 2');
+        });
+
+        it('should respect date filters', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+            await _createMemberNewsletterSubscription('member3', newsletterId);
+
+            // Events spanning multiple days
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-05T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-10T00:00:00Z'));
+
+            // Request only middle date range
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-04',
+                date_to: '2024-01-06',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
+            // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+            assert.equal(stats.values[0].date, '2024-01-04');
+            assert.equal(stats.values[0].value, 2, 'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)');
+            assert.equal(stats.values[1].date, '2024-01-05');
+            assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+            assert.equal(stats.values[2].date, '2024-01-06');
+            assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+        });
+    });
+
+    describe('_fillMissingDates', function () {
+        it('fills in all missing dates in the range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-03', value: 15}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 5, 'Should have 5 days');
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 10);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 10, 'Should carry forward from Jan 1');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 15);
+            assert.equal(result[3].date, '2024-01-04');
+            assert.equal(result[3].value, 15, 'Should carry forward from Jan 3');
+            assert.equal(result[4].date, '2024-01-05');
+            assert.equal(result[4].value, 15, 'Should carry forward from Jan 3');
+        });
+
+        it('uses startingValue when no events exist at the beginning', function () {
+            const sparseValues = [
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                100
+            );
+
+            assert.equal(result.length, 5);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 100, 'Should use startingValue for first day');
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 100, 'Should carry forward startingValue');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 20, 'Should use actual value when event exists');
+        });
+
+        it('handles empty values array', function () {
+            const result = service._fillMissingDates(
+                [],
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                50
+            );
+
+            assert.equal(result.length, 3);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 50);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 50);
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 50);
+        });
+
+        it('returns values as-is when no date range provided', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, sparseValues, 'Should return input values unchanged when no date range');
+        });
+
+        it('returns empty array when values is null and no dates', function () {
+            const result = service._fillMissingDates(
+                null,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, []);
+        });
+
+        it('handles single day range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 25}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-01',
+                'UTC',
+                10
+            );
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 25);
+        });
+
+        it('respects timezone when parsing dates', function () {
+            const sparseValues = [
+                {date: '2024-01-02', value: 30}
+            ];
+
+            // Using different timezones shouldn't affect YYYY-MM-DD date strings
+            const resultUTC = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                20
+            );
+
+            const resultNY = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'America/New_York',
+                20
+            );
+
+            assert.equal(resultUTC.length, 3);
+            assert.equal(resultNY.length, 3);
+            assert.deepEqual(resultUTC, resultNY, 'Should produce same results for date-only strings');
+        });
+
+        it('handles values with all dates already present', function () {
+            const completeValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-02', value: 15},
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                completeValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 3);
+            assert.deepEqual(result, completeValues, 'Should return same values when all dates present');
         });
     });
 });

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 import {cn} from '@/lib/utils';
-import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 const Dialog = DialogPrimitive.Root;
 

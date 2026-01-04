@@ -1,14 +1,8 @@
-import Growth from './views/PostAnalytics/Growth/Growth';
-import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
-import Overview from './views/PostAnalytics/Overview/Overview';
-import PostAnalytics from './views/PostAnalytics/PostAnalytics';
-import PostAnalyticsProvider from './providers/PostAnalyticsContext';
-import Web from './views/PostAnalytics/Web/Web';
 import {ErrorPage} from '@tryghost/shade';
-import {RouteObject} from '@tryghost/admin-x-framework';
-// import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
+import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
+// import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
-export const APP_ROUTE_PREFIX = '/posts';
+export const APP_ROUTE_PREFIX = '/';
 
 // Wrap components with feature flag protection where needed
 //  e.g.
@@ -21,32 +15,59 @@ export const routes: RouteObject[] = [
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
             {
-
                 // Post Analytics
-                path: 'analytics/:postId',
-                element: (
-                    <PostAnalyticsProvider>
-                        <PostAnalytics />
-                    </PostAnalyticsProvider>
-                ),
+                path: 'posts/analytics/:postId',
+                lazy: async () => {
+                    const [
+                        {default: PostAnalyticsProvider},
+                        {default: PostAnalytics}
+                    ] = await Promise.all([
+                        import('./providers/post-analytics-context'),
+                        import('./views/PostAnalytics/post-analytics')
+                    ]);
+                    return {
+                        element: (
+                            <PostAnalyticsProvider>
+                                <PostAnalytics />
+                            </PostAnalyticsProvider>
+                        )
+                    };
+                },
                 children: [
                     {
                         path: '',
-                        element: <Overview />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Overview/overview'))
                     },
                     {
                         path: 'web',
-                        element: <Web />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Web/web'))
                     },
                     {
                         path: 'growth',
-                        element: <Growth />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Growth/growth'))
                     },
                     {
                         path: 'newsletter',
-                        element: <Newsletter />
+                        lazy: lazyComponent(() => import('@views/PostAnalytics/Newsletter/newsletter'))
                     }
                 ]
+            },
+            {
+                path: 'tags',
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/Tags/tags'))
+                    },
+                    {
+                        path: ':tagSlug',
+                        element: null
+                    }
+                ]
+            },
+            {
+                path: 'comments',
+                lazy: lazyComponent(() => import('@views/comments/comments'))
             },
 
             // Error handling

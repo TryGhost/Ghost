@@ -1548,8 +1548,9 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
             rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
-        });
+        });    
     });
+
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
             getStub.withArgs('members_enabled').returns(true);

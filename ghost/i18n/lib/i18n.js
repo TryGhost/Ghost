@@ -1,4 +1,8 @@
 const i18next = require('i18next');
+const path = require('path');
+const fs = require('fs');
+const errors = require('@tryghost/errors');
+const debug = require('@tryghost/debug')('i18n');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -16,6 +20,7 @@ const SUPPORTED_LOCALES = [
     'eo', // Esperanto
     'es', // Spanish
     'et', // Estonian
+    'eu', // Basque
     'fa', // Persian/Farsi
     'fi', // Finnish
     'fr', // French
@@ -84,18 +89,97 @@ function generateResources(locales, ns) {
     }, {});
 }
 
+function generateThemeResources(lng, themeLocalesPath) {
+    if (!themeLocalesPath) {
+        return {
+            [lng]: {
+                theme: {}
+            }
+        };
+    }
+
+    // Get available theme locales by scanning the directory
+    let availableLocales = [];
+    try {
+        const files = fs.readdirSync(themeLocalesPath);
+        availableLocales = files
+            .filter(file => file.endsWith('.json'))
+            .map(file => file.replace('.json', ''));
+    } catch (err) {
+        // If we can't read the directory, fall back to just trying the requested locale and English
+        
+        availableLocales = [lng, 'en'];
+    }
+
+    // Always include the requested locale and English as fallbacks
+    const locales = [...new Set([lng, ...availableLocales, 'en'])];
+
+    return locales.reduce((acc, locale) => {
+        let res;
+        // Try to load the locale file, fallback to English
+        try {
+            const localePath = path.join(themeLocalesPath, `${locale}.json`);
+            if (fs.existsSync(localePath)) {
+                // Delete from require cache to ensure fresh reads for theme files
+                delete require.cache[require.resolve(localePath)];
+                res = require(localePath);
+            } else {
+                throw new errors.IncorrectUsageError({
+                    message: `Locale file not found: ${locale}`,
+                    context: locale
+                });
+            }
+        } catch (err) {
+            debug(`Error loading theme locale file: ${locale}`);
+            // Fallback to English if it's not the locale we're already trying
+            if (locale !== 'en') {
+                try {
+                    const enPath = path.join(themeLocalesPath, 'en.json');
+                    if (fs.existsSync(enPath)) {
+                        // Delete from require cache to ensure fresh reads for theme files
+                        delete require.cache[require.resolve(enPath)];
+                        res = require(enPath);
+                    } else {
+                        res = {};
+                    }
+                } catch (enErr) {
+                    res = {};
+                }
+            } else {
+                debug(`Theme en.json file not found`);
+                res = {};
+            }
+        }
+
+        // Handle the same default export issue as other namespaces
+        acc[locale] = {
+            theme: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
+        };
+        return acc;
+    }, {});
+}
+
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'theme'} ns
  */
-module.exports = (lng = 'en', ns = 'portal') => {
+module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     const i18nextInstance = i18next.createInstance();
     const interpolation = {
         prefix: '{',
         suffix: '}'
     };
-
-    let resources = generateResources(SUPPORTED_LOCALES, ns);
+    if (ns === 'theme') {
+        interpolation.escapeValue = false;
+    }
+    let resources;
+    if (ns !== 'theme') {
+        resources = generateResources(SUPPORTED_LOCALES, ns);
+    } else {
+        debug(`generateThemeResources: ${lng}, ${options.themePath}`);
+        resources = generateThemeResources(lng, options.themePath);
+    }
+    
     i18nextInstance.init({
         lng,
 

@@ -30,7 +30,7 @@ describe('Advanced URL Configurations', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             mockManager.restore();
         });
 
@@ -97,6 +97,48 @@ describe('Advanced URL Configurations', function () {
                     .expect(200)
                     .expect('Cache-Control', testUtils.cacheRules.noCache);
             });
+        });
+    });
+
+    describe('Subdirectory config: /ghost/ redirects with separate admin', function () {
+        before(async function () {
+            configUtils.set('url', 'http://localhost/blog/');
+            configUtils.set('admin:redirects', true);
+            configUtils.set('admin:url', 'http://admin.localhost/');
+            urlUtils.stubUrlUtilsFromConfig();
+            await testUtils.startGhost();
+            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+        });
+
+        after(async function () {
+            await urlUtils.restore();
+            await configUtils.restore();
+            await testUtils.startGhost();
+            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+        });
+
+        it('/blog/ghost should redirect to external admin SPA', async function () {
+            await request.get('/blog/ghost')
+                .expect(301)
+                .expect('Location', 'http://admin.localhost/blog/ghost/');
+        });
+
+        it('/blog/ghost/ should redirect to external admin SPA', async function () {
+            await request.get('/blog/ghost/')
+                .expect(301)
+                .expect('Location', 'http://admin.localhost/blog/ghost/');
+        });
+
+        it('/blog/ghost/api/admin/posts/ should redirect to external admin API route', async function () {
+            await request.get('/blog/ghost/api/admin/posts/')
+                .expect(301)
+                .expect('Location', 'http://admin.localhost/blog/ghost/api/admin/posts/');
+        });
+
+        it('/blog/ghost/api/admin/site/ should redirect to external admin API route', async function () {
+            await request.get('/blog/ghost/api/admin/site/')
+                .expect(301)
+                .expect('Location', 'http://admin.localhost/blog/ghost/api/admin/site/');
         });
     });
 });

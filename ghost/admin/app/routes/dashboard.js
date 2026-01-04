@@ -1,28 +1,11 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
+import {inject as service} from '@ember/service';
 
-export default class DashboardRoute extends AuthenticatedRoute {
+// Redirect all users to analytics since dashboard has been retired
+export default class DashboardRoute extends AdminRoute {
+    @service router;
+
     async beforeModel() {
-        super.beforeModel(...arguments);
-
-        if (this.session.user.isContributor) {
-            return this.transitionTo('posts');
-        } else if (!this.session.user.isAdmin) {
-            return this.transitionTo('site');
-        }
-    }
-
-    buildRouteInfoMetadata() {
-        return {
-            mainClasses: ['gh-main-wide']
-        };
-    }
-
-    // trigger a background load of members plus labels for filter dropdown
-    setupController() {
-        super.setupController(...arguments);
-    }
-
-    model() {
-        return this.controllerFor('dashboard').loadSiteStatusTask.perform();
+        this.router.replaceWith('stats-x');
     }
 }
