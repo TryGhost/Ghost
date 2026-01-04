@@ -13,6 +13,7 @@ export const centsToDollars = (value : number) => {
     return Math.round(value / 100);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface postAnalyticsProps {}
 
 const Growth: React.FC<postAnalyticsProps> = () => {

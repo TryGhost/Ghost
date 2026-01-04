@@ -63,18 +63,30 @@ const Comment = ghostBookshelf.Model.extend({
 
     // Called by our filtered-collection bookshelf plugin
     applyCustomQuery(options) {
-        const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+        const excludedStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
 
         this.query((qb) => {
-            qb.where(function () {
-                this.whereNotIn('comments.status', excludedCommentStatuses)
-                    .orWhereExists(function () {
-                        this.select(1)
-                            .from('comments as replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .whereNotIn('replies.status', excludedCommentStatuses);
-                    });
-            });
+            if (options.browseAll) {
+                // Browse All: simply exclude statuses, no thread structure preservation
+                qb.whereNotIn('comments.status', excludedStatuses);
+            } else {
+                // Default: preserve thread structure by including deleted parents with replies
+                qb.where(function () {
+                    this.whereNotIn('comments.status', excludedStatuses)
+                        .orWhereExists(function () {
+                            this.select(1)
+                                .from('comments as replies')
+                                .whereRaw('replies.parent_id = comments.id')
+                                .whereNotIn('replies.status', excludedStatuses);
+                        });
+                });
+            }
+
+            // Filter by report count (extracted from filter in controller)
+            if (options.reportCount !== undefined) {
+                const subquery = '(SELECT COUNT(*) FROM comment_reports WHERE comment_reports.comment_id = comments.id)';
+                qb.whereRaw(`${subquery} ${options.reportCount.op} ?`, [options.reportCount.value]);
+            }
         });
     },
 
@@ -118,6 +130,7 @@ const Comment = ghostBookshelf.Model.extend({
     orderAttributes: function orderAttributes() {
         let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
         keys.push('count__likes');
+        keys.push('count__reports');
         return keys;
     },
 
@@ -235,6 +248,11 @@ const Comment = ghostBookshelf.Model.extend({
                         // Relations
                         'inReplyTo', 'member', 'count.likes', 'count.liked'
                     ];
+                    
+                    // Add count.reports for admin requests only
+                    if (options.isAdmin) {
+                        options.withRelated.push('count.reports');
+                    }
                 } else {
                     options.withRelated = [
                         // Relations
@@ -242,6 +260,12 @@ const Comment = ghostBookshelf.Model.extend({
                         // Replies (limited to 3)
                         'replies', 'replies.member', 'replies.inReplyTo', 'replies.count.likes', 'replies.count.liked'
                     ];
+                    
+                    // Add count.reports for admin requests only
+                    if (options.isAdmin) {
+                        options.withRelated.push('count.reports');
+                        options.withRelated.push('replies.count.reports');
+                    }
                 }
             }
 
@@ -306,6 +330,14 @@ const Comment = ghostBookshelf.Model.extend({
                     // Return zero
                     qb.select(ghostBookshelf.knex.raw('0')).as('count__liked');
                 });
+            },
+            reports(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('comment_reports.id')
+                        .from('comment_reports')
+                        .whereRaw('comment_reports.comment_id = comments.id')
+                        .as('count__reports');
+                });
             }
         };
     },
@@ -317,9 +349,10 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-        // The comment model additionally supports having a parentId and isAdmin option
         options.push('parentId');
         options.push('isAdmin');
+        options.push('browseAll');
+        options.push('reportCount');
 
         return options;
     }

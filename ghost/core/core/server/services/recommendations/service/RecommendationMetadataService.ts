@@ -61,11 +61,11 @@ export class RecommendationMetadataService {
             if (response.statusCode >= 200 && response.statusCode < 300) {
                 try {
                     return JSON.parse(response.body);
-                } catch (e) {
+                } catch {
                     return undefined;
                 }
             }
-        } catch (e) {
+        } catch {
             return undefined;
         }
     }
@@ -76,7 +76,7 @@ export class RecommendationMetadataService {
         }
         try {
             return new URL(url);
-        } catch (e) {
+        } catch {
             return null;
         }
     }

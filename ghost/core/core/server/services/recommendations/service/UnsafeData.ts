@@ -185,7 +185,7 @@ export class UnsafeData {
                 throw new errors.ValidationError({message: `${this.field} must be a valid URL`});
             }
             return url;
-        } catch (e) {
+        } catch {
             throw new errors.ValidationError({message: `${this.field} must be a valid URL`});
         }
     }

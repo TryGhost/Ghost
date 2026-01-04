@@ -1,4 +1,5 @@
 import {AutomatedEmailFactory} from './factories/automated-email-factory';
+import {CommentFactory} from './factories/comment-factory';
 import {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 import {HttpClient} from './persistence/adapters/http-client';
 import {MemberFactory} from './factories/member-factory';
@@ -44,5 +45,13 @@ export function createAutomatedEmailFactory(httpClient: HttpClient): AutomatedEm
         'automated_emails'
     );
     return new AutomatedEmailFactory(adapter);
+}
+
+export function createCommentFactory(httpClient: HttpClient): CommentFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'comments'
+    );
+    return new CommentFactory(adapter);
 }
 

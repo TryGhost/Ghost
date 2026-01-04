@@ -5,12 +5,81 @@ import MainForm from './forms/main-form';
 import Pagination from './pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
 import {SortingForm} from './forms/sorting-form';
+import {parseCommentIdFromHash} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../app-context';
-import {useEffect} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
+
+/**
+ * Find the iframe element that contains the current window, if any.
+ * Returns null if not in an iframe or cross-origin.
+ */
+function findContainingIframe(doc: Document): HTMLIFrameElement | null {
+    const currentWindow = doc.defaultView;
+    if (!currentWindow?.parent || currentWindow.parent === currentWindow) {
+        return null;
+    }
+
+    try {
+        const iframes = currentWindow.parent.document.getElementsByTagName('iframe');
+        for (const iframe of iframes) {
+            if (iframe.contentWindow === currentWindow) {
+                return iframe;
+            }
+        }
+    } catch {
+        // Cross-origin - can't access parent
+    }
+    return null;
+}
+
+// Fallback timeout if iframe height doesn't change (content fits exactly)
+const IFRAME_RESIZE_TIMEOUT_MS = 500;
+
+/**
+ * Wait for iframe to resize then call callback (on initial load, iframe starts small).
+ * Uses ResizeObserver with a fallback timeout.
+ */
+function onIframeResize(
+    iframe: HTMLIFrameElement,
+    callback: () => void
+): () => void {
+    const initialHeight = iframe.clientHeight;
+    let triggered = false;
+
+    const trigger = () => {
+        if (triggered) {
+            return;
+        }
+        triggered = true;
+        observer.disconnect();
+        callback();
+    };
+
+    const observer = new ResizeObserver(() => {
+        if (iframe.clientHeight !== initialHeight) {
+            trigger();
+        }
+    });
+    observer.observe(iframe);
+
+    const timeout = setTimeout(trigger, IFRAME_RESIZE_TIMEOUT_MS);
+
+    return () => {
+        clearTimeout(timeout);
+        observer.disconnect();
+    };
+}
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, commentsIsLoading, t} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo} = useAppContext();
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
+        element.scrollIntoView({behavior: 'smooth', block: 'center'});
+        dispatchAction('highlightComment', {commentId});
+        dispatchAction('setScrollTarget', null);
+    }, [dispatchAction]);
 
     useEffect(() => {
         const elem = document.getElementById(ROOT_DIV_ID);
@@ -29,6 +98,47 @@ const Content = () => {
             }
         }
     }, []);
+
+    useEffect(() => {
+        if (!labs?.commentPermalinks) {
+            return;
+        }
+
+        const handleHashChange = () => {
+            const commentId = parseCommentIdFromHash(window.parent.location.hash);
+            if (commentId && containerRef.current) {
+                const doc = containerRef.current.ownerDocument;
+                const element = doc.getElementById(commentId);
+                if (element) {
+                    scrollToComment(element, commentId);
+                }
+            }
+        };
+
+        window.parent.addEventListener('hashchange', handleHashChange);
+        return () => window.parent.removeEventListener('hashchange', handleHashChange);
+    }, [labs?.commentPermalinks, scrollToComment]);
+
+    useEffect(() => {
+        if (!commentIdToScrollTo || commentsIsLoading || !containerRef.current) {
+            return;
+        }
+
+        const doc = containerRef.current.ownerDocument;
+        const element = doc.getElementById(commentIdToScrollTo);
+        if (!element) {
+            return;
+        }
+
+        const iframe = findContainingIframe(doc);
+        if (iframe) {
+            return onIframeResize(iframe, () => {
+                scrollToComment(element, commentIdToScrollTo);
+            });
+        }
+
+        scrollToComment(element, commentIdToScrollTo);
+    }, [commentIdToScrollTo, commentsIsLoading, comments, scrollToComment]);
 
     const isPaidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
@@ -55,7 +165,7 @@ const Content = () => {
                     </span>
                 </div>
             )}
-            <div className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
+            <div ref={containerRef} className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
                 {commentsComponents}
             </div>
             <Pagination />

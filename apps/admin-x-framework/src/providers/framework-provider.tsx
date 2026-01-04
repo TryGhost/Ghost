@@ -10,6 +10,7 @@ export interface StatsConfig {
     endpointBrowser?: string;
     id?: string;
     token?: string;
+    version?: string;
     local?: {
         enabled?: boolean;
         endpoint?: string;

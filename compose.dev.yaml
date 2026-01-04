@@ -115,6 +115,9 @@ services:
       - "80:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      # Mount Caddyfile for live config changes without rebuilding
+      - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
       ghost-dev:
         condition: service_healthy
