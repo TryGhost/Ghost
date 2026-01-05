@@ -30,7 +30,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await settingsService.setCommentsEnabled('all');
     });
 
-    test('reply to comment', async ({page}) => {
+    test('reply to top comment', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
         const paidTier = await tiersService.getFirstPaidTier();
@@ -63,6 +63,38 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await expect(postPage.comments.comments).toHaveCount(3);
         await expect(postPage.comments.comments.first()).toContainText('Main comment');
         await expect(postPage.comments.comments.last()).toContainText('Reply to main comment 2');
+    });
+
+    test('reply to reply comment', async ({page}) => {
+        const post = await postFactory.create({status: 'published'});
+        const member = await memberFactory.create({status: 'free'});
+        const paidTier = await tiersService.getFirstPaidTier();
+        const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
+
+        const comment = await commentFactory.create({
+            html: 'Main comment',
+            post_id: post.id,
+            member_id: member.id
+        });
+
+        await commentFactory.create({
+            html: 'Reply to main comment',
+            post_id: post.id,
+            member_id: paidMember.id,
+            parent_id: comment.id
+        });
+
+        await signInAsMember(page, paidMember);
+
+        const postPage = new PostPage(page);
+        await postPage.gotoPost(post.slug);
+        await postPage.comments.waitForCommentsToLoad();
+
+        await postPage.comments.replyToComment('Reply to main comment', 'My reply');
+        await expect(postPage.comments.comments).toHaveCount(3);
+        await expect(postPage.comments.comments.first()).toContainText('Main comment');
+        await expect(postPage.comments.comments.last()).toContainText('My reply');
+        await expect(postPage.comments.comments.last()).toContainText('Replied to: Reply to main comment');
     });
 
     test('show replies and load more replies', async ({page}) => {

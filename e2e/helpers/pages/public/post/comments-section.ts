@@ -76,6 +76,10 @@ export class CommentsSection {
         await this.comments.waitFor({state: 'visible', timeout: 10000});
     }
 
+    getCommentComponentByText(text: string): Locator {
+        return this.getCommentByText(text).locator('../..');
+    }
+
     getCommentByText(text: string): Locator {
         return this.commentsFrame
             .getByTestId('comment-content')
@@ -83,7 +87,7 @@ export class CommentsSection {
     }
 
     async replyToComment(commentText: string, replyText: string): Promise<void> {
-        const comment = this.getCommentByText(commentText).locator('../..');
+        const comment = this.getCommentComponentByText(commentText);
         await comment.getByRole('button', {name: 'Reply'}).click();
         await this.commentsFrame.getByTestId('reply-form').getByTestId('editor').fill(replyText);
         await this.addReplyButton.click();

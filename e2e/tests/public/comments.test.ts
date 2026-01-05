@@ -30,7 +30,7 @@ test.describe('Ghost Public - Comments', () => {
         await settingsService.setCommentsEnabled('all');
     });
 
-    test('sort comments', async ({page}) => {
+    test('sort comments by date and show more', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
         const paidTier = await tiersService.getFirstPaidTier();
@@ -67,35 +67,6 @@ test.describe('Ghost Public - Comments', () => {
         await postPage.comments.sortBy('Newest');
         await expect(postPage.comments.sortingButton).toContainText('Newest');
         await expect(postPage.comments.comments.first()).toContainText('Test comment 1');
-        await expect(postPage.comments.comments.last()).toContainText('Test comment 20');
-        await expect(postPage.comments.showMoreCommentsButton).toBeVisible();
-        await expect(postPage.comments.showMoreCommentsButton).toContainText('Load more (5)');
-
-        await postPage.comments.showMoreCommentsButton.click();
-        await expect(postPage.comments.comments).toHaveCount(25);
-        await expect(postPage.comments.comments.last()).toContainText('Test comment 25');
-    });
-
-    test('show more comments', async ({page}) => {
-        const post = await postFactory.create({status: 'published'});
-        const member = await memberFactory.create({status: 'free'});
-
-        const comments = Array.from({length: 25}, (_, index) => {
-            return {
-                html: `Test comment ${index + 1}`,
-                post_id: post.id,
-                member_id: member.id,
-                created_at: new Date(Date.now() - index * 1000).toISOString()
-            };
-        });
-
-        await commentFactory.createMany(comments);
-
-        const postPage = new PostPage(page);
-        await postPage.gotoPost(post.slug);
-        await postPage.comments.waitForCommentsToLoad();
-
-        await expect(postPage.comments.sortingButton).toContainText('Best');
         await expect(postPage.comments.comments.last()).toContainText('Test comment 20');
         await expect(postPage.comments.showMoreCommentsButton).toBeVisible();
         await expect(postPage.comments.showMoreCommentsButton).toContainText('Load more (5)');
