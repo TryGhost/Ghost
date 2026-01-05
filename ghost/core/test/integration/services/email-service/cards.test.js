@@ -86,6 +86,7 @@ describe('Can send cards via email', function () {
     beforeEach(function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+        sinon.stub(Date.prototype, 'getFullYear').returns(2025); // for consistent snapshots
     });
 
     afterEach(async function () {

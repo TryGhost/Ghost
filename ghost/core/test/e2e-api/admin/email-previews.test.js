@@ -41,6 +41,8 @@ describe('Email Preview API', function () {
     beforeEach(function () {
         mockManager.mockMailgun();
         sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
+        // Stub Date.getFullYear to return a fixed year for consistent snapshots
+        sinon.stub(Date.prototype, 'getFullYear').returns(2025);
     });
 
     before(async function () {
