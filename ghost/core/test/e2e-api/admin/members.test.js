@@ -2397,6 +2397,266 @@ describe('Members API', function () {
         });
     });
 
+    describe('can_comment', function () {
+        // Helper to format dates consistently for database insertion
+        const formatDate = (date) => {
+            return date.toISOString().slice(0, 19).replace('T', ' ');
+        };
+
+        it('New members can comment by default (no bans)', async function () {
+            const member = await createMember({
+                email: `can-comment-default-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            const {body} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0]).have.property('can_comment');
+            should(body.members[0].can_comment).be.true();
+        });
+
+        it('Can ban a member from commenting via comment-bans endpoint', async function () {
+            const member = await createMember({
+                email: `can-comment-ban-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Verify member can comment by default
+            let response = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+            should(response.body.members[0].can_comment).be.true();
+
+            // Ban member from commenting (permanent ban, no expires_at)
+            await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{reason: 'Test ban'}]})
+                .expectStatus(201);
+
+            // Verify member can no longer comment
+            response = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+            should(response.body.members[0].can_comment).be.false();
+        });
+
+        it('Can unban a member from commenting (soft delete)', async function () {
+            const member = await createMember({
+                email: `can-comment-unban-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Create a ban
+            const banResponse = await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{reason: 'Test ban'}]})
+                .expectStatus(201);
+
+            const banId = banResponse.body.comment_bans[0].id;
+
+            // Verify member cannot comment
+            let response = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+            should(response.body.members[0].can_comment).be.false();
+
+            // Verify ban appears in browse
+            let bansResponse = await agent
+                .get(`/members/${member.id}/comment-bans/`)
+                .expectStatus(200);
+            should(bansResponse.body.comment_bans.length).equal(1);
+
+            // Unban the member (sets deleted_at)
+            await agent
+                .delete(`/members/${member.id}/comment-bans/${banId}/`)
+                .expectStatus(204);
+
+            // Verify member can comment again
+            response = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+            should(response.body.members[0].can_comment).be.true();
+
+            // Soft-deleted bans are filtered out of browse results
+            bansResponse = await agent
+                .get(`/members/${member.id}/comment-bans/`)
+                .expectStatus(200);
+            should(bansResponse.body.comment_bans.length).equal(0);
+        });
+
+        it('Returns can_comment in member read response', async function () {
+            const member = await createMember({
+                email: `can-comment-read-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            const {body} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0]).have.property('can_comment');
+            should(body.members[0].can_comment).be.true();
+        });
+
+        it('Returns can_comment in member browse response', async function () {
+            const uniqueEmail = `can-comment-browse-${Date.now()}@test.com`;
+            await createMember({
+                email: uniqueEmail,
+                name: 'Test Member'
+            });
+
+            const {body} = await agent
+                .get(`/members/?filter=email:'${uniqueEmail}'`)
+                .expectStatus(200);
+
+            should(body.members.length).equal(1);
+            should(body.members[0]).have.property('can_comment');
+            should(body.members[0].can_comment).be.true();
+        });
+
+        it('Temporary bans expire automatically', async function () {
+            const member = await createMember({
+                email: `can-comment-expired-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Create a ban that expired in the past
+            const pastDate = new Date(Date.now() - 5000); // 5 seconds ago
+            await models.Base.knex('members_comment_bans').insert({
+                id: ObjectId().toHexString(),
+                member_id: member.id,
+                reason: 'Expired test ban',
+                expires_at: formatDate(pastDate),
+                created_at: formatDate(new Date())
+            });
+
+            // Even though there's a ban record, it's expired so can_comment should be true
+            const {body} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0].can_comment).be.true();
+        });
+
+        it('Active temporary ban blocks commenting until expiry', async function () {
+            const member = await createMember({
+                email: `can-comment-future-ban-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Create a ban that expires in the future
+            const futureDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+            await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{
+                    reason: 'Temporary ban',
+                    expires_at: futureDate.toISOString()
+                }]})
+                .expectStatus(201);
+
+            // Ban is still active, so can_comment should be false
+            const {body} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0].can_comment).be.false();
+        });
+
+        it('Multiple bans - member cannot comment while any ban is active', async function () {
+            const member = await createMember({
+                email: `can-comment-multiple-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Create first ban (expired)
+            const pastDate = new Date(Date.now() - 5000);
+            await models.Base.knex('members_comment_bans').insert({
+                id: ObjectId().toHexString(),
+                member_id: member.id,
+                reason: 'First ban - expired',
+                expires_at: formatDate(pastDate),
+                created_at: formatDate(new Date())
+            });
+
+            // Create second ban (permanent)
+            await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{reason: 'Second ban - permanent'}]})
+                .expectStatus(201);
+
+            // Should not be able to comment due to active permanent ban
+            const {body} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            should(body.members[0].can_comment).be.false();
+        });
+
+        it('Unbanned bans are not returned in browse results', async function () {
+            const member = await createMember({
+                email: `can-comment-history-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            // Create and then unban
+            const banResponse = await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{reason: 'First ban'}]})
+                .expectStatus(201);
+
+            // Verify ban appears in browse
+            let bansResponse = await agent
+                .get(`/members/${member.id}/comment-bans/`)
+                .expectStatus(200);
+            should(bansResponse.body.comment_bans.length).equal(1);
+
+            // Unban
+            await agent
+                .delete(`/members/${member.id}/comment-bans/${banResponse.body.comment_bans[0].id}/`)
+                .expectStatus(204);
+
+            // Soft-deleted bans are not returned in browse results
+            bansResponse = await agent
+                .get(`/members/${member.id}/comment-bans/`)
+                .expectStatus(200);
+            should(bansResponse.body.comment_bans.length).equal(0);
+
+            // Create a second ban
+            await agent
+                .post(`/members/${member.id}/comment-bans/`)
+                .body({comment_bans: [{reason: 'Second ban'}]})
+                .expectStatus(201);
+
+            // Now should have 1 active ban
+            bansResponse = await agent
+                .get(`/members/${member.id}/comment-bans/`)
+                .expectStatus(200);
+            should(bansResponse.body.comment_bans.length).equal(1);
+            should(bansResponse.body.comment_bans[0].reason).equal('Second ban');
+        });
+
+        it('Cannot ban non-existent member', async function () {
+            await agent
+                .post('/members/000000000000000000000000/comment-bans/')
+                .body({comment_bans: [{reason: 'Test'}]})
+                .expectStatus(404);
+        });
+
+        it('Cannot unban non-existent ban', async function () {
+            const member = await createMember({
+                email: `can-comment-nobans-${Date.now()}@test.com`,
+                name: 'Test Member'
+            });
+
+            await agent
+                .delete(`/members/${member.id}/comment-bans/000000000000000000000000/`)
+                .expectStatus(404);
+        });
+    });
+
     // Log out
     it('Can log out', async function () {
         const member = await createMember({

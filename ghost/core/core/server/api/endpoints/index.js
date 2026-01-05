@@ -201,6 +201,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
+    get commentBans() {
+        return apiFramework.pipeline(require('./comment-bans'), localUtils);
+    },
+
     get commentReplies() {
         return apiFramework.pipeline(require('./comment-replies'), localUtils);
     },

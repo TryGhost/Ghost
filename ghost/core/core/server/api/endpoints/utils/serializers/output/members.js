@@ -178,6 +178,9 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
+        // can_comment is computed from the absence of active bans
+        // If count.active_comment_bans is 0 or undefined, member can comment
+        can_comment: (json.count?.active_comment_bans || 0) === 0,
         attribution: serializeAttribution(json.attribution),
         unsubscribe_url: json.unsubscribe_url
     };

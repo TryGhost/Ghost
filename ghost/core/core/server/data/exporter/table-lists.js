@@ -29,6 +29,7 @@ const BACKUP_TABLES = [
     'email_recipients',
     'email_recipient_failures',
     'members_cancel_events',
+    'members_comment_bans',
     'members_payment_events',
     'members_login_events',
     'members_email_change_events',

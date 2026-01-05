@@ -11,7 +11,8 @@ const messages = {
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
-    cannotEditComment: 'You do not have permission to edit comments'
+    cannotEditComment: 'You do not have permission to edit comments',
+    memberCannotComment: 'You do not have permission to comment.'
 };
 
 class CommentsService {
@@ -61,6 +62,17 @@ class CommentsService {
 
     /** @private */
     checkCommentAccess(memberModel) {
+        // can_comment is computed from the count of active bans
+        // A member can comment if they have no active bans (count is 0 or undefined)
+        const activeCommentBans = memberModel.get('count__active_comment_bans') || 0;
+        const canComment = activeCommentBans === 0;
+
+        if (!canComment) {
+            throw new errors.NoPermissionError({
+                message: tpl(messages.memberCannotComment)
+            });
+        }
+
         if (this.enabled === 'paid' && memberModel.get('status') === 'free') {
             throw new errors.NoPermissionError({
                 message: tpl(messages.cannotCommentOnPost)
@@ -98,7 +110,7 @@ class CommentsService {
         }, {
             require: true,
             ...options,
-            withRelated: ['products']
+            withRelated: ['products', 'count.active_comment_bans']
         });
 
         this.checkCommentAccess(memberModel);
@@ -261,7 +273,7 @@ class CommentsService {
         }, {
             require: true,
             ...options,
-            withRelated: ['products']
+            withRelated: ['products', 'count.active_comment_bans']
         });
 
         this.checkCommentAccess(memberModel);
@@ -319,7 +331,7 @@ class CommentsService {
         }, {
             require: true,
             ...options,
-            withRelated: ['products']
+            withRelated: ['products', 'count.active_comment_bans']
         });
 
         this.checkCommentAccess(memberModel);

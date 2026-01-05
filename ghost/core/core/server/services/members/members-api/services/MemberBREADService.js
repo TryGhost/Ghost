@@ -208,7 +208,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
-            'newsletters'
+            'newsletters',
+            'count.active_comment_bans'
         ];
 
         const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
@@ -384,7 +385,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
-            'newsletters'
+            'newsletters',
+            'count.active_comment_bans'
         ];
 
         if (options.limit === 'all' || options.limit > 100) {

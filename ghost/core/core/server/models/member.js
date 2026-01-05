@@ -137,7 +137,7 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters', 'commentBans'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
@@ -206,6 +206,11 @@ const Member = ghostBookshelf.Model.extend({
 
     stripeCustomers() {
         return this.hasMany('MemberStripeCustomer', 'member_id', 'id');
+    },
+
+    commentBans() {
+        return this.hasMany('MemberCommentBan', 'member_id', 'id')
+            .query('orderBy', 'created_at', 'DESC');
     },
 
     stripeSubscriptions() {
@@ -405,6 +410,26 @@ const Member = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
+    countRelations() {
+        return {
+            active_comment_bans: function activeCommentBans(modelOrCollection) {
+                modelOrCollection.query('columns', 'members.*', (qb) => {
+                    qb.count('members_comment_bans.id')
+                        .from('members_comment_bans')
+                        .whereRaw('members_comment_bans.member_id = members.id')
+                        .whereNull('members_comment_bans.deleted_at')
+                        .where(function () {
+                            // Format date as string for consistent comparison across SQLite and MySQL
+                            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                            this.whereNull('members_comment_bans.expires_at')
+                                .orWhere('members_comment_bans.expires_at', '>', now);
+                        })
+                        .as('count__active_comment_bans');
+                });
+            }
+        };
+    },
+
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
      * @param {String} methodName The name of the method to check valid options for.

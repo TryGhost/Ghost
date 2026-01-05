@@ -19,7 +19,8 @@ const memberFields = [
     'uuid',
     'name',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment'
 ];
 
 const memberFieldsAdmin = [
@@ -28,7 +29,8 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment'
 ];
 
 const postFields = [
@@ -71,6 +73,14 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.member) {
         response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
+        // Compute can_comment from the count of active comment bans if available
+        // A member can comment if they have no active bans (count is 0 or undefined)
+        if (response.member && jsonModel.member.count !== undefined) {
+            response.member.can_comment = (jsonModel.member.count?.active_comment_bans || 0) === 0;
+        } else if (response.member && response.member.can_comment === undefined) {
+            // Default to true if we don't have the count data
+            response.member.can_comment = true;
+        }
     } else {
         response.member = null;
     }

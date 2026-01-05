@@ -16,6 +16,7 @@ describe('MemberBreadService', function () {
             'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
             'newsletters',
+            'count.active_comment_bans',
             'productEvents'
         ];
 
