@@ -5,7 +5,7 @@ import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, test} from '@/helpers/playwright';
 import {signInAsMember} from '@/helpers/playwright/flows/sign-in';
 
-test.describe('Ghost Public - Comments', () => {
+test.describe('Ghost Public - Comments - Permission', () => {
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
     let settingsService: SettingsService;
@@ -28,12 +28,12 @@ test.describe('Ghost Public - Comments', () => {
 
             const postPage = new PostPage(page);
             await postPage.gotoPost(post.slug);
-            await postPage.comments.waitForCommentsToLoad();
+            await postPage.commentsSection.waitForCommentsToLoad();
 
-            await expect(postPage.comments.ctaBox).toBeVisible();
-            await expect(postPage.comments.signUpButton).toBeVisible();
-            await expect(postPage.comments.signInButton).toBeVisible();
-            await expect(postPage.comments.mainForm).toBeHidden();
+            await expect(postPage.commentsSection.ctaBox).toBeVisible();
+            await expect(postPage.commentsSection.signUpButton).toBeVisible();
+            await expect(postPage.commentsSection.signInButton).toBeVisible();
+            await expect(postPage.commentsSection.mainForm).toBeHidden();
         });
 
         test('free member - can add a comment', async ({page}) => {
@@ -44,18 +44,18 @@ test.describe('Ghost Public - Comments', () => {
             await signInAsMember(page, freeMember);
             const postPage = new PostPage(page);
             await postPage.gotoPost(post.slug);
-            await postPage.comments.waitForCommentsToLoad();
-            await postPage.comments.addComment(commentTexts[0]);
-            await postPage.comments.addComment(commentTexts[1]);
+            await postPage.commentsSection.waitForCommentsToLoad();
+            await postPage.commentsSection.addComment(commentTexts[0]);
+            await postPage.commentsSection.addComment(commentTexts[1]);
 
-            await expect(postPage.comments.mainForm).toBeVisible();
-            await expect(postPage.comments.ctaBox).toBeHidden();
+            await expect(postPage.commentsSection.mainForm).toBeVisible();
+            await expect(postPage.commentsSection.ctaBox).toBeHidden();
 
             // assert comment details
-            await expect(postPage.comments.commentCountText).toHaveText('2 comments');
-            await expect(postPage.comments.comments).toHaveCount(2);
-            await expect(postPage.comments.comments.first()).toContainText(commentTexts[1]);
-            await expect(postPage.comments.comments.last()).toContainText(commentTexts[0]);
+            await expect(postPage.commentsSection.commentCountText).toHaveText('2 comments');
+            await expect(postPage.commentsSection.comments).toHaveCount(2);
+            await expect(postPage.commentsSection.comments.first()).toContainText(commentTexts[1]);
+            await expect(postPage.commentsSection.comments.last()).toContainText(commentTexts[0]);
         });
 
         test('paid member - can add a comment', async ({page}) => {
@@ -68,15 +68,15 @@ test.describe('Ghost Public - Comments', () => {
             const postPage = new PostPage(page);
             await postPage.gotoPost(post.slug);
             await postPage.waitForPostToLoad();
-            await postPage.comments.waitForCommentsToLoad();
-            await postPage.comments.addComment(commentText);
+            await postPage.commentsSection.waitForCommentsToLoad();
+            await postPage.commentsSection.addComment(commentText);
 
-            await expect(postPage.comments.mainForm).toBeVisible();
-            await expect(postPage.comments.ctaBox).toBeHidden();
+            await expect(postPage.commentsSection.mainForm).toBeVisible();
+            await expect(postPage.commentsSection.ctaBox).toBeHidden();
 
             // assert comment details
-            await expect(postPage.comments.comments).toHaveCount(1);
-            await expect(postPage.comments.comments.first()).toContainText(commentText);
+            await expect(postPage.commentsSection.comments).toHaveCount(1);
+            await expect(postPage.commentsSection.comments.first()).toContainText(commentText);
         });
     });
 
@@ -93,10 +93,10 @@ test.describe('Ghost Public - Comments', () => {
             const postPage = new PostPage(page);
             await postPage.gotoPost(post.slug);
             await postPage.waitForPostToLoad();
-            await postPage.comments.waitForCommentsToLoad();
+            await postPage.commentsSection.waitForCommentsToLoad();
 
-            await expect(postPage.comments.ctaBox).toBeVisible();
-            await expect(postPage.comments.mainForm).toBeHidden();
+            await expect(postPage.commentsSection.ctaBox).toBeVisible();
+            await expect(postPage.commentsSection.mainForm).toBeHidden();
         });
 
         test('paid member - can add a comment', async ({page}) => {
@@ -109,13 +109,13 @@ test.describe('Ghost Public - Comments', () => {
             const postPage = new PostPage(page);
             await postPage.gotoPost(post.slug);
             await postPage.waitForPostToLoad();
-            await postPage.comments.waitForCommentsToLoad();
-            await postPage.comments.addComment(commentText);
+            await postPage.commentsSection.waitForCommentsToLoad();
+            await postPage.commentsSection.addComment(commentText);
 
-            await expect(postPage.comments.mainForm).toBeVisible();
-            await expect(postPage.comments.ctaBox).toBeHidden();
+            await expect(postPage.commentsSection.mainForm).toBeVisible();
+            await expect(postPage.commentsSection.ctaBox).toBeHidden();
 
-            await expect(postPage.comments.comments.first()).toContainText(commentText);
+            await expect(postPage.commentsSection.comments.first()).toContainText(commentText);
         });
     });
 
@@ -131,7 +131,7 @@ test.describe('Ghost Public - Comments', () => {
             await postPage.gotoPost(post.slug);
             await postPage.waitForPostToLoad();
 
-            await expect(postPage.comments.commentsIframe).toBeHidden();
+            await expect(postPage.commentsSection.commentsIframe).toBeHidden();
         });
     });
 });
