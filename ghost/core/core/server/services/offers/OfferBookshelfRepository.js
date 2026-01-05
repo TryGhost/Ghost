@@ -121,6 +121,7 @@ class OfferBookshelfRepository {
                 currency: json.currency,
                 duration: json.duration,
                 duration_in_months: json.duration_in_months,
+                stripe_coupon_id: json.stripe_coupon_id,
                 redemptionCount: count,
                 status: json.active ? 'active' : 'archived',
                 tier: {
@@ -215,6 +216,10 @@ class OfferBookshelfRepository {
             currency: offer.currency ? offer.currency.value : null,
             active: offer.status.value === 'active'
         };
+
+        if (offer.stripeCouponId !== undefined) {
+            data.stripe_coupon_id = offer.stripeCouponId;
+        }
 
         if (offer.isNew) {
             await this.OfferModel.add(data, options);

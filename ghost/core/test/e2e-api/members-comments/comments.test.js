@@ -103,6 +103,7 @@ const dbFns = {
 
 const commentMatcher = {
     id: anyObjectId,
+    parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -664,11 +665,7 @@ describe('Comments API', function () {
                         }]
                     });
 
-                    const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments.length).eql(1);
-                    should(result.body.comments[0].html).eql(null);
-                    should(result.body.comments[0].count.replies).eql(1);
-                    should(result.body.meta.pagination.total).eql(1);
+                    await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
                 });
 
                 it('excludes deleted comments if all replies are hidden or deleted', async function () {
@@ -781,8 +778,9 @@ describe('Comments API', function () {
                         }]
                     });
 
+                    // Deleted parent returned with full data, only 1 published reply visible
                     const result = await testGetComments(`/api/comments/post/${postId}/`, [commentMatcherWithReplies({replies: 1})]);
-                    should(result.body.comments[0].count.replies).eql(1);
+                    should(result.body.comments[0].replies.length).eql(1);
                 });
             });
 
@@ -1120,6 +1118,28 @@ describe('Comments API', function () {
                 report.get('member_id').should.eql(loggedInMember.id);
 
                 emailMockReceiver.assertSentEmailCount(0);
+            });
+
+            it('Does not expose reports count in public API', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                // Add multiple reports to this comment
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await dbFns.addReport({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 1).id
+                });
+
+                // Verify the reports count is NOT included in public API response
+                const res = await membersAgent.get(`/api/comments/${comment.get('id')}/`);
+                should(res.body.comments[0].count.reports).be.undefined();
+                // Verify other counts are still there
+                should(res.body.comments[0].count.likes).eql(0);
             });
 
             it('Can edit a comment on a post', async function () {

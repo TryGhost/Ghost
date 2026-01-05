@@ -23,6 +23,7 @@ interface ProcessedLocationData {
     percentage: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface postAnalyticsProps {}
 
 const Web: React.FC<postAnalyticsProps> = () => {

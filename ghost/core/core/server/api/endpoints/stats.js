@@ -125,7 +125,6 @@ const controller = {
             'date_to',
             'timezone',
             'member_status',
-            'tb_version',
             'post_type',
             'post_uuid',
             'pathname',

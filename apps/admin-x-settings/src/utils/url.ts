@@ -27,7 +27,7 @@ export function arePathsEqual(urlStr1: string, urlStr2: string) {
     try {
         url1 = new URL(urlStr1);
         url2 = new URL(urlStr2);
-    } catch (e) {
+    } catch {
         return false;
     }
 
