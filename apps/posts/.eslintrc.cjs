@@ -17,15 +17,18 @@ module.exports = {
         }
     },
     rules: {
-        // sort multiple import lines into alphabetical groups
+        // Sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
 
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+
         // TODO: re-enable this (maybe fixed fast refresh?)
         'react-refresh/only-export-components': 'off',
 
-        // suppress errors for missing 'import React' in JSX files, as we don't need it
+        // Suppress errors for missing 'import React' in JSX files, as we don't need it
         'react/react-in-jsx-scope': 'off',
         // ignore prop-types for now
         'react/prop-types': 'off',
@@ -34,7 +37,7 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-empty-function': 'off',
 
-        // custom react rules
+        // Custom react rules
         'react/jsx-sort-props': ['error', {
             reservedFirst: true,
             callbacksLast: true,

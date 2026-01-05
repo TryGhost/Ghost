@@ -1,10 +1,12 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
 const assert = require('assert/strict');
+const config = require('../../../core/shared/config');
 const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
 const should = require('should');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const urlUtilsHelper = require('../../utils/urlUtils');
 
 // @TODO: factor out these requires
 const ObjectId = require('bson-objectid').default;
@@ -233,6 +235,100 @@ describe('Email Preview API', function () {
                     testCleanedSnapshot(body.email_previews[0].plaintext, {
                         [selectedNewsletter.uuid]: 'requested-newsletter-uuid'
                     });
+                });
+        });
+
+        it('Mobiledoc post email preview renders with all URLs as absolute site URLs', async function () {
+            const siteUrl = config.get('url');
+            const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'});
+
+            await agent
+                .get(`email_previews/posts/${post.id}/`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const html = body.email_previews[0].html;
+                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    html.should.not.containEql('__GHOST_URL__');
+                });
+        });
+
+        it('Lexical post email preview renders with all URLs as absolute site URLs', async function () {
+            const siteUrl = config.get('url');
+            const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'});
+
+            await agent
+                .get(`email_previews/posts/${post.id}/`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const html = body.email_previews[0].html;
+                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    html.should.not.containEql('__GHOST_URL__');
+                });
+        });
+
+        it('Mobiledoc post email preview renders with CDN URLs for thumbnails when configured', async function () {
+            const siteUrl = config.get('url');
+            const cdnUrl = 'https://cdn.example.com/c/site-uuid';
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const post = await models.Post.findOne({slug: 'post-with-all-media-types-mobiledoc'});
+
+            await agent
+                .get(`email_previews/posts/${post.id}/`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const html = body.email_previews[0].html;
+                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    html.should.not.containEql('__GHOST_URL__');
+                });
+        });
+
+        it('Lexical post email preview renders with CDN URLs for thumbnails when configured', async function () {
+            const siteUrl = config.get('url');
+            const cdnUrl = 'https://cdn.example.com/c/site-uuid';
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const post = await models.Post.findOne({slug: 'post-with-all-media-types-lexical'});
+
+            await agent
+                .get(`email_previews/posts/${post.id}/`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const html = body.email_previews[0].html;
+                    html.should.containEql(`${siteUrl}/content/images/feature.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/gallery-1.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/audio-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-video-thumb.jpg`);
+                    html.should.containEql(`${siteUrl}/content/images/snippet-audio-thumb.jpg`);
+                    html.should.not.containEql('__GHOST_URL__');
                 });
         });
     });

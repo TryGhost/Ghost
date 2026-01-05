@@ -35,6 +35,11 @@ class EventStorage {
                 referrer_source: attribution?.referrerSource ?? null,
                 referrer_medium: attribution?.referrerMedium ?? null,
                 referrer_url: attribution?.referrerUrl ?? null,
+                utm_source: attribution?.utmSource ?? null,
+                utm_medium: attribution?.utmMedium ?? null,
+                utm_campaign: attribution?.utmCampaign ?? null,
+                utm_term: attribution?.utmTerm ?? null,
+                utm_content: attribution?.utmContent ?? null,
                 batch_id: event.data.batchId ?? null
             });
         });
@@ -52,6 +57,11 @@ class EventStorage {
                 referrer_source: attribution?.referrerSource ?? null,
                 referrer_medium: attribution?.referrerMedium ?? null,
                 referrer_url: attribution?.referrerUrl ?? null,
+                utm_source: attribution?.utmSource ?? null,
+                utm_medium: attribution?.utmMedium ?? null,
+                utm_campaign: attribution?.utmCampaign ?? null,
+                utm_term: attribution?.utmTerm ?? null,
+                utm_content: attribution?.utmContent ?? null,
                 batch_id: event.data.batchId ?? null
             });
         });

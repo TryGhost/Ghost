@@ -78,6 +78,8 @@ Sample config:
             //  -- optional override for site uuid
             // "id": "106a623d-9792-4b63-acde-4a0c28ead3dc",
             "endpoint": "https://api.tinybird.co",
+            // -- optional endpoint version suffix (e.g., "v2" calls api_kpis_v2 instead of api_kpis)
+            // "version": "v2",
             // -- tinybird local configuration (optional)
             "local": {
                 "enabled": true,

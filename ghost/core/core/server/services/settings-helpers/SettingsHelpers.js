@@ -234,6 +234,12 @@ class SettingsHelpers {
             return false;
         }
 
+        // Private sites cannot use social web
+        if (this.settingsCache.get('is_private') === true) {
+            debug('Social web is not available for private sites');
+            return false;
+        }
+
         // Ghost (Pro) limits
         if (this.limitService.isDisabled('limitSocialWeb')) {
             debug('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');

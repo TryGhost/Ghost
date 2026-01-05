@@ -57,7 +57,7 @@ class CommentsImporter extends TableImporter {
             id: this.fastFakeObjectId(),
             post_id: this.model.id,
             member_id: this.possibleMembers[faker.datatype.number(this.possibleMembers.length - 1)].id,
-            parent_id: isReply ? this.commentIds[faker.datatype.number(this.commentIds.length - 1)] : undefined,
+            parent_id: isReply ? this.commentIds[faker.datatype.number(this.commentIds.length - 1)] : null,
             status: 'published',
             created_at: dateToDatabaseString(timestamp),
             updated_at: dateToDatabaseString(timestamp),

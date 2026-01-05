@@ -130,6 +130,18 @@
             "lifetime": 3600,
             "freeRetries": 10
         },
+        "otc_verification_enumeration": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
+        "otc_verification": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
         "blocked_email_domains": []
     },
     "caching": {
@@ -204,7 +216,17 @@
     "stripeDirect": false,
     "enableStripePromoCodes": false,
     "enableTipsAndDonations": true,
-    "emailAnalytics": true,
+    "emailAnalytics": {
+        "enabled": true,
+        "batchProcessing": false,
+        "metrics": {
+            "openThroughput": {
+                "enabled": false,
+                "threshold": 500
+            }
+        },
+        "openedJobLagWarningMinutes": 30
+    },
     "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {
         "emailAnalytics": true,
@@ -212,7 +234,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.53"
+        "version": "2.56"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -280,5 +302,6 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false
+    "disableJSBackups": false,
+    "memberWelcomeEmailTestInbox": ""
 }

@@ -1,5 +1,5 @@
-import {test, expect} from '../../../helpers/playwright';
-import {AnalyticsWebTrafficPage} from '../../../helpers/pages/admin';
+import {AnalyticsWebTrafficPage} from '@/admin-pages';
+import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Analytics Web Traffic', () => {
     let analyticsWebTrafficPage: AnalyticsWebTrafficPage;
@@ -32,5 +32,9 @@ test.describe('Ghost Admin - Analytics Web Traffic', () => {
 
     test('empty top sources card', async () => {
         await expect(analyticsWebTrafficPage.topSourcesCard).toContainText('No visitors');
+    });
+
+    test('empty locations card', async () => {
+        await expect(analyticsWebTrafficPage.locationsCard).toContainText('No visitors');
     });
 });

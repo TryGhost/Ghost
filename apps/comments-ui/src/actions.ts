@@ -1,5 +1,5 @@
-import {AddComment, Comment, CommentsOptions, DispatchActionType, EditableAppContext, OpenCommentForm} from './AppContext';
-import {AdminApi} from './utils/adminApi';
+import {AddComment, Comment, CommentsOptions, DispatchActionType, EditableAppContext, OpenCommentForm} from './app-context';
+import {AdminApi} from './utils/admin-api';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
@@ -259,7 +259,7 @@ async function likeComment({api, data: comment, dispatchAction}: {state: Editabl
     try {
         await api.comments.like({comment});
         return {};
-    } catch (err) {
+    } catch {
         dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
     }
 }
@@ -270,7 +270,7 @@ async function unlikeComment({api, data: comment, dispatchAction}: {state: Edita
     try {
         await api.comments.unlike({comment});
         return {};
-    } catch (err) {
+    } catch {
         dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
     }
 }
@@ -481,12 +481,17 @@ function closeCommentForm({data: id, state}: {data: string, state: EditableAppCo
     return {openCommentForms: state.openCommentForms.filter(f => f.id !== id)};
 };
 
+function setScrollTarget({data: commentId}: {data: string | null}) {
+    return {commentIdToScrollTo: commentId};
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
-    setCommentFormHasUnsavedChanges
+    setCommentFormHasUnsavedChanges,
+    setScrollTarget
 };
 
 export type SyncActionType = keyof typeof SyncActions;

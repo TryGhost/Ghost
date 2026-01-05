@@ -6,11 +6,12 @@ const {
     dbUtils,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
+const {anyEtag, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
 const models = require('../../../core/server/models');
 
 const membersCommentMatcher = {
     id: anyObjectId,
+    parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
         id: anyObjectId,
@@ -431,8 +432,30 @@ describe(`Admin Comments API`, function () {
                 status: 'deleted'
             });
 
-            const res = await adminApi.get('/comments/post/' + postId + '/');
-            assert.equal(res.body.comments.length, 0);
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: []
+                });
+        });
+
+        it('excludes deleted comments when all replies are also deleted', async function () {
+            await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'deleted',
+                replies: [{
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: 'Reply 1',
+                    status: 'deleted'
+                }]
+            });
+
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: []
+                });
         });
 
         it('returns deleted comments if they have published replies', async function () {
@@ -447,24 +470,24 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get('/comments/post/' + postId + '/');
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid
+                }
+            };
 
-            const deletedComment = res.body.comments[0];
-            assert.equal(deletedComment.html, 'Comment 1');
-
-            const publishedReply = res.body.comments[0].replies[0];
-            assert.equal(publishedReply.html, 'Reply 1');
-        });
-
-        it('does not return deleted comments with only deleted replies', async function () {
-            await dbFns.addComment({
-                member_id: fixtureManager.get('members', 0).id,
-                html: 'Comment 1',
-                status: 'deleted'
-            });
-
-            const res = await adminApi.get('/comments/post/' + postId + '/');
-            assert.equal(res.body.comments.length, 0);
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher]
+                    }]
+                });
         });
 
         it('does not return deleted replies', async function () {
@@ -487,11 +510,25 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get('/comments/post/' + postId + '/');
-            const comment = res.body.comments[0];
-            assert.equal(comment.replies.length, 2);
-            assert.notEqual(comment.replies[0].status, 'deleted');
-            assert.notEqual(comment.replies[1].status, 'deleted');
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid
+                }
+            };
+
+            // Admin sees hidden + published, but not deleted
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher, replyMatcher]
+                    }]
+                });
         });
 
         it('includes hidden replies but not deleted replies in count', async function () {
@@ -514,9 +551,25 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get('/comments/post/' + postId + '/');
-            const comment = res.body.comments[0];
-            assert.equal(comment.count.replies, 2);
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid
+                }
+            };
+
+            // Admin sees hidden + published (2), but not deleted
+            await adminApi.get('/comments/post/' + postId + '/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher, replyMatcher]
+                    }]
+                });
         });
         it('includes in_reply_to_snippet for hidden replies', async function () {
             const post = fixtureManager.get('posts', 1);
@@ -571,18 +624,6 @@ describe(`Admin Comments API`, function () {
             assert.equal(res.body.comments[0].html, 'Comment 1');
         });
 
-        // TODO: Should this be possible?
-        it('can get a deleted comment', async function () {
-            const comment = await dbFns.addComment({
-                member_id: fixtureManager.get('members', 0).id,
-                html: 'Comment 1',
-                status: 'deleted'
-            });
-
-            const res = await adminApi.get(`/comments/${comment.id}/`);
-            assert.equal(res.body.comments[0].html, 'Comment 1');
-        });
-
         it('includes published replies', async function () {
             const {parent} = await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
@@ -623,8 +664,14 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get(`/comments/${parent.id}/`);
-            assert.equal(res.body.comments[0].replies.length, 0);
+            await adminApi.get(`/comments/${parent.id}/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: []
+                    }]
+                });
         });
     });
 
@@ -1143,6 +1190,346 @@ describe(`Admin Comments API`, function () {
 
             // Verify NO emails were sent (internal context should prevent notifications)
             emailMockReceiver.assertSentEmailCount(0);
+        });
+    });
+
+    describe('Browse All', function () {
+        // Matcher for comments (always includes member, post, and counts for admin)
+        const commentMatcher = {
+            id: anyObjectId,
+            parent_id: nullable(anyObjectId),
+            created_at: anyISODateTime,
+            edited_at: nullable(anyISODateTime),
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid
+            },
+            post: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                url: anyString
+            },
+            count: {
+                likes: anyNumber,
+                replies: anyNumber,
+                reports: anyNumber
+            }
+        };
+
+        it('Can browse all comments across posts', async function () {
+            await dbFns.addComment({
+                post_id: fixtureManager.get('posts', 0).id,
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment on post 1</p>'
+            });
+            await dbFns.addComment({
+                post_id: fixtureManager.get('posts', 1).id,
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment on post 2</p>'
+            });
+
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher, commentMatcher]
+                });
+        });
+
+        it('Returns flat list including replies by default', async function () {
+            await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Parent</p>',
+                replies: [{member_id: fixtureManager.get('members', 1).id, html: '<p>Reply</p>'}]
+            });
+
+            // Both parent and reply appear as separate items in flat list
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher, commentMatcher]
+                });
+        });
+
+        it('Returns only top-level with include_nested=false', async function () {
+            await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Parent</p>',
+                replies: [{member_id: fixtureManager.get('members', 1).id, html: '<p>Reply</p>'}]
+            });
+
+            // Only parent returned (no nested replies in flat moderation view)
+            await adminApi.get('/comments/?include_nested=false')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Includes hidden comments with full html for admin', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Hidden comment</p>',
+                status: 'hidden'
+            });
+
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Excludes deleted comments', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Published</p>',
+                status: 'published'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Deleted</p>',
+                status: 'deleted'
+            });
+
+            // Only published is returned, deleted is excluded
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Excludes deleted comments even when they have published replies', async function () {
+            await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Deleted parent</p>',
+                status: 'deleted',
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: '<p>Published reply</p>',
+                    status: 'published'
+                }]
+            });
+
+            // Only the reply is returned - admin always excludes deleted comments
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Can filter by status', async function () {
+            await dbFns.addComment({member_id: fixtureManager.get('members', 0).id, status: 'published'});
+            await dbFns.addComment({member_id: fixtureManager.get('members', 0).id, status: 'hidden'});
+
+            await adminApi.get('/comments/?filter=' + encodeURIComponent('status:hidden'))
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Can filter by member_id', async function () {
+            await dbFns.addComment({member_id: fixtureManager.get('members', 0).id});
+            await dbFns.addComment({member_id: fixtureManager.get('members', 1).id});
+
+            await adminApi.get('/comments/?filter=' + encodeURIComponent(`member_id:'${fixtureManager.get('members', 0).id}'`))
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Supports pagination', async function () {
+            for (let i = 0; i < 5; i++) {
+                await dbFns.addComment({member_id: fixtureManager.get('members', 0).id});
+            }
+
+            await adminApi.get('/comments/?limit=2&page=1')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher, commentMatcher]
+                });
+        });
+
+        it('Orders by created_at desc by default', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Older</p>',
+                created_at: new Date('2023-01-01')
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Newer</p>',
+                created_at: new Date('2023-06-01')
+            });
+
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher, commentMatcher]
+                });
+        });
+
+        it('Can order by created_at asc', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Older</p>',
+                created_at: new Date('2023-01-01')
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Newer</p>',
+                created_at: new Date('2023-06-01')
+            });
+
+            await adminApi.get('/comments/?order=' + encodeURIComponent('created_at asc'))
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher, commentMatcher]
+                });
+        });
+
+        it('Always includes member and post relations', async function () {
+            await dbFns.addComment({member_id: fixtureManager.get('members', 0).id});
+
+            await adminApi.get('/comments/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [commentMatcher]
+                });
+        });
+
+        it('Includes reports count for comments with reports', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment with reports</p>'
+            });
+
+            // Add reports to the comment
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+
+            const res = await adminApi.get('/comments/');
+            assert.equal(res.body.comments[0].count.reports, 2);
+        });
+
+        it('Returns zero reports count for comments without reports', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment without reports</p>'
+            });
+
+            const res = await adminApi.get('/comments/');
+            assert.equal(res.body.comments[0].count.reports, 0);
+        });
+
+        it('Can filter for reported comments using count.reports:>0', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add a report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:>0'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Reported comment</p>');
+        });
+
+        it('Can filter for non-reported comments using count.reports:0', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add a report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:0'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Non-reported comment</p>');
+        });
+
+        it('Can filter for highly reported comments using count.reports:>=2', async function () {
+            const highlyReportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Highly reported comment</p>'
+            });
+            const singleReportComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Single report comment</p>'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported comment</p>'
+            });
+
+            // Add multiple reports to one comment
+            await models.CommentReport.add({
+                comment_id: highlyReportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentReport.add({
+                comment_id: highlyReportedComment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            // Add single report to another
+            await models.CommentReport.add({
+                comment_id: singleReportComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const res = await adminApi.get('/comments/?filter=' + encodeURIComponent('count.reports:>=2'));
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Highly reported comment</p>');
+            assert.equal(res.body.comments[0].count.reports, 2);
+        });
+
+        it('Can combine count.reports filter with other filters', async function () {
+            const reportedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported published</p>',
+                status: 'published'
+            });
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Non-reported published</p>',
+                status: 'published'
+            });
+
+            // Add report to one comment
+            await models.CommentReport.add({
+                comment_id: reportedComment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            const filter = encodeURIComponent('count.reports:>0+status:published');
+            const res = await adminApi.get('/comments/?filter=' + filter);
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(res.body.comments[0].html, '<p>Reported published</p>');
         });
     });
 });

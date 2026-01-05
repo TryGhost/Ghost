@@ -570,9 +570,9 @@ Object {
       "limit": 1,
       "next": 2,
       "page": 1,
-      "pages": 11,
+      "pages": 13,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -636,9 +636,9 @@ Object {
       "limit": 1,
       "next": 2,
       "page": 1,
-      "pages": 10,
+      "pages": 12,
       "prev": null,
-      "total": 10,
+      "total": 12,
     },
   },
   "posts": Array [
@@ -782,7 +782,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -1415,6 +1415,402 @@ Most successful subscription businesses publish a mix of free and paid posts to 
           "website": null,
           "youtube": null,
         },
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a6f1",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\" width=\\"1600\\" height=\\"900\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/inline.jpg 1000w, http://127.0.0.1:2369/content/images/inline.jpg 1600w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>An inline image card</figcaption></figure><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 1\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 2\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 3\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Test Document</div><div class=\\"kg-file-card-caption\\">A test PDF document</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">document.pdf</div><div class=\\"kg-file-card-filesize\\">2 MB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">2:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Test video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">180</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong><em>all media types</em></strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\" width=\\"1200\\" height=\\"800\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/snippet-inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/snippet-inline.jpg 1000w, http://127.0.0.1:2369/content/images/snippet-inline.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Snippet Document</div><div class=\\"kg-file-card-caption\\">A test document file</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div><div class=\\"kg-file-card-filesize\\">1000 KB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">1:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Snippet video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">120</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a6f1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "primary_author": Object {
+        "bio": "bio",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "5951f5fc0000000000000000",
+        "instagram": null,
+        "linkedin": null,
+        "location": "location",
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "slug": "joe-bloggs",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+        "youtube": null,
+      },
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-lexical",
+      "title": "Post with all media types - Lexical",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "authors": Array [
+        Object {
+          "bio": "bio",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "5951f5fc0000000000000000",
+          "instagram": null,
+          "linkedin": null,
+          "location": "location",
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Joe Bloggs",
+          "profile_image": "https://example.com/super_photo.jpg",
+          "slug": "joe-bloggs",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+          "website": null,
+          "youtube": null,
+        },
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a700",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\"><figcaption>An inline image card</figcaption></figure><p>Gallery card:</p><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Test Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test PDF document</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">document.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Test video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">3:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong>all media types</strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Snippet Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test document file</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Snippet video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">2:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a700",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "primary_author": Object {
+        "bio": "bio",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "5951f5fc0000000000000000",
+        "instagram": null,
+        "linkedin": null,
+        "location": "location",
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "slug": "joe-bloggs",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+        "youtube": null,
+      },
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-mobiledoc",
+      "title": "Post with all media types - Mobiledoc",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "authors": Array [
+        Object {
+          "bio": "bio",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "5951f5fc0000000000000000",
+          "instagram": null,
+          "linkedin": null,
+          "location": "location",
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Joe Bloggs",
+          "profile_image": "https://example.com/super_photo.jpg",
+          "slug": "joe-bloggs",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+          "website": null,
+          "youtube": null,
+        },
         Object {
           "bio": "bio",
           "bluesky": null,
@@ -1777,7 +2173,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "57852",
+  "content-length": "98970",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2174,7 +2570,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -2772,6 +3168,400 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "twitter_title": null,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "url": "http://127.0.0.1:2369/integrations/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a6f1",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\" width=\\"1600\\" height=\\"900\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/inline.jpg 1000w, http://127.0.0.1:2369/content/images/inline.jpg 1600w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>An inline image card</figcaption></figure><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 1\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 2\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 3\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Test Document</div><div class=\\"kg-file-card-caption\\">A test PDF document</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">document.pdf</div><div class=\\"kg-file-card-filesize\\">2 MB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">2:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Test video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">180</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong><em>all media types</em></strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\" width=\\"1200\\" height=\\"800\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/snippet-inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/snippet-inline.jpg 1000w, http://127.0.0.1:2369/content/images/snippet-inline.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Snippet Document</div><div class=\\"kg-file-card-caption\\">A test document file</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div><div class=\\"kg-file-card-filesize\\">1000 KB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">1:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Snippet video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">120</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a6f1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "primary_author": Object {
+        "bio": "bio",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "5951f5fc0000000000000000",
+        "instagram": null,
+        "linkedin": null,
+        "location": "location",
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "slug": "joe-bloggs",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+        "youtube": null,
+      },
+      "primary_tag": Object {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": "A tag with all image types for testing URL transformations",
+        "feature_image": "http://127.0.0.1:2369/content/images/tag-feature.jpg",
+        "id": "6193c6dfe792de832cd08150",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Tag with images",
+        "og_description": null,
+        "og_image": "http://127.0.0.1:2369/content/images/tag-og.jpg",
+        "og_title": null,
+        "slug": "tag-with-images",
+        "twitter_description": null,
+        "twitter_image": "http://127.0.0.1:2369/content/images/tag-twitter.jpg",
+        "twitter_title": null,
+        "url": "http://127.0.0.1:2369/404/",
+        "visibility": "public",
+      },
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-lexical",
+      "tags": Any<Array>,
+      "title": "Post with all media types - Lexical",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a700",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\"><figcaption>An inline image card</figcaption></figure><p>Gallery card:</p><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Test Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test PDF document</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">document.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Test video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">3:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong>all media types</strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Snippet Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test document file</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Snippet video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">2:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a700",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "primary_author": Object {
+        "bio": "bio",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "5951f5fc0000000000000000",
+        "instagram": null,
+        "linkedin": null,
+        "location": "location",
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "slug": "joe-bloggs",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+        "youtube": null,
+      },
+      "primary_tag": Object {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": "A tag with all image types for testing URL transformations",
+        "feature_image": "http://127.0.0.1:2369/content/images/tag-feature.jpg",
+        "id": "6193c6dfe792de832cd08150",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Tag with images",
+        "og_description": null,
+        "og_image": "http://127.0.0.1:2369/content/images/tag-og.jpg",
+        "og_title": null,
+        "slug": "tag-with-images",
+        "twitter_description": null,
+        "twitter_image": "http://127.0.0.1:2369/content/images/tag-twitter.jpg",
+        "twitter_title": null,
+        "url": "http://127.0.0.1:2369/404/",
+        "visibility": "public",
+      },
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-mobiledoc",
+      "tags": Any<Array>,
+      "title": "Post with all media types - Mobiledoc",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "public",
     },
@@ -3116,7 +3906,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "68181",
+  "content-length": "111905",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3190,7 +3980,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -3216,6 +4006,12 @@ Object {
       "url": "http://127.0.0.1:2369/integrations/",
     },
     Object {
+      "url": "http://127.0.0.1:2369/404/",
+    },
+    Object {
+      "url": "http://127.0.0.1:2369/404/",
+    },
+    Object {
       "url": "http://127.0.0.1:2369/not-so-short-bit-complex/",
     },
     Object {
@@ -3235,7 +4031,7 @@ exports[`Posts Content API Can request fields of posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "587",
+  "content-length": "661",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3253,7 +4049,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -3536,6 +4332,310 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "twitter_title": null,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "url": "http://127.0.0.1:2369/integrations/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a6f1",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\" width=\\"1600\\" height=\\"900\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/inline.jpg 1000w, http://127.0.0.1:2369/content/images/inline.jpg 1600w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>An inline image card</figcaption></figure><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 1\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 2\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 3\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Test Document</div><div class=\\"kg-file-card-caption\\">A test PDF document</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">document.pdf</div><div class=\\"kg-file-card-filesize\\">2 MB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">2:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Test video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">180</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong><em>all media types</em></strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\" width=\\"1200\\" height=\\"800\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/snippet-inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/snippet-inline.jpg 1000w, http://127.0.0.1:2369/content/images/snippet-inline.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Snippet Document</div><div class=\\"kg-file-card-caption\\">A test document file</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div><div class=\\"kg-file-card-filesize\\">1000 KB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">1:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Snippet video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">120</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a6f1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-lexical",
+      "title": "Post with all media types - Lexical",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a700",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\"><figcaption>An inline image card</figcaption></figure><p>Gallery card:</p><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Test Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test PDF document</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">document.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Test video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">3:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong>all media types</strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Snippet Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test document file</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Snippet video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">2:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a700",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-mobiledoc",
+      "title": "Post with all media types - Mobiledoc",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "public",
     },
@@ -3720,7 +4820,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "46632",
+  "content-length": "85988",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3738,7 +4838,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -4029,6 +5129,310 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "canonical_url": null,
       "codeinjection_foot": null,
       "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a6f1",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\" width=\\"1600\\" height=\\"900\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/inline.jpg 1000w, http://127.0.0.1:2369/content/images/inline.jpg 1600w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>An inline image card</figcaption></figure><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 1\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 2\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt=\\"Gallery image 3\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Test Document</div><div class=\\"kg-file-card-caption\\">A test PDF document</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">document.pdf</div><div class=\\"kg-file-card-filesize\\">2 MB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">2:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Test video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">180</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong><em>all media types</em></strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\" width=\\"1200\\" height=\\"800\\" srcset=\\"http://127.0.0.1:2369/content/images/size/w600/snippet-inline.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/snippet-inline.jpg 1000w, http://127.0.0.1:2369/content/images/snippet-inline.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p><div class=\\"kg-card kg-file-card\\"><a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download=\\"\\"><div class=\\"kg-file-card-contents\\"><div class=\\"kg-file-card-title\\">Snippet Document</div><div class=\\"kg-file-card-caption\\">A test document file</div><div class=\\"kg-file-card-metadata\\"><div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div><div class=\\"kg-file-card-filesize\\">1000 KB</div></div></div><div class=\\"kg-file-card-icon\\"><svg viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"></polyline><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"></line><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"></circle></svg></div></a></div><p>Video card:</p><figure class=\\"kg-card kg-video-card kg-width-regular kg-card-hascaption\\" data-kg-thumbnail=\\"http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg\\" data-kg-custom-thumbnail=\\"\\">
+            <div class=\\"kg-video-container\\">
+                <video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline=\\"\\" preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\"></video>
+                <div class=\\"kg-video-overlay\\">
+                    <button class=\\"kg-video-large-play-icon\\" aria-label=\\"Play video\\">
+                        <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                            <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class=\\"kg-video-player-container\\">
+                    <div class=\\"kg-video-player\\">
+                        <button class=\\"kg-video-play-icon\\" aria-label=\\"Play video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-pause-icon kg-video-hide\\" aria-label=\\"Pause video\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                                <rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect>
+                            </svg>
+                        </button>
+                        <span class=\\"kg-video-current-time\\">0:00</span>
+                        <div class=\\"kg-video-time\\">
+                            /<span class=\\"kg-video-duration\\">1:00</span>
+                        </div>
+                        <input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\">
+                        <button class=\\"kg-video-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button>
+                        <button class=\\"kg-video-unmute-icon\\" aria-label=\\"Unmute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path>
+                            </svg>
+                        </button>
+                        <button class=\\"kg-video-mute-icon kg-video-hide\\" aria-label=\\"Mute\\">
+                            <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\">
+                                <path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path>
+                            </svg>
+                        </button>
+                        <input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\">
+                    </div>
+                </div>
+            </div>
+            <figcaption>Snippet video file</figcaption>
+        </figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"></path><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"></path></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\" aria-label=\\"Play audio\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"></path></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\" aria-label=\\"Pause audio\\"><svg viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"></rect></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">120</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\" aria-label=\\"Adjust playback speed\\">1×</button><button class=\\"kg-audio-unmute-icon\\" aria-label=\\"Unmute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"></path></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\" aria-label=\\"Mute\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"></path></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a6f1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-lexical",
+      "title": "Post with all media types - Lexical",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a700",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/inline.jpg\\" class=\\"kg-image\\" alt=\\"Inline image\\" loading=\\"lazy\\"><figcaption>An inline image card</figcaption></figure><p>Gallery card:</p><figure class=\\"kg-card kg-gallery-card kg-width-wide kg-card-hascaption\\"><div class=\\"kg-gallery-container\\"><div class=\\"kg-gallery-row\\"><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-1.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-1.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-1.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-1.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-2.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-2.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-2.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-2.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div><div class=\\"kg-gallery-image\\"><img src=\\"http://127.0.0.1:2369/content/images/gallery-3.jpg\\" width=\\"1200\\" height=\\"800\\" loading=\\"lazy\\" alt srcset=\\"http://127.0.0.1:2369/content/images/size/w600/gallery-3.jpg 600w, http://127.0.0.1:2369/content/images/size/w1000/gallery-3.jpg 1000w, http://127.0.0.1:2369/content/images/gallery-3.jpg 1200w\\" sizes=\\"(min-width: 720px) 720px\\"></div></div></div><figcaption>A gallery with three images</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Test Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test PDF document</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">document.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Test video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Test Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">3:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>Inserted snippet content below:</strong></p><p>This snippet contains <a href=\\"http://127.0.0.1:2369/snippet-link\\"><strong>all media types</strong></a> for testing URL transformations in reusable content.</p><p>Image card:</p><figure class=\\"kg-card kg-image-card kg-card-hascaption\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-inline.jpg\\" class=\\"kg-image\\" alt=\\"Snippet image\\" loading=\\"lazy\\"><figcaption>Image in snippet</figcaption></figure><p>File card:</p>
+        <div class=\\"kg-card kg-file-card \\">
+            <a class=\\"kg-file-card-container\\" href=\\"http://127.0.0.1:2369/content/files/snippet-document.pdf\\" title=\\"Download\\" download>
+                <div class=\\"kg-file-card-contents\\">
+                    <div class=\\"kg-file-card-title\\">Snippet Document</div>
+                    <div class=\\"kg-file-card-caption\\">A test document file</div>
+                    <div class=\\"kg-file-card-metadata\\">
+                        <div class=\\"kg-file-card-filename\\">snippet-doc.pdf</div>
+                        <div class=\\"kg-file-card-filesize\\">0 Byte</div>
+                    </div>
+                </div>
+                <div class=\\"kg-file-card-icon\\">
+                    <svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class=\\"a\\" points=\\"8.25 14.25 12 18 15.75 14.25\\"/><line class=\\"a\\" x1=\\"12\\" y1=\\"6.75\\" x2=\\"12\\" y2=\\"18\\"/><circle class=\\"a\\" cx=\\"12\\" cy=\\"12\\" r=\\"11.25\\"/></svg>
+                </div>
+            </a>
+        </div>
+        <p>Video card:</p><figure class=\\"kg-card kg-video-card kg-card-hascaption\\"><div class=\\"kg-video-container\\"><video src=\\"http://127.0.0.1:2369/content/media/snippet-video.mp4\\" poster=\\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\\" width=\\"1920\\" height=\\"1080\\" playsinline preload=\\"metadata\\" style=\\"background: transparent url('http://127.0.0.1:2369/content/images/snippet-video-thumb.jpg') 50% 50% / cover no-repeat;\\" /></video><div class=\\"kg-video-overlay\\"><button class=\\"kg-video-large-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button></div><div class=\\"kg-video-player-container\\"><div class=\\"kg-video-player\\"><button class=\\"kg-video-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-video-pause-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-video-current-time\\">0:00</span><div class=\\"kg-video-time\\">/<span class=\\"kg-video-duration\\"></span></div><input type=\\"range\\" class=\\"kg-video-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-video-playback-rate\\">1&#215;</button><button class=\\"kg-video-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-video-mute-icon kg-video-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-video-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><figcaption>Snippet video file</figcaption></figure><p>Audio card:</p><div class=\\"kg-card kg-audio-card\\"><img src=\\"http://127.0.0.1:2369/content/images/snippet-audio-thumb.jpg\\" alt=\\"audio-thumbnail\\" class=\\"kg-audio-thumbnail\\"><div class=\\"kg-audio-thumbnail placeholder kg-audio-hide\\"><svg width=\\"24\\" height=\\"24\\" fill=\\"none\\" xmlns=\\"http://www.w3.org/2000/svg\\"><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z\\"/><path fill-rule=\\"evenodd\\" clip-rule=\\"evenodd\\" d=\\"M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z\\"/></svg></div><div class=\\"kg-audio-player-container\\"><audio src=\\"http://127.0.0.1:2369/content/media/snippet-audio.mp3\\" preload=\\"metadata\\"></audio><div class=\\"kg-audio-title\\">Snippet Audio</div><div class=\\"kg-audio-player\\"><button class=\\"kg-audio-play-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\\"/></svg></button><button class=\\"kg-audio-pause-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><rect x=\\"3\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/><rect x=\\"14\\" y=\\"1\\" width=\\"7\\" height=\\"22\\" rx=\\"1.5\\" ry=\\"1.5\\"/></svg></button><span class=\\"kg-audio-current-time\\">0:00</span><div class=\\"kg-audio-time\\">/<span class=\\"kg-audio-duration\\">2:00</span></div><input type=\\"range\\" class=\\"kg-audio-seek-slider\\" max=\\"100\\" value=\\"0\\"><button class=\\"kg-audio-playback-rate\\">1&#215;</button><button class=\\"kg-audio-unmute-icon\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\\"/></svg></button><button class=\\"kg-audio-mute-icon kg-audio-hide\\"><svg xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 24 24\\"><path d=\\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\\"/></svg></button><input type=\\"range\\" class=\\"kg-audio-volume-slider\\" max=\\"100\\" value=\\"100\\"></div></div></div><p><strong>End of inserted snippet content.</strong></p><p>This post tests that all URL transformations work correctly across all media types and inserted snippets.</p>",
+      "id": "618ba1ffbe2896088840a700",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-mobiledoc",
+      "title": "Post with all media types - Mobiledoc",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
       "comment_id": "618ba1ffbe2896088840a6e7",
       "comments": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -4205,7 +5609,7 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "46632",
+  "content-length": "85988",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4219,11 +5623,11 @@ Object {
   "meta": Object {
     "pagination": Object {
       "limit": 15,
-      "next": null,
+      "next": 2,
       "page": 1,
-      "pages": 1,
+      "pages": 2,
       "prev": null,
-      "total": 15,
+      "total": 17,
     },
   },
   "posts": Array [
@@ -4262,6 +5666,124 @@ Object {
       "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
     },
     Object {
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+    },
+    Object {
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+    },
+    Object {
       "excerpt": " * Lorem
  * Aliquam
  * Tortor
@@ -4287,14 +5809,6 @@ mctesters
  * items
 ",
     },
-    Object {
-      "excerpt": "HTML Ipsum Presents
-
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
-    },
-    Object {
-      "excerpt": "This is my custom excerpt!",
-    },
   ],
 }
 `;
@@ -4304,11 +5818,11 @@ Object {
   "meta": Object {
     "pagination": Object {
       "limit": 15,
-      "next": null,
+      "next": 2,
       "page": 1,
-      "pages": 1,
+      "pages": 2,
       "prev": null,
-      "total": 15,
+      "total": 17,
     },
   },
   "posts": Array [
@@ -4564,6 +6078,204 @@ For more advanced automation, it's possible to create custom Ghost integrations 
 These custom integrations allow you to use the Ghost API without needing to write code, and create powerful workflows such as sending content from your favorite desktop editor into Ghost as a new draft.",
     },
     Object {
+      "plaintext": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet DocumentA test document filesnippet-doc.pdf1000 KBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/1:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Snippet Audio0:00/1201×
+
+End of inserted snippet content.
+
+This post tests that all URL transformations work correctly across all media types and inserted snippets.",
+    },
+    Object {
+      "plaintext": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Document
+A test document file
+
+snippet-doc.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Snippet Audio0:00/2:001×
+
+End of inserted snippet content.
+
+This post tests that all URL transformations work correctly across all media types and inserted snippets.",
+    },
+    Object {
       "plaintext": " * Lorem
  * Aliquam
  * Tortor
@@ -4595,48 +6307,6 @@ mctesters
  * items
 ",
     },
-    Object {
-      "plaintext": "HTML Ipsum Presents
-
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis.
-
-
-Header Level 2
-
- 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
- 2. Aliquam tincidunt mauris eu risus.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.
-
-
-Header Level 3
-
- * Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
- * Aliquam tincidunt mauris eu risus.
-
-#header h1 a{display: block;width: 300px;height: 80px;}",
-    },
-    Object {
-      "plaintext": "HTML Ipsum Presents
-
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis.
-
-
-Header Level 2
-
- 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
- 2. Aliquam tincidunt mauris eu risus.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.
-
-
-Header Level 3
-
- * Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
- * Aliquam tincidunt mauris eu risus.
-
-#header h1 a{display: block;width: 300px;height: 80px;}",
-    },
   ],
 }
 `;
@@ -4650,10 +6320,22 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -4733,7 +6415,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 11,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -4979,6 +6661,188 @@ Object {
       "twitter_title": null,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "url": "http://127.0.0.1:2369/integrations/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a6f1",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+File card:
+
+Test DocumentA test PDF documentdocument.pdf2 MBdownload-circle
+
+Video card:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0:00
+
+/2:00
+
+
+1×
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audio card:
+
+Test Audio0:00/1801×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+Snippet Docume",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "id": "618ba1ffbe2896088840a6f1",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-lexical",
+      "title": "Post with all media types - Lexical",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "access": true,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "618ba1ffbe2896088840a700",
+      "comments": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "This is a post containing all media types for testing URL transformations. It includes images, galleries, files, videos, audio, and an inserted snippet.
+
+Image card:
+
+Gallery card:
+
+File card:
+
+
+
+
+
+Test Document
+A test PDF document
+
+document.pdf
+0 Byte
+
+
+
+download-circle
+
+
+
+
+
+Video card:
+
+0:00/1×
+
+Audio card:
+
+Test Audio0:00/3:001×
+
+Inserted snippet content below:
+
+This snippet contains all media types for testing URL transformations in reusable content.
+
+Image card:
+
+File card:
+
+
+
+
+
+Snippet Doc",
+      "feature_image": "http://127.0.0.1:2369/content/images/feature.jpg",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "id": "618ba1ffbe2896088840a700",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": "http://127.0.0.1:2369/content/images/og.jpg",
+      "og_title": null,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "reading_time": 2,
+      "slug": "post-with-all-media-types-mobiledoc",
+      "title": "Post with all media types - Mobiledoc",
+      "twitter_description": null,
+      "twitter_image": "http://127.0.0.1:2369/content/images/twitter.jpg",
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": "http://127.0.0.1:2369/404/",
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "public",
     },

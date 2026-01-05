@@ -1,21 +1,21 @@
 // Framework
-export type {StatsConfig, FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
-export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
+export type {StatsConfig, FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/framework-provider';
+export {FrameworkProvider, useFramework} from './providers/framework-provider';
 
 // App Context
-export type {AppSettings, BaseAppProps, AppContextType, AppProviderProps} from './providers/AppProvider';
-export {AppProvider, useAppContext} from './providers/AppProvider';
+export type {AppSettings, BaseAppProps, AppContextType, AppProviderProps} from './providers/app-provider';
+export {AppContext, AppProvider, useAppContext} from './providers/app-provider';
 
 // Hooks
-export {useActiveVisitors} from './hooks/useActiveVisitors';
-export {default as useForm} from './hooks/useForm';
-export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/useForm';
-export {default as useHandleError} from './hooks/useHandleError';
-export {default as useFilterableApi} from './hooks/useFilterableApi';
-export {useTinybirdToken} from './hooks/useTinybirdToken';
-export type {UseTinybirdTokenResult} from './hooks/useTinybirdToken';
-export {useTinybirdQuery} from './hooks/useTinybirdQuery';
-export type {UseTinybirdQueryOptions} from './hooks/useTinybirdQuery';
+export {useActiveVisitors} from './hooks/use-active-visitors';
+export {default as useForm} from './hooks/use-form';
+export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/use-form';
+export {default as useHandleError} from './hooks/use-handle-error';
+export {default as useFilterableApi} from './hooks/use-filterable-api';
+export {useTinybirdToken} from './hooks/use-tinybird-token';
+export type {UseTinybirdTokenResult} from './hooks/use-tinybird-token';
+export {useTinybirdQuery} from './hooks/use-tinybird-query';
+export type {UseTinybirdQueryOptions} from './hooks/use-tinybird-query';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
@@ -34,10 +34,13 @@ export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './
 
 // Routing
 export type {RouteObject} from 'react-router';
-export type {RouterProviderProps} from './providers/RouterProvider';
-export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/RouterProvider';
-export {useNavigationStack} from './providers/NavigationStackProvider';
-export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes} from 'react-router';
+export type {RouterProviderProps, NavigateOptions} from './providers/router-provider';
+export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/router-provider';
+export {useNavigationStack} from './providers/navigation-stack-provider';
+export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';
+
+// Lazy component loader
+export {lazyComponent} from './utils/lazy-component';
 
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';

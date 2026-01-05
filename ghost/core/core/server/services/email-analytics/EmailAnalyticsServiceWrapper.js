@@ -1,4 +1,6 @@
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
+const config = require('../../../shared/config');
 
 class EmailAnalyticsServiceWrapper {
     init() {
@@ -13,8 +15,8 @@ class EmailAnalyticsServiceWrapper {
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
         const domainEvents = require('@tryghost/domain-events');
-        const config = require('../../../shared/config');
         const settings = require('../../../shared/settings-cache');
+        const labs = require('../../../shared/labs');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
         const membersService = require('../members');
@@ -48,12 +50,16 @@ class EmailAnalyticsServiceWrapper {
             settings,
             eventProcessor,
             providers: [
-                new MailgunProvider({config, settings})
+                new MailgunProvider({config, settings, labs})
             ],
             queries,
             domainEvents,
             prometheusClient
         });
+
+        // Log the processing mode on initialization
+        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+        logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
         // We currently cannot trigger a non-offloaded job from the job manager
         // So the email analytics jobs simply emits an event.
@@ -62,51 +68,102 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
+    /**
+     * Log comprehensive job completion with timing metrics
+     * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
+     * @param {object} fetchResult - The fetch result from EmailAnalyticsService
+     * @param {number} totalDurationMs - Total duration in milliseconds
+     */
+    _logJobCompletion(jobType, fetchResult, totalDurationMs) {
+        const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, result} = fetchResult;
+
+        if (eventCount === 0) {
+            return;
+        }
+
+        const throughput = totalDurationMs > 0 ? eventCount / (totalDurationMs / 1000) : 0;
+        const apiPercent = totalDurationMs > 0 ? Math.round((apiPollingTimeMs / totalDurationMs) * 100) : 0;
+        const processingPercent = totalDurationMs > 0 ? Math.round((processingTimeMs / totalDurationMs) * 100) : 0;
+        const aggregationPercent = totalDurationMs > 0 ? Math.round((aggregationTimeMs / totalDurationMs) * 100) : 0;
+        const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
+
+        const logMessage = [
+            `[EmailAnalytics] Job complete: ${jobType}`,
+            `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
+            `Mode: ${batchMode}`,
+            `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%)`,
+            `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
+        ].join(' | ');
+
+        logging.info(logMessage);
+
+        // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
+        if (jobType === 'latest-opened') {
+            const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
+            const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
+            if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
+                metrics.metric('email-analytics-open-throughput', {
+                    value: throughput,
+                    events: eventCount,
+                    duration: totalDurationMs
+                });
+            }
+        }
+    }
+
     async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch latest opened events started');
+        const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
+        const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
+        const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
+
+        // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
+        //  - Ghost or Mailgun outages
+        //  - Lack of actual email activity
+        if (lagThreshold && lagMinutes > lagThreshold) {
+            logging.warn(`[EmailAnalytics] Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
+        }
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatestOpenedEvents({maxEvents});
-        const fetchEndDate = new Date();
+        const fetchResult = await this.service.fetchLatestOpenedEvents({maxEvents});
+        const totalDuration = Date.now() - fetchStartDate.getTime();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest opens)`);
-        return totalEvents;
+        this._logJobCompletion('latest-opened', fetchResult, totalDuration);
+
+        return fetchResult.eventCount;
     }
 
     async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch latest non-opened events started');
-
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatestNonOpenedEvents({maxEvents});
-        const fetchEndDate = new Date();
+        const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
+        const totalDuration = Date.now() - fetchStartDate.getTime();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
-        return totalEvents;
+        this._logJobCompletion('latest', fetchResult, totalDuration);
+
+        return fetchResult.eventCount;
     }
 
     async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch missing events started');
-
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchMissing({maxEvents});
-        const fetchEndDate = new Date();
+        const fetchResult = await this.service.fetchMissing({maxEvents});
+        const totalDuration = Date.now() - fetchStartDate.getTime();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (missing)`);
-        return totalEvents;
+        this._logJobCompletion('missing', fetchResult, totalDuration);
+
+        return fetchResult.eventCount;
     }
 
     async fetchScheduled({maxEvents}) {
         if (maxEvents < 300) {
             return 0;
         }
-        logging.info('[EmailAnalytics] Fetch scheduled events started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchScheduled({maxEvents});
-        const fetchEndDate = new Date();
+        const fetchResult = await this.service.fetchScheduled({maxEvents});
+        const totalDuration = Date.now() - fetchStartDate.getTime();
 
-        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (scheduled)`);
-        return totalEvents;
+        this._logJobCompletion('scheduled', fetchResult, totalDuration);
+
+        return fetchResult.eventCount;
     }
 
     async startFetch() {
@@ -142,6 +199,11 @@ class EmailAnalyticsServiceWrapper {
             if (c4 > 0) {
                 this._restartFetch('scheduled backfill');
                 return;
+            }
+
+            // Log summary if no events were found across all jobs
+            if (c1 + c2 + c3 + c4 === 0) {
+                logging.info('[EmailAnalytics] Job complete - No events');
             }
 
             this.fetching = false;

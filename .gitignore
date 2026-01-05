@@ -125,11 +125,14 @@ test/functional/*.png
 /ghost/core/core/frontend/public/ghost-stats.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!.docker/caddy/Caddyfile
+!docker/caddy/Caddyfile
+!docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
 /ghost/core/playwright-report
+/playwright-report
+/test-results
 
 # Admin
 /ghost/admin/dist
@@ -190,8 +193,15 @@ yalc.lock
 # useful for keeping local plans etc
 /ai
 
+# direnv environment loader files
+.envrc
+
 # e2e test suite
 /e2e/test-results
+/e2e/playwright-report
 /e2e/build
 /e2e/playwright
 /e2e/data
+.env.tinybird
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

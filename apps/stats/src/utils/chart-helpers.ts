@@ -188,13 +188,10 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
     data.forEach((item, index) => {
         const itemDate = moment(item.date);
         const value = Number(item[fieldName]);
-        const isLikelyOutlier = aggregationType === 'sum' && value > 10000;
 
         if (isInSameMonth(itemDate.format('YYYY-MM-DD'), currentMonth.format('YYYY-MM-DD'))) {
-            if (!isLikelyOutlier) {
-                monthTotal += value;
-                monthCount += 1;
-            }
+            monthTotal += value;
+            monthCount += 1;
             lastValue = value;
             lastItem = item;
         } else {
@@ -212,8 +209,8 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
             }
 
             currentMonth = itemDate.startOf('month');
-            monthTotal = isLikelyOutlier ? 0 : value;
-            monthCount = isLikelyOutlier ? 0 : 1;
+            monthTotal = value;
+            monthCount = 1;
             lastValue = value;
             lastItem = item;
         }

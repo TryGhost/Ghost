@@ -7,6 +7,7 @@ const request = require('@tryghost/request');
 const settingsCache = require('../../../shared/settings-cache');
 const posts = require('../posts/posts-service');
 const members = require('../members');
+const statsService = require('../stats');
 
 // Export the creation function for testing
 module.exports.createService = function createService() {
@@ -18,7 +19,8 @@ module.exports.createService = function createService() {
         ghostVersion,
         request,
         posts: posts(),
-        members
+        members,
+        statsService
     });
 };
 

@@ -857,7 +857,7 @@ describe('RouterController', function () {
             });
         });
 
-        describe('membersSigninOTC feature flag', function () {
+        describe('OTC response handling', function () {
             let req, res, handleSigninStub, routerController;
 
             beforeEach(function () {
@@ -880,7 +880,7 @@ describe('RouterController', function () {
                         getAttribution: sinon.stub().resolves({})
                     },
                     labsService: {
-                        isSet: sinon.stub()
+                        isSet: sinon.stub().returns(false)
                     },
                     settingsCache: {
                         get: sinon.stub().returns([])
@@ -901,8 +901,7 @@ describe('RouterController', function () {
                 routerController._handleSignin = handleSigninStub;
             });
 
-            it('should return otc_ref when flag is enabled and otcRef exists', async function () {
-                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+            it('should return otc_ref when otcRef exists', async function () {
                 handleSigninStub.resolves({otcRef: 'test-token-123'});
 
                 await routerController.sendMagicLink(req, res);
@@ -911,18 +910,7 @@ describe('RouterController', function () {
                 res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})).should.be.true();
             });
 
-            it('should not return otc_ref when flag is disabled', async function () {
-                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(false);
-                handleSigninStub.resolves({otcRef: 'test-token-123'});
-
-                await routerController.sendMagicLink(req, res);
-
-                res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('Created.').should.be.true();
-            });
-
-            it('should not return otc_ref when flag is enabled but no otcRef', async function () {
-                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+            it('should not return otc_ref when no otcRef', async function () {
                 handleSigninStub.resolves({otcRef: null});
 
                 await routerController.sendMagicLink(req, res);
@@ -931,8 +919,7 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but otcRef is undefined', async function () {
-                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+            it('should not return otc_ref when otcRef is undefined', async function () {
                 handleSigninStub.resolves({});
 
                 await routerController.sendMagicLink(req, res);
@@ -1189,6 +1176,7 @@ describe('RouterController', function () {
 
                 for (const invalid of invalidOtcs) {
                     req.body.otc = invalid;
+                    mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                     mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
                     await assert.rejects(
@@ -1237,6 +1225,7 @@ describe('RouterController', function () {
             });
 
             it('should throw BadRequestError when verifyOTC returns false', async function () {
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
                 await assert.rejects(
