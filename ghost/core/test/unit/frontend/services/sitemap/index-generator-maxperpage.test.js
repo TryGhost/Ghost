@@ -23,7 +23,7 @@ describe('SiteMapIndexGenerator maxPerPage Bug Fix', function () {
         // The index generator's maxPerPage should NOT affect the resource type's pagination
         const indexGenerator = new IndexGenerator({
             types: {posts: postGenerator},
-            maxPerPage: 5  // Different from postGenerator's 50000!
+            maxPerPage: 5 // Different from postGenerator's 50000!
         });
 
         const xml = indexGenerator.getXml();
@@ -110,7 +110,7 @@ describe('SiteMapIndexGenerator maxPerPage Bug Fix', function () {
 
         const indexGenerator = new IndexGenerator({
             types: {posts: postGenerator, pages: pageGenerator},
-            maxPerPage: 50000  // Different from both resource types!
+            maxPerPage: 50000 // Different from both resource types!
         });
 
         const xml = indexGenerator.getXml();
