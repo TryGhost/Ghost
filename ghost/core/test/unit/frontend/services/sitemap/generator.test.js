@@ -132,6 +132,11 @@ describe('Generators', function () {
 
                 xml.should.match(/sitemap-posts.xml/);
                 xml.should.match(/sitemap-posts-2.xml/);
+
+                // Verify the posts generator can actually serve page 2
+                const page2 = generator.types.posts.getXml(2);
+                should.exist(page2);
+                page2.should.containEql('<loc>');
             });
         });
     });

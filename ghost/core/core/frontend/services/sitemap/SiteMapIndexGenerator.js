@@ -31,7 +31,10 @@ class SiteMapIndexGenerator {
 
     generateSiteMapUrlElements() {
         return _.map(this.types, (resourceType) => {
-            const noOfPages = Math.ceil(Object.keys(resourceType.nodeLookup).length / this.maxPerPage);
+            // Use the resource type's maxPerPage, not the index's maxPerPage
+            // This ensures pagination is calculated consistently with how the resource generates its pages
+            const maxPerPage = resourceType.maxPerPage || this.maxPerPage;
+            const noOfPages = Math.ceil(Object.keys(resourceType.nodeLookup).length / maxPerPage);
             const pages = [];
             for (let i = 0; i < noOfPages; i++) {
                 const page = i === 0 ? '' : `-${i + 1}`;
