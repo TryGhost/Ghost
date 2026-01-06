@@ -154,10 +154,14 @@ describe('Frontend Routing: Preview Routes', function () {
     });
 
     it('should render scheduled email-only posts', async function () {
+        const newsletters = await testUtils.fixtures.insertNewsletters();
+        const newsletterId = newsletters[0].id;
+
         const scheduledEmail = await testUtils.fixtures.insertPosts([{
             title: 'test newsletter',
             status: 'scheduled',
             published_at: DateTime.now().plus({days: 1}).toISODate(),
+            newsletter_id: newsletterId,
             posts_meta: {
                 email_only: true
             }

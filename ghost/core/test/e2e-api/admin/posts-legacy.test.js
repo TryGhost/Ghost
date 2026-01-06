@@ -1472,6 +1472,41 @@ describe('Posts API', function () {
         should(email.get('status')).equalOneOf('pending', 'submitted', 'submitting');
     });
 
+    it('Cannot schedule an email only post without newsletter reference', async function () {
+        const post = {
+            title: 'My scheduled email only post without newsletter',
+            status: 'draft',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post')
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'scheduled';
+        updatedPost.email_only = true;
+        updatedPost.published_at = moment().add(2, 'days').toDate();
+
+        // Attempt to schedule without newsletter reference should fail
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422)
+            .expect((result) => {
+                result.body.errors[0].message.should.eql('Validation error, cannot edit post.');
+                result.body.errors[0].context.should.eql('Scheduling an email requires a newsletter reference.');
+            });
+    });
+
     it('Can\'t change the newsletter once it has been sent', async function () {
         // Note: this test only works if there are members subscribed to the initial newsletter
         // (so it won't get reset when changing the post status to draft again)
