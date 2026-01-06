@@ -55,3 +55,27 @@ export function createCommentFactory(httpClient: HttpClient): CommentFactory {
     return new CommentFactory(adapter);
 }
 
+export interface Factories {
+    postFactory: PostFactory;
+    tagFactory: TagFactory;
+    memberFactory: MemberFactory;
+    automatedEmailFactory: AutomatedEmailFactory;
+    commentFactory: CommentFactory;
+}
+
+/**
+ * Helper for creating all factories with the same http client
+ * @param httpClient - client for requests with pre-defined authorization and base url
+ * 
+ * @returns All factories ready to use with the specified Ghost backend
+ */
+export function createFactories(httpClient: HttpClient): Factories {
+    return {
+        postFactory: createPostFactory(httpClient),
+        tagFactory: createTagFactory(httpClient),
+        memberFactory: createMemberFactory(httpClient),
+        automatedEmailFactory: createAutomatedEmailFactory(httpClient),
+        commentFactory: createCommentFactory(httpClient)
+    };
+}
+
