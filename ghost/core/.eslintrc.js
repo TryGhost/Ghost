@@ -109,10 +109,12 @@ module.exports = {
             }
         },
         {
-            // Helpers use underscores (e.g., ghost_head.js → {{ghost_head}}) - can't rename without breaking themes
+            // Helper filenames use underscores because they map directly to Handlebars helper names
+            // e.g., ghost_head.js → {{ghost_head}}. Renaming would break all themes.
+            // See: core/frontend/services/helpers/registry.js:26
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
-                'ghost/filenames/match-regex': 'off'
+                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
             }
         },
         /**
