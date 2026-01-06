@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
-const TaxonomyRouter = require('../../../../../core/frontend/services/routing/TaxonomyRouter');
+const TaxonomyRouter = require('../../../../../core/frontend/services/routing/taxonomy-router');
 
 const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config');
 

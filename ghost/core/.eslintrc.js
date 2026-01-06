@@ -101,9 +101,18 @@ module.exports = {
             }
         },
         {
+            // Frontend files use kebab-case filenames with PascalCase class exports
+            files: ['core/frontend/**/*.js'],
+            rules: {
+                'ghost/filenames/match-exported-class': 'off',
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            }
+        },
+        {
+            // Helpers use underscores (e.g., ghost_head.js → {{ghost_head}}) - can't rename without breaking themes
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
-                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
+                'ghost/filenames/match-regex': 'off'
             }
         },
         /**

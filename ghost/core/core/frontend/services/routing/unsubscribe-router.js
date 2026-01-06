@@ -1,4 +1,4 @@
-const ParentRouter = require('./ParentRouter');
+const ParentRouter = require('./parent-router');
 const controllers = require('./controllers');
 
 /**

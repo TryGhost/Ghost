@@ -34,7 +34,7 @@ function SiteRouter(req, res, next) {
 
 /**
  *
- * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
  * @returns {import('express').Application}
  */
 module.exports = function setupSiteApp(routerConfig) {
@@ -173,7 +173,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
 /**
  * see https://github.com/expressjs/express/issues/2596
- * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
  */
 module.exports.reload = (routerConfig) => {
     debug('reloading');

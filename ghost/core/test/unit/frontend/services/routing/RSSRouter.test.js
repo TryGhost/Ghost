@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
-const RSSRouter = require('../../../../../core/frontend/services/routing/RSSRouter');
+const RSSRouter = require('../../../../../core/frontend/services/routing/rss-router');
 const urlUtils = require('../../../../../core/shared/url-utils');
 
 describe('UNIT - services/routing/RSSRouter', function () {
