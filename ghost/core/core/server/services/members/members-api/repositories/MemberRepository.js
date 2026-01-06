@@ -1438,7 +1438,7 @@ module.exports = class MemberRepository {
                         email: memberModel.get('email'),
                         name: memberModel.get('name'),
                         source,
-                        timestamp: new Date(),
+                        timestamp: subscriptionData.start_date || updatedMember.get('updated_at') || new Date(),
                         status: 'paid'
                     })
                 }, options);
