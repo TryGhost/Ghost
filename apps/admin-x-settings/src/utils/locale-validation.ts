@@ -1,4 +1,44 @@
 /**
+ * Grandfathered tags from BCP 47 (RFC 5646)
+ * Source: IANA Language Subtag Registry
+ * https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+ *
+ * These 26 legacy tags from RFC 3066 don't follow current BCP 47 syntax
+ * but must be accepted for backward compatibility. They're a fixed list
+ * from the IANA registry - no additions or removals allowed.
+ */
+const GRANDFATHERED_TAGS = new Set([
+    // Irregular - don't match standard syntax
+    'en-gb-oed',
+    'i-ami',
+    'i-bnn',
+    'i-default',
+    'i-enochian',
+    'i-hak',
+    'i-klingon',
+    'i-lux',
+    'i-mingo',
+    'i-navajo',
+    'i-pwn',
+    'i-tao',
+    'i-tay',
+    'i-tsu',
+    'sgn-be-fr',
+    'sgn-be-nl',
+    'sgn-ch-de',
+    // Regular - valid syntax but non-registry subtags
+    'art-lojban',
+    'cel-gaulish',
+    'no-bok',
+    'no-nyn',
+    'zh-guoyu',
+    'zh-hakka',
+    'zh-min',
+    'zh-min-nan',
+    'zh-xiang'
+]);
+
+/**
  * Validates a BCP 47 language tag
  * @param value - The locale string to validate
  * @returns null if valid, error message string if invalid
@@ -10,74 +50,17 @@ export const validateLocale = (value: string): string | null => {
         return 'Enter a value';
     }
 
-    // Trim whitespace
     const trimmedValue = value.trim();
 
     if (!trimmedValue) {
         return errorMessage;
     }
 
-    /**
-     * Grandfathered tags from BCP 47 (RFC 5646)
-     * Source: IANA Language Subtag Registry
-     * https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
-     *
-     * These 26 legacy tags from RFC 3066 don't follow current BCP 47 syntax
-     * but must be accepted for backward compatibility. They're a fixed list
-     * from the IANA registry - no additions or removals allowed.
-     *
-     * Most have modern replacements (e.g., "i-klingon" → "tlh") but the old
-     * forms remain valid for existing content.
-     */
-
-    // Irregular grandfathered tags - don't match standard syntax
-    const grandfatheredIrregular = [
-        'en-gb-oed', // Oxford English Dictionary spelling
-        'i-ami', // Amis (Austronesian language of Taiwan)
-        'i-bnn', // Bunun (Austronesian language of Taiwan)
-        'i-default', // Default/fallback language for i18n
-        'i-enochian', // Enochian (mystical/artificial language)
-        'i-hak', // Hakka Chinese
-        'i-klingon', // Klingon (Star Trek) - now use "tlh"
-        'i-lux', // Luxembourgish - now use "lb"
-        'i-mingo', // Mingo (Native American language)
-        'i-navajo', // Navajo - now use "nv"
-        'i-pwn', // Paiwan (Austronesian language of Taiwan)
-        'i-tao', // Tao/Yami (Austronesian language of Taiwan)
-        'i-tay', // Tayal (Austronesian language of Taiwan)
-        'i-tsu', // Tsou (Austronesian language of Taiwan)
-        'sgn-be-fr', // Belgian-French Sign Language
-        'sgn-be-nl', // Belgian-Flemish Sign Language
-        'sgn-ch-de' // Swiss German Sign Language
-    ];
-
-    // Regular grandfathered tags - valid syntax but non-registry subtags
-    const grandfatheredRegular = [
-        'art-lojban', // Lojban constructed language - now use "jbo"
-        'cel-gaulish', // Gaulish (ancient Celtic language)
-        'no-bok', // Norwegian Bokmål - now use "nb"
-        'no-nyn', // Norwegian Nynorsk - now use "nn"
-        'zh-guoyu', // Mandarin Chinese, Guoyu romanization
-        'zh-hakka', // Hakka Chinese - now use "hak"
-        'zh-min', // Min Chinese (broad group)
-        'zh-min-nan', // Southern Min Chinese (Taiwanese/Hokkien) - now use "nan"
-        'zh-xiang' // Xiang/Hunanese Chinese - now use "hsn"
-    ];
-
-    // Check grandfathered tags
-    const lowerValue = trimmedValue.toLowerCase();
-    if (grandfatheredIrregular.includes(lowerValue) ||
-        grandfatheredRegular.includes(lowerValue)) {
+    if (GRANDFATHERED_TAGS.has(trimmedValue.toLowerCase())) {
         return null;
     }
 
-    // Basic format validation - only alphanumeric and hyphens
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/i.test(trimmedValue)) {
-        return errorMessage;
-    }
-
-    // Reject if any segment is empty
-    if (trimmedValue.includes('--') || trimmedValue.startsWith('-') || trimmedValue.endsWith('-')) {
         return errorMessage;
     }
 
@@ -126,15 +109,12 @@ export const validateLocale = (value: string): string | null => {
 
     // Extension subtags (optional): single char (not x) + one or more 2-8 char subtags
     while (position < segments.length) {
-        // Check for extension singleton
         if (/^[0-9a-wy-z]$/i.test(segments[position])) {
             position += 1;
-            // Must have at least one extension subtag
             if (position >= segments.length || !/^[a-z0-9]{2,8}$/i.test(segments[position])) {
                 return errorMessage;
             }
             position += 1;
-            // Additional extension subtags
             while (position < segments.length && /^[a-z0-9]{2,8}$/i.test(segments[position])) {
                 position += 1;
             }
@@ -143,14 +123,13 @@ export const validateLocale = (value: string): string | null => {
         }
     }
 
-    // Private use at the end (optional): x + one or more 1-8 char subtags
+    // Private use at the end (optional): x + one or more subtags (lenient on length)
     if (position < segments.length && segments[position].toLowerCase() === 'x') {
         position += 1;
         if (position >= segments.length) {
             return errorMessage;
         }
         while (position < segments.length) {
-            // Private use subtags can be 1-8 characters, but we'll be lenient and allow longer
             if (!/^[a-z0-9]+$/i.test(segments[position])) {
                 return errorMessage;
             }
@@ -158,35 +137,27 @@ export const validateLocale = (value: string): string | null => {
         }
     }
 
-    // If we haven't consumed all segments, the format is invalid
     if (position !== segments.length) {
         return errorMessage;
     }
 
-    // Additional validation for common mistakes
-    // Check if any segment looks like a full word rather than a code
-    // Find the index of 'x' (case-insensitive) for private use detection
+    // Reject common mistakes (full words instead of locale codes)
     const xIndex = segments.findIndex(s => s.toLowerCase() === 'x');
+
+    const invalidWords = ['english', 'french', 'spanish', 'german', 'italian',
+        'chinese', 'japanese', 'korean', 'russian', 'arabic',
+        'united', 'states', 'kingdom', 'traditional', 'simplified'];
 
     for (let i = 0; i < segments.length; i++) {
         const segment = segments[i];
-        // Skip grandfathered prefixes and private use
+        // Skip grandfathered prefixes and private use segments
         if (['i', 'x', 'sgn', 'art', 'cel', 'no', 'zh'].includes(segment.toLowerCase())) {
             continue;
         }
-        // Skip segments in private use (after 'x')
         if (xIndex !== -1 && i > xIndex) {
             continue;
         }
-        // Reject segments that are obviously too long (but be lenient for private use)
-        if (segment.length > 16) {
-            return errorMessage;
-        }
-        // Common English words that might be mistakenly used
-        const invalidWords = ['english', 'french', 'spanish', 'german', 'italian',
-            'chinese', 'japanese', 'korean', 'russian', 'arabic',
-            'united', 'states', 'kingdom', 'traditional', 'simplified'];
-        if (invalidWords.includes(segment.toLowerCase())) {
+        if (segment.length > 16 || invalidWords.includes(segment.toLowerCase())) {
             return errorMessage;
         }
     }

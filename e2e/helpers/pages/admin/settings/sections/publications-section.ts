@@ -27,21 +27,15 @@ export class PublicationSection extends BasePage {
             throw new Error('Language must be a non-empty string');
         }
 
-        // Try to select from the dropdown first
         await this.localeSelect.click();
-
-        // Wait for dropdown options to be visible before checking
         await this.page.getByTestId('select-option').first().waitFor({state: 'visible'});
 
-        // Check if the language code exists in the dropdown options
         const optionLocator = this.page.getByTestId('select-option').filter({hasText: `(${language.trim()})`});
         const optionCount = await optionLocator.count();
 
         if (optionCount > 0) {
-            // Select from dropdown
             await optionLocator.first().click();
         } else {
-            // Use "Other..." option for custom locale
             await this.page.getByTestId('select-option').filter({hasText: 'Other'}).click();
             await this.customLanguageField.fill(language.trim());
         }
