@@ -158,4 +158,26 @@ describe('Account Email Page', () => {
         const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
         expect(unsubscribeBtns).toHaveLength(3);
     });
+
+    test('paid subscription message is shown for paid members', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            title: 'Test Site'
+        });
+        const paidMember = getMemberData({newsletters: newsletterData, paid: true});
+        const {getByText} = setup({site: siteData, member: paidMember});
+        expect(getByText(`Unsubscribing from emails will not cancel your paid subscription to ${siteData.title}`)).toBeInTheDocument();
+    });
+
+    test('paid subscription message is not shown for free members', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            title: 'Test Site'
+        });
+        const freeMember = getMemberData({newsletters: newsletterData, paid: false});
+        const {queryByText} = setup({site: siteData, member: freeMember});
+        expect(queryByText(`Unsubscribing from emails will not cancel your paid subscription to ${siteData.title}`)).not.toBeInTheDocument();
+    });
 });
