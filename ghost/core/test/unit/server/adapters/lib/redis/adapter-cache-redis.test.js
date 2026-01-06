@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
+const RedisCache = require('../../../../../../core/server/adapters/lib/redis/adapter-cache-redis');
 
 describe('Adapter Cache Redis', function () {
     beforeEach(function () {

@@ -6,7 +6,7 @@ const events = require('../../../core/server/lib/common/events');
 // Testing  the Private API
 let CacheManager = require('../../../core/shared/settings-cache/CacheManager');
 const publicSettings = require('../../../core/shared/settings-cache/public');
-const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache');
+const InMemoryCache = require('../../../core/server/adapters/cache/memory-cache');
 
 should.equal(true, true);
 

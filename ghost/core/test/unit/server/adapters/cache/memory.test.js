@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 
-const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const MemoryCache = require('../../../../../core/server/adapters/cache/memory-cache');
 
 describe('In Memory Cache Adapter', function () {
     let memoryCache;

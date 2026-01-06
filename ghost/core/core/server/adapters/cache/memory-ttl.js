@@ -1,3 +1,3 @@
-const TTLMemoryCache = require('./AdapterCacheMemoryTTL');
+const TTLMemoryCache = require('./adapter-cache-memory-ttl');
 
 module.exports = TTLMemoryCache;

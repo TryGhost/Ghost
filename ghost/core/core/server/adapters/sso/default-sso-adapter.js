@@ -1,4 +1,4 @@
-const Base = require('./SSOBase');
+const Base = require('./sso-base');
 
 module.exports = class DefaultSSOAdapter extends Base {
     constructor() {

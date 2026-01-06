@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
 const configUtils = require('../../../../utils/configUtils');
 const storage = require('../../../../../core/server/adapters/storage');
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+const LocalStorageBase = require('../../../../../core/server/adapters/storage/local-storage-base');
 
 const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {

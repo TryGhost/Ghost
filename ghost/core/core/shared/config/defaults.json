@@ -25,21 +25,21 @@
     },
     "adapters": {
         "sso": {
-            "active": "DefaultSSOAdapter"
+            "active": "default-sso-adapter"
         },
         "cache": {
-            "active": "MemoryCache",
+            "active": "memory-cache",
             "settings": {},
             "imageSizes": {},
             "gscan": {}
         }
     },
     "storage": {
-        "active": "LocalImagesStorage",
-        "media": "LocalMediaStorage",
-        "files": "LocalFilesStorage",
-        "LocalMediaStorage": {},
-        "LocalFilesStorage": {}
+        "active": "local-images-storage",
+        "media": "local-media-storage",
+        "files": "local-files-storage",
+        "local-media-storage": {},
+        "local-files-storage": {}
     },
     "scheduling": {
         "active": "scheduling-default"

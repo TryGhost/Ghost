@@ -8,7 +8,7 @@ const events = require('../../../../../../core/server/lib/common/events');
 const schedulingUtils = require('../../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../../core/server/adapters/scheduling/scheduling-default');
 const urlUtils = require('../../../../../../core/shared/url-utils');
-const PostScheduler = require('../../../../../../core/server/adapters/scheduling/post-scheduling/PostScheduler');
+const PostScheduler = require('../../../../../../core/server/adapters/scheduling/post-scheduling/post-scheduler');
 const nock = require('nock');
 
 describe('Scheduling: Post Scheduler', function () {

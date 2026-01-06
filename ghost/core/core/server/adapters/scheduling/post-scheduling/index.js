@@ -1,6 +1,6 @@
 const events = require('../../../lib/common/events');
 const localUtils = require('../utils');
-const PostScheduler = require('./PostScheduler');
+const PostScheduler = require('./post-scheduler');
 const getSchedulerIntegration = require('./scheduler-intergation');
 const {sequence} = require('@tryghost/promise');
 

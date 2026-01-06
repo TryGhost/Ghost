@@ -4,7 +4,7 @@ const path = require('path');
 const config = require('../../../shared/config');
 const security = require('@tryghost/security');
 const {compress} = require('@tryghost/zip');
-const LocalStorageBase = require('../../adapters/storage/LocalStorageBase');
+const LocalStorageBase = require('../../adapters/storage/local-storage-base');
 
 /**
  * @TODO: combine with loader.js?

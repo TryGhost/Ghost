@@ -5,7 +5,7 @@ const list = require('../../../../../core/server/services/themes/list');
 const gscan = require('gscan');
 const assert = require('assert/strict');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
-const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/memory-cache');
 const logging = require('@tryghost/logging');
 
 describe('Themes', function () {

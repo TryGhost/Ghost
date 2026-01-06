@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/CachedImageSizeFromUrl');
-const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/memory-cache');
 const logging = require('@tryghost/logging');
 
 describe('lib/image: image size cache', function () {

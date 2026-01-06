@@ -13,7 +13,7 @@ import {
     AbortMultipartUploadCommand,
     S3Client
 } from '@aws-sdk/client-s3';
-import S3Storage, {type S3StorageOptions} from '../../../../../core/server/adapters/storage/S3Storage';
+import S3Storage, {type S3StorageOptions} from '../../../../../core/server/adapters/storage/s3-storage';
 
 // Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
 const MIN_MULTIPART_CHUNK_SIZE = 5 * 1024 * 1024;

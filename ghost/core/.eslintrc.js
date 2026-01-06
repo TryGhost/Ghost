@@ -106,6 +106,13 @@ module.exports = {
                 'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
             }
         },
+        {
+            // Adapter files are loaded dynamically by name from config, not by class name
+            files: ['core/server/adapters/**/*.{js,ts}'],
+            rules: {
+                'ghost/filenames/match-exported-class': 'off'
+            }
+        },
         /**
          * @TODO: enable these soon
          */

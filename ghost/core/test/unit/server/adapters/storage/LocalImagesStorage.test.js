@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const fs = require('fs-extra');
 const moment = require('moment');
 const path = require('path');
-const LocalImagesStorage = require('../../../../../core/server/adapters/storage/LocalImagesStorage');
+const LocalImagesStorage = require('../../../../../core/server/adapters/storage/local-images-storage');
 const configUtils = require('../../../../utils/configUtils');
 
 describe('Local Images Storage', function () {

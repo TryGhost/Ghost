@@ -2,7 +2,7 @@
 // The (default) module for storing media, using the local file system
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
-const LocalStorageBase = require('./LocalStorageBase');
+const LocalStorageBase = require('./local-storage-base');
 
 const messages = {
     notFound: 'File not found',

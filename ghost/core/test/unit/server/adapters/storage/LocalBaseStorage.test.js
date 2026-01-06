@@ -3,7 +3,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const should = require('should');
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+const LocalStorageBase = require('../../../../../core/server/adapters/storage/local-storage-base');
 
 describe('Local Storage Base', function () {
     describe('serve', function () {
