@@ -28,3 +28,4 @@ export {createTagFactory} from './setup';
 export {createMemberFactory} from './setup';
 export {createAutomatedEmailFactory} from './setup';
 export {createCommentFactory} from './setup';
+export {createFactories} from './setup';
