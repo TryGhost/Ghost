@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const dnsPromises = require('dns').promises;
 const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
@@ -986,6 +987,29 @@ describe('ExternalMediaInliner', function () {
 
             assert.equal(matches.length, 1);
             assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+    });
+
+    describe('SSRF protection', function () {
+        it('getRemoteMedia returns null when URL resolves to a private IP', async function () {
+            // Restore any existing stub before creating a new one
+            dnsPromises.lookup.restore?.();
+
+            // Stub DNS lookup to return a private IP address
+            const dnsStub = sinon.stub(dnsPromises, 'lookup').callsFake(function () {
+                return Promise.resolve({address: '192.168.0.1'});
+            });
+
+            try {
+                const inliner = new ExternalMediaInliner({});
+                const result = await inliner.getRemoteMedia('https://malicious-site.com/image.jpg');
+
+                assert.equal(result, null);
+                assert.ok(logging.error.called);
+                assert.equal(logging.error.args[0][0], 'Error downloading remote media: https://malicious-site.com/image.jpg');
+            } finally {
+                dnsStub.restore();
+            }
         });
     });
 });
