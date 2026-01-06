@@ -1,6 +1,6 @@
 const should = require('should');
 const path = require('path');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 /**
  * This is a somewhat legacy set of tests that check we get the right values for storage

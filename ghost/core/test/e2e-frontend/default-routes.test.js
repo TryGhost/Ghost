@@ -12,7 +12,7 @@ const moment = require('moment');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
 

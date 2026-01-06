@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const moment = require('moment');
 const path = require('path');
 const LocalImagesStorage = require('../../../../../core/server/adapters/storage/LocalImagesStorage');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 describe('Local Images Storage', function () {
     let image;

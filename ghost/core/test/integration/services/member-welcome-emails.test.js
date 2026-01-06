@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const mailService = require('../../../core/server/services/mail');
 const config = require('../../../core/shared/config');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
@@ -83,7 +83,7 @@ describe('Member Welcome Emails Integration', function () {
             const entry = outboxEntries.models[0];
             assert.equal(entry.get('event_type'), 'MemberCreatedEvent');
             assert.equal(entry.get('status'), OUTBOX_STATUSES.PENDING);
-            
+
             const payload = JSON.parse(entry.get('payload'));
             assert.equal(payload.memberId, member.id);
             assert.equal(payload.email, 'welcome-test@example.com');
@@ -94,7 +94,7 @@ describe('Member Welcome Emails Integration', function () {
 
         it('does NOT create outbox entry when config is not set', async function () {
             configUtils.set('memberWelcomeEmailTestInbox', '');
-            
+
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
                 name: 'No Welcome Member'
@@ -141,7 +141,7 @@ describe('Member Welcome Emails Integration', function () {
             configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             const beforeCreation = new Date(Date.now() - 1000);
-            
+
             await membersService.api.members.create({
                 email: 'timestamp-test@example.com',
                 name: 'Timestamp Test'
@@ -156,7 +156,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(outboxEntries.length, 1);
             const entry = outboxEntries.models[0];
             const payload = JSON.parse(entry.get('payload'));
-            
+
             const timestamp = new Date(payload.timestamp);
             assert.ok(timestamp >= beforeCreation);
             assert.ok(timestamp <= afterCreation);

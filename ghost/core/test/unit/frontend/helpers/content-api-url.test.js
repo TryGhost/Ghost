@@ -1,12 +1,12 @@
 /* eslint-disable no-regex-spaces */
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 // Stuff we are testing
 const content_api_url = require('../../../../core/frontend/helpers/content_api_url');
 const logging = require('@tryghost/logging');
-    
+
 describe('{{content_api_url}} helper', function () {
     let logWarnStub;
 
@@ -57,7 +57,7 @@ describe('{{content_api_url}} helper', function () {
         after(async function () {
             await configUtils.restore();
         });
-    
+
         it('should output an absolute url', async function () {
             let result = content_api_url();
             const rendered = new String(result);

@@ -8,7 +8,7 @@ const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 let request;
 

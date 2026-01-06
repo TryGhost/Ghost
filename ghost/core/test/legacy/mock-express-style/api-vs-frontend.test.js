@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtils = require('../../utils/url-utils');
 
 const routeSettingsService = require('../../../core/server/services/route-settings');
 const themeEngine = require('../../../core/frontend/services/theme-engine');

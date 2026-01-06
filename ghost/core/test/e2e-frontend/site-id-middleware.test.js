@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 
 describe('Site id middleware execution', function () {
     let request;

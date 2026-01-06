@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
@@ -1330,11 +1330,11 @@ describe('{{ghost_head}} helper', function () {
     describe('includes tinybird tracker script when config is set', function () {
         let labsStub;
         let settingsHelpersStub;
-        
+
         function setAnalyticsFlags({analytics = false} = {}) {
             settingsHelpersStub.returns(analytics);
         }
-        
+
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
@@ -1353,11 +1353,11 @@ describe('{{ghost_head}} helper', function () {
             });
             labsStub = sinon.stub(labs, 'isSet');
             labsStub.withArgs('i18n').returns(true);
-            
+
             settingsHelpersStub = sinon.stub(settingsHelpers, 'isWebAnalyticsEnabled');
             setAnalyticsFlags({analytics: true});
         });
-        
+
         afterEach(function () {
             settingsHelpersStub.restore();
         });
@@ -1548,7 +1548,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
             rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
-        });    
+        });
     });
 
     describe('respects values from excludes: ', function () {

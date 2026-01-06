@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const getSiteProperties = require('../../../../../core/server/services/public-config/site');
 
 describe('Public-config Service', function () {

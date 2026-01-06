@@ -11,8 +11,8 @@ const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const settingsCache = require('../../../core/shared/settings-cache');
 const events = require('../../../core/server/lib/common/events');
-const configUtils = require('../../utils/configUtils');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtilsHelper = require('../../utils/url-utils');
 const context = testUtils.context.owner;
 const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 

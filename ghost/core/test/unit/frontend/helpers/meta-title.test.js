@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const meta_title = require('../../../../core/frontend/helpers/meta_title');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
