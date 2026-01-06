@@ -738,7 +738,6 @@ describe('MemberRepository', function () {
 
             sinon.assert.notCalled(Outbox.add);
         });
-
         it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
             sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
 
@@ -780,6 +779,327 @@ describe('MemberRepository', function () {
             }, {});
 
             // The free welcome email should NOT be sent when stripeCustomer is present
+            sinon.assert.notCalled(Outbox.add);
+        });
+    });
+
+    describe('linkSubscription - outbox integration', function () {
+        let Member;
+        let Outbox;
+        let MemberPaidSubscriptionEvent;
+        let StripeCustomerSubscription;
+        let MemberProductEvent;
+        let MemberStatusEvent;
+        let stripeAPIService;
+        let productRepository;
+        let AutomatedEmail;
+        let subscriptionData;
+
+        beforeEach(function () {
+            subscriptionData = {
+                id: 'sub_123',
+                customer: 'cus_123',
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'Monthly',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 500,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: Date.now() / 1000,
+                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false
+            };
+
+            Member = {
+                findOne: sinon.stub().resolves({
+                    id: 'member_id_123',
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {
+                            email: 'test@example.com',
+                            name: 'Test Member'
+                        };
+                        return data[key];
+                    }),
+                    related: (relation) => {
+                        return {
+                            query: sinon.stub().returns({
+                                fetchOne: sinon.stub().resolves({})
+                            }),
+                            toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
+                            fetch: sinon.stub().resolves({
+                                toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
+                                models: []
+                            })
+                        };
+                    },
+                    toJSON: sinon.stub().returns({})
+                }),
+                edit: sinon.stub().resolves({
+                    attributes: {},
+                    _previousAttributes: {}
+                })
+            };
+
+            Outbox = {
+                add: sinon.stub().resolves()
+            };
+
+            MemberPaidSubscriptionEvent = {
+                add: sinon.stub().resolves()
+            };
+
+            StripeCustomerSubscription = {
+                add: sinon.stub().resolves({
+                    id: 'stripe_sub_id_123',
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {
+                            created_at: new Date(),
+                            status: 'active',
+                            cancel_at_period_end: false
+                        };
+                        return data[key];
+                    })
+                }),
+                edit: sinon.stub().resolves({
+                    id: 'stripe_sub_id_123',
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {
+                            created_at: new Date(),
+                            status: 'active',
+                            cancel_at_period_end: false
+                        };
+                        return data[key];
+                    })
+                })
+            };
+
+            MemberProductEvent = {
+                add: sinon.stub().resolves({})
+            };
+
+            MemberStatusEvent = {
+                add: sinon.stub().resolves()
+            };
+
+            stripeAPIService = {
+                configured: true,
+                getSubscription: sinon.stub().resolves(subscriptionData)
+            };
+
+            productRepository = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().returns(),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            AutomatedEmail = {
+                findOne: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {lexical: '{"root":{}}', status: 'active'};
+                        return data[key];
+                    })
+                })
+            };
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('creates outbox entry when member status changes to paid', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            sinon.assert.calledOnce(Outbox.add);
+            const payload = JSON.parse(Outbox.add.firstCall.args[0].payload);
+            assert.equal(payload.status, 'paid');
+            assert.equal(payload.memberId, 'member_id_123');
+            assert.equal(payload.email, 'test@example.com');
+            assert.equal(payload.name, 'Test Member');
+            assert.equal(payload.source, 'member');
+            assert.ok(payload.timestamp);
+        });
+
+        it('does NOT create outbox entry when config is not set', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            sinon.assert.notCalled(Outbox.add);
+        });
+
+        it('does NOT create outbox entry for disallowed sources', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const disallowedSources = [
+                {name: 'import', context: {import: true}},
+                {name: 'admin', context: {user: true}},
+                {name: 'api', context: {api_key: true}}
+            ];
+
+            for (const source of disallowedSources) {
+                Outbox.add.resetHistory();
+                await repo.linkSubscription({
+                    id: 'member_id_123',
+                    subscription: subscriptionData
+                }, {
+                    transacting: {
+                        executionPromise: Promise.resolve()
+                    },
+                    context: source.context
+                });
+                sinon.assert.notCalled(Outbox.add);
+            }
+        });
+
+        it('does NOT create outbox entry when paid welcome email is inactive', async function () {
+            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
+
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'free'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
+            AutomatedEmail.findOne.resolves({
+                get: sinon.stub().callsFake((key) => {
+                    const data = {lexical: '{"root":{}}', status: 'inactive'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                AutomatedEmail,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
             sinon.assert.notCalled(Outbox.add);
         });
     });

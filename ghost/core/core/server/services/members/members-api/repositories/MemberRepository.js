@@ -1420,6 +1420,30 @@ module.exports = class MemberRepository {
                 to_status: updatedMember.get('status'),
                 ...eventData
             }, options);
+
+            const context = options?.context || {};
+            const source = this._resolveContextSource(context);
+            const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
+            let isPaidWelcomeEmailActive = false;
+            if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
+                const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
+                isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
+            }
+            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
+                await this._Outbox.add({
+                    id: ObjectId().toHexString(),
+                    event_type: MemberCreatedEvent.name,
+                    payload: JSON.stringify({
+                        memberId: memberModel.id,
+                        email: memberModel.get('email'),
+                        name: memberModel.get('name'),
+                        source,
+                        timestamp: subscriptionData.start_date || updatedMember.get('updated_at') || new Date(),
+                        status: 'paid'
+                    })
+                }, options);
+                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+            }
         }
     }
 
