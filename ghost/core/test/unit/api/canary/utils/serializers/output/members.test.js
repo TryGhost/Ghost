@@ -76,4 +76,18 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
 
         should.exist(frame.response.members[0].tiers);
     });
+
+    it('read: includes comment notification enabled flag', function () {
+        const apiConfig = {docName: 'members'};
+        const frame = {
+            options: {
+                context: {}
+            }
+        };
+
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithCommentNotificationsEnabled());
+        memberSerializer.read(ctrlResponse, apiConfig, frame);
+        should.exist(frame.response.members[0].enable_comment_notifications);
+        should.equal(frame.response.members[0].enable_comment_notifications, true);
+    });
 });
