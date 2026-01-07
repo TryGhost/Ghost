@@ -1045,13 +1045,29 @@ module.exports = class MemberRepository {
             const cadence = _.get(subscriptionPriceData, 'recurring.interval');
             const tier = {id: ghostProduct.get('id'), name: ghostProduct.get('name')};
 
-            const offer = await this._offersAPI.ensureOfferForStripeCoupon(
-                coupon,
-                cadence,
-                tier,
-                options
-            );
-            offerId = offer.id;
+            try {
+                const offer = await this._offersAPI.ensureOfferForStripeCoupon(
+                    coupon,
+                    cadence,
+                    tier,
+                    options
+                );
+                offerId = offer.id;
+            } catch (e) {
+                if (e instanceof errors.ValidationError) {
+                    // During migrations, some Stripe coupons from other platforms may not compatible with Ghost offers.
+                    // For example, a `yearly` coupon set to `repeating` (Ghost only accepts `once` or `forever` for `yearly` coupons).
+                    //
+                    // When we attempt to create a Ghost offer based on an invalid Stripe coupon, we can either:
+                    //     1. Surface the offer validation errors during migrations, so that they can be resolved case-by-case, until all invalid Stripe coupons have been removed from paid members
+                    //     2. Skip creating the offer but still create the paid member
+                    // The migration team has opted for solution 2, in particular in the context of self-migrations where resolving those errors may be difficult
+                    logging.error(`Failed to create offer for Stripe coupon - ${stripeCouponId}`);
+                    logging.error(e);
+                } else {
+                    throw e;
+                }
+            }
         }
 
         const subscriptionData = {
