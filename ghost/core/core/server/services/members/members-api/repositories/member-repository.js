@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const config = require('../../../../../shared/config');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const {MemberCommentingCodec} = require('../../commenting');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -2010,5 +2011,22 @@ module.exports = class MemberRepository {
             }
         }
         return true;
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting: MemberCommentingCodec.format(commenting)},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
     }
 };

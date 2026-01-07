@@ -2,10 +2,12 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const {MemberCommentingCodec} = require('../../commenting');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
-    memberAlreadyExists: 'Member already exists.'
+    memberAlreadyExists: 'Member already exists.',
+    memberNotFound: 'Member not found.'
 };
 
 /**
@@ -252,6 +254,10 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
+        const commenting = MemberCommentingCodec.parse(member.commenting);
+        member.can_comment = commenting.canComment;
+        member.commenting = commenting;
+
         return member;
     }
 
@@ -371,6 +377,60 @@ module.exports = class MemberBREADService {
         return this.read({id: model.id}, options);
     }
 
+    /**
+     * @param {string} memberId
+     * @param {string} reason
+     * @param {Date|null} until
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async disableCommenting(memberId, reason, until, context) {
+        const member = await this.read({id: memberId});
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const updated = member.commenting.disable(reason, until);
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_disabled',
+            context
+        );
+
+        return this.read({id: memberId});
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async enableCommenting(memberId, context) {
+        const member = await this.read({id: memberId});
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const updated = member.commenting.enable();
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_enabled',
+            context
+        );
+
+        return this.read({id: memberId});
+    }
+
     async logout(options) {
         await this.memberRepository.cycleTransientId(options);
     }
@@ -433,6 +493,11 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
+
+            const commenting = MemberCommentingCodec.parse(member.commenting);
+            member.can_comment = commenting.canComment;
+            member.commenting = commenting;
+
             return member;
         });
 
