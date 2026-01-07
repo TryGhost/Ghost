@@ -21,7 +21,6 @@ Object {
       "domainWarmup": true,
       "editorExcerpt": true,
       "emailCustomization": true,
-      "emailSizeWarnings": true,
       "emailUniqueid": true,
       "explore": true,
       "i18n": true,
