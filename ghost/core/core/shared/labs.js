@@ -55,7 +55,9 @@ const PRIVATE_FEATURES = [
     'domainWarmup',
     'themeTranslation',
     'commentModeration',
-    'commentPermalinks'
+    'emailSizeWarnings',
+    'commentPermalinks',
+    'indexnow'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

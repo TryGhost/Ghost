@@ -93,7 +93,8 @@ const SETTING_KEYS_BLOCKLIST = [
     'stripe_publishable_key',
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
-    'email_verification_required'
+    'email_verification_required',
+    'indexnow_api_key'
 ];
 
 module.exports = {
