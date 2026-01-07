@@ -8,6 +8,7 @@ const Member = ghostBookshelf.Model.extend({
 
     actionsCollectCRUD: true,
     actionsResourceType: 'member',
+    actionsExtraContext: ['commenting'],
 
     defaults() {
         return {

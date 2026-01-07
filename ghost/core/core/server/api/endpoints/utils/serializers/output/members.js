@@ -5,6 +5,7 @@ const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const papaparse = require('papaparse');
+const {serializeCommenting} = require('./utils/member-commenting');
 
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -179,7 +180,9 @@ function serializeMember(member, options) {
         status: json.status,
         last_seen_at: json.last_seen_at,
         attribution: serializeAttribution(json.attribution),
-        unsubscribe_url: json.unsubscribe_url
+        unsubscribe_url: json.unsubscribe_url,
+        can_comment: json.can_comment,
+        commenting: serializeCommenting(json.commenting)
     };
 
     if (json.products) {
@@ -263,7 +266,9 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'} status
+ * @prop {'free'|'paid'|'comped'} status
+ * @prop {boolean} can_comment
+ * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */
 
 /**

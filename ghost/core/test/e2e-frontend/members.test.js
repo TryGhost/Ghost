@@ -885,11 +885,13 @@ describe('Front-end members behavior', function () {
                     'paid',
                     'created_at',
                     'enable_comment_notifications',
+                    'can_comment',
+                    'commenting',
                     'newsletters',
                     'email_suppression',
                     'unsubscribe_url'
                 ]);
-                Object.keys(memberData).should.have.length(14);
+                Object.keys(memberData).should.have.length(16);
                 memberData.should.not.have.property('id');
                 memberData.newsletters.should.have.length(1);
 
