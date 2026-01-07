@@ -45,14 +45,19 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
             const response = await route.fetch();
             const json = await response.json();
 
-            json.settings.push(
-                {key: 'stripe_connect_secret_key', value: '••••••••'},
-                {key: 'stripe_connect_publishable_key', value: 'pk_test_fakeKeyForE2eTesting'}
-            );
+            for (const setting of json.settings) {
+                if (setting.key === 'stripe_connect_secret_key') {
+                    setting.value = 'sk_test_fakeKeyForE2eTesting';
+                }
+                if (setting.key === 'stripe_connect_publishable_key') {
+                    setting.value = 'pk_test_fakeKeyForE2eTesting';
+                }
+            }
 
             await route.fulfill({response, json});
         });
 
+        await page.reload();
         await welcomeEmailsSection.goto();
         await welcomeEmailsSection.enablePaidWelcomeEmail();
 
