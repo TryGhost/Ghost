@@ -57,14 +57,12 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * Each instance gets its own database, runs on a unique port, and includes authentication
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
- * Ghost config via config settings, and Stripe connection state like:
- *
+ * and Stripe connection via test.use({stripeConnected: true})
+   and Ghost config via config settings: 
  *  test.use({config: {
  *      memberWelcomeEmailSendInstantly: 'true',
  *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
  *  }})
- * 
- * test.use({stripeConnected: true})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define options that can be set per test or describe block
