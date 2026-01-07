@@ -4,70 +4,11 @@ const fs = require('fs');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('i18n');
 
-const SUPPORTED_LOCALES = [
-    'af', // Afrikaans
-    'ar', // Arabic
-    'bg', // Bulgarian
-    'bn', // Bengali
-    'bs', // Bosnian
-    'ca', // Catalan
-    'cs', // Czech
-    'da', // Danish
-    'de', // German
-    'de-CH', // Swiss German
-    'el', // Greek
-    'en', // English
-    'eo', // Esperanto
-    'es', // Spanish
-    'et', // Estonian
-    'eu', // Basque
-    'fa', // Persian/Farsi
-    'fi', // Finnish
-    'fr', // French
-    'gd', // Gaelic (Scottish)
-    'he', // Hebrew
-    'hi', // Hindi
-    'hr', // Croatian
-    'hu', // Hungarian
-    'id', // Indonesian
-    'is', // Icelandic
-    'it', // Italian
-    'ja', // Japanese
-    'ko', // Korean
-    'kz', // Kazach
-    'lt', // Lithuanian
-    'lv', // Latvian
-    'mk', // Macedonian
-    'mn', // Mongolian
-    'ms', // Malay
-    'nb', // Norwegian Bokmål
-    'ne', // Nepali
-    'nl', // Dutch
-    'nn', // Norwegian Nynorsk
-    'pa', // Punjabi (Gurmukhi, India)
-    'pl', // Polish
-    'pt', // Portuguese
-    'pt-BR', // Portuguese (Brazil)
-    'ro', // Romanian
-    'ru', // Russian
-    'si', // Sinhala
-    'sk', // Slovak
-    'sl', // Slovenian
-    'sq', // Albanian
-    'sr', // Serbian
-    'sr-Cyrl', // Serbian (Cyrillic)
-    'sv', // Swedish
-    'th', // Thai
-    'tr', // Turkish
-    'uk', // Ukrainian
-    'ur', // Urdu
-    'uz', // Uzbek
-    'vi', // Vietnamese
-    'zh', // Chinese
-    'zh-Hant', // Traditional Chinese
-    'sw', // Swahili
-    'ta' // Tamil
-];
+// Locale data loaded from JSON (single source of truth)
+const LOCALE_DATA = require('./locale-data.json');
+
+// Export just the locale codes for backward compatibility
+const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
 
 function generateResources(locales, ns) {
     return locales.reduce((acc, locale) => {
@@ -209,4 +150,5 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
 };
 
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+module.exports.LOCALE_DATA = LOCALE_DATA;
 module.exports.generateResources = generateResources;
