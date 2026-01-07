@@ -8,6 +8,7 @@ import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+
 export interface User {
     name: string;
     email: string;
@@ -25,6 +26,7 @@ export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
     config?: GhostConfig;
+    stripeConnected?: boolean;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
@@ -33,12 +35,11 @@ export interface GhostInstanceFixture {
     };
 }
 
-async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
+async function setupLabSettings(page: Page, settingsService: SettingsService, labsFlags: Record<string, boolean>) {
     const analyticsPage = new AnalyticsOverviewPage(page);
     await analyticsPage.goto();
 
     debug('Updating labs settings:', labsFlags);
-    const settingsService = new SettingsService(page.request);
     await settingsService.updateLabsSettings(labsFlags);
 
     // Reload the page to ensure the new labs settings take effect in the UI
@@ -78,9 +79,10 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
-    // Define labs as an option that can be set per test or describe block
+    // Define options that can be set per test or describe block
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
+    stripeConnected: [false, {option: true}],
     ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
@@ -122,14 +124,22 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
     },
-    // Extract the page from pageWithAuthenticatedUser and apply labs settings
-    page: async ({pageWithAuthenticatedUser, labs}, use) => {
+    // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
+    page: async ({pageWithAuthenticatedUser, labs, stripeConnected}, use) => {
+        const page = pageWithAuthenticatedUser.page;
+        const settingsService = new SettingsService(page.request);
+
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
-            await setupLabSettings(pageWithAuthenticatedUser.page, labs);
+            await setupLabSettings(page, settingsService, labs);
         }
 
-        await use(pageWithAuthenticatedUser.page);
+        if (stripeConnected) {
+            debug('Setting up Stripe connection for test');
+            await settingsService.setStripeConnected();
+        }
+
+        await use(page);
     }
 });
 
