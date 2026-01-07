@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const cancel_link = require('../../../../core/frontend/helpers/cancel_link');
 const labs = require('../../../../core/shared/labs');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 describe('{{cancel_link}} helper', function () {

@@ -1,6 +1,6 @@
 const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 const page_url = require('../../../../core/frontend/helpers/page_url');
 const pagination = require('../../../../core/frontend/helpers/pagination');

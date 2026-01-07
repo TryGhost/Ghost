@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const configUtils = require('../../../../../utils/configUtils');
+const configUtils = require('../../../../../utils/config-utils');
 const maxLimitCap = require('../../../../../../core/server/web/shared/middleware/max-limit-cap');
 
 describe('Max Limit Cap Middleware', function () {

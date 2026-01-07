@@ -1,6 +1,6 @@
 const should = require('should');
 const {getFrontendAppConfig, getDataAttributes} = require('../../../../core/frontend/utils/frontend-apps');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('Frontend apps:', function () {
     describe('getFrontendAppConfig', function () {

@@ -4,7 +4,7 @@ const link = require('../../../../core/frontend/helpers/link');
 const url = require('../../../../core/frontend/helpers/url');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 let defaultGlobals;
 

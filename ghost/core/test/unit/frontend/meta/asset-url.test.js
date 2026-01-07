@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = configUtils.config;
 
 const getAssetUrl = require('../../../../core/frontend/meta/asset-url');

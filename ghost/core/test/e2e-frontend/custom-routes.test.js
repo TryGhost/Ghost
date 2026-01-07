@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const path = require('path');
 const moment = require('moment');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 
 function assertCorrectFrontendHeaders(res) {
     should.not.exist(res.headers['x-cache-invalidate']);

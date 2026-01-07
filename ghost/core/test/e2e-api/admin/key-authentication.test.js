@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 

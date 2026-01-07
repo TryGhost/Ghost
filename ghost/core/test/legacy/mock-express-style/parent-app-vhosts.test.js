@@ -4,8 +4,8 @@ const path = require('path');
 
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtils = require('../../utils/url-utils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
 describe('Integration - Web - vhosts', function () {

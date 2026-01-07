@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const rssCache = rewire('../../../../../core/frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {

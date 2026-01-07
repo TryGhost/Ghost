@@ -1,7 +1,7 @@
 const should = require('should');
 const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const storage = require('../../../../../core/server/adapters/storage');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 

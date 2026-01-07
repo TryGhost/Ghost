@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 
 describe('Content API key authentication', function () {
     let request;

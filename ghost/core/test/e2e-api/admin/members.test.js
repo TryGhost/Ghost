@@ -9,7 +9,7 @@ const sinon = require('sinon');
 const should = require('should');
 
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 
 const Papa = require('papaparse');
 

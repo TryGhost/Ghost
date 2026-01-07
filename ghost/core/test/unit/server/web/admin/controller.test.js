@@ -1,7 +1,7 @@
 require('should');
 const sinon = require('sinon');
 const path = require('path');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const controller = require('../../../../../core/server/web/admin/controller');
 
 describe('Admin App', function () {

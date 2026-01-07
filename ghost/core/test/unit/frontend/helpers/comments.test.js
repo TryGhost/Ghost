@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const {mockManager} = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');

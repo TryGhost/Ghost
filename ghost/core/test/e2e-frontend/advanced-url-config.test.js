@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
-const urlUtils = require('../utils/urlUtils');
+const configUtils = require('../utils/config-utils');
+const urlUtils = require('../utils/url-utils');
 const {mockManager} = require('../utils/e2e-framework');
 
 let request;

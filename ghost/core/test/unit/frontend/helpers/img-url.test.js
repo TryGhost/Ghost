@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 // Stuff we are testing
 const img_url = require('../../../../core/frontend/helpers/img_url');

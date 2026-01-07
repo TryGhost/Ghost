@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const rewire = require('rewire');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 // Stuff we test
 const slack = rewire('../../../../core/server/services/slack');

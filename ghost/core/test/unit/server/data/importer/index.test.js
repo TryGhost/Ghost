@@ -17,7 +17,7 @@ const MarkdownHandler = require('../../../../../core/server/data/importer/handle
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const RevueImporter = require('../../../../../core/server/data/importer/importers/importer-revue');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 describe('Importer', function () {

@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 
 describe('Tinybird API', function () {
     let agent;
@@ -43,12 +43,12 @@ describe('Tinybird API', function () {
                 assert(response.body.tinybird.token);
                 assert.equal(typeof response.body.tinybird.token, 'string');
                 assert(response.body.tinybird.token.length > 0);
-                
+
                 // JWT tokens should include expiration in ISO format
                 assert(response.body.tinybird.exp);
                 assert.equal(typeof response.body.tinybird.exp, 'string');
                 assert(new Date(response.body.tinybird.exp).getTime() > Date.now());
-                
+
                 // Verify that the ISO8601 string matches the JWT payload exp
                 const jwt = require('jsonwebtoken');
                 const decoded = jwt.decode(response.body.tinybird.token);

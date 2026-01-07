@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const redirectGhostToAdmin = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
 const {handleAdminRedirect} = require('../../../../../core/frontend/web/middleware/redirect-ghost-to-admin');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 
 describe('Redirect Ghost To Admin', function () {

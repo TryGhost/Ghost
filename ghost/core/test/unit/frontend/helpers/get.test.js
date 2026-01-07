@@ -2,7 +2,7 @@ const assert = require('assert').strict;
 const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing

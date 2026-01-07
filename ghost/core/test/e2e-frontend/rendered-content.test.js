@@ -3,7 +3,7 @@ const supertest = require('supertest');
 
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
-const urlUtilsHelper = require('../utils/urlUtils');
+const urlUtilsHelper = require('../utils/url-utils');
 
 describe('Post Rendering', function () {
     let siteUrl;

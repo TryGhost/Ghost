@@ -1,6 +1,6 @@
 const should = require('should');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const path = require('path');
 
 const concat = require('../../../../core/frontend/helpers/concat');

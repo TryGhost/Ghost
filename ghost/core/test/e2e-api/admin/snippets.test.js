@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
 const config = require('../../../core/shared/config');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 
 const matchSnippet = {
     id: anyObjectId,

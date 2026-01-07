@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 const models = require('../../core/server/models');
 const UrlService = require('../../core/server/services/url/UrlService');
 

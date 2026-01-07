@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
 

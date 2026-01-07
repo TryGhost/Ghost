@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');
 const sinon = require('sinon');

@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const ImageHandler = require('../../../../../../core/server/data/importer/handlers/image');
 const storage = require('../../../../../../core/server/adapters/storage');
-const configUtils = require('../../../../../utils/configUtils');
+const configUtils = require('../../../../../utils/config-utils');
 
 describe('ImageHandler', function () {
     const store = storage.getStorage('images');

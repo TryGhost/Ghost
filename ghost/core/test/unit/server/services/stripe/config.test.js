@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
 
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 const {getConfig} = require('../../../../../core/server/services/stripe/config');
 
