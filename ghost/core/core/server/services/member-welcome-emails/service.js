@@ -8,7 +8,7 @@ const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES, DEFAULT_WELCOME_EMAILS} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -30,11 +30,16 @@ class MemberWelcomeEmailService {
     }
 
     async loadMemberWelcomeEmails() {
+        const useDefaults = Boolean(config.get('memberWelcomeEmailTestInbox'));
+
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
             if (!row || !row.get('lexical')) {
-                this.#memberWelcomeEmails[memberStatus] = null;
+                // Use default template when test inbox is configured
+                this.#memberWelcomeEmails[memberStatus] = useDefaults
+                    ? DEFAULT_WELCOME_EMAILS[memberStatus]
+                    : null;
                 continue;
             }
 
