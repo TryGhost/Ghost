@@ -9073,14 +9073,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-5.1.1.tgz#de490aa9847294ee7de70be816ce21e6b8737f1b"
   integrity sha512-VeQOz36U6J+ZNcgiDSJI+qu7MO2ORN8YtDsZoFxhH/EilCHAGWBURgv2qfx3AP4ScI4KCx+cBjt6gm+u1aYI5A==
 
-"@tryghost/kg-default-cards@10.2.0":
-  version "10.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.2.0.tgz#1510c109eec308b285c6901d62f078a88258aed6"
-  integrity sha512-Ci4aFtAanAcaGEGqqFVQIDZHrVvdryfy2mAfAR7OB034ImAOcpURgB6OTHvTu7xdna1yutSVMz2kS1ACOSzNIg==
+"@tryghost/kg-default-cards@10.2.2":
+  version "10.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.2.2.tgz#083bd07af674cf863c8e886fd9e2e6bf247d39d2"
+  integrity sha512-OKJvIRNZJSqvPaldUETRqL7fG4ITvrmSc4K9zPHT0v7JDGAUyD67TnCaOyzWp1SVTMOUURqKRi0oYV4ZPIsWWA==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "7.1.4"
+    "@tryghost/kg-markdown-html-renderer" "7.1.6"
     "@tryghost/string" "0.2.17"
-    "@tryghost/url-utils" "4.5.0"
+    "@tryghost/url-utils" "5.1.0"
     handlebars "^4.7.6"
     juice "^10.0.0"
     lodash "^4.17.21"
@@ -9177,12 +9177,12 @@
     markdown-it-sup "^2.0.0"
     semver "^7.7.0"
 
-"@tryghost/kg-markdown-html-renderer@7.1.4":
-  version "7.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-7.1.4.tgz#9c0a2e1539e436e64c52fd50ac128c1e9ae94b0f"
-  integrity sha512-+xWKhIe2Rqoq7fdjSdPbgL3Zowxd78lGbPcqdCcXhU8va4nvMX5WkEp/E5Mxociul4SzJCd3hYEtvInD91TcDA==
+"@tryghost/kg-markdown-html-renderer@7.1.6":
+  version "7.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-7.1.6.tgz#0fb51df1e58ac73c9541b2055259deace2c2cfac"
+  integrity sha512-hGpKlP42/FO8KscxDIdLBLCXZjvc83qm+pYtBy9oYshAp0ZmLDzCw7LVVZ2f7RW+6d8EXM+uWnOwHU10Z8fAGA==
   dependencies:
-    "@tryghost/kg-utils" "1.0.33"
+    "@tryghost/kg-utils" "1.0.35"
     markdown-it "^14.0.0"
     markdown-it-footnote "^4.0.0"
     markdown-it-image-lazy-loading "^2.0.0"
@@ -9227,10 +9227,10 @@
   dependencies:
     semver "^7.7.0"
 
-"@tryghost/kg-utils@1.0.33":
-  version "1.0.33"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.33.tgz#b35360b8a20c21ba2cba39e4ece478334b119bc9"
-  integrity sha512-FSvwfMALDcTTSVv1NtOy5we+vQb7EEVBDqSr3kLJh9ajW+boU7Yf04srir6fPpgnu96okH39E+/g+f565UYDfw==
+"@tryghost/kg-utils@1.0.35":
+  version "1.0.35"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.35.tgz#d7232b446d624936096a14deffe52681ba1586e7"
+  integrity sha512-JPQYHEeuQh0pajiWDubVF2172DuxSjZSK2AcYpZMsDYG27lm70VAecBpwQdotsT/5LF0CvWVSqqzAjH0RsZ3Rg==
   dependencies:
     semver "^7.7.0"
 
@@ -9472,19 +9472,6 @@
   integrity sha512-U6zWUnxDgw2nHZc5DTI0JuqYsytK76BVfIB3hz2rYrCKL4O6JL76F25Jr6I+A8cEIfL5GKLSG8/tWmEAHLy0Mg==
   dependencies:
     lodash.template "^4.5.0"
-
-"@tryghost/url-utils@4.5.0":
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.5.0.tgz#b4b95303b003f5a6ffe1bc17c037f91b1cb61033"
-  integrity sha512-U5uXE26GWLJwZdE9LxonADDfG4+Dw5gzOSJ0Y4x0SdufA7sbIdVrQoPFUeupp4kDNBf0BiTABogx1ZmTEnBlyw==
-  dependencies:
-    cheerio "^0.22.0"
-    lodash "^4.17.21"
-    moment "^2.27.0"
-    moment-timezone "^0.5.31"
-    remark "^11.0.2"
-    remark-footnotes "^1.0.0"
-    unist-util-visit "^2.0.0"
 
 "@tryghost/url-utils@5.1.0":
   version "5.1.0"
@@ -29741,7 +29728,7 @@ relateurl@^0.2.7:
   resolved "https://registry.yarnpkg.com/relateurl/-/relateurl-0.2.7.tgz#54dbf377e51440aca90a4cd274600d3ff2d888a9"
   integrity sha512-G08Dxvm4iDN3MLM0EsP62EDV9IuhXPR6blNz6Utcp7zyV3tr4HVNINt6MpaRWbxoOHT3Q7YN2P+jaHX8vUbgog==
 
-remark-footnotes@1.0.0, remark-footnotes@^1.0.0:
+remark-footnotes@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/remark-footnotes/-/remark-footnotes-1.0.0.tgz#9c7a97f9a89397858a50033373020b1ea2aad011"
   integrity sha512-X9Ncj4cj3/CIvLI2Z9IobHtVi8FVdUrdJkCNaL9kdX8ohfsi18DXHsCVd/A7ssARBdccdDb5ODnt62WuEWaM/g==
@@ -29787,7 +29774,7 @@ remark-stringify@^7.0.0:
     unherit "^1.0.4"
     xtend "^4.0.1"
 
-remark@11.0.2, remark@^11.0.2:
+remark@11.0.2:
   version "11.0.2"
   resolved "https://registry.yarnpkg.com/remark/-/remark-11.0.2.tgz#12b90ea100ac3362b1976fa87a6e4e0ab5968202"
   integrity sha512-bh+eJgn8wgmbHmIBOuwJFdTVRVpl3fcVP6HxmpPWO0ULGP9Qkh6INJh0N5Uy7GqlV7DQYGoqaKiEIpM5LLvJ8w==

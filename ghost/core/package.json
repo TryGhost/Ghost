@@ -90,7 +90,7 @@
     "@tryghost/kg-clean-basic-html": "4.2.7",
     "@tryghost/kg-converters": "1.1.7",
     "@tryghost/kg-default-atoms": "5.1.1",
-    "@tryghost/kg-default-cards": "10.2.0",
+    "@tryghost/kg-default-cards": "10.2.2",
     "@tryghost/kg-default-nodes": "2.0.1",
     "@tryghost/kg-default-transforms": "1.2.24",
     "@tryghost/kg-html-to-lexical": "1.2.24",
