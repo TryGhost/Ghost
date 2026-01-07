@@ -35,19 +35,6 @@ export interface GhostInstanceFixture {
     };
 }
 
-async function setupLabSettings(page: Page, settingsService: SettingsService, labsFlags: Record<string, boolean>) {
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.goto();
-
-    debug('Updating labs settings:', labsFlags);
-    await settingsService.updateLabsSettings(labsFlags);
-
-    // Reload the page to ensure the new labs settings take effect in the UI
-    await page.reload();
-    await analyticsPage.header.waitFor({state: 'visible'});
-    debug('Labs settings applied and page reloaded');
-}
-
 async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
     debug('Setting up authenticated page for Ghost instance:', baseURL);
 
@@ -71,12 +58,14 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * Each instance gets its own database, runs on a unique port, and includes authentication
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
- * and Ghost config via config settings like:
+ * Ghost config via config settings, and Stripe connection state like:
  *
  *  test.use({config: {
  *      memberWelcomeEmailSendInstantly: 'true',
  *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
  *  }})
+ * 
+ * test.use({stripeConnected: true})
  */
 export const test = base.extend<GhostInstanceFixture>({
     // Define options that can be set per test or describe block
@@ -136,7 +125,17 @@ export const test = base.extend<GhostInstanceFixture>({
 
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
-            await setupLabSettings(page, settingsService, labs);
+            debug('Updating labs settings:', labs);
+            await settingsService.updateLabsSettings(labs);
+        }
+
+        const needsReload = stripeConnected || labsFlagsSpecified;
+        if (needsReload) {
+            const analyticsPage = new AnalyticsOverviewPage(page);
+            await analyticsPage.goto();
+            await page.reload();
+            await analyticsPage.header.waitFor({state: 'visible'});
+            debug('Settings applied and page reloaded');
         }
 
         await use(page);
