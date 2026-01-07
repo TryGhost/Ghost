@@ -1,4 +1,4 @@
-const {IdentityTokenService} = require('@tryghost/identity-token-service');
+const {IdentityTokenService} = require('./IdentityTokenService');
 
 module.exports = class IdentityTokenServiceWrapper {
     /** @type IdentityTokenService */

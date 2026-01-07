@@ -1,7 +1,6 @@
 const urlService = require('../url');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
 
 class MemberAttributionServiceWrapper {
@@ -12,9 +11,11 @@ class MemberAttributionServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {
-            MemberAttributionService, UrlTranslator, ReferrerTranslator, AttributionBuilder, OutboundLinkTagger
-        } = require('@tryghost/member-attribution');
+        const MemberAttributionService = require('./MemberAttributionService');
+        const UrlTranslator = require('./UrlTranslator');
+        const ReferrerTranslator = require('./ReferrerTranslator');
+        const AttributionBuilder = require('./AttributionBuilder');
+        const OutboundLinkTagger = require('./OutboundLinkTagger');
         const models = require('../../models');
 
         const urlTranslator = new UrlTranslator({
@@ -35,7 +36,7 @@ class MemberAttributionServiceWrapper {
         this.attributionBuilder = new AttributionBuilder({urlTranslator, referrerTranslator});
 
         this.outboundLinkTagger = new OutboundLinkTagger({
-            isEnabled: () => !labs.isSet('outboundLinkTagging') || !!settingsCache.get('outbound_link_tagging'),
+            isEnabled: () => !!settingsCache.get('outbound_link_tagging'),
             getSiteUrl: () => config.getSiteUrl(),
             urlUtils
         });

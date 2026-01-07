@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
-const logging = require('@tryghost/logging');
 const WebhookTrigger = require('./WebhookTrigger');
 const models = require('../../models');
 const payload = require('./payload');
@@ -46,18 +45,7 @@ const WEBHOOKS = [
 ];
 
 const listen = async () => {
-    if (limitService.isLimited('customIntegrations')) {
-        // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
-        //       a concept of measuring if the limit has been surpassed
-        const overLimit = await limitService.checkWouldGoOverLimit('customIntegrations');
-
-        if (overLimit) {
-            logging.info(`Skipped subscribing webhooks to events. The "customIntegrations" plan limit is enabled.`);
-            return;
-        }
-    }
-
-    const webhookTrigger = new WebhookTrigger({models, payload});
+    const webhookTrigger = new WebhookTrigger({models, payload, limitService});
     _.each(WEBHOOKS, (event) => {
         // @NOTE: The early exit makes sure the listeners are only registered once.
         //        During testing the "events" instance is kept around with all the

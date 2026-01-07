@@ -1,477 +1,600 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
+const assert = require('assert/strict');
 const config = require('../../../core/shared/config');
-const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
+const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, anyString, nullable} = matchers;
+const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const localUtils = require('./utils');
 
+const userMatcher = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    last_seen: nullable(anyISODateTime)
+};
+
+const userMatcherWithRoles = {
+    ...userMatcher,
+    roles: anyArray
+};
+
 describe('User API', function () {
-    let request;
-    let inactiveUser;
-    let admin;
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-
-        // create inactive user
-        inactiveUser = await testUtils.createUser({
-            user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
-            role: testUtils.DataGenerator.Content.roles[2].name
-        });
-
-        // create admin user
-        admin = await testUtils.createUser({
-            user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org', slug: 'admin'}),
-            role: testUtils.DataGenerator.Content.roles[0].name
-        });
-
-        // by default we login with the owner
-        await localUtils.doAuth(request, 'posts');
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('users', 'user:inactive', 'posts');
+        await agent.loginAsOwner();
     });
 
     it('Can request all users ordered by id', async function () {
-        // @NOTE: ASC is default
-        const res = await request.get(localUtils.API.getApiQuery('users/?order=id%20DESC'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        // @NOTE: ASC is default - explicit order also helps with consistent db ordering
+        await agent.get('users/?order=id%20DESC')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: new Array(8).fill(userMatcher)
+            })
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => {
+                localUtils.API.checkResponse(body, 'users');
+                localUtils.API.checkResponse(body.users[0], 'user');
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+                // Verify we have the expected user types in descending ID order
+                const userEmails = body.users.map(user => user.email);
+                assert.ok(userEmails.includes('ghost-author@example.com'));
+                assert.ok(userEmails.includes(fixtureManager.get('users', 1).email));
 
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        localUtils.API.checkResponse(jsonResponse, 'users');
-
-        // owner use + ghost-author user when Ghost starts
-        // and two extra users, see createUser in before
-        jsonResponse.users.should.have.length(4);
-
-        localUtils.API.checkResponse(jsonResponse.users[0], 'user');
-
-        jsonResponse.users[0].email.should.eql(admin.email);
-        jsonResponse.users[0].status.should.eql(admin.status);
-
-        jsonResponse.users[1].email.should.eql(inactiveUser.email);
-        jsonResponse.users[1].status.should.eql(inactiveUser.status);
-
-        jsonResponse.users[2].email.should.eql('ghost-author@example.com');
-        jsonResponse.users[3].email.should.eql(testUtils.DataGenerator.Content.users[0].email);
-
-        testUtils.API.isISO8601(jsonResponse.users[3].last_seen).should.be.true();
-        testUtils.API.isISO8601(jsonResponse.users[3].created_at).should.be.true();
-        testUtils.API.isISO8601(jsonResponse.users[3].updated_at).should.be.true();
-
-        // only "ghost" and joe-bloggs author has a published post
-        jsonResponse.users[0].url.should.eql(`${config.get('url')}/404/`);
-        jsonResponse.users[1].url.should.eql(`${config.get('url')}/404/`);
-        jsonResponse.users[2].url.should.eql(`${config.get('url')}/author/ghost/`);
-        jsonResponse.users[3].url.should.eql(`${config.get('url')}/author/joe-bloggs/`);
+                // Verify URL structure for users with/without published posts
+                body.users.forEach((user) => {
+                    if (user.slug === 'ghost' || user.slug === 'joe-bloggs') {
+                        assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
+                    } else {
+                        assert.equal(user.url, `${config.get('url')}/404/`);
+                    }
+                });
+            });
     });
-
     it('Can include user roles', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/?include=roles'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        localUtils.API.checkResponse(jsonResponse, 'users');
-
-        jsonResponse.users.should.have.length(4);
-        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
+        // uses explicit order for consistent db ordering
+        await agent.get('users/?include=roles&order=id%20DESC')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: new Array(8).fill(userMatcherWithRoles)
+            })
+            .expect(cacheInvalidateHeaderNotSet());
     });
-
     it('Can paginate users', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/?page=2'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.equal(jsonResponse.meta.pagination.page, 2);
+        // uses explicit order for consistent db ordering
+        await agent.get('users/?page=2&limit=5&order=id%20DESC')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: new Array(3).fill(userMatcher), // 8 total users, 5 per page, so page 2 has 3
+                meta: {
+                    pagination: {
+                        page: 2,
+                        limit: 5,
+                        pages: 2,
+                        total: 8,
+                        next: null,
+                        prev: 1
+                    }
+                }
+            })
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => { 
+                assert.equal(body.users[0].slug, 'smith-wellingsworth');
+            });
     });
-
     it('Can retrieve a user by id', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/' + testUtils.getExistingData().users[0].id + '/?include=roles,roles.permissions,count.posts'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        should.not.exist(jsonResponse.meta);
-
-        jsonResponse.users.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles', 'count']);
-        localUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
-
-        should.exist(jsonResponse.users[0].count.posts);
-        jsonResponse.users[0].count.posts.should.equal(8);
-    });
+        const userId = fixtureManager.get('users', 0).id;
+        await agent.get(`users/${userId}/?include=roles,roles.permissions,count.posts`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    roles: anyArray,
+                    count: {
+                        posts: 10
+                    }
+                }]
+            })
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => {
+                assert.equal(body.meta, undefined);
+                localUtils.API.checkResponse(body.users[0], 'user', ['roles', 'count']);
+            });
+    });  
 
     it('Can retrieve a user by slug', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/slug/joe-bloggs/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        should.not.exist(jsonResponse.meta);
-
-        jsonResponse.users.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+        const userSlug = fixtureManager.get('users', 1).slug;
+        await agent.get(`users/slug/${userSlug}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [userMatcher]
+            })
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => {
+                assert.equal(body.meta, undefined);
+                localUtils.API.checkResponse(body.users[0], 'user');
+            });
     });
 
     it('Can retrieve a user by email', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('users/email/jbloggs%40example.com/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        should.not.exist(jsonResponse.meta);
-
-        jsonResponse.users.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+        const userEmail = fixtureManager.get('users', 1).email;
+        const encodedEmail = encodeURIComponent(userEmail);
+        await agent.get(`users/email/${encodedEmail}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [userMatcher]
+            })
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => {
+                assert.equal(body.meta, undefined);
+                localUtils.API.checkResponse(body.users[0], 'user');
+            });
     });
 
     it('can edit a user', async function () {
-        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
-            .set('Origin', config.get('url'))
-            .send({
+        const res = await agent.put('users/me/')
+            .body({
                 users: [{
                     website: 'http://joe-bloggs.ghost.org',
                     password: 'mynewfancypasswordwhichisnotallowed'
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expect(cacheInvalidateHeaderSetToWildcard())
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    website: 'http://joe-bloggs.ghost.org'
+                }]
+            })
+            .expect(({body}) => {
+                assert.equal(body.users[0].email, fixtureManager.get('users', 0).email);
+                assert.equal(body.users[0].password, undefined);
+            });
 
-        const putBody = res.body;
-        res.headers['x-cache-invalidate'].should.eql('/*');
-        should.exist(putBody.users[0]);
-        putBody.users[0].website.should.eql('http://joe-bloggs.ghost.org');
-        putBody.users[0].email.should.eql('jbloggs@example.com');
-        localUtils.API.checkResponse(putBody.users[0], 'user');
-
-        should.not.exist(putBody.users[0].password);
-
+        // Verify password change was ignored
         try {
-            const user = await models.User.findOne({id: putBody.users[0].id});
+            const user = await models.User.findOne({id: res.body.users[0].id});
             await models.User.isPasswordCorrect({
                 plainPassword: 'mynewfancypasswordwhichisnotallowed',
                 hashedPassword: user.get('password')
             });
-            return Promise.reject();
+            assert.fail('Password should not have been changed');
         } catch (err) {
-            err.code.should.eql('PASSWORD_INCORRECT');
+            assert.equal(err.code, 'PASSWORD_INCORRECT');
         }
     });
 
     it('can edit a user fetched from the API', async function () {
-        const userToEditId = testUtils.getExistingData().users[1].id;
-        const res = await request
-            .get(localUtils.API.getApiQuery(`users/${userToEditId}/?include=roles`))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        const userToEditId = fixtureManager.get('users', 1).id;
+        
+        // First, fetch the user with roles
+        const res = await agent.get(`users/${userToEditId}/?include=roles`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    roles: anyArray,
+                    name: fixtureManager.get('users', 1).name
+                }]
+            });
 
         const jsonResponse = res.body;
-        jsonResponse.users[0].name.should.equal('Ghost');
+        const expectedRoleName = jsonResponse.users[0].roles[0].name;
 
-        should.exist(jsonResponse.users[0].roles);
-        jsonResponse.users[0].roles.should.have.length(1);
-        jsonResponse.users[0].roles[0].name.should.equal('Contributor');
-
+        // Modify the user data
         jsonResponse.users[0].name = 'Changed Name';
 
-        const editResponse = await request
-            .put(localUtils.API.getApiQuery(`users/${userToEditId}/?include=roles`))
-            .set('Origin', config.get('url'))
-            .send({
+        // Send the update
+        await agent.put(`users/${userToEditId}/?include=roles`)
+            .body({
                 users: jsonResponse.users
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        const editJSONResponse = editResponse.body;
-        editJSONResponse.users[0].name.should.equal('Changed Name');
-
-        should.exist(editJSONResponse.users[0].roles);
-        editJSONResponse.users[0].roles.should.have.length(1);
-        editJSONResponse.users[0].roles[0].name.should.equal('Contributor');
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expect(cacheInvalidateHeaderSetToWildcard())
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    roles: anyArray,
+                    name: 'Changed Name'
+                }]
+            })
+            .expect(({body}) => {
+                assert.equal(body.users[0].roles[0].name, expectedRoleName);
+            });
     });
 
     it('Can edit user with empty roles data and does not change the role', async function () {
-        const res = await request.put(localUtils.API.getApiQuery('users/me?include=roles'))
-            .set('Origin', config.get('url'))
-            .send({
+        await agent.put('users/me/?include=roles')
+            .body({
                 users: [{
                     roles: []
                 }]
             })
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        jsonResponse.users.should.have.length(1);
-
-        should.exist(jsonResponse.users[0].roles);
-        jsonResponse.users[0].roles.should.have.length(1);
-        jsonResponse.users[0].roles[0].name.should.equal('Owner');
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    roles: [anyObject]
+                }]
+            })
+            .expect(({body}) => {
+                assert.equal(body.users[0].roles[0].name, 'Owner');
+            });
     });
 
     it('Cannot edit user with invalid roles data', async function () {
-        const userId = testUtils.getExistingData().users[1].id;
-        const res = await request.put(localUtils.API.getApiQuery(`users/${userId}?include=roles`))
-            .set('Origin', config.get('url'))
-            .send({
+        const userId = fixtureManager.get('users', 1).id;
+        await agent.put(`users/${userId}/?include=roles`)
+            .body({
                 users: [{
                     roles: ['Invalid Role Name']
                 }]
             })
-            .expect(422);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.errors);
-        jsonResponse.errors.should.have.length(1);
-        jsonResponse.errors[0].message.should.match(/cannot edit user/);
+            .expectStatus(422)
+            .expect(({body}) => {
+                assert.ok(body.errors);
+                assert.equal(body.errors.length, 1);
+                assert.match(body.errors[0].message, /cannot edit user/);
+            });
     });
 
     it('Can edit user roles by name', async function () {
-        const userId = testUtils.getExistingData().users[1].id;
-        const res = await request.put(localUtils.API.getApiQuery(`users/${userId}?include=roles`))
-            .set('Origin', config.get('url'))
-            .send({
+        const userId = fixtureManager.get('users', 1).id;
+        await agent.put(`users/${userId}/?include=roles`)
+            .body({
                 users: [{
                     roles: ['Administrator']
                 }]
             })
-            .expect(200);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.users);
-        jsonResponse.users.should.have.length(1);
-
-        should.exist(jsonResponse.users[0].roles);
-        jsonResponse.users[0].roles.should.have.length(1);
-        jsonResponse.users[0].roles[0].name.should.equal('Administrator');
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    roles: [anyObject]
+                }]
+            })
+            .expect(({body}) => {
+                assert.equal(body.users[0].roles[0].name, 'Administrator');
+            });
     });
 
     it('Does not trigger cache invalidation when a private attribute on a user has been changed', async function () {
-        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
-            .set('Origin', config.get('url'))
-            .send({
+        await agent.put('users/me/')
+            .body({
                 users: [{
                     comment_notifications: false
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    comment_notifications: false
+                }]
+            })
+            .expect(cacheInvalidateHeaderNotSet());
+    });
 
-        should.equal(res.headers['x-cache-invalidate'], undefined);
+    it('Does trigger cache invalidation when a social link on a user has been changed', async function () {
+        await agent.put('users/me/')
+            .body({
+                users: [{
+                    mastodon: 'https://mastodon.social/@johnsmith'
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expect(cacheInvalidateHeaderSetToWildcard())
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    mastodon: 'https://mastodon.social/@johnsmith'
+                }]
+            });
     });
 
     it('Does not trigger cache invalidation when no attribute on a user has been changed', async function () {
-        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
-            .set('Origin', config.get('url'))
-            .send({
+        await agent.put('users/me/')
+            .body({
                 users: [{
                     facebook: null
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.equal(res.headers['x-cache-invalidate'], undefined);
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                users: [{
+                    ...userMatcher,
+                    facebook: null
+                }]
+            })
+            .expect(cacheInvalidateHeaderNotSet());
     });
 
     it('Can destroy an active user and transfer posts to the owner', async function () {
-        const userId = testUtils.getExistingData().users[1].id;
-        const userSlug = testUtils.getExistingData().users[1].slug;
-        const ownerId = testUtils.getExistingData().users[0].id;
+        // Use slimer-mcectoplasm user (index 3) who has a post in the fixtures
+        const {id: userId, slug: userSlug} = fixtureManager.get('users', 3); 
+        const ownerId = fixtureManager.get('users', 0).id;
 
-        const res = await request
-            .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}`))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        // First check the user actually has posts
+        const initialPostsRes = await agent.get(`posts/?filter=authors:${userSlug}`)
+            .expectStatus(200); 
+        
+        // Verify the user has posts to transfer
+        assert.ok(initialPostsRes.body.posts.length > 0, `User ${userSlug} should have posts to make this test meaningful`);
 
-        res.body.posts.length.should.eql(7);
+        // Ensure the user's posts are only authored by that user (remove any co-authors)
+        const userPostIds = initialPostsRes.body.posts.map(post => post.id);
+        
+        // Remove all co-authors from the user's posts
+        await db.knex('posts_authors')
+            .whereIn('post_id', userPostIds)
+            .andWhereNot('author_id', userId)
+            .del();
 
+        // Ensure the user is the primary author (sort_order = 0) on all their posts
+        await db.knex('posts_authors')
+            .whereIn('post_id', userPostIds)
+            .where('author_id', userId)
+            .update({sort_order: 0});
+
+        // Check initial database state
         const ownerPostsAuthorsModels = await db.knex('posts_authors')
-            .where({
-                author_id: ownerId
-            })
+            .where({author_id: ownerId})
             .select();
-
-        // includes posts & pages
-        should.equal(ownerPostsAuthorsModels.length, 8);
+        const initialOwnerPostCount = ownerPostsAuthorsModels.length;
 
         const userPostsAuthorsModels = await db.knex('posts_authors')
-            .where({
-                author_id: userId
-            })
+            .where({author_id: userId})
             .select();
+        const initialUserPostCount = userPostsAuthorsModels.length;
 
-        // includes posts & pages
-        should.equal(userPostsAuthorsModels.length, 11);
+        // Delete the user
+        const deleteRes = await agent.delete(`users/${userId}/`)
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.ok(body.meta.filename);
+            });
 
-        const res2 = await request
-            .delete(localUtils.API.getApiQuery(`users/${userId}`))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        // Check the backup file was created
+        await agent.get(`db/?filename=${deleteRes.body.meta.filename}`)
+            .expectStatus(200);
 
-        should.exist(res2.body.meta.filename);
+        // Verify user was deleted
+        await agent.get(`users/${userId}/`)
+            .expectStatus(404);
 
-        await request
-            .get(localUtils.API.getApiQuery(`db/?filename=${res2.body.meta.filename}/`))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        // Check no posts are now assigned to the deleted user
+        await agent.get(`posts/?filter=authors:${userSlug}`)
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.equal(body.posts.length, 0);
+            });
 
-        await request
-            .get(localUtils.API.getApiQuery(`users/${userId}/`))
-            .set('Origin', config.get('url'))
-            .expect(404);
-
-        const res3 = await request
-            .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}}`))
-            .set('Origin', config.get('url'))
-            .expect(200);
-
-        res3.body.posts.length.should.eql(0);
-
+        // Verify database cleanup
         const rolesUsersModels = await db.knex('roles_users')
-            .where({
-                user_id: userId
-            })
+            .where({user_id: userId})
             .select();
-
-        rolesUsersModels.length.should.eql(0);
+        assert.equal(rolesUsersModels.length, 0);
 
         const rolesUsers = await db.knex('roles_users').select();
-        rolesUsers.length.should.greaterThan(0);
+        assert.ok(rolesUsers.length > 0);
 
+        // Verify posts were transferred to owner
         const ownerPostsAuthorsModelsAfter = await db.knex('posts_authors')
-            .where({
-                author_id: ownerId
-            })
+            .where({author_id: ownerId})
             .select();
 
-        should.equal(ownerPostsAuthorsModelsAfter.length, 19);
+        assert.equal(ownerPostsAuthorsModelsAfter.length, initialOwnerPostCount + initialUserPostCount);
 
         const userPostsAuthorsModelsAfter = await db.knex('posts_authors')
-            .where({
-                author_id: userId
-            })
+            .where({author_id: userId})
             .select();
-
-        should.equal(userPostsAuthorsModelsAfter.length, 0);
+        assert.equal(userPostsAuthorsModelsAfter.length, 0);
     });
 
     it('Can transfer ownership to admin user', async function () {
-        const res = await request
-            .put(localUtils.API.getApiQuery('users/owner'))
-            .set('Origin', config.get('url'))
-            .send({
+        const originalOwnerId = fixtureManager.get('users', 0).id;
+        const newOwnerId = fixtureManager.get('users', 1).id;
+
+        await agent.put('users/owner/')
+            .body({
                 owner: [{
-                    id: admin.id
+                    id: newOwnerId
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        res.body.users[0].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[0].name);
-        res.body.users[1].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[3].name);
+            .expectStatus(200)
+            .matchBodySnapshot({
+                users: [
+                    {
+                        ...userMatcher,
+                        id: originalOwnerId,
+                        roles: [{name: 'Administrator', 
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime}]
+                    },
+                    {
+                        ...userMatcher,
+                        id: newOwnerId,
+                        roles: [{name: 'Owner',
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime}]
+                    }
+                ]
+            });
     });
 
     it('Can change password and retain the session', async function () {
-        let res = await request
-            .put(localUtils.API.getApiQuery('users/password'))
-            .set('Origin', config.get('url'))
-            .send({
+        await agent.put('users/password/')
+            .body({
                 password: [{
                     newPassword: '1234abcde!!',
                     ne2Password: '1234abcde!!',
                     oldPassword: 'Sl1m3rson99',
-                    user_id: testUtils.getExistingData().users[0].id
+                    user_id: fixtureManager.get('users', 0).id
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot()
+            .expect(({body}) => {
+                assert.ok(body.password);
+                assert.ok(body.password[0].message);
+            });
 
-        should.exist(res.body.password);
-        should.exist(res.body.password[0].message);
-
-        await request
-            .get(localUtils.API.getApiQuery('session/'))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        // Verify session is still valid
+        await agent.get('users/me/')
+            .expectStatus(200);
     });
 
     it('Can read the user\'s Personal Token', async function () {
-        const res = await request
-            .get(localUtils.API.getApiQuery('users/me/token/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.exist(res.body.apiKey);
-        should.exist(res.body.apiKey.id);
-        should.exist(res.body.apiKey.secret);
+        await agent.get('users/me/token/')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                apiKey: {
+                    id: anyObjectId,
+                    secret: anyString,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    role_id: anyObjectId,
+                    user_id: anyString,
+                    type: 'admin',
+                    integration_id: null,
+                    last_seen_at: null,
+                    last_seen_version: null
+                }
+            })
+            .expect(({body}) => {
+                assert.ok(body.apiKey);
+                assert.ok(body.apiKey.id);
+                assert.ok(body.apiKey.secret);
+            });
     });
 
     it('Can\'t read another user\'s Personal Token', async function () {
-        const userNotAdmin = testUtils.getExistingData().users.find(user => user.email === 'ghost-author@example.com');
-        const res = await request
-            .get(localUtils.API.getApiQuery('users/' + userNotAdmin.id + '/token/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403);
-
-        should.exist(res.body.errors);
+        // Try to access a different user's token (should be forbidden)
+        const otherUser = fixtureManager.get('users', 1);
+        
+        await agent.get(`users/${otherUser.id}/token/`)
+            .expectStatus(403)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    type: 'NoPermissionError',
+                    message: 'You do not have permission to perform this action',
+                    id: anyString,
+                    code: null,
+                    context: null,
+                    details: null,
+                    ghostErrorCode: null,
+                    help: null,
+                    property: null
+                }]
+            });
     });
 
     it('Can re-generate the user\'s Personal Token', async function () {
-        const {body: {apiKey: {id, secret}}} = await request
-            .get(localUtils.API.getApiQuery('users/me/token/'))
-            .set('Origin', config.get('url'))
-            .expect(200);
+        const originalTokenRes = await agent.get('users/me/token/')
+            .expectStatus(200);
+        
+        const {id: originalId, secret: originalSecret} = originalTokenRes.body.apiKey;
 
-        const res = await request
-            .put(localUtils.API.getApiQuery('users/me/token'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const newTokenRes = await agent.put('users/me/token/')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                apiKey: {
+                    id: anyObjectId,
+                    secret: anyString,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    role_id: anyObjectId,
+                    user_id: anyString,
+                    type: 'admin',
+                    integration_id: null,
+                    last_seen_at: null,
+                    last_seen_version: null
+                }
+            })
+            .expect(cacheInvalidateHeaderNotSet());
+        
+        const {id: newId, secret: newSecret} = newTokenRes.body.apiKey;
 
-        should.exist(res.body.apiKey);
-        should.exist(res.body.apiKey.id);
-        should.exist(res.body.apiKey.secret);
-        should.not.exist(res.headers['x-cache-invalidate']);
-
-        should(res.body.id).not.be.equal(id);
-        should(res.body.secret).not.be.equal(secret);
+        assert.equal(originalId, newId, 'Token id should remain the same');
+        assert.notEqual(originalSecret, newSecret, 'Token secret should have changed');
     });
 });

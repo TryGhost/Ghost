@@ -55,12 +55,11 @@ yarn test
 
 ### Ghost e2e browser tests
 
-Portal is primarily tested via Ghost's e2e browser tests. In order to test against your local changes rather than the last published package on npm you need to have the local portal build being served and to configure Ghost to use the local URL.
+Portal is primarily tested via Ghost's e2e browser tests, see [our Playwright docs](https://ghost.notion.site/Playwright-Tests-b49ccb6e2b4a40f1a4f8df5261391218) for more details.
 
-1. Run `yarn dev` in `ghost/apps/portal` to serve the local portal build on http://localhost:4175/portal.min.js
-2. Run the Ghost e2e tests in `ghost/core`, providing an ENV variable to override the portal URL:
+1. Run the Ghost e2e tests in the top-level of the monorepo, providing ENV variables for Stripe:
    ```
-   portal__url=http://localhost:4175/portal.min.js STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser:portal
+   STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser
    ```
 
 ## Release
@@ -74,15 +73,18 @@ In order to have Ghost's e2e tests run against the new code on CI or to test the
 ### Patch release
 
 1. Run `yarn ship` and select a patch version when prompted
-2. (Optional) Clear JsDelivr cache to get the new version out instantly ([docs](https://www.notion.so/ghost/How-to-clear-jsDelivr-CDN-cache-2930bdbac02946eca07ac23ab3199bfa?pvs=4)). Typically, you'll need to open `https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/portal.min.js` and
-`https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/main.css` in your browser, where `PORTAL_VERSION` is the latest minor version in `ghost/core/core/shared/config/defaults.json` ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L185))
+2. Merge the release commit to `main`
 
 ### Minor / major release
 
 1. Run `yarn ship` and select a minor or major version when prompted
-2. Update the Portal version in `ghost/core/core/shared/config/defaults.json` to the new minor or major version ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L198))
+2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
+
+### JsDelivr cache
+If the CI doesn't clear JsDelivr cache to get the new version out instantly, you may want to do it yourself manually ([docs](https://www.notion.so/ghost/How-to-clear-jsDelivr-CDN-cache-2930bdbac02946eca07ac23ab3199bfa?pvs=4)). Typically, you'll need to open `https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/portal.min.js` and
+`https://purge.jsdelivr.net/ghost/portal@~${PORTAL_VERSION}/umd/main.css` in your browser, where `PORTAL_VERSION` is the latest minor version in `ghost/core/core/shared/config/defaults.json` ([code](https://github.com/TryGhost/Ghost/blob/0aef3d3beeebcd79a4bfd3ad27e0ac67554b5744/ghost/core/core/shared/config/defaults.json#L185))
 
 # Copyright & License
 
-Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).

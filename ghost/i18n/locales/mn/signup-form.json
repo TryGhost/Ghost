@@ -1,9 +1,9 @@
 {
-    "Email sent": "",
-    "Now check your email!": "",
-    "Please enter a valid email address": "",
-    "Something went wrong, please try again.": "",
-    "Subscribe": "",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
-    "Your email address": ""
+    "Email sent": "Имэйл илгээгдлээ",
+    "Now check your email!": "Одоо имэйлээ шалгана уу!",
+    "Please enter a valid email address": "Зөв имэйл хаяг оруулна уу",
+    "Something went wrong, please try again.": "Алдаа гарлаа, дахин оролдоно уу.",
+    "Subscribe": "Захиалах",
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Бүртгэлээ дуусгахын тулд инбоксдоо ирсэн баталгаажуулах холбоос дээр дарна уу. Хэрвээ 3 минутын дотор ирэхгүй бол спамаа шалгана уу!",
+    "Your email address": "Таны имэйл хаяг"
 }

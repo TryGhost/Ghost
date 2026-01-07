@@ -64,6 +64,18 @@ export default class SigninVerifyController extends Controller {
     @tracked flowErrors = '';
     @tracked verifyData = new VerifyData();
     @tracked resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
+    @tracked twoFactorRequired = false;
+
+    constructor() {
+        super(...arguments);
+        // Get the error from session and clear it immediately
+        const errorCode = this.session.get('errorCode');
+
+        if (errorCode === '2FA_TOKEN_REQUIRED') {
+            this.twoFactorRequired = true;
+        }
+        this.session.set('errorCode', null); // Clear it after reading
+    }
 
     resetResendTokenCountdown() {
         clearInterval(this.resendTokenCountdownInterval);

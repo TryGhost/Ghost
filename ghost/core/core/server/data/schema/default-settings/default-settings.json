@@ -59,6 +59,15 @@
         "members_stripe_webhook_secret": {
             "defaultValue": null,
             "type": "string"
+        },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
@@ -259,7 +268,7 @@
             "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["all", "invite", "none"]]
+                "isIn": [["all", "paid", "invite", "none"]]
             },
             "type": "string"
         },
@@ -315,6 +324,10 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "blocked_email_domains": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "portal": {
@@ -327,7 +340,7 @@
             "type": "boolean"
         },
         "portal_button": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
@@ -416,19 +429,6 @@
             },
             "type": "boolean",
             "flags": "RO"
-        }
-    },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
         }
     },
     "firstpromoter": {
@@ -542,6 +542,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "web_analytics": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "pintura": {
@@ -584,6 +592,44 @@
     },
     "recommendations": {
         "recommendations_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
+            "type": "boolean"
+        }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        }
+    },
+    "explore": {
+        "explore_ping": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "explore_ping_growth": {
             "defaultValue": "false",
             "validations": {
                 "isEmpty": false,

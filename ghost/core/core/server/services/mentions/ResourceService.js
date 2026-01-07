@@ -1,7 +1,7 @@
 const ObjectID = require('bson-objectid').default;
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IResourceService} IResourceService
+ * @typedef {import('./MentionsAPI').IResourceService} IResourceService
  */
 
 /**
@@ -26,7 +26,7 @@ module.exports = class ResourceService {
 
     /**
      * @param {URL} url
-     * @returns {Promise<import('@tryghost/webmentions/lib/MentionsAPI').ResourceResult>}
+     * @returns {Promise<import('./MentionsAPI').ResourceResult>}
      */
     async getByURL(url) {
         const path = this.#urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});

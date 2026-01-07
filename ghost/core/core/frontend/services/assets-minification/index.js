@@ -1,16 +1,9 @@
-const AdminAuthAssets = require('./AdminAuthAssets');
-const CardAssets = require('./CardAssets');
-const CommentCountsAssets = require('./CommentCountsAssets');
-const MemberAttributionAssets = require('./MemberAttributionAssets');
-
-const adminAuthAssets = new AdminAuthAssets();
+const CardAssets = require('./card-assets');
+const AdminAuthAssets = require('./admin-auth-assets');
 const cardAssets = new CardAssets();
-const commentCountsAssets = new CommentCountsAssets();
-const memberAttributionAssets = new MemberAttributionAssets();
+const adminAuthAssets = new AdminAuthAssets();
 
 module.exports = {
-    adminAuthAssets,
     cardAssets,
-    commentCountsAssets,
-    memberAttributionAssets
+    adminAuthAssets
 };

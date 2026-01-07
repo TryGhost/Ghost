@@ -1,7 +1,34 @@
-node_modules/
+node_modules
 
 .nxcache
-.nx/cache
-.nx/workspace-data
+.nx
 
 **/*.log
+
+build
+dist
+
+coverage
+
+.eslintcache
+
+test-results
+
+tsconfig.tsbuildinfo
+
+Dockerfile
+.dockerignore
+
+.git
+.vscode
+.editorconfig
+compose.yml
+
+docker
+!docker/**/*.entrypoint.sh
+!docker/**/*entrypoint.sh
+
+ghost/core/core/built/admin
+
+# Ignore local config files (.json and .jsonc)
+ghost/core/config.local.json*

@@ -1,0 +1,35 @@
+{
+    "stats": [
+        {
+            "post_id": "64d623b64676110001e897d9",
+            "title": "Welcome to Ghost",
+            "free_members": 250,
+            "paid_members": 50,
+            "mrr": 25000
+        },
+        {
+            "post_id": "64d623b64676110001e897d8",
+            "title": "Getting Started with Ghost",
+            "free_members": 180,
+            "paid_members": 35,
+            "mrr": 17500
+        },
+        {
+            "post_id": "64d623b64676110001e897d7",
+            "title": "Ghost Tips and Tricks",
+            "free_members": 120,
+            "paid_members": 20,
+            "mrr": 10000
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "limit": 10,
+            "pages": 1,
+            "total": 3,
+            "next": null,
+            "prev": null
+        }
+    }
+} 

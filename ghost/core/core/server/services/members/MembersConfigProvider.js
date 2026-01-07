@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const {URL} = require('url');
-const crypto = require('crypto');
 const createKeypair = require('keypair');
 
 class MembersConfigProvider {
@@ -42,28 +41,10 @@ class MembersConfigProvider {
         return this._settingsHelpers.isStripeConnected();
     }
 
-    getAuthSecret() {
-        const hexSecret = this._settingsCache.get('members_email_auth_secret');
-        if (!hexSecret) {
-            logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
-            return crypto.randomBytes(64);
-        }
-        const secret = Buffer.from(hexSecret, 'hex');
-        if (secret.length < 64) {
-            logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
-            return crypto.randomBytes(64);
-        }
-        return secret;
-    }
-
     getAllowSelfSignup() {
-        // 'invite' and 'none' members signup access disables all signup
-        if (this._settingsCache.get('members_signup_access') !== 'all') {
-            return false;
-        }
-
-        // Always allow free signup because the theme might have a form to signup regardless of the Portal settings
-        return true;
+        // Free signups are allowed only if the site subscription is set to "Full-access"
+        // It is blocked for "Invite-only", "Paid-members-only" and "None" accesses
+        return this._settingsCache.get('members_signup_access') === 'all';
     }
 
     getTokenConfig() {
@@ -86,13 +67,23 @@ class MembersConfigProvider {
         };
     }
 
-    getSigninURL(token, type, referrer) {
+    /**
+     * @param {string} token
+     * @param {string} type - also known as "action", e.g. "signin" or "signup"
+     * @param {string} [referrer] - optional URL for redirecting to after signin
+     * @param {string} [otcVerification] - optional for verifying an OTC signin redirect
+     * @returns {string}
+     */
+    getSigninURL(token, type, referrer, otcVerification) {
         const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
         const signinURL = new URL(siteUrl);
         signinURL.searchParams.set('token', token);
         signinURL.searchParams.set('action', type);
         if (referrer) {
             signinURL.searchParams.set('r', referrer);
+        }
+        if (otcVerification) {
+            signinURL.searchParams.set('otc_verification', otcVerification);
         }
         return signinURL.toString();
     }

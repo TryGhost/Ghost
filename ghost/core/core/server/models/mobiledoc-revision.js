@@ -21,8 +21,7 @@ const MobiledocRevision = ghostBookshelf.Model.extend({
     },
 
     toJSON(unfilteredOptions) {
-        const options = MobiledocRevision.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         // CASE: only for internal accuracy
         delete attrs.created_at_ts;

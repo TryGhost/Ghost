@@ -91,5 +91,29 @@ module.exports = function testRoutes() {
         res.sendStatus(202);
     });
 
+    function blockForSeconds(seconds) {
+        const end = Date.now() + seconds * 1000;
+        while (Date.now() < end) {
+            // Busy-wait loop to block the event loop
+        }
+    }
+
+    router.get('/block/:seconds', (req, res) => {
+        const seconds = parseInt(req.params.seconds, 10);
+        if (isNaN(seconds) || seconds <= 0) {
+            return res.status(400).send('Invalid number of seconds');
+        }
+
+        // eslint-disable-next-line no-console
+        console.log(`Blocking for ${seconds} seconds`);
+        blockForSeconds(seconds);
+        res.send(`Blocked for ${seconds} seconds`);
+    });
+
+    router.get('/drop', () => { // do nothing and wait for request to drop
+        // eslint-disable-next-line no-console
+        console.log('Request received but not responding');
+    });
+
     return router;
 };

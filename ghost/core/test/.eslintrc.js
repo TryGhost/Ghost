@@ -11,6 +11,15 @@ module.exports = {
         'eslint:recommended',
         'plugin:ghost/test'
     ],
+    overrides: [
+        {
+            files: ['**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            extends: [
+                'plugin:ghost/test'
+            ]
+        }
+    ],
     rules: {
         // TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
@@ -29,6 +38,7 @@ module.exports = {
         'no-useless-escape': 'off',
 
         'ghost/mocha/no-skipped-tests': 'error',
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9-.]+$', null, true],
 
         // TODO: remove these custom rules and fix problems in test files
         'ghost/mocha/no-setup-in-describe': 'off',

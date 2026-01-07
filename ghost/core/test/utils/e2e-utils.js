@@ -11,14 +11,10 @@ const boot = require('../../core/boot');
 const models = require('../../core/server/models');
 const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings/settings-service');
-const routeSettingsService = require('../../core/server/services/route-settings');
-const themeService = require('../../core/server/services/themes');
-const limits = require('../../core/server/services/limits');
-const customRedirectsService = require('../../core/server/services/custom-redirects');
 const adapterManager = require('../../core/server/services/adapter-manager');
 
 // Other Test Utilities
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const dbUtils = require('./db-utils');
 const urlServiceUtils = require('./url-service-utils');
 const redirects = require('./redirects');
@@ -57,7 +53,7 @@ const exposeFixtures = async () => {
         });
 };
 
-const prepareContentFolder = (options) => {
+const prepareContentFolder = async (options) => {
     const contentFolderForTests = options.contentFolder;
 
     /**
@@ -66,102 +62,41 @@ const prepareContentFolder = (options) => {
      */
     configUtils.set('paths:contentPath', contentFolderForTests);
 
-    fs.ensureDirSync(contentFolderForTests);
-    fs.ensureDirSync(path.join(contentFolderForTests, 'data'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'themes'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'images'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'logs'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'adapters'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
+    await fs.ensureDir(contentFolderForTests);
+    await fs.ensureDir(path.join(contentFolderForTests, 'data'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'themes'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'images'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'logs'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
         // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
-        fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+        await fs.copy(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
     }
 
     // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
+    await fs.copy(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
 
     if (options.redirectsFile) {
-        redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
+        await redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
     }
 
     if (options.routesFilePath) {
-        fs.copySync(options.routesFilePath, path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+        await fs.copy(options.routesFilePath, path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     } else if (options.copySettings) {
-        fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+        await fs.copy(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
 
     // Used by newsletter fixtures
-    fs.ensureDirSync(path.join(contentFolderForTests, 'images', '2022', '05'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'images', '2022', '05'));
     const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-    fs.writeFileSync(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
+    await fs.writeFile(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
-// CASE: Ghost Server is Running
-// In this case we need to reset things so it's as though Ghost just booted:
-// - truncate database
-// - re-run default fixtures
-// - reload affected services
-const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
-    debug('Reload Mode');
-
-    // TODO: figure out why we need this if we reset again later?
-    urlServiceUtils.reset();
-
-    await dbUtils.reset({truncate: true});
-
-    debug('init done');
-
-    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
-    adapterManager.clearCache();
-
-    // Reset the settings cache
-    await settingsService.init();
-    debug('settings done');
-
-    if (copySettings) {
-        await routeSettingsService.init();
-    }
-    if (copyThemes || frontend) {
-        await themeService.init();
-    }
-    if (copyThemes) {
-        await themeService.loadInactiveThemes();
-    }
-
-    // Reload the URL service & wait for it to be ready again
-    // @TODO: why/how is this different to urlService.resetGenerators?
-    urlServiceUtils.reset();
-    urlServiceUtils.init({urlCache: !frontend});
-
-    if (frontend) {
-        await urlServiceUtils.isFinished();
-    }
-
-    debug('routes done');
-
-    await customRedirectsService.init();
-
-    // Reload limits service
-    limits.init();
-};
-
-// CASE: Ghost Server needs Starting
-// In this case we need to ensure that Ghost is started cleanly:
-// - ensure the DB is reset
-// - CASE: If we are in force start mode the server is already running so we
-//      - stop the server (if we are in force start mode it will be running)
-//      - reload affected services - just settings and not the frontend!?
-// - Start Ghost: Uses OLD Boot process
-const freshModeGhostStart = async (options) => {
-    if (options.forceStart) {
-        debug('Forced Restart Mode');
-    } else {
-        debug('Fresh Start Mode');
-    }
-
-    // Stop the server (forceStart Mode)
+// Stop Ghost if it's running, reset the DB, and start Ghost
+const _startGhost = async (options) => {
+    // Stop the server -- noops if it's not running
     await stopGhost();
 
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
@@ -194,7 +129,6 @@ const freshModeGhostStart = async (options) => {
  * @param {boolean} [options.frontend]
  * @param {boolean} [options.redirectsFile]
  * @param {String} [options.redirectsFileExt]
- * @param {boolean} [options.forceStart]
  * @param {boolean} [options.copyThemes]
  * @param {boolean} [options.copySettings]
  * @param {String} [options.routesFilePath] - path to a routes configuration file to start the instance with
@@ -210,7 +144,6 @@ const startGhost = async (options) => {
         frontend: true,
         redirectsFile: false,
         redirectsFileExt: '.json',
-        forceStart: false,
         copyThemes: false,
         copySettings: false,
         contentFolder: path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test'),
@@ -218,13 +151,9 @@ const startGhost = async (options) => {
     }, options);
 
     // @TODO: tidy up the tmp folders after tests
-    prepareContentFolder(options);
+    await prepareContentFolder(options);
 
-    if (ghostServer && ghostServer.httpServer && !options.forceStart) {
-        await restartModeGhostStart(options);
-    } else {
-        await freshModeGhostStart(options);
-    }
+    await _startGhost(options);
 
     // Expose fixture data, wrap-up and return
     await exposeFixtures();

@@ -2,29 +2,29 @@ const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberPageViewEvent} = require('@tryghost/member-events');
+const {MemberPageViewEvent} = require('../../shared/events');
 
 // App requires
 const config = require('../../shared/config');
-const constants = require('@tryghost/constants');
 const storage = require('../../server/adapters/storage');
 const urlUtils = require('../../shared/url-utils');
 const sitemapHandler = require('../services/sitemap/handler');
+const serveFavicon = require('./routers/serve-favicon');
+const servePublicFiles = require('./routers/serve-public-file');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
-const {cardAssets, commentCountsAssets, memberAttributionAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
-const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
-const STATIC_FILES_URL_PREFIX = `/${constants.STATIC_FILES_URL_PREFIX}`;
+const STATIC_MEDIA_URL_PREFIX = `/${urlUtils.STATIC_MEDIA_URL_PREFIX}`;
+const STATIC_FILES_URL_PREFIX = `/${urlUtils.STATIC_FILES_URL_PREFIX}`;
 
 let router;
 
@@ -34,7 +34,7 @@ function SiteRouter(req, res, next) {
 
 /**
  *
- * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
  * @returns {import('express').Application}
  */
 module.exports = function setupSiteApp(routerConfig) {
@@ -63,24 +63,10 @@ module.exports = function setupSiteApp(routerConfig) {
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    siteApp.use(mw.serveFavicon());
+    serveFavicon(siteApp);
 
-    // Serve sitemap.xsl file
-    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
-
-    // Serve stylesheets for default templates
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-
-    // Card assets
-    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
-
-    // Comment counts
-    siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
-
-    // Member attribution
-    siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    // Public files (sitemap.xsl, stylesheets, scripts, etc.)
+    servePublicFiles(siteApp);
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
@@ -98,9 +84,6 @@ module.exports = function setupSiteApp(routerConfig) {
         }
     );
 
-    // Recommendations well-known
-    siteApp.use(mw.servePublicFile('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
-
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
     config.get('apps:internal').forEach((appName) => {
@@ -113,9 +96,6 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
-
-    // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
 
     debug('Static content done');
 
@@ -156,6 +136,19 @@ module.exports = function setupSiteApp(routerConfig) {
 
     debug('General middleware done');
 
+    // Middleware to set analytics indicator header when analytics tracking is included
+    siteApp.use(function ghostAnalyticsHeaderMiddleware(req, res, next) {
+        const originalSend = res.send;
+        // Has to be on res.send otherwise this executes prior to ghost_head
+        res.send = function (data) {
+            if (res.locals && (res.locals.ghostAnalytics)) {
+                res.set('X-Ghost-Analytics', 'true');
+            }
+            return originalSend.call(this, data);
+        };
+        next();
+    });
+
     router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
 
@@ -180,7 +173,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
 /**
  * see https://github.com/expressjs/express/issues/2596
- * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
  */
 module.exports.reload = (routerConfig) => {
     debug('reloading');

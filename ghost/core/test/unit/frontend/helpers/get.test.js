@@ -2,14 +2,14 @@ const assert = require('assert').strict;
 const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
 const models = require('../../../../core/server/models');
-const proxy = require('../../../../core/frontend/services/proxy');
 const api = require('../../../../core/server/api').endpoints;
+const maxLimitCap = require('../../../../core/shared/max-limit-cap');
 
 describe('{{#get}} helper', function () {
     let fn;
@@ -331,7 +331,7 @@ describe('{{#get}} helper', function () {
         });
     });
 
-    describe('limit=all max', function () {
+    describe('limit capping', function () {
         let browseStub;
 
         beforeEach(function () {
@@ -344,7 +344,19 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('Behaves normally without config', async function () {
+        it('caps "all" to maxLimit (100 by default)', async function () {
+            locals = {root: {_locals: {}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql(100);
+        });
+
+        it('allows "all" when allowLimitAll is true', async function () {
+            sinon.stub(maxLimitCap.limitConfig, 'allowLimitAll').value(true);
+
             locals = {root: {_locals: {}}};
             await get.call(
                 {},
@@ -354,8 +366,28 @@ describe('{{#get}} helper', function () {
             browseStub.firstCall.args[0].limit.should.eql('all');
         });
 
-        it('Replaces "all" with "getHelperLimitAllMax" config, if present', async function () {
-            sinon.stub(proxy.config, 'get').withArgs('getHelperLimitAllMax').returns(2);
+        it('caps numeric limits exceeding maxLimit', async function () {
+            locals = {root: {_locals: {}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 150}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql(100);
+        });
+
+        it('leaves numeric limits below maxLimit unchanged', async function () {
+            locals = {root: {_locals: {}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 50}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql(50);
+        });
+
+        it('uses custom maxLimit when configured', async function () {
+            sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(50);
 
             locals = {root: {_locals: {}}};
             await get.call(
@@ -363,7 +395,17 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
-            browseStub.firstCall.args[0].limit.should.eql(2);
+            browseStub.firstCall.args[0].limit.should.eql(50);
+        });
+
+        it('caps invalid string limits to maxLimit', async function () {
+            locals = {root: {_locals: {}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'invalid'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql(100);
         });
     });
 

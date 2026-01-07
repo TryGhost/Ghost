@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+        <title>{{post.title}}</title>
+        {{>styles}}
+    </head>
+    <body data-testid="email-preview-body">
+        <span class="preheader">{{preheader}}</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
+            {{{preheaderSpacing}}}
+        </div>
+
+        <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
+        {{#if hasHeaderContent}}
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header" width="100%">
+                <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+                <!--[if mso]>
+                <tr>
+                    <td>
+                        <center>
+                            <table border="0" cellpadding="0" cellspacing="0" width="600">
+                <![endif]-->
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="{{classes.container}}" align="center">
+                        <div class="content">
+                        <!-- Header content constrained to 600px -->
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="header-main">
+                            <tr>
+                                <td class="header-content">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        {{#if headerImage}}
+                                            <tr class="header-image-row">
+                                                <td class="header-image" width="100%" align="center">
+                                                    <a href="{{site.url}}">
+                                                        <img
+                                                            src="{{headerImage}}"
+                                                            {{#if headerImageWidth}}
+                                                                width="{{headerImageWidth}}"
+                                                            {{/if}}
+                                                        >
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
+                                        {{#if (or showHeaderIcon showHeaderTitle showHeaderName) }}
+                                            <tr class="site-info-row">
+                                                <td class="site-info" width="100%" align="center">
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                        {{#if (and showHeaderIcon site.iconUrl) }}
+                                                            <tr>
+                                                                <td class="site-icon"><a href="{{site.url}}"><img src="{{site.iconUrl}}" alt="{{site.title}}" border="0" width="48" height="48"></a></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if showHeaderTitle }}
+                                                            <tr>
+                                                                <td class="site-url {{#unless showHeaderName}}site-url-bottom-padding{{/unless}}"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{site.title}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if (and showHeaderName showHeaderTitle) }}
+                                                            <tr>
+                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-subtitle">{{newsletter.name}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+                                                        {{#if (and showHeaderName (not showHeaderTitle)) }}
+                                                            <tr>
+                                                                <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="{{site.url}}" class="site-title">{{newsletter.name}}</a></div></td>
+                                                            </tr>
+                                                        {{/if}}
+
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
+                                        {{#if newsletter.showPostTitleSection}}
+                                            <tr>
+                                                <td class="{{classes.title}}">
+                                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td>
+                                                                <a href="{{post.url}}" class="{{classes.titleLink}}">{{post.title}}</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            {{#if (and newsletter.showExcerpt post.customExcerpt)}}
+                                                <tr>
+                                                    <td class="post-excerpt-wrapper" style="width: 100%">
+                                                        <p class="{{classes.excerpt}}">{{post.customExcerpt}}</p>
+                                                    </td>
+                                                </tr>
+                                            {{/if}}
+                                            <tr>
+                                                <td width="100%" style="width: 100%" align="center">
+                                                    <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
+                                                        <tr>
+                                                            <td height="20" class="{{classes.meta}}" style="padding: 0;">
+                                                                {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{t '{date}' date=post.publishedAt}} </span>
+                                                            </td>
+                                                            <td class="{{classes.meta}} view-online desktop">
+                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="{{classes.meta}} view-online-mobile">
+                                                            <td height="20" class="view-online">
+                                                                <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        {{/if}}
+
+                                        {{#if showFeatureImage }}
+                                            <tr class="feature-image-row">
+                                                <td class="feature-image
+                                                    {{#if post.feature_image_caption }}
+                                                        feature-image-with-caption
+                                                    {{/if}}
+                                                " align="center"><img
+                                                    src="{{post.feature_image}}"
+                                                    {{#if post.feature_image_width }}
+                                                        width="{{post.feature_image_width}}"
+                                                    {{/if}}
+                                                    {{#if post.feature_image_alt }}
+                                                        alt="{{post.feature_image_alt}}"
+                                                    {{/if}}
+                                                ></td>
+                                            </tr>
+
+                                            {{#if post.feature_image_caption }}
+                                                <tr>
+                                                    <td align="center">
+                                                        <div class="feature-image-caption">
+                                                            {{{post.feature_image_caption}}}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {{/if}}
+                                        {{/if}}
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        </div>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+                <![endif]-->
+            </table>
+        {{/if}}
+
+        <!-- MAIN CONTENT AREA -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
+            <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+            <!--[if mso]>
+            <tr>
+                <td>
+                    <center>
+                        <table border="0" cellpadding="0" cellspacing="0" width="600">
+            <![endif]-->
+            <tr>
+                <td>&nbsp;</td>
+                <td class="{{classes.container}}">
+                    <div class="content">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
+                            <tr>
+                                <td class="wrapper">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" data-testid="email-preview-content">
+                                        <tr class="post-content-row">
+                                            <td class="{{classes.body}}">
+                                                <!-- POST CONTENT START -->
+                                                {{{html}}}
+                                                <!-- POST CONTENT END -->
+
+                                                {{#if paywall}}
+                                                    {{>paywall}}
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- END MAIN CONTENT AREA -->
+
+                            {{#if (or feedbackButtons newsletter.showCommentCta) }}
+                                <tr>
+                                    <td class="feedback-buttons-container" dir="ltr" width="100%" align="center">
+                                        <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42"}}
+                                                {{/if}}
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                             {{#if latestPosts.length}}
+                                <tr>
+                                    <td class="latest-posts-container">
+                                        <h3 class="latest-posts-header">{{t 'Keep reading'}}</h3>
+                                        {{> latestPosts}}
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                            {{#if newsletter.showSubscriptionDetails}}
+                                <tr>
+                                    <td class="subscription-box">
+                                        <h3>{{t 'Subscription details'}}</h3>
+                                        <p style="margin-bottom: 16px;">
+                                            <span>{{{t "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}." site=site.title }}}</span> %%{status_text}%%
+                                        </p>
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td class="subscription-details">
+                                                    <p class="%%{name_class}%%">{{t 'Name'}}: %%{name, "not provided"}%%</p>
+                                                    <p>{{t 'Email'}}: <a href="#">%%{email}%%</a></p>
+                                                    <p>{{t 'Member since'}}: %%{created_at}%%</p>
+                                                </td>
+                                                <td align="right" valign="bottom" class="manage-subscription">
+                                                    <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}}</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                            <tr>
+                                <td class="wrapper" align="center">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
+                                        {{#if footerContent }}
+                                            <tr><td class="footer">{{{footerContent}}}</td></tr>
+                                        {{/if}}
+                                        <tr>
+                                            <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">{{t 'Unsubscribe'}}</a></td>
+                                        </tr>
+
+                                        {{#if showBadge }}
+                                            <tr>
+                                                <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
+                                            </tr>
+                                        {{/if}}
+                                    </table>
+                                </td>
+                            </tr>
+
+                        </table>
+                        <!-- END CENTERED WHITE CONTAINER -->
+                    </div>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <!--[if mso]>
+                            </table>
+                        </center>
+                    </td>
+                </tr>
+            <![endif]-->
+        </table>
+    </body>
+</html>

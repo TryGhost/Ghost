@@ -212,7 +212,7 @@ Object {
   "members": Array [
     Object {
       "attribution": Object {
-        "id": "1",
+        "id": "5951f5fc0000000000000000",
         "referrer_medium": null,
         "referrer_source": null,
         "referrer_url": null,
@@ -267,7 +267,7 @@ exports[`Members API - member attribution Can read member attributed to an autho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1065",
+  "content-length": "1088",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -386,7 +386,7 @@ exports[`Members API - member attribution Returns sign up attributions of all ty
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8053",
+  "content-length": "8685",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1786,7 +1786,7 @@ exports[`Members API Can add and send a signup confirmation email 3: [html 1] 1`
               </tr>
               <tr>
                 <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 2px;\\">
-                  <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member_getting_confirmation@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member_getting_confirmation@test.com</a></p>
+                  <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;\\">This message was sent from <a class=\\"small\\" href=\\"http://127.0.0.1:2369/\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">127.0.0.1</a> to <a class=\\"small\\" href=\\"mailto:member_getting_confirmation@test.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 11px;\\">member_getting_confirmation@test.com</a>.</p>
                 </td>
               </tr>
 
@@ -1829,6 +1829,9 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": false,
+  "headers": Object {
+    "Sender": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
+  },
   "replyTo": null,
   "subject": "🙌 Complete your sign up to Ghost's Test Site!",
   "to": "member_getting_confirmation@test.com",
@@ -3603,10 +3606,8 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -3617,10 +3618,8 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-disposition": Any<String>,
-  "content-length": "241",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -6126,7 +6125,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4601",
+  "content-length": "5427",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -7306,7 +7305,7 @@ exports[`Members API can change the email address 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1118",
+  "content-length": "1209",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

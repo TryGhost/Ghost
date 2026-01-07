@@ -1,5 +1,5 @@
-<tr data-test-list='members-list-item' data-test-member={{@member.id}} class="gh-members-list-row">
-    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data" data-test-table-data="details">
+<tr data-test-list='members-list-item' data-testid='members-list-item' data-test-member={{@member.id}} class="gh-members-list-row">
+    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data wrap" data-test-table-data="details">
         <div class="flex items-center gh-members-list-name-container">
             <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
             <div class="w-80">
@@ -38,7 +38,7 @@
         </LinkTo>
     {{/if}}
 
-    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
+    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data wrap middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
         {{#if (and @member.geolocation @member.geolocation.country)}}
             {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                 {{@member.geolocation.region}}, US

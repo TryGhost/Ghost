@@ -6,7 +6,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
 
@@ -81,6 +80,29 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
+     * Saves a buffer in the targetPath
+     * @param {Buffer} buffer is an instance of Buffer
+     * @param {String} targetPath relative path NOT including storage path to which the buffer should be written
+     * @returns {Promise<String>} a URL to retrieve the data
+     */
+    async saveRaw(buffer, targetPath) {
+        const storagePath = path.join(this.storagePath, targetPath);
+        const targetDir = path.dirname(storagePath);
+
+        await fs.mkdirs(targetDir);
+        await fs.writeFile(storagePath, buffer);
+
+        // For local file system storage can use relative path so add a slash
+        const fullUrl = (
+            urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                this.staticFileURLPrefix,
+                targetPath)
+        ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+
+        return fullUrl;
+    }
+
+    /**
      *
      * @param {String} url full url under which the stored content is served, result of save method
      * @returns {String} path under which the content is stored
@@ -136,7 +158,7 @@ class LocalStorageBase extends StorageBase {
             return serveStatic(
                 storagePath,
                 {
-                    maxAge: constants.ONE_YEAR_MS,
+                    maxAge: (365 * 24 * 60 * 60 * 1000), // 1 year in ms
                     fallthrough: false
                 }
             )(req, res, (err) => {

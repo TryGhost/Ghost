@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('DangerZone', async () => {
     test('Delete all content', async ({page}) => {
@@ -17,7 +16,7 @@ test.describe('DangerZone', async () => {
 
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Delete'}).click();
 
-        await expect(page.getByTestId('toast-success')).toContainText('All content deleted');
+        await expect(page.getByTestId('toast-success')).toContainText('All content deleted from database');
 
         expect(lastApiRequests.deleteAllContent).toBeTruthy();
     });

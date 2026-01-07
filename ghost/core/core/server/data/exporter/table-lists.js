@@ -2,6 +2,7 @@
 const BACKUP_TABLES = [
     'actions',
     'api_keys',
+    'automated_emails',
     'brute',
     'donation_payment_events',
     'emails',
@@ -53,7 +54,8 @@ const BACKUP_TABLES = [
     'collections_posts',
     'recommendations',
     'recommendation_click_events',
-    'recommendation_subscribe_events'
+    'recommendation_subscribe_events',
+    'outbox'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

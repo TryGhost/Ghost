@@ -157,7 +157,7 @@
     align-items: center;
     height: 80px;
     margin-bottom: -24px;
-    padding: var(--main-layout-area-padding);
+    padding: 32px;
     background: var(--white);
 }
 
@@ -194,6 +194,19 @@
     margin-left: auto;
     margin-right: auto;
     color: var(--black);
+}
+
+.gh-post-history .gh-editor-excerpt {
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gh-post-history .gh-editor-title-divider {
+    width: 100%;
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gh-post-history-hidden-lexical {

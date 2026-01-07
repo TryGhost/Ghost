@@ -1,12 +1,23 @@
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
-import i18nLib from '@tryghost/i18n';
+import {t} from './utils/i18n';
 
-export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}, 
-    t = (str) => {
-        return str;
-    }) {
+function displayErrorIfElementExists(errorEl, message) {
+    if (errorEl) {
+        errorEl.innerText = message;
+    }
+}
+
+function handleError(error, form, errorEl) {
+    form.classList.add('error');
+    const defaultMessage = t('There was an error sending the email, please try again');
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
+}
+
+export async function formSubmitHandler(
+    {event, form, errorEl, siteUrl, submitHandler, doAction, captureException}
+) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -36,6 +47,8 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         emailType = form.dataset.membersForm;
     }
 
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true';
+
     form.classList.add('loading');
     const urlHistory = getUrlHistory();
     const reqBody = {
@@ -45,6 +58,9 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         name: name,
         autoRedirect: (autoRedirect === 'true')
     };
+    if (wantsOTC) {
+        reqBody.includeOTC = true;
+    }
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
     }
@@ -60,44 +76,55 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         }
     }
 
-    return fetch(`${siteUrl}/members/api/integrity-token/`, {
-        method: 'GET'
-    }).then((res) => {
-        return res.text();
-    }).then((integrityToken) => {
-        return fetch(`${siteUrl}/members/api/send-magic-link/`, {
+    try {
+        const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {method: 'GET'});
+        const integrityToken = await integrityTokenRes.text();
+
+        const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ...reqBody,
-                integrityToken
-            })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({...reqBody, integrityToken})
         });
-    }).then(function (res) {
+
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
-        if (res.ok) {
+        if (magicLinkRes.ok) {
             form.classList.add('success');
+
+            let responseBody;
+            if (wantsOTC) {
+                try {
+                    responseBody = await magicLinkRes.clone().json();
+                } catch (e) {
+                    responseBody = undefined;
+                }
+            }
+
+            const otcRef = responseBody?.otc_ref;
+            if (otcRef && typeof doAction === 'function') {
+                try {
+                    doAction('startSigninOTCFromCustomForm', {
+                        email: (email || '').trim(),
+                        otcRef
+                    });
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error(e);
+                    captureException?.(e);
+                }
+            }
         } else {
-            return HumanReadableError.fromApiResponse(res).then((e) => {
-                throw e;
-            });
+            const e = await HumanReadableError.fromApiResponse(magicLinkRes);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'));
+            displayErrorIfElementExists(errorEl, errorMessage);
+            form.classList.add('error'); // Ensure error state is set here
         }
-    }).catch((err) => {
-        if (errorEl) {
-            // This theme supports a custom error element
-            errorEl.innerText = chooseBestErrorMessage(err, t('There was an error sending the email, please try again'), t);
-        }
-        form.classList.add('error');
-    });
+    } catch (err) {
+        handleError(err, form, errorEl);
+    }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale | 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -177,18 +204,16 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site, member}) {
-    const i18nLanguage = site.locale | 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
     if (!siteUrl) {
         return;
     }
+
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException});
         }
         form.addEventListener('submit', submitHandler);
     });

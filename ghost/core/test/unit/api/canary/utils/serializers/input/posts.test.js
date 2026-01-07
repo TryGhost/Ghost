@@ -102,6 +102,33 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             frame.options.formats.should.containEql('plaintext');
         });
 
+        it('adds default order when no order is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            frame.options.order.should.eql('published_at desc, id desc');
+        });
+
+        it('keeps order when it is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    order: 'updated_at desc',
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            frame.options.order.should.eql('updated_at desc');
+        });
+
         describe('Content API', function () {
             it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
                 const apiConfig = {};
@@ -353,7 +380,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"showOnEmail":true,"showOnWeb":true,"segment":""}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
             });
 
             it('throws error when HTML conversion fails', function () {

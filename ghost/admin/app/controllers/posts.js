@@ -1,9 +1,11 @@
 import Controller from '@ember/controller';
 import SelectionList from 'ghost-admin/components/posts-list/selection-list';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const TYPES = [{
@@ -56,6 +58,7 @@ export default class PostsController extends Controller {
     @service router;
     @service session;
     @service store;
+    @service tagsManager;
 
     @inject config;
 
@@ -73,11 +76,18 @@ export default class PostsController extends Controller {
     availableVisibilities = VISIBILITIES;
     availableOrders = ORDERS;
 
-    _availableTags = this.store.peekAll('tag');
     _availableAuthors = this.store.peekAll('user');
 
-    _hasLoadedTags = false;
+    // Set & used by the posts route
     _hasLoadedAuthors = false;
+    _hasLoadedFilteredTag = false;
+
+    @tracked _initialTags = new TrackedArray();
+    _initialTagsMeta = null;
+    _hasLoadedInitialTags = false;
+    @tracked _searchedTags = new TrackedArray();
+    _searchedTagsQuery = null;
+    _searchedTagsMeta = null;
 
     constructor() {
         super(...arguments);
@@ -104,21 +114,73 @@ export default class PostsController extends Controller {
     }
 
     get availableTags() {
-        const tags = this._availableTags
-            .filter(tag => tag.get('id') !== null)
-            .sort((tagA, tagB) => tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true}));
+        let options = [{name: 'All tags', slug: null}];
 
-        const options = tags.toArray();
-        options.unshift({name: 'All tags', slug: null});
+        options = options.concat(this.tagsManager.sortTags(this._initialTags));
+
+        if (this.tag && !options.findBy('slug', this.tag)) {
+            const foundTag = this.tagsManager.loadedTags.findBy('slug', this.tag);
+            if (foundTag) {
+                options.push(foundTag);
+            }
+        }
 
         return options;
     }
 
-    get selectedTag() {
-        const tag = this.tag;
-        const tags = this.availableTags;
+    @action
+    async loadInitialTags() {
+        if (!this._hasLoadedInitialTags) {
+            await this.loadMoreTagsTask.perform(false);
+            this._hasLoadedInitialTags = true;
+        }
+    }
 
-        return tags.findBy('slug', tag) || {slug: '!unknown'};
+    @task({drop: true})
+    *loadMoreTagsTask(isSearch = false) {
+        if (isSearch) {
+            if (this.searchTagsTask.isRunning) {
+                return;
+            }
+
+            if (this._searchedTagsMeta && this._searchedTagsMeta.pagination.pages <= this._searchedTagsMeta.pagination.page) {
+                return;
+            }
+
+            const page = this._searchedTagsMeta.pagination.page + 1;
+            const tags = yield this.tagsManager.searchTagsTask.perform(this._searchedTagsQuery, {page});
+            this._searchedTags.push(...this.tagsManager.sortTags(tags.toArray()));
+            this._searchedTagsMeta = tags.meta;
+        } else {
+            if (this._initialTagsMeta && this._initialTagsMeta?.pagination.pages <= this._initialTagsMeta.pagination.page) {
+                return;
+            }
+
+            const page = this._initialTagsMeta?.pagination.page ? this._initialTagsMeta.pagination.page + 1 : 1;
+            const tags = yield this.store.query('tag', {limit: 100, page, order: 'name asc'});
+            this._initialTags.push(...tags.toArray());
+            this._initialTagsMeta = tags.meta;
+        }
+    }
+
+    @task
+    *searchTagsTask(term) {
+        this._searchedTagsQuery = term;
+        const tags = yield this.tagsManager.searchTagsTask.perform(term);
+        this._searchedTagsMeta = tags.meta;
+
+        // we need to create a tracked array for vertical-collection to update as new options are loaded
+        // because we can't rely on power-select re-rendering as @options changes via auto template updates
+        this._searchedTags = new TrackedArray(this.tagsManager.sortTags(tags.toArray()));
+        return this._searchedTags;
+    }
+
+    get selectedTag() {
+        if (this.tag === null) {
+            return this.availableTags[0];
+        } else {
+            return this.tagsManager.loadedTags.findBy('slug', this.tag) || {slug: '!unknown'};
+        }
     }
 
     get availableAuthors() {

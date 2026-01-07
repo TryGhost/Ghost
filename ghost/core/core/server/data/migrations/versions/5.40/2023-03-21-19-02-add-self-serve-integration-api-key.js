@@ -2,7 +2,9 @@ const {InternalServerError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const security = require('@tryghost/security');
 const {default: ObjectID} = require('bson-objectid');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
+
+const MIGRATION_USER = 1;
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -46,7 +48,7 @@ module.exports = createTransactionalMigration(
             role_id: role.id,
             integration_id: integration.id,
             created_at: knex.raw('current_timestamp'),
-            created_by: meta.MIGRATION_USER
+            created_by: MIGRATION_USER
         });
     },
     async function down(knex) {

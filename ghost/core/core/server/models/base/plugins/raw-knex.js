@@ -16,21 +16,26 @@ module.exports = function (Bookshelf) {
          * If we e.g. instantiate for each object a model, it takes twice long.
          */
         raw_knex: {
-            fetchAll: function (options) {
-                options = options || {};
+            fetchAll: async function (options = {}) {
+                const {
+                    modelName,
+                    exclude,
+                    filter,
+                    shouldHavePosts,
+                    withRelated,
+                    withRelatedFields,
+                    id,
+                    offset,
+                    limit
+                } = options;
 
-                const nql = require('@tryghost/nql');
-                const modelName = options.modelName;
+                const bookshelfPrototype = Bookshelf.registry.models[modelName].prototype;
                 const tableNames = {
                     Post: 'posts',
                     User: 'users',
                     Tag: 'tags'
                 };
-                const exclude = options.exclude;
-                const filter = options.filter;
-                const shouldHavePosts = options.shouldHavePosts;
-                const withRelated = options.withRelated;
-                const withRelatedFields = options.withRelatedFields;
+
                 const relations = {
                     tags: {
                         targetTable: 'tags',
@@ -60,149 +65,141 @@ module.exports = function (Bookshelf) {
 
                 let query = Bookshelf.knex(tableNames[modelName]);
 
-                if (options.offset) {
-                    query.offset(options.offset);
+                if (offset) {
+                    query.offset(offset);
                 }
 
-                if (options.limit) {
-                    query.limit(options.limit);
+                if (limit) {
+                    query.limit(limit);
                 }
 
-                // exclude fields if enabled
+                // exclude fields if provided
                 if (exclude) {
-                    let toSelect = _.keys(schema.tables[tableNames[modelName]]);
-                    toSelect = toSelect.filter(key => !(key.startsWith('@@')));
-
-                    _.each(exclude, (key) => {
-                        if (toSelect.indexOf(key) !== -1) {
-                            toSelect.splice(toSelect.indexOf(key), 1);
-                        }
-                    });
+                    const toSelect = Object
+                        .keys(schema.tables[tableNames[modelName]])
+                        .filter(key => !key.startsWith('@@') && !exclude.includes(key));
 
                     query.select(toSelect);
                 }
 
                 // @NOTE: We can't use the filter plugin, because we are not using bookshelf.
+                // Lazyloaded to keep boot fast
+                const nql = require('@tryghost/nql');
                 nql(filter).querySQL(query);
 
                 if (shouldHavePosts) {
                     plugins.hasPosts.addHasPostsWhere(tableNames[modelName], shouldHavePosts)(query);
                 }
 
-                if (options.id) {
-                    query.where({id: options.id});
+                if (id) {
+                    query.where({id});
                 }
 
-                return query.then((objects) => {
-                    debug('fetched', modelName, filter);
+                let objects = await query;
 
-                    if (!objects.length) {
-                        debug('No more entries found');
-                        return Promise.resolve([]);
-                    }
+                debug('fetched', modelName, filter);
 
-                    let props = {};
+                if (!objects.length) {
+                    debug('No more entries found');
+                    return [];
+                }
 
-                    if (!withRelated) {
-                        return _.map(objects, (object) => {
-                            object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
-                                attributes: object,
-                                related: function (key) {
-                                    return object[key];
-                                },
-                                serialize: Bookshelf.registry.models[modelName].prototype.serialize,
-                                formatsToJSON: Bookshelf.registry.models[modelName].prototype.formatsToJSON
-                            })();
+                let props = {};
 
-                            object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
-                            object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
-                            return object;
-                        });
-                    }
-
-                    _.each(withRelated, (withRelatedKey) => {
-                        const relation = relations[withRelatedKey];
-
-                        props[relation.name] = (() => {
-                            debug('fetch withRelated', relation.name);
-
-                            let relationQuery = Bookshelf.knex(relation.targetTable);
-
-                            // default fields to select
-                            _.each(relation.select, (fieldToSelect) => {
-                                relationQuery.select(fieldToSelect);
-                            });
-
-                            // custom fields to select
-                            _.each(withRelatedFields[withRelatedKey], (toSelect) => {
-                                relationQuery.select(toSelect);
-                            });
-
-                            relationQuery.innerJoin(
-                                relation.innerJoin.relation,
-                                relation.innerJoin.condition[0],
-                                relation.innerJoin.condition[1],
-                                relation.innerJoin.condition[2]
-                            );
-
-                            relationQuery.whereIn(relation.whereIn, _.map(objects, 'id'));
-                            relationQuery.orderBy(relation.orderBy);
-
-                            return relationQuery
-                                .then((queryRelations) => {
-                                    debug('fetched withRelated', relation.name);
-
-                                    // arr => obj[post_id] = [...] (faster access)
-                                    return queryRelations.reduce((obj, item) => {
-                                        if (!obj[item[relation.whereInKey]]) {
-                                            obj[item[relation.whereInKey]] = [];
-                                        }
-
-                                        obj[item[relation.whereInKey]].push(_.omit(item, relation.select));
-                                        return obj;
-                                    }, {});
-                                });
+                if (!withRelated) {
+                    return _.map(objects, (object) => {
+                        object = bookshelfPrototype.toJSON.bind({
+                            attributes: object,
+                            related: function (key) {
+                                return object[key];
+                            },
+                            serialize: bookshelfPrototype.serialize,
+                            formatsToJSON: bookshelfPrototype.formatsToJSON
                         })();
+
+                        object = bookshelfPrototype.fixBools(object);
+                        object = bookshelfPrototype.fixDatesWhenFetch(object);
+                        return object;
                     });
+                }
 
-                    return Promise.all(Object.values(props))
-                        .then((relationsToAttachArray) => {
-                            debug('attach relations', modelName);
+                _.each(withRelated, (withRelatedKey) => {
+                    const relation = relations[withRelatedKey];
 
-                            const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
+                    props[relation.name] = (async () => {
+                        debug('fetch withRelated', relation.name);
 
-                            objects = _.map(objects, (object) => {
-                                for (const relation in relationsToAttach) {
-                                    if (!relationsToAttach[relation][object.id]) {
-                                        object[relation] = [];
-                                        continue;
-                                    }
+                        let relationQuery = Bookshelf.knex(relation.targetTable);
 
-                                    object[relation] = relationsToAttach[relation][object.id];
-                                }
-
-                                object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
-                                    attributes: object,
-                                    _originalOptions: {
-                                        withRelated: Object.keys(relationsToAttach)
-                                    },
-                                    related: function (key) {
-                                        return object[key];
-                                    },
-                                    serialize: Bookshelf.registry.models[modelName].prototype.serialize,
-                                    formatsToJSON: Bookshelf.registry.models[modelName].prototype.formatsToJSON
-                                })();
-
-                                object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
-                                object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
-                                return object;
-                            });
-
-                            debug('attached relations', modelName);
-
-                            return objects;
+                        // default fields to select
+                        _.each(relation.select, (fieldToSelect) => {
+                            relationQuery.select(fieldToSelect);
                         });
+
+                        // custom fields to select
+                        _.each(withRelatedFields[withRelatedKey], (toSelect) => {
+                            relationQuery.select(toSelect);
+                        });
+
+                        relationQuery.innerJoin(
+                            relation.innerJoin.relation,
+                            relation.innerJoin.condition[0],
+                            relation.innerJoin.condition[1],
+                            relation.innerJoin.condition[2]
+                        );
+
+                        relationQuery.whereIn(relation.whereIn, _.map(objects, 'id'));
+                        relationQuery.orderBy(relation.orderBy);
+
+                        const queryRelations = await relationQuery;
+                        debug('fetched withRelated', relation.name);
+
+                        // arr => obj[post_id] = [...] (faster access)
+                        return queryRelations.reduce((obj, item) => {
+                            if (!obj[item[relation.whereInKey]]) {
+                                obj[item[relation.whereInKey]] = [];
+                            }
+
+                            obj[item[relation.whereInKey]].push(_.omit(item, relation.select));
+                            return obj;
+                        }, {});
+                    })();
                 });
+
+                debug('attaching relations to', modelName);
+
+                const relationsToAttachArray = await Promise.all(Object.values(props));
+                const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
+
+                objects = _.map(objects, (object) => {
+                    for (const relation in relationsToAttach) {
+                        if (!relationsToAttach[relation][object.id]) {
+                            object[relation] = [];
+                            continue;
+                        }
+
+                        object[relation] = relationsToAttach[relation][object.id];
+                    }
+
+                    object = bookshelfPrototype.toJSON.bind({
+                        attributes: object,
+                        _originalOptions: {
+                            withRelated: Object.keys(relationsToAttach)
+                        },
+                        related: function (key) {
+                            return object[key];
+                        },
+                        serialize: bookshelfPrototype.serialize,
+                        formatsToJSON: bookshelfPrototype.formatsToJSON
+                    })();
+
+                    object = bookshelfPrototype.fixBools(object);
+                    object = bookshelfPrototype.fixDatesWhenFetch(object);
+                    return object;
+                });
+
+                debug('attached relations to', modelName);
+                return objects;
             }
         }
     });

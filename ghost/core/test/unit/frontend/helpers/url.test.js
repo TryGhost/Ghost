@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
@@ -11,11 +11,12 @@ const api = require('../../../../core/server/api').endpoints;
 
 describe('{{url}} helper', function () {
     let rendered;
+    let urlServiceGetUrlByResourceIdStub;
 
     beforeEach(function () {
         rendered = null;
 
-        sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
 
         sinon.stub(api.settings, 'read').callsFake(function () {
             return Promise.resolve({settings: [{value: '/:slug/'}]});
@@ -45,7 +46,7 @@ describe('{{url}} helper', function () {
                 url: '/slug/'
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, withSubdirectory: true}).returns('/slug/');
+            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: undefined, withSubdirectory: true}).returns('/slug/');
 
             rendered = url.call(post);
             should.exist(rendered);
@@ -62,7 +63,7 @@ describe('{{url}} helper', function () {
                 created_at: new Date(0)
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
+            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
 
             rendered = url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -77,7 +78,7 @@ describe('{{url}} helper', function () {
                 parent: null
             });
 
-            urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
+            urlServiceGetUrlByResourceIdStub.withArgs(tag.id, {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
 
             rendered = url.call(tag);
             should.exist(rendered);
@@ -93,7 +94,7 @@ describe('{{url}} helper', function () {
                 slug: 'some-author'
             });
 
-            urlService.getUrlByResourceId.withArgs(user.id, {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
+            urlServiceGetUrlByResourceIdStub.withArgs(user.id, {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
 
             rendered = url.call(user);
             should.exist(rendered);

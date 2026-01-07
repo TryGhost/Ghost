@@ -17,6 +17,15 @@ module.exports = {
     },
     overrides: [
         {
+            files: [
+                '**/*.ts'
+            ],
+            extends: [
+                'plugin:ghost/ts'
+            ],
+            parser: '@typescript-eslint/parser'
+        },
+        {
             files: 'core/server/api/endpoints/*',
             rules: {
                 'ghost/ghost-custom/max-api-complexity': 'error'
@@ -30,7 +39,7 @@ module.exports = {
                 'core/server/data/migrations/versions/3.*/*'
             ],
             rules: {
-                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z]+){2,}$', true]
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z0-9]+){2,}$', true]
             }
         },
         {
@@ -77,6 +86,32 @@ module.exports = {
             }
         },
         {
+            files: 'core/server/data/schema/schema.js',
+            rules: {
+                'no-restricted-syntax': ['error',
+                    {
+                        selector: 'Property[key.name="created_by"]',
+                        message: '`created_by` is not allowed - The action log should be used to record user actions.'
+                    },
+                    {
+                        selector: 'Property[key.name="updated_by"]',
+                        message: '`updated_by` is not allowed - The action log should be used to record user actions.'
+                    }
+                ]
+            }
+        },
+        {
+            // Frontend files use kebab-case filenames with PascalCase class exports
+            files: ['core/frontend/**/*.js'],
+            rules: {
+                'ghost/filenames/match-exported-class': 'off',
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            }
+        },
+        {
+            // Helper filenames use underscores because they map directly to Handlebars helper names
+            // e.g., ghost_head.js → {{ghost_head}}. Renaming would break all themes.
+            // See: core/frontend/services/helpers/registry.js:26
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
                 'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]

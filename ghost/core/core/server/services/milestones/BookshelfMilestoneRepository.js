@@ -1,8 +1,7 @@
-const {Milestone} = require('@tryghost/milestones');
+const Milestone = require('./Milestone');
 
 /**
- * @typedef {import('@tryghost/milestones/lib/MilestonesService').IMilestoneRepository} IMilestoneRepository
- * @typedef {import('@tryghost/milestones/lib/MilestonesService')} Milestone
+ * @typedef {import('./MilestonesService').IMilestoneRepository} IMilestoneRepository
  */
 
 /**
@@ -37,7 +36,7 @@ module.exports = class BookshelfMilestoneRepository {
     }
 
     /**
-     * @param {import('@tryghost/milestones/lib/Milestone')} milestone
+     * @param {Milestone} milestone
      * @returns {Promise<void>}
      */
     async save(milestone) {
@@ -68,7 +67,7 @@ module.exports = class BookshelfMilestoneRepository {
      * @param {'arr'|'members'} type
      * @param {string} [currency]
      *
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')[]>}
+     * @returns {Promise<Milestone[]>}
      */
     async getAllByType(type, currency = 'usd') {
         let milestone = null;
@@ -93,7 +92,7 @@ module.exports = class BookshelfMilestoneRepository {
      * @param {'arr'|'members'} type
      * @param {string} [currency]
      *
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     * @returns {Promise<Milestone|null>}
      */
     async getLatestByType(type, currency = 'usd') {
         const allMilestonesForType = await this.getAllByType(type, currency);
@@ -101,7 +100,7 @@ module.exports = class BookshelfMilestoneRepository {
     }
 
     /**
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     * @returns {Promise<Milestone|null>}
      */
     async getLastEmailSent() {
         let milestone = await this.#MilestoneModel.findAll({filter: 'email_sent_at:-null', order: 'email_sent_at ASC'}, {require: false});
@@ -119,7 +118,7 @@ module.exports = class BookshelfMilestoneRepository {
      * @param {number} value
      * @param {string} [currency]
      *
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     * @returns {Promise<Milestone|null>}
      */
     async getByARR(value, currency = 'usd') {
         // find a milestone of the ARR type by a given value
@@ -134,7 +133,7 @@ module.exports = class BookshelfMilestoneRepository {
     /**
      * @param {number} value
      *
-     * @returns {Promise<import('@tryghost/milestones/lib/Milestone')|null>}
+     * @returns {Promise<Milestone|null>}
      */
     async getByCount(value) {
         // find a milestone of the members type by a given value

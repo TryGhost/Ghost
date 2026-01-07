@@ -21,7 +21,9 @@ module.exports = {
             'tenor',
             'pintura',
             'signupForm',
-            'stats'
+            'stats',
+            'security',
+            'exploreTestimonialsUrl'
         ];
 
         frame.response = {

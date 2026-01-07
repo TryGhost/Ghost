@@ -158,8 +158,6 @@ export default class PostsContextMenu extends Component {
 
     @task
     *addTagToPostsTask(tags) {
-        const updatedModels = this.selectionList.availableModels;
-
         yield this.performBulkEdit('addTag', {
             tags: tags.map((t) => {
                 return {
@@ -175,13 +173,6 @@ export default class PostsContextMenu extends Component {
             this.notifications.showNotification(this.#getToastMessage('tagAdded'), {type: 'success'});
         }
 
-        const serializedTags = tags.toArray().map((t) => {
-            return {
-                ...t.serialize({includeId: true}),
-                type: 'tag'
-            };
-        });
-
         // Destroy unsaved new tags (otherwise we could select them again)
         this.store.peekAll('tag').forEach((tag) => {
             if (tag.isNew) {
@@ -189,50 +180,13 @@ export default class PostsContextMenu extends Component {
             }
         });
 
-        // For new tags, attach the id to it, so we can link the new tag to the post
-        let allTags = null;
-
-        for (const tag of serializedTags) {
-            if (!tag.id) {
-                if (!allTags) {
-                    // Update tags on the client side (we could have created new tags)
-                    yield this.store.query('tag', {limit: 'all'});
-                    allTags = this.store.peekAll('tag').toArray();
-                }
-                const createdTag = allTags.find(t => t.name === tag.name && t.id);
-                if (createdTag) {
-                    tag.id = createdTag.id;
-                    tag.slug = createdTag.slug;
-                }
-            }
-        }
-
-        // Update the models on the client side
-        for (const post of updatedModels) {
-            const newTags = post.tags.toArray().map((t) => {
-                return {
-                    ...t.serialize({includeId: true}),
-                    type: 'tag'
-                };
-            });
-            for (const tag of serializedTags) {
-                if (!newTags.find(t => t.id === tag.id)) {
-                    newTags.push(tag);
-                }
-            }
-
-            // We need to do it this way to prevent marking the model as dirty
-            this.store.push({
-                data: {
-                    id: post.id,
-                    type: this.type,
-                    relationships: {
-                        tags: {
-                            data: newTags
-                        }
-                    }
-                }
-            });
+        // Re-fetch all updated posts so the client store is up-to-date
+        // Fetch in batches of 50 to avoid too-long URLs from all of the ObjectIDs
+        const updatedPosts = this.selectionList.availableModels;
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < updatedPosts.length; i += BATCH_SIZE) {
+            const batch = updatedPosts.slice(i, i + BATCH_SIZE);
+            yield this.store.query('post', {filter: `id:[${batch.map(p => p.id).join(',')}]`});
         }
 
         // Remove posts that no longer match the filter

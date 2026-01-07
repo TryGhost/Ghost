@@ -167,8 +167,20 @@ class UrlGenerator {
         }
 
         // CASE 1: route has no custom filter, it will own the resource for sure
+        let shouldReserve = !this.filter;
+
         // CASE 2: find out if my filter matches the resource
-        if ((!this.filter) || (this.nql.queryJSON(resource.data))) {
+        if (!shouldReserve) {
+            try {
+                shouldReserve = this.nql.queryJSON(resource.data);
+            } catch (err) {
+                debug(`Failed to queryJSON with filter "${this.filter}"`, err);
+
+                return false;
+            }
+        }
+
+        if (shouldReserve) {
             const url = this._generateUrl(resource);
             this.urls.add({
                 url: url,

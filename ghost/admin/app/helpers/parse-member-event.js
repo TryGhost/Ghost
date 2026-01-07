@@ -9,8 +9,24 @@ export default class ParseMemberEventHelper extends Helper {
     @service utils;
     @service membersUtils;
 
+    trimString(value) {
+        // Always convert to null if the value is empty/null/undefined
+        if (!value && value !== 0) {
+            return null;
+        }
+
+        // Force to string and trim
+        const trimmed = String(value).trim();
+
+        // Convert empty strings or pure whitespace to null
+        return trimmed || null;
+    }
+
     compute([event, hasMultipleNewsletters]) {
-        const subject = event.data.member ? (event.data.member.name || event.data.member.email) : (event.data.name || event.data.email || '');
+        let memberName = event.data.member?.name;
+        memberName = this.trimString(memberName);
+
+        const subject = event.data.member ? (memberName || event.data.member.email) : (event.data.name || event.data.email || '');
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
@@ -23,9 +39,15 @@ export default class ParseMemberEventHelper extends Helper {
         const timestamp = moment(event.data.created_at);
         const source = this.getSource(event);
 
+        // Also ensure the member object has the transformed name
+        const member = event.data.member ? {
+            ...event.data.member,
+            name: memberName
+        } : event.data.member;
+
         return {
             memberId: event.data.member_id ?? event.data.member?.id,
-            member: event.data.member,
+            member,
             emailId: event.data.email_id,
             email: event.data.email,
             icon,
@@ -344,7 +366,7 @@ export default class ParseMemberEventHelper extends Helper {
         if (['click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return {
-                    name: 'posts.analytics',
+                    name: 'posts-x',
                     model: event.data.post.id
                 };
             }
@@ -353,7 +375,7 @@ export default class ParseMemberEventHelper extends Helper {
         if (['signup_event', 'subscription_event'].includes(event.type)) {
             if (event.data.attribution_type === 'post') {
                 return {
-                    name: 'posts.analytics',
+                    name: 'posts-x',
                     model: event.data.attribution_id
                 };
             }

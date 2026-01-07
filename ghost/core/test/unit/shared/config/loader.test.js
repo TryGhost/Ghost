@@ -2,8 +2,9 @@ const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
-const configUtils = require('../../../utils/configUtils');
-
+const configUtils = require('../../../utils/config-utils');
+const sinon = require('sinon');
+const localUtils = require('../../../../core/shared/config/utils');
 describe('Config Loader', function () {
     before(async function () {
         await configUtils.restore();
@@ -18,12 +19,13 @@ describe('Config Loader', function () {
         let originalArgv;
         let customConfig;
         let loader;
+        let nodeEnvStub;
 
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = rewire('../../../../core/shared/config/loader');
-
+            nodeEnvStub = sinon.stub(localUtils, 'getNodeEnv').returns('testing');
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
@@ -32,6 +34,7 @@ describe('Config Loader', function () {
         afterEach(function () {
             process.env = originalEnv;
             process.argv = originalArgv;
+            sinon.restore();
         });
 
         it('env parameter is stronger than file', function () {
@@ -82,6 +85,17 @@ describe('Config Loader', function () {
             customConfig.get('url').should.eql('http://localhost:2368');
             customConfig.get('logging:level').should.eql('error');
             customConfig.get('logging:transports').should.eql(['stdout']);
+        });
+
+        it('should load JSONC files', function () {
+            nodeEnvStub.returns('development');
+            customConfig = loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+
+            customConfig.get('site_uuid').should.eql('a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
+            should.not.exist(customConfig.get('commented'));
         });
     });
 

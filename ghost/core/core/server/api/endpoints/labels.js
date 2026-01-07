@@ -59,17 +59,15 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Label.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.labelNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Label.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.labelNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -120,21 +118,19 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Label.edit(frame.data.labels[0], frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.labelNotFound)
-                        }));
-                    }
-
-                    if (model.wasChanged()) {
-                        frame.setHeader('X-Cache-Invalidate', '/*');
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Label.edit(frame.data.labels[0], frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.labelNotFound)
                 });
+            }
+
+            if (model.wasChanged()) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+
+            return model;
         }
     },
 

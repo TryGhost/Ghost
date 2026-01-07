@@ -19,7 +19,6 @@ const postsService = getPostServiceInstance();
 
 const commentsService = require('../../../../../../services/comments');
 const memberAttribution = require('../../../../../../services/member-attribution');
-const labs = require('../../../../../../../shared/labs');
 
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
@@ -96,13 +95,9 @@ module.exports = async (model, frame, options = {}) => {
         delete jsonModel.mobiledoc;
         delete jsonModel.lexical;
 
-        // Add  outbound link tags
-        if (labs.isSet('outboundLinkTagging')) {
-            // Only add it in the flag! Without the flag we only add it to emails.
-            if (jsonModel.html) {
-                // Only set if HTML was requested
-                jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
-            }
+        // Add outbound link tagging if we have the HTML
+        if (jsonModel.html) {
+            jsonModel.html = await memberAttribution.outboundLinkTagger.addToHtml(jsonModel.html);
         }
     }
 

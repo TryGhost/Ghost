@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../../utils/acceptance';
-import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User actions', async () => {
     test('Supports suspending a user', async ({page}) => {
@@ -8,6 +7,9 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -47,17 +49,20 @@ test.describe('User actions', async () => {
     });
 
     test('Supports un-suspending a user', async ({page}) => {
-        const userToEdit = responseFixtures.users.users.find(user => user.email === 'author@test.com')!;
+        const userToEdit = {
+            ...responseFixtures.users.users.find(user => user.email === 'author@test.com'),
+            status: 'inactive'
+        };
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
                 users: [
                     ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
-                    {
-                        ...userToEdit,
-                        status: 'inactive'
-                    }
+                    userToEdit
                 ]
             }},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
@@ -104,6 +109,9 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${authorUser.slug}/?include=roles`, response: {
+                users: [authorUser]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             deleteUser: {method: 'DELETE', path: `/users/${authorUser.id}/`, response: {}}
         }});
@@ -135,6 +143,7 @@ test.describe('User actions', async () => {
 
     test('Supports transferring ownership to an administrator', async ({page}) => {
         const administrator = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+        const editor = responseFixtures.users.users.find(user => user.email === 'editor@test.com')!;
 
         const makeOwnerResponse = {
             users: [
@@ -152,6 +161,12 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getAdminBySlug: {method: 'GET', path: `/users/slug/${administrator.slug}/?include=roles`, response: {
+                users: [administrator]
+            }},
+            getEditorBySlug: {method: 'GET', path: `/users/slug/${editor.slug}/?include=roles`, response: {
+                users: [editor]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: /^\/users\/\w{24}\/\?include=roles$/, response: responseFixtures.users},
             makeOwner: {method: 'PUT', path: '/users/owner/', response: makeOwnerResponse}
@@ -202,18 +217,21 @@ test.describe('User actions', async () => {
     });
 
     test('Limits un-suspending a user when there are too many users', async ({page}) => {
-        const userToEdit = responseFixtures.users.users.find(user => user.email === 'author@test.com')!;
+        const userToEdit = {
+            ...responseFixtures.users.users.find(user => user.email === 'author@test.com'),
+            status: 'inactive'
+        };
 
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
                 users: [
                     ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
-                    {
-                        ...userToEdit,
-                        status: 'inactive'
-                    }
+                    userToEdit
                 ]
             }},
             browseConfig: {

@@ -1,31 +1,57 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const config = require('../../../core/shared/config');
-const localUtils = require('./utils');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag} = matchers;
 
 describe('Slug API', function () {
-    let request;
+    /** @type {import('../../utils/agents').AdminAPITestAgent} */
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request);
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init();
+        await agent.loginAsOwner();
     });
 
     it('Can generate a slug', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('slugs/post/a post title/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        await agent
+            .get('slugs/post/a post title/')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.slugs);
-        jsonResponse.slugs.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
-        jsonResponse.slugs[0].slug.should.equal('a-post-title');
+    it('Will increment the slug if there is a collision', async function () {
+        await agent
+            .get('slugs/post/integrations/')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can handle collisions of the same resource if an id is provided', async function () {
+        await agent
+            .get('slugs/post/integrations/6194d3ce51e2700162531a71')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can handle collisions of a different resource if an id is provided', async function () {
+        await agent
+            .get('slugs/post/integrations/000000000000000000000000')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
     });
 });

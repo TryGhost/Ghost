@@ -38,6 +38,27 @@ export function feature(name, options = {}) {
     }));
 }
 
+// Cookie utilities for admin forward functionality
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        return parts.pop().split(';').shift();
+    }
+    return null;
+}
+
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = `expires=${date.toUTCString()}`;
+    document.cookie = `${name}=${value};${expires};path=/ghost/`;
+}
+
+function deleteCookie(name) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/ghost/`;
+}
+
 @classic
 export default class FeatureService extends Service {
     @service lazyLoader;
@@ -59,25 +80,21 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
+    @feature('adminForward') adminForward;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
-    @feature('signupCard') signupCard;
-    @feature('collections') collections;
-    @feature('mailEvents') mailEvents;
-    @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('adminXDemo') adminXDemo;
-    @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
-    @feature('commentImprovements') commentImprovements;
+    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('tagsX') tagsX;
+    @feature('utmTracking') utmTracking;
+    @feature('emailSizeWarnings') emailSizeWarnings;
 
     _user = null;
 
@@ -103,9 +120,40 @@ export default class FeatureService extends Service {
         }
     }
 
+    get inAdminForward() {
+        // Detect if Ember is running inside the React admin shell
+        // In React shell: Ember renders to #ember-app
+        // Standalone: Ember renders to body (no #ember-app element)
+        return document.querySelector('#ember-app') !== null;
+    }
+
+    _reconcileAdminForwardState() {
+        // Skip in dev since we only serve one admin version at a time
+        if (this.config.environment === 'development') {
+            return;
+        }
+
+        const cookieName = 'ghost-admin-forward';
+        const hasAdminForwardCookie = !!getCookie(cookieName);
+
+        // Update cookie based on feature flag
+        if (hasAdminForwardCookie && !this.adminForward) {
+            deleteCookie(cookieName);
+        } else if (!hasAdminForwardCookie && this.adminForward) {
+            setCookie(cookieName, '1', 365);
+        }
+
+        // Reload if flag state doesn't match current wrapper
+        // (flag enabled but in Ember standalone, or flag disabled but in React shell)
+        if (this.adminForward !== this.inAdminForward) {
+            window.location.reload();
+        }
+    }
+
     fetch() {
         return this.settings.fetch().then(() => {
             this.set('_user', this.session.user);
+            this._reconcileAdminForwardState();
             return this._setAdminTheme().then(() => true);
         });
     }
@@ -154,11 +202,14 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
+
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
+            document.documentElement.classList.remove('dark');
         });
     }
 }

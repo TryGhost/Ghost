@@ -1,8 +1,8 @@
-const {promises: fs} = require('fs');
-const path = require('path');
 const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
+const CommentsServiceEmailRenderer = require('./CommentsServiceEmailRenderer');
+const {t} = require('../i18n');
 
 class CommentsServiceEmails {
     constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
@@ -14,8 +14,7 @@ class CommentsServiceEmails {
         this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
-
-        this.Handlebars = require('handlebars').create();
+        this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({t});
     }
 
     async notifyPostAuthors(comment) {
@@ -46,10 +45,13 @@ class CommentsServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.notificationFromAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${author.get('slug')}`)
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${author.get('slug')}/email-notifications`)
             };
 
-            const {html, text} = await this.renderEmailTemplate('new-comment', templateData);
+            const {
+                html,
+                text
+            } = await this.commentsServiceEmailRenderer.renderEmailTemplate('new-comment', templateData);
 
             await this.sendMail({
                 to,
@@ -73,16 +75,21 @@ class CommentsServiceEmails {
             return;
         }
 
+        const memberId = reply.get('member_id');
+
         // Don't send a notification if you reply to your own comment
-        if (parentMember.id === reply.get('member_id')) {
+        if (parentMember.id === memberId) {
             return;
         }
 
-        const to = parentMember.get('email');
-        const subject = '↪️ New reply to your comment on ' + this.settingsCache.get('title');
+        const parentMemberEmail = parentMember.get('email');
+        const subject = '↪️ ' + t(`New reply to your comment on {siteTitle}`, {
+            siteTitle: this.settingsCache.get('title'),
+            interpolation: {escapeValue: false}
+        });
 
         const post = await this.models.Post.findOne({id: reply.get('post_id')});
-        const member = await this.models.Member.findOne({id: reply.get('member_id')});
+        const member = await this.models.Member.findOne({id: memberId});
 
         const memberName = member.get('name') || 'Anonymous';
 
@@ -99,14 +106,17 @@ class CommentsServiceEmails {
             memberInitials: this.extractInitials(memberName),
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
-            toEmail: to,
-            profileUrl: emailService.renderer.createUnsubscribeUrl(member.get('uuid'), {comments: true})
+            toEmail: parentMemberEmail,
+            profileUrl: emailService.renderer.createUnsubscribeUrl(parentMember.get('uuid'), {comments: true})
         };
 
-        const {html, text} = await this.renderEmailTemplate('new-comment-reply', templateData);
+        const {
+            html,
+            text
+        } = await this.commentsServiceEmailRenderer.renderEmailTemplate('new-comment-reply', templateData);
 
         return this.sendMail({
-            to,
+            to: parentMemberEmail,
             subject,
             html,
             text
@@ -118,7 +128,7 @@ class CommentsServiceEmails {
      * @param {*} comment The comment model that has been reported
      * @param {*} reporter The member object who reported this comment
      */
-    async notifiyReport(comment, reporter) {
+    async notifyReport(comment, reporter) {
         const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
         const member = await this.models.Member.findOne({id: comment.get('member_id')});
         const owner = await this.models.User.getOwnerUser();
@@ -150,10 +160,10 @@ class CommentsServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
             toEmail: to,
-            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}`)
+            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`)
         };
 
-        const {html, text} = await this.renderEmailTemplate('report', templateData);
+        const {html, text} = await this.commentsServiceEmailRenderer.renderEmailTemplate('report', templateData);
 
         await this.sendMail({
             to,
@@ -193,17 +203,6 @@ class CommentsServiceEmails {
         }, message);
 
         return this.mailer.send(msg);
-    }
-
-    async renderEmailTemplate(templateName, data) {
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
-        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        const textTemplate = require(`./email-templates/${templateName}.txt.js`);
-
-        const html = htmlTemplate(data);
-        const text = textTemplate(data);
-
-        return {html, text};
     }
 }
 

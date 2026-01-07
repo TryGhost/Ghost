@@ -24,7 +24,7 @@ const messages = {
     },
     stripeCustomerNotFound: {
         context: 'Missing Stripe customer.',
-        help: 'Make sure you’re connected to the correct Stripe Account.'
+        help: 'Make sure you\'re connected to the correct Stripe Account.'
     },
     resourceNotFound: '{resource} not found.'
 };
@@ -381,10 +381,12 @@ const controller = {
                     return `members.${datetime}.csv`;
                 }
             },
+            contentType: 'text/csv',
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -426,7 +428,7 @@ const controller = {
             if (frame.user) {
                 email = frame.user.get('email');
             } else {
-                email = await models.User.getOwnerUser().get('email');
+                email = (await models.User.getOwnerUser()).get('email');
             }
 
             return membersService.processImport({

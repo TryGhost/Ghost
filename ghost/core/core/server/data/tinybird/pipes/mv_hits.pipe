@@ -1,0 +1,148 @@
+TOKEN "axis" READ
+
+NODE mv_hits_0
+SQL >
+
+    SELECT timestamp,
+        inserted_at,
+        -- payload.meta.received_timestamp may be missing or null
+        -- Nullable fields incur performance penalty in clickhouse, so we default to zero (unix epoch) instead of null.
+        parseDateTime64BestEffortOrZero(JSONExtractString(payload, 'meta', 'received_timestamp'), 3) as received_at,
+        action,
+        version,
+        coalesce(session_id, '0') as session_id,
+        JSONExtractString(payload, 'locale') as locale,
+        JSONExtractString(payload, 'location') as location,
+        case
+            when JSONExtractString(payload, 'referrerSource') = '' then JSONExtractString(payload, 'meta', 'referrerSource')
+            else JSONExtractString(payload, 'referrerSource')
+        end as referrer,
+        JSONExtractString(payload, 'pathname') as pathname,
+        JSONExtractString(payload, 'href') as href,
+        site_uuid,
+        JSONExtractString(payload, 'member_uuid') as member_uuid,
+        JSONExtractString(payload, 'member_status') as member_status,
+        JSONExtractString(payload, 'post_uuid') as post_uuid,
+        JSONExtractString(payload, 'post_type') as post_type,
+        lower(JSONExtractString(payload, 'user-agent')) as user_agent,
+        JSONExtractString(payload, 'device') as device,
+        JSONExtractString(payload, 'utm_source') as utm_source,
+        JSONExtractString(payload, 'utm_medium') as utm_medium,
+        JSONExtractString(payload, 'utm_campaign') as utm_campaign,
+        JSONExtractString(payload, 'utm_term') as utm_term,
+        JSONExtractString(payload, 'utm_content') as utm_content
+    FROM analytics_events
+    where action = 'page_hit'
+
+
+
+NODE mv_hits_1
+SQL >
+
+    SELECT
+        site_uuid,
+        timestamp,
+        received_at,
+        inserted_at,
+        case
+            -- set to -1 if received_at is the unix epoch, or if received_at is after inserted_at
+            when toUnixTimestamp(received_at) = 0 then -1
+            when received_at > inserted_at then -1
+            else date_diff('millisecond', received_at, inserted_at)
+        end as ingestion_latency_ms,
+        action,
+        version,
+        session_id,
+        member_uuid,
+        member_status,
+        post_uuid,
+        post_type,
+        location,
+        case
+            when referrer = '' then ''
+            -- Social Media Consolidation
+            when referrer IN ('Facebook', 'www.facebook.com', 'l.facebook.com', 'lm.facebook.com', 'm.facebook.com', 'facebook') then 'Facebook'
+            when referrer IN ('Twitter', 'x.com', 'com.twitter.android') then 'Twitter'
+            when referrer IN ('go.bsky.app', 'bsky', 'bsky.app') then 'Bluesky'
+            when referrer IN ('Instagram', 'www.instagram.com') then 'Instagram'
+            when referrer IN ('LinkedIn', 'LINKEDIN_COMPANY') then 'LinkedIn'
+            when referrer IN ('l.threads.com') then 'Threads'
+
+            -- Reddit Ecosystem
+            when referrer IN ('www.reddit.com', 'out.reddit.com', 'old.reddit.com', 'com.reddit.frontpage') then 'Reddit'
+
+            -- Search Engines (keep distinctions)
+            when referrer IN ('search.brave.com') then 'Brave Search'
+            when referrer IN ('www.ecosia.org') then 'Ecosia'
+
+            -- Email Services
+            when referrer IN ('Gmail', 'com.google.android.gm', 'mail.google.com') then 'Gmail'
+            when referrer IN ('Outlook.com') then 'Outlook'
+            when referrer IN ('Yahoo!', 'www.yahoo.com', 'Yahoo! Mail', 'r.search.yahoo.com') then 'Yahoo!'
+            when referrer IN ('AOL Mail') then 'AOL Mail'
+
+            -- Content Platforms
+            when referrer IN ('flipboard', 'flipboard.com', 'flipboard.app') then 'Flipboard'
+            when referrer IN ('substack', 'substack.com') then 'Substack'
+            when referrer IN ('Ghost.org', 'ghost.org') then 'Ghost'
+            when referrer IN ('buffer') then 'Buffer'
+            when referrer IN ('Taboola') then 'Taboola'
+            when referrer IN ('AppNexus') then 'AppNexus'
+
+            -- Wikipedia
+            when referrer IN ('en.wikipedia.org', 'en.m.wikipedia.org') then 'Wikipedia'
+
+            -- Mastodon Network
+            when referrer IN ('mastodon.social', 'mastodon.online', 'org.joinmastodon.android', 'phanpy.social', 'dev.phanpy.social') then 'Mastodon'
+
+            -- News Aggregators
+            when referrer IN ('www.memeorandum.com', 'memeorandum.com') then 'Memeorandum'
+            when referrer IN ('ground.news') then 'Ground News'
+            when referrer IN ('apple.news') then 'Apple News'
+            when referrer IN ('www.smartnews.com') then 'SmartNews'
+
+            -- Keep other sources as-is
+            when domainWithoutWWW(referrer) != '' then domainWithoutWWW(referrer)
+            else referrer
+        end as source,
+        pathname,
+        href,
+        case  
+            when device = '' then 'unknown'  
+            else device  
+        end as device,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'macos'
+            when match(user_agent, 'linux')
+            then 'linux'
+            when match(user_agent, 'android')
+            then 'android'
+            when match(user_agent, 'iphone|ipad|ipod')
+            then 'ios'
+            else 'Unknown'
+        END as os,
+        case
+            when match(user_agent, 'firefox')
+            then 'firefox'
+            when match(user_agent, 'chrome|crios')
+            then 'chrome'
+            when match(user_agent, 'opera')
+            then 'opera'
+            when match(user_agent, 'msie|trident')
+            then 'ie'
+            when match(user_agent, 'iphone|ipad|safari')
+            then 'safari'
+            else 'Unknown'
+        END as browser,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content
+    FROM mv_hits_0
+
+TYPE materialized
+DATASOURCE _mv_hits

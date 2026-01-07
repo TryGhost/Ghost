@@ -1,0 +1,125 @@
+{
+    "posts": [
+        {
+            "id": "https://example.com/.ghost/activitypub/note/b639ae5d-9392-4816-a2d7-670be1edc4f7",
+            "type": 0,
+            "title": "",
+            "excerpt": "",
+            "summary": null,
+            "content": "<p>Good news: We've fixed that pesky bug where Ghost sites were unable to follow @bsky.brid.gy@bsky.brid.gy<br /><br />You should now be able to search, find and follow that account - to bridge your site to Bluesky</p>",
+            "url": "https://example.com/.ghost/activitypub/note/b639ae5d-9392-4816-a2d7-670be1edc4f7",
+            "featureImageUrl": null,
+            "publishedAt": "2025-03-26T10:16:37.000Z",
+            "likeCount": 35,
+            "likedByMe": true,
+            "replyCount": 3,
+            "readingTimeMinutes": 1,
+            "attachments": [],
+            "author": {
+                "id": "2",
+                "handle": "@bob@example.com",
+                "name": "Bob",
+                "url": "https://example.com/",
+                "avatarUrl": "https://example.com/bob.png"
+            },
+            "authoredByMe": false,
+            "repostCount": 4,
+            "repostedByMe": false,
+            "repostedBy": null
+        },
+        {
+            "id": "https://activitypub.ghost.org/.ghost/activitypub/note/edb54ea7-4b90-49cf-bba9-770cfb96a356",
+            "type": 0,
+            "title": "",
+            "excerpt": "",
+            "summary": null,
+            "content": "<p>Big things coming tomorrow 👀</p>",
+            "url": "https://activitypub.ghost.org/.ghost/activitypub/note/edb54ea7-4b90-49cf-bba9-770cfb96a356",
+            "featureImageUrl": null,
+            "publishedAt": "2025-03-16T13:12:47.000Z",
+            "likeCount": 20,
+            "likedByMe": true,
+            "replyCount": 1,
+            "readingTimeMinutes": 1,
+            "attachments": [],
+            "author": {
+                "id": "2",
+                "handle": "@bob@example.com",
+                "name": "Bob",
+                "url": "https://example.com/",
+                "avatarUrl": "https://example.com/bob.png"
+            },
+            "authoredByMe": false,
+            "repostCount": 8,
+            "repostedByMe": true,
+            "repostedBy": {
+                "id": "3920",
+                "handle": "@hey@sagzy.io",
+                "name": "sag",
+                "url": "https://sagzy.io",
+                "avatarUrl": "https://storage.googleapis.com/prd-activitypub/images%2F1dd40aa7-238b-4788-814e-b20da102b389%2Fee8daf8b-b88c-4b9f-853a-3a0ad1a55da5.jpeg"
+            }
+        },
+        {
+            "id": "https://activitypub.ghost.org/.ghost/activitypub/article/bce46c6f-ac8f-443d-8f85-69ca3672b656",
+            "type": 1,
+            "title": "Zen and the art of ActivityPub maintenance",
+            "excerpt": "",
+            "summary": null,
+            "content": "<p>Another week, another update from your friendly ActivityPugs. Can you believe January is almost over already? The beginning of each year feels like some sort of time warp where our simulation overlords start messing with the settings.</p><p><a href=\"https://activitypub.ghost.org/the-story-so-far/\" rel=\"noreferrer\">Last week</a>, we recapped everything that happened in 2024 and looked ahead to what's coming up in 2025 — including Ghost 6.0.</p><figure class=\"kg-card kg-image-card kg-width-wide\"><img src=\"https://activitypub.ghost.org/content/images/2025/01/tch.webp\" class=\"kg-image\" alt=\"\" loading=\"lazy\" width=\"1100\" height=\"616\" srcset=\"https://activitypub.ghost.org/content/images/size/w600/2025/01/tch.webp 600w, https://activitypub.ghost.org/content/images/size/w1000/2025/01/tch.webp 1000w, https://activitypub.ghost.org/content/images/2025/01/tch.webp 1100w\"></figure><h2 id=\"whats-new-with-activitypub\">What's new with ActivityPub?</h2><p>For the next couple of weeks our updates are going to be a little more brief than usual as we work hard to transition over to our <a href=\"https://activitypub.ghost.org/the-reader-experience/\" rel=\"noreferrer\">new database architecture</a>. After that, you can expect us to be back with more details about features and visible progress.</p><p>We made good progress this week moving over the first few pieces of the app to the new DB schema, and next week we hope to have the first piece of that working in production. This will start to unlock several critical (basic) features we've been blocked on for a while, like making it possible to easily unfollow people and delete existing posts.</p><p>In the meantime, we're still working away to improve the reader experience of articles and posts when you open them inside the Ghost ActivityPub client.</p><p>This week, we added an outline view with an integrated table of contents to help you navigate longer pieces like a breeze.</p><figure class=\"kg-card kg-video-card kg-width-wide\" data-kg-thumbnail=\"https://activitypub.ghost.org/content/media/2025/01/ap-demo-toc-2_thumb.jpg\" data-kg-custom-thumbnail=\"\">\n            <div class=\"kg-video-container\">\n                <video src=\"https://activitypub.ghost.org/content/media/2025/01/ap-demo-toc-2.mp4\" poster=\"https://img.spacergif.org/v1/1576x1080/0a/spacer.png\" width=\"1576\" height=\"1080\" loop=\"\" autoplay=\"\" muted=\"\" playsinline=\"\" preload=\"metadata\" style=\"background: transparent url('https://activitypub.ghost.org/content/media/2025/01/ap-demo-toc-2_thumb.jpg') 50% 50% / cover no-repeat;\"></video>\n                <div class=\"kg-video-overlay\">\n                    <button class=\"kg-video-large-play-icon\" aria-label=\"Play video\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                            <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                        </svg>\n                    </button>\n                </div>\n                <div class=\"kg-video-player-container kg-video-hide\">\n                    <div class=\"kg-video-player\">\n                        <button class=\"kg-video-play-icon\" aria-label=\"Play video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-pause-icon kg-video-hide\" aria-label=\"Pause video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <rect x=\"3\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                                <rect x=\"14\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                            </svg>\n                        </button>\n                        <span class=\"kg-video-current-time\">0:00</span>\n                        <div class=\"kg-video-time\">\n                            /<span class=\"kg-video-duration\">0:09</span>\n                        </div>\n                        <input type=\"range\" class=\"kg-video-seek-slider\" max=\"100\" value=\"0\">\n                        <button class=\"kg-video-playback-rate\" aria-label=\"Adjust playback speed\">1×</button>\n                        <button class=\"kg-video-unmute-icon\" aria-label=\"Unmute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-mute-icon kg-video-hide\" aria-label=\"Mute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\"></path>\n                            </svg>\n                        </button>\n                        <input type=\"range\" class=\"kg-video-volume-slider\" max=\"100\" value=\"100\">\n                    </div>\n                </div>\n            </div>\n            \n        </figure><p>As usual, we've also been fixing bugs reported by beta testers, and inviting more people to join the private beta to try things out. If you're using <a href=\"https://ghost.org/pricing/\" rel=\"noreferrer\">Ghost(Pro)</a> and you'd like to be one of the first people to try ActivityPub, you can <a href=\"https://tally.so/r/nGDN1z\">apply here for a private beta invitation</a>.</p><p>Just to reiterate, because people often ask, Ghost's ActivityPub work is <a href=\"https://github.com/TryGhost/ActivityPub\">all open source</a>, and will be available to self-hosters, too. We're just focusing on running it on our own network, first, while we're still in active development.</p><p>While we're busy over here hitting the AP engine with a plasma gun, let's bring back a section of the newsletter that we haven't had for a while! The Q&amp;A.</p><p>Got questions about ActivityPub, the Fediverse, Ghost, pugs or anything in between? Drop a comment on this week's newsletter and we'll answer as many as we can in the next one. Or take a long nap. Hard to say. We're unpredictable.</p><p>Hope you have a great week!</p>",
+            "url": "https://activitypub.ghost.org/zen-and-the-art-of-activitypub-maintenance/",
+            "featureImageUrl": null,
+            "publishedAt": "2025-01-19T12:03:21.000Z",
+            "likeCount": 3,
+            "likedByMe": true,
+            "replyCount": 2,
+            "readingTimeMinutes": 1,
+            "attachments": [],
+            "author": {
+                "id": "2",
+                "handle": "@bob@example.com",
+                "name": "Bob",
+                "url": "https://example.com/",
+                "avatarUrl": "https://example.com/bob.png"
+            },
+            "authoredByMe": false,
+            "repostCount": 3,
+            "repostedByMe": false,
+            "repostedBy": null
+        },
+        {
+            "id": "https://activitypub.ghost.org/.ghost/activitypub/article/b35075aa-c527-423c-9773-ee1e471cd5dd",
+            "type": 1,
+            "title": "Actually, I take that back",
+            "excerpt": "What to do when you wish you could undo",
+            "summary": null,
+            "content": "<p>Happy Sunday! While you're enjoying a well-earned weekend, you might as well kick back and enjoy some more delightful tales of decentralized decadence from your favorite neighborhood pugs.</p><p><a href=\"https://activitypub.ghost.org/warp-factor-5-mr-sulu/\" rel=\"noreferrer\">Last week</a>, we delivered <em>substantial</em> performance improvements for ActivityPub in Ghost thanks to our long but necessary campaign to architect a solid database for all our Fediverse work. This week, we shipped a new feature! Dreams do come true.</p><figure class=\"kg-card kg-image-card kg-width-wide\"><img src=\"https://activitypub.ghost.org/content/images/2025/03/-delete.webp\" class=\"kg-image\" alt=\"\" loading=\"lazy\" width=\"2000\" height=\"1121\" srcset=\"https://activitypub.ghost.org/content/images/size/w600/2025/03/-delete.webp 600w, https://activitypub.ghost.org/content/images/size/w1000/2025/03/-delete.webp 1000w, https://activitypub.ghost.org/content/images/size/w1600/2025/03/-delete.webp 1600w, https://activitypub.ghost.org/content/images/size/w2400/2025/03/-delete.webp 2400w\" sizes=\"(min-width: 1200px) 1200px\"></figure><h2 id=\"whats-new-with-activitypub\">What's new with ActivityPub?</h2><p>Up until now it has been possible to publish new content into the Fediverse with Ghost, but.. um... it was sort of permanent. If you made a typo or just changed your mind about something, there was no way to delete.</p><p>This week, we fixed that! You can now delete posts via ActivityPub.</p><p>On the face of it, deleting a post sounds like a pretty unremarkable feature. If you can create a post, it follows that it should be straightforward to delete it – but distributed systems make things a little more interesting than centralized ones.</p><p>In a regular application when you create something (most of the time) you're just adding a row to a database. When you delete it, you delete that row from the database. There's really not much to talk about. </p><figure class=\"kg-card kg-video-card kg-width-wide\" data-kg-thumbnail=\"https://activitypub.ghost.org/content/media/2025/03/ap-delete2-1_thumb.jpg\" data-kg-custom-thumbnail=\"\">\n            <div class=\"kg-video-container\">\n                <video src=\"https://activitypub.ghost.org/content/media/2025/03/ap-delete2-1.mp4\" poster=\"https://img.spacergif.org/v1/1584x1080/0a/spacer.png\" width=\"1584\" height=\"1080\" playsinline=\"\" preload=\"metadata\" style=\"background: transparent url('https://activitypub.ghost.org/content/media/2025/03/ap-delete2-1_thumb.jpg') 50% 50% / cover no-repeat;\"></video>\n                <div class=\"kg-video-overlay\">\n                    <button class=\"kg-video-large-play-icon\" aria-label=\"Play video\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                            <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                        </svg>\n                    </button>\n                </div>\n                <div class=\"kg-video-player-container\">\n                    <div class=\"kg-video-player\">\n                        <button class=\"kg-video-play-icon\" aria-label=\"Play video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-pause-icon kg-video-hide\" aria-label=\"Pause video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <rect x=\"3\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                                <rect x=\"14\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                            </svg>\n                        </button>\n                        <span class=\"kg-video-current-time\">0:00</span>\n                        <div class=\"kg-video-time\">\n                            /<span class=\"kg-video-duration\">0:13</span>\n                        </div>\n                        <input type=\"range\" class=\"kg-video-seek-slider\" max=\"100\" value=\"0\">\n                        <button class=\"kg-video-playback-rate\" aria-label=\"Adjust playback speed\">1×</button>\n                        <button class=\"kg-video-unmute-icon\" aria-label=\"Unmute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-mute-icon kg-video-hide\" aria-label=\"Mute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\"></path>\n                            </svg>\n                        </button>\n                        <input type=\"range\" class=\"kg-video-volume-slider\" max=\"100\" value=\"100\">\n                    </div>\n                </div>\n            </div>\n            \n        </figure><p>In a decentralized network, though, the question is: Which database?</p><p>When you publish a post via ActivityPub it doesn't just get stored in 1 database, it gets sent out to every follower you have, and the server of every single one of your followers stores that post in <em>their</em> database, too. If you want to delete a post, it has to be deleted in all those different places, too — and that doesn't just happen automatically.</p><p>This is a relatively novel concept which hasn't been a significant feature of past decentralized protocols. If you send an email to 10,000 people, you can delete it from your email app's sent messages folder, but you can't delete it from anyone else's inbox. It's just... <em>out there</em>.</p><p>In ActivityPub, though, it is possible. When you publish a post, you send out a <code>create</code> activity that instructs the servers of all the people who follow you to create a new post. Then, if you change your mind, you can also send out a <code>delete</code> activity which instructs all those same servers to delete a particular post. That's <em>outbound</em> delete activity.</p><p>You also need to be able to handle an <em>inbound</em> delete activity, when someone else on another server sends a <code>delete</code> that they'd like you to process, to remove something you previously received from them.</p><p>As of this week, Ghost can now handle both inbound and outbound deletes, so that they work properly across the whole Fediverse.</p><figure class=\"kg-card kg-video-card kg-width-wide\" data-kg-thumbnail=\"https://activitypub.ghost.org/content/media/2025/03/ap-delete1-2_thumb.jpg\" data-kg-custom-thumbnail=\"\">\n            <div class=\"kg-video-container\">\n                <video src=\"https://activitypub.ghost.org/content/media/2025/03/ap-delete1-2.mp4\" poster=\"https://img.spacergif.org/v1/1920x1080/0a/spacer.png\" width=\"1920\" height=\"1080\" playsinline=\"\" preload=\"metadata\" style=\"background: transparent url('https://activitypub.ghost.org/content/media/2025/03/ap-delete1-2_thumb.jpg') 50% 50% / cover no-repeat;\"></video>\n                <div class=\"kg-video-overlay\">\n                    <button class=\"kg-video-large-play-icon\" aria-label=\"Play video\">\n                        <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                            <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                        </svg>\n                    </button>\n                </div>\n                <div class=\"kg-video-player-container\">\n                    <div class=\"kg-video-player\">\n                        <button class=\"kg-video-play-icon\" aria-label=\"Play video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-pause-icon kg-video-hide\" aria-label=\"Pause video\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <rect x=\"3\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                                <rect x=\"14\" y=\"1\" width=\"7\" height=\"22\" rx=\"1.5\" ry=\"1.5\"></rect>\n                            </svg>\n                        </button>\n                        <span class=\"kg-video-current-time\">0:00</span>\n                        <div class=\"kg-video-time\">\n                            /<span class=\"kg-video-duration\">0:45</span>\n                        </div>\n                        <input type=\"range\" class=\"kg-video-seek-slider\" max=\"100\" value=\"0\">\n                        <button class=\"kg-video-playback-rate\" aria-label=\"Adjust playback speed\">1×</button>\n                        <button class=\"kg-video-unmute-icon\" aria-label=\"Unmute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z\"></path>\n                            </svg>\n                        </button>\n                        <button class=\"kg-video-mute-icon kg-video-hide\" aria-label=\"Mute\">\n                            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">\n                                <path d=\"M16.177 4.3a.248.248 0 0 0 .073-.176v-1.1a1 1 0 0 0-1.061-1 9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h.114a.251.251 0 0 0 .177-.073ZM23.707 1.706A1 1 0 0 0 22.293.292l-22 22a1 1 0 0 0 0 1.414l.009.009a1 1 0 0 0 1.405-.009l6.63-6.631A.251.251 0 0 1 8.515 17a.245.245 0 0 1 .177.075 10.081 10.081 0 0 0 6.5 2.92 1 1 0 0 0 1.061-1V9.266a.247.247 0 0 1 .073-.176Z\"></path>\n                            </svg>\n                        </button>\n                        <input type=\"range\" class=\"kg-video-volume-slider\" max=\"100\" value=\"100\">\n                    </div>\n                </div>\n            </div>\n            \n        </figure><p>Once you wrap your head around the core idea that everything in ActivityPub is an <em>activity</em> which you send and receive, you begin to see how it's quite an elegant system for achieving a diverse set of functionality distributed across different applications. </p><p>It's a different way of thinking about building software. It makes things a little more complex than they might be in an isolated system, but it's quite remarkable when you consider the scale of a functional decentralized network comprised of thousands of different pieces of software and millions of users, 99% of whom have never met, spoken, coordinated or interacted with one another.</p><p>Just thinking about it makes my paws tingle.</p><p>Anyway, that's all for this week. Next week, if all goes well, we'll have a larger update about the <strong>public beta</strong>.</p>",
+            "url": "https://activitypub.ghost.org/actually-i-take-that-back/",
+            "featureImageUrl": null,
+            "publishedAt": "2025-03-09T11:38:05.000Z",
+            "likeCount": 11,
+            "likedByMe": true,
+            "replyCount": 0,
+            "readingTimeMinutes": 1,
+            "attachments": [],
+            "author": {
+                "id": "3",
+                "handle": "@charlie@example.com",
+                "name": "Charlie",
+                "url": "https://example.com/",
+                "avatarUrl": "https://example.com/charlie.png"
+            },
+            "authoredByMe": false,
+            "repostCount": 4,
+            "repostedByMe": true,
+            "repostedBy": {
+                "id": "2",
+                "handle": "@bob@example.com",
+                "name": "Bob",
+                "url": "https://example.com/",
+                "avatarUrl": "https://example.com/bob.png"
+            }
+        }
+    ],
+    "next": null
+}

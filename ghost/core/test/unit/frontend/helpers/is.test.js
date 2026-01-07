@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const is = require('../../../../core/frontend/helpers/is');
 const logging = require('@tryghost/logging');
@@ -18,8 +19,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['home', 'index']}}}
         );
 
-        fn.called.should.be.true();
-        inverse.called.should.be.false();
+        assert.equal(fn.called, true);
+        assert.equal(inverse.called, false);
     });
 
     it('should match OR context "index, paged"', function () {
@@ -32,8 +33,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['tag', 'paged']}}}
         );
 
-        fn.called.should.be.true();
-        inverse.called.should.be.false();
+        assert.equal(fn.called, true);
+        assert.equal(inverse.called, false);
     });
 
     it('should not match "paged"', function () {
@@ -46,8 +47,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        fn.called.should.be.false();
-        inverse.called.should.be.true();
+        assert.equal(fn.called, false);
+        assert.equal(inverse.called, true);
     });
 
     it('should log warning with no args', function () {
@@ -61,8 +62,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        logWarn.called.should.be.true();
-        fn.called.should.be.false();
-        inverse.called.should.be.false();
+        assert.equal(logWarn.called, true);
+        assert.equal(fn.called, false);
+        assert.equal(inverse.called, false);
     });
 });

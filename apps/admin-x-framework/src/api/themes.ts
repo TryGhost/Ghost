@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from '../utils/api/hooks';
-import {customThemeSettingsDataType} from './customThemeSettings';
+import {customThemeSettingsDataType} from './custom-theme-settings';
 
 // Types
 
@@ -10,6 +10,9 @@ export type Theme = {
         name?: string;
         description?: string;
         version?: string;
+        author?: {
+            name?: string;
+        }
     };
     templates?: string[];
 }
@@ -47,6 +50,11 @@ const dataType = 'ThemesResponseType';
 export const useBrowseThemes = createQuery<ThemesResponseType>({
     dataType,
     path: '/themes/'
+});
+
+export const useActiveTheme = createQuery<ThemesInstallResponseType>({
+    dataType,
+    path: '/themes/active/'
 });
 
 export const useActivateTheme = createMutation<ThemesResponseType, string>({

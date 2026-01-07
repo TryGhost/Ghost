@@ -1,0 +1,69 @@
+{
+    "name": "@tryghost/posts",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/posts"
+    },
+    "author": "Ghost Foundation",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "dist/"
+    ],
+    "main": "./dist/posts.umd.cjs",
+    "module": "./dist/posts.js",
+    "private": true,
+    "scripts": {
+        "dev": "vite build --watch",
+        "dev:start": "vite",
+        "build": "tsc && vite build",
+        "test:unit": "vitest run test/unit",
+        "lint": "yarn run lint:code && yarn run lint:test",
+        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
+        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+        "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
+        "preview": "vite preview",
+        "test": "yarn test:unit --coverage"
+    },
+    "devDependencies": {
+        "@tanstack/react-query": "4.36.1",
+        "@tanstack/react-virtual": "3.13.12",
+        "@testing-library/react": "14.3.1",
+        "@types/jest": "29.5.14",
+        "@types/react": "18.3.26",
+        "msw": "2.11.5",
+        "vite": "5.4.20",
+        "vitest": "1.6.1"
+    },
+    "dependencies": {
+        "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shade": "0.0.0",
+        "i18n-iso-countries": "7.14.0",
+        "moment": "2.24.0",
+        "moment-timezone": "0.5.45",
+        "react": "18.3.1",
+        "react-dom": "18.3.1"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:acceptance": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
+}

@@ -25,8 +25,9 @@ window.addEventListener('message', async function (event) {
 
     if (data.action === 'browseComments') {
         try {
+            const {postId, params} = data;
             const res = await fetch(
-                adminUrl + '/comments/?limit=50&order=created_at%20desc'
+                adminUrl + `/comments/post/${postId}/?${new URLSearchParams(params).toString()}`
             );
             const json = await res.json();
             respond(null, json);
@@ -35,10 +36,34 @@ window.addEventListener('message', async function (event) {
         }
     }
 
+    if (data.action === 'getReplies') {
+        try {
+            const {commentId, params} = data;
+            const res = await fetch(
+                adminUrl + `/comments/${commentId}/replies/?${new URLSearchParams(params).toString()}`
+            );
+            const json = await res.json();
+            respond(null, json);
+        } catch (err) {
+            respond(err, null);
+        }
+    }
+
+    if (data.action === 'readComment') {
+        try {
+            const {commentId, params} = data;
+            const res = await fetch(adminUrl + '/comments/' + commentId + '/' + '?' + new URLSearchParams(params).toString());
+            const json = await res.json();
+            respond(null, json);
+        } catch (err) {
+            respond(err, null);
+        }
+    }
+ 
     if (data.action === 'getUser') {
         try {
             const res = await fetch(
-                adminUrl + '/users/me/'
+                adminUrl + '/users/me/?include=roles'
             );
             const json = await res.json();
             respond(null, json);

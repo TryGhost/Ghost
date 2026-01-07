@@ -229,14 +229,6 @@
             "value": false
         },
         {
-            "key": "amp",
-            "value": false
-        },
-        {
-            "key": "amp_gtag_id",
-            "value": null
-        },
-        {
             "key": "firstpromoter",
             "value": false
         },
@@ -309,6 +301,10 @@
             "value": true
         },
         {
+            "key": "donations_enabled",
+            "value": true
+        },
+        {
             "key": "members_invite_only",
             "value": false
         },
@@ -335,11 +331,15 @@
         {
             "key": "body_font",
             "value": null
+        },
+        {
+            "key": "require_email_mfa",
+            "value": false
         }
     ],
     "meta": {
         "filters": {
-            "group": "site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura"
+            "group": "site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura"
         }
     }
 }

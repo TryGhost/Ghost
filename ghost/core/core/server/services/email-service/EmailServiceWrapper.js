@@ -15,9 +15,17 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const EmailService = require('./EmailService');
+        const EmailController = require('./EmailController');
+        const EmailRenderer = require('./EmailRenderer');
+        const SendingService = require('./SendingService');
+        const BatchSendingService = require('./BatchSendingService');
+        const EmailSegmenter = require('./EmailSegmenter');
+        const MailgunEmailProvider = require('./MailgunEmailProvider');
+        const {DomainWarmingService} = require('./DomainWarmingService');
+
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('@tryghost/mailgun-client');
+        const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -34,7 +42,7 @@ class EmailServiceWrapper {
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
-        const linkReplacer = require('@tryghost/link-replacer');
+        const linkReplacer = require('../lib/link-replacer');
         const linkTracking = require('../link-tracking');
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
@@ -49,26 +57,14 @@ class EmailServiceWrapper {
 
         // Mailgun client instance for email provider
         const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache
+            config: configService, settings: settingsCache, labs
         });
-        const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
-        const i18n = i18nLib(i18nLanguage, 'newsletter');
-        
-        events.on('settings.labs.edited', () => {
-            if (labs.isSet('i18n')) {
-                debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
-                i18n.changeLanguage(settingsCache.get('locale'));
-            } else {
-                debug('labs i18n disabled, updating i18n to en');
-                i18n.changeLanguage('en');
-            }
-        });
-    
+        const i18nLanguage = settingsCache.get('locale') || 'en';
+        const i18n = i18nLib(i18nLanguage, 'ghost');
+
         events.on('settings.locale.edited', (model) => {
-            if (labs.isSet('i18n')) {
-                debug('locale changed, updating i18n to', model.get('value'));
-                i18n.changeLanguage(model.get('value'));
-            } 
+            debug('locale changed, updating i18n to', model.get('value'));
+            i18n.changeLanguage(model.get('value'));
         });
 
         const mailgunEmailProvider = new MailgunEmailProvider({
@@ -100,12 +96,20 @@ class EmailServiceWrapper {
 
         const sendingService = new SendingService({
             emailProvider: mailgunEmailProvider,
-            emailRenderer
+            emailRenderer,
+            emailAddressService: emailAddressService.service
         });
 
         const emailSegmenter = new EmailSegmenter({
             membersRepository
         });
+
+        const domainWarmingService = new DomainWarmingService({
+            models: {Email},
+            labs,
+            config: configService
+        });
+
         const batchSendingService = new BatchSendingService({
             sendingService,
             models: {
@@ -117,6 +121,7 @@ class EmailServiceWrapper {
             jobsService,
             emailSegmenter,
             emailRenderer,
+            domainWarmingService,
             db,
             sentry,
             debugStorageFilePath: configService.getContentPath('data')
@@ -136,7 +141,8 @@ class EmailServiceWrapper {
             limitService,
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
-            emailAnalyticsJobs
+            emailAnalyticsJobs,
+            domainWarmingService
         });
 
         this.controller = new EmailController(this.service, {

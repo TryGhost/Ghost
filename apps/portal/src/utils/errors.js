@@ -1,3 +1,5 @@
+import {t} from './i18n';
+
 export class HumanReadableError extends Error {
     /**
      * Returns whether this response from the server is a human readable error and should be shown to the user.
@@ -14,12 +16,14 @@ export class HumanReadableError extends Error {
                 }
             } catch (e) {
                 // Failed to decode: ignore
-                return false;
+                return undefined;
             }
         }
         if (res.status === 500) {
             return new HumanReadableError('A server error occurred');
         }
+
+        return undefined;
     }
 }
 
@@ -31,8 +35,7 @@ export const specialMessages = [];
  * Many "alreadyTranslatedDefaultMessages" are pretty vague, so we want to replace them with a more specific message
  * whenever one is available.
  */
-export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t) {
-    // helper functions
+export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
     const translateMessage = (message, number = null) => {
         if (number) {
             return t(message, {number});
@@ -40,6 +43,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             return t(message);
         }
     };
+
     const setupSpecialMessages = () => {
         // eslint-disable-next-line no-shadow
         const t = message => specialMessages.push(message);
@@ -51,15 +55,21 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');
             t('This site is not accepting payments at the moment.');
-            t('Too many attempts try again in {{number}} minutes.');
-            t('Too many attempts try again in {{number}} hours.');
-            t('Too many attempts try again in {{number}} days.');
-            t('Too many different sign-in attempts, try again in {{number}} minutes');
-            t('Too many different sign-in attempts, try again in {{number}} hours');
-            t('Too many different sign-in attempts, try again in {{number}} days');
+            t('Too many attempts try again in {number} minutes.');
+            t('Too many attempts try again in {number} hours.');
+            t('Too many attempts try again in {number} days.');
+            t('Too many different sign-in attempts, try again in {number} minutes');
+            t('Too many different sign-in attempts, try again in {number} hours');
+            t('Too many different sign-in attempts, try again in {number} days');
             t('Failed to send magic link email');
+            t('This site only accepts paid members.');
+            t('Signups from this email domain are currently restricted.');
+            t('Too many sign-up attempts, try again later');
+            t('Memberships from this email domain are currently restricted.');
+            t('Invalid verification code');
         }
     };
+
     const isSpecialMessage = (message) => {
         if (specialMessages.length === 0) {
             setupSpecialMessages();
@@ -71,22 +81,22 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
     };
 
     const prepareErrorMessage = (message = null) => {
-        // Check for a number in message, if found, replace the number with {{number}} and return the number.
-        // Assumes there's only one number in the message. 
-        if (!message) { 
-            return {preparedMessage: 'An error occurred', number: null}; 
+        // Check for a number in message, if found, replace the number with {number} and return the number.
+        // Assumes there's only one number in the message.
+        if (!message) {
+            return {preparedMessage: 'An error occurred', number: null};
         }
         const number = message.match(/\d+/);
         if (number) {
-            message = message.replace(number[0], '{{number}}');
+            message = message.replace(number[0], '{number}');
         }
         return {preparedMessage: message, number: number ? number[0] : null};
     };
 
-    // main function
     if (!error && !alreadyTranslatedDefaultMessage) {
-        return t('An error occurred'); 
+        return t('An error occurred');
     }
+
     if (error instanceof HumanReadableError || error.message) {
         const {preparedMessage, number} = prepareErrorMessage(error.message);
         if (isSpecialMessage(preparedMessage)) {

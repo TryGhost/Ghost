@@ -18,11 +18,11 @@
                 <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
                     {{#each this.savedEventsFetcher.data as |event|}}
                         {{#let (parse-member-event event) as |parsedEvent|}}
-                            <div class="gh-dashboard-list-item">
+                            <div class="gh-dashboard-list-item {{unless parsedEvent.member.email 'deleted-member'}}">
                                 <div class="gh-dashboard-list-item-sub">
                                     {{#if parsedEvent.member}}
                                         <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
+                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{if parsedEvent.subject parsedEvent.subject "Deleted member"}}</LinkTo>
                                     {{else}}
                                         {{#if parsedEvent.email}}
                                             <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
@@ -119,11 +119,11 @@
                 <div class="gh-dashboard-list-body gh-dashboard-list-cols-{{this.eventType}}">
                     {{#each eventsFetcher.data as |event|}}
                         {{#let (parse-member-event event) as |parsedEvent|}}
-                            <div class="gh-dashboard-list-item">
+                            <div class="gh-dashboard-list-item {{unless parsedEvent.member.email 'deleted-member'}}">
                                 <div class="gh-dashboard-list-item-sub">
                                     {{#if parsedEvent.member}}
                                         <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
+                                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{if parsedEvent.subject parsedEvent.subject "Deleted member"}}</LinkTo>
                                     {{else}}
                                         {{#if parsedEvent.email}}
                                             <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />

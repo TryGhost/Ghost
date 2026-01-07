@@ -14,7 +14,7 @@ class LinkRedirectsServiceWrapper {
         // Wire up all the dependencies
         const models = require('../../models');
 
-        const {LinkRedirectsService} = require('@tryghost/link-redirects');
+        const LinkRedirectsService = require('./LinkRedirectsService');
 
         this.linkRedirectRepository = new LinkRedirectRepository({
             LinkRedirect: models.Redirect,

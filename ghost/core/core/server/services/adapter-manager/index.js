@@ -1,4 +1,4 @@
-const AdapterManager = require('@tryghost/adapter-manager');
+const AdapterManager = require('./AdapterManager');
 const getAdapterServiceConfig = require('./config');
 const resolveAdapterOptions = require('./options-resolver');
 const config = require('../../../shared/config');

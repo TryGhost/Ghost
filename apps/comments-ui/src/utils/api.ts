@@ -1,4 +1,4 @@
-import {AddComment, Comment, LabsContextType} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../app-context';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -10,9 +10,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return '';
     }
 
-    function contentEndpointFor({resource, params = ''}: {resource: string, params?: string}) {
+    function contentEndpointFor({resource, params = {}}: {resource: string, params?: Record<string, string | number>}) {
         if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+            const searchParams = new URLSearchParams({
+                ...params,
+                key: apiKey
+            });
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?${searchParams.toString()}`;
         }
         return '';
     }
@@ -27,7 +31,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
+    // To fix pagination when we create new comments (or people post comments
+    // after you loaded the page), we need to only load comments created AFTER the page load
     let firstCommentCreatedAt: null | string = null;
 
     const api = {
@@ -164,10 +169,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return response;
             },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
-                const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
+            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                const params = new URLSearchParams();
+                params.set('limit', (limit ?? 5).toString());
 
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&filter=${filter}`});
+                if (afterReplyId) {
+                    params.set('filter', `id:>'${afterReplyId}'`);
+                }
+
+                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?${params.toString()}`});
                 const res = await makeRequest({
                     url,
                     method: 'GET',
@@ -304,7 +314,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             if (settings.settings.labs) {
                 Object.assign(labs, settings.settings.labs);
             }
-        } catch (e) {
+        } catch {
             labs = {};
         }
 

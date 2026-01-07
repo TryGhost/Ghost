@@ -17,11 +17,11 @@
                 >
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
-                            {{#if this.fromAnalytics }}
-                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
+                            {{#if this.fromAnalytics}}
+                                <a href="#{{this.fromAnalytics}}" class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
                                     {{svg-jar "arrow-left"}}
                                     <span>Analytics</span>
-                                </LinkTo>
+                                </a>
                             {{else}}
                                 <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
                                     {{svg-jar "arrow-left"}}
@@ -93,7 +93,6 @@
                 @cardOptions={{hash
                     post=this.post
                     snippets=this.snippets
-                    collections=this.collections
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
@@ -107,6 +106,7 @@
                 <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
+                <Editor::EmailSizeWarning @post={{this.post}} />
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 
@@ -120,6 +120,7 @@
                     as |publishManagement|
                 >
                     <div class="gh-editor-wordcount">
+                        <Editor::EmailSizeWarning @post={{this.post}} />
                         {{gh-pluralize this.wordCount "word"}}
                     </div>
                     <section class="gh-editor-publish-buttons">
@@ -145,7 +146,7 @@
         {{/if}}
     </div>
 
-    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger>
+    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger data-testid="settings-menu-toggle">
         {{#if this.showSettingsMenu}}
             <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
         {{else}}

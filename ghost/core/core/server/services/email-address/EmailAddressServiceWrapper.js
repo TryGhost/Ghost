@@ -1,6 +1,6 @@
 class EmailAddressServiceWrapper {
     /**
-     * @type {import('@tryghost/email-addresses').EmailAddressService}
+     * @type {import('./EmailAddressService').EmailAddressService}
      */
     service;
 
@@ -14,9 +14,7 @@ class EmailAddressServiceWrapper {
         const settingsHelpers = require('../settings-helpers');
         const validator = require('@tryghost/validator');
 
-        const {
-            EmailAddressService
-        } = require('@tryghost/email-addresses');
+        const {EmailAddressService} = require('./EmailAddressService');
 
         this.service = new EmailAddressService({
             labs,
@@ -26,8 +24,14 @@ class EmailAddressServiceWrapper {
             getSendingDomain: () => {
                 return config.get('hostSettings:managedEmail:sendingDomain') || null;
             },
+            getFallbackDomain: () => {
+                return config.get('hostSettings:managedEmail:fallbackDomain') || null;
+            },
             getDefaultEmail: () => {
                 return settingsHelpers.getDefaultEmail();
+            },
+            getFallbackEmail: () => {
+                return config.get('hostSettings:managedEmail:fallbackAddress') || null;
             },
             isValidEmailAddress: (emailAddress) => {
                 return validator.isEmail(emailAddress);

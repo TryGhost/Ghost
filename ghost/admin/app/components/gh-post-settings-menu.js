@@ -114,7 +114,7 @@ export default class GhPostSettingsMenu extends Component {
     @or(
         'session.user.isOwnerOnly',
         'session.user.isAdminOnly',
-        'session.user.isEditor'
+        'session.user.isEitherEditor'
     )
         showVisibilityInput;
 
@@ -146,6 +146,11 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     get canViewPostHistory() {
+        // Cannot view history for new posts
+        if (this.post.isNew) {
+            return false;
+        }
+
         // Can only view history for lexical posts
         if (this.post.lexical === null) {
             return false;

@@ -1,4 +1,4 @@
-const LinkRedirect = require('@tryghost/link-redirects').LinkRedirect;
+const LinkRedirect = require('./LinkRedirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
 
@@ -17,7 +17,7 @@ module.exports = class LinkRedirectRepository {
      * @param {object} deps.LinkRedirect - Bookshelf Model
      * @param {object} deps.urlUtils
      * @param {object} deps.cacheAdapter - Cache Adapter instance, or null if cache is disabled
-     * @param {object} deps.EventRegistry 
+     * @param {object} deps.EventRegistry
      */
     constructor(deps) {
         debug('Creating LinkRedirectRepository');
@@ -61,7 +61,7 @@ module.exports = class LinkRedirectRepository {
 
     /**
      * Trim the leading slash from a URL path
-     * @param {string} url 
+     * @param {string} url
      * @returns {string} url without leading slash
      */
     #trimLeadingSlash(url) {
@@ -70,14 +70,14 @@ module.exports = class LinkRedirectRepository {
 
     /**
      * Returns a LinkRedirect object from a model
-     * @param {object} model - Bookshelf model instance 
+     * @param {object} model - Bookshelf model instance
      * @returns {InstanceType<LinkRedirect>} LinkRedirect
      */
     fromModel(model) {
         // Store if link has been edited
         // Note: in some edge cases updated_at is set directly after created_at, sometimes with a second difference, so we need to check for that
         const edited = model.get('updated_at')?.getTime() > (model.get('created_at')?.getTime() + 1000);
-        
+
         return new LinkRedirect({
             id: model.id,
             from: new URL(this.#trimLeadingSlash(model.get('from')), this.#urlUtils.urlFor('home', true)),
@@ -106,7 +106,7 @@ module.exports = class LinkRedirectRepository {
 
     /**
      * Serialize a LinkRedirect object to a plain object (e.g. for caching)
-     * @param {InstanceType<LinkRedirect>} linkRedirect 
+     * @param {InstanceType<LinkRedirect>} linkRedirect
      * @returns {object} - serialized LinkRedirect
      */
     #serialize(linkRedirect) {
@@ -120,7 +120,7 @@ module.exports = class LinkRedirectRepository {
 
     /**
      * Get all LinkRedirects from the DB, with optional filters
-     * @param {object} options - options passed directly to LinkRedirect.findAll 
+     * @param {object} options - options passed directly to LinkRedirect.findAll
      * @returns {Promise<InstanceType<LinkRedirect>[]>} array of LinkRedirects
      */
     async getAll(options) {

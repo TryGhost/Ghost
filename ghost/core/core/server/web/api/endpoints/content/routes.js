@@ -41,11 +41,13 @@ module.exports = function apiRoutes() {
     router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
     router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
 
-    router.get('/collections/:id', mw.authenticatePublic, http(api.collectionsPublic.readById));
-    router.get('/collections/slug/:slug', mw.authenticatePublic, http(api.collectionsPublic.readBySlug));
-
     // ## Recommendations
     router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
+
+    // ## Search index
+    router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));
+    router.get('/search-index/authors', mw.authenticatePublic, http(api.searchIndexPublic.fetchAuthors));
+    router.get('/search-index/tags', mw.authenticatePublic, http(api.searchIndexPublic.fetchTags));
 
     return router;
 };

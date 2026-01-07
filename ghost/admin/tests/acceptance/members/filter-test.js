@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enablePaidMembers} from '../../helpers/members';
@@ -19,6 +20,8 @@ describe('Acceptance: Members filtering', function () {
     let clock;
 
     beforeEach(async function () {
+        mockAnalyticsApps();
+
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         this.server.loadFixtures('newsletters');
@@ -33,6 +36,7 @@ describe('Acceptance: Members filtering', function () {
     });
 
     afterEach(function () {
+        cleanupMockAnalyticsApps();
         clock?.restore();
     });
 

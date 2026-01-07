@@ -3,7 +3,7 @@
 
 .gh-publish-trigger,
 .gh-unpublish-trigger {
-    height: max-content;
+    height: 34px;
     cursor: pointer;
 }
 
@@ -220,7 +220,7 @@
     justify-content: space-between;
     height: 34px;
     padding: 0;
-    margin: 30px;
+    margin: 1.2rem 2rem;
     z-index: 799;
 }
 
@@ -242,6 +242,12 @@
     .gh-publish-header .mobile {
         margin-left: 5px;
     }
+}
+
+.gh-publish-header .gh-btn-group-right {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
 }
 
 .gh-publish-back-button {
@@ -440,6 +446,15 @@
     font-size: 1.8rem;
     font-weight: 400;
     line-height: 1.35em;
+}
+
+.gh-publish-setting-email-warning {
+    transition: all 0.3s ease;
+}
+
+.gh-publish-setting-email-warning.open {
+    transform: translateY(-12px);
+    margin-bottom: 12px;
 }
 
 @media (max-width: 560px) {

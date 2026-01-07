@@ -1,23 +1,27 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {inject} from 'ghost-admin/decorators/inject';
 import {pluralize} from 'ember-inflector';
-
+import {inject as service} from '@ember/service';
 export default class Analytics extends AuthenticatedRoute {
+    @inject config;
+    @service feature;
+
     model(params) {
         let {post_id: id} = params;
 
         let query = {
             id,
             include: [
-                'tags', 
-                'authors', 
-                'authors.roles', 
-                'email', 
-                'tiers', 
-                'newsletter', 
-                'count.conversions', 
-                'count.clicks', 
-                'sentiment', 
-                'count.positive_feedback', 
+                'tags',
+                'authors',
+                'authors.roles',
+                'email',
+                'tiers',
+                'newsletter',
+                'count.conversions',
+                'count.clicks',
+                'sentiment',
+                'count.positive_feedback',
                 'count.negative_feedback'
             ].join(',')
         };

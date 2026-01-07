@@ -9,8 +9,8 @@ const fs = require('fs');
 
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
-const urlUtils = require('../utils/urlUtils');
+const configUtils = require('../utils/config-utils');
+const urlUtils = require('../utils/url-utils');
 const adminUtils = require('../utils/admin-utils');
 const config = require('../../core/shared/config');
 let request;
@@ -84,12 +84,12 @@ describe('Admin Routing', function () {
             configUtils.set('url', 'https://localhost:2390');
             urlUtils.stubUrlUtilsFromConfig();
 
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
             request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
         });
 
         after(async function () {
-            urlUtils.restore();
+            await urlUtils.restore();
             await configUtils.restore();
         });
 

@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery} from '../utils/api/hooks';
-import {APIKey} from './apiKeys';
+import {APIKey} from './api-keys';
 import {Webhook} from './webhooks';
 
 // Types
@@ -31,7 +31,7 @@ export const integrationsDataType = dataType;
 export const useBrowseIntegrations = createQuery<IntegrationsResponseType>({
     dataType,
     path: '/integrations/',
-    defaultSearchParams: {include: 'api_keys,webhooks'}
+    defaultSearchParams: {include: 'api_keys,webhooks', limit: '50'}
 });
 
 export const useCreateIntegration = createMutation<IntegrationsResponseType, Partial<Integration>>({

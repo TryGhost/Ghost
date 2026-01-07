@@ -10,15 +10,20 @@ const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache')
 
 should.equal(true, true);
 
+function createCacheManager(settingsOverrides = {}) {
+    const cacheStore = new InMemoryCache();
+    const cache = new CacheManager({
+        publicSettings
+    });
+    cache.init(events, {}, [], cacheStore, settingsOverrides);
+    return cache;
+}
+
 describe('UNIT: settings cache', function () {
     let cache;
 
     beforeEach(function () {
-        let cacheStore = new InMemoryCache();
-        cache = new CacheManager({
-            publicSettings
-        });
-        cache.init(events, {}, [], cacheStore);
+        cache = createCacheManager();
     });
 
     afterEach(function () {
@@ -93,10 +98,55 @@ describe('UNIT: settings cache', function () {
         should(cache.get('stringarr')).eql([]);
     });
 
+    it('.get() respects settingsOverrides', function () {
+        cache = createCacheManager({
+            email_track_clicks: false
+        });
+        cache.set('email_track_clicks', {value: true});
+        should(cache.get('email_track_clicks')).eql(false);
+        should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, is_read_only: true});
+    });
+
+    it('.get() only returns an override if the key is set to begin with', function () {
+        should(cache.get('email_track_clicks', {resolve: false})).eql(undefined);
+    });
+
     it('.getAll() returns all values', function () {
         cache.set('key1', {value: '1'});
         cache.get('key1').should.eql('1');
         cache.getAll().should.eql({key1: {value: '1'}});
+    });
+
+    it('.getAll() respects settingsOverrides', function () {
+        cache = createCacheManager({
+            email_track_clicks: false
+        });
+        cache.set('email_track_clicks', {
+            id: '67996cef430e5905ab385357',
+            group: 'email',
+            key: 'email_track_clicks',
+            value: true,
+            type: 'boolean'
+        });
+        cache.getAll().should.eql({email_track_clicks: {
+            id: '67996cef430e5905ab385357',
+            group: 'email',
+            key: 'email_track_clicks',
+            value: false,
+            is_read_only: true,
+            type: 'boolean'
+        }});
+    });
+
+    it('handles multiple settingsOverrides correctly', function () {
+        cache = createCacheManager({
+            setting1: false,
+            setting2: 'test'
+        });
+        cache.set('setting1', {value: true});
+        cache.set('setting2', {value: 'original'});
+        should(cache.get('setting1')).eql(false);
+        should(cache.get('setting2')).eql('test');
     });
 
     it('.getPublic() correctly filters and formats public values', function () {

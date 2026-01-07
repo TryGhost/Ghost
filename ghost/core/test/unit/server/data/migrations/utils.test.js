@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 const utils = require('../../../../../core/server/data/migrations/utils');
 
@@ -170,7 +171,7 @@ describe('migrations/utils', function () {
 const Knex = require('knex');
 const ObjectId = require('bson-objectid').default;
 
-async function setupDb() {
+async function setupPermissionsDb() {
     const knex = Knex({
         client: 'sqlite',
         connection: {
@@ -188,9 +189,7 @@ async function setupDb() {
             \`action_type\` varchar(50) not null,
             \`object_id\` varchar(24) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -211,9 +210,7 @@ async function setupDb() {
             \`name\` varchar(50) not null,
             \`description\` varchar(2000) null,
             \`created_at\` datetime not null,
-            \`created_by\` varchar(24) not null,
             \`updated_at\` datetime null,
-            \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
     `);
@@ -225,9 +222,7 @@ async function setupDb() {
         name: 'Role Name',
         description: 'Role description',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
 
     await knex('roles').insert({
@@ -235,9 +230,7 @@ async function setupDb() {
         name: 'Other Role Name',
         description: 'Other Role description',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
 
     await knex('permissions').insert({
@@ -246,10 +239,36 @@ async function setupDb() {
         action_type: 'action',
         object_type: 'object',
         created_at: date,
-        created_by: utils.meta.MIGRATION_USER,
-        updated_at: date,
-        updated_by: utils.meta.MIGRATION_USER
+        updated_at: date
     });
+
+    return knex;
+}
+
+async function setupSettingsDb() {
+    const knex = Knex({
+        client: 'sqlite',
+        connection: {
+            filename: ':memory:'
+        },
+        // Suppress warnings from knex
+        useNullAsDefault: true
+    });
+
+    await knex.raw(`
+        CREATE TABLE \`settings\` (
+            \`id\` varchar(24) not null,
+            \`key\` varchar(50) not null,
+            \`value\` text null,
+            \`group\` varchar(50) not null,
+            \`type\` varchar(50) not null,
+            \`flags\` varchar(50) null,
+            \`created_at\` datetime not null,
+            \`updated_at\` datetime null,
+            primary key (\`id\`)
+        );
+    `);
+    await knex.raw(`CREATE UNIQUE INDEX \`settings_key_unique\` on \`settings\` (\`key\`);`);
 
     return knex;
 }
@@ -271,7 +290,7 @@ async function runUpMigration(knex, migration) {
 describe('migrations/utils/permissions', function () {
     describe('addPermission', function () {
         it('Accepts a name, action and object and returns a migration which adds a permission to the database', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermission({
                 name: 'scarface',
@@ -303,7 +322,7 @@ describe('migrations/utils/permissions', function () {
 
     describe('addPermissionToRole', function () {
         it('Accepts a permission name and role name and returns a migration which adds a permission to the database', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermissionToRole({
                 permission: 'Permission Name',
@@ -363,7 +382,7 @@ describe('migrations/utils/permissions', function () {
 
         describe('Throws errors', function () {
             it('Throws when permission cannot be found in up migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Unimaginable',
@@ -380,7 +399,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Does not throw when permission cannot be found in down migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -396,7 +415,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Throws when role cannot be found', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -413,7 +432,7 @@ describe('migrations/utils/permissions', function () {
             });
 
             it('Does not throw when role cannot be found in down migration', async function () {
-                const knex = await setupDb();
+                const knex = await setupPermissionsDb();
 
                 const migration = utils.addPermissionToRole({
                     permission: 'Permission Name',
@@ -432,7 +451,7 @@ describe('migrations/utils/permissions', function () {
 
     describe('addPermissionWithRoles', function () {
         it('Accepts addPermission config and a list of roles, and creates the permission, linking it to roles', async function () {
-            const knex = await setupDb();
+            const knex = await setupPermissionsDb();
 
             const migration = utils.addPermissionWithRoles({
                 name: 'scarface',
@@ -552,6 +571,300 @@ describe('migrations/utils/permissions', function () {
             });
 
             should.ok(!permissionAttachedToOtherRoleAfterDown, 'The permission was removed from the other role.');
+        });
+    });
+});
+
+describe('migrations/utils/settings', function () {
+    describe('addSetting', function () {
+        it('Accepts a setting spec and returns a migration which adds a setting to the database', async function () {
+            const knex = await setupSettingsDb();
+
+            const migration = utils.addSetting({
+                key: 'test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+            const addedSettingAfterUp = allSettingsAfterUp.find((row) => {
+                return row.key === 'test_key';
+            });
+
+            should.equal(addedSettingAfterUp.key, 'test_key', 'The setting was added to the database');
+            should.equal(addedSettingAfterUp.value, 'test_value');
+            should.equal(addedSettingAfterUp.type, 'string');
+            should.equal(addedSettingAfterUp.group, 'test_group');
+            should.equal(addedSettingAfterUp.flags, 'PUBLIC');
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+        });
+
+        it('Skips adding if setting already exists', async function () {
+            const knex = await setupSettingsDb();
+
+            // First add a setting
+            const firstMigration = utils.addSetting({
+                key: 'test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            await runUpMigration(knex, firstMigration);
+
+            // Try to add the same setting again
+            const secondMigration = utils.addSetting({
+                key: 'test_key',
+                value: 'new_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC'
+            });
+
+            const runDownMigration = await runUpMigration(knex, secondMigration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+            const existingSetting = allSettingsAfterUp.find((row) => {
+                return row.key === 'test_key';
+            });
+
+            should.equal(existingSetting.value, 'test_value', 'The original value was preserved');
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAfterDown.length, 0, 'The setting was removed');
+        });
+    });
+
+    describe('removeSetting', function () {
+        it('Accepts a key and returns a migration which removes a setting from the database', async function () {
+            const knex = await setupSettingsDb();
+
+            await knex('settings').insert({
+                id: ObjectId().toHexString(),
+                key: 'remove_test_key',
+                value: 'test_value',
+                type: 'string',
+                group: 'test_group',
+                flags: 'PUBLIC',
+                created_at: knex.raw('CURRENT_TIMESTAMP')
+            });
+
+            const allSettingsAtStart = await knex('settings').select();
+
+            const migration = utils.removeSetting('remove_test_key');
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+            const restoredSettingAfterDown = allSettingsAfterDown.find((row) => {
+                return row.key === 'remove_test_key';
+            });
+
+            should.equal(allSettingsAtStart.length, 1, 'Started with one setting');
+            should.equal(allSettingsAfterUp.length, 0, 'Setting was removed');
+            should.equal(allSettingsAfterDown.length, 1, 'Ended with one setting');
+            should.equal(restoredSettingAfterDown.key, 'remove_test_key', 'Setting was restored');
+        });
+
+        it('Skips removal if setting does not exist', async function () {
+            const knex = await setupSettingsDb();
+
+            const allSettingsAtStart = await knex('settings').select();
+
+            const migration = utils.removeSetting('non_existent_key');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            const allSettingsAfterUp = await knex('settings').select();
+
+            await runDownMigration();
+
+            const allSettingsAfterDown = await knex('settings').select();
+
+            should.equal(allSettingsAtStart.length, 0, 'No settings in place at the start');
+            should.equal(allSettingsAfterUp.length, 0, 'No settings were removed');
+            should.equal(allSettingsAfterDown.length, 0, 'No settings were restored');
+        });
+    });
+});
+
+async function setupNullableTestDb() {
+    const knex = Knex({
+        client: 'sqlite3',
+        connection: {
+            filename: ':memory:'
+        },
+        useNullAsDefault: true
+    });
+
+    // Create test table with mixed nullable/not-nullable columns
+    await knex.raw(`
+        CREATE TABLE test_nullable_migration (
+            id INTEGER PRIMARY KEY,
+            nullable_col TEXT NULL,
+            not_nullable_col TEXT NOT NULL,
+            mixed_col TEXT NOT NULL
+        );
+    `);
+
+    // Insert test data
+    await knex('test_nullable_migration').insert({
+        id: 1,
+        nullable_col: 'test',
+        not_nullable_col: 'required',
+        mixed_col: 'data'
+    });
+
+    return knex;
+}
+
+// Helper function to check column nullable status for SQLite
+async function checkColumnNullable(table, column, knex) {
+    const response = await knex.raw(`PRAGMA table_info(??)`, [table]);
+    const columnInfo = response.find(col => col.name === column);
+    return columnInfo ? columnInfo.notnull === 0 : null;
+}
+
+describe('migrations/utils/schema nullable functions', function () {
+    describe('createSetNullableMigration', function () {
+        it('Sets a not-nullable column to nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createSetNullableMigration('test_nullable_migration', 'not_nullable_col');
+
+            should.ok(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
+
+            // Verify initial state - column should be not nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableInitial, false, 'Column should initially be not nullable');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            // Verify column is now nullable
+            const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableAfter, true, 'Column should be nullable after up migration');
+
+            // Test down migration
+            await runDownMigration();
+            const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableAfterDown, false, 'Column should be not nullable after down migration');
+
+            await knex.destroy();
+        });
+
+        it('Skips setting nullable when column is already nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createSetNullableMigration('test_nullable_migration', 'nullable_col');
+
+            // Verify initial state - column should already be nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+
+            // Spy on logging to verify skip message
+            const logSpy = sinon.spy(logging, 'warn');
+
+            try {
+                const runDownMigration = await runUpMigration(knex, migration);
+
+                should.ok(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+
+                // Column should still be nullable
+                const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+                should.equal(isNullableAfter, true, 'Column should still be nullable');
+
+                await runDownMigration();
+            } finally {
+                logSpy.restore();
+
+                await knex.destroy();
+            }
+        });
+    });
+
+    describe('createDropNullableMigration', function () {
+        it('Drops nullable from a nullable column', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createDropNullableMigration('test_nullable_migration', 'nullable_col');
+
+            should.ok(migration.config.transaction, 'createDropNullableMigration creates a transactional migration');
+
+            // Verify initial state - column should be nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            // Verify column is now not nullable
+            const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNotNullableAfter, false, 'Column should be not nullable after up migration');
+
+            // Test down migration (should set back to nullable)
+            await runDownMigration();
+            const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
+
+            await knex.destroy();
+        });
+
+        it('Skips dropping nullable when column is already not nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createDropNullableMigration('test_nullable_migration', 'not_nullable_col');
+
+            // Verify initial state - column should already be not nullable
+            const isNotNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNotNullableInitial, false, 'Column should initially be not nullable');
+
+            // Spy on logging to verify skip message
+            const logSpy = sinon.spy(require('@tryghost/logging'), 'warn');
+
+            try {
+                const runDownMigration = await runUpMigration(knex, migration);
+
+                should.ok(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+
+                // Column should still be not nullable
+                const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+                should.equal(isNotNullableAfter, false, 'Column should still be not nullable');
+
+                await runDownMigration();
+            } finally {
+                logSpy.restore();
+
+                await knex.destroy();
+            }
+        });
+    });
+
+    describe('helper functions', function () {
+        it('Nullable status detection works correctly', async function () {
+            const knex = await setupNullableTestDb();
+
+            const nullableResult = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            const notNullableResult = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+
+            should.equal(nullableResult, true, 'Should identify nullable column correctly');
+            should.equal(notNullableResult, false, 'Should identify not nullable column correctly');
+
+            await knex.destroy();
         });
     });
 });

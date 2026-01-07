@@ -30,10 +30,16 @@ function getCacheHeaderFromEventString(event, dto) {
         return true;
     }
     if (event === 'scheduled_updated' || event === 'draft_updated') {
+        const baseUrl = urlUtils.urlFor({
+            relativeUrl: urlUtils.urlJoin('/p', dto.uuid, '/')
+        });
         return {
-            value: urlUtils.urlFor({
-                relativeUrl: urlUtils.urlJoin('/p', dto.uuid, '/')
-            })
+            value: [
+                baseUrl,
+                `${baseUrl}?member_status=anonymous`,
+                `${baseUrl}?member_status=free`,
+                `${baseUrl}?member_status=paid`
+            ].join(', ')
         };
     }
 }
@@ -165,15 +171,13 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
-            return models.Post.add(frame.data.posts[0], frame.options)
-                .then((model) => {
-                    if (model.get('status') === 'published') {
-                        frame.setHeader('X-Cache-Invalidate', '/*');
-                    }
+        async query(frame) {
+            const model = await models.Post.add(frame.data.posts[0], frame.options);
+            if (model.get('status') === 'published') {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
 
-                    return model;
-                });
+            return model;
         }
     },
 

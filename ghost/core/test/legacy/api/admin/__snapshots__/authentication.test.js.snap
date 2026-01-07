@@ -1,0 +1,928 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Authentication API Blog setup complete setup 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": null,
+      "bluesky": null,
+      "comment_notifications": true,
+      "cover_image": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "donation_notifications": true,
+      "email": "test@example.com",
+      "facebook": null,
+      "free_member_signup_notification": true,
+      "id": "5951f5fc0000000000000000",
+      "instagram": null,
+      "last_seen": null,
+      "linkedin": null,
+      "location": null,
+      "mastodon": null,
+      "mention_notifications": true,
+      "meta_description": null,
+      "meta_title": null,
+      "milestone_notifications": true,
+      "name": "test user",
+      "paid_subscription_canceled_notification": false,
+      "paid_subscription_started_notification": true,
+      "profile_image": null,
+      "recommendation_notifications": true,
+      "slug": "test",
+      "status": "active",
+      "threads": null,
+      "tiktok": null,
+      "tour": null,
+      "twitter": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "853",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup complete setup 3: [html 1] 1`] = `
+"<!doctype html>
+<html>
+<head>
+<meta name=\\"viewport\\" content=\\"width=device-width\\">
+<meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+<title>Welcome to Ghost</title>
+<style>
+/* -------------------------------------
+    RESPONSIVE AND MOBILE FRIENDLY STYLES
+------------------------------------- */
+@media only screen and (max-width: 620px) {
+    table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+    }
+    table[class=body] p,
+        table[class=body] ul,
+        table[class=body] ol,
+        table[class=body] td,
+        table[class=body] span,
+        table[class=body] a {
+    font-size: 16px !important;
+    }
+    table[class=body] .title {
+    font-size: 22px !important;
+    }
+    table[class=body] .wrapper,
+        table[class=body] .article {
+    padding: 10px !important;
+    }
+    table[class=body] .content {
+    padding: 0 !important;
+    }
+    table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+    }
+    table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+    }
+    table[class=body] .btn table {
+    width: 100% !important;
+    }
+    table[class=body] .btn a {
+    width: 100% !important;
+    }
+    table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+    }
+    table[class=body] p[class=small],
+    table[class=body] a[class=small] {
+    font-size: 12x !important;
+    }
+}
+/* -------------------------------------
+    PRESERVE THESE STYLES IN THE HEAD
+------------------------------------- */
+@media all {
+    .ExternalClass {
+    width: 100%;
+    }
+    .ExternalClass,
+        .ExternalClass p,
+        .ExternalClass span,
+        .ExternalClass font,
+        .ExternalClass td,
+        .ExternalClass div {
+    line-height: 100%;
+    }
+    .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+    }
+    #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    }
+}
+hr {
+    border-width: 0;
+    height: 0;
+    margin-top: 34px;
+    margin-bottom: 34px;
+    border-bottom-width: 1px;
+    border-bottom-color: #EEF5F8;
+}
+a {
+    color: #3A464C;
+}
+</style>
+</head>
+<body style=\\"background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+
+<table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+    <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;\\">
+
+            <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+                <!-- START MAIN CONTENT AREA -->
+                <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;\\">
+                    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                        <tr>
+                            <td align=\\"center\\" style=\\"padding-top: 20px; padding-bottom: 12px;\\"><img src=\\"https://static.ghost.org/v4.0.0/images/ghost-orb-3.png\\" width=\\"60\\" height=\\"60\\" style=\\"width: 60px; height: 60px;\\" /></td>
+                        </tr>
+                        <tr>
+                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;\\">
+                            <p class=\\"title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 0px; margin-top: 50px; font-weight: 600; color: #15212A;\\">Hello!</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 24px; padding-bottom: 10px;\\">
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">Good news! You've successfully created a brand new Ghost publication over on  <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #15212A;\\">http://127.0.0.1:2369/</a></p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">You can log in to your admin account with the following details:</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\"><strong style=\\"font-weight: 600;\\">Email Address:</strong> <a href=\\"mailto:test@example.com\\" style=\\"color: #15212A;\\">test@example.com</a></p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\"><strong style=\\"font-weight: 600;\\">Password:</strong> The password you chose when you signed up</p>
+
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\">Keep this email somewhere safe for future reference, and have fun!</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">xoxo</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\">Team Ghost – <a href=\\"https://ghost.org\\" style=\\"color: #15212A;\\">https://ghost.org</a></p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-top: 80px; padding-bottom: 10px;\\">
+                    <div class=\\"footer\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;\\">This email was sent from <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #738A94;\\">http://127.0.0.1:2369/</a> to <a href=\\"mailto:test@example.com\\" style=\\"color: #738A94;\\">test@example.com</a></p>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- END CENTERED CONTAINER -->
+            </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+    </tr>
+</table>
+</body>
+</html>"
+`;
+
+exports[`Authentication API Blog setup complete setup 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+
+Good news! You've successfully created a brand new Ghost publication over on 
+http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
+
+You can log in to your admin account with the following details:
+
+Email Address: test@example.com [test@example.com]
+
+Password: The password you chose when you signed up
+
+Keep this email somewhere safe for future reference, and have fun!
+
+xoxo
+
+Team Ghost – https://ghost.org [https://ghost.org]
+
+This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup 5: [metadata 1] 1`] = `
+Object {
+  "encoding": "base64",
+  "from": "\\"a test blog\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
+  "replyTo": null,
+  "subject": "Your New Ghost Site",
+  "to": "test@example.com",
+}
+`;
+
+exports[`Authentication API Blog setup complete setup again 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Setup has already been completed.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup complete setup again 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "223",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": null,
+      "bluesky": null,
+      "comment_notifications": true,
+      "cover_image": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "donation_notifications": true,
+      "email": "test@example.com",
+      "facebook": null,
+      "free_member_signup_notification": true,
+      "id": "5951f5fc0000000000000000",
+      "instagram": null,
+      "last_seen": null,
+      "linkedin": null,
+      "location": null,
+      "mastodon": null,
+      "mention_notifications": true,
+      "meta_description": null,
+      "meta_title": null,
+      "milestone_notifications": true,
+      "name": "test user",
+      "paid_subscription_canceled_notification": false,
+      "paid_subscription_started_notification": true,
+      "profile_image": null,
+      "recommendation_notifications": true,
+      "slug": "test",
+      "status": "active",
+      "threads": null,
+      "tiktok": null,
+      "tour": null,
+      "twitter": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "853",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 3: [html 1] 1`] = `
+"<!doctype html>
+<html>
+<head>
+<meta name=\\"viewport\\" content=\\"width=device-width\\">
+<meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+<title>Welcome to Ghost</title>
+<style>
+/* -------------------------------------
+    RESPONSIVE AND MOBILE FRIENDLY STYLES
+------------------------------------- */
+@media only screen and (max-width: 620px) {
+    table[class=body] h1 {
+    font-size: 28px !important;
+    margin-bottom: 10px !important;
+    }
+    table[class=body] p,
+        table[class=body] ul,
+        table[class=body] ol,
+        table[class=body] td,
+        table[class=body] span,
+        table[class=body] a {
+    font-size: 16px !important;
+    }
+    table[class=body] .title {
+    font-size: 22px !important;
+    }
+    table[class=body] .wrapper,
+        table[class=body] .article {
+    padding: 10px !important;
+    }
+    table[class=body] .content {
+    padding: 0 !important;
+    }
+    table[class=body] .container {
+    padding: 0 !important;
+    width: 100% !important;
+    }
+    table[class=body] .main {
+    border-left-width: 0 !important;
+    border-radius: 0 !important;
+    border-right-width: 0 !important;
+    }
+    table[class=body] .btn table {
+    width: 100% !important;
+    }
+    table[class=body] .btn a {
+    width: 100% !important;
+    }
+    table[class=body] .img-responsive {
+    height: auto !important;
+    max-width: 100% !important;
+    width: auto !important;
+    }
+    table[class=body] p[class=small],
+    table[class=body] a[class=small] {
+    font-size: 12x !important;
+    }
+}
+/* -------------------------------------
+    PRESERVE THESE STYLES IN THE HEAD
+------------------------------------- */
+@media all {
+    .ExternalClass {
+    width: 100%;
+    }
+    .ExternalClass,
+        .ExternalClass p,
+        .ExternalClass span,
+        .ExternalClass font,
+        .ExternalClass td,
+        .ExternalClass div {
+    line-height: 100%;
+    }
+    .recipient-link a {
+    color: inherit !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    text-decoration: none !important;
+    }
+    #MessageViewBody a {
+    color: inherit;
+    text-decoration: none;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    }
+}
+hr {
+    border-width: 0;
+    height: 0;
+    margin-top: 34px;
+    margin-bottom: 34px;
+    border-bottom-width: 1px;
+    border-bottom-color: #EEF5F8;
+}
+a {
+    color: #3A464C;
+}
+</style>
+</head>
+<body style=\\"background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+
+<table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+    <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;\\">
+
+            <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+                <!-- START MAIN CONTENT AREA -->
+                <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;\\">
+                    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                        <tr>
+                            <td align=\\"center\\" style=\\"padding-top: 20px; padding-bottom: 12px;\\"><img src=\\"https://static.ghost.org/v4.0.0/images/ghost-orb-3.png\\" width=\\"60\\" height=\\"60\\" style=\\"width: 60px; height: 60px;\\" /></td>
+                        </tr>
+                        <tr>
+                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top;\\">
+                            <p class=\\"title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 21px; color: #3A464C; font-weight: normal; line-height: 25px; margin-bottom: 0px; margin-top: 50px; font-weight: 600; color: #15212A;\\">Hello!</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 24px; padding-bottom: 10px;\\">
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">Good news! You've successfully created a brand new Ghost publication over on  <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #15212A;\\">http://127.0.0.1:2369/</a></p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">You can log in to your admin account with the following details:</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\"><strong style=\\"font-weight: 600;\\">Email Address:</strong> <a href=\\"mailto:test@example.com\\" style=\\"color: #15212A;\\">test@example.com</a></p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\"><strong style=\\"font-weight: 600;\\">Password:</strong> The password you chose when you signed up</p>
+
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\">Keep this email somewhere safe for future reference, and have fun!</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 20px;\\">xoxo</p>
+                                <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 0px;\\">Team Ghost – <a href=\\"https://ghost.org\\" style=\\"color: #15212A;\\">https://ghost.org</a></p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-top: 80px; padding-bottom: 10px;\\">
+                    <div class=\\"footer\\">
+                        <p class=\\"small\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;\\">This email was sent from <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #738A94;\\">http://127.0.0.1:2369/</a> to <a href=\\"mailto:test@example.com\\" style=\\"color: #738A94;\\">test@example.com</a></p>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- END CENTERED CONTAINER -->
+            </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+    </tr>
+</table>
+</body>
+</html>"
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+
+Good news! You've successfully created a brand new Ghost publication over on 
+http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
+
+You can log in to your admin account with the following details:
+
+Email Address: test@example.com [test@example.com]
+
+Password: The password you chose when you signed up
+
+Keep this email somewhere safe for future reference, and have fun!
+
+xoxo
+
+Team Ghost – https://ghost.org [https://ghost.org]
+
+This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 5: [metadata 1] 1`] = `
+Object {
+  "encoding": "base64",
+  "from": "\\"a test blog\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
+  "replyTo": null,
+  "subject": "Your New Ghost Site",
+  "to": "test@example.com",
+}
+`;
+
+exports[`Authentication API Blog setup is setup? no 1: [body] 1`] = `
+Object {
+  "setup": Array [
+    Object {
+      "status": false,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup is setup? no 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "28",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup is setup? yes 1: [body] 1`] = `
+Object {
+  "setup": Array [
+    Object {
+      "status": true,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup is setup? yes 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "27",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup update setup 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": "bio",
+      "bluesky": null,
+      "comment_notifications": true,
+      "cover_image": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "donation_notifications": true,
+      "email": "test-edit@example.com",
+      "facebook": null,
+      "free_member_signup_notification": true,
+      "id": "5951f5fc0000000000000000",
+      "instagram": null,
+      "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "linkedin": null,
+      "location": "location",
+      "mastodon": null,
+      "mention_notifications": true,
+      "meta_description": null,
+      "meta_title": null,
+      "milestone_notifications": true,
+      "name": "test user edit",
+      "paid_subscription_canceled_notification": true,
+      "paid_subscription_started_notification": true,
+      "profile_image": "https://example.com/super_photo.jpg",
+      "recommendation_notifications": true,
+      "slug": "test",
+      "status": "active",
+      "threads": null,
+      "tiktok": null,
+      "tour": null,
+      "twitter": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+      "youtube": null,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "924",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check invalid invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "valid": false,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation check invalid invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "32",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check invite with invalid email 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "228",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check valid invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "valid": true,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation check valid invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "31",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "message": "Invitation accepted.",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "51",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite and existing email address 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Attempting to create an account with existing email address.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Use different email address to register your account.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Could not create an account, email is already in use.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite and existing email address 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "350",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept without invite 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "203",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password 1: [body] 1`] = `
+Object {
+  "password_reset": Array [
+    Object {
+      "message": "Password updated",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "51",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: expired token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Password reset link expired.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Request a new password reset via the login form.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: expired token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "282",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: generate reset token 1: [body] 1`] = `
+Object {
+  "password_reset": Array [
+    Object {
+      "message": "Check your email for further instructions.",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: generate reset token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "77",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: invalid token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid password reset link.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Check if password reset link has been fully copied or request new password reset via the login form.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: invalid token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "336",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: unmatched token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Password reset link has already been used.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Request a new password reset via the login form.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: unmatched token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "296",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Reset all passwords reset all passwords returns 204 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;

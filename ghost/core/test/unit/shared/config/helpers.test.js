@@ -1,5 +1,5 @@
-const should = require('should');
-const configUtils = require('../../../utils/configUtils');
+require('should');
+const configUtils = require('../../../utils/config-utils');
 
 describe('vhost utils', function () {
     beforeEach(function () {

@@ -1,8 +1,9 @@
 const _ = require('lodash');
 const security = require('@tryghost/security');
-const constants = require('@tryghost/constants');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const moment = require('moment');
+
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const mail = require('../mail');
@@ -47,7 +48,7 @@ function generateToken(email, settingsAPI, transaction) {
             }
 
             token = security.tokens.resetToken.generateHash({
-                expires: Date.now() + constants.ONE_DAY_MS,
+                expires: moment().add(1, 'days').valueOf(),
                 email: email,
                 dbHash: dbHash,
                 password: user.get('password')

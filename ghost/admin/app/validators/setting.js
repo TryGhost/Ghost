@@ -7,7 +7,7 @@ export default BaseValidator.create({
     title(model) {
         let title = model.title;
 
-        if (!validator.isLength(title || '', 0, 150)) {
+        if (!validator.isLength(title || '', {max: 150})) {
             model.errors.add('title', 'Title is too long');
             this.invalidate();
         }
@@ -16,7 +16,7 @@ export default BaseValidator.create({
     description(model) {
         let desc = model.description;
 
-        if (!validator.isLength(desc || '', 0, 200)) {
+        if (!validator.isLength(desc || '', {max: 200})) {
             model.errors.add('description', 'Description is too long');
             this.invalidate();
         }

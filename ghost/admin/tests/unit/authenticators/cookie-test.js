@@ -98,6 +98,26 @@ describe('Unit: Authenticator: cookie', () => {
                 });
             });
         });
+
+        it('includes skipEmailVerification in request data when provided', function () {
+            let authenticator = this.owner.lookup('authenticator:cookie');
+            let post = authenticator.ajax.post;
+
+            return authenticator.authenticate({
+                identification: 'AzureDiamond', 
+                password: 'hunter2',
+                skipEmailVerification: true
+            }).then(() => {
+                expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
+                expect(post.args[0][1]).to.deep.include({
+                    data: {
+                        username: 'AzureDiamond',
+                        password: 'hunter2',
+                        skipEmailVerification: true
+                    }
+                });
+            });
+        });
     });
 
     describe('#invalidate', function () {

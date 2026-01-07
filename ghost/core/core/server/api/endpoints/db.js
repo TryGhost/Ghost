@@ -56,6 +56,7 @@ const controller = {
             cacheInvalidate: false
         },
         permissions: true,
+        // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
         async query(frame) {
             if (frame.options.filename) {
                 let backup = await dbBackup.readBackup(frame.options.filename);
@@ -67,11 +68,11 @@ const controller = {
                 return backup;
             }
 
-            return Promise.resolve()
-                .then(() => exporter.doExport({include: frame.options.withRelated}))
-                .catch((err) => {
-                    return Promise.reject(new errors.InternalServerError({err: err}));
-                });
+            try {
+                return exporter.doExport({include: frame.options.withRelated});
+            } catch (err) {
+                throw new errors.InternalServerError({err: err});
+            }
         }
     },
 
@@ -95,7 +96,7 @@ const controller = {
             if (frame.user) {
                 email = frame.user.get('email');
             } else {
-                email = await models.User.getOwnerUser().get('email');
+                email = (await models.User.getOwnerUser()).get('email');
             }
 
             return importer.importFromFile(frame.file, {
@@ -132,7 +133,9 @@ const controller = {
         },
         statusCode: 204,
         permissions: true,
-        query() {
+        async query() {
+            await dbBackup.backup();
+
             /**
              * @NOTE:
              * We fetch all posts with `columns:id` to increase the speed of this endpoint.
@@ -141,36 +144,32 @@ const controller = {
              *   - model layer can't trigger event e.g. `post.page` to trigger `post|page.unpublished`.
              *   - `onDestroyed` or `onDestroying` can contain custom logic
              */
-            function deleteContent() {
-                return models.Base.transaction((transacting) => {
-                    const queryOpts = {
-                        columns: 'id',
-                        context: {internal: true},
-                        destroyAll: true,
-                        transacting: transacting
-                    };
+            await models.Base.transaction(async (transacting) => {
+                const queryOpts = {
+                    columns: 'id',
+                    context: {internal: true},
+                    destroyAll: true,
+                    transacting
+                };
 
-                    return models.Post.findAll(queryOpts)
-                        .then((response) => {
-                            return pool(response.models.map(post => () => {
-                                return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            }), 100);
-                        })
-                        .then(() => models.Tag.findAll(queryOpts))
-                        .then((response) => {
-                            return pool(response.models.map(tag => () => {
-                                return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            }), 100);
-                        })
-                        .catch((err) => {
-                            throw new errors.InternalServerError({
-                                err: err
-                            });
-                        });
-                });
-            }
+                try {
+                    const allPosts = await models.Post.findAll(queryOpts);
 
-            return dbBackup.backup().then(deleteContent);
+                    await pool(allPosts.map(post => () => {
+                        return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
+                    }), 100);
+
+                    const allTags = await models.Tag.findAll(queryOpts);
+
+                    await pool(allTags.map(tag => () => {
+                        return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
+                    }), 100);
+                } catch (err) {
+                    throw new errors.InternalServerError({
+                        err
+                    });
+                }
+            });
         }
     }
 };

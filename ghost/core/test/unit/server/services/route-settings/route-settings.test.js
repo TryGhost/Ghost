@@ -6,11 +6,15 @@ const bridge = require('../../../../../core/bridge');
 const RouteSettings = require('../../../../../core/server/services/route-settings/RouteSettings');
 
 describe('UNIT > Settings Service DefaultSettingsManager:', function () {
+    let fsReadFileStub;
+    let fsCopyStub;
+    let bridgeReloadFrontendStub;
+
     beforeEach(function () {
-        sinon.stub(fs, 'readFile');
+        fsReadFileStub = sinon.stub(fs, 'readFile');
         sinon.stub(fs, 'readFileSync');
-        sinon.stub(fs, 'copy');
-        sinon.stub(bridge, 'reloadFrontend');
+        fsCopyStub = sinon.stub(fs, 'copy');
+        bridgeReloadFrontendStub = sinon.stub(bridge, 'reloadFrontend');
     });
 
     afterEach(function () {
@@ -23,12 +27,12 @@ describe('UNIT > Settings Service DefaultSettingsManager:', function () {
             const backupFilePath = path.join(__dirname, '../../../../utils/fixtures/settings/routes-backup.yaml');
             const incomingSettingsPath = path.join(__dirname, '../../../../utils/fixtures/settings/routes-incoming.yaml');
 
-            fs.readFile.withArgs(routesSettingsPath, 'utf8').resolves('content');
-            fs.copy.withArgs(backupFilePath, routesSettingsPath).resolves();
-            fs.copy.withArgs(incomingSettingsPath, routesSettingsPath).resolves();
+            fsReadFileStub.withArgs(routesSettingsPath, 'utf8').resolves('content');
+            fsCopyStub.withArgs(backupFilePath, routesSettingsPath).resolves();
+            fsCopyStub.withArgs(incomingSettingsPath, routesSettingsPath).resolves();
 
             // simulate a parsing error during frontend reload
-            bridge.reloadFrontend.throws(new Error('YAMLException: bad indentation of a mapping entry'));
+            bridgeReloadFrontendStub.throws(new Error('YAMLException: bad indentation of a mapping entry'));
 
             const defaultSettingsManager = new RouteSettings({
                 settingsLoader: {},

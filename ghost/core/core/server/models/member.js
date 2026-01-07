@@ -6,6 +6,9 @@ const config = require('../../shared/config');
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'member',
+
     defaults() {
         return {
             status: 'free',
@@ -388,8 +391,7 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     toJSON(unfilteredOptions) {
-        const options = Member.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         // Inject a computed avatar url. Uses gravatar's default ?d= query param
         // to serve a blank image if there is no gravatar for the member's email.

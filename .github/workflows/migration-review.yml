@@ -11,7 +11,7 @@ jobs:
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         with:
           script: |
             github.rest.issues.addLabels({
@@ -30,6 +30,7 @@ jobs:
 
             ### General requirements
 
+            - [ ]  :warning: Tested performance on staging database servers, as performance on local machines is not comparable to a production environment
             - [ ]  Satisfies idempotency requirement (both `up()` and `down()`)
             - [ ]  Does not reference models
             - [ ]  Filename is in the correct format (and correctly ordered)

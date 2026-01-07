@@ -32,6 +32,10 @@ async function getMember(memberId) {
     // eslint-disable-next-line dot-notation
     return await models['Member'].where('id', memberId).fetch({require: true});
 }
+async function getOfferByStripeCoupon(stripeCouponId) {
+    // eslint-disable-next-line dot-notation
+    return await models['Offer'].findOne({stripe_coupon_id: stripeCouponId});
+}
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
@@ -44,6 +48,14 @@ async function assertSubscription(subscriptionId, asserts) {
 
     // We use the native toJSON to prevent calling the overriden serialize method
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
+}
+
+// Helper methods to update the customer and subscription
+function set(object, newValues) {
+    for (const key of Object.keys(object)) {
+        delete object[key];
+    }
+    Object.assign(object, newValues);
 }
 
 describe('Members API', function () {
@@ -120,6 +132,21 @@ describe('Members API', function () {
                     return [200, coupon];
                 }
 
+                if (resource === 'prices') {
+                    return [200, {
+                        id: 'price_123',
+                        product: 'product_123',
+                        active: true,
+                        nickname: 'month',
+                        currency: 'usd',
+                        recurring: {
+                            interval: 'month'
+                        },
+                        unit_amount: 150,
+                        type: 'recurring'
+                    }];
+                }
+
                 return [500];
             });
 
@@ -129,14 +156,6 @@ describe('Members API', function () {
     afterEach(function () {
         mockManager.restore();
     });
-
-    // Helper methods to update the customer and subscription
-    function set(object, newValues) {
-        for (const key of Object.keys(object)) {
-            delete object[key];
-        }
-        Object.assign(object, newValues);
-    }
 
     describe('/webhooks/stripe/', function () {
         before(async function () {
@@ -1665,17 +1684,22 @@ describe('Members API', function () {
             });
         });
 
-        it('Silently ignores an invalid offer id in metadata', async function () {
+        it('Supports creating an offer from a Stripe coupon', async function () {
             const interval = 'month';
             const unit_amount = 500;
             const mrr_with = 400;
+
+            const stripeCouponId = 'stripe-coupon-id';
+
+            const existingOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.equal(existingOffer, null, `No offer should exist with coupon ID: ${stripeCouponId}`);
 
             const discount = {
                 id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                 object: 'discount',
                 checkout_session: null,
                 coupon: {
-                    id: 'unknownCoupon', // this one is unknown in Ghost
+                    id: stripeCouponId,
                     object: 'coupon',
                     amount_off: null,
                     created: 1649774041,
@@ -1771,6 +1795,13 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
+            // Offer should now exist and have expected name, code and status
+            const createdOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.notEqual(createdOffer, null, `An offer should now have been created with coupon ID: ${stripeCouponId}`);
+            assert.equal(createdOffer.get('code'), stripeCouponId, 'Offer code should match Stripe coupon ID');
+            assert.equal(createdOffer.get('active'), false, 'Imported offer should be archived (not active)');
+            assert.equal(createdOffer.get('name'), '20% off forever (stripe-coupon-id)', 'Offer name should be auto-generated from coupon');
+
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
                 subscription_id: subscription.id,
@@ -1781,12 +1812,14 @@ describe('Members API', function () {
                 plan_currency: 'usd',
                 current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
                 mrr: mrr_with,
-                offer_id: null
+                offer_id: createdOffer.id
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
             member.subscriptions[0].should.match({
-                offer: null
+                offer: {
+                    id: createdOffer.id
+                }
             });
 
             await assertMemberEvents({
@@ -1887,7 +1920,19 @@ describe('Members API', function () {
                 start_date: beforeNow / 1000,
                 current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                 cancel_at_period_end: false,
-                metadata: {}
+                metadata: attribution ? {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type,
+                    referrer_source: attribution.referrerSource,
+                    referrer_medium: attribution.referrerMedium,
+                    referrer_url: attribution.referrerUrl,
+                    utm_source: attribution.utmSource,
+                    utm_medium: attribution.utmMedium,
+                    utm_campaign: attribution.utmCampaign,
+                    utm_term: attribution.utmTerm,
+                    utm_content: attribution.utmContent
+                } : {}
             });
 
             set(customer, {
@@ -1910,7 +1955,15 @@ describe('Members API', function () {
                         metadata: attribution ? {
                             attribution_id: attribution.id,
                             attribution_url: attribution.url,
-                            attribution_type: attribution.type
+                            attribution_type: attribution.type,
+                            referrer_source: attribution.referrerSource,
+                            referrer_medium: attribution.referrerMedium,
+                            referrer_url: attribution.referrerUrl,
+                            utm_source: attribution.utmSource,
+                            utm_medium: attribution.utmMedium,
+                            utm_campaign: attribution.utmCampaign,
+                            utm_term: attribution.utmTerm,
+                            utm_content: attribution.utmContent
                         } : {}
                     }
                 }
@@ -1946,9 +1999,9 @@ describe('Members API', function () {
                         subscription_id: subscriptionModel.id,
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null
                     }
                 ]
             });
@@ -1966,9 +2019,9 @@ describe('Members API', function () {
                         created_at: memberModel.get('created_at'),
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null,
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null,
                         source: 'member'
                     }
                 ]
@@ -2155,6 +2208,273 @@ describe('Members API', function () {
             });
         });
 
+        it('Creates a SubscriptionCreatedEvent with UTM parameters', async function () {
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url',
+                referrerSource: 'Google',
+                referrerMedium: 'cpc',
+                referrerUrl: 'google.com',
+                utmSource: 'newsletter',
+                utmMedium: 'email',
+                utmCampaign: 'spring_sale',
+                utmTerm: 'ghost_pro',
+                utmContent: 'header_link'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            const memberModel = await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: 'Google',
+                referrer_medium: 'cpc',
+                referrer_url: 'google.com'
+            });
+
+            // Fetch the member via API to get subscription data
+            const {body} = await adminAgent.get(`/members/${memberModel.id}/`);
+            const member = body.members[0];
+
+            // Verify UTM parameters are stored in SubscriptionCreatedEvent
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+                        attribution_id: null,
+                        attribution_url: '/',
+                        attribution_type: 'url',
+                        referrer_source: 'Google',
+                        referrer_medium: 'cpc',
+                        referrer_url: 'google.com',
+                        utm_source: 'newsletter',
+                        utm_medium: 'email',
+                        utm_campaign: 'spring_sale',
+                        utm_term: 'ghost_pro',
+                        utm_content: 'header_link'
+                    }
+                ]
+            });
+        });
+
+        it('The customer.subscription.created webhook should set the attribution metadata', async function () {
+            // set up all necessary resources
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'month',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 150,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: { // set the attribution on the subscription
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            const memberData = {
+                name: 'test',
+                email: 'memberTestAdd@test.com',
+                subscribed: false,
+                stripe_customer_id: customer_id
+            };
+
+            // create our free member
+            const res = await adminAgent
+                .post(`/members/`)
+                .body({members: [memberData]})
+                .expectStatus(201);
+            let member = res.body.members[0];
+
+            let webhookPayload = JSON.stringify({
+                type: 'customer.subscription.created',
+                data: {
+                    object: subscription
+                }
+            });
+
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            const {body} = await adminAgent.get(`/members/${member.id}/`);
+            member = body.members[0]; // update member model with latest data
+
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id ?? null,
+                        attribution_url: attribution?.url ?? null,
+                        attribution_type: attribution?.type ?? null
+                    }
+                ]
+            });
+        });
+
+        it('The checkout.session.completed webhook should set the attribution metadata', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'month',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 150,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            let webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: customer.id,
+                        subscription: subscription.id
+                    }
+                }
+            });
+
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
+
+            const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            assert.equal(body.members.length, 1, 'The member was not created');
+            const member = body.members[0];
+
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+
+            // subscription created event should have attribution
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id,
+                        attribution_url: attribution?.url,
+                        attribution_type: attribution?.type
+                    }
+                ]
+            });
+        });
+
         // Activity feed
         // This test is here because creating subscriptions is a PITA now, and we would need to essentially duplicate all above tests elsewhere
         it('Returns subscription created attributions in activity feed', async function () {
@@ -2165,11 +2485,6 @@ describe('Members API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject
-                    })
                 })
                 .expect(({body}) => {
                     should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();

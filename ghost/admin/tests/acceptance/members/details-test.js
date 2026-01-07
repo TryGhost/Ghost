@@ -1,5 +1,5 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, find, findAll} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enableStripe} from '../../helpers/stripe';
@@ -27,8 +27,8 @@ describe('Acceptance: Member details', function () {
         // add a default tier that complimentary plans can be assigned to
         tier = this.server.create('tier', {
             id: '6213b3f6cb39ebdb03ebd810',
-            name: 'Ghost Subscription',
-            slug: 'ghost-subscription',
+            name: 'Supporter',
+            slug: 'supporter',
             created_at: '2022-02-21T16:47:02.000Z',
             updated_at: '2022-03-03T15:37:02.000Z',
             description: null,
@@ -83,7 +83,7 @@ describe('Acceptance: Member details', function () {
                         currency: 'USD',
                         tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
-                            name: 'Ghost Subscription',
+                            name: 'Supporter',
                             tier_id: tier.id
                         }
                     },
@@ -120,7 +120,7 @@ describe('Acceptance: Member details', function () {
                         currency: 'USD',
                         tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
-                            name: 'Ghost Subscription',
+                            name: 'Supporter',
                             tier_id: tier.id
                         }
                     },
@@ -177,7 +177,7 @@ describe('Acceptance: Member details', function () {
                         currency: 'USD',
                         tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
-                            name: 'Ghost Subscription',
+                            name: 'Supporter',
                             tier_id: '6213b3f6cb39ebdb03ebd810'
                         }
                     },
@@ -254,8 +254,8 @@ describe('Acceptance: Member details', function () {
 
     it('handles multiple tiers', async function () {
         const tier2 = this.server.create('tier', {
-            name: 'Second tier',
-            slug: 'second-tier',
+            name: 'Superfan',
+            slug: 'superfan',
             created_at: '2022-02-21T16:47:02.000Z',
             updated_at: '2022-03-03T15:37:02.000Z',
             description: null,
@@ -274,17 +274,15 @@ describe('Acceptance: Member details', function () {
 
         await visit(`/members/${member.id}`);
 
-        // all tiers and subscriptions are shown
-        expect(findAll('[data-test-tier]').length, '# of tier blocks').to.equal(2);
+        // all subscriptions are shown
+        expect(findAll('[data-test-subscription]').length, '# of subscriptions shown').to.equal(3);
 
-        const p1 = `[data-test-tier="${tier.id}"]`;
-        const p2 = `[data-test-tier="${tier2.id}"]`;
+        // verify correct number of occurrences for each tier name
+        const supporterCount = findAll('[data-test-text="tier-name"]').filter(el => el.textContent.includes('Supporter')).length;
+        const superfanCount = findAll('[data-test-text="tier-name"]').filter(el => el.textContent.includes('Superfan')).length;
 
-        expect(find(`${p1} [data-test-text="tier-name"]`)).to.contain.text('Ghost Subscription');
-        expect(findAll(`${p1} [data-test-subscription]`).length, '# of tier 1 subscription blocks').to.equal(2);
-
-        expect(find(`${p2} [data-test-text="tier-name"]`)).to.contain.text('Second tier');
-        expect(findAll(`${p2} [data-test-subscription]`).length, '# of tier 2 subscription blocks').to.equal(1);
+        expect(supporterCount, '# of Supporter tiers').to.equal(2);
+        expect(superfanCount, '# of Superfan tiers').to.equal(1);
 
         // can add complimentary
         expect(findAll('[data-test-button="add-complimentary"]').length, '# of add-complimentary buttons').to.equal(1);
@@ -292,6 +290,71 @@ describe('Acceptance: Member details', function () {
         await click(`[data-test-tier-option="${tier2.id}"]`);
         await click('[data-test-button="save-comp-tier"]');
 
-        expect(findAll(`${p2} [data-test-subscription]`).length, '# of tier 2 subscription blocks after comp added').to.equal(2);
+        expect(findAll('[data-test-subscription]').length, '# of tiers after comp added').to.equal(4);
+        expect(findAll('[data-test-text="tier-name"]').filter(el => el.textContent.includes('Supporter')).length, '# of Supporter tiers after comp added').to.equal(2);
+        expect(findAll('[data-test-text="tier-name"]').filter(el => el.textContent.includes('Superfan')).length, '# of Superfan tiers after comp added').to.equal(2);
+    });
+
+    it('does not set comped status when saving member with stale tier data', async function () {
+        // Regression test: When a member's subscription was cancelled while the admin
+        // had the member page open, saving the member would incorrectly set status to
+        // 'comped' because stale tier data was sent in the request.
+
+        // 1. Create a paid member with an active subscription
+        const member = this.server.create('member', {
+            name: 'Stale Tier Test',
+            status: 'paid',
+            tiers: [tier],
+            subscriptions: [
+                this.server.create('subscription', {
+                    tier,
+                    status: 'active',
+                    plan: {
+                        id: 'price_1',
+                        nickname: 'Monthly',
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    price: {
+                        id: 'price_1',
+                        price_id: '6220df272fee0571b5dd0a0a',
+                        nickname: 'Monthly',
+                        amount: 500,
+                        interval: 'month',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: 'prod_1',
+                            tier_id: tier.id
+                        }
+                    }
+                })
+            ]
+        });
+
+        // 2. Visit member page (loads tier data into client memory)
+        await visit(`/members/${member.id}`);
+        expect(currentURL()).to.equal(`/members/${member.id}`);
+
+        // 3. Simulate backend cancellation - remove tier directly in mirage
+        // This mimics what happens when a subscription is cancelled via Stripe
+        // while the admin still has the member page open
+        member.update({
+            tiers: [],
+            status: 'free'
+        });
+
+        // 4. Edit the member (change note) and save
+        // The client still has stale tier data in memory
+        await fillIn('[data-test-input="member-note"]', 'Testing stale tier data');
+        await click('[data-test-button="save"]');
+
+        // 5. Verify save succeeded and member is still free, not comped
+        expect(find('[data-test-button="save"]')).to.not.contain.text('Retry');
+
+        const updatedMember = this.server.schema.members.find(member.id);
+        expect(updatedMember.status).to.equal('free');
+        expect(updatedMember.tiers.length).to.equal(0);
     });
 });

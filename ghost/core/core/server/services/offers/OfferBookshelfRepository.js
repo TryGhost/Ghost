@@ -1,7 +1,7 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {Offer} = require('@tryghost/members-offers');
+const Offer = require('./domain/models/Offer');
 const sentry = require('../../../shared/sentry');
 const logger = require('@tryghost/logging');
 
@@ -93,7 +93,7 @@ class OfferBookshelfRepository {
      * @private
      * @param {import('bookshelf').Model<any>} model
      * @param {BaseOptions} options
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
@@ -121,6 +121,7 @@ class OfferBookshelfRepository {
                 currency: json.currency,
                 duration: json.duration,
                 duration_in_months: json.duration_in_months,
+                stripe_coupon_id: json.stripe_coupon_id,
                 redemptionCount: count,
                 status: json.active ? 'active' : 'archived',
                 tier: {
@@ -140,7 +141,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id
      * @param {BaseOptions} [options]
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async getById(id, options) {
         const model = await this.OfferModel.findOne({id}, {
@@ -158,7 +159,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id stripe_coupon_id
      * @param {BaseOptions} [options]
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async getByStripeCouponId(id, options) {
         const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
@@ -175,7 +176,7 @@ class OfferBookshelfRepository {
 
     /**
      * @param {ListOptions} options
-     * @returns {Promise<import('@tryghost/members-offers').Offer[]>}
+     * @returns {Promise<import('./domain/models/Offer')[]>}
      */
     async getAll(options) {
         const models = await this.OfferModel.findAll({
@@ -194,7 +195,7 @@ class OfferBookshelfRepository {
     }
 
     /**
-     * @param {import('@tryghost/members-offers').Offer} offer
+     * @param {import('./domain/models/Offer')} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
      */
@@ -215,6 +216,10 @@ class OfferBookshelfRepository {
             currency: offer.currency ? offer.currency.value : null,
             active: offer.status.value === 'active'
         };
+
+        if (offer.stripeCouponId !== undefined) {
+            data.stripe_coupon_id = offer.stripeCouponId;
+        }
 
         if (offer.isNew) {
             await this.OfferModel.add(data, options);

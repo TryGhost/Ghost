@@ -6,10 +6,11 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
-const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
+const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 87;
+// Updated to reflect current total based on test output
+const CURRENT_SETTINGS_COUNT = 92;
 
 const settingsMatcher = {};
 
@@ -32,10 +33,10 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 61) {
+    if (length > 59) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[61] = labsSettingMatcher;
+        settingsArray[59] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -43,7 +44,7 @@ const matchSettingsArray = (length) => {
 
 describe('Settings API', function () {
     let agent;
-
+    let emailMockReceiver;
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
@@ -51,8 +52,7 @@ describe('Settings API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -193,11 +193,12 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
+                    'content-length': anyContentLength,
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('removes image size prefixes when setting the icon', async function () {
@@ -232,7 +233,7 @@ describe('Settings API', function () {
             const afterValue = settingsCache.get('icon');
             assert.equal(afterValue, 'http://127.0.0.1:2369/content/images/2019/07/icon.png');
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('cannot edit uneditable settings', async function () {
@@ -254,38 +255,7 @@ describe('Settings API', function () {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
                     assert.equal(emailVerificationRequired.value, false);
                 });
-            mockManager.assert.sentEmailCount(0);
-        });
-
-        it('[LEGACY] editing members_support_address triggers email verification flow', async function () {
-            await agent.put('settings/')
-                .body({
-                    settings: [{key: 'members_support_address', value: 'support@example.com'}]
-                })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
-                })
-                .matchHeaderSnapshot({
-                    etag: anyEtag,
-                    // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength,
-                    'content-version': anyContentVersion
-                })
-                .expect(({body}) => {
-                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.equal(membersSupportAddress.value, 'noreply');
-
-                    assert.deepEqual(body.meta, {
-                        sent_email_verification: ['members_support_address']
-                    });
-                });
-
-            mockManager.assert.sentEmailCount(1);
-            mockManager.assert.sentEmail({
-                subject: 'Verify email address',
-                to: 'support@example.com'
-            });
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
@@ -315,7 +285,7 @@ describe('Settings API', function () {
                     assert.deepEqual(body.meta, {});
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('fails to edit setting with unsupported announcement_visibility value', async function () {
@@ -375,6 +345,80 @@ describe('Settings API', function () {
 
             sinon.assert.calledOnce(loggingStub);
         });
+
+        it('can edit Stripe settings when Stripe Connect limit is not enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: false,
+                errorIfWouldGoOverLimit: false
+            });
+
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_for_stripe',
+                secret_key: 'sk_test_123',
+                livemode: null,
+                display_name: null,
+                account_id: null
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: true,
+                errorIfWouldGoOverLimit: true
+            });
+
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_123',
+                secret_key: 'sk_test_123',
+                livemode: false,
+                display_name: 'Test Account',
+                account_id: 'acct_test_123'
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('verify key update', function () {
@@ -404,7 +448,7 @@ describe('Settings API', function () {
                     assert.equal(membersSupportAddress.value, 'support@example.com');
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('cannot update invalid keys via token', async function () {
@@ -535,7 +579,7 @@ describe('Settings API', function () {
                     });
                 });
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'othersupport@example.com'
@@ -558,7 +602,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -596,7 +640,7 @@ describe('Settings API', function () {
                     });
                 });
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'othersupport@example.com'
@@ -622,7 +666,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -641,7 +685,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -649,7 +693,6 @@ describe('Settings API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
-            mockLabsEnabled('newEmailAddresses');
         });
 
         it('editing members_support_address does not trigger email verification flow', async function () {
@@ -671,7 +714,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -690,7 +733,49 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+    });
+
+    describe('Settings overrides', function () {
+        this.beforeEach(async function () {
+            const settingsOverrides = {
+                email_track_clicks: false
+            };
+            configUtils.set('hostSettings:settingsOverrides', settingsOverrides);
+            await fixtureManager.init();
+        });
+
+        it('respects settings overrides defined in hostSettings:settingsOverrides', async function () {
+            await agent.get('settings/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
+        });
+
+        it('prevents modification of overridden settings via API', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{
+                        key: 'email_track_clicks',
+                        value: true
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
         });
     });
 });

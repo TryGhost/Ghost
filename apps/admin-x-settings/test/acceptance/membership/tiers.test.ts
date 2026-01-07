@@ -1,11 +1,11 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
+            ...limitRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
@@ -70,6 +70,7 @@ test.describe('Tier settings', async () => {
     test('Supports updating a tier', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            ...limitRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editTier: {method: 'PUT', path: `/tiers/${responseFixtures.tiers.tiers[1].id}/`, response: {
@@ -159,6 +160,7 @@ test.describe('Tier settings', async () => {
     test('Supports editing the free tier', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            ...limitRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editTier: {method: 'PUT', path: `/tiers/${responseFixtures.tiers.tiers[0].id}/`, response: {
@@ -203,5 +205,145 @@ test.describe('Tier settings', async () => {
                 ]
             }]
         });
+    });
+
+    test('Shows limit modal when connecting Stripe with limitStripeConnect', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: globalDataRequests.browseSettings, // No Stripe configured
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                limitStripeConnect: {
+                                    disabled: true,
+                                    error: 'Your current plan doesn\'t support Stripe Connect.'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('tiers');
+
+        // Click on "Connect with Stripe" button
+        await section.getByRole('button', {name: 'Connect with Stripe'}).click();
+
+        // Wait for limit modal to appear (limit check happens in useEffect)
+        await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
+
+        // Should show limit modal instead of Stripe Connect modal
+        await expect(page.getByTestId('limit-modal')).toBeVisible();
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your current plan doesn't support Stripe Connect/);
+
+        // Stripe modal should not be visible
+        await expect(page.getByTestId('stripe-modal')).not.toBeVisible();
+
+        // Click upgrade
+        const limitModal = page.getByTestId('limit-modal');
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated to /pro
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
+    });
+
+    test('Allows access to Stripe Connect with limitStripeConnect and Stripe already set up', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                limitStripeConnect: {
+                                    disabled: true,
+                                    error: 'Your current plan doesn\'t support Stripe Connect.'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('tiers');
+
+        // Click on Stripe button (different text, as it's already connected)
+        await section.getByRole('button', {name: 'Connected to Stripe'}).click();
+
+        // Limit modal should not be visible
+        await expect(page.getByTestId('limit-modal')).not.toBeVisible();
+
+        // Stripe modal should be visible
+        await expect(page.getByTestId('stripe-modal')).toBeVisible();
+    });
+
+    test('Shows limit modal when directly accessing stripe-connect route with limitStripeConnect', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: globalDataRequests.browseSettings, // No Stripe configured
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                limitStripeConnect: {
+                                    disabled: true,
+                                    error: 'Your current plan doesn\'t support Stripe Connect.'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        // Navigate directly to stripe-connect route
+        await page.goto('/#/settings/stripe-connect');
+
+        // Wait for limit modal to appear (limit check should happen on route load)
+        await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
+
+        // Should show limit modal instead of Stripe Connect modal
+        await expect(page.getByTestId('limit-modal')).toBeVisible();
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your current plan doesn't support Stripe Connect/);
+
+        // Stripe modal should not be visible
+        await expect(page.getByTestId('stripe-modal')).not.toBeVisible();
+
+        // Click upgrade
+        const limitModal = page.getByTestId('limit-modal');
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated to /pro
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
     });
 });

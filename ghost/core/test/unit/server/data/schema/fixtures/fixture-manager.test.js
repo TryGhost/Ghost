@@ -17,6 +17,224 @@ describe('Migration Fixture Utils', function () {
         sinon.restore();
     });
 
+    describe('Placeholder Processing', function () {
+        it('should replace placeholders with values from the provided map', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'User',
+                        entries: [
+                            {
+                                id: '__USER_ID__',
+                                email: 'test@example.com'
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            const placeholderMap = {
+                __USER_ID__: () => 'user123'
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+            const processed = manager.fixtures;
+
+            processed.models[0].entries[0].id.should.equal('user123');
+            processed.models[0].entries[0].email.should.equal('test@example.com');
+        });
+
+        it('should handle nested structures', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'Post',
+                        entries: [{
+                            id: 'post123',
+                            title: 'Test Post',
+                            authors: [
+                                {
+                                    id: '__USER_ID__'
+                                }
+                            ]
+                        }]
+                    }
+                ]
+            };
+
+            const placeholderMap = {
+                __USER_ID__: () => 'user123'
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+            const processed = manager.fixtures;
+
+            processed.models[0].entries[0].authors[0].id.should.equal('user123');
+        });
+
+        it('should handle arrays of values', function () {
+            const testFixtures = {
+                relations: [
+                    {
+                        from: {
+                            model: 'User',
+                            match: 'id'
+                        },
+                        to: {
+                            model: 'Role'
+                        },
+                        entries: {
+                            __USER_ID__: ['Owner', 'Admin']
+                        }
+                    }
+                ]
+            };
+
+            const placeholderMap = {
+                __USER_ID__: () => 'user123'
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+            const processed = manager.fixtures;
+
+            processed.relations[0].entries.should.have.property('user123');
+            processed.relations[0].entries.user123.should.deepEqual(['Owner', 'Admin']);
+            processed.relations[0].entries.should.not.have.property('__USER_ID__');
+        });
+
+        it('should only process fixtures once', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'User',
+                        entries: [{
+                            id: '__USER_ID__'
+                        }]
+                    }
+                ]
+            };
+
+            let callCount = 0;
+
+            const placeholderMap = {
+                __USER_ID__: () => {
+                    callCount += 1;
+
+                    return 'processed';
+                }
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+
+            // Access fixtures multiple times
+            const first = manager.fixtures;
+            const second = manager.fixtures;
+            const third = manager.fixtures;
+
+            callCount.should.equal(1);
+            first.should.equal(second);
+            second.should.equal(third);
+        });
+
+        it('should handle no placeholders gracefully', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'User',
+                        entries: [{
+                            id: 'user123',
+                            email: 'test@example.com'
+                        }]
+                    }
+                ]
+            };
+
+            const manager = new FixtureManager(testFixtures, {});
+            const processed = manager.fixtures;
+
+            processed.should.deepEqual(testFixtures);
+        });
+
+        it('should pass models to placeholder functions', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'User',
+                        entries: [{
+                            id: '__USER_ID__'
+                        }]
+                    }
+                ]
+            };
+
+            let receivedModels = null;
+
+            const placeholderMap = {
+                __USER_ID__: (providedModels) => {
+                    receivedModels = providedModels;
+
+                    return 'user123';
+                }
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+            const processed = manager.fixtures;
+
+            processed.models[0].entries[0].id.should.equal('user123');
+
+            should.exist(receivedModels);
+
+            receivedModels.should.equal(models);
+        });
+
+        it('should handle missing placeholder handlers', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'User',
+                        entries: [
+                            {
+                                id: '__MISSING_HANDLER__',
+                                email: 'test@example.com'
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            const manager = new FixtureManager(testFixtures, {});
+            const processed = manager.fixtures;
+
+            // Should leave placeholder unchanged if no handler
+            processed.models[0].entries[0].id.should.equal('__MISSING_HANDLER__');
+        });
+
+        it('should handle multiple different placeholders in one value', function () {
+            const testFixtures = {
+                models: [
+                    {
+                        name: 'Post',
+                        entries: [
+                            {
+                                content: 'This is a test post created by __AUTHOR__NAME__ on __DATE__'
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            const placeholderMap = {
+                __AUTHOR__NAME__: () => 'John Doe',
+                __DATE__: () => '2025-06-26'
+            };
+
+            const manager = new FixtureManager(testFixtures, placeholderMap);
+            const processed = manager.fixtures;
+
+            processed.models[0].entries[0].content.should.equal('This is a test post created by John Doe on 2025-06-26');
+        });
+    });
+
     describe('Match Func', function () {
         const matchFunc = FixtureManager.matchFunc;
         let getStub;
@@ -191,7 +409,7 @@ describe('Migration Fixture Utils', function () {
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 112;
+                const FIXTURE_COUNT = 137;
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', FIXTURE_COUNT);
@@ -201,7 +419,7 @@ describe('Migration Fixture Utils', function () {
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
                 dataMethodStub.filter.callCount.should.eql(FIXTURE_COUNT);
-                dataMethodStub.find.callCount.should.eql(9);
+                dataMethodStub.find.callCount.should.eql(10);
                 baseUtilAttachStub.callCount.should.eql(FIXTURE_COUNT);
 
                 fromItem.related.callCount.should.eql(FIXTURE_COUNT);

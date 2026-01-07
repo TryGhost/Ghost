@@ -1,8 +1,8 @@
 const config = require('../../../../../../shared/config');
-const {STATIC_MEDIA_URL_PREFIX} = require('@tryghost/constants');
+const urlUtils = require('../../../../../../shared/url-utils');
 
 function getURL(urlPath) {
-    const media = new RegExp('^' + config.getSubdir() + '/' + STATIC_MEDIA_URL_PREFIX);
+    const media = new RegExp('^' + config.getSubdir() + '/' + urlUtils.STATIC_MEDIA_URL_PREFIX);
     const absolute = media.test(urlPath) ? true : false;
 
     if (absolute) {

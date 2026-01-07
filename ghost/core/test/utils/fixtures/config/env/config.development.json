@@ -1,0 +1,7 @@
+{
+    "url": "http://localhost:2368",
+    "logging": {
+        "level": "info",
+        "transports": ["stdout"]
+    }
+}

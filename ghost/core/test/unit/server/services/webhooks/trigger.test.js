@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const crypto = require('crypto');
 const sinon = require('sinon');
+const LimitService = require('@tryghost/limit-service');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/WebhookTrigger');
 
@@ -12,7 +13,7 @@ describe('Webhook Service', function () {
     const WEBHOOK_TARGET_URL = 'http://example.com';
     const WEBHOOK_SECRET = 'abc123dontstealme';
 
-    let models, payload, request, webhookTrigger;
+    let models, payload, request, webhookTrigger, limitService;
 
     beforeEach(function () {
         models = {
@@ -34,7 +35,12 @@ describe('Webhook Service', function () {
         payload = sinon.stub();
         request = sinon.stub().resolves({});
 
-        webhookTrigger = new WebhookTrigger({models, payload, request});
+        const realLimitService = new LimitService();
+        limitService = sinon.stub(realLimitService);
+        limitService.isLimited.withArgs('customIntegrations').returns(false);
+        limitService.checkWouldGoOverLimit.withArgs('customIntegrations').resolves(false);
+
+        webhookTrigger = new WebhookTrigger({models, payload, request, limitService});
 
         sinon.stub(webhookTrigger, 'onSuccess').callsFake(() => Promise.resolve());
         sinon.stub(webhookTrigger, 'onError').callsFake(() => Promise.resolve());
@@ -45,6 +51,33 @@ describe('Webhook Service', function () {
             models.Webhook.findAllByEvent
                 .withArgs(WEBHOOK_EVENT, {context: {internal: true}})
                 .resolves({models: []});
+
+            await webhookTrigger.trigger(WEBHOOK_EVENT);
+
+            assert.equal(models.Webhook.findAllByEvent.called, true);
+            assert.equal(payload.called, false);
+            assert.equal(request.called, false);
+        });
+
+        it('does not trigger payload handler when there are hooks registered for an event, but the custom integrations limit is active', async function () {
+            const webhookModel = {
+                get: sinon.stub(),
+                related: sinon.stub()
+            };
+
+            webhookModel.get
+                .withArgs('event').returns(WEBHOOK_EVENT)
+                .withArgs('target_url').returns(WEBHOOK_TARGET_URL);
+
+            webhookModel.related
+                .withArgs('integration').returns(null);
+
+            models.Webhook.findAllByEvent
+                .withArgs(WEBHOOK_EVENT, {context: {internal: true}, withRelated: ['integration']})
+                .resolves({models: [webhookModel]});
+
+            limitService.isLimited.withArgs('customIntegrations').returns(true);
+            limitService.checkWouldGoOverLimit.withArgs('customIntegrations').resolves(true);
 
             await webhookTrigger.trigger(WEBHOOK_EVENT);
 

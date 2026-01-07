@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const labs = require('../../../core/shared/labs');
 const settingsCache = require('../../../core/shared/settings-cache');
 
@@ -31,8 +31,8 @@ describe('Labs Service', function () {
     it('returns an alpha flag when dev experiments in toggled', function () {
         configUtils.set('enableDeveloperExperiments', true);
         sinon.stub(process.env, 'NODE_ENV').value('production');
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('labs').returns({
             urlCache: true
         });
 
@@ -47,30 +47,12 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet('urlCache'), true);
     });
 
-    it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
-        configUtils.set('enableDeveloperExperiments', false);
-        sinon.stub(process.env, 'NODE_ENV').value('production');
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
-            urlCache: true
-        });
-
-        // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
-        //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
-        assert.deepEqual(labs.getAll(), expectedLabsObject({
-            members: true
-        }));
-
-        assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('urlCache'), false);
-    });
-
     it('respects the value in config over settings', function () {
         configUtils.set('labs', {
             collections: false
         });
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('labs').returns({
             collections: true,
             members: true
         });
@@ -97,8 +79,8 @@ describe('Labs Service', function () {
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('all');
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('all');
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
             members: true
@@ -108,9 +90,9 @@ describe('Labs Service', function () {
     });
 
     it('returns other allowlisted flags along with members', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('all');
-        settingsCache.get.withArgs('labs').returns({
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('all');
+        getSpy.withArgs('labs').returns({
             activitypub: false
         });
 
@@ -124,8 +106,8 @@ describe('Labs Service', function () {
     });
 
     it('members flag is false when members_signup_access setting is "none"', function () {
-        sinon.stub(settingsCache, 'get');
-        settingsCache.get.withArgs('members_signup_access').returns('none');
+        const getSpy = sinon.stub(settingsCache, 'get');
+        getSpy.withArgs('members_signup_access').returns('none');
 
         assert.deepEqual(labs.getAll(), expectedLabsObject({
             members: false

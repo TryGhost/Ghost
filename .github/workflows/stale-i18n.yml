@@ -1,0 +1,26 @@
+name: 'Close stale i18n PRs'
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+jobs:
+  stale:
+    if: github.repository_owner == 'TryGhost'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          stale-pr-message: |
+            Thanks for contributing to Ghost's i18n :)
+
+            This PR has been automatically marked as stale because there has not been any activity here in 3 weeks.
+            I18n PRs tend to get out of date quickly, so we're closing them to keep the PR list clean.
+
+            If you're still interested in working on this PR, please let us know. Otherwise this PR will be closed shortly, but can always be reopened later. Thank you for understanding 🙂
+          only-labels: 'affects:i18n'
+          days-before-pr-stale: 21
+          days-before-pr-close: 7
+          exempt-pr-labels: 'feature,pinned,needs:triage'
+          stale-pr-label: 'stale'
+          close-pr-message: |
+            This PR has been automatically closed due to inactivity. If you'd like to continue working on it, feel free to open a new PR.

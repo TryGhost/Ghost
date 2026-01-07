@@ -1,1 +1,0 @@
-tinybird-cli>=4,<5

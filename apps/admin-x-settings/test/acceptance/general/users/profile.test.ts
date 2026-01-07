@@ -1,14 +1,16 @@
-import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
+import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staff-token';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
-    test('Supports editing user profiles', async ({page}) => {
+    test('Validates basic profile fields', async ({page}) => {
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
 
-        const {lastApiRequests} = await mockApi({page, requests: {
+        await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -32,29 +34,65 @@ test.describe('User profile', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        // Validation failures
-
+        // Test name validation
         await modal.getByLabel('Full name').fill('');
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Name is required');
 
+        // Test email validation
         await modal.getByLabel('Email').fill('test');
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid email address');
 
+        // Test location validation
         await modal.getByLabel('Location').fill(new Array(195).join('a'));
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Location is too long');
 
-        await modal.getByLabel('Bio').fill(new Array(210).join('a'));
+        // Test bio validation
+        await modal.getByLabel('Bio').fill(new Array(255).join('a'));
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Bio is too long');
+    });
 
-        await modal.getByLabel('Website').fill('not-a-website');
+    test('Validates social links', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Social Links').click();
+        await modal.getByTestId('website-input').fill('not-a-website');
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid URL');
 
-        const facebookInput = modal.getByLabel('Facebook profile');
+        // Test Facebook URL validation
+        const facebookInput = modal.getByTestId('facebook-input');
 
         await testUrlValidation(
             facebookInput,
@@ -70,49 +108,13 @@ test.describe('User profile', async () => {
 
         await testUrlValidation(
             facebookInput,
-            'ab99',
-            'https://www.facebook.com/ab99'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'page/ab99',
-            'https://www.facebook.com/page/ab99'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'page/*(&*(%%))',
-            'https://www.facebook.com/page/*(&*(%%))'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
-            'https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'https://www.facebook.com/groups/savethecrowninn',
-            'https://www.facebook.com/groups/savethecrowninn'
-        );
-
-        await testUrlValidation(
-            facebookInput,
             'http://github.com/username',
             'http://github.com/username',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
-        await testUrlValidation(
-            facebookInput,
-            'http://github.com/pages/username',
-            'http://github.com/pages/username',
-            'The URL must be in a format like https://www.facebook.com/yourPage'
-        );
-
-        const twitterInput = modal.getByLabel('X (formerly Twitter) profile');
+        // Test Twitter URL validation
+        const twitterInput = modal.getByTestId('x-input');
 
         await testUrlValidation(
             twitterInput,
@@ -122,49 +124,55 @@ test.describe('User profile', async () => {
 
         await testUrlValidation(
             twitterInput,
-            'testuser',
-            'https://x.com/testuser'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            'http://github.com/username',
-            'https://x.com/username'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            '*(&*(%%))',
-            '*(&*(%%))',
-            'The URL must be in a format like https://x.com/yourUsername'
-        );
-
-        await testUrlValidation(
-            twitterInput,
             'thisusernamehasmorethan15characters',
             'thisusernamehasmorethan15characters',
             'Your Username is not a valid Twitter Username'
         );
+    });
 
-        // Successful update
+    test('Updates user profile successfully', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
 
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        // Update basic profile
         await modal.getByLabel('Full name').fill('New Admin');
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
         await expect(modal.getByText('https://example.com/author/newadmin')).toBeVisible();
         await modal.getByLabel('Location').fill('some location');
-        await modal.getByLabel('Website').fill('https://example.com');
-        await modal.getByLabel('Facebook profile').fill('fb');
-        await modal.getByLabel('X (formerly Twitter) profile').fill('tw');
         await modal.getByLabel('Bio').fill('some bio');
 
-        // Email notification settings
-
-        await modal.getByLabel(/Comments/).uncheck();
-        await modal.getByLabel(/New signups/).uncheck();
-        await modal.getByLabel(/New paid members/).uncheck();
-        await modal.getByLabel(/Paid member cancellations/).check();
-        await modal.getByLabel(/Milestones/).uncheck();
+        await modal.getByTitle('Social Links').click();
+        await modal.getByTestId('website-input').fill('https://example.com');
+        await modal.getByTestId('facebook-input').fill('fb');
+        await modal.getByTestId('x-input').fill('tw');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -183,7 +191,55 @@ test.describe('User profile', async () => {
                 website: 'https://example.com',
                 facebook: 'fb',
                 twitter: '@tw',
-                bio: 'some bio',
+                bio: 'some bio'
+            }]
+        });
+    });
+
+    test('Updates email notification settings', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        // Update notification settings
+        await modal.getByTitle('Email Notifications').click();
+        await modal.getByLabel(/Comments/).uncheck();
+        await modal.getByLabel(/New signups/).uncheck();
+        await modal.getByLabel(/New paid members/).uncheck();
+        await modal.getByLabel(/Paid member cancellations/).check();
+        await modal.getByLabel(/Milestones/).uncheck();
+
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editUser?.body).toMatchObject({
+            users: [{
                 comment_notifications: false,
                 free_member_signup_notification: false,
                 paid_subscription_started_notification: false,
@@ -261,6 +317,9 @@ test.describe('User profile', async () => {
 
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -283,7 +342,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         const modal = page.getByTestId('user-detail-modal');
-
+        await modal.getByTitle('Email Notifications').click();
         await expect(modal.getByLabel(/Comments/)).toBeVisible();
         await expect(modal.getByLabel(/New signups/)).toBeHidden();
         await expect(modal.getByLabel(/New paid members/)).toBeHidden();
@@ -296,6 +355,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
@@ -317,6 +379,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         const modal = page.getByTestId('user-detail-modal');
+        await modal.getByTitle('Email Notifications').click();
 
         await expect(modal.getByLabel(/Tips & donations/)).toBeVisible();
         await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'true');
@@ -335,8 +398,13 @@ test.describe('User profile', async () => {
     });
 
     test('Hides donation notification option when Stripe disabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
         }});
 
@@ -353,7 +421,70 @@ test.describe('User profile', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
+        await modal.getByTitle('Email Notifications').click();
+
         await expect(modal.getByLabel(/Tips & donations/)).not.toBeVisible();
+    });
+
+    test('Hides paid subscription notification options when Stripe disabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Email Notifications').click();
+
+        await expect(modal.getByLabel(/New paid members/)).not.toBeVisible();
+        await expect(modal.getByLabel(/Paid member cancellations/)).not.toBeVisible();
+    });
+
+    test('Shows paid subscription notification options when Stripe enabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Email Notifications').click();
+
+        await expect(modal.getByLabel(/New paid members/)).toBeVisible();
+        await expect(modal.getByLabel(/Paid member cancellations/)).toBeVisible();
     });
 
     test('Warns when leaving without saving', async ({page}) => {
@@ -361,6 +492,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: responseFixtures.users}
         }});
@@ -391,6 +525,7 @@ test.describe('User profile', async () => {
     });
 
     test('Supports managing staff token', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'owner@test.com')!;
 
         const apiKey = {
@@ -408,6 +543,12 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getAdminBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
 
             getStaffToken: {method: 'GET', path: '/users/me/token/', response: {apiKey} satisfies StaffTokenResponseType},
@@ -458,5 +599,334 @@ test.describe('User profile', async () => {
         await expect(modal.getByTestId('api-keys')).toContainText('token-id:new-secret');
 
         expect(lastApiRequests.genStaffToken).toBeTruthy();
+    });
+
+    test.describe('Social links', () => {
+        test('Validates Threads URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const threadsInput = modal.getByTestId('threads-input');
+
+            await testUrlValidation(threadsInput, 'https://www.notthreads.com', 'https://www.notthreads.com', 'The URL must be in a format like https://www.threads.net/@yourUsername');
+
+            await testUrlValidation(threadsInput, 'https://www.threads.net/@username', 'https://www.threads.net/@username');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    threads: '@username'
+                }]
+            });
+        });
+
+        test('Validates Bluesky URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const blueskyInput = modal.getByTestId('bluesky-input');
+
+            await testUrlValidation(blueskyInput, 'https://notbluesky.com', 'https://notbluesky.com', 'The URL must be in a format like https://bsky.app/profile/yourUsername');
+
+            await testUrlValidation(blueskyInput, 'https://bsky.app/profile/username', 'https://bsky.app/profile/username');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    bluesky: 'username'
+                }]
+            });
+        });
+
+        test('Validates Linkedin URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const linkedinInput = modal.getByTestId('linkedin-input');
+
+            await testUrlValidation(linkedinInput, 'https://notlinkedin.com', 'https://notlinkedin.com', 'The URL must be in a format like https://www.linkedin.com/in/yourUsername');
+
+            await testUrlValidation(linkedinInput, 'https://www.linkedin.com/in/yourUsername', 'https://www.linkedin.com/in/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    linkedin: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates Instagram URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const instagramInput = modal.getByTestId('instagram-input');
+
+            await testUrlValidation(instagramInput, 'https://twitter.com/johnsmith', 'https://twitter.com/johnsmith', 'The URL must be in a format like https://www.instagram.com/yourUsername');
+
+            await testUrlValidation(instagramInput, 'https://www.instagram.com/yourUsername', 'https://www.instagram.com/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    instagram: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates YouTube URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const youtubeInput = modal.getByTestId('youtube-input');
+
+            await testUrlValidation(youtubeInput, 'https://www.youutbe/gsg', 'https://www.youutbe/gsg', 'The URL must be in a format like https://www.youtube.com/@yourUsername, https://www.youtube.com/user/yourUsername, or https://www.youtube.com/channel/yourChannelId');
+
+            await testUrlValidation(youtubeInput, 'https://www.youtube.com/@yourUsername', 'https://www.youtube.com/@yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    youtube: '@yourUsername'
+                }]
+            });
+        });
+
+        test('Validates TikTok URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const tiktokInput = modal.getByTestId('tiktok-input');
+
+            await testUrlValidation(tiktokInput, 'https://www.tik.com/nottiktok', 'https://www.tik.com/nottiktok', 'The URL must be in a format like https://www.tiktok.com/@yourUsername');
+
+            await testUrlValidation(tiktokInput, 'https://www.tiktok.com/@yourUsername', 'https://www.tiktok.com/@yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    tiktok: '@yourUsername'
+                }]
+            });
+        });
+
+        test('Validates Mastodon URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            await modal.getByTitle('Social Links').click();
+            const mastodonInput = modal.getByTestId('mastodon-input');
+
+            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like @username@instance.tld or https://instance.tld/@username or https://website.com/@username@instance.tld');
+
+            await testUrlValidation(mastodonInput, '@johnsmith@mastodon.social', 'https://mastodon.social/@johnsmith');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    mastodon: 'mastodon.social/@johnsmith'
+                }]
+            });
+        });
     });
 });

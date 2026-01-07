@@ -10,7 +10,7 @@ const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
 const {sequence} = require('@tryghost/promise');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products'];
+const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products', 'email_verification_required', 'site_uuid', 'amp'];
 
 // Importer maintains as much backwards compatibility as possible
 const renamedSettingsMap = {
@@ -140,9 +140,7 @@ class SettingsImporter extends BaseImporter {
                             group: to.group,
                             type: to.type,
                             flags: to.flags || null,
-                            created_by: deprecatedSetting.created_by || 1,
                             created_at: deprecatedSetting.created_at,
-                            updated_by: deprecatedSetting.updated_by || 1,
                             updated_at: deprecatedSetting.updated_at
                         });
                     });

@@ -81,11 +81,11 @@ module.exports = function (Bookshelf) {
              * removes null relations coming from `hasOne` - https://bookshelfjs.org/api.html#Model-instance-hasOne
              * Based on https://github.com/bookshelf/bookshelf/issues/72#issuecomment-25164617
              */
-            _.each(this.relations, (value, key) => {
-                if (_.isEmpty(value)) {
+            for (const key in this.relations) {
+                if (_.isEmpty(this.relations[key])) {
                     delete this.relations[key];
                 }
-            });
+            }
             // CASE: get JSON of previous attrs
             if (options.previous) {
                 const clonedModel = _.cloneDeep(this);
