@@ -1,5 +1,4 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
@@ -131,10 +130,7 @@ export const test = base.extend<GhostInstanceFixture>({
 
         const needsReload = stripeConnected || labsFlagsSpecified;
         if (needsReload) {
-            const analyticsPage = new AnalyticsOverviewPage(page);
-            await analyticsPage.goto();
-            await page.reload();
-            await analyticsPage.header.waitFor({state: 'visible'});
+            await page.reload({waitUntil: 'load'});
             debug('Settings applied and page reloaded');
         }
 
