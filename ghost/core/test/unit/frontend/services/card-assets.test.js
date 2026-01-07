@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-const CardAssetService = require('../../../../core/frontend/services/assets-minification/CardAssets');
+const CardAssetService = require('../../../../core/frontend/services/assets-minification/card-assets');
 
 const themeDefaults = require('../../../../core/frontend/services/theme-engine/config/defaults.json');
 

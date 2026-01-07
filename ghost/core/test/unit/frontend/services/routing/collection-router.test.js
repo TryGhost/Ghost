@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
 const events = require('../../../../../core/server/lib/common/events');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
-const CollectionRouter = require('../../../../../core/frontend/services/routing/CollectionRouter');
+const CollectionRouter = require('../../../../../core/frontend/services/routing/collection-router');
 const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {

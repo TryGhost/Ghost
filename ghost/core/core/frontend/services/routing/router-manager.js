@@ -1,13 +1,13 @@
 const debug = require('@tryghost/debug')('frontend:routing');
 const _ = require('lodash');
-const StaticRoutesRouter = require('./StaticRoutesRouter');
-const StaticPagesRouter = require('./StaticPagesRouter');
-const CollectionRouter = require('./CollectionRouter');
-const TaxonomyRouter = require('./TaxonomyRouter');
-const PreviewRouter = require('./PreviewRouter');
-const ParentRouter = require('./ParentRouter');
-const EmailRouter = require('./EmailRouter');
-const UnsubscribeRouter = require('./UnsubscribeRouter');
+const StaticRoutesRouter = require('./static-routes-router');
+const StaticPagesRouter = require('./static-pages-router');
+const CollectionRouter = require('./collection-router');
+const TaxonomyRouter = require('./taxonomy-router');
+const PreviewRouter = require('./preview-router');
+const ParentRouter = require('./parent-router');
+const EmailRouter = require('./email-router');
+const UnsubscribeRouter = require('./unsubscribe-router');
 
 // This emits its own routing events
 const events = require('../../../server/lib/common/events');

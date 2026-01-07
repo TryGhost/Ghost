@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const BaseMapGenerator = require('./BaseSiteMapGenerator');
+const BaseMapGenerator = require('./base-site-map-generator');
 
 class TagsMapGenerator extends BaseMapGenerator {
     constructor(opts) {

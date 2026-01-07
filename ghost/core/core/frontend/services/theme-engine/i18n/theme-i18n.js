@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const I18n = require('./I18n');
+const I18n = require('./i18n');
 
 class ThemeI18n extends I18n {
     /**

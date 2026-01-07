@@ -8,12 +8,12 @@ const {URLResourceUpdatedEvent} = require('../../../../../core/shared/events');
 
 const events = require('../../../../../core/server/lib/common/events');
 
-const SiteMapManager = require('../../../../../core/frontend/services/sitemap/SiteMapManager');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
+const SiteMapManager = require('../../../../../core/frontend/services/sitemap/site-map-manager');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tags-map-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-map-generator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
 
 describe('Unit: sitemap/manager', function () {
     let eventsToRemember;
