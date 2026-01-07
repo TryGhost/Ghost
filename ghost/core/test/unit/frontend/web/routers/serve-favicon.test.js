@@ -4,7 +4,7 @@ const express = require('../../../../../core/shared/express');
 const serveFavicon = require('../../../../../core/frontend/web/routers/serve-favicon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const storage = require('../../../../../core/server/adapters/storage');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const path = require('path');
 
 describe('Serve Favicon', function () {

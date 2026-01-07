@@ -18,7 +18,7 @@ test.describe('Ghost Admin - i18n Newsletter', () => {
         const adminPublicationPage = new SettingsPage(page).publicationSection;
         await adminPublicationPage.goto();
         await adminPublicationPage.setLanguage('fr');
-        await expect(adminPublicationPage.languageField).toHaveValue('fr');
+        await expect(adminPublicationPage.localeSelect).toContainText('French (fr)');
 
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);

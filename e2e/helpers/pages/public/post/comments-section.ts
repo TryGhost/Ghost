@@ -4,6 +4,7 @@ export class CommentsSection {
     private readonly page: Page;
     readonly commentsFrame: FrameLocator;
     readonly commentsIframe: Locator;
+    readonly deletePopupFrame: FrameLocator;
 
     readonly ctaBox: Locator;
     readonly signUpButton: Locator;
@@ -28,6 +29,7 @@ export class CommentsSection {
         this.page = page;
         this.commentsIframe = this.page.locator('iframe[title="comments-frame"]');
         this.commentsFrame = this.page.frameLocator('iframe[title="comments-frame"]');
+        this.deletePopupFrame = this.page.frameLocator('iframe[title="deletePopup"]');
 
         // CTA box (shown when user is not logged in or cannot comment)
         this.ctaBox = this.commentsFrame.getByTestId('cta-box');
@@ -76,20 +78,69 @@ export class CommentsSection {
         await this.comments.waitFor({state: 'visible', timeout: 10000});
     }
 
+    getCommentComponentByText(text: string): Locator {
+        return this.getCommentByText(text).locator('../..');
+    }
+
     getCommentByText(text: string): Locator {
         return this.commentsFrame
             .getByTestId('comment-content')
             .getByText(text, {exact: true});
     }
 
-    async replyToComment(commentText: string, replyText: string): Promise<void> {
-        const comment = this.getCommentByText(commentText).locator('../..');
+    async replyToComment(commentToManageText: string, replyText: string): Promise<void> {
+        const comment = this.getCommentComponentByText(commentToManageText);
         await comment.getByRole('button', {name: 'Reply'}).click();
+
         await this.commentsFrame.getByTestId('reply-form').getByTestId('editor').fill(replyText);
         await this.addReplyButton.click();
     }
 
+    async getCommentActionButtons(commentToManageText: string): Promise<{
+            editCommentButton: Locator;
+            deleteCommentButton: Locator;
+            hideCommentButton: Locator;
+            showCommentButton: Locator;
+    }> {
+        const comment = this.getCommentComponentByText(commentToManageText);
+        await comment.getByTestId('more-button').click();
+        return {
+            editCommentButton: comment.getByTestId('edit'),
+            deleteCommentButton: comment.getByTestId('delete'),
+            hideCommentButton: comment.getByTestId('hide-button'),
+            showCommentButton: comment.getByTestId('show-button')
+        };
+    }
+
     async likeComment(text: string): Promise<void> {
-        await this.getCommentByText(text).getByTestId('like-button').click();
+        const comment = this.getCommentComponentByText(text);
+        await comment.getByTestId('like-button').click();
+    }
+
+    async editComment(commentToManageText: string, newText: string): Promise<void> {
+        const comment = this.getCommentComponentByText(commentToManageText);
+        await comment.getByTestId('more-button').click();
+        await comment.getByTestId('edit').click();
+
+        await this.fillEditCommentForm(commentToManageText, newText);
+    }
+
+    async deleteComment(commentToManageText: string): Promise<void> {
+        const comment = this.getCommentComponentByText(commentToManageText);
+        await comment.getByTestId('more-button').click();
+        await comment.getByTestId('delete').click();
+
+        // Popup is in a separate iframe with title "deletePopup"
+        await this.deletePopupFrame.getByTestId('delete-popup-confirm').click();
+        await this.deletePopupFrame.getByTestId('delete-popup-confirm').waitFor({state: 'hidden', timeout: 5000});
+    }
+
+    // Find and fill the edit form - it's the one containing the original commment text
+    private async fillEditCommentForm(formForCommentText: string, textToFill: string): Promise<void> {
+        let editForm = this.commentsFrame.getByTestId('form').filter({hasText: formForCommentText});
+        await editForm.getByTestId('editor').fill(textToFill);
+
+        editForm = this.commentsFrame.getByTestId('form').filter({hasText: textToFill});
+        await editForm.getByTestId('submit-form-button').click();
     }
 }

@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const labs = require('../../../../core/shared/labs');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;

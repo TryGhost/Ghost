@@ -2,10 +2,7 @@
   "name": "@tryghost/signup-form",
   "version": "0.3.4",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/TryGhost/Ghost/tree/main/packages/signup-form"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "LICENSE",

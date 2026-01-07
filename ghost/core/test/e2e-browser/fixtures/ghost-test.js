@@ -7,7 +7,7 @@ const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-fram
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
 
 const startWebhookServer = (port) => {

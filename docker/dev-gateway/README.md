@@ -23,6 +23,9 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
   - For developing Lexical in the separate [Koenig repository](https://github.com/TryGhost/Koenig)
   - Requires `EDITOR_URL=/ghost/assets/koenig-lexical/` when starting admin dev server
   - Automatically falls back to Ghost backend (built package) if dev server is not running
+- `ACTIVITYPUB_PROXY_TARGET` - *Optional:* ActivityPub service (e.g., `host.docker.internal:8080`)
+  - For developing with the [ActivityPub project](https://github.com/TryGhost/ActivityPub) running locally
+  - Requires the ActivityPub docker-compose services to be running
 
 **Note:** AdminX React apps (admin-x-settings, activitypub, posts, stats) are served through the admin dev server so they don't need separate proxy entries.
 
@@ -36,6 +39,9 @@ The Caddyfile defines these routing rules:
 |--------------------------------------|-------------------------------------|------------------------------------------------------------------------|
 | `/ember-cli-live-reload.js`          | Admin live reload (port 4200)       | Ember hot-reload script and WebSocket                                  |
 | `/ghost/api/*`                       | Ghost backend                       | Ghost API (bypasses admin dev server)                                  |
+| `/.ghost/activitypub/*`              | ActivityPub server (port 8080)      | *Optional:* ActivityPub API (requires AP project running)              |
+| `/.well-known/webfinger`             | ActivityPub server (port 8080)      | *Optional:* WebFinger for federation                                   |
+| `/.well-known/nodeinfo`              | ActivityPub server (port 8080)      | *Optional:* NodeInfo for federation                                    |
 | `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
 | `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
 | `/ghost/assets/comments-ui/*`        | Comments dev server (port 7173)     | Comments widget                                                        |

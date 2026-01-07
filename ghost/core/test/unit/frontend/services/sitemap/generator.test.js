@@ -6,11 +6,11 @@ const moment = require('moment');
 const assert = require('assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tags-map-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-map-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct

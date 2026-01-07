@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const mailService = require('../../../core/server/services/mail');
 const config = require('../../../core/shared/config');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
@@ -46,12 +46,23 @@ describe('Member Welcome Emails Integration', function () {
             lexical,
             created_at: new Date()
         });
+
+        await db.knex('automated_emails').insert({
+            id: ObjectId().toHexString(),
+            status: 'active',
+            name: 'Paid Member Welcome Email',
+            slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+            subject: 'Welcome paid member to {{site.title}}',
+            lexical,
+            created_at: new Date()
+        });
     });
 
     afterEach(async function () {
         await db.knex('outbox').del();
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
         await configUtils.restore();
     });
 
@@ -72,7 +83,7 @@ describe('Member Welcome Emails Integration', function () {
             const entry = outboxEntries.models[0];
             assert.equal(entry.get('event_type'), 'MemberCreatedEvent');
             assert.equal(entry.get('status'), OUTBOX_STATUSES.PENDING);
-            
+
             const payload = JSON.parse(entry.get('payload'));
             assert.equal(payload.memberId, member.id);
             assert.equal(payload.email, 'welcome-test@example.com');
@@ -83,7 +94,7 @@ describe('Member Welcome Emails Integration', function () {
 
         it('does NOT create outbox entry when config is not set', async function () {
             configUtils.set('memberWelcomeEmailTestInbox', '');
-            
+
             await membersService.api.members.create({
                 email: 'no-welcome@example.com',
                 name: 'No Welcome Member'
@@ -130,7 +141,7 @@ describe('Member Welcome Emails Integration', function () {
             configUtils.set('memberWelcomeEmailTestInbox', 'test-inbox@example.com');
 
             const beforeCreation = new Date(Date.now() - 1000);
-            
+
             await membersService.api.members.create({
                 email: 'timestamp-test@example.com',
                 name: 'Timestamp Test'
@@ -145,7 +156,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(outboxEntries.length, 1);
             const entry = outboxEntries.models[0];
             const payload = JSON.parse(entry.get('payload'));
-            
+
             const timestamp = new Date(payload.timestamp);
             assert.ok(timestamp >= beforeCreation);
             assert.ok(timestamp <= afterCreation);
@@ -223,6 +234,54 @@ describe('Member Welcome Emails Integration', function () {
                     email: 'notemplate@example.com',
                     name: 'No Template Member',
                     status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+
+            const entriesAfterJob = await models.Outbox.findAll();
+            assert.equal(entriesAfterJob.length, 1);
+            assert.ok(entriesAfterJob.models[0].get('message'));
+        });
+
+        it('does not send email when paid template is inactive but entry has status paid', async function () {
+            await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid)
+                .update({status: 'inactive'});
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: 'paid_member_1',
+                    email: 'paid-inactive@example.com',
+                    name: 'Paid Inactive Template Member',
+                    status: 'paid'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+
+            const entriesAfterJob = await models.Outbox.findAll();
+            assert.equal(entriesAfterJob.length, 1);
+            assert.ok(entriesAfterJob.models[0].get('message').includes('inactive'));
+        });
+
+        it('does not send email when no paid template exists but entry has status paid', async function () {
+            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: 'paid_member_2',
+                    email: 'paid-notemplate@example.com',
+                    name: 'Paid No Template Member',
+                    status: 'paid'
                 }),
                 status: OUTBOX_STATUSES.PENDING
             });

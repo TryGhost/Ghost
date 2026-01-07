@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const should = require('should');
 const models = require('../../../../core/server/models');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const labs = require('../../../../core/shared/labs');
 
 const config = configUtils.config;
