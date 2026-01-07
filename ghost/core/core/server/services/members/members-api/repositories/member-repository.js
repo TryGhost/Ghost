@@ -2016,6 +2016,7 @@ module.exports = class MemberRepository {
 
     /**
      * @param {string} memberId
+<<<<<<< HEAD
      * @param {import('../../commenting').MemberCommenting} commenting
      * @param {string} actionName
      * @param {Object} context
