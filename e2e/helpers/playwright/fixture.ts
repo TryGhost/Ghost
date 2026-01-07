@@ -129,14 +129,14 @@ export const test = base.extend<GhostInstanceFixture>({
         const page = pageWithAuthenticatedUser.page;
         const settingsService = new SettingsService(page.request);
 
-        const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
-        if (labsFlagsSpecified) {
-            await setupLabSettings(page, settingsService, labs);
-        }
-
         if (stripeConnected) {
             debug('Setting up Stripe connection for test');
             await settingsService.setStripeConnected();
+        }
+
+        const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
+        if (labsFlagsSpecified) {
+            await setupLabSettings(page, settingsService, labs);
         }
 
         await use(page);
