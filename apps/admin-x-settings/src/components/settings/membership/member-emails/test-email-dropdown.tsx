@@ -17,7 +17,6 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     subject,
     lexical,
     validateForm
-
 }) => {
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: sendTestEmail} = useSendTestWelcomeEmail();
