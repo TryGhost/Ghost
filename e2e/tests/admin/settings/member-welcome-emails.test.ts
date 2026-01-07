@@ -40,6 +40,19 @@ test.describe('Ghost Admin - Member Welcome Emails', () => {
     test('can enable paid welcome emails', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
+        // Mocked Stripe as connected so the paid welcome email toggle will render
+        await page.route('**/ghost/api/admin/settings/**', async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+
+            json.settings.push(
+                {key: 'stripe_connect_secret_key', value: '••••••••'},
+                {key: 'stripe_connect_publishable_key', value: 'pk_test_fakeKeyForE2eTesting'}
+            );
+
+            await route.fulfill({response, json});
+        });
+
         await welcomeEmailsSection.goto();
         await welcomeEmailsSection.enablePaidWelcomeEmail();
 
