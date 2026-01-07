@@ -2,8 +2,8 @@ const debug = require('@tryghost/debug')('card-assets');
 const _ = require('lodash');
 const path = require('path');
 const config = require('../../../shared/config');
-const Minifier = require('./Minifier');
-const AssetsMinificationBase = require('./AssetsMinificationBase');
+const Minifier = require('./minifier');
+const AssetsMinificationBase = require('./assets-minification-base');
 
 module.exports = class CardAssets extends AssetsMinificationBase {
     constructor(options = {}) {

@@ -1,10 +1,10 @@
 const DomainEvents = require('@tryghost/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
-const IndexMapGenerator = require('./SiteMapIndexGenerator');
-const PagesMapGenerator = require('./PageMapGenerator');
-const PostsMapGenerator = require('./PostMapGenerator');
-const UsersMapGenerator = require('./UserMapGenerator');
-const TagsMapGenerator = require('./TagsMapGenerator');
+const IndexMapGenerator = require('./site-map-index-generator');
+const PagesMapGenerator = require('./page-map-generator');
+const PostsMapGenerator = require('./post-map-generator');
+const UsersMapGenerator = require('./user-map-generator');
+const TagsMapGenerator = require('./tags-map-generator');
 
 // This uses events from the routing service and the URL service
 const events = require('../../../server/lib/common/events');

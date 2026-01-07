@@ -1,10 +1,10 @@
 const debug = require('@tryghost/debug')('routing:collection-router');
 const urlUtils = require('../../../shared/url-utils');
-const ParentRouter = require('./ParentRouter');
+const ParentRouter = require('./parent-router');
 
 const controllers = require('./controllers');
 const middleware = require('./middleware');
-const RSSRouter = require('./RSSRouter');
+const RSSRouter = require('./rss-router');
 
 /**
  * @description Collection Router for post resource.

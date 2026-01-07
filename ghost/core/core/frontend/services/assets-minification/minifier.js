@@ -1,6 +1,6 @@
 /**
  * ```
- * const Minifier = require('./Minifier');
+ * const Minifier = require('./minifier');
  * const minifier = new Minifier({
  *     src: 'my/src/path',
  *     dest: 'my/dest/path'
