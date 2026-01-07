@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const config = require('../../core/shared/config');
 const urlUtils = require('../../core/shared/url-utils');
 

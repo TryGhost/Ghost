@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const config = require('../../../core/shared/config');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 const models = require('../../../core/server/models');
 
 describe('Ghost Admin - Storage Adapter Switching', function () {

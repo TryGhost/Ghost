@@ -4,7 +4,7 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 const escapeRegExp = require('lodash/escapeRegExp');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 

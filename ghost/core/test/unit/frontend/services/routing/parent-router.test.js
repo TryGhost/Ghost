@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const ParentRouter = require('../../../../../core/frontend/services/routing/parent-router');
 

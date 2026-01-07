@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
 const crypto = require('crypto');
 const assert = require('assert').strict;

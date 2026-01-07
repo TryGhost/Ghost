@@ -4,7 +4,7 @@ const assert = require('assert/strict');
 const nock = require('nock');
 
 // Helper services
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
 const EmailMockReceiver = require('@tryghost/email-mock-receiver');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;

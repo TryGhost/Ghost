@@ -3,7 +3,7 @@ const concat = require('../../../../core/frontend/helpers/concat');
 const link_class = require('../../../../core/frontend/helpers/link_class');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 let defaultGlobals;
 

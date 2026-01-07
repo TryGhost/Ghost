@@ -1,7 +1,7 @@
 require('should');
 
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
 const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');

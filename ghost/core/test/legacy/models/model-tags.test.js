@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtilsHelper = require('../../utils/url-utils');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 

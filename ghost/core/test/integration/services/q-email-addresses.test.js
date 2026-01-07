@@ -3,11 +3,11 @@ const Mention = require('../../../core/server/services/mentions/Mention');
 const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const {mockSetting} = require('../../utils/e2e-framework-mock-manager');
 const ObjectId = require('bson-objectid').default;
 const {sendEmail, getDefaultNewsletter, getLastEmail} = require('../../utils/batch-email-utils');
-const urlUtils = require('../../utils/urlUtils');
+const urlUtils = require('../../utils/url-utils');
 
 let emailMockReceiver, agent, membersAgent;
 

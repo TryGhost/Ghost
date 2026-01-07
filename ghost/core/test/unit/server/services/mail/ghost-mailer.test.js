@@ -3,7 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
 const assert = require('assert/strict');
