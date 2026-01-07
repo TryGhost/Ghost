@@ -1843,4 +1843,21 @@ module.exports = class MemberRepository {
         }
         return true;
     }
+
+    /**
+     * @param {string} memberId
+     * @param {string} commentingJson
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commentingJson, actionName, context) {
+        return this._Member.edit(
+            {commenting: commentingJson},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
+    }
 };

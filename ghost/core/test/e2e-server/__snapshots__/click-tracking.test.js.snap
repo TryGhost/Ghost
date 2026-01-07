@@ -15,6 +15,7 @@ Object {
   "member": Object {
     "current": Object {
       "avatar_image": null,
+      "commenting": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "email": "with-product@test.com",
