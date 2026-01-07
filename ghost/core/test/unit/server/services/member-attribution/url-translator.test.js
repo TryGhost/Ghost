@@ -10,7 +10,7 @@ const models = {
             }
             // Return post with appropriate status based on id
             const postStatus = id === 'sent-post' ? 'sent' : 'published';
-            return {id: 'post_id', get: (attr) => attr === 'status' ? postStatus : 'Title'};
+            return {id: 'post_id', get: attr => (attr === 'status' ? postStatus : 'Title')};
         }
     },
     User: {
