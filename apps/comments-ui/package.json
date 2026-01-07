@@ -2,7 +2,7 @@
   "name": "@tryghost/comments-ui",
   "version": "1.2.6",
   "license": "MIT",
-  "repository": "git@github.com:TryGhost/comments-ui.git",
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "unpkg": "umd/comments-ui.umd.js",
   "files": [

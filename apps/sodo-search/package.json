@@ -2,10 +2,7 @@
   "name": "@tryghost/sodo-search",
   "version": "1.8.3",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "umd/",
