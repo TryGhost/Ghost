@@ -22,6 +22,7 @@ Object {
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
+      "featurebaseFeedback": true,
       "explore": true,
       "i18n": true,
       "importMemberTier": true,

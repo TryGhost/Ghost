@@ -56,7 +56,8 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'commentModeration',
     'commentPermalinks',
-    'indexnow'
+    'indexnow',
+    'featurebaseFeedback'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
