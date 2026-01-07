@@ -1,4 +1,4 @@
-const ExplorePingService = require('./ExplorePingService');
+const ExplorePingService = require('./explore-ping-service');
 const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');

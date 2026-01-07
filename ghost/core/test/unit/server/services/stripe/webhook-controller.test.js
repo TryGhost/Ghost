@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const WebhookController = require('../../../../../core/server/services/stripe/WebhookController');
+const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
 
 describe('WebhookController', function () {
     let controller;

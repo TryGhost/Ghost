@@ -1,4 +1,4 @@
-const PostsService = require('../../../../../core/server/services/posts/PostsService');
+const PostsService = require('../../../../../core/server/services/posts/postsservice');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 

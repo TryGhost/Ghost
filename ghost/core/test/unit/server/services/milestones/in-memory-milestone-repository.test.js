@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/InMemoryMilestoneRepository');
-const Milestone = require('../../../../../core/server/services/milestones/Milestone');
+const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/in-memory-milestone-repository');
+const Milestone = require('../../../../../core/server/services/milestones/milestone');
 const DomainEvents = require('@tryghost/domain-events');
 const sinon = require('sinon');
 

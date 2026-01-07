@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/IdentityTokenService';
+import {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/identity-token-service';
 import {JWK} from 'node-jose';
 import {verify} from 'jsonwebtoken';
 

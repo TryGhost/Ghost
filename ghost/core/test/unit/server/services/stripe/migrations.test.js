@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const Migrations = require('../../../../../core/server/services/stripe/StripeMigrations');
+const Migrations = require('../../../../../core/server/services/stripe/stripe-migrations');
 
 describe('Migrations', function () {
     describe('updateStripeProductNamesFromDefaultProduct', function () {

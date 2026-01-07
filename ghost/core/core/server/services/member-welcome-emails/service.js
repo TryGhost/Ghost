@@ -7,7 +7,7 @@ const emailAddressService = require('../email-address');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
-const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
+const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 class MemberWelcomeEmailService {
@@ -97,7 +97,7 @@ class MemberWelcomeEmailService {
         if (!slug) {
             return false;
         }
-        
+
         const row = await AutomatedEmail.findOne({slug});
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
     }

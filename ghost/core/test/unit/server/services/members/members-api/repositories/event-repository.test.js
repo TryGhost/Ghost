@@ -1,5 +1,5 @@
 const should = require('should');
-const EventRepository = require('../../../../../../../core/server/services/members/members-api/repositories/EventRepository');
+const EventRepository = require('../../../../../../../core/server/services/members/members-api/repositories/event-repository');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 

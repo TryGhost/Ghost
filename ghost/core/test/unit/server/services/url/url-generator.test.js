@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const UrlGenerator = require('../../../../../core/server/services/url/UrlGenerator');
+const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
 
 describe('Unit: services/url/UrlGenerator', function () {
     let queue;

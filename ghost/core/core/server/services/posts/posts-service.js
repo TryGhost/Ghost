@@ -1,5 +1,5 @@
-const PostsService = require('./PostsService');
-const PostsExporter = require('./PostsExporter');
+const PostsService = require('./postsservice');
+const PostsExporter = require('./posts-exporter');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 /**
@@ -9,7 +9,7 @@ const getPostServiceInstance = () => {
     const urlUtils = require('../../../shared/url-utils');
     const labs = require('../../../shared/labs');
     const models = require('../../models');
-    const PostStats = require('./stats/PostStats');
+    const PostStats = require('./stats/post-stats');
     const emailService = require('../email-service');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');

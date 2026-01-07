@@ -2,7 +2,7 @@ const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const Queue = require('../../../../../core/server/services/url/Queue');
+const Queue = require('../../../../../core/server/services/url/queue');
 
 describe('Unit: services/url/Queue', function () {
     /** @type {Queue} */
