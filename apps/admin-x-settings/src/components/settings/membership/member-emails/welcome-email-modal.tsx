@@ -5,8 +5,8 @@ import MemberEmailEditor from './member-email-editor';
 import {Button, Hint, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
+import TestEmailDropdown from './test-email-dropdown';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../../../components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -44,16 +44,14 @@ const isEmptyLexical = (lexical: string | null | undefined): boolean => {
 
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const {updateRoute} = useRouting();
-    const {data: currentUser} = useCurrentUser();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
-    const [testEmail, setTestEmail] = useState(currentUser?.email || '');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const handleError = useHandleError();
     const {settings} = useGlobalData();
     const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
 
-    const {formState, saveState, updateForm, handleSave, okProps, errors} = useForm({
+    const {formState, saveState, updateForm, handleSave, okProps, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
             lexical: automatedEmail?.lexical || ''
@@ -66,7 +64,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         onValidate: (state) => {
             const newErrors: Record<string, string> = {};
 
-            if (!state.subject) {
+            if (!state.subject?.trim()) {
                 newErrors.subject = 'A subject is required';
             }
 
@@ -77,13 +75,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             return newErrors;
         }
     });
-
-    // Update test email when current user data loads
-    useEffect(() => {
-        if (currentUser?.email) {
-            setTestEmail(currentUser.email);
-        }
-    }, [currentUser?.email]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -147,28 +138,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     onClick={() => setShowTestDropdown(!showTestDropdown)}
                                 />
                                 {showTestDropdown && (
-                                    <div className='absolute right-0 top-full z-10 mt-2 w-[260px] rounded border border-grey-200 bg-white p-4 shadow-lg'>
-                                        <div className='mb-3'>
-                                            <label className='mb-2 block text-sm font-semibold'>Send test email</label>
-                                            <TextField
-                                                className='!h-[36px]'
-                                                placeholder='you@yoursite.com'
-                                                value={testEmail}
-                                                onChange={e => setTestEmail(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className='flex justify-end'>
-                                            <Button
-                                                className='w-full'
-                                                color="black"
-                                                label="Send"
-                                                onClick={() => {
-                                                    // Handle send test email logic here
-                                                    setShowTestDropdown(false);
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
                                 )}
                             </div>
                             <Button
