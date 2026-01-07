@@ -38,7 +38,6 @@ async function fetchPendingEntries({batchSize, jobStartISO}) {
 }
 
 async function processOutbox() {
-    logging.info(`${OUTBOX_LOG_KEY} Starting outbox processing job. Max entries: ${MAX_ENTRIES_PER_JOB}, Batch size: ${BATCH_SIZE}`);
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
