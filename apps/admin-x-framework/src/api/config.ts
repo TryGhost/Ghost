@@ -81,6 +81,9 @@ export type Config = {
             enabled?: boolean
             sendingDomain?: string
         },
+        featurebase?: {
+            organization?: string
+        }
     }
     security?: {
         staffDeviceVerification?: boolean;
