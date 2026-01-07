@@ -132,8 +132,7 @@ class UrlTranslator {
         switch (type) {
         case 'post':
         case 'page': {
-            // Include 'sent' status for email-only posts, not just 'published'
-            const post = await this.models.Post.findOne({id}, {require: false, filter: 'status:[published,sent]'});
+            const post = await this.models.Post.findOne({id, status: 'all'}, {require: false});
             if (!post) {
                 return null;
             }
