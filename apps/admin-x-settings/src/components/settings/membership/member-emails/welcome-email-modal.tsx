@@ -64,7 +64,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         onValidate: (state) => {
             const newErrors: Record<string, string> = {};
 
-            if (!state.subject) {
+            if (!state.subject?.trim()) {
                 newErrors.subject = 'A subject is required';
             }
 
