@@ -101,8 +101,24 @@ module.exports = {
             }
         },
         {
-            // These folders use kebab-case filenames
-            files: ['core/frontend/**/*.{js,ts}', 'core/server/services/**/*.{js,ts}', 'core/server/*.{js,ts}'],
+            // Enforce kebab-case filenames across core/
+            // Excludes folders still pending migration to kebab-case
+            files: [
+                'core/**/*.{js,ts}'
+            ],
+            excludedFiles: [
+                // Adapters - referenced by name in config files
+                'core/server/adapters/**',
+                // Shared events - many external consumers
+                'core/shared/events/**',
+                'core/shared/events-ts/**',
+                // Shared caches
+                'core/shared/custom-theme-settings-cache/**',
+                'core/shared/settings-cache/**',
+                'core/shared/SentryKnexTracingIntegration.js',
+                // libs
+                'core/server/lib/**'
+            ],
             rules: {
                 'ghost/filenames/match-exported-class': 'off',
                 'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
