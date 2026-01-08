@@ -2,11 +2,11 @@ const errors = require('@tryghost/errors');
 const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
-const Queue = require('../../../../../core/server/services/url/Queue');
-const Resources = require('../../../../../core/server/services/url/Resources');
-const UrlGenerator = require('../../../../../core/server/services/url/UrlGenerator');
-const Urls = require('../../../../../core/server/services/url/Urls');
-const UrlService = rewire('../../../../../core/server/services/url/UrlService');
+const Queue = require('../../../../../core/server/services/url/queue');
+const Resources = require('../../../../../core/server/services/url/resources');
+const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
+const Urls = require('../../../../../core/server/services/url/urls');
+const UrlService = rewire('../../../../../core/server/services/url/url-service');
 
 describe('Unit: services/url/UrlService', function () {
     let QueueStub;

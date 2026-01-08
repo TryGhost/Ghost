@@ -15,14 +15,14 @@ class EmailServiceWrapper {
             return;
         }
 
-        const EmailService = require('./EmailService');
-        const EmailController = require('./EmailController');
-        const EmailRenderer = require('./EmailRenderer');
-        const SendingService = require('./SendingService');
-        const BatchSendingService = require('./BatchSendingService');
-        const EmailSegmenter = require('./EmailSegmenter');
-        const MailgunEmailProvider = require('./MailgunEmailProvider');
-        const {DomainWarmingService} = require('./DomainWarmingService');
+        const EmailService = require('./email-service');
+        const EmailController = require('./email-controller');
+        const EmailRenderer = require('./email-renderer');
+        const SendingService = require('./sending-service');
+        const BatchSendingService = require('./batch-sending-service');
+        const EmailSegmenter = require('./email-segmenter');
+        const MailgunEmailProvider = require('./mailgun-email-provider');
+        const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/mailgun-client');

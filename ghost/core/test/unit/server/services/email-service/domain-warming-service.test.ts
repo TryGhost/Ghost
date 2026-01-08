@@ -1,5 +1,5 @@
 import {createModelClass} from './utils';
-import {DomainWarmingService} from '../../../../../core/server/services/email-service/DomainWarmingService';
+import {DomainWarmingService} from '../../../../../core/server/services/email-service/domain-warming-service';
 import sinon from 'sinon';
 import assert from 'assert/strict';
 

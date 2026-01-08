@@ -1,14 +1,14 @@
 const nql = require('@tryghost/nql');
-const Mention = require('./Mention');
+const Mention = require('./mention');
 
 /**
- * @typedef {import('./MentionsAPI').GetPageOptions} GetPageOptions
- * @typedef {import('./MentionsAPI').IMentionRepository} IMentionRepository
+ * @typedef {import('./mentions-api').GetPageOptions} GetPageOptions
+ * @typedef {import('./mentions-api').IMentionRepository} IMentionRepository
  */
 
 /**
  * @template Model
- * @typedef {import('./MentionsAPI').Page<Model>} Page<Model>
+ * @typedef {import('./mentions-api').Page<Model>} Page<Model>
  */
 
 /**

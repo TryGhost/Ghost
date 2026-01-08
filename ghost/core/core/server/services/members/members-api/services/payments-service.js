@@ -11,7 +11,7 @@ class PaymentsService {
      * @param {object} deps
      * @param {import('bookshelf').Model} deps.Offer
      * @param {import('../../../offers/application/offers-api')} deps.offersAPI
-     * @param {import('../../../stripe/StripeAPI')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
      */
     constructor(deps) {

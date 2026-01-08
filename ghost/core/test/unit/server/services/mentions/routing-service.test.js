@@ -4,7 +4,7 @@ const nock = require('nock');
 const ObjectID = require('bson-objectid').default;
 
 const externalRequest = require('../../../../../core/server/lib/request-external');
-const RoutingService = require('../../../../../core/server/services/mentions/RoutingService');
+const RoutingService = require('../../../../../core/server/services/mentions/routing-service');
 
 describe('RoutingService', function () {
     afterEach(function () {

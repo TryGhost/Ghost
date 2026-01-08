@@ -1,12 +1,12 @@
-const WebhookManager = require('./WebhookManager');
-const StripeAPI = require('./StripeAPI');
-const StripeMigrations = require('./StripeMigrations');
-const WebhookController = require('./WebhookController');
+const WebhookManager = require('./webhook-manager');
+const StripeAPI = require('./stripe-api');
+const StripeMigrations = require('./stripe-migrations');
+const WebhookController = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
-const SubscriptionEventService = require('./services/webhook/SubscriptionEventService');
-const InvoiceEventService = require('./services/webhook/InvoiceEventService');
-const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
+const SubscriptionEventService = require('./services/webhook/subscription-event-service');
+const InvoiceEventService = require('./services/webhook/invoice-event-service');
+const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -34,7 +34,7 @@ module.exports = class StripeService {
      * @param {*} deps.membersService
      * @param {*} deps.donationService
      * @param {*} deps.staffService
-     * @param {import('./WebhookManager').StripeWebhook} deps.StripeWebhook
+     * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
      * @param {object} deps.models
      * @param {object} deps.models.Product
      * @param {object} deps.models.StripePrice

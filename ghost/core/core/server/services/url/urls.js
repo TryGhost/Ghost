@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const events = require('../../lib/common/events');
 
 /**
- * @typedef {{url: string, generatorId: string, resource: import('./Resource')}} Url
+ * @typedef {{url: string, generatorId: string, resource: import('./resource')}} Url
  */
 
 /**

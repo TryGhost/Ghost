@@ -1,4 +1,4 @@
-const EmailService = require('../../../../../core/server/services/email-service/EmailService');
+const EmailService = require('../../../../../core/server/services/email-service/email-service');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');

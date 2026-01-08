@@ -1,7 +1,7 @@
 const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('../../../shared/events');
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
-const EmailOpenedEvent = require('../../services/email-service/events/EmailOpenedEvent');
+const EmailOpenedEvent = require('../email-service/events/email-opened-event');
 const logging = require('@tryghost/logging');
 const LastSeenAtCache = require('./last-seen-at-cache');
 

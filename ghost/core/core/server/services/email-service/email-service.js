@@ -5,15 +5,15 @@
  * @typedef {object} Email
  * @typedef {object} LimitService
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
- * @typedef {import ('./DomainWarmingService').DomainWarmingService} DomainWarmingService
+ * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
  */
 
-const BatchSendingService = require('./BatchSendingService');
+const BatchSendingService = require('./batch-sending-service');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const EmailRenderer = require('./EmailRenderer');
-const EmailSegmenter = require('./EmailSegmenter');
-const SendingService = require('./SendingService');
+const EmailRenderer = require('./email-renderer');
+const EmailSegmenter = require('./email-segmenter');
+const SendingService = require('./sending-service');
 const logging = require('@tryghost/logging');
 
 const messages = {
@@ -190,11 +190,11 @@ class EmailService {
 
     /**
      * @params {string} [segment]
-     * @return {import('./EmailRenderer').MemberLike}
+     * @return {import('./email-renderer').MemberLike}
      */
     getDefaultExampleMember(segment) {
         /**
-         * @type {import('./EmailRenderer').MemberLike}
+         * @type {import('./email-renderer').MemberLike}
          */
         return {
             id: 'example-id',
@@ -219,11 +219,11 @@ class EmailService {
      * @private
      * @param {string} [email] (optional) Search for a member with this email address and use it as the example. If not found, defaults to the default but still uses the provided email address.
      * @param {string} [segment] (optional) The segment to use for the example member
-     * @return {Promise<import('./EmailRenderer').MemberLike>}
+     * @return {Promise<import('./email-renderer').MemberLike>}
      */
     async getExampleMember(email, segment) {
         /**
-         * @type {import('./EmailRenderer').MemberLike}
+         * @type {import('./email-renderer').MemberLike}
          */
         const exampleMember = this.getDefaultExampleMember(segment);
 
@@ -259,8 +259,8 @@ class EmailService {
      * Do a manual replacement of tokens with values for a member (normally only used for previews)
      *
      * @param {string} htmlOrPlaintext
-     * @param {import('./EmailRenderer').ReplacementDefinition[]} replacements
-     * @param {import('./EmailRenderer').MemberLike} member
+     * @param {import('./email-renderer').ReplacementDefinition[]} replacements
+     * @param {import('./email-renderer').MemberLike} member
      * @return {string}
      */
     replaceDefinitions(htmlOrPlaintext, replacements, member) {
@@ -275,7 +275,7 @@ class EmailService {
      *
      * @param {*} post
      * @param {*} newsletter
-     * @param {import('./EmailRenderer').Segment} segment
+     * @param {import('./email-renderer').Segment} segment
      * @returns {Promise<{subject: string, html: string, plaintext: string}>} Email preview
      */
     async previewEmail(post, newsletter, segment) {
@@ -295,7 +295,7 @@ class EmailService {
      *
      * @param {*} post
      * @param {*} newsletter
-     * @param {import('./EmailRenderer').Segment} segment
+     * @param {import('./email-renderer').Segment} segment
      * @param {string[]} emails
      */
     async sendTestEmail(post, newsletter, segment, emails) {

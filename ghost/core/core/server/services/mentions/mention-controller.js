@@ -1,13 +1,13 @@
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('./MentionsAPI')} MentionsAPI
- * @typedef {import('./Mention')} Mention
+ * @typedef {import('./mentions-api')} MentionsAPI
+ * @typedef {import('./mention')} Mention
  */
 
 /**
  * @template Model
- * @typedef {import('./MentionsAPI').Page<Model>} Page<Model>
+ * @typedef {import('./mentions-api').Page<Model>} Page<Model>
  */
 
 /**
@@ -33,7 +33,7 @@ const logging = require('@tryghost/logging');
  */
 
 module.exports = class MentionController {
-    /** @type {import('./MentionsAPI')} */
+    /** @type {import('./mentions-api')} */
     #api;
 
     /** @type {IJobService} */
@@ -44,7 +44,7 @@ module.exports = class MentionController {
 
     /**
      * @param {object} deps
-     * @param {import('./MentionsAPI')} deps.api
+     * @param {import('./mentions-api')} deps.api
      * @param {IJobService} deps.jobService
      * @param {IMentionResourceService} deps.mentionResourceService
      */

@@ -3,10 +3,10 @@ const logging = require('@tryghost/logging');
 module.exports = class WebhookController {
     /**
      * @param {object} deps
-     * @param {import('./WebhookManager')} deps.webhookManager
-     * @param {import('./services/webhook/CheckoutSessionEventService')} deps.checkoutSessionEventService
-     * @param {import('./services/webhook/SubscriptionEventService')} deps.subscriptionEventService
-     * @param {import('./services/webhook/InvoiceEventService')} deps.invoiceEventService
+     * @param {import('./webhook-manager')} deps.webhookManager
+     * @param {import('./services/webhook/checkout-session-event-service')} deps.checkoutSessionEventService
+     * @param {import('./services/webhook/subscription-event-service')} deps.subscriptionEventService
+     * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
      */
     constructor(deps) {
         this.checkoutSessionEventService = deps.checkoutSessionEventService;

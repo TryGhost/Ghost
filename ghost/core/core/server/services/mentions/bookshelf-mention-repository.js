@@ -1,18 +1,18 @@
-const Mention = require('./Mention');
+const Mention = require('./mention');
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('./MentionsAPI').IMentionRepository} IMentionRepository
+ * @typedef {import('./mentions-api').IMentionRepository} IMentionRepository
  */
 
 /**
  * @template Model
- * @typedef {import('./MentionsAPI').Page<Model>} Page
+ * @typedef {import('./mentions-api').Page<Model>} Page
  */
 
 /**
- * @typedef {import('./MentionsAPI').GetPageOptions} GetPageOptions
- * @typedef {import('./MentionsAPI').GetAllOptions} GetAllOptions
+ * @typedef {import('./mentions-api').GetPageOptions} GetPageOptions
+ * @typedef {import('./mentions-api').GetAllOptions} GetAllOptions
  */
 
 /**
@@ -64,7 +64,7 @@ module.exports = class BookshelfMentionRepository {
 
     /**
      * @param {GetPageOptions} options
-     * @returns {Promise<Page<import('./Mention')>>}
+     * @returns {Promise<Page<import('./mention')>>}
      */
     async getPage(options) {
         /**
@@ -88,7 +88,7 @@ module.exports = class BookshelfMentionRepository {
 
     /**
      * @param {GetAllOptions} options
-     * @returns {Promise<import('./Mention')[]>}
+     * @returns {Promise<import('./mention')[]>}
      */
     async getAll(options) {
         const models = await this.#MentionModel.findAll(options);
@@ -99,7 +99,7 @@ module.exports = class BookshelfMentionRepository {
     /**
      * @param {URL} source
      * @param {URL} target
-     * @returns {Promise<import('./Mention')|null>}
+     * @returns {Promise<import('./mention')|null>}
      */
     async getBySourceAndTarget(source, target) {
         const model = await this.#MentionModel.findOne({
@@ -115,7 +115,7 @@ module.exports = class BookshelfMentionRepository {
     }
 
     /**
-     * @param {import('./Mention')} mention
+     * @param {import('./mention')} mention
      * @returns {Promise<void>}
      */
     async save(mention) {

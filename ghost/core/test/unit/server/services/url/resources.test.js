@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 
-const Resources = require('../../../../../core/server/services/url/Resources');
+const Resources = require('../../../../../core/server/services/url/resources');
 
 describe('Unit: services/url/Resources', function () {
     const resources = new Resources({

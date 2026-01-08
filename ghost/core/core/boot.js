@@ -421,7 +421,7 @@ async function initBackgroundServices({config}) {
 
     const outboxService = require('./server/services/outbox');
     outboxService.init();
-    
+
     debug('End: initBackgroundServices');
 }
 
@@ -498,7 +498,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/GhostServer');
+            const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');

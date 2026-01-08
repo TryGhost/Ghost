@@ -3,7 +3,7 @@ const ObjectID = require('bson-objectid').default;
 const cheerio = require('cheerio');
 const sinon = require('sinon');
 
-const Mention = require('../../../../../core/server/services/mentions/Mention');
+const Mention = require('../../../../../core/server/services/mentions/mention');
 
 const validInput = {
     source: 'https://source.com',

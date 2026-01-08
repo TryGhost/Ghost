@@ -1,6 +1,6 @@
 /**
  * @typedef {import('stripe').Stripe.WebhookEndpointCreateParams.EnabledEvent} WebhookEvent
- * @typedef {import('./StripeAPI')} StripeAPI
+ * @typedef {import('./stripe-api')} StripeAPI
  */
 
 /**
@@ -51,7 +51,7 @@ module.exports = class WebhookManager {
 
     /**
      * Deletes the Stripe Webhook Endpoint and saves null values for the webhook ID and secret.
-     * 
+     *
      * @returns {Promise<boolean>}
      */
     async stop() {
@@ -76,7 +76,7 @@ module.exports = class WebhookManager {
 
     /**
      * Starts the Stripe Webhook Endpoint and saves the webhook ID and secret.
-     * 
+     *
      * @returns {Promise<void>}
      */
     async start() {
@@ -115,7 +115,7 @@ module.exports = class WebhookManager {
      * Setup a new Stripe Webhook Endpoint.
      * - If the webhook exists, delete it and create a new one
      * - If the webhook does not exist, create a new one
-     * 
+     *
      * @param {string} [id]
      * @param {string} [secret]
      * @param {object} [opts]
@@ -164,7 +164,7 @@ module.exports = class WebhookManager {
 
     /**
      * Parse a Stripe Webhook event.
-     * 
+     *
      * @param {string} body
      * @param {string} signature
      * @returns {import('stripe').Stripe.Event}
