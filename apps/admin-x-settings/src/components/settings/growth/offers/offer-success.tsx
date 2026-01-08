@@ -4,7 +4,7 @@ import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {type Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
 import {TextField} from '@tryghost/admin-x-design-system';
-import {currencyToDecimal} from '../../../../utils/currency';
+import {currencyToDecimal, formatCurrency} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useEffect, useState} from 'react';
@@ -39,7 +39,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             discount = offer?.amount + '% discount';
             break;
         case 'fixed':
-            discount = numberWithCommas(currencyToDecimal(offer?.amount)) + ' ' + offer?.currency + ' discount';
+            discount = formatCurrency(offer?.currency || 'USD', currencyToDecimal(offer?.amount)) + ' discount';
             break;
         case 'trial':
             discount = offer?.amount + ' days free trial';

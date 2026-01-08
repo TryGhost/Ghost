@@ -152,6 +152,30 @@ export function getSymbol(currency: string): string {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 }
 
+/**
+ * Formats a currency amount with proper decimal places
+ * - Shows 2 decimal places when cents are not .00 (e.g., $1.20, $1.50)
+ * - Shows 0 decimal places when cents are .00 (e.g., $5, $10)
+ * @param currency - Currency code (e.g., 'USD', 'EUR')
+ * @param amount - Amount in currency units (not cents)
+ * @returns Formatted currency string
+ */
+export function formatCurrency(currency: string, amount: number): string {
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+    
+    // Check if amount has fractional cents
+    const hasFractionalCents = Math.round(amount * 100) % 100 !== 0;
+    
+    return Intl.NumberFormat('en', {
+        currency,
+        style: 'currency',
+        minimumFractionDigits: hasFractionalCents ? 2 : 0,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
 // We currently only support decimal currencies
 export function currencyToDecimal(integerAmount: number): number {
     return integerAmount / 100;

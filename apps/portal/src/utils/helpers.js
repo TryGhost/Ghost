@@ -756,6 +756,30 @@ export const formatNumber = (amount) => {
     return amount.toLocaleString();
 };
 
+/**
+ * Formats a currency amount with proper decimal places
+ * - Shows 2 decimal places when cents are not .00 (e.g., $1.20, $1.50)
+ * - Shows 0 decimal places when cents are .00 (e.g., $5, $10)
+ * @param {string} currency - Currency code (e.g., 'USD', 'EUR')
+ * @param {number} amount - Amount in currency units (not cents)
+ * @returns {string} Formatted currency string
+ */
+export const formatCurrency = (currency, amount) => {
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+    
+    // Check if amount has fractional cents
+    const hasFractionalCents = Math.round(amount * 100) % 100 !== 0;
+    
+    return Intl.NumberFormat('en', {
+        currency,
+        style: 'currency',
+        minimumFractionDigits: hasFractionalCents ? 2 : 0,
+        maximumFractionDigits: 2
+    }).format(amount);
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
@@ -794,7 +818,7 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
 
 export const getOfferOffAmount = ({offer}) => {
     if (offer.type === 'fixed') {
-        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+        return formatCurrency(offer.currency, offer.amount / 100);
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
     }
@@ -813,7 +837,7 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
         updatedAmount = originalAmount / 100;
     }
     if (useFormatted) {
-        return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
+        return formatCurrency(price?.currency, updatedAmount);
     }
     return updatedAmount;
 };
