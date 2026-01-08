@@ -37,9 +37,15 @@ class MemberWelcomeEmailService {
 
             if (!row || !row.get('lexical')) {
                 // Use default template when test inbox is configured
-                this.#memberWelcomeEmails[memberStatus] = useDefaults
-                    ? DEFAULT_WELCOME_EMAILS[memberStatus]
-                    : null;
+                if (useDefaults) {
+                    const defaultEmail = DEFAULT_WELCOME_EMAILS[memberStatus];
+                    this.#memberWelcomeEmails[memberStatus] = {
+                        ...defaultEmail,
+                        lexical: urlUtils.transformReadyToAbsolute(defaultEmail.lexical)
+                    };
+                } else {
+                    this.#memberWelcomeEmails[memberStatus] = null;
+                }
                 continue;
             }
 

@@ -330,6 +330,28 @@ describe('Member Welcome Emails Integration', function () {
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
         });
+
+        it('transforms __GHOST_URL__ placeholders to actual site URL in default templates', async function () {
+            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: 'member_url_test',
+                    email: 'url-test@example.com',
+                    name: 'URL Test Member',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sentEmail = mailService.GhostMailer.prototype.send.firstCall.args[0];
+            assert.ok(!sentEmail.html.includes('__GHOST_URL__'), 'Email should not contain __GHOST_URL__ placeholder');
+            assert.ok(sentEmail.html.includes('http://'), 'Email should contain actual URL');
+        });
     });
 });
 
