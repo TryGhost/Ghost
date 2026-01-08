@@ -531,9 +531,10 @@ describe('MemberRepository', function () {
             StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
         });
 
-        it('sets offer_id to null if unable to create an offer from an invalid Stripe coupon', async function () {
+        it('sets offer_id to null if Stripe coupon is known to be incompatible with Ghost offers', async function () {
             const invalidCouponError = new errors.ValidationError({
-                message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.'
+                message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.',
+                code: 'INVALID_YEARLY_DURATION'
             });
 
             offersAPI = {
@@ -604,6 +605,85 @@ describe('MemberRepository', function () {
             // Verify subscription was still created, but without an offer_id
             StripeCustomerSubscription.add.calledOnce.should.be.true();
             assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, null);
+        });
+
+        it('throws other validation errors from ensureOfferForStripeCoupon', async function () {
+            const otherValidationError = new errors.ValidationError({
+                message: 'Some other validation error'
+            });
+
+            offersAPI = {
+                ensureOfferForStripeCoupon: sinon.stub().rejects(otherValidationError)
+            };
+
+            const productRepositoryWithTier = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        if (key === 'id') {
+                            return 'tier_1';
+                        }
+                        if (key === 'name') {
+                            return 'Tier One';
+                        }
+                        return null;
+                    }),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            const stripeCoupon = {
+                id: 'coupon_abc',
+                percent_off: 20,
+                duration: 'forever'
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        discount: {
+                            coupon: stripeCoupon
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository: productRepositoryWithTier,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const transacting = {
+                executionPromise: Promise.resolve()
+            };
+
+            // Should throw because it's not the INVALID_YEARLY_DURATION error
+            await assert.rejects(
+                repo.linkSubscription({
+                    id: 'member_id_123',
+                    subscription: {...subscriptionData, discount: {coupon: {id: 'coupon_abc'}}}
+                }, {
+                    transacting,
+                    context: {}
+                }),
+                (err) => {
+                    assert.equal(err.message, 'Some other validation error');
+                    return true;
+                }
+            );
+
+            // Verify ensureOfferForStripeCoupon was called
+            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+
+            // Verify subscription was NOT created because the error was rethrown
+            StripeCustomerSubscription.add.called.should.be.false();
         });
     });
 
