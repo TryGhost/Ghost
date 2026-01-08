@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const should = require('should');
 
-const RequestIntegrityTokenProvider = require('../../../../../core/server/services/members/RequestIntegrityTokenProvider');
+const RequestIntegrityTokenProvider = require('../../../../../core/server/services/members/request-integrity-token-provider');
 
 const tokenProvider = new RequestIntegrityTokenProvider({
     themeSecret: 'test',

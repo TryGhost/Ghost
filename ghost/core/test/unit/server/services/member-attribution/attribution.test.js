@@ -1,7 +1,7 @@
 const should = require('should');
 
-const UrlHistory = require('../../../../../core/server/services/member-attribution/UrlHistory');
-const AttributionBuilder = require('../../../../../core/server/services/member-attribution/AttributionBuilder');
+const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
+const AttributionBuilder = require('../../../../../core/server/services/member-attribution/attribution-builder');
 
 describe('AttributionBuilder', function () {
     let attributionBuilder;

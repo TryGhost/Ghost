@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 describe('EventProcessingResult', function () {
     it('has expected initial state', function () {

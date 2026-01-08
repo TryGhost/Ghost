@@ -32,7 +32,7 @@ class ReferrerTranslator {
 
     /**
      * Calculate referrer details from history
-     * @param {import('./UrlHistory').UrlHistoryArray} history
+     * @param {import('./url-history').UrlHistoryArray} history
      * @returns {ReferrerData|null}
      */
     getReferrerDetails(history) {

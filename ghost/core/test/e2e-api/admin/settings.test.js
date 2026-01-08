@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;

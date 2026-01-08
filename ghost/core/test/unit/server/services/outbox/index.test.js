@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const rewire = require('rewire');
 const DomainEvents = require('@tryghost/domain-events');
-const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/StartOutboxProcessingEvent');
+const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
 
 describe('Outbox Service', function () {
     let service;

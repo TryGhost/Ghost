@@ -1,4 +1,4 @@
-const MembersStatsService = require('../../../../../core/server/services/stats/MembersStatsService');
+const MembersStatsService = require('../../../../../core/server/services/stats/members-stats-service');
 const knex = require('knex').default;
 const assert = require('assert/strict');
 const moment = require('moment');
@@ -413,7 +413,7 @@ describe('MembersStatsService', function () {
             const {data: results, meta} = await membersStatsService.getCountHistory({
                 startDate: yesterdayDate
             });
-            
+
             assert.equal(results.length, 2);
             assert.deepEqual(results, [
                 {
@@ -473,7 +473,7 @@ describe('MembersStatsService', function () {
 
             // Should get 3 days: baseline (3 days ago) + yesterday + today
             assert.equal(results.length, 3);
-            
+
             // Verify all dates are present (no gaps)
             const dates = results.map(r => r.date).sort();
             const expectedDates = [

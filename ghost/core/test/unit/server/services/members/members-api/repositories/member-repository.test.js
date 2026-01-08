@@ -2,7 +2,7 @@ require('should');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/MemberRepository');
+const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
 const config = require('../../../../../../../core/shared/config');
 

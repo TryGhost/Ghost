@@ -4,7 +4,7 @@ const assert = require('assert').strict;
 const errors = require('@tryghost/errors');
 
 // @ts-ignore - Intentionally ignoring TypeScript errors for tests
-const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/RouterController');
+const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
 
 describe('RouterController', function () {
     let offersAPI;

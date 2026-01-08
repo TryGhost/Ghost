@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const logging = require('@tryghost/logging');
-const CustomRedirectsAPI = require('../../../../../core/server/services/custom-redirects/CustomRedirectsAPI');
+const CustomRedirectsAPI = require('../../../../../core/server/services/custom-redirects/custom-redirects-api');
 
 describe('UNIT: redirects CustomRedirectsAPI class', function () {
     let customRedirectsAPI;

@@ -4,7 +4,7 @@ const knex = require('knex').default;
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
-const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/PaymentsService');
+const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
 describe('PaymentsService', function () {
     let Bookshelf;

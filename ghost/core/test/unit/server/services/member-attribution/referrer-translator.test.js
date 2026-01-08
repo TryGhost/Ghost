@@ -1,6 +1,6 @@
 const should = require('should');
 
-const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/ReferrerTranslator');
+const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/referrer-translator');
 
 describe('ReferrerTranslator', function () {
     describe('Constructor', function () {

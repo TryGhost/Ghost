@@ -10,7 +10,7 @@ const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
-const UpdateCheckService = require('./UpdateCheckService');
+const UpdateCheckService = require('./update-check-service');
 
 /**
  * Initializes and triggers update check

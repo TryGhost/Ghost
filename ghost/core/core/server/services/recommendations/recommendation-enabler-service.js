@@ -1,10 +1,10 @@
 module.exports = class RecommendationEnablerService {
-    /** @type {import('../settings/SettingsBREADService')} */
+    /** @type {import('../settings/settings-bread-service')} */
     #settingsService;
 
     /**
      * @param {object} deps
-     * @param {import('../settings/SettingsBREADService')} deps.settingsService
+     * @param {import('../settings/settings-bread-service')} deps.settingsService
      */
     constructor(deps) {
         this.#settingsService = deps.settingsService;

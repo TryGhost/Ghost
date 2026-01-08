@@ -1,4 +1,4 @@
-const Feedback = require('./Feedback');
+const Feedback = require('./feedback');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -74,8 +74,8 @@ class AudienceFeedbackController {
         }
 
         const feedback = new Feedback({
-            memberId: member.id, 
-            postId: post.id, 
+            memberId: member.id,
+            postId: post.id,
             score
         });
         await this.#repository.add(feedback);

@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
-const ExplorePingService = require('../../../../../core/server/services/explore-ping/ExplorePingService');
+const ExplorePingService = require('../../../../../core/server/services/explore-ping/explore-ping-service');
 
 describe('ExplorePingService', function () {
     let explorePingService;

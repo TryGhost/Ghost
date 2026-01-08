@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const EmailOpenedEvent = require('../../services/email-service/events/EmailOpenedEvent');
 const logging = require('@tryghost/logging');
-const LastSeenAtCache = require('./LastSeenAtCache');
+const LastSeenAtCache = require('./last-seen-at-cache');
 
 /**
  * Listen for `MemberViewEvent` to update the `member.last_seen_at` timestamp

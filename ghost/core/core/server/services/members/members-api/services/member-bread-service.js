@@ -30,7 +30,7 @@ const messages = {
 module.exports = class MemberBREADService {
     /**
      * @param {object} deps
-     * @param {import('../repositories/MemberRepository')} deps.memberRepository
+     * @param {import('../repositories/member-repository')} deps.memberRepository
      * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService

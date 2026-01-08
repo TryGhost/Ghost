@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import {InMemoryRepository} from '../../lib/InMemoryRepository';
+import {InMemoryRepository} from '../../lib/in-memory-repository';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 

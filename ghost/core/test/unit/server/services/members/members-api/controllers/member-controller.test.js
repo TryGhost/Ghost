@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const MemberController = require('../../../../../../../core/server/services/members/members-api/controllers/MemberController');
+const MemberController = require('../../../../../../../core/server/services/members/members-api/controllers/member-controller');
 
 describe('MemberController', function () {
     describe('updateSubscription', function () {

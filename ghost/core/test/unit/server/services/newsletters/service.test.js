@@ -9,7 +9,7 @@ const mail = require('../../../../../core/server/services/mail');
 const urlUtils = require('../../../../utils/url-utils');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const {EmailAddressService} = require('../../../../../core/server/services/email-address/email-address-service');
-const NewslettersService = require('../../../../../core/server/services/newsletters/NewslettersService');
+const NewslettersService = require('../../../../../core/server/services/newsletters/newsletters-service');
 
 class TestTokenProvider {
     async create(data) {

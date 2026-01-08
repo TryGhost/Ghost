@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const should = require('should');
 
-const OutboundLinkTagger = require('../../../../../core/server/services/member-attribution/OutboundLinkTagger');
+const OutboundLinkTagger = require('../../../../../core/server/services/member-attribution/outbound-link-tagger');
 
 describe('OutboundLinkTagger', function () {
     describe('Constructor', function () {
