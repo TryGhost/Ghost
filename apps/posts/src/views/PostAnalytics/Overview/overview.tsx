@@ -94,13 +94,15 @@ const Overview: React.FC = () => {
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
+    const showGrowthSection = appSettings?.analytics.membersTrackSources;
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
+    // Only redirect if Growth section is available
     useEffect(() => {
-        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
+        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics && showGrowthSection) {
             navigate(`/posts/analytics/${postId}/growth`);
         }
-    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
+    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId, showGrowthSection]);
 
     // First we have to wait for the post to be loaded to determine what sections (web, newsletter etc.) should be displayed
     if (isPostLoading) {
@@ -131,37 +133,38 @@ const Overview: React.FC = () => {
                             post={post as Post}
                         />
                     )}
-                    <Card className='group col-span-2 overflow-hidden p-0' data-testid='growth'>
-                        <div className='relative flex items-center justify-between gap-6'>
-                            <CardHeader>
-                                <CardTitle className='flex items-center gap-1.5 text-lg'>
-                                    <LucideIcon.Sprout size={16} strokeWidth={1.5} />
+                    {showGrowthSection && (
+                        <Card className='group col-span-2 overflow-hidden p-0' data-testid='growth'>
+                            <div className='relative flex items-center justify-between gap-6'>
+                                <CardHeader>
+                                    <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                        <LucideIcon.Sprout size={16} strokeWidth={1.5} />
                                 Growth
-                                </CardTitle>
-                            </CardHeader>
-                            <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                                navigate(`/posts/analytics/${postId}/growth`);
-                            }}>View more</Button>
-                        </div>
-                        <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
-                            {kpiIsLoading ?
-                                Array.from({length: 3}, (_, i) => (
-                                    <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
-                                        <Skeleton className='w-2/3' />
-                                        <Skeleton className='h-7 w-12' />
-                                    </div>
-                                ))
-                                :
-                                <>
-                                    <KpiCard className='grow gap-1 py-0'>
-                                        <KpiCardLabel>
+                                    </CardTitle>
+                                </CardHeader>
+                                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                    navigate(`/posts/analytics/${postId}/growth`);
+                                }}>View more</Button>
+                            </div>
+                            <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
+                                {kpiIsLoading ?
+                                    Array.from({length: 3}, (_, i) => (
+                                        <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                            <Skeleton className='w-2/3' />
+                                            <Skeleton className='h-7 w-12' />
+                                        </div>
+                                    ))
+                                    :
+                                    <>
+                                        <KpiCard className='grow gap-1 py-0'>
+                                            <KpiCardLabel>
                                         Free members
-                                        </KpiCardLabel>
-                                        <KpiCardContent>
-                                            <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
-                                        </KpiCardContent>
-                                    </KpiCard>
-                                    {appSettings?.paidMembersEnabled &&
+                                            </KpiCardLabel>
+                                            <KpiCardContent>
+                                                <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
+                                            </KpiCardContent>
+                                        </KpiCard>
+                                        {appSettings?.paidMembersEnabled &&
                                 <>
                                     <KpiCard className='grow gap-1 py-0'>
                                         <KpiCardLabel>
@@ -180,11 +183,12 @@ const Overview: React.FC = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </>
-                                    }
-                                </>
-                            }
-                        </CardContent>
-                    </Card>
+                                        }
+                                    </>
+                                }
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </PostAnalyticsContent>
         </>

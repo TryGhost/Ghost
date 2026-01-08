@@ -46,12 +46,13 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         await expect(postAnalyticsGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
 
-    test('Growth tab is hidden when member sources tracking is disabled', async ({page}) => {
+    test('Growth tab and section are hidden when member sources tracking is disabled', async ({page}) => {
         const settingsService = new SettingsService(page.request);
         const postAnalyticsPage = new PostAnalyticsPage(page);
 
         // Initially, Growth tab should be visible (member sources enabled by default)
         await expect(postAnalyticsPage.growthButton).toBeVisible();
+        await expect(postAnalyticsPage.growthSection.card).toBeVisible();
 
         // Disable member source tracking
         await settingsService.setMembersTrackSources(false);
@@ -61,6 +62,9 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
 
         // Growth tab should now be hidden
         await expect(postAnalyticsPage.growthButton).toBeHidden();
+
+        // Growth section on overview page should also be hidden
+        await expect(postAnalyticsPage.growthSection.card).toBeHidden();
 
         // Overview and Web traffic tabs should still be visible
         await expect(postAnalyticsPage.overviewButton).toBeVisible();
@@ -74,6 +78,7 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
 
         // Growth tab should be visible again
         await expect(postAnalyticsPage.growthButton).toBeVisible();
+        await expect(postAnalyticsPage.growthSection.card).toBeVisible();
     });
 });
 
