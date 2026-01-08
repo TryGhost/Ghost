@@ -24,8 +24,9 @@ const notImplemented = function notImplemented(req, res, next) {
     // Staff tokens have a user_id associated with them, integration tokens don't
     if (req.api_key?.get('user_id')) {
         // Check if staff token is trying to access blocked endpoints
-        const isDeleteAllContent = req.method === 'DELETE' && req.path === '/db/';
-        const isTransferOwnership = req.method === 'PUT' && req.path === '/users/owner/';
+        // Match both with and without trailing slash since Express routes accept both
+        const isDeleteAllContent = req.method === 'DELETE' && (req.path === '/db/' || req.path === '/db');
+        const isTransferOwnership = req.method === 'PUT' && (req.path === '/users/owner/' || req.path === '/users/owner');
 
         if (isDeleteAllContent || isTransferOwnership) {
             return next(new errors.NoPermissionError({
