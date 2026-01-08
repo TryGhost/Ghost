@@ -94,7 +94,6 @@ export default class FeatureService extends Service {
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('tagsX') tagsX;
     @feature('utmTracking') utmTracking;
-    @feature('emailSizeWarnings') emailSizeWarnings;
 
     _user = null;
 

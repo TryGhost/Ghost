@@ -55,7 +55,6 @@ const PRIVATE_FEATURES = [
     'domainWarmup',
     'themeTranslation',
     'commentModeration',
-    'emailSizeWarnings',
     'commentPermalinks'
 ];
 

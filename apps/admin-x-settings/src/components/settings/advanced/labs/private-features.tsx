@@ -60,10 +60,6 @@ const features: Feature[] = [{
     description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
     flag: 'commentModeration'
 }, {
-    title: 'Email Size Warnings',
-    description: 'Enable warnings in editor when content exceeds email cut-off size',
-    flag: 'emailSizeWarnings'
-}, {
     title: 'Comment Permalinks',
     description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
     flag: 'commentPermalinks'
