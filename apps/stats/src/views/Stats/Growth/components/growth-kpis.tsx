@@ -507,6 +507,12 @@ const GrowthKPIs: React.FC<{
                                                     displayValue = rawValue < 0 ? formatNumber(rawValue * -1) : formatNumber(rawValue);
                                                 }
 
+                                                // Calculate net change (new + cancelled, since cancelled is negative)
+                                                const newValue = Number(payload?.payload?.new || 0);
+                                                const cancelledValue = Number(payload?.payload?.cancelled || 0);
+                                                const netChange = newValue + cancelledValue;
+                                                const netChangeFormatted = netChange === 0 ? '0' : (netChange > 0 ? `+${formatNumber(netChange)}` : formatNumber(netChange));
+
                                                 return (
                                                     <div className='flex w-full flex-col'>
                                                         {index === 0 &&
@@ -530,6 +536,16 @@ const GrowthKPIs: React.FC<{
                                                                 {displayValue}
                                                             </div>
                                                         </div>
+                                                        {index === 1 &&
+                                                            <div className='mt-1 flex w-full items-center justify-between gap-4 border-t pt-1'>
+                                                                <span className='text-sm text-muted-foreground'>
+                                                                    Net change
+                                                                </span>
+                                                                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                                    {netChangeFormatted}
+                                                                </div>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 );
                                             }}
