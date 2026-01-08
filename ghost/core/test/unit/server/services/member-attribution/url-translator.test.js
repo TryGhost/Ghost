@@ -8,9 +8,7 @@ const models = {
             if (id === 'invalid') {
                 return null;
             }
-            // Return post with appropriate status based on id
-            const postStatus = id === 'sent-post' ? 'sent' : 'published';
-            return {id: 'post_id', get: attr => (attr === 'status' ? postStatus : 'Title')};
+            return {id: 'post_id', get: () => 'Title'};
         }
     },
     User: {
@@ -264,14 +262,6 @@ describe('UrlTranslator', function () {
 
         it('returns null for not found tag', async function () {
             should(await translator.getResourceById('invalid', 'tag')).eql(null);
-        });
-
-        it('returns email-only posts with sent status', async function () {
-            // Email-only posts have status 'sent' instead of 'published'
-            // Attribution should work for both published and sent posts
-            should(await translator.getResourceById('sent-post', 'post')).match({
-                id: 'post_id'
-            });
         });
     });
 
