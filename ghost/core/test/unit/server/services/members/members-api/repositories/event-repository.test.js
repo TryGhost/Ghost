@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const EventRepository = require('../../../../../../../core/server/services/members/members-api/repositories/EventRepository');
 const sinon = require('sinon');
@@ -112,6 +113,59 @@ describe('EventRepository', function () {
                     }
                 }]
             });
+        });
+    });
+
+    describe('getPostIdFromFilter', function () {
+        let eventRepository;
+
+        before(function () {
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+        });
+
+        it('returns ObjectID for valid hex string', function () {
+            const filter = {'data.post_id': '507f1f77bcf86cd799439011'};
+            const result = eventRepository.getPostIdFromFilter(filter);
+            assert.ok(result);
+            assert.equal(result.toHexString(), '507f1f77bcf86cd799439011');
+        });
+
+        it('extracts post_id from $and condition', function () {
+            const filter = {
+                $and: [
+                    {'data.post_id': '507f1f77bcf86cd799439011'},
+                    {'data.member_id': '123'}
+                ]
+            };
+            const result = eventRepository.getPostIdFromFilter(filter);
+            assert.ok(result);
+            assert.equal(result.toHexString(), '507f1f77bcf86cd799439011');
+        });
+
+        it('returns null for invalid ObjectID string', function () {
+            const filter = {'data.post_id': 'not-a-valid-id'};
+            const result = eventRepository.getPostIdFromFilter(filter);
+            assert.equal(result, null);
+        });
+
+        it('rejects SQL injection attempts', function () {
+            const filter = {'data.post_id': '\'; DROP TABLE posts; --'};
+            const result = eventRepository.getPostIdFromFilter(filter);
+            assert.equal(result, null);
+        });
+
+        it('returns null when filter is missing or undefined', function () {
+            assert.equal(eventRepository.getPostIdFromFilter(null), null);
+            assert.equal(eventRepository.getPostIdFromFilter(undefined), null);
+            assert.equal(eventRepository.getPostIdFromFilter({}), null);
         });
     });
 
