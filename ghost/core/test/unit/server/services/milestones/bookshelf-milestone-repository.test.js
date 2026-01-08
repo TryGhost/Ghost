@@ -7,7 +7,7 @@ describe('BookshelfMilestoneRepository', function () {
     let repository;
 
     it('Provides expected public API', async function () {
-        const BookshelfMilestoneRepository = require('../../../../../core/server/services/milestones/BookshelfMilestoneRepository');
+        const BookshelfMilestoneRepository = require('../../../../../core/server/services/milestones/bookshelf-milestone-repository');
         repository = new BookshelfMilestoneRepository({
             DomainEvents,
             MilestoneModel: models.Milestone

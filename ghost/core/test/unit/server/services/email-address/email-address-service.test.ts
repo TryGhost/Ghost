@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
-import {EmailAddressService} from '../../../../../core/server/services/email-address/EmailAddressService.js';
+import {EmailAddressService} from '../../../../../core/server/services/email-address/email-address-service';
 
 describe('EmailAddressService', function () {
     let labsStub: any;

@@ -1,10 +1,10 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const OffersAPI = require('../../../../../../core/server/services/offers/application/OffersAPI');
+const OffersAPI = require('../../../../../../core/server/services/offers/application/offers-api');
 
 /**
- * @typedef {import('../../../../../../core/server/services/offers/OfferBookshelfRepository')} OfferBookshelfRepository
+ * @typedef {import('../../../../../../core/server/services/offers/offer-bookshelf-repository')} OfferBookshelfRepository
  */
 
 function createMockRepository(overrides = {}) {

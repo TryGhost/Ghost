@@ -1,4 +1,4 @@
-const LinkRedirectsService = require('../../../../../core/server/services/link-redirection/LinkRedirectsService');
+const LinkRedirectsService = require('../../../../../core/server/services/link-redirection/link-redirects-service');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const crypto = require('crypto');
