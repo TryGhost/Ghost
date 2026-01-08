@@ -1,5 +1,5 @@
 const {parentPort} = require('worker_threads');
-const StartOutboxProcessingEvent = require('../events/StartOutboxProcessingEvent');
+const StartOutboxProcessingEvent = require('../events/start-outbox-processing-event');
 
 function cancel() {
     if (parentPort) {

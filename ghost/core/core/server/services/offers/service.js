@@ -1,4 +1,4 @@
-const DynamicRedirectManager = require('../lib/DynamicRedirectManager');
+const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');

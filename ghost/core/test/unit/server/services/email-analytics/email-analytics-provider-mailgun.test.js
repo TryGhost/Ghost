@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
-const EmailAnalyticsProviderMailgun = require('../../../../../core/server/services/email-analytics/EmailAnalyticsProviderMailgun');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
+const EmailAnalyticsProviderMailgun = require('../../../../../core/server/services/email-analytics/email-analytics-provider-mailgun');
 
 const SAMPLE_EVENTS = [
     new EventProcessingResult({

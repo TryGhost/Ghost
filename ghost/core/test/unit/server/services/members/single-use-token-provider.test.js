@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 
-const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../../../../../core/server/services/members/single-use-token-provider');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;

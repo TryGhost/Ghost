@@ -3,9 +3,9 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
-const MembersConfigProvider = require('./MembersConfigProvider');
+const MembersConfigProvider = require('./members-config-provider');
 const makeMembersCSVImporter = require('./importer');
-const MembersStats = require('./stats/MembersStats');
+const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -16,10 +16,10 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
-const VerificationTrigger = require('../VerificationTrigger');
+const VerificationTrigger = require('../verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
-const RequestIntegrityTokenProvider = require('./RequestIntegrityTokenProvider');
+const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',

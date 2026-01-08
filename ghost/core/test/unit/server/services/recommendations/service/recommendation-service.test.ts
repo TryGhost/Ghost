@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import {ClickEvent, InMemoryRecommendationRepository, Recommendation, RecommendationService, SubscribeEvent, WellknownService, RecommendationMetadata, RecommendationMetadataService} from '../../../../../../core/server/services/recommendations/service';
-import {InMemoryRepository} from '../../../../../../core/server/services/lib/InMemoryRepository';
+import {InMemoryRepository} from '../../../../../../core/server/services/lib/in-memory-repository';
 import sinon from 'sinon';
 
 class InMemoryClickEventRepository<T extends ClickEvent|SubscribeEvent> extends InMemoryRepository<string, T> {

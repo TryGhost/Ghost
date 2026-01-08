@@ -1,4 +1,4 @@
-const MailgunClient = require('../lib/MailgunClient');
+const MailgunClient = require('../lib/mailgun-client');
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;

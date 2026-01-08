@@ -3,7 +3,7 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 require('should');
-const VerificationTrigger = require('../../../../core/server/services/VerificationTrigger');
+const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');
 

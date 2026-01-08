@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {InMemoryRepository} from '../../../../../core/server/services/lib/InMemoryRepository';
+import {InMemoryRepository} from '../../../../../core/server/services/lib/in-memory-repository';
 
 type SimpleEntity = {
     id: string;

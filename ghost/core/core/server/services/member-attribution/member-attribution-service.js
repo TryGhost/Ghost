@@ -1,4 +1,4 @@
-const UrlHistory = require('./UrlHistory');
+const UrlHistory = require('./url-history');
 
 class MemberAttributionService {
     /**
@@ -23,7 +23,7 @@ class MemberAttributionService {
     /**
      *
      * @param {Object} context instance of ghost framework context object
-     * @returns {Promise<import('./AttributionBuilder').AttributionResource|null>}
+     * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async getAttributionFromContext(context) {
         if (!context || !this.isTrackingEnabled) {
@@ -70,8 +70,8 @@ class MemberAttributionService {
 
     /**
      *
-     * @param {import('./UrlHistory').UrlHistoryArray} historyArray
-     * @returns {Promise<import('./AttributionBuilder').Attribution>}
+     * @param {import('./url-history').UrlHistoryArray} historyArray
+     * @returns {Promise<import('./attribution-builder').Attribution>}
      */
     async getAttribution(historyArray) {
         let history = UrlHistory.create(historyArray);
@@ -107,7 +107,7 @@ class MemberAttributionService {
      * Returns the attribution resource for a given event model (MemberCreatedEvent / SubscriptionCreatedEvent), where the model has the required relations already loaded
      * You need to already load the 'postAttribution', 'userAttribution', and 'tagAttribution' relations
      * @param {Object} eventModel MemberCreatedEvent or SubscriptionCreatedEvent
-     * @returns {import('./AttributionBuilder').AttributionResource|null}
+     * @returns {import('./attribution-builder').AttributionResource|null}
      */
     getEventAttribution(eventModel) {
         const _attribution = this.attributionBuilder.build({
@@ -139,7 +139,7 @@ class MemberAttributionService {
     /**
      * Returns the parsed attribution for a member creation event
      * @param {string} memberId
-     * @returns {Promise<import('./AttributionBuilder').AttributionResource|null>}
+     * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async getMemberCreatedAttribution(memberId) {
         const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false, withRelated: []});
@@ -160,7 +160,7 @@ class MemberAttributionService {
     /**
      * Returns the last attribution for a given subscription ID
      * @param {string} subscriptionId
-     * @returns {Promise<import('./AttributionBuilder').AttributionResource|null>}
+     * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
         const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false, withRelated: []});
@@ -180,8 +180,8 @@ class MemberAttributionService {
 
     /**
      * Fetches the resource for a given attribution without the use of an event model
-     * @param {Object} attribution 
-     * @returns {Promise<import('./AttributionBuilder').AttributionResource|null>}
+     * @param {Object} attribution
+     * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async fetchResource(attribution) {
         if (!attribution) {

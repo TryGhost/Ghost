@@ -1,4 +1,4 @@
-const {AbstractEmailSuppressionList, EmailSuppressionData} = require('./EmailSuppressionList');
+const {AbstractEmailSuppressionList, EmailSuppressionData} = require('./email-suppression-list');
 
 module.exports = class InMemoryEmailSuppressionList extends AbstractEmailSuppressionList {
     store = ['spam@member.test', 'fail@member.test'];

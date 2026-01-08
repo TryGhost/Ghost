@@ -8,7 +8,7 @@ class DonationServiceWrapper {
             return;
         }
 
-        const {DonationBookshelfRepository} = require('./DonationBookshelfRepository');
+        const {DonationBookshelfRepository} = require('./donation-bookshelf-repository');
 
         this.repository = new DonationBookshelfRepository({
             DonationPaymentEventModel
