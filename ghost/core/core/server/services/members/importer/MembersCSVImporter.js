@@ -33,8 +33,8 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {string} storagePath - The path to store CSV's in before importing
  * @property {Function} getTimezone - function returning currently configured timezone
  * @property {() => Object} getMembersRepository - member model access instance for data access and manipulation
- * @property {() => Promise<import('../../tiers/Tier')>} getDefaultTier - async function returning default Member Tier
- * @property {(string) => Promise<import('../../tiers/Tier')>} getTierByName - async function returning Member Tier by name
+ * @property {() => Promise<import('../../tiers/tier')>} getDefaultTier - async function returning default Member Tier
+ * @property {(string) => Promise<import('../../tiers/tier')>} getTierByName - async function returning Member Tier by name
  * @property {Function} sendEmail - function sending an email
  * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
  * @property {({job, offloaded, name}) => void} addJob - Method registering an async job

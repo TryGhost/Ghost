@@ -1,5 +1,5 @@
 const should = require('should');
-const StripeCoupon = require('../../../../../../../core/server/services/offers/domain/models/StripeCoupon');
+const StripeCoupon = require('../../../../../../../core/server/services/offers/domain/models/stripe-coupon');
 
 describe('StripeCoupon', function () {
     describe('StripeCoupon.create factory', function () {

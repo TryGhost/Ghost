@@ -1,4 +1,4 @@
-const PostsExporter = require('../../../../../core/server/services/posts/PostsExporter');
+const PostsExporter = require('../../../../../core/server/services/posts/posts-exporter');
 const assert = require('assert/strict');
 const {createModelClass, createModel} = require('./utils');
 

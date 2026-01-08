@@ -28,7 +28,7 @@ const logging = require('@tryghost/logging');
  */
 
 /**
- * @typedef {import("../email-address/EmailAddressService").EmailAddressService} EmailAddressService
+ * @typedef {import("../email-address/email-address-service").EmailAddressService} EmailAddressService
  */
 
 /**

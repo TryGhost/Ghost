@@ -1,15 +1,15 @@
-const LinkClickTrackingService = require('../../../../../core/server/services/link-tracking/LinkClickTrackingService');
+const LinkClickTrackingService = require('../../../../../core/server/services/link-tracking/link-click-tracking-service');
 const sinon = require('sinon');
 const should = require('should');
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const PostLink = require('../../../../../core/server/services/link-tracking/PostLink');
-const RedirectEvent = require('../../../../../core/server/services/link-redirection/RedirectEvent');
+const PostLink = require('../../../../../core/server/services/link-tracking/post-link');
+const RedirectEvent = require('../../../../../core/server/services/link-redirection/redirect-event');
 const errors = require('@tryghost/errors');
 
 describe('LinkClickTrackingService', function () {
     it('exists', function () {
-        require('../../../../../core/server/services/link-tracking/LinkClickTrackingService');
+        require('../../../../../core/server/services/link-tracking/link-click-tracking-service');
     });
 
     describe('init', function () {

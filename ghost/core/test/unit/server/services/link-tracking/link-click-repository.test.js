@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const configUtils = require('../../../../utils/config-utils');
 
-const LinkClickRepository = require('../../../../../core/server/services/link-tracking/LinkClickRepository');
-const LinkClick = require('../../../../../core/server/services/link-tracking/ClickEvent');
+const LinkClickRepository = require('../../../../../core/server/services/link-tracking/link-click-repository');
+const LinkClick = require('../../../../../core/server/services/link-tracking/click-event');
 
 const linkClicks = [
     new LinkClick({

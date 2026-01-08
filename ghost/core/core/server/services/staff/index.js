@@ -8,7 +8,7 @@ class StaffServiceWrapper {
             return;
         }
 
-        const StaffService = require('./StaffService');
+        const StaffService = require('./staff-service');
 
         const logging = require('@tryghost/logging');
         const models = require('../../models');

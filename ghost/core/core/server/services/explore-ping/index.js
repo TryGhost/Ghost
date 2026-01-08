@@ -5,7 +5,7 @@ const logging = require('@tryghost/logging');
 const ghostVersion = require('@tryghost/version');
 const request = require('@tryghost/request');
 const settingsCache = require('../../../shared/settings-cache');
-const posts = require('../posts/posts-service');
+const posts = require('../posts/posts-service-instance');
 const members = require('../members');
 const statsService = require('../stats');
 

@@ -1,6 +1,6 @@
 const should = require('should');
 
-const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/OfferCode');
+const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/offer-code');
 
 describe('OfferCode', function () {
     describe('OfferCode.create factory', function () {

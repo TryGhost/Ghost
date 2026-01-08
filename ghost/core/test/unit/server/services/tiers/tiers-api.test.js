@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 
-const TiersAPI = require('../../../../../core/server/services/tiers/TiersAPI');
-const InMemoryTierRepository = require('../../../../../core/server/services/tiers/InMemoryTierRepository');
+const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
+const InMemoryTierRepository = require('../../../../../core/server/services/tiers/in-memory-tier-repository');
 
 describe('TiersAPI', function () {
     /** @type {TiersAPI.ITierRepository} */

@@ -9,7 +9,7 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const EmailAddressParser = require('../email-address/EmailAddressParser');
+const EmailAddressParser = require('../email-address/email-address-parser');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 

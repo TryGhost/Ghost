@@ -6,10 +6,10 @@ let routeSettings;
 
 module.exports = {
     init: async () => {
-        const RouteSettings = require('./RouteSettings');
-        const SettingsLoader = require('./SettingsLoader');
-        const DefaultSettingsManager = require('./DefaultSettingsManager');
-        const SettingsPathManager = require('./SettingsPathManager');
+        const RouteSettings = require('./route-settings');
+        const SettingsLoader = require('./settings-loader');
+        const DefaultSettingsManager = require('./default-settings-manager');
+        const SettingsPathManager = require('./settings-path-manager');
 
         const settingsPathManager = new SettingsPathManager({type: 'routes', paths: [config.getContentPath('settings')]});
         settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});

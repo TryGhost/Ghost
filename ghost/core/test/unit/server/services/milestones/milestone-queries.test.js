@@ -24,7 +24,7 @@ describe('MilestoneQueries', function () {
     });
 
     it('Provides expected public API', async function () {
-        const MilestoneQueries = require('../../../../../core/server/services/milestones/MilestoneQueries');
+        const MilestoneQueries = require('../../../../../core/server/services/milestones/milestone-queries');
         milestoneQueries = new MilestoneQueries({db: knexMock});
 
         assert.ok(milestoneQueries.getMembersCount);

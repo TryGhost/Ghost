@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const should = require('should');
-const SettingsPathManager = require('../../../../../core/server/services/route-settings/SettingsPathManager');
+const SettingsPathManager = require('../../../../../core/server/services/route-settings/settings-path-manager');
 
 describe('Settings Path Manager', function () {
     it('throws when paths parameter is not provided', function () {

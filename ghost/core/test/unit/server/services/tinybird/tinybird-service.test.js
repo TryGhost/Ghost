@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const TinybirdService = require('../../../../../core/server/services/tinybird/TinybirdService');
+const TinybirdService = require('../../../../../core/server/services/tinybird/tinybird-service');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
 
@@ -119,7 +119,7 @@ describe('TinybirdService', function () {
         it('should exist', function () {
             assert.ok(tinybirdService.getToken);
         });
-        
+
         it('should return the existing server JWT token if it is not expired', async function () {
             const tokenResult = tinybirdService.getToken();
             const newTokenResult = tinybirdService.getToken();

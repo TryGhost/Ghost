@@ -1,16 +1,16 @@
 const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
-const TierCreatedEvent = require('../../../../../../core/server/services/tiers/TierCreatedEvent');
-const TierPriceChangeEvent = require('../../../../../../core/server/services/tiers/TierPriceChangeEvent');
-const TierNameChangeEvent = require('../../../../../../core/server/services/tiers/TierNameChangeEvent');
-const OfferCreatedEvent = require('../../../../../../core/server/services/offers/domain/events/OfferCreatedEvent');
+const TierCreatedEvent = require('../../../tiers/tier-created-event');
+const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
+const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
+const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-event');
 const {BadRequestError} = require('@tryghost/errors');
 
 class PaymentsService {
     /**
      * @param {object} deps
      * @param {import('bookshelf').Model} deps.Offer
-     * @param {import('../../../offers/application/OffersAPI')} deps.offersAPI
+     * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {import('../../../stripe/StripeAPI')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
      */
@@ -57,7 +57,7 @@ class PaymentsService {
 
     /**
      * @param {object} params
-     * @param {import('../../../tiers/Tier')} params.tier
+     * @param {import('../../../tiers/tier')} params.tier
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
@@ -183,7 +183,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('../../../tiers/Tier')} tier
+     * @param {import('../../../tiers/tier')} tier
      * @returns {Promise<{id: string}>}
      */
     async getProductForTier(tier) {
@@ -211,7 +211,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('../../../tiers/Tier')} tier
+     * @param {import('../../../tiers/tier')} tier
      * @returns {Promise<import('stripe').default.Product>}
      */
     async createProductForTier(tier) {
@@ -224,7 +224,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('../../../tiers/Tier')} tier
+     * @param {import('../../../tiers/tier')} tier
      * @returns {Promise<void>}
      */
     async updateNameForTierProducts(tier) {
@@ -398,7 +398,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('../../../tiers/Tier')} tier
+     * @param {import('../../../tiers/tier')} tier
      * @param {'month'|'year'} cadence
      * @returns {Promise<{id: string}>}
      */
@@ -442,7 +442,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('../../../tiers/Tier')} tier
+     * @param {import('../../../tiers/tier')} tier
      * @param {'month'|'year'} cadence
      * @returns {Promise<import('stripe').default.Price>}
      */

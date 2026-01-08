@@ -16,7 +16,7 @@ const messages = {
     reason: ' Reason: {reason}.',
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
-const EmailAddressParser = require('../email-address/EmailAddressParser');
+const EmailAddressParser = require('../email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 
 function getDomain() {

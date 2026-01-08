@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const PostLinkRepository = require('../../../../../core/server/services/link-tracking/PostLinkRepository');
+const PostLinkRepository = require('../../../../../core/server/services/link-tracking/post-link-repository');
 
 describe('UNIT: PostLinkRepository class', function () {
     let postLinkRepository;

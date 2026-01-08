@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/InMemoryMilestoneRepository');
-const Milestone = require('../../../../../core/server/services/milestones/Milestone');
+const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/in-memory-milestone-repository');
+const Milestone = require('../../../../../core/server/services/milestones/milestone');
 const DomainEvents = require('@tryghost/domain-events');
 const sinon = require('sinon');
 
@@ -99,7 +99,7 @@ describe('InMemoryMilestoneRepository', function () {
         const timeDiff = new Date(latestArrMilestone.createdAt).getTime() - new Date('2023-02-01T01:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(latestArrMilestone.value === 60000);
-        assert(latestArrMilestone.type = 'arr');
+        assert(latestArrMilestone.type === 'arr');
         assert(latestArrMilestone.currency === 'usd');
     });
 

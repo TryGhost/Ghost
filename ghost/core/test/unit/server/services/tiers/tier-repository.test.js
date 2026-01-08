@@ -1,8 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const {Product: ProductModel} = require('../../../../../core/server/models/product');
-const TierRepository = require('../../../../../core/server/services/tiers/TierRepository');
-const Tier = require('../../../../../core/server/services/tiers/Tier');
+const TierRepository = require('../../../../../core/server/services/tiers/tier-repository');
+const Tier = require('../../../../../core/server/services/tiers/tier');
 
 describe('TierRepository', function () {
     after(function () {

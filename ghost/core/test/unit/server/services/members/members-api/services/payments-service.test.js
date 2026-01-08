@@ -2,7 +2,7 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const knex = require('knex').default;
 
-const Tier = require('../../../../../../../core/server/services/tiers/Tier');
+const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/PaymentsService');
 
