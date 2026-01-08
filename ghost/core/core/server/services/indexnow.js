@@ -20,7 +20,6 @@
  * ghost/core/core/frontend/web/middleware/serve-indexnow-key.js
  */
 
-const crypto = require('crypto');
 const urlService = require('./url');
 const urlUtils = require('../../shared/url-utils');
 const errors = require('@tryghost/errors');
@@ -30,7 +29,6 @@ const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
 const labs = require('../../shared/labs');
 const events = require('../lib/common/events');
-const models = require('../models');
 
 const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
@@ -44,61 +42,20 @@ const defaultPostSlugs = [
     'managing-users',
     'private-sites',
     'advanced-markdown',
-    'themes'
+    'themes',
+    'coming-soon'
 ];
 
 // IndexNow endpoint - this routes to all participating search engines
 const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 
 /**
- * Generate a random 32-character hexadecimal API key
- * @returns {string} The generated API key
- */
-function generateApiKey() {
-    return crypto.randomBytes(16).toString('hex');
-}
-
-/**
  * Get existing API key from settings
+ * The key is auto-generated on boot by the settings service
  * @returns {string|null} The API key or null if not set
  */
 function getApiKey() {
     return settingsCache.get('indexnow_api_key') || null;
-}
-
-/**
- * Get or create the API key
- * If no key exists, generates one and saves it to settings
- * @returns {Promise<string>} The API key
- */
-async function getOrCreateApiKey() {
-    let key = getApiKey();
-
-    if (!key) {
-        key = generateApiKey();
-        logging.info('IndexNow: Generated new API key');
-
-        // Save the generated key to settings
-        // Use findOne first to check if setting exists, then edit or add accordingly
-        const existingSetting = await models.Settings.findOne({key: 'indexnow_api_key'});
-
-        if (existingSetting) {
-            await models.Settings.edit([{
-                key: 'indexnow_api_key',
-                value: key
-            }], {context: {internal: true}});
-        } else {
-            // Setting doesn't exist in DB yet - add it using forge/save
-            await models.Settings.forge({
-                key: 'indexnow_api_key',
-                value: key,
-                type: 'string',
-                group: 'indexnow'
-            }).save(null, {context: {internal: true}});
-        }
-    }
-
-    return key;
 }
 
 /**
@@ -129,8 +86,12 @@ async function ping(post) {
     try {
         const url = urlService.getUrlByResourceId(post.id, {absolute: true});
 
-        // Get or create the API key (auto-generates if not set)
-        const key = await getOrCreateApiKey();
+        // Get the API key (auto-generated on boot by settings service)
+        const key = getApiKey();
+        if (!key) {
+            logging.warn('IndexNow: API key not available');
+            return;
+        }
 
         // Get the site URL for the keyLocation parameter
         const siteUrl = urlUtils.urlFor('home', true);

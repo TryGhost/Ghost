@@ -8,26 +8,17 @@ const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
-const models = require('../../../../core/server/models');
 
 describe('IndexNow', function () {
     let eventStub;
     let loggingStub;
     let settingsCacheStub;
     let labsStub;
-    let modelsEditStub;
-    let modelsFindOneStub;
-    let modelsForgeStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
         settingsCacheStub = sinon.stub(settingsCache, 'get');
         labsStub = sinon.stub(labs, 'isSet');
-        modelsEditStub = sinon.stub(models.Settings, 'edit').resolves();
-        modelsFindOneStub = sinon.stub(models.Settings, 'findOne').resolves({id: '1', key: 'indexnow_api_key'});
-        modelsForgeStub = sinon.stub(models.Settings, 'forge').returns({
-            save: sinon.stub().resolves()
-        });
 
         // Default: IndexNow enabled, site not private, API key set
         labsStub.withArgs('indexnow').returns(true);
@@ -321,55 +312,22 @@ describe('IndexNow', function () {
             pingRequest.isDone().should.be.false();
         });
 
-        it('when no API key is set should auto-generate and execute ping', async function () {
+        it('when no API key is set should not execute ping and log warning', async function () {
             settingsCacheStub.withArgs('indexnow_api_key').returns(null);
-            // Simulate setting not existing in DB yet
-            modelsFindOneStub.resolves(null);
-            loggingStub = sinon.stub(logging, 'info');
+            loggingStub = sinon.stub(logging, 'warn');
 
-            const saveStub = sinon.stub().resolves();
-            modelsForgeStub.returns({save: saveStub});
-
-            nock('https://api.indexnow.org')
+            const pingRequest = nock('https://api.indexnow.org')
                 .get(/\/indexnow/)
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             await ping(testPost);
 
-            // Should have called models.Settings.forge to create the setting
-            modelsForgeStub.calledOnce.should.be.true();
-            modelsForgeStub.firstCall.args[0].key.should.equal('indexnow_api_key');
-            modelsForgeStub.firstCall.args[0].value.should.match(/^[a-f0-9]{32}$/);
-            saveStub.calledOnce.should.be.true();
-
-            // Should log about generating the key and successful ping
-            loggingStub.calledTwice.should.be.true();
-        });
-
-        it('when no API key is set but setting exists in DB should use edit', async function () {
-            settingsCacheStub.withArgs('indexnow_api_key').returns(null);
-            // Simulate setting existing in DB (e.g., from migration)
-            modelsFindOneStub.resolves({id: '1', key: 'indexnow_api_key', value: null});
-            loggingStub = sinon.stub(logging, 'info');
-
-            nock('https://api.indexnow.org')
-                .get(/\/indexnow/)
-                .reply(200);
-            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-
-            await ping(testPost);
-
-            // Should have called models.Settings.edit to update the setting
-            modelsEditStub.calledOnce.should.be.true();
-            modelsEditStub.firstCall.args[0][0].key.should.equal('indexnow_api_key');
-            modelsEditStub.firstCall.args[0][0].value.should.match(/^[a-f0-9]{32}$/);
-
-            // Should NOT have called forge
-            modelsForgeStub.called.should.be.false();
-
-            // Should log about generating the key and successful ping
-            loggingStub.calledTwice.should.be.true();
+            // Should NOT have made the ping request
+            pingRequest.isDone().should.be.false();
+            // Should have logged a warning
+            loggingStub.calledOnce.should.be.true();
+            loggingStub.args[0][0].should.containEql('API key not available');
         });
 
         it('should handle 202 response as success', async function () {
