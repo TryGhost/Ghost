@@ -367,7 +367,7 @@ class ReferrersStatsService {
      * @returns {Promise<{data: AttributionCountStatWithMrr[], meta: {}}>}
      */
     async getTopSourcesWithRange(options = {}) {
-        const {order: orderBy = 'signups desc', limit = 50} = options;
+        const {order = 'signups desc', limit = 50} = options;
 
         // Get deduplicated member counts and MRR data in parallel
         const [memberCounts, mrrEntries] = await Promise.all([
@@ -416,7 +416,7 @@ class ReferrersStatsService {
         let results = Array.from(sourceMap.values());
 
         // Apply sorting - only allow descending sorts for sources
-        const [field] = orderBy.split(' ');
+        const [field] = order.split(' ');
 
         results.sort((a, b) => {
             let valueA; let valueB;
