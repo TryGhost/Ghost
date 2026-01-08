@@ -1,6 +1,6 @@
 const should = require('should');
 
-const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/OfferAmount');
+const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
 
 describe('OfferAmount', function () {
     describe('OfferPercentageAmount', function () {

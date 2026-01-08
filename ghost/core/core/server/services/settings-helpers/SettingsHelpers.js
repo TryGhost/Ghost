@@ -1,7 +1,7 @@
 const net = require('net');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const EmailAddressParser = require('../email-address/EmailAddressParser');
+const EmailAddressParser = require('../email-address/email-address-parser');
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
 const debug = require('@tryghost/debug')('services:settings-helpers');
@@ -269,7 +269,7 @@ class SettingsHelpers {
      * Calculated setting for Web analytics
      *
      *  Setting > Labs Flag > Config > Limit Service
-     * 
+     *
      * @returns {boolean}
      */
     isWebAnalyticsEnabled() {
@@ -289,7 +289,7 @@ class SettingsHelpers {
 
     /**
      * Check if web analytics can be configured (used for UI enable/disable state)
-     * 
+     *
      * @returns {boolean}
      */
     isWebAnalyticsConfigured() {
@@ -316,7 +316,7 @@ class SettingsHelpers {
      */
     _isValidTinybirdConfig() {
         const tinybirdConfig = this.config.get('tinybird');
-        
+
         // First requirement: tinybird:tracker:endpoint is always required
         if (!tinybirdConfig || !tinybirdConfig.tracker?.endpoint) {
             debug('Web analytics is not available without tinybird:tracker:endpoint');
@@ -326,7 +326,7 @@ class SettingsHelpers {
         // Second requirement: Either JWT config OR local stats config
         const hasJwtConfig = !!(tinybirdConfig.workspaceId && tinybirdConfig.adminToken);
         const hasLocalConfig = !!(tinybirdConfig.stats?.local?.enabled);
-        
+
         if (!hasJwtConfig && !hasLocalConfig) {
             debug('Web analytics requires either (workspaceId + adminToken) or stats.local.enabled');
             return false;
