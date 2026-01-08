@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {EmailSuppressionData, EmailSuppressedEvent} = require('../../../../../core/server/services/email-suppression-list/EmailSuppressionList');
+const {EmailSuppressionData, EmailSuppressedEvent} = require('../../../../../core/server/services/email-suppression-list/email-suppression-list');
 
 describe('EmailSuppressionData', function () {
     it('Has null info when not suppressed', function () {

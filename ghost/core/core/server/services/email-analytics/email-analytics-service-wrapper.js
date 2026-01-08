@@ -8,12 +8,12 @@ class EmailAnalyticsServiceWrapper {
             return;
         }
 
-        const EmailAnalyticsService = require('./EmailAnalyticsService');
+        const EmailAnalyticsService = require('./email-analytics-service');
         const EmailEventStorage = require('../email-service/EmailEventStorage');
         const EmailEventProcessor = require('../email-service/EmailEventProcessor');
-        const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
+        const MailgunProvider = require('./email-analytics-provider-mailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
-        const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
+        const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
         const labs = require('../../../shared/labs');

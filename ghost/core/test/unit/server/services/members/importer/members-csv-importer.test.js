@@ -6,7 +6,7 @@ const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
-const MembersCSVImporter = require('../../../../../../core/server/services/members/importer/MembersCSVImporter');
+const MembersCSVImporter = require('../../../../../../core/server/services/members/importer/members-csv-importer');
 
 const csvPath = path.join(__dirname, '/fixtures/');
 

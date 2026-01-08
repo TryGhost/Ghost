@@ -1,7 +1,7 @@
 const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
-const CommentsServiceEmailRenderer = require('./CommentsServiceEmailRenderer');
+const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
 const {t} = require('../i18n');
 
 class CommentsServiceEmails {

@@ -54,7 +54,7 @@ class UrlTranslator {
 
     /**
      * Get the resource type and ID from a URLHistory item that was added by the frontend attribution script
-     * @param {import('./UrlHistory').UrlHistoryItem} item
+     * @param {import('./url-history').UrlHistoryItem} item
      * @returns {Promise<{type: string, id: string | null, url: string}|null>} Returns null if the item is invalid
      */
     async getResourceDetails(item) {

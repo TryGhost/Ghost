@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 
 // Import source normalization from ReferrersStatsService
-const {normalizeSource} = require('./ReferrersStatsService');
+const {normalizeSource} = require('./referrers-stats-service');
 // Import centralized date utilities
 const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
 
@@ -147,7 +147,7 @@ class PostsStatsService {
                                 .from('members_created_events')
                                 .whereNotNull('attribution_url');
                             applyDateFilter(subquery1, dateFrom, dateTo, 'created_at');
-                            
+
                             subquery1.union(function () {
                                 const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                     .from('members_subscription_created_events')
@@ -215,10 +215,10 @@ class PostsStatsService {
         // Transform results and enrich with titles and URL existence validation
         return results.map((row) => {
             const title = row.title || this._generateTitleFromPath(row.attribution_url);
-            
+
             // Check if URL exists using the URL service
             let urlExists = true; // Default to true for backward compatibility
-            
+
             if (this.urlService && row.attribution_url) {
                 try {
                     // Check if URL service is ready
@@ -253,7 +253,7 @@ class PostsStatsService {
         if (!path) {
             return 'Unknown';
         }
-        
+
         // Handle common Ghost paths
         if (path === '/') {
             return 'Homepage';
@@ -269,12 +269,12 @@ class PostsStatsService {
         if (path.startsWith('/author/')) {
             const segments = path.split('/');
             return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
-        }  
+        }
         if (path.startsWith('/authors/')) {
             const segments = path.split('/');
             return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
         }
-        
+
         // For other paths, just return the path itself
         return path;
     }
@@ -362,7 +362,7 @@ class PostsStatsService {
 
             // Apply source normalization and group by normalized source
             const normalizedResults = new Map();
-            
+
             results.forEach((row) => {
                 const normalizedSource = normalizeSource(row.source);
                 const existing = normalizedResults.get(normalizedSource) || {
@@ -372,11 +372,11 @@ class PostsStatsService {
                     paid_members: 0,
                     mrr: 0
                 };
-                
+
                 existing.free_members += row.free_members;
                 existing.paid_members += row.paid_members;
                 existing.mrr += row.mrr;
-                
+
                 normalizedResults.set(normalizedSource, existing);
             });
 
@@ -453,7 +453,7 @@ class PostsStatsService {
         const groupByField = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
         const joinCondition = groupByUrl ? 'mce.attribution_url' : 'mce.attribution_id';
         const {dateFrom, dateTo} = getDateBoundaries(options);
-        
+
         let subquery = knex('members_created_events as mce')
             .select(selectField)
             .countDistinct('mce.member_id as free_members')
@@ -515,7 +515,7 @@ class PostsStatsService {
         const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
         const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
         const {dateFrom, dateTo} = getDateBoundaries(options);
-        
+
         let subquery = knex('members_subscription_created_events as msce')
             .select(selectField)
             .countDistinct('msce.member_id as paid_members')
@@ -559,7 +559,7 @@ class PostsStatsService {
         const selectField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id as post_id';
         const groupByField = groupByUrl ? 'msce.attribution_url' : 'msce.attribution_id';
         const {dateFrom, dateTo} = getDateBoundaries(options);
-        
+
         let subquery = this.knex('members_subscription_created_events as msce')
             .select(selectField)
             .sum('mpse.mrr_delta as mrr')
@@ -841,7 +841,7 @@ class PostsStatsService {
                     .whereIn('p.status', ['sent', 'published'])
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
-                    
+
                 // Apply centralized date filtering
                 applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
             } else {
@@ -861,7 +861,7 @@ class PostsStatsService {
                     .whereIn('p.status', ['sent', 'published'])
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
-                    
+
                 // Apply centralized date filtering
                 applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
             }
@@ -1119,7 +1119,7 @@ class PostsStatsService {
             if (!postId || postId.trim() === '') {
                 return {data: []};
             }
-            
+
             // Get basic post info for stats calculations
             const postData = await this.knex('posts')
                 .select('posts.id', 'posts.uuid', 'posts.published_at', 'e.email_count', 'e.opened_count')
@@ -1127,7 +1127,7 @@ class PostsStatsService {
                 .where('posts.id', postId)
                 .where('posts.status', 'published')
                 .first();
-                
+
             if (!postData) {
                 return {data: []};
             }
@@ -1135,14 +1135,14 @@ class PostsStatsService {
             // Get member attribution counts
             const memberAttributionCounts = await this._getMemberAttributionCounts([postData.id]);
             const attributionCount = memberAttributionCounts.find(ac => ac.post_id === postData.id);
-            
+
             const freeMembers = attributionCount ? attributionCount.free_members : 0;
             const paidMembers = attributionCount ? attributionCount.paid_members : 0;
             const totalMembers = freeMembers + paidMembers;
 
             // Calculate open rate
-            const openRate = postData.email_count ? 
-                (postData.opened_count / postData.email_count) * 100 : 
+            const openRate = postData.email_count ?
+                (postData.opened_count / postData.email_count) * 100 :
                 null;
 
             // Get visitor count from Tinybird
@@ -1208,7 +1208,7 @@ class PostsStatsService {
 
             // Filter out any rows without post_uuid and get unique UUIDs
             const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
-            
+
             // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
             const posts = await this.knex('posts as p')
                 .select(
@@ -1300,7 +1300,7 @@ class PostsStatsService {
             if (remainingCount > 0) {
                 // Get post IDs that we already have to exclude them
                 const existingPostIds = postsWithViews.map(p => p.post_id);
-                
+
                 additionalPosts = await this.knex('posts as p')
                     .select(
                         'p.id as post_id',
@@ -1474,7 +1474,7 @@ class PostsStatsService {
     async getPostsMemberCounts(postIds, options = {}) {
         try {
             const attributionCounts = await this._getMemberAttributionCounts(postIds, options);
-            
+
             // Convert array to object mapping post_id -> counts
             const memberCounts = {};
             attributionCounts.forEach((count) => {
@@ -1483,7 +1483,7 @@ class PostsStatsService {
                     paid_members: count.paid_members
                 };
             });
-            
+
             return memberCounts;
         } catch (error) {
             logging.error('Error fetching member counts:', error);

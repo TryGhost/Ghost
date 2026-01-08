@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const MembersConfigProvider = require('../../../../../core/server/services/members/MembersConfigProvider');
+const MembersConfigProvider = require('../../../../../core/server/services/members/members-config-provider');
 
 const urlUtils = require('../../../../utils/url-utils');
 const configUtils = require('../../../../utils/config-utils');

@@ -9,10 +9,10 @@ const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
-const SettingsBREADService = require('./SettingsBREADService');
+const SettingsBREADService = require('./settings-bread-service');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;

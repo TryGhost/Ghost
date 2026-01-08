@@ -25,7 +25,7 @@ class CommentsService {
         /** @private */
         this.contentGating = contentGating;
 
-        const Emails = require('./CommentsServiceEmails');
+        const Emails = require('./comments-service-emails');
         /** @private */
         this.emails = new Emails({
             config,

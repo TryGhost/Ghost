@@ -1,6 +1,6 @@
 import ObjectID from 'bson-objectid';
 import {Knex} from 'knex';
-import {IdentityTokenService} from '../identity-tokens/IdentityTokenService';
+import {IdentityTokenService} from '../identity-tokens/identity-token-service';
 import fetch from 'node-fetch';
 
 type ExpectedWebhook = {

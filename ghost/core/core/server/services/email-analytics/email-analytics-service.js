@@ -1,4 +1,4 @@
-const EventProcessingResult = require('./EventProcessingResult');
+const EventProcessingResult = require('./event-processing-result');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
