@@ -7,6 +7,8 @@ const moment = require('moment');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const mail = require('../mail');
+const otp = require('./otp');
+const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
     userNotFound: 'User not found.',
@@ -144,6 +146,12 @@ function doReset(options, tokenParts, settingsAPI) {
         .then((updatedUser) => {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
+        })
+        .then((savedUser) => {
+            // Generate email verification token for 2FA bypass on login
+            const secret = settingsCache.get('admin_session_secret');
+            const emailVerificationToken = otp.generate(savedUser.id, secret);
+            return {emailVerificationToken};
         })
         .catch((err) => {
             if (errors.utils.isGhostError(err)) {

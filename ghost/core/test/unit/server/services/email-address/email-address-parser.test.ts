@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import EmailAddressParser from '../../../../../core/server/services/email-address/EmailAddressParser.js';
+import EmailAddressParser from '../../../../../core/server/services/email-address/email-address-parser.js';
 
 describe('EmailAddressParser', function () {
     describe('parse', function () {

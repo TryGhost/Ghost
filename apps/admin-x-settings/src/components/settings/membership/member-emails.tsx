@@ -4,7 +4,7 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -63,7 +63,7 @@ const EmailPreview: React.FC<{
 };
 
 const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
@@ -140,25 +140,29 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         emailType='free'
                     />
                 }
-                <Separator />
-                <Toggle
-                    key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
-                    checked={Boolean(paidWelcomeEmailEnabled)}
-                    containerClasses='items-center'
-                    direction='rtl'
-                    disabled={isLoading}
-                    gap='gap-0'
-                    hint='Sent to new paid members as soon as they start their subscription.'
-                    label='Paid members welcome email'
-                    labelClasses='py-4 w-full'
-                    onChange={() => handleToggle('paid')}
-                />
-                {paidWelcomeEmail && paidWelcomeEmailEnabled &&
-                    <EmailPreview
-                        automatedEmail={paidWelcomeEmail}
-                        emailType='paid'
-                    />
-                }
+                {checkStripeEnabled(settings, config) && (
+                    <>
+                        <Separator />
+                        <Toggle
+                            key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
+                            checked={Boolean(paidWelcomeEmailEnabled)}
+                            containerClasses='items-center'
+                            direction='rtl'
+                            disabled={isLoading}
+                            gap='gap-0'
+                            hint='Sent to new paid members as soon as they start their subscription.'
+                            label='Paid members welcome email'
+                            labelClasses='py-4 w-full'
+                            onChange={() => handleToggle('paid')}
+                        />
+                        {paidWelcomeEmail && paidWelcomeEmailEnabled &&
+                            <EmailPreview
+                                automatedEmail={paidWelcomeEmail}
+                                emailType='paid'
+                            />
+                        }
+                    </>
+                )}
             </SettingGroupContent>
         </TopLevelGroup>
     );

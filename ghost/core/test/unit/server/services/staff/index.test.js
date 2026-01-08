@@ -6,7 +6,7 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
 const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
-const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/MilestoneCreatedEvent');
+const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
 describe('Staff Service:', function () {
     let emailMockReceiver;
