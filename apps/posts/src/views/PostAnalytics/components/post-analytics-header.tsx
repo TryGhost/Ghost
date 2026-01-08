@@ -49,10 +49,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         if (hasBeenEmailed(post as Post)) {
             tabs.push('Newsletter');
         }
-        tabs.push('Growth');
+        // Only show Growth tab if member source tracking is enabled
+        if (appSettings?.analytics.membersTrackSources) {
+            tabs.push('Growth');
+        }
 
         return tabs;
-    }, [post, appSettings?.analytics.webAnalytics]);
+    }, [post, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
 
     const handleDeletePost = () => {
         if (!post) {

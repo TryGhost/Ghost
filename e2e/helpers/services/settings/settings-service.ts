@@ -69,4 +69,14 @@ export class SettingsService {
         const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
         return await response.json() as SettingsResponse;
     }
+
+    /**
+     * Set member source tracking enabled/disabled
+     * @param enabled - true to enable member source tracking, false to disable
+     */
+    async setMembersTrackSources(enabled: boolean) {
+        const data = {settings: [{key: 'members_track_sources', value: enabled}]};
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
+        return await response.json() as SettingsResponse;
+    }
 }
