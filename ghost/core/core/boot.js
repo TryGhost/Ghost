@@ -315,6 +315,7 @@ async function initServices() {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
+    const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
     const scheduling = require('./server/adapters/scheduling');
@@ -360,6 +361,7 @@ async function initServices() {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
+        indexnow.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
