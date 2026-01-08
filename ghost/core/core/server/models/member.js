@@ -388,6 +388,11 @@ const Member = ghostBookshelf.Model.extend({
                 orderByRaw: `members.email_open_rate IS NOT NULL DESC, members.email_open_rate ${direction}`
             };
         }
+        if (field === 'email_click_rate') {
+            return {
+                orderByRaw: `members.email_click_rate IS NOT NULL DESC, members.email_click_rate ${direction}`
+            };
+        }
     },
 
     toJSON(unfilteredOptions) {
