@@ -8,7 +8,7 @@ const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
 const configUtils = require('../../utils/config-utils');
-const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 
 const startWebhookServer = (port) => {
     const isCI = process.env.CI;

@@ -15,7 +15,7 @@
  */
 
 class Attribution {
-    /** @type {import('./UrlTranslator')} */
+    /** @type {import('./url-translator')} */
     #urlTranslator;
 
     /**
@@ -133,9 +133,9 @@ class Attribution {
  * Convert a UrlHistory to an attribution object
  */
 class AttributionBuilder {
-    /** @type {import('./UrlTranslator')} */
+    /** @type {import('./url-translator')} */
     urlTranslator;
-    /** @type {import('./ReferrerTranslator')} */
+    /** @type {import('./referrer-translator')} */
     referrerTranslator;
 
     /**
@@ -166,7 +166,7 @@ class AttributionBuilder {
 
     /**
      * Last Post Algorithm™️
-     * @param {import('./UrlHistory').UrlHistoryArray} history
+     * @param {import('./url-history').UrlHistoryArray} history
      * @returns {Promise<Attribution>}
      */
     async getAttribution(history) {

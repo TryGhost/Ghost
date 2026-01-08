@@ -1,7 +1,7 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
 const moment = require('moment-timezone');
-const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
+const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
 
 /**
  * @typedef {object} TestPost
@@ -652,10 +652,10 @@ describe('PostsStatsService', function () {
             // Make sure we have results for both referrers
             const pastResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_past');
             const futureResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_future');
-            
+
             assert.ok(pastResult, 'Should have results for referrer_past');
             assert.equal(pastResult.free_members, 1, 'Recent referrer should have 1 free member');
-            
+
             assert.ok(futureResult, 'Should have results for referrer_future');
             assert.equal(futureResult.free_members, 1, 'Older referrer should have 1 free member');
         });
@@ -672,15 +672,15 @@ describe('PostsStatsService', function () {
 
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 2, 'Should return only 2 referrers');
-            
+
             // All referrers have 1 free member, so we just check that we got 2 out of the 3 possible sources
             const validSources = ['referrer_1', 'referrer_2', 'referrer_3'];
             const returnedSources = result.data.map(item => item.source);
-            
+
             // Both returned sources should be from our valid sources list
-            assert.equal(returnedSources.every(source => validSources.includes(source)), true, 
+            assert.equal(returnedSources.every(source => validSources.includes(source)), true,
                 'All returned sources should be from our test data');
-                
+
             // We should have exactly 2 different sources
             assert.equal(new Set(returnedSources).size, 2, 'Should return 2 different sources');
         });
@@ -724,11 +724,11 @@ describe('PostsStatsService', function () {
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            
+
             // Should return the latest posts ordered by published_at desc with 0 views and 0 members (no attribution events)
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 4, 'Should return 4 posts (all published posts)');
-            
+
             // All posts should have zero views since there's no Tinybird client
             result.data.forEach((post) => {
                 assert.equal(post.views, 0, 'All posts should have 0 views');
@@ -737,7 +737,7 @@ describe('PostsStatsService', function () {
                 assert.ok(post.title, 'Post should have a title');
                 assert.ok(typeof post.published_at === 'number', 'Post should have a published_at timestamp');
             });
-            
+
             // Posts should be ordered by published_at desc (newest first)
             for (let i = 1; i < result.data.length; i++) {
                 assert.ok(result.data[i - 1].published_at >= result.data[i].published_at, 'Posts should be ordered by published_at desc');
@@ -749,10 +749,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -870,10 +870,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -924,7 +924,7 @@ describe('PostsStatsService', function () {
             const redirect2 = await _createRedirect('post2');
             const redirect3 = await _createRedirect('post3');
             const redirect4 = await _createRedirect('post4');
-            
+
             await _createClickEvent(redirect1, 'member_1', new Date('2025-01-16'));
             await _createClickEvent(redirect1, 'member_2', new Date('2025-01-16'));
             await _createClickEvent(redirect2, 'member_3', new Date('2025-01-17'));
@@ -1087,10 +1087,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1138,7 +1138,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works and returns expected structure
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // With current implementation and date filtering issues, we expect posts but with 0 members
             // This test mainly verifies the method structure works correctly
             if (result.data.length > 0) {
@@ -1166,10 +1166,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1201,7 +1201,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // This test verifies that the method handles the free + paid member scenario
             // The current implementation counts them separately (no deduplication)
             if (result.data.length > 0) {
@@ -1227,10 +1227,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1271,7 +1271,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works for cross-post scenarios
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // This test verifies cross-post attribution handling
             // post1: should get credit for free signups
             // post2: should get credit for paid conversions
@@ -1285,10 +1285,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2020-01-15'),
@@ -1342,18 +1342,18 @@ describe('PostsStatsService', function () {
 
             // Verify that we get member attribution data (since date filtering was removed for members)
             assert.ok(result.data.length >= 2, 'Should return at least 2 posts');
-            
+
             // Find the posts in the results
             const post1Result = result.data.find(p => p.post_id === 'post1');
             const post2Result = result.data.find(p => p.post_id === 'post2');
-            
+
             assert.ok(post1Result, 'Post 1 should be in results');
             assert.ok(post2Result, 'Post 2 should be in results');
-            
+
             // Verify click tracking is working
             assert.equal(post1Result.clicked_count, 1, 'Post 1 should have 1 click');
             assert.equal(post2Result.clicked_count, 1, 'Post 2 should have 1 click');
-            
+
             // Member attribution might be 0 due to date filtering logic, but we've verified the infrastructure works
             // The important thing is that the API returns the expected structure with all fields
             assert.ok(typeof post1Result.members === 'number', 'Members should be a number');
@@ -1378,12 +1378,12 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create multiple users with different names to test comma formatting
             await _createUser('author1', 'Alice Johnson');
             await _createUser('author2', 'Bob Wilson');
             await _createUser('author3', 'Carol Smith');
-            
+
             await _createPostWithDetails('post1', 'Multi-Author Post', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1392,7 +1392,7 @@ describe('PostsStatsService', function () {
 
             // Assign multiple authors to the post in a specific order
             await _createPostAuthor('post1', 'author1', 0); // First author
-            await _createPostAuthor('post1', 'author2', 1); // Second author  
+            await _createPostAuthor('post1', 'author2', 1); // Second author
             await _createPostAuthor('post1', 'author3', 2); // Third author
 
             // Add email stats
@@ -1407,53 +1407,53 @@ describe('PostsStatsService', function () {
 
             // Should return the post with properly formatted authors
             assert.ok(result.data.length >= 1, 'Should return at least 1 post');
-            
+
             const post1Result = result.data.find(p => p.post_id === 'post1');
             assert.ok(post1Result, 'Post 1 should be in results');
-            
+
             // Verify authors field exists and has proper comma formatting
             assert.ok(post1Result.authors, 'Authors field should exist');
             assert.equal(typeof post1Result.authors, 'string', 'Authors should be a string');
-            
+
             // Test that authors are properly comma-separated with single commas
             const authorsString = post1Result.authors;
-            
+
             // Should contain all three author names
             assert.ok(authorsString.includes('Alice Johnson'), 'Should contain Alice Johnson');
-            assert.ok(authorsString.includes('Bob Wilson'), 'Should contain Bob Wilson'); 
+            assert.ok(authorsString.includes('Bob Wilson'), 'Should contain Bob Wilson');
             assert.ok(authorsString.includes('Carol Smith'), 'Should contain Carol Smith');
-            
+
             // Should have exactly 2 commas for 3 authors
             const commaCount = (authorsString.match(/,/g) || []).length;
             assert.equal(commaCount, 2, 'Should have exactly 2 commas for 3 authors');
-            
+
             // Should not have trailing comma
             assert.ok(!authorsString.endsWith(','), 'Should not have trailing comma');
-            
-            // Should not have leading comma  
+
+            // Should not have leading comma
             assert.ok(!authorsString.startsWith(','), 'Should not have leading comma');
-            
+
             // Should not have multiple consecutive commas
             assert.ok(!authorsString.includes(',,'), 'Should not have consecutive commas');
-            
+
             // Should have proper spacing after commas (should be "Name1, Name2, Name3")
             assert.ok(!authorsString.includes(', ,'), 'Should not have empty values between commas');
-            
+
             // Verify the exact format matches expected pattern
             assert.equal(authorsString, 'Alice Johnson, Bob Wilson, Carol Smith', 'Authors should be formatted as "Alice Johnson, Bob Wilson, Carol Smith"');
         });
 
         it('filters out pages when no Tinybird client exists (fallback)', async function () {
             service = new PostsStatsService({knex: db}); // No Tinybird client
-            
+
             // Create posts and pages
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create user
             await _createUser('author1', 'Test Author');
-            
+
             // Create posts (type = 'post')
             await _createPostWithDetails('post1', 'Test Post 1', 'published', {
                 uuid: 'post-uuid1',
@@ -1465,7 +1465,7 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-16'),
                 type: 'post'
             });
-            
+
             // Create pages (type = 'page')
             await _createPostWithDetails('page1', 'Test Page 1', 'published', {
                 uuid: 'page-uuid1',
@@ -1490,11 +1490,11 @@ describe('PostsStatsService', function () {
                 timezone: 'UTC',
                 limit: 10
             });
-            
+
             // Should only return posts, not pages
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
-            
+
             // Verify all returned items are posts
             result.data.forEach((item) => {
                 assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
@@ -1507,15 +1507,15 @@ describe('PostsStatsService', function () {
                 fetch: () => Promise.resolve([]) // No views data
             };
             service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
-            
+
             // Create posts and pages
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create user
             await _createUser('author1', 'Test Author');
-            
+
             // Create posts (type = 'post')
             await _createPostWithDetails('post1', 'Test Post 1', 'published', {
                 uuid: 'post-uuid1',
@@ -1527,7 +1527,7 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-16'),
                 type: 'post'
             });
-            
+
             // Create pages (type = 'page')
             await _createPostWithDetails('page1', 'Test Page 1', 'published', {
                 uuid: 'page-uuid1',
@@ -1552,11 +1552,11 @@ describe('PostsStatsService', function () {
                 timezone: 'UTC',
                 limit: 10
             });
-            
+
             // Should only return posts, not pages
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
-            
+
             // Verify all returned items are posts
             result.data.forEach((item) => {
                 assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
@@ -1571,15 +1571,15 @@ describe('PostsStatsService', function () {
                 ])
             };
             service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
-            
+
             // Create posts and pages
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create user
             await _createUser('author1', 'Test Author');
-            
+
             // Create posts (type = 'post')
             await _createPostWithDetails('post1', 'Test Post 1', 'published', {
                 uuid: 'post-uuid1',
@@ -1596,7 +1596,7 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-17'),
                 type: 'post'
             });
-            
+
             // Create pages (type = 'page') - these should be newer but still excluded
             await _createPostWithDetails('page1', 'Test Page 1', 'published', {
                 uuid: 'page-uuid1',
@@ -1622,22 +1622,22 @@ describe('PostsStatsService', function () {
                 timezone: 'UTC',
                 limit: 5 // Request 5 items to trigger backfilling
             });
-            
+
             // Should return only posts, not pages, even when backfilling
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 3, 'Should return only 3 posts, not pages');
-            
+
             // Verify all returned items are posts
             result.data.forEach((item) => {
                 assert.ok(['post1', 'post2', 'post3'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
                 assert.ok(['Test Post 1', 'Test Post 2', 'Test Post 3'].includes(item.title), `Should only return post titles, but got ${item.title}`);
             });
-            
+
             // Verify the first post has views data from Tinybird and others have 0 views
             const post1Result = result.data.find(p => p.post_id === 'post1');
             assert.ok(post1Result, 'Should find post1 in results');
             assert.equal(post1Result.views, 1000, 'Post1 should have 1000 views from Tinybird');
-            
+
             // Other posts should have 0 views (backfilled)
             const otherPosts = result.data.filter(p => p.post_id !== 'post1');
             otherPosts.forEach((post) => {
@@ -1687,7 +1687,7 @@ describe('PostsStatsService', function () {
 
         it('should return cumulative values instead of deltas', async function () {
             const newsletterId = 'newsletter1';
-            
+
             // Create newsletter
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
@@ -1714,7 +1714,7 @@ describe('PostsStatsService', function () {
 
             assert.ok(result.data, 'Should have data property');
             assert.equal(result.data.length, 1, 'Should return one stats object');
-            
+
             const stats = result.data[0];
             assert.equal(stats.total, 2, 'Total subscribers should be 2');
             assert.ok(Array.isArray(stats.values), 'Should have values array');
@@ -1757,7 +1757,7 @@ describe('PostsStatsService', function () {
 
         it('should exclude email_disabled members', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             await _createMember('member1', false);
@@ -1786,7 +1786,7 @@ describe('PostsStatsService', function () {
 
         it('should calculate correct starting point for historical data', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             // Create 5 members
@@ -1817,7 +1817,7 @@ describe('PostsStatsService', function () {
 
         it('should handle negative growth correctly', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             // Create 3 members
@@ -1846,7 +1846,7 @@ describe('PostsStatsService', function () {
 
         it('should handle multiple events on same day', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             await _createMember('member1');
@@ -1876,7 +1876,7 @@ describe('PostsStatsService', function () {
 
         it('should respect date filters', async function () {
             const newsletterId = 'newsletter1';
-            
+
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
             await _createMember('member1');

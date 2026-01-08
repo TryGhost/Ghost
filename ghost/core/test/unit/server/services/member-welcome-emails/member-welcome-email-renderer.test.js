@@ -16,7 +16,7 @@ describe('MemberWelcomeEmailRenderer', function () {
     beforeEach(function () {
         lexicalRenderStub = sinon.stub().resolves('<p>Hello World</p>');
 
-        MemberWelcomeEmailRenderer = rewire('../../../../../core/server/services/member-welcome-emails/MemberWelcomeEmailRenderer');
+        MemberWelcomeEmailRenderer = rewire('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
         MemberWelcomeEmailRenderer.__set__('lexicalLib', {
             render: lexicalRenderStub
         });

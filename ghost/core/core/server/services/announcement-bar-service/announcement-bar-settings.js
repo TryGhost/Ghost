@@ -1,4 +1,4 @@
-const AnnouncementVisibilityValues = require('./AnnouncementVisibilityValues');
+const AnnouncementVisibilityValues = require('./announcement-visibility-values');
 
 class AnnouncementBarSettings {
     #getAnnouncementSettings;

@@ -17,8 +17,8 @@ const messages = {
 
 module.exports = class CommentsController {
     /**
-     * @param {import('./CommentsService')} service
-     * @param {import('./CommentsStatsService')} stats
+     * @param {import('./comments-service')} service
+     * @param {import('./comments-stats-service')} stats
      */
     constructor(service, stats) {
         this.service = service;

@@ -62,7 +62,7 @@ module.exports = class CheckoutSessionEventService {
         const memberRepository = this.deps.memberRepository;
         const member = session.customer ? (await memberRepository.get({customer_id: session.customer})) : null;
 
-        const {DonationPaymentEvent} = require('../../../donations/DonationPaymentEvent');
+        const {DonationPaymentEvent} = require('../../../donations/donation-payment-event');
         const data = DonationPaymentEvent.create({
             name: member?.get('name') ?? session.customer_details.name,
             email: member?.get('email') ?? session.customer_details.email,

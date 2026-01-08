@@ -7,7 +7,7 @@ const assert = require('assert/strict');
 const util = require('util');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const UpdateCheckService = require('../../../../core/server/services/update-check/UpdateCheckService');
+const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};

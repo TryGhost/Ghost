@@ -1,9 +1,9 @@
-const MRRService = require('./MrrStatsService');
-const MembersService = require('./MembersStatsService');
-const SubscriptionStatsService = require('./SubscriptionStatsService');
-const ReferrersStatsService = require('./ReferrersStatsService');
-const PostsStatsService = require('./PostsStatsService');
-const ContentStatsService = require('./ContentStatsService');
+const MRRService = require('./mrr-stats-service');
+const MembersService = require('./members-stats-service');
+const SubscriptionStatsService = require('./subscription-stats-service');
+const ReferrersStatsService = require('./referrers-stats-service');
+const PostsStatsService = require('./posts-stats-service');
+const ContentStatsService = require('./content-stats-service');
 class StatsService {
     /**
      * @param {object} deps
@@ -78,8 +78,8 @@ class StatsService {
 
     /**
      * Get top posts by attribution metrics (includes all content that drove conversions)
-     * @param {import('./PostsStatsService').TopPostsOptions} options
-     * @returns {Promise<{data: import('./PostsStatsService').AttributionResult[]}>}
+     * @param {import('./posts-stats-service').TopPostsOptions} options
+     * @returns {Promise<{data: import('./posts-stats-service').AttributionResult[]}>}
      */
     async getTopPosts(options = {}) {
         // Return the original { data: results } structure
@@ -94,7 +94,7 @@ class StatsService {
      * @param {string} options.date_to - End date in YYYY-MM-DD format
      * @param {string} options.timezone - Timezone to use for date interpretation
      * @param {number} [options.limit=5] - Maximum number of posts to return
-     * @returns {Promise<{data: import('./PostsStatsService').TopPostResult[]}>}
+     * @returns {Promise<{data: import('./posts-stats-service').TopPostResult[]}>}
      */
     async getTopPostsViews(options) {
         const result = await this.posts.getTopPostsViews(options);
@@ -124,17 +124,17 @@ class StatsService {
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
+     * @returns {Promise<{data: import('./posts-stats-service').NewsletterStatResult[]}>}
      */
     async getNewsletterStats(options = {}) {
         // Extract newsletter_id from options
         const {newsletter_id: newsletterId, ...otherOptions} = options;
-        
+
         // If no newsletterId is provided, we can't get specific stats
         if (!newsletterId) {
             return {data: []};
         }
-        
+
         // Return newsletter stats for the specific newsletter
         const result = await this.posts.getNewsletterStats(newsletterId, otherOptions);
         return result;
@@ -142,23 +142,23 @@ class StatsService {
 
     /**
      * Get newsletter subscriber statistics including total count and daily deltas
-     * 
+     *
      * @param {Object} options
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @returns {Promise<{data: import('./PostsStatsService').NewsletterSubscriberStats[]}>}
+     * @returns {Promise<{data: import('./posts-stats-service').NewsletterSubscriberStats[]}>}
      */
     async getNewsletterSubscriberStats(options = {}) {
         // Extract newsletter_id from options
         const {newsletter_id: newsletterId, ...otherOptions} = options;
-        
+
         // If no newsletterId is provided, we can't get specific stats
         if (!newsletterId) {
             return {data: [{total: 0, values: []}]};
         }
-        
+
         const result = await this.posts.getNewsletterSubscriberStats(newsletterId, otherOptions);
         return result;
     }
@@ -195,17 +195,17 @@ class StatsService {
      * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
-     * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
+     * @returns {Promise<{data: import('./posts-stats-service').NewsletterStatResult[]}>}
      */
     async getNewsletterBasicStats(options = {}) {
         // Extract newsletter_id from options
         const {newsletter_id: newsletterId, ...otherOptions} = options;
-        
+
         // If no newsletterId is provided, we can't get specific stats
         if (!newsletterId) {
             return {data: []};
         }
-        
+
         // Return newsletter basic stats for the specific newsletter
         const result = await this.posts.getNewsletterBasicStats(newsletterId, otherOptions);
         return result;
@@ -221,12 +221,12 @@ class StatsService {
     async getNewsletterClickStats(options = {}) {
         // Extract newsletter_id and post_ids from options
         const {newsletter_id: newsletterId, post_ids: postIds} = options;
-        
+
         // If no newsletterId is provided, we can't get specific stats
         if (!newsletterId) {
             return {data: []};
         }
-        
+
         // Return newsletter click stats for the specific newsletter and posts
         const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
         return result;
@@ -255,7 +255,7 @@ class StatsService {
      * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @param {string} [options.post_id] - Optional filter by post ID
-     * @returns {Promise<{data: import('./ReferrersStatsService').UtmGrowthStat[], meta: {}}>}
+     * @returns {Promise<{data: import('./referrers-stats-service').UtmGrowthStat[], meta: {}}>}
      */
     async getUtmGrowthStats(options = {}) {
         return this.referrers.getUtmGrowthStats(options);
