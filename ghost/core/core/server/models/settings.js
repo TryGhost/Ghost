@@ -60,7 +60,8 @@ function parseDefaultSettings() {
         members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
-        site_uuid: () => getOrGenerateSiteUuid()
+        site_uuid: () => getOrGenerateSiteUuid(),
+        indexnow_api_key: () => crypto.randomBytes(16).toString('hex')
     };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {

@@ -637,5 +637,11 @@
             },
             "type": "boolean"
         }
+    },
+    "indexnow": {
+        "indexnow_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        }
     }
 }
