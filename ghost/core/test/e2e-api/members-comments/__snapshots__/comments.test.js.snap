@@ -148,6 +148,92 @@ Object {
 }
 `;
 
+exports[`Comments API When authenticated as post author does NOT notify post author when they comment on their own post 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "This is a comment",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+}
+`;
+
+exports[`Comments API When authenticated as post author does NOT notify post author when they comment on their own post 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "399",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\//,
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API When authenticated as post author does NOT notify post author when they reply to a comment on their own post 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "Reply from post author",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+}
+`;
+
+exports[`Comments API When authenticated as post author does NOT notify post author when they reply to a comment on their own post 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "404",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Comments API when commenting enabled for all when authenticated Browsing comments does not return the member unsubscribe_url 1: [body] 1`] = `
 Object {
   "comments": Array [

@@ -26,6 +26,11 @@ class CommentsServiceEmails {
                 continue;
             }
 
+            // Don't send a notification if you comment or reply as a member to your own post
+            if (author.get('email') === member.get('email')) {
+                continue;
+            }
+
             const to = author.get('email');
             const subject = '💬 New comment on your post: ' + post.get('title');
 

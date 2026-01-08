@@ -1524,6 +1524,59 @@ describe('Comments API', function () {
         });
     });
 
+    describe('When authenticated as post author', function () {
+        let getStub;
+
+        before(async function () {
+            await membersAgent.loginAs(postAuthorEmail);
+        });
+
+        beforeEach(function () {
+            getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'all';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        afterEach(async function () {
+            sinon.restore();
+        });
+
+        it('does NOT notify post author when they comment on their own post', async function () {
+            await testPostComment({
+                post_id: postId,
+                html: 'This is a comment'
+            });
+
+            // Post author should NOT receive a notification for their own comment
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+
+        it('does NOT notify post author when they reply to a comment on their own post', async function () {
+            // Create a parent comment from another member
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            // Post author replies
+            await testPostComment({
+                post_id: postId,
+                parent_id: parentComment.get('id'),
+                html: 'Reply from post author'
+            });
+
+            // Post author should NOT receive a notification for their own reply
+            emailMockReceiver.assertSentEmailCount(1); // Only the parent comment author is notified
+            mockManager.assert.sentEmail({
+                subject: '↪️ New reply to your comment on Ghost',
+                to: fixtureManager.get('members', 1).email
+            });
+        });
+    });
+
     describe('when commenting disabled', function () {
         beforeEach(async function () {
             await membersAgent.loginAs('member@example.com');
