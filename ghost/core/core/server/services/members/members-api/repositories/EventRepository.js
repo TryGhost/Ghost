@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const mingo = require('mingo');
 const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys, rejectStatements} = require('@tryghost/mongo-utils');
+const {default: ObjectID} = require('bson-objectid');
 
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
@@ -485,26 +486,36 @@ module.exports = class EventRepository {
         };
     }
 
+    getPostIdFromFilter(filter) {
+        let postIdString = '';
+
+        if (filter && filter.$and) {
+            // Case when there is an $and condition
+            postIdString = filter.$and.find(condition => condition['data.post_id'])?.['data.post_id'];
+        } else {
+            // Case when there's no $and condition, directly look for data.post_id
+            postIdString = filter ? filter['data.post_id'] : '';
+        }
+
+        if (!ObjectID.isValid(postIdString)) {
+            return null;
+        }
+
+        return ObjectID.createFromHexString(postIdString);
+    }
+
     /**
      * This groups click events per member for the same post, and only returns the first actual event, and includes the total clicks per event (for the same member and post)
      */
     async getAggregatedClickEvents(options = {}, filter) {
-        let postId = '';
+        const postId = this.getPostIdFromFilter(filter);
 
-        if (filter && filter.$and) {
-            // Case when there is an $and condition
-            postId = filter.$and.find(condition => condition['data.post_id'])?.['data.post_id'];
-        } else {
-            // Case when there's no $and condition, directly look for data.post_id
-            postId = filter ? filter['data.post_id'] : '';
-        }
-
-        //Remove type filter as we don't need it in the query 
+        //Remove type filter as we don't need it in the query
         const [typeFilter, otherFilter] = this.getNQLSubset(options.filter); // eslint-disable-line
 
         filter = this.removePostIdFilter(otherFilter); //Remove post_id filter as we don't need it in the query
 
-        let postClicksQuery = postId && postId !== '' ? `SELECT
+        let postClicksQuery = postId ? `SELECT
                     mce.id,
                     mce.member_id,
                     mce.redirect_id,
@@ -514,7 +525,7 @@ module.exports = class EventRepository {
                 INNER JOIN
                     redirects r ON mce.redirect_id = r.id
                 WHERE
-                    r.post_id = '${postId}'
+                    r.post_id = '${postId.toHexString()}'
         `
             : `SELECT
                         mce.id,
@@ -914,7 +925,7 @@ module.exports = class EventRepository {
         if (!filter) {
             return filter;
         }
-    
+
         try {
             return rejectStatements(filter, key => key === 'data.post_id');
         } catch (e) {
