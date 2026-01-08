@@ -362,12 +362,12 @@ class ReferrersStatsService {
      * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @param {string} [options.orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
+     * @param {string} [options.order='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
      * @param {number} [options.limit=50] - Maximum number of sources to return
      * @returns {Promise<{data: AttributionCountStatWithMrr[], meta: {}}>}
      */
     async getTopSourcesWithRange(options = {}) {
-        const {orderBy = 'signups desc', limit = 50} = options;
+        const {order: orderBy = 'signups desc', limit = 50} = options;
 
         // Get deduplicated member counts and MRR data in parallel
         const [memberCounts, mrrEntries] = await Promise.all([
