@@ -23,7 +23,6 @@
         "contentPath": "content/"
     },
     "privacy": {
-        "useRpcPing": false,
         "useUpdateCheck": true
     },
     "useMinFiles": false,
