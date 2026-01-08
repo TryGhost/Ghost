@@ -130,14 +130,16 @@ class UrlTranslator {
 
     async getResourceById(id, type) {
         switch (type) {
-        case 'post':
+        case 'post': {
+            const post = await this.models.Post.findOne({id}, {
+                require: false,
+                filter: 'status:[published,sent]' // Include sent status for email-only posts
+            });
+            return post || null;
+        }
         case 'page': {
-            const post = await this.models.Post.findOne({id}, {require: false});
-            if (!post) {
-                return null;
-            }
-
-            return post;
+            const page = await this.models.Post.findOne({id}, {require: false});
+            return page || null;
         }
         case 'author': {
             const user = await this.models.User.findOne({id}, {require: false});
