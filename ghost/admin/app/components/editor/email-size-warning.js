@@ -6,15 +6,13 @@ import {tracked} from '@glimmer/tracking';
 
 export default class EmailSizeWarningComponent extends Component {
     @service emailSizeWarning;
-    @service feature;
     @service settings;
 
     @tracked overLimit = false;
     @tracked emailSizeKb = null;
 
     get isEnabled() {
-        return this.feature.emailSizeWarnings
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+        return this.settings.editorDefaultEmailRecipients !== 'disabled'
             && this.args.post
             && !this.args.post.email
             && !this.args.post.isNew;
