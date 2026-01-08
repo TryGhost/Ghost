@@ -42,7 +42,8 @@ module.exports = {
     resetPassword(data, apiConfig, frame) {
         frame.response = {
             password_reset: [{
-                message: tpl(messages.passwordChanged)
+                message: tpl(messages.passwordChanged),
+                emailVerificationToken: data.emailVerificationToken
             }]
         };
     },

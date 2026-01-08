@@ -205,6 +205,107 @@ describe('SessionService', function () {
         should.equal(req.session.verified, true);
     });
 
+    it('#createSessionForUser verifies session when valid token is provided on request', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        // Generate a valid token first
+        req.session = {user_id: 'egg'};
+        const validToken = await sessionService.generateAuthCodeForUser(req, res);
+        delete req.session;
+
+        // Now create session with token on request body
+        req.body = {token: validToken};
+        await sessionService.createSessionForUser(req, res, user);
+
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, true);
+    });
+
+    it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        // Provide an invalid token on request body
+        req.body = {token: '000000'};
+        await sessionService.createSessionForUser(req, res, user);
+
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, undefined);
+    });
+
     it('Generates a valid auth code and verifies it correctly', async function () {
         const getSession = async (req) => {
             if (req.session) {
