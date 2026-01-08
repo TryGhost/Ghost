@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 
-const LocalFileCache = require('../../../../../core/server/services/url/LocalFileCache');
+const LocalFileCache = require('../../../../../core/server/services/url/local-file-cache');
 
 describe('Unit: services/url/LocalFileCache', function () {
     afterEach(function () {

@@ -4,10 +4,10 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const labs = require('../../../shared/labs');
-const UrlGenerator = require('./UrlGenerator');
-const Queue = require('./Queue');
-const Urls = require('./Urls');
-const Resources = require('./Resources');
+const UrlGenerator = require('./url-generator');
+const Queue = require('./queue');
+const Urls = require('./urls');
+const Resources = require('./resources');
 const urlUtils = require('../../../shared/url-utils');
 const resourcesConfig = require('./config');
 

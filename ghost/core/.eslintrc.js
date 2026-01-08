@@ -101,11 +101,11 @@ module.exports = {
             }
         },
         {
-            // Frontend files use kebab-case filenames with PascalCase class exports
-            files: ['core/frontend/**/*.js', 'core/server/services/**/*.{js,ts}'],
+            // These folders use kebab-case filenames
+            files: ['core/frontend/**/*.{js,ts}', 'core/server/services/**/*.{js,ts}', 'core/server/*.{js,ts}'],
             rules: {
                 'ghost/filenames/match-exported-class': 'off',
-                'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', true]
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
             }
         },
         {

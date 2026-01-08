@@ -2,7 +2,7 @@ const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 
-const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/CheckoutSessionEventService');
+const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
 
 describe('CheckoutSessionEventService', function () {
     let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail;

@@ -9,8 +9,8 @@ class EmailAnalyticsServiceWrapper {
         }
 
         const EmailAnalyticsService = require('./email-analytics-service');
-        const EmailEventStorage = require('../email-service/EmailEventStorage');
-        const EmailEventProcessor = require('../email-service/EmailEventProcessor');
+        const EmailEventStorage = require('../email-service/email-event-storage');
+        const EmailEventProcessor = require('../email-service/email-event-processor');
         const MailgunProvider = require('./email-analytics-provider-mailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');

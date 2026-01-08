@@ -4,7 +4,7 @@ const {NotFoundError, NoPermissionError, BadRequestError, IncorrectUsageError, V
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
-const MagicLink = require('../lib/magic-link/MagicLink');
+const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];

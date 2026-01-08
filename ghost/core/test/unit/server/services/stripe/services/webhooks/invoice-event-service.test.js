@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 
-const InvoiceEventService = require('../../../../../../../core/server/services/stripe/services/webhook/InvoiceEventService');
+const InvoiceEventService = require('../../../../../../../core/server/services/stripe/services/webhook/invoice-event-service');
 
 describe('InvoiceEventService', function () {
     let memberRepositoryStub, eventRepositoryStub, productRepositoryStub, apiStub, service;

@@ -6,7 +6,7 @@ const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 
-const MentionDiscoveryService = require('../../../../../core/server/services/mentions/MentionDiscoveryService');
+const MentionDiscoveryService = require('../../../../../core/server/services/mentions/mention-discovery-service');
 
 describe('MentionDiscoveryService', function () {
     const service = new MentionDiscoveryService({externalRequest});

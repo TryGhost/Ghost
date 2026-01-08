@@ -1,8 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const ResourceService = require('../../../../../core/server/services/mentions/ResourceService');
+const ResourceService = require('../../../../../core/server/services/mentions/resource-service');
 const UrlUtils = require('@tryghost/url-utils');
-const UrlService = require('../../../../../core/server/services/url/UrlService');
+const UrlService = require('../../../../../core/server/services/url/url-service');
 
 function stubGetResource(urlService) {
     const getResource = sinon.stub(urlService, 'getResource');

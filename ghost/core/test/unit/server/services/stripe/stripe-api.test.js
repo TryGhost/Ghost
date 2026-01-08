@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
-const StripeAPI = rewire('../../../../../core/server/services/stripe/StripeAPI');
+const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
 
 describe('StripeAPI', function () {
     const mockCustomerEmail = 'foo@example.com';
