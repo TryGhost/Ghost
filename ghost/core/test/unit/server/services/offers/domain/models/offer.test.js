@@ -1,9 +1,9 @@
 const should = require('should');
 const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../../../../core/server/services/offers/domain/errors');
-const Offer = require('../../../../../../../core/server/services/offers/domain/models/Offer');
-const OfferName = require('../../../../../../../core/server/services/offers/domain/models/OfferName');
-const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/OfferCode');
+const Offer = require('../../../../../../../core/server/services/offers/domain/models/offer');
+const OfferName = require('../../../../../../../core/server/services/offers/domain/models/offer-name');
+const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/offer-code');
 
 function createUniqueChecker(dupe) {
     return {

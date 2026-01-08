@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
 
-const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/LinkRedirectRepository');
-const LinkRedirect = require('../../../../../core/server/services/link-redirection/LinkRedirect');
+const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/link-redirect-repository');
+const LinkRedirect = require('../../../../../core/server/services/link-redirection/link-redirect');
 
 /**
  * Create a stubbed LinkRedirect Bookshelf model for testing, with overridable values
