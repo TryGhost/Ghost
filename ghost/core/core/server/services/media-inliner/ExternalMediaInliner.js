@@ -1,6 +1,6 @@
 const mime = require('mime-types');
 const FileType = require('file-type');
-const request = require('@tryghost/request');
+const request = require('../../lib/request-external');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
