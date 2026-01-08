@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const Mention = require('./Mention');
+const Mention = require('./mention');
 
 /**
  * @template Model

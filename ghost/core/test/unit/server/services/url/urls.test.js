@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const events = require('../../../../../core/server/lib/common/events');
-const Urls = require('../../../../../core/server/services/url/Urls');
+const Urls = require('../../../../../core/server/services/url/urls');
 const logging = require('@tryghost/logging');
 
 describe('Unit: services/url/Urls', function () {

@@ -2,7 +2,7 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const EmailBodyCache = require('./EmailBodyCache');
+const EmailBodyCache = require('./email-body-cache');
 
 const messages = {
     emailErrorPartialFailure: 'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
@@ -12,11 +12,11 @@ const messages = {
 const MAX_SENDING_CONCURRENCY = 2;
 
 /**
- * @typedef {import('./SendingService')} SendingService
- * @typedef {import('./EmailSegmenter')} EmailSegmenter
- * @typedef {import('./EmailRenderer')} EmailRenderer
- * @typedef {import('./DomainWarmingService').DomainWarmingService} DomainWarmingService
- * @typedef {import('./EmailRenderer').MemberLike} MemberLike
+ * @typedef {import('./sending-service')} SendingService
+ * @typedef {import('./email-segmenter')} EmailSegmenter
+ * @typedef {import('./email-renderer')} EmailRenderer
+ * @typedef {import('./domain-warming-service').DomainWarmingService} DomainWarmingService
+ * @typedef {import('./email-renderer').MemberLike} MemberLike
  * @typedef {object} JobsService
  * @typedef {object} Email
  * @typedef {object} Newsletter
@@ -345,7 +345,7 @@ class BatchSendingService {
      * Creates a batch with retry logic and adds it to the batches array
      * @param {object} params
      * @param {Email} params.email
-     * @param {import('./EmailRenderer').Segment} params.segment
+     * @param {import('./email-renderer').Segment} params.segment
      * @param {object[]} params.members
      * @param {boolean} params.useFallbackDomain
      * @param {EmailBatch[]} params.batches
@@ -374,7 +374,7 @@ class BatchSendingService {
     /**
      * @private
      * @param {Email} email
-     * @param {import('./EmailRenderer').Segment} segment
+     * @param {import('./email-renderer').Segment} segment
      * @param {object[]} members
      * @param {object} options
      * @param {boolean} options.useFallbackDomain

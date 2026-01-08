@@ -11,7 +11,7 @@ const logging = require('@tryghost/logging');
  * @prop {string} [replyTo]
  * @prop {string} [domainOverride]
  * @prop {Recipient[]} recipients
- * @prop {import("./EmailRenderer").ReplacementDefinition[]} replacementDefinitions
+ * @prop {import("./email-renderer").ReplacementDefinition[]} replacementDefinitions
  *
  * @typedef {object} IEmailProviderService
  * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
@@ -23,8 +23,8 @@ const logging = require('@tryghost/logging');
  */
 
 /**
- * @typedef {import("./EmailRenderer")} EmailRenderer
- * @typedef {import("./EmailRenderer").EmailBody} EmailBody
+ * @typedef {import("./email-renderer")} EmailRenderer
+ * @typedef {import("./email-renderer").EmailBody} EmailBody
  */
 
 /**
@@ -41,7 +41,7 @@ const logging = require('@tryghost/logging');
  */
 
 /**
- * @typedef {import("./EmailRenderer").MemberLike} MemberLike
+ * @typedef {import("./email-renderer").MemberLike} MemberLike
  */
 
 /**
@@ -156,7 +156,7 @@ class SendingService {
     /**
      * @private
      * @param {MemberLike[]} members
-     * @param {import("./EmailRenderer").ReplacementDefinition[]} replacementDefinitions
+     * @param {import("./email-renderer").ReplacementDefinition[]} replacementDefinitions
      * @returns {Recipient[]}
      */
     buildRecipients(members, replacementDefinitions) {

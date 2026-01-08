@@ -19,7 +19,7 @@ const logging = require('@tryghost/logging');
 module.exports = class CheckoutSessionEventService {
     /**
      * @param {object} deps
-     * @param {import('../../StripeAPI')} deps.api
+     * @param {import('../../stripe-api')} deps.api
      * @param {object} deps.memberRepository
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
