@@ -35,8 +35,8 @@ class MemberWelcomeEmailService {
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
-            if (!row || !row.get('lexical')) {
-                // Use default template when test inbox is configured
+            if (!row) {
+                // No row - use default template when test inbox is configured
                 if (useDefaults) {
                     const defaultEmail = DEFAULT_WELCOME_EMAILS[memberStatus];
                     this.#memberWelcomeEmails[memberStatus] = {
@@ -49,6 +49,13 @@ class MemberWelcomeEmailService {
                 continue;
             }
 
+            // Row exists - check if it has content
+            if (!row.get('lexical')) {
+                this.#memberWelcomeEmails[memberStatus] = null;
+                continue;
+            }
+
+            // Use DB template (status check happens in send())
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: row.get('lexical'),
                 subject: row.get('subject'),
