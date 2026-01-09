@@ -99,7 +99,7 @@ function CommentContent({item}: {item: Comment}) {
 
     return (
         <div className={`mt-1 flex flex-col gap-2`}>
-            <div className="flex max-w-[720px] flex-col items-start">
+            <div className={`flex max-w-[720px] flex-col items-start ${item.status === 'hidden' && 'opacity-50'}`}>
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
@@ -108,8 +108,7 @@ function CommentContent({item}: {item: Comment}) {
                         (isExpanded ?
                             '-mb-1 [&_p]:mb-[0.85em]'
                             :
-                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1 mb-1'),
-                        (item.status === 'hidden' && 'opacity-50')
+                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1 mb-1')
                     )}
                 />
                 {isClamped && (
@@ -260,13 +259,13 @@ function CommentsList({
 
                                         <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
-                                                <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
+                                                <Button className='text-gray-800' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
                                                     Hide
                                                 </Button>
                                             )}
                                             {item.status === 'hidden' && (
-                                                <Button size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
+                                                <Button className='text-gray-800' size="sm" variant="outline" onClick={() => showComment({id: item.id})}>
                                                     <LucideIcon.Eye/>
                                                     Show
                                                 </Button>
@@ -275,7 +274,7 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className='ml-2 flex items-center gap-1 text-xs'>
+                                                            <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
                                                                 <LucideIcon.Reply size={16} strokeWidth={1.5} />
                                                                 <span>{formatNumber(item.count?.replies)}</span>
                                                             </div>
@@ -289,7 +288,7 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className='ml-2 flex items-center gap-1 text-xs'>
+                                                            <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
                                                                 <LucideIcon.Heart size={16} strokeWidth={1.5} />
                                                                 <span>{formatNumber(item.count?.likes)}</span>
                                                             </div>
@@ -303,7 +302,7 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports && 'font-medium text-red'}`}>
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-semibold text-red' : 'text-gray-800'}`}>
                                                                 <LucideIcon.Flag size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
                                                                 <span>{formatNumber(item.count?.reports)}</span>
                                                             </div>
@@ -317,7 +316,7 @@ function CommentsList({
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
-                                                        className="relative z-10 ml-1 hover:bg-secondary [&_svg]:size-4"
+                                                        className="relative z-10 ml-1 text-gray-800 hover:bg-secondary [&_svg]:size-4"
                                                         size="sm"
                                                         variant="ghost"
                                                     >
