@@ -8,7 +8,7 @@ const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES, DEFAULT_WELCOME_EMAILS} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -30,14 +30,32 @@ class MemberWelcomeEmailService {
     }
 
     async loadMemberWelcomeEmails() {
+        const useDefaults = Boolean(config.get('memberWelcomeEmailTestInbox'));
+
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
-            if (!row || !row.get('lexical')) {
+            if (!row) {
+                // No row - use default template when test inbox is configured
+                if (useDefaults) {
+                    const defaultEmail = DEFAULT_WELCOME_EMAILS[memberStatus];
+                    this.#memberWelcomeEmails[memberStatus] = {
+                        ...defaultEmail,
+                        lexical: urlUtils.transformReadyToAbsolute(defaultEmail.lexical)
+                    };
+                } else {
+                    this.#memberWelcomeEmails[memberStatus] = null;
+                }
+                continue;
+            }
+
+            // Row exists - check if it has content
+            if (!row.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
+            // Use DB template (status check happens in send())
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: row.get('lexical'),
                 subject: row.get('subject'),
