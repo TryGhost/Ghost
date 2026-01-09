@@ -319,12 +319,12 @@ describe('ReferrersStatsService', function () {
             ]);
 
             // Test different sort orders
-            const signupsResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'signups desc'});
+            const signupsResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', order: 'signups desc'});
             assert.equal(signupsResult.data[0].source, 'Twitter', 'Twitter should be first when sorted by signups');
             assert.equal(signupsResult.data[1].source, 'Facebook', 'Facebook should be second');
             assert.equal(signupsResult.data[2].source, 'Google', 'Google should be third');
 
-            const sourceResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'source desc'});
+            const sourceResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', order: 'source desc'});
             assert.equal(sourceResult.data[0].source, 'Twitter', 'Sources should be sorted alphabetically descending');
         });
 
@@ -343,7 +343,7 @@ describe('ReferrersStatsService', function () {
             });
             await db('members_created_events').insert(inserts);
 
-            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'signups desc', limit: 3});
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', order: 'signups desc', limit: 3});
             assert.equal(result.data.length, 3, 'Should return only 3 results when limit is 3');
         });
 

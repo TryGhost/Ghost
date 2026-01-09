@@ -237,7 +237,7 @@ class StatsService {
      * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @param {string} [options.orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
+     * @param {string} [options.order='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
      * @param {number} [options.limit=50] - Maximum number of sources to return
      */
     async getTopSourcesWithRange(options = {}) {
