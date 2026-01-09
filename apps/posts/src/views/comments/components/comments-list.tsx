@@ -7,6 +7,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    Badge,
     Button,
     DropdownMenu,
     DropdownMenuContent,
@@ -67,8 +68,7 @@ function formatDate(dateString: string): string {
 function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
     return (
         <Button
-            className="shrink-0 gap-0.5 self-start p-0 text-muted-foreground hover:bg-transparent"
-            size="sm"
+            className="shrink-0 gap-0.5 self-start p-0 text-base hover:bg-transparent"
             variant="ghost"
             onClick={onClick}
         >
@@ -104,12 +104,12 @@ function CommentContent({item}: {item: Comment}) {
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
                     className={cn(
-                        'prose flex-1 text-base leading-[1.45em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
+                        'prose flex-1 text-base leading-[1.5em] [&_*]:leading-[1.5em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
                         (isExpanded ?
                             '-mb-1 [&_p]:mb-[0.85em]'
                             :
-                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1'),
-                        (item.status === 'hidden' && 'text-muted-foreground [&_blockquote]:border-foreground-muted')
+                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1 mb-1'),
+                        (item.status === 'hidden' && 'opacity-50')
                     )}
                 />
                 {isClamped && (
@@ -197,63 +197,68 @@ function CommentsList({
                                     </div>
 
                                     <div className='flex min-w-0 flex-col'>
-                                        <div className='mb-1 flex min-w-0 items-center gap-x-1 text-sm'>
-                                            <div className='nowrap'>
-                                                {item.member?.id ? (
-                                                    <>
-                                                        <Button
-                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70 ${item.status === 'hidden' && 'text-muted-foreground'}`}
-                                                            variant='link'
-                                                            onClick={() => {
-                                                                onAddFilter('author', item.member!.id);
-                                                            }}
+                                        <div className='flex items-baseline gap-4'>
+                                            <div className={`mb-1 flex min-w-0 items-center gap-x-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                <div className='nowrap'>
+                                                    {item.member?.id ? (
+                                                        <>
+                                                            <Button
+                                                                className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
+                                                                variant='link'
+                                                                onClick={() => {
+                                                                    onAddFilter('author', item.member!.id);
+                                                                }}
+                                                            >
+                                                                {item.member.name || 'Unknown'}
+                                                            </Button>
+                                                        </>
+                                                    ) : (
+                                                        <span className="block truncate font-semibold">
+                                                            {item.member?.name || 'Unknown'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
+                                                <div className='nowrap shrink-0'>
+                                                    {item.created_at && (
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span className="cursor-default text-sm text-muted-foreground">
+                                                                        {formatTimestamp(item.created_at)}
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {formatDate(item.created_at)}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
+                                                    )}
+                                                </div>
+                                                <div className='shrink-0 text-muted-foreground'>on</div>
+                                                <div className='min-w-0 truncate'>
+                                                    {item.post?.id && item.post?.title && onAddFilter ? (
+                                                        <div
+                                                            className="block h-auto cursor-pointer truncate p-0 font-medium text-gray-800 hover:opacity-70 dark:text-gray-400"
+                                                            onClick={() => onAddFilter('post', item.post!.id)}
                                                         >
-                                                            {item.member.name || 'Unknown'}
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <span className="block truncate font-semibold">
-                                                        {item.member?.name || 'Unknown'}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
-                                            <div className='nowrap shrink-0'>
-                                                {item.created_at && (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span className="cursor-default text-sm text-muted-foreground">
-                                                                    {formatTimestamp(item.created_at)}
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                {formatDate(item.created_at)}
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                )}
-                                            </div>
-                                            <div className='shrink-0'>on</div>
-                                            <div className='min-w-0 truncate'>
-                                                {item.post?.id && item.post?.title && onAddFilter ? (
-                                                    <div
-                                                        className="block h-auto truncate p-0 font-medium  text-primary hover:opacity-70"
-                                                        onClick={() => onAddFilter('post', item.post!.id)}
-                                                    >
-                                                        {item.post.title}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground">
+                                                            {item.post.title}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">
                                                     Unknown post
-                                                    </span>
-                                                )}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
+                                            {item.status === 'hidden' && (
+                                                <Badge variant='secondary'>Hidden</Badge>
+                                            )}
                                         </div>
 
                                         <CommentContent item={item} />
 
-                                        <div className="mt-5 flex flex-row flex-nowrap items-center gap-2">
+                                        <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
                                                 <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
@@ -266,7 +271,7 @@ function CommentsList({
                                                     Show
                                                 </Button>
                                             )}
-                                            <div className='flex items-center gap-3'>
+                                            <div className='flex items-center gap-4'>
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -312,7 +317,7 @@ function CommentsList({
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
-                                                        className="relative z-10 ml-1 [&_svg]:size-4"
+                                                        className="relative z-10 ml-1 hover:bg-secondary [&_svg]:size-4"
                                                         size="sm"
                                                         variant="ghost"
                                                     >
@@ -346,7 +351,7 @@ function CommentsList({
                                     {item.post?.feature_image ? (
                                         <img
                                             alt={item.post.title || 'Post feature image'}
-                                            className="hidden aspect-video w-36 rounded object-cover lg:block"
+                                            className={`hidden aspect-video w-36 rounded object-cover lg:block ${item.status === 'hidden' && 'opacity-50'}`}
                                             src={item.post.feature_image}
                                         />
                                     ) : null}
