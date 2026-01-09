@@ -224,15 +224,16 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(entriesAfterJob.models[0].get('message').includes('inactive'));
         });
 
-        it('does not send email when no template exists', async function () {
+        it('sends email using default template when no DB template exists', async function () {
+            // Delete the free welcome email from the database
             await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'member1',
-                    email: 'notemplate@example.com',
-                    name: 'No Template Member',
+                    email: 'default-template@example.com',
+                    name: 'Default Template Member',
                     status: 'free'
                 }),
                 status: OUTBOX_STATUSES.PENDING
@@ -240,11 +241,15 @@ describe('Member Welcome Emails Integration', function () {
 
             await scheduleInlineJob();
 
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            // Email should be sent using default template
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sentEmail = mailService.GhostMailer.prototype.send.firstCall.args[0];
+            assert.ok(sentEmail.html.includes('Thanks for subscribing'));
+            assert.equal(sentEmail.to, 'test-inbox@example.com');
 
+            // Outbox entry should be processed (deleted after success)
             const entriesAfterJob = await models.Outbox.findAll();
-            assert.equal(entriesAfterJob.length, 1);
-            assert.ok(entriesAfterJob.models[0].get('message'));
+            assert.equal(entriesAfterJob.length, 0);
         });
 
         it('does not send email when paid template is inactive but entry has status paid', async function () {
@@ -272,15 +277,16 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(entriesAfterJob.models[0].get('message').includes('inactive'));
         });
 
-        it('does not send email when no paid template exists but entry has status paid', async function () {
+        it('sends email using default paid template when no DB paid template exists', async function () {
+            // Delete the paid welcome email from the database
             await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
                 payload: JSON.stringify({
                     memberId: 'paid_member_2',
-                    email: 'paid-notemplate@example.com',
-                    name: 'Paid No Template Member',
+                    email: 'paid-default-template@example.com',
+                    name: 'Paid Default Template Member',
                     status: 'paid'
                 }),
                 status: OUTBOX_STATUSES.PENDING
@@ -288,11 +294,63 @@ describe('Member Welcome Emails Integration', function () {
 
             await scheduleInlineJob();
 
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            // Email should be sent using default paid template
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sentEmail = mailService.GhostMailer.prototype.send.firstCall.args[0];
+            assert.ok(sentEmail.html.includes('thank you for your support'));
+            assert.equal(sentEmail.to, 'test-inbox@example.com');
+
+            // Outbox entry should be processed (deleted after success)
+            const entriesAfterJob = await models.Outbox.findAll();
+            assert.equal(entriesAfterJob.length, 0);
+        });
+
+        it('prefers DB template over default when DB template exists and is active', async function () {
+            // DB template is already set up in beforeEach with custom content
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: 'member_db_template',
+                    email: 'db-template@example.com',
+                    name: 'DB Template Member',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            // Email should be sent using DB template content
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sentEmail = mailService.GhostMailer.prototype.send.firstCall.args[0];
+            // The DB template has "Welcome to our site!" not the default "Thanks for subscribing"
+            assert.ok(sentEmail.html.includes('Welcome to our site!'));
+            assert.ok(!sentEmail.html.includes('Thanks for subscribing'));
 
             const entriesAfterJob = await models.Outbox.findAll();
-            assert.equal(entriesAfterJob.length, 1);
-            assert.ok(entriesAfterJob.models[0].get('message'));
+            assert.equal(entriesAfterJob.length, 0);
+        });
+
+        it('transforms __GHOST_URL__ placeholders to actual site URL in default templates', async function () {
+            await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId: 'member_url_test',
+                    email: 'url-test@example.com',
+                    name: 'URL Test Member',
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            const sentEmail = mailService.GhostMailer.prototype.send.firstCall.args[0];
+            assert.ok(!sentEmail.html.includes('__GHOST_URL__'), 'Email should not contain __GHOST_URL__ placeholder');
+            assert.ok(sentEmail.html.includes('http://'), 'Email should contain actual URL');
         });
     });
 });
