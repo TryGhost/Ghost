@@ -32,7 +32,8 @@ const NewsletterTableRows: React.FC<{
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
     sortBy: TopNewslettersOrder;
-}> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy}) => {
+    siteTimezone?: string;
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy, siteTimezone}) => {
     const navigate = useNavigate();
 
     // Fetch newsletter stats with reactive sort order - isolated to this component
@@ -85,7 +86,7 @@ const NewsletterTableRows: React.FC<{
                                 </div>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(post.send_date)}
+                                {formatDisplayDate(post.send_date, siteTimezone)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
@@ -124,7 +125,7 @@ const NewsletterTableRows: React.FC<{
                     </TableCell>
                 </TableRow>
         );
-    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range]);
+    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range, siteTimezone]);
 
     // Show loading rows while data is loading
     if (isStatsLoading || !newsletterStatsData) {
@@ -194,7 +195,8 @@ const TopNewslettersTable: React.FC<{
     range: number;
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
-}> = React.memo(({range, selectedNewsletterId, shouldFetchStats}) => {
+    siteTimezone?: string;
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats, siteTimezone}) => {
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
     return (
@@ -207,6 +209,7 @@ const TopNewslettersTable: React.FC<{
                             range={range}
                             selectedNewsletterId={selectedNewsletterId}
                             shouldFetchStats={shouldFetchStats}
+                            siteTimezone={siteTimezone}
                             sortBy={sortBy}
                         />
                     </TableBody>
@@ -219,9 +222,12 @@ const TopNewslettersTable: React.FC<{
 TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
-    const {range, selectedNewsletterId} = useGlobalData();
+    const {range, selectedNewsletterId, settings} = useGlobalData();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
+    
+    // Get site timezone for date formatting
+    const siteTimezone = settings.find(s => s.key === 'timezone')?.value as string | undefined;
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -392,6 +398,7 @@ const Newsletters: React.FC = () => {
                         range={range}
                         selectedNewsletterId={selectedNewsletterId}
                         shouldFetchStats={!!shouldFetchStats}
+                        siteTimezone={siteTimezone}
                     />
                 </>
             </StatsView>

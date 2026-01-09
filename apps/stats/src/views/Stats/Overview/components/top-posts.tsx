@@ -58,8 +58,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
     isLoading
 }) => {
     const navigate = useNavigate();
-    const {range} = useGlobalData();
+    const {range, settings} = useGlobalData();
     const {appSettings} = useAppContext();
+    
+    // Get site timezone for date formatting
+    const siteTimezone = settings.find(s => s.key === 'timezone')?.value as string | undefined;
 
     // Show open rate if newsletters are enabled and email tracking is enabled
     const showWebAnalytics = appSettings?.analytics.webAnalytics;
@@ -98,7 +101,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             <div className='flex flex-col'>
                                                 <span className='line-clamp-2 text-lg font-semibold leading-[1.35em]'>{post.title}</span>
                                                 <span className='text-sm text-muted-foreground'>
-                                                    By {post.authors} &ndash; {formatDisplayDate(post.published_at)}
+                                                    By {post.authors} &ndash; {formatDisplayDate(post.published_at, siteTimezone)}
                                                 </span>
                                                 <span className='text-sm text-muted-foreground'>
                                                     {getPostStatusText(post)}

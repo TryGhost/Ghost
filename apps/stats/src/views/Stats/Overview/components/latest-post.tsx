@@ -32,6 +32,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    
+    // Get site timezone for date formatting
+    const siteTimezone = settings.find(s => s.key === 'timezone')?.value as string | undefined;
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
@@ -104,7 +107,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 <div className='mt-0.5 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
                                         <div>
-                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at)}
+                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at, siteTimezone)}
                                         </div>
                                     )}
                                     <div className='mt-0.5'>

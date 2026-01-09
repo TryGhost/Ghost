@@ -14,9 +14,10 @@ interface BarTooltipProps {
     active?: boolean;
     payload?: BarTooltipPayload[];
     range?: number;
+    siteTimezone?: string;
 }
 
-const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
+const BarTooltipContent = ({active, payload, siteTimezone}: BarTooltipProps) => {
     if (!active || !payload?.length) {
         return null;
     }
@@ -28,7 +29,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
         <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             <div className="mb-2 flex w-full flex-col border-b pb-2">
                 <span className="text-sm font-semibold leading-tight">{currentItem.post_title}</span>
-                <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate)}</span>
+                <span className="text-sm text-muted-foreground">Sent on {formatDisplayDate(sendDate, siteTimezone)}</span>
             </div>
 
             <div className="mb-1 flex w-full justify-between">
@@ -83,11 +84,14 @@ const NewsletterKPIs: React.FC<{
 }) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
-    const {range} = useGlobalData();
+    const {range, settings} = useGlobalData();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    
+    // Get site timezone for date formatting
+    const siteTimezone = settings.find(s => s.key === 'timezone')?.value as string | undefined;
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
@@ -376,7 +380,7 @@ const NewsletterKPIs: React.FC<{
                                                 width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
                                             />
                                             <ChartTooltip
-                                                content={<BarTooltipContent />}
+                                                content={<BarTooltipContent siteTimezone={siteTimezone} />}
                                                 cursor={false}
                                                 isAnimationActive={false}
                                                 position={{y: 10}}
