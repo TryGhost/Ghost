@@ -13,12 +13,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     LucideIcon,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -33,27 +27,27 @@ import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-v
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
 const SpacerRow = ({height}: { height: number }) => (
-    <tr aria-hidden="true" className="flex lg:table-row">
-        <td className="flex lg:table-cell" style={{height}} />
-    </tr>
+    <div aria-hidden="true" className="flex">
+        <div className="flex" style={{height}} />
+    </div>
 );
 
 // TODO: Remove forwardRef once we have upgraded to React 19
-const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
+const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
     props,
     ref
 ) {
     return (
-        <TableRow
+        <div
             ref={ref}
             {...props}
             aria-hidden="true"
-            className="relative flex flex-col lg:table-row"
+            className="relative flex flex-col"
         >
-            <TableCell className="relative z-10 h-24 animate-pulse">
+            <div className="relative z-10 h-24 animate-pulse">
                 <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
-            </TableCell>
-        </TableRow>
+            </div>
+        </div>
     );
 });
 
@@ -144,10 +138,10 @@ function CommentsList({
     isLoading?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
-    
+
     // Restore scroll position when navigating back from filtered views
     useScrollRestoration({parentRef, isLoading});
-    
+
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
         totalItems,
@@ -171,17 +165,11 @@ function CommentsList({
 
     return (
         <div ref={parentRef} className="overflow-hidden">
-            <Table
-                className="flex table-fixed flex-col lg:table"
+            <div
+                className="flex flex-col"
                 data-testid="comments-list"
             >
-                <TableHeader className="hidden lg:!visible lg:!table-header-group">
-                    <TableRow>
-                        <TableHead className="h-0 px-4 py-0"></TableHead>
-                        <TableHead className="h-0 w-36 px-4 py-0"></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody className="flex flex-col lg:table-row-group">
+                <div className="flex flex-col">
                     <SpacerRow height={spaceBefore} />
                     {visibleItems.map(({key, virtualItem, item, props}) => {
                         const shouldRenderPlaceholder =
@@ -192,45 +180,45 @@ function CommentsList({
                         }
 
                         return (
-                            <TableRow
+                            <div
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
+                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                                 data-testid="comment-list-row"
                             >
-                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-4 md:relative lg:table-cell">
-                                    <div className='flex flex-col gap-3'>
-                                        <div className="flex flex-wrap items-center">
-                                            {item.member?.id ? (
-                                                <>
-                                                    <Button
-                                                        className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70 ${item.status === 'hidden' && 'text-muted-foreground'}`}
-                                                        variant='link'
-                                                        onClick={() => {
-                                                            onAddFilter('author', item.member!.id);
-                                                        }}
-                                                    >
-                                                        {/* TODO: replace temporary avatar with Avatar component once fallback is handled */}
-                                                        <div className='relative flex size-5 items-center justify-center overflow-hidden rounded-full bg-accent'>
-                                                            {item.member.avatar_image && (
-                                                                <div className='absolute inset-0'><img src={item.member.avatar_image} /></div>
-                                                            )}
-                                                            <div>
-                                                                <LucideIcon.User className='!size-3 text-muted-foreground' size={12} />
-                                                            </div>
-                                                        </div>
-                                                        {item.member.name || 'Unknown'}
-                                                    </Button>
-                                                </>
-                                            ) : (
-                                                <span className="block truncate font-semibold">
-                                                    {item.member?.name || 'Unknown'}
-                                                </span>
-                                            )}
+                                <div className='flex items-start gap-3'>
+                                    <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
+                                        {item.member?.id && item.member.avatar_image && (
+                                            <div className='absolute inset-0'><img src={item.member.avatar_image} /></div>
+                                        )}
+                                        <div>
+                                            <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
+                                        </div>
+                                    </div>
 
-                                            <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
-
-                                            <div className='flex flex-wrap items-baseline gap-1 text-muted-foreground'>
+                                    <div className='flex min-w-0 flex-col'>
+                                        <div className='mb-1 flex min-w-0 items-center gap-x-1 text-sm'>
+                                            <div className='nowrap'>
+                                                {item.member?.id ? (
+                                                    <>
+                                                        <Button
+                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70 ${item.status === 'hidden' && 'text-muted-foreground'}`}
+                                                            variant='link'
+                                                            onClick={() => {
+                                                                onAddFilter('author', item.member!.id);
+                                                            }}
+                                                        >
+                                                            {item.member.name || 'Unknown'}
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <span className="block truncate font-semibold">
+                                                        {item.member?.name || 'Unknown'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
+                                            <div className='nowrap shrink-0'>
                                                 {item.created_at && (
                                                     <TooltipProvider>
                                                         <Tooltip>
@@ -245,35 +233,27 @@ function CommentsList({
                                                         </Tooltip>
                                                     </TooltipProvider>
                                                 )}
-                                                <span>on</span>
-
+                                            </div>
+                                            <div className='shrink-0'>on</div>
+                                            <div className='min-w-0 truncate'>
                                                 {item.post?.id && item.post?.title && onAddFilter ? (
-                                                    <Button
+                                                    <div
                                                         className="block h-auto truncate p-0 font-medium  text-primary hover:opacity-70"
-                                                        variant="link"
                                                         onClick={() => onAddFilter('post', item.post!.id)}
                                                     >
                                                         {item.post.title}
-                                                    </Button>
+                                                    </div>
                                                 ) : (
                                                     <span className="text-muted-foreground">
                                                     Unknown post
                                                     </span>
                                                 )}
                                             </div>
-
-                                            {item.status === 'hidden' && (
-                                                <>
-                                                    <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
-                                                    <div className='mr-2 flex items-center gap-1 text-muted-foreground'>
-                                                        Hidden from members
-                                                    </div>
-                                                </>
-                                            )}
-
                                         </div>
+
                                         <CommentContent item={item} />
-                                        <div className="flex flex-row flex-nowrap items-center gap-2">
+
+                                        <div className="mt-5 flex flex-row flex-nowrap items-center gap-2">
                                             {item.status === 'published' && (
                                                 <Button size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
@@ -286,11 +266,11 @@ function CommentsList({
                                                     Show
                                                 </Button>
                                             )}
-                                            <div className='ml-4 flex items-center gap-3'>
+                                            <div className='flex items-center gap-3'>
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${!item.count?.replies && 'text-muted-foreground/70'}`}>
+                                                            <div className='ml-2 flex items-center gap-1 text-xs'>
                                                                 <LucideIcon.Reply size={16} strokeWidth={1.5} />
                                                                 <span>{formatNumber(item.count?.replies)}</span>
                                                             </div>
@@ -304,7 +284,7 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${!item.count?.likes && 'text-muted-foreground/70'}`}>
+                                                            <div className='ml-2 flex items-center gap-1 text-xs'>
                                                                 <LucideIcon.Heart size={16} strokeWidth={1.5} />
                                                                 <span>{formatNumber(item.count?.likes)}</span>
                                                             </div>
@@ -318,8 +298,8 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-medium text-yellow-600 dark:text-yellow' : 'text-muted-foreground/70'}`}>
-                                                                <LucideIcon.TriangleAlert size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports && 'font-medium text-red'}`}>
+                                                                <LucideIcon.Flag size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
                                                                 <span>{formatNumber(item.count?.reports)}</span>
                                                             </div>
                                                         </TooltipTrigger>
@@ -332,7 +312,7 @@ function CommentsList({
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
-                                                        className="relative z-10 ml-1"
+                                                        className="relative z-10 ml-1 [&_svg]:size-4"
                                                         size="sm"
                                                         variant="ghost"
                                                     >
@@ -360,22 +340,39 @@ function CommentsList({
                                             </DropdownMenu>
                                         </div>
                                     </div>
-                                </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-2 row-end-3 p-0 text-right align-top md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                </div>
+
+                                <div>
                                     {item.post?.feature_image ? (
                                         <img
                                             alt={item.post.title || 'Post feature image'}
-                                            className="hidden aspect-video w-32 rounded object-cover lg:block"
+                                            className="hidden aspect-video w-36 rounded object-cover lg:block"
                                             src={item.post.feature_image}
                                         />
                                     ) : null}
-                                </TableCell>
-                            </TableRow>
+                                </div>
+
+                                {/* <div className="flex min-w-0 flex-col p-4 md:relative">
+                                    <div className='flex flex-col gap-3'>
+                                        <div className="flex flex-wrap items-center">
+                                            {item.status === 'hidden' && (
+                                                <>
+                                                    <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
+                                                    <div className='mr-2 flex items-center gap-1 text-muted-foreground'>
+                                                        Hidden from members
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                 */}
+                            </div>
                         );
                     })}
                     <SpacerRow height={spaceAfter} />
-                </TableBody>
-            </Table>
+                </div>
+            </div>
 
             <AlertDialog open={!!commentToDelete} onOpenChange={open => !open && setCommentToDelete(null)}>
                 <AlertDialogContent>
