@@ -40,10 +40,12 @@ export function useFeaturebase() {
     const {data: currentUser} = useCurrentUser();
     const {data: config} = useBrowseConfig();
     const {data: site} = useBrowseSite();
-    const featurebaseEnabled = useFeatureFlag('featurebaseFeedback');
+    const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const isInitializedRef = useRef(false);
 
-    const featurebaseOrg = config?.config.hostSettings?.featurebase?.organization;
+    const featurebaseConfig = config?.config.featurebase;
+    const featurebaseOrg = featurebaseConfig?.organization;
+    const featurebaseEnabled = featureFlagEnabled && featurebaseConfig?.enabled;
 
     useEffect(() => {
         if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !site || isInitializedRef.current) {

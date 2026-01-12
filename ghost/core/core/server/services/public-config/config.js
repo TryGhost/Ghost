@@ -22,7 +22,8 @@ module.exports = function getConfigProperties() {
         tenor: config.get('tenor'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
-        security: config.get('security')
+        security: config.get('security'),
+        featurebase: config.get('featurebase')
     };
 
     if (config.get('explore') && config.get('explore:testimonials_url')) {

@@ -80,13 +80,14 @@ export type Config = {
         managedEmail?: {
             enabled?: boolean
             sendingDomain?: string
-        },
-        featurebase?: {
-            organization?: string
         }
     }
     security?: {
         staffDeviceVerification?: boolean;
+    };
+    featurebase?: {
+        enabled?: boolean;
+        organization?: string;
     };
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
     [key: string]: JSONValue | undefined;
