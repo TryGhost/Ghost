@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const ImporterContentFileHandler = require('../../../../../../core/server/data/importer/handlers/ImporterContentFileHandler');
+const ImporterContentFileHandler = require('../../../../../../core/server/data/importer/handlers/importer-content-file-handler');
 
 describe('ImporterContentFileHandler', function () {
     it('creates an instance', function () {

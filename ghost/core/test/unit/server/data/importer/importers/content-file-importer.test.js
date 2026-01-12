@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const _ = require('lodash');
 const sinon = require('sinon');
 
-const ContentFileImporter = require('../../../../../../core/server/data/importer/importers/ContentFileImporter');
+const ContentFileImporter = require('../../../../../../core/server/data/importer/importers/content-file-importer');
 
 describe('ContentFileImporter', function () {
     afterEach(function () {

@@ -1,5 +1,5 @@
 const should = require('should');
-const NewslettersImporter = require('../../../../../../../core/server/data/importer/importers/data/NewslettersImporter');
+const NewslettersImporter = require('../../../../../../../core/server/data/importer/importers/data/newsletters-importer');
 
 const fakeNewsletters = [{
     id: '1',

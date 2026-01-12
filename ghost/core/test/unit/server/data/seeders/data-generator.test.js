@@ -9,7 +9,7 @@ const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
 
 const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
 
-const DataGenerator = require('../../../../../core/server/data/seeders/DataGenerator');
+const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');
 
 const schema = require('../../../../../core/server/data/schema');
 

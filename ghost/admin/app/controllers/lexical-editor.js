@@ -10,7 +10,7 @@ import UpdateSnippetModal from '../components/editor/modals/update-snippet';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
-import isNumber from 'ghost-admin/utils/isNumber';
+import isNumber from 'ghost-admin/utils/is-number';
 import microdiff from 'microdiff';
 import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
