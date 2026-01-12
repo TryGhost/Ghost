@@ -140,6 +140,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'email-changed';
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            icon = 'sent-email';
+        }
+
         return 'event-' + icon;
     }
 
@@ -239,6 +243,12 @@ export default class ParseMemberEventHelper extends Helper {
                 return `Email address changed from ${event.data.from_email} to ${event.data.to_email}`;
             }
             return 'Email address changed';
+        }
+
+        if (event.type === 'automated_email_sent_event') {
+            const slug = event.data.automatedEmail?.slug || '';
+            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+            return `Sent welcome email (${emailType})`;
         }
 
         if (event.type === 'donation_event') {
