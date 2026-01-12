@@ -3,6 +3,7 @@ import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeatureFlag} from './use-feature-flag';
+import { useUserPreferences } from './user-preferences';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
 type FeaturebaseFunction = (action: string, options: Record<string, unknown>, callback?: FeaturebaseCallback) => void;
@@ -39,6 +40,7 @@ function loadFeaturebaseSDK(): Promise<void> {
 export function useFeaturebase() {
     const {data: currentUser} = useCurrentUser();
     const {data: config} = useBrowseConfig();
+    const {data: preferences} = useUserPreferences();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const isInitializedRef = useRef(false);
 
@@ -61,7 +63,7 @@ export function useFeaturebase() {
         loadFeaturebaseSDK().then(() => {
             window.Featurebase?.('initialize_feedback_widget', {
                 organization: featurebaseOrg,
-                theme: 'light',
+                theme: preferences?.nightShift ? 'dark' : 'light',
                 defaultBoard: 'Feature Request',
                 featurebaseJwt: token
             }, (err) => {
@@ -72,7 +74,7 @@ export function useFeaturebase() {
         }).catch((err) => {
             console.error('[Featurebase] Failed to load SDK:', err);
         });
-    }, [featurebaseEnabled, featurebaseOrg, currentUser, token]);
+    }, [featurebaseEnabled, featurebaseOrg, currentUser, token, preferences?.nightShift]);
 
     const openFeedbackWidget = useCallback((options?: {board?: string}) => {
         window.postMessage({
