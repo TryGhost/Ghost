@@ -196,6 +196,8 @@ jobs:
       - name: Install dependencies
         run: bash .github/scripts/install-deps.sh
 
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
 
     outputs:
       changed_admin: ${{ steps.changed.outputs.admin }}
