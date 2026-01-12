@@ -121,7 +121,7 @@ module.exports = {
             // See: core/frontend/services/helpers/registry.js:26
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
-                'ghost/filenames/match-regex': ['off', '^[a-z0-9_.]$', null, false]
+                'ghost/filenames/match-regex': ['error', '^[a-z0-9_.-]+$', false]
             }
         },
         /**
