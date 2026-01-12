@@ -43,7 +43,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         });
 
         it('substitutes member template variables', async function () {
-            lexicalRenderStub.resolves('<p>Hello {{member.name}}, or {{member.firstname}}! Contact: {{member.email}}</p>');
+            lexicalRenderStub.resolves('<p>Hello {name}, or {first_name}! Contact: {email}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -59,7 +59,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         });
 
         it('substitutes site template variables', async function () {
-            lexicalRenderStub.resolves('<p>Welcome to {{site.title}} at {{site.url}}. Also {{siteTitle}} and {{siteUrl}}</p>');
+            lexicalRenderStub.resolves('<p>Welcome to {site_title} at {site_url}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -71,8 +71,6 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             result.html.should.containEql('Welcome to Test Site');
             result.html.should.containEql('at https://example.com');
-            result.html.should.containEql('Also Test Site');
-            result.html.should.containEql('and https://example.com');
         });
 
         it('inlines accentColor into link styles', async function () {
@@ -94,7 +92,7 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             const result = await renderer.render({
                 lexical: '{}',
-                subject: 'Welcome to {{site.title}}, {{member.firstname}}!',
+                subject: 'Welcome to {site_title}, {first_name}!',
                 member: {name: 'John Doe', email: 'john@example.com'},
                 siteSettings: defaultSiteSettings
             });
@@ -102,8 +100,22 @@ describe('MemberWelcomeEmailRenderer', function () {
             result.subject.should.equal('Welcome to Test Site, John!');
         });
 
-        it('falls back to "there" when member name is missing', async function () {
-            lexicalRenderStub.resolves('<p>Hello {{member.name}}</p>');
+        it('renders empty when member name is missing and no fallback specified', async function () {
+            lexicalRenderStub.resolves('<p>Hello {name}</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('Hello </p>');
+        });
+
+        it('uses custom fallback when member name is missing', async function () {
+            lexicalRenderStub.resolves('<p>Hello {name, "there"}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -116,8 +128,36 @@ describe('MemberWelcomeEmailRenderer', function () {
             result.html.should.containEql('Hello there');
         });
 
-        it('falls back to empty string when member email is missing', async function () {
-            lexicalRenderStub.resolves('<p>Email: {{member.email}}</p>');
+        it('uses custom fallback for first_name when missing', async function () {
+            lexicalRenderStub.resolves('<p>Hey {first_name, "friend"}</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('Hey friend');
+        });
+
+        it('ignores fallback when member name is present', async function () {
+            lexicalRenderStub.resolves('<p>Hello {name, "there"}</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'Jane Smith', email: 'jane@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('Hello Jane Smith');
+        });
+
+        it('renders empty when member email is missing', async function () {
+            lexicalRenderStub.resolves('<p>Email: {email}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
@@ -127,11 +167,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Email: <');
+            result.html.should.containEql('Email: </p>');
         });
 
         it('extracts first name correctly from full name', async function () {
-            lexicalRenderStub.resolves('<p>Hi {{member.firstname}}</p>');
+            lexicalRenderStub.resolves('<p>Hi {first_name}</p>');
             const renderer = new MemberWelcomeEmailRenderer();
 
             const result = await renderer.render({
