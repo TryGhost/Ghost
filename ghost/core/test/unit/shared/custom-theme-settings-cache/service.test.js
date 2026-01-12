@@ -5,8 +5,8 @@ const sinon = require('sinon');
 const {ValidationError} = require('@tryghost/errors');
 const nql = require('@tryghost/nql-lang');
 
-const Cache = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsCache');
-const Service = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsService');
+const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
+const Service = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-service');
 
 function makeModelInstance(data) {
     const instance = Object.assign({}, data, {

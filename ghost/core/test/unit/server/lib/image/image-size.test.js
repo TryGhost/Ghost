@@ -4,7 +4,7 @@ const nock = require('nock');
 const path = require('path');
 const errors = require('@tryghost/errors');
 const fs = require('fs');
-const ImageSize = require('../../../../../core/server/lib/image/ImageSize');
+const ImageSize = require('../../../../../core/server/lib/image/image-size');
 const probe = require('probe-image-size');
 
 describe('lib/image: image size', function () {

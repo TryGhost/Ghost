@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
-import {PostRevisions} from '../../../../core/server/lib/PostRevisions';
+import {PostRevisions} from '../../../../core/server/lib/post-revisions';
 
 const config = {
     max_revisions: 10,

@@ -1,6 +1,6 @@
 const should = require('should');
 
-const Cache = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsCache');
+const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
 
 describe('Cache', function () {
     describe('populate()', function () {

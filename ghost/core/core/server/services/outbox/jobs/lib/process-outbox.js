@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const db = require('../../../../data/db');
-const MemberCreatedEvent = require('../../../../../shared/events/MemberCreatedEvent');
+const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
 const processEntries = require('./process-entries');

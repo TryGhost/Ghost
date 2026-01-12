@@ -110,16 +110,7 @@ module.exports = {
                 // Adapter filenames must match the name specified in config (e.g. adapters.cache.active: "Redis").
                 // The adapter-manager loads adapters by constructing a path from the config value.
                 // See: core/shared/config/defaults.json, core/server/services/adapter-manager
-                'core/server/adapters/**',
-                // Shared events - many external consumers
-                'core/shared/events/**',
-                'core/shared/events-ts/**',
-                // Shared caches
-                'core/shared/custom-theme-settings-cache/**',
-                'core/shared/settings-cache/**',
-                'core/shared/SentryKnexTracingIntegration.js',
-                // libs
-                'core/server/lib/**'
+                'core/server/adapters/**'
             ],
             rules: {
                 'ghost/filenames/match-exported-class': 'off',
@@ -132,7 +123,7 @@ module.exports = {
             // See: core/frontend/services/helpers/registry.js:26
             files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
             rules: {
-                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
+                'ghost/filenames/match-regex': ['off', '^[a-z0-9_.]$', null, false]
             }
         },
         /**

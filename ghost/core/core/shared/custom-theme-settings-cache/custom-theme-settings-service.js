@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const BREAD = require('./CustomThemeSettingsBREADService');
+const BREAD = require('./custom-theme-settings-bread-service');
 const nql = require('@tryghost/nql');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
@@ -17,7 +17,7 @@ module.exports = class CustomThemeSettingsService {
     /**
      * @param {Object} options
      * @param {any} options.model - Bookshelf-like model instance for storing theme setting key/value pairs
-     * @param {import('./CustomThemeSettingsCache')} options.cache - Instance of a custom key/value pair cache
+     * @param {import('./custom-theme-settings-cache')} options.cache - Instance of a custom key/value pair cache
      */
     constructor({model, cache}) {
         this.activeThemeName = null;

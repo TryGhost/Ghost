@@ -1,5 +1,5 @@
 const config = require('./config');
-const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
+const SentryKnexTracingIntegration = require('./sentry-knex-tracing-integration');
 const sentryConfig = config.get('sentry');
 let _errors;
 
