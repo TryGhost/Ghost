@@ -102,12 +102,14 @@ module.exports = {
         },
         {
             // Enforce kebab-case filenames across core/
-            // Excludes folders still pending migration to kebab-case
+            // Excludes folders for special cases like adapters which need specific file namings
             files: [
                 'core/**/*.{js,ts}'
             ],
             excludedFiles: [
-                // Adapters - referenced by name in config files
+                // Adapter filenames must match the name specified in config (e.g. adapters.cache.active: "Redis").
+                // The adapter-manager loads adapters by constructing a path from the config value.
+                // See: core/shared/config/defaults.json, core/server/services/adapter-manager
                 'core/server/adapters/**',
                 // Shared events - many external consumers
                 'core/shared/events/**',
