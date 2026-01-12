@@ -10,8 +10,6 @@ module.exports = {
         'plugin:ghost/node'
     ],
     rules: {
-        // @TODO: remove this rule once it's turned into "error" in the base plugin
-        'no-shadow': 'error',
         'no-var': 'error',
         'one-var': ['error', 'never']
     },
