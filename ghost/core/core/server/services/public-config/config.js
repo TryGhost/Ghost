@@ -22,8 +22,7 @@ module.exports = function getConfigProperties() {
         tenor: config.get('tenor'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
-        security: config.get('security'),
-        featurebase: config.get('featurebase')
+        security: config.get('security')
     };
 
     if (config.get('explore') && config.get('explore:testimonials_url')) {
@@ -36,6 +35,14 @@ module.exports = function getConfigProperties() {
         configProperties.stats = {
             ...statsConfig,
             id: siteUuid
+        };
+    }
+
+    if (config.get('featurebase')) {
+        // Expose only the public featurebase config properties
+        configProperties.featurebase = {
+            enabled: config.get('featurebase:enabled'),
+            organization: config.get('featurebase:organization')
         };
     }
 
