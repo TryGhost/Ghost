@@ -234,12 +234,15 @@
     /*
     1. Correct the inability to style clickable types in iOS and Safari.
     2. Remove default button styles.
+    Note: Attribute selectors are wrapped rapped in :where() to give zero 
+    specificity so any class can override.
     */
 
     button,
+    :where(
         /* [type='button'], */
         [type='reset'],
-        [type='submit'] {
+        [type='submit']) {
         -webkit-appearance: button; /* 1 */
         background-color: transparent; /* 2 */
         background-image: none; /* 2 */
