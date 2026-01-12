@@ -167,7 +167,7 @@ class Users {
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
 
-            const {PostRevisions} = require('../lib/PostRevisions');
+            const {PostRevisions} = require('../lib/post-revisions');
 
             // null author field for users' post revisions
             const postRevisions = new PostRevisions({
