@@ -38,7 +38,7 @@ module.exports = function getConfigProperties() {
         };
     }
 
-    if (config.get('featurebase')) {
+    if (labs.isSet('featurebaseFeedback') && config.get('featurebase')) {
         // Expose only the public featurebase config properties
         configProperties.featurebase = {
             enabled: config.get('featurebase:enabled'),

@@ -189,6 +189,10 @@ module.exports = {
         return apiFramework.pipeline(require('./tinybird'), localUtils);
     },
 
+    get featurebase() {
+        return apiFramework.pipeline(require('./featurebase'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
