@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef} from 'react';
+import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeatureFlag} from './use-feature-flag';
 
@@ -39,7 +39,6 @@ function loadFeaturebaseSDK(): Promise<void> {
 export function useFeaturebase() {
     const {data: currentUser} = useCurrentUser();
     const {data: config} = useBrowseConfig();
-    const {data: site} = useBrowseSite();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const isInitializedRef = useRef(false);
 
@@ -47,33 +46,24 @@ export function useFeaturebase() {
     const featurebaseOrg = featurebaseConfig?.organization;
     const featurebaseEnabled = featureFlagEnabled && featurebaseConfig?.enabled;
 
+    const {data: tokenData} = getFeaturebaseToken({
+        enabled: featurebaseEnabled
+    });
+    const token = tokenData?.featurebase?.token;
+
     useEffect(() => {
-        if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !site || isInitializedRef.current) {
+        if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !token || isInitializedRef.current) {
             return;
         }
 
         isInitializedRef.current = true;
 
         loadFeaturebaseSDK().then(() => {
-            window.Featurebase?.('identify', {
-                organization: featurebaseOrg,
-                email: currentUser.email,
-                name: currentUser.name,
-                userId: currentUser.id,
-                companies: [{
-                    id: site.site.site_uuid,
-                    name: site.site.title,
-                    website: site.site.url
-                }]
-            }, (err) => {
-                if (err) {
-                    console.error('[Featurebase] Failed to identify user:', err);
-                }
-            });
-
             window.Featurebase?.('initialize_feedback_widget', {
                 organization: featurebaseOrg,
-                theme: 'light'
+                theme: 'light',
+                defaultBoard: 'Feature Request',
+                featurebaseJwt: token
             }, (err) => {
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
@@ -82,7 +72,7 @@ export function useFeaturebase() {
         }).catch((err) => {
             console.error('[Featurebase] Failed to load SDK:', err);
         });
-    }, [featurebaseEnabled, featurebaseOrg, currentUser, site]);
+    }, [featurebaseEnabled, featurebaseOrg, currentUser, token]);
 
     const openFeedbackWidget = useCallback((options?: {board?: string}) => {
         window.postMessage({
