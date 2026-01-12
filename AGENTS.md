@@ -6,6 +6,10 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 **Always use `yarn` (v1) for all commands.** This repository uses yarn workspaces, not npm.
 
+## Primary Branch
+
+The primary branch is `main`. Use `main` as the base for PRs and comparisons.
+
 ## Monorepo Structure
 
 Ghost is a Yarn v1 + Nx monorepo with three workspace groups:
