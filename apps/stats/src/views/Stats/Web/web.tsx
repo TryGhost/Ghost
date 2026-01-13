@@ -58,8 +58,8 @@ const Web: React.FC = () => {
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
 
-    // Check if UTM tracking is enabled in labs
-    const utmTrackingEnabled = data?.labs?.utmTracking || false;
+    // Check if UTM tracking is enabled in labs (defaults to true / GA)
+    const utmTrackingEnabled = data?.labs?.utmTracking ?? true;
 
     // Derive audience from filters when UTM tracking is enabled, otherwise use global state
     // This makes the URL the single source of truth for filters
