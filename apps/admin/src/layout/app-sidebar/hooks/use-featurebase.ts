@@ -54,7 +54,7 @@ export function useFeaturebase(): Featurebase {
     const {data: preferences} = useUserPreferences();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const isInitializingRef = useRef(false);
-    const initializedThemeRef = useRef<string | null>(null);
+    const initializedWithRef = useRef<{theme: string; token: string} | null>(null);
 
     const featurebaseConfig = config?.config.featurebase;
     const featurebaseOrg = featurebaseConfig?.organization;
@@ -71,8 +71,10 @@ export function useFeaturebase(): Featurebase {
             return;
         }
 
-        // Skip if already initialized with the same theme or initialization in progress
-        if (initializedThemeRef.current === theme || isInitializingRef.current) {
+        const initializedWith = initializedWithRef.current;
+        const initializedWithSameData = initializedWith && initializedWith.theme === theme && initializedWith.token === token;
+
+        if (isInitializingRef.current || initializedWithSameData) {
             return;
         }
 
@@ -86,16 +88,17 @@ export function useFeaturebase(): Featurebase {
                 featurebaseJwt: token
             }, (err) => {
                 isInitializingRef.current = false;
-                initializedThemeRef.current = theme;
 
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
-                    initializedThemeRef.current = null;
+                    initializedWithRef.current = null;
+                } else {
+                    initializedWithRef.current = {theme, token};
                 }
             });
         }).catch(() => {
             isInitializingRef.current = false;
-            initializedThemeRef.current = null;
+            initializedWithRef.current = null;
         });
     }, [featurebaseEnabled, featurebaseOrg, currentUser, token, theme]);
 
