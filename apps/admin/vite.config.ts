@@ -24,6 +24,8 @@ export default defineConfig({
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },
     server: {
+        // Port 5174 to avoid conflict with Koenig's dev server (5173) during local Koenig development
+        port: 5174,
         host: true,
         allowedHosts: true
     },
