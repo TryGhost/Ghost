@@ -14,8 +14,8 @@ const UniversalImportModal: React.FC = () => {
         <Modal
             backDropClick={false}
             footer={
-                <div className='p-8 flex w-full items-center justify-between'>
-                    <Link href="https://docs.ghost.org/migration/custom" target="_blank">Learn about importing</Link>
+                <div className='flex w-full items-center justify-between p-8'>
+                    <Link href="https://docs.ghost.org/migration/ghost" target="_blank">Learn about importing</Link>
                     <Button color='outline' label='Cancel' onClick={() => modal.remove()} />
                 </div>
             }
