@@ -8,7 +8,7 @@ import {
 } from "@tryghost/shade"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
-import { isOwnerUser } from "@tryghost/admin-x-framework/api/users";
+import { isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { useFeaturebase } from "@/hooks/use-featurebase";
@@ -27,7 +27,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     // Only show Ghost(Pro) for owner users when billing is enabled
     const showGhostPro = isOwnerUser(currentUser) && config?.config.hostSettings?.billing?.enabled;
-    const showFeedback = featurebaseFeedbackFlag && config?.config.featurebase?.enabled;
+    const showFeedback = featurebaseFeedbackFlag && !isContributorUser(currentUser) && config?.config.featurebase?.enabled;
 
     if (!showGhostPro && !showFeedback) {
         return null;

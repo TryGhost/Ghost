@@ -30,9 +30,14 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        permissions: {
-            docName: 'members',
-            method: 'browse'
+        // Uses a custom permissions function to avoid needing to populate
+        // fixtures data for this non-core use case.
+        permissions: async (frame) => {
+            await frame.user.load(['roles']);
+            const isContributor = frame.user.hasRole('Contributor');
+            if (isContributor) {
+                throw new errors.NoPermissionError();
+            }
         },
         async query(frame) {
             const enabled = config.get('featurebase:enabled');
