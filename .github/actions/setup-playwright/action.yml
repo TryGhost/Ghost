@@ -26,8 +26,3 @@ runs:
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
       run: npx playwright install --with-deps
-
-    - name: Install OS dependencies of Playwright if cache hit
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      shell: bash
-      run: npx playwright install-deps
