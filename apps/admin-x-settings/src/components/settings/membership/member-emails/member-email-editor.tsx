@@ -41,11 +41,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         >
             {(koenig: KoenigInstance) => (
                 <>
-                    <koenig.ListPlugin />
                     <koenig.ReplacementStringsPlugin />
-                    {/* <koenig.ButtonPlugin /> */}
-                    {/* <koenig.HorizontalRulePlugin /> */}
-                    <koenig.SlashCardMenuPlugin />
+                    <koenig.ListPlugin />
                 </>
             )}
         </KoenigEditorBase>
