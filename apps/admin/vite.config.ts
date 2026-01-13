@@ -9,11 +9,11 @@ import { deepLinksPlugin } from "./vite-deep-links";
 
 const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/cards");
 
-// Local Koenig development: set KOENIG_PATH to the koenig-lexical ESM build
-// Path is relative to Ghost monorepo root, e.g., ../Koenig/packages/koenig-lexical/dist/koenig-lexical.js
+// Local Koenig development: set KOENIG_PATH to the Koenig repo root
+// Path is relative to Ghost monorepo root, e.g., ../Koenig
 const MONOREPO_ROOT = resolve(__dirname, "../..");
 const KOENIG_PATH = process.env.KOENIG_PATH
-    ? resolve(MONOREPO_ROOT, process.env.KOENIG_PATH)
+    ? resolve(MONOREPO_ROOT, process.env.KOENIG_PATH, "packages/koenig-lexical/dist/koenig-lexical.js")
     : undefined;
 
 // https://vite.dev/config/
