@@ -28,7 +28,7 @@ const Styles = () => {
 
 const NotificationText = ({type, status, context}) => {
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
-    const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
+    const signupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
 
     if (type === 'signin' && status === 'success' && context.member) {
         const firstname = context.member.firstname || '';
@@ -70,13 +70,13 @@ const NotificationText = ({type, status, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
