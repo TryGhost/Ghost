@@ -13,11 +13,15 @@ export interface MemberEmailsEditorProps {
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes = 'EMAIL_TEMPLATE_NODES',
+    nodes,
     singleParagraph = false,
     className,
     onChange
 }) => {
+    // Ensure membership emails always use the email template node set by default
+    // (handles undefined/null/empty values safely)
+    const editorNodes: NodeType = nodes || 'EMAIL_TEMPLATE_NODES';
+
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
     const handleChange = useCallback((data: unknown) => {
@@ -34,7 +38,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             className={className}
             emojiPicker={false}
             initialEditorState={value}
-            nodes={nodes}
+            nodes={editorNodes}
             placeholder={placeholder}
             singleParagraph={singleParagraph}
             onChange={handleChange}

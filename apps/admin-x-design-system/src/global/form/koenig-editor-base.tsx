@@ -124,7 +124,9 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS,
-        EMAIL_TEMPLATE_NODES: koenig.EMAIL_TRANSFORMERS
+        // EMAIL_TEMPLATE_* is the established naming pattern in Koenig exports.
+        // Keep a fallback for older builds that used EMAIL_TRANSFORMERS.
+        EMAIL_TEMPLATE_NODES: koenig.EMAIL_TEMPLATE_TRANSFORMERS || koenig.EMAIL_TRANSFORMERS
     };
 
     const defaultNodes = nodes || 'DEFAULT_NODES';
