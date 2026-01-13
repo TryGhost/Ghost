@@ -179,13 +179,11 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         </div>
                     </div>
                 </div>
-                <div className='bg-grey-50 p-6'>
+                <div className='relative z-0 bg-grey-50 p-6'>
                     <div className={`mx-auto max-w-[600px] rounded border bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold ${errors.lexical ? 'border-red' : 'border-grey-200'}`}>
                         <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
-                            nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
-                            singleParagraph={false}
                             value={formState.lexical}
                             onChange={lexical => updateForm(state => ({...state, lexical}))}
                         />
