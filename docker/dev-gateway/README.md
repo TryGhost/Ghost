@@ -12,7 +12,7 @@ The Caddy reverse proxy container:
 Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy targets:
 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
-- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5173`)
+- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5174`)
 - `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
 - `PORTAL_DEV_SERVER` - Portal dev server (e.g., `host.docker.internal:4175`)
 - `COMMENTS_DEV_SERVER` - Comments UI (e.g., `host.docker.internal:7173`)
