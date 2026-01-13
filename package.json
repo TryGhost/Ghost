@@ -29,7 +29,7 @@
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
-    "dev:lexical": "KOENIG_PATH=../../Koenig/packages/koenig-lexical/dist/koenig-lexical.js nx run ghost-monorepo:docker:dev",
+    "dev:lexical": "KOENIG_PATH=${KOENIG_PATH:-../Koenig/packages/koenig-lexical/dist/koenig-lexical.js} nx run ghost-monorepo:docker:dev",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
