@@ -9,9 +9,8 @@ import { deepLinksPlugin } from "./vite-deep-links";
 
 const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/cards");
 
-// Local Koenig development: set KOENIG_PATH to the koenig-lexical package source
-// e.g., KOENIG_PATH=../Koenig/packages/koenig-lexical/src/index.js (relative to monorepo root)
-// or KOENIG_PATH=/absolute/path/to/koenig-lexical/src/index.js
+// Local Koenig development: set KOENIG_PATH to the koenig-lexical ESM build
+// Path is relative to Ghost monorepo root, e.g., ../Koenig/packages/koenig-lexical/dist/koenig-lexical.js
 const MONOREPO_ROOT = resolve(__dirname, "../..");
 const KOENIG_PATH = process.env.KOENIG_PATH
     ? resolve(MONOREPO_ROOT, process.env.KOENIG_PATH)
@@ -33,7 +32,7 @@ export default defineConfig({
             "@ghost-cards": GHOST_CARDS_PATH,
             // TODO: Remove this when @tryghost/nql is updated
             mingo: resolve(__dirname, "../../node_modules/mingo/dist/mingo.js"),
-            // Local Koenig development: alias to local source for HMR
+            // Local Koenig development: alias to local build
             ...(KOENIG_PATH ? { "@tryghost/koenig-lexical": KOENIG_PATH } : {}),
         },
         // Shim node modules utilized by the @tryghost/nql package
