@@ -1,5 +1,6 @@
-const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
+const jwt = require('jsonwebtoken');
+const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/config-utils');
 
 describe('Featurebase API', function () {
@@ -45,7 +46,6 @@ describe('Featurebase API', function () {
                 assert(response.body.featurebase.token.length > 0);
 
                 // Verify it's a valid JWT with expected structure
-                const jwt = require('jsonwebtoken');
                 const decoded = jwt.decode(response.body.featurebase.token);
                 assert(typeof decoded === 'object');
                 assert(decoded.name);
