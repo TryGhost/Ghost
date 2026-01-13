@@ -37,16 +37,22 @@ function loadFeaturebaseSDK(): Promise<void> {
     });
 }
 
-export function useFeaturebase() {
+interface Featurebase {
+    openFeedbackWidget: (options?: {board?: string}) => void;
+}
+
+export function useFeaturebase(): Featurebase {
     const {data: currentUser} = useCurrentUser();
     const {data: config} = useBrowseConfig();
     const {data: preferences} = useUserPreferences();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const isInitializedRef = useRef(false);
+    const lastThemeRef = useRef<string | null>(null);
 
     const featurebaseConfig = config?.config.featurebase;
     const featurebaseOrg = featurebaseConfig?.organization;
     const featurebaseEnabled = featureFlagEnabled && featurebaseConfig?.enabled;
+    const theme = preferences?.nightShift ? 'dark' : 'light';
 
     const {data: tokenData} = getFeaturebaseToken({
         enabled: featurebaseEnabled
@@ -54,16 +60,22 @@ export function useFeaturebase() {
     const token = tokenData?.featurebase?.token;
 
     useEffect(() => {
-        if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !token || isInitializedRef.current) {
+        if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !token) {
+            return;
+        }
+
+        // Skip if already initialized with the same theme
+        if (isInitializedRef.current && lastThemeRef.current === theme) {
             return;
         }
 
         isInitializedRef.current = true;
+        lastThemeRef.current = theme;
 
         loadFeaturebaseSDK().then(() => {
             window.Featurebase?.('initialize_feedback_widget', {
                 organization: featurebaseOrg,
-                theme: preferences?.nightShift ? 'dark' : 'light',
+                theme,
                 defaultBoard: 'Feature Request',
                 featurebaseJwt: token
             }, (err) => {
@@ -74,7 +86,7 @@ export function useFeaturebase() {
         }).catch((err) => {
             console.error('[Featurebase] Failed to load SDK:', err);
         });
-    }, [featurebaseEnabled, featurebaseOrg, currentUser, token, preferences?.nightShift]);
+    }, [featurebaseEnabled, featurebaseOrg, currentUser, token, theme]);
 
     const openFeedbackWidget = useCallback((options?: {board?: string}) => {
         window.postMessage({
