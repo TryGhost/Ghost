@@ -1637,6 +1637,8 @@ exports[`Members API Can add and send a signup confirmation email 3: [html 1] 1`
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"color-scheme\\" content=\\"light only\\">
+    <meta name=\\"supported-color-schemes\\" content=\\"light\\">
     <title>🙌 Complete your sign up to Ghost's Test Site!</title>
     <style>
     /* -------------------------------------
