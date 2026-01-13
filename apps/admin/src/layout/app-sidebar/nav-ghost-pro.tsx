@@ -1,5 +1,4 @@
 import React from "react"
-
 import {
     LucideIcon,
     SidebarGroup,
@@ -19,14 +18,12 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const featurebaseFeedbackFlag = useFeatureFlag('featurebaseFeedback');
     const { openFeedbackWidget } = useFeaturebase();
 
-    const isProSite = config?.config.hostSettings?.billing?.enabled;
-
-    if (!currentUser || !isProSite) {
+    if (!currentUser) {
         return null;
     }
 
-    // Only show Ghost(Pro) for owner users when billing is enabled
-    const showGhostPro = isOwnerUser(currentUser) && config?.config.hostSettings?.billing?.enabled;
+    const isProSite = config?.config.hostSettings?.billing?.enabled;
+    const showGhostPro = isProSite && isOwnerUser(currentUser);
     const showFeedback = featurebaseFeedbackFlag && !isContributorUser(currentUser) && config?.config.featurebase?.enabled;
 
     if (!showGhostPro && !showFeedback) {
