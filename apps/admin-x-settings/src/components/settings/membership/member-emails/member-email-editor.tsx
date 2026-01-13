@@ -107,7 +107,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
 
     return (
         <div className={className || 'w-full'}>
-            <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
+            <div className="koenig-react-editor w-full">
                 <ErrorBoundary name='editor'>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigEmailEditorWrapper
