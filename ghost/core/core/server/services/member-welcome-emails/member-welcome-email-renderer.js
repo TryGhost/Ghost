@@ -8,6 +8,7 @@ const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
+const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
@@ -34,7 +35,13 @@ class MemberWelcomeEmailRenderer {
      */
     #buildReplacementDefinitions({member, siteSettings}) {
         return [
-            {id: 'first_name', getValue: () => member.name?.split(' ')[0]},
+            {id: 'first_name', getValue: () => {
+                const name = member.name?.trim();
+                if (!name) {
+                    return undefined;
+                }
+                return name.split(/\s+/)[0];
+            }},
             {id: 'name', getValue: () => member.name},
             {id: 'email', getValue: () => member.email},
             {id: 'site_title', getValue: () => siteSettings.title},
@@ -49,19 +56,24 @@ class MemberWelcomeEmailRenderer {
      * @param {string} options.text - The text to process (content body or subject line)
      * @param {Object} options.member - Member data
      * @param {Object} options.siteSettings - Site settings
+     * @param {boolean} [options.escapeHtml=false] - Whether to HTML-escape replaced values
      * @returns {string}
      */
-    #applyReplacements({text, member, siteSettings}) {
+    #applyReplacements({text, member, siteSettings, escapeHtml = false}) {
         const definitions = this.#buildReplacementDefinitions({member, siteSettings});
         let processed = wrapReplacementStrings(text);
 
-        return processed.replace(REPLACEMENT_REGEX, (match, property, fallback) => {
+        processed = processed.replace(REPLACEMENT_REGEX, (match, property, fallback) => {
             const def = definitions.find(d => d.id === property);
             if (def) {
-                return def.getValue() || fallback || '';
+                const raw = def.getValue();
+                const resolved = raw || fallback || '';
+                return escapeHtml ? this.Handlebars.Utils.escapeExpression(resolved) : resolved;
             }
             return match;
         });
+
+        return processed.replace(UNMATCHED_TOKEN_REGEX, '');
     }
 
     /**
@@ -84,8 +96,8 @@ class MemberWelcomeEmailRenderer {
             });
         }
 
-        const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings});
-        const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings});
+        const contentWithReplacements = this.#applyReplacements({text: content, member, siteSettings, escapeHtml: true});
+        const subjectWithReplacements = this.#applyReplacements({text: subject, member, siteSettings, escapeHtml: false});
 
         const html = this.#wrapperTemplate({
             content: contentWithReplacements,
