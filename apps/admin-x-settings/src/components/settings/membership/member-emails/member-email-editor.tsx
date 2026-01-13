@@ -18,9 +18,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     className,
     onChange
 }) => {
-    // Ensure membership emails always use the email template node set by default
-    // (handles undefined/null/empty values safely)
-    const editorNodes: NodeType = nodes || 'EMAIL_TEMPLATE_NODES';
+    const editorNodes: NodeType = nodes || 'EMAIL_NODES';
 
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
