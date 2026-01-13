@@ -134,6 +134,17 @@ export const BASIC_TRANSFORMERS = [
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
+export const EMAIL_TRANSFORMERS = [
+    HEADING,
+    QUOTE,
+    UNORDERED_LIST,
+    ORDERED_LIST,
+    HR,
+    ...TEXT_FORMAT_TRANSFORMERS,
+    ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
+    ...TEXT_MATCH_TRANSFORMERS
+];
+
 export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
     return LexicalMarkdownShortcutPlugin({transformers});
 }

@@ -32,6 +32,10 @@ const Watermark = ({editorType}) => {
         {
             name: 'minimal',
             url: '/minimal'
+        },
+        {
+            name: 'email',
+            url: '/email'
         }
     ];
 

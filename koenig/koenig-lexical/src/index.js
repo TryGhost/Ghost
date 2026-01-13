@@ -26,6 +26,7 @@ import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
 import MarkdownPlugin from './plugins/MarkdownPlugin';
 import MarkdownShortcutPlugin from './plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
+import ReplacementStringsPlugin from './plugins/ReplacementStringsPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
 import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
@@ -33,12 +34,14 @@ import TKCountPlugin from './plugins/TKCountPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
 import VideoPlugin from './plugins/VideoPlugin';
 import WordCountPlugin from './plugins/WordCountPlugin';
+import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
 
 /* Nodes */
 import BASIC_NODES from './nodes/BasicNodes';
 import DEFAULT_NODES from './nodes/DefaultNodes';
+import EMAIL_NODES from './nodes/EmailNodes';
 import MINIMAL_NODES from './nodes/MinimalNodes';
 
 /* Transformers */
@@ -47,6 +50,7 @@ import {
     CODE_BLOCK as CODE_BLOCK_TRANSFORMER,
     DEFAULT_TRANSFORMERS,
     ELEMENT_TRANSFORMERS,
+    EMAIL_TRANSFORMERS,
     HR as HR_TRANSFORMER,
     MINIMAL_TRANSFORMERS
 } from './plugins/MarkdownShortcutPlugin';
@@ -82,6 +86,7 @@ export {
     MarkdownPlugin,
     MarkdownShortcutPlugin,
     PlusCardMenuPlugin,
+    ReplacementStringsPlugin,
     RestrictContentPlugin,
     SignupPlugin,
     SlashCardMenuPlugin,
@@ -89,11 +94,13 @@ export {
     TogglePlugin,
     VideoPlugin,
     WordCountPlugin,
+    ListPlugin,
 
     AllDefaultPlugins,
 
     DEFAULT_NODES,
     BASIC_NODES,
+    EMAIL_NODES,
     MINIMAL_NODES,
 
     ELEMENT_TRANSFORMERS,
@@ -102,6 +109,7 @@ export {
 
     DEFAULT_TRANSFORMERS,
     BASIC_TRANSFORMERS,
+    EMAIL_TRANSFORMERS,
     MINIMAL_TRANSFORMERS
 };
 

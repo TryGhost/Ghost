@@ -1,23 +1,24 @@
 import DarkModeToggle from './components/DarkModeToggle';
 import DollarIcon from './assets/icons/kg-dollar.svg?react';
+import EmailEditorWrapper from './components/EmailEditorWrapper';
 import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
 import LockIcon from './assets/icons/kg-lock.svg?react';
 import React, {useState} from 'react';
+import ReplacementStringsPlugin from '../src/plugins/ReplacementStringsPlugin';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import Watermark from './components/Watermark';
 import WordCount from './components/WordCount';
 import basicContent from './content/basic-content.json';
 import content from './content/content.json';
+import emailContent from './content/email-content.json';
 import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
-    KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
-    RestrictContentPlugin,
-    TKCountPlugin,
-    WordCountPlugin
+    BASIC_NODES, BASIC_TRANSFORMERS, EMAIL_NODES, EMAIL_TRANSFORMERS,
+    KoenigComposableEditor, KoenigComposer, KoenigEditor, ListPlugin, MINIMAL_NODES,
+    MINIMAL_TRANSFORMERS, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
@@ -116,6 +117,8 @@ function getDefaultContent({editorType}) {
         return basicContent;
     } else if (editorType === 'minimal') {
         return minimalContent;
+    } else if (editorType === 'email') {
+        return emailContent;
     }
     return content;
 }
@@ -125,6 +128,8 @@ function getAllowedNodes({editorType}) {
         return BASIC_NODES;
     } else if (editorType === 'minimal') {
         return MINIMAL_NODES;
+    } else if (editorType === 'email') {
+        return EMAIL_NODES;
     }
     return undefined;
 }
@@ -149,6 +154,20 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 registerAPI={registerAPI}
             >
                 <RestrictContentPlugin paragraphs={1} />
+                <WordCountPlugin onChange={setWordCount} />
+            </KoenigComposableEditor>
+        );
+    } else if (editorType === 'email') {
+        return (
+            <KoenigComposableEditor
+                cursorDidExitAtTop={cursorDidExitAtTop}
+                isSnippetsEnabled={false}
+                markdownTransformers={EMAIL_TRANSFORMERS}
+                placeholderText="Begin writing your email..."
+                registerAPI={registerAPI}
+            >
+                <ListPlugin />
+                <ReplacementStringsPlugin />
                 <WordCountPlugin onChange={setWordCount} />
             </KoenigComposableEditor>
         );
@@ -304,7 +323,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         };
     }, [editorAPI]);
 
-    const showTitle = !isMultiplayer && !['basic', 'minimal'].includes(editorType);
+    const showTitle = !isMultiplayer && !['basic', 'minimal', 'email'].includes(editorType);
 
     const cardConfig = {
         ...defaultCardConfig,
@@ -331,7 +350,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             enableMultiplayer={isMultiplayer}
             fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
             initialEditorState={initialContent}
-            isTKEnabled={true} // TODO: can we move this onto <KoenigEditor>?
+            isTKEnabled={editorType !== 'email'}
             multiplayerDocId={`demo/${WEBSOCKET_ID}`}
             multiplayerEndpoint={WEBSOCKET_ENDPOINT}
             nodes={getAllowedNodes({editorType})}
@@ -349,14 +368,27 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
                             ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
                             : null
                         }
-                        <DemoEditor
-                            cursorDidExitAtTop={focusTitle}
-                            darkMode={darkMode}
-                            editorType={editorType}
-                            registerAPI={setEditorAPI}
-                            setTKCount={setTKCount}
-                            setWordCount={setWordCount}
-                        />
+                        {editorType === 'email' ? (
+                            <EmailEditorWrapper>
+                                <DemoEditor
+                                    cursorDidExitAtTop={focusTitle}
+                                    darkMode={darkMode}
+                                    editorType={editorType}
+                                    registerAPI={setEditorAPI}
+                                    setTKCount={setTKCount}
+                                    setWordCount={setWordCount}
+                                />
+                            </EmailEditorWrapper>
+                        ) : (
+                            <DemoEditor
+                                cursorDidExitAtTop={focusTitle}
+                                darkMode={darkMode}
+                                editorType={editorType}
+                                registerAPI={setEditorAPI}
+                                setTKCount={setTKCount}
+                                setWordCount={setWordCount}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
