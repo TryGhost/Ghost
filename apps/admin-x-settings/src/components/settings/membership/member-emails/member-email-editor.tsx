@@ -13,13 +13,11 @@ export interface MemberEmailsEditorProps {
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes,
+    nodes = 'EMAIL_NODES',
     singleParagraph = false,
     className,
     onChange
 }) => {
-    const editorNodes: NodeType = nodes || 'EMAIL_NODES';
-
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
     const handleChange = useCallback((data: unknown) => {
@@ -36,7 +34,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             className={className}
             emojiPicker={false}
             initialEditorState={value}
-            nodes={editorNodes}
+            nodes={nodes}
             placeholder={placeholder}
             singleParagraph={singleParagraph}
             onChange={handleChange}
