@@ -1,6 +1,6 @@
 const find = require('lodash/find');
 const should = require('should');
-const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/SettingsImporter');
+const SettingsImporter = require('../../../../../../../core/server/data/importer/importers/data/settings-importer');
 
 describe('SettingsImporter', function () {
     describe('#beforeImport', function () {

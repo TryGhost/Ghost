@@ -1,3 +1,7 @@
+/**
+ * knex-migrator requires this exact filename in the project root, therefore, linter naming rules are disabled here.
+ * @see https://github.com/TryGhost/knex-migrator
+ */
 /* eslint-disable ghost/filenames/match-regex */
 const config = require('./core/shared/config');
 const ghostVersion = require('@tryghost/version');
