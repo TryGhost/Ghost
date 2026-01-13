@@ -16,7 +16,7 @@ import { useFeaturebase } from "@/hooks/use-featurebase";
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: config } = useBrowseConfig();
-    const featurebaseFeedbackEnabled = useFeatureFlag('featurebaseFeedback');
+    const featurebaseFeedbackFlag = useFeatureFlag('featurebaseFeedback');
     const { openFeedbackWidget } = useFeaturebase();
 
     const isProSite = config?.config.hostSettings?.billing?.enabled;
@@ -27,7 +27,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     // Only show Ghost(Pro) for owner users when billing is enabled
     const showGhostPro = isOwnerUser(currentUser) && config?.config.hostSettings?.billing?.enabled;
-    const showFeedback = featurebaseFeedbackEnabled;
+    const showFeedback = featurebaseFeedbackFlag && config?.config.featurebase?.enabled;
 
     if (!showGhostPro && !showFeedback) {
         return null;
