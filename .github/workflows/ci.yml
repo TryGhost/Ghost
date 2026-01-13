@@ -1564,6 +1564,7 @@ jobs:
       && needs.job_setup.result == 'success'
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
+      && vars.DEPLOY_ADMIN == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
