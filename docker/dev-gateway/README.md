@@ -48,8 +48,8 @@ The Caddyfile defines these routing rules:
 | `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |
 | `/ghost/assets/sodo-search/*`        | Search dev server (port 4178)       | Search widget (JS + CSS)                                               |
 | `/ghost/assets/announcement-bar/*`   | Announcement dev server (port 4177) | Announcement widget                                                    |
-| `/ghost/assets/*`                    | Admin dev server (port 5173)        | Other admin assets (fallback)                                          |
-| `/ghost/*`                           | Admin dev server (port 5173)        | Admin interface                                                        |
+| `/ghost/assets/*`                    | Admin dev server (port 5174)        | Other admin assets (fallback)                                          |
+| `/ghost/*`                           | Admin dev server (port 5174)        | Admin interface                                                        |
 | Everything else                      | Ghost backend                       | Main Ghost application                                                 |
 
 **Note:** All port numbers listed are the host ports where dev servers run by default.
