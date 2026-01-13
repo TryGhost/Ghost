@@ -58,7 +58,7 @@ export function useFeaturebase(): Featurebase {
 
     const featurebaseConfig = config?.config.featurebase;
     const featurebaseOrg = featurebaseConfig?.organization;
-    const featurebaseEnabled = featureFlagEnabled && featurebaseConfig?.enabled;
+    const featurebaseEnabled = !!(featureFlagEnabled && featurebaseConfig?.enabled);
     const theme = preferences?.nightShift ? 'dark' : 'light';
 
     const {data: tokenData} = getFeaturebaseToken({
