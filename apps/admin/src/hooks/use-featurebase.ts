@@ -17,7 +17,7 @@ declare global {
 const SDK_URL = 'https://do.featurebase.app/js/sdk.js';
 
 function loadFeaturebaseSDK(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${SDK_URL}"]`)) {
             resolve();
             return;
@@ -26,6 +26,7 @@ function loadFeaturebaseSDK(): Promise<void> {
         const script = document.createElement('script');
         script.src = SDK_URL;
         script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load Featurebase SDK from ${SDK_URL}`));
         document.head.appendChild(script);
 
         // Set up the queue function while script loads

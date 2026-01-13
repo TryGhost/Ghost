@@ -30,8 +30,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        // Uses a custom permissions function to avoid needing to populate
-        // fixtures data for this non-core use case.
+        // Custom permissions check: All authenticated users except Contributors
+        // can access this endpoint. Using a custom function avoids adding
+        // featurebase-specific permissions to the core database fixtures.
         permissions: async (frame) => {
             await frame.user.load(['roles']);
             const isContributor = frame.user.hasRole('Contributor');
