@@ -5,6 +5,7 @@ import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-syst
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useShouldShowAdminForwardFlag} from './use-admin-migration-status';
 
 const BetaFeatures: React.FC = () => {
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
@@ -12,6 +13,7 @@ const BetaFeatures: React.FC = () => {
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState<boolean>(false);
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
+    const shouldShowAdminForwardFlag = useShouldShowAdminForwardFlag();
 
     return (
         <List titleSeparator={false}>
@@ -27,6 +29,12 @@ const BetaFeatures: React.FC = () => {
                 action={<FeatureToggle flag="additionalPaymentMethods" />}
                 detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />
+            {!shouldShowAdminForwardFlag && (
+                <LabItem
+                    action={<FeatureToggle flag="adminForward" />}
+                    detail={<>Preview the next version of the admin interface</>}
+                    title='New Admin Experience' />
+            )}
             <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
                     <FileUpload

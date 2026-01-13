@@ -44,10 +44,6 @@ const features: Feature[] = [{
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
 }, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
     title: 'Domain Warmup',
     description: 'Enable custom sending domain warmup for gradual email volume increases',
     flag: 'domainWarmup'
