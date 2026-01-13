@@ -10,7 +10,7 @@ import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 import { isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
-import { useFeaturebase } from "@/hooks/use-featurebase";
+import { useFeaturebase } from "./hooks/use-featurebase";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();

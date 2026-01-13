@@ -2,8 +2,8 @@ import {useCallback, useEffect, useRef} from 'react';
 import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
-import {useFeatureFlag} from './use-feature-flag';
-import { useUserPreferences } from './user-preferences';
+import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useUserPreferences} from '@/hooks/user-preferences';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
 type FeaturebaseFunction = (action: string, options: Record<string, unknown>, callback?: FeaturebaseCallback) => void;
