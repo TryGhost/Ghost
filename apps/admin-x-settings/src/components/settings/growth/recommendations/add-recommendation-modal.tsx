@@ -26,7 +26,7 @@ const validateUrl = function (errors: ErrorMessages, url: string) {
         } else {
             delete errors.url;
         }
-    } catch (e) {
+    } catch {
         errors.url = 'Enter a valid URL';
     }
     return errors;

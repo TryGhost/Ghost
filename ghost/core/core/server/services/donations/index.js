@@ -1,3 +1,3 @@
-const DonationServiceWrapper = require('./DonationServiceWrapper');
+const DonationServiceWrapper = require('./donation-service-wrapper');
 
 module.exports = new DonationServiceWrapper();

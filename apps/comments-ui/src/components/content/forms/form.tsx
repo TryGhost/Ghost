@@ -75,7 +75,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
             await submit({
                 html: editor.getHTML()
             });
-        } catch (e) {
+        } catch {
             setProgress('error');
             return;
         }

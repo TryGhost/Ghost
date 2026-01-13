@@ -2,7 +2,7 @@ const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
 const localUtils = require('../../../../core/shared/config/utils');
 describe('Config Loader', function () {

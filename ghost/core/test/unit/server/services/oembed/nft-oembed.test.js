@@ -1,9 +1,9 @@
 const assert = require('assert/strict');
-const NFTOembedProvider = require('../../../../../core/server/services/oembed/NFTOEmbedProvider');
+const NFTOEmbedProvider = require('../../../../../core/server/services/oembed/nft-oembed-provider');
 
 describe('NFTOEmbedProvider', function () {
     it('Can support requests for OpenSea Ethereum NTFs', async function () {
-        const provider = new NFTOembedProvider({
+        const provider = new NFTOEmbedProvider({
             config: {
                 apiKey: 'fake-api-key'
             }

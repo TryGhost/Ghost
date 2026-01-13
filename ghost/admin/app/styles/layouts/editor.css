@@ -459,7 +459,7 @@
 }
 
 .gh-editor-email-size-warning svg path {
-    stroke: currentColor !important;
+    stroke: var(--yellow) !important;
 }
 
 .gh-editor-email-size-popup {
@@ -977,7 +977,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1.2rem;
     height: 1.2rem;
     margin-right: .5em;
-    padding-top: 2px;
     fill: var(--darkgrey);
 }
 

@@ -7,18 +7,27 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AppContext, DispatchActionType, EditableAppContext} from './app-context';
+import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {CommentsFrame} from './components/frame';
 import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
 
 type AppProps = {
     scriptTag: HTMLElement;
+    initialCommentId: string | null;
+    pageUrl: string;
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 
-const App: React.FC<AppProps> = ({scriptTag}) => {
+/**
+ * Check if a comment ID exists in the comments array (either as a top-level comment or reply)
+ */
+function isCommentLoaded(comments: Comment[], targetId: string): boolean {
+    return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
+}
+
+const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
@@ -33,7 +42,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         order: 'count__likes desc, created_at desc',
         adminApi: null,
         commentsIsLoading: false,
-        commentIdToHighlight: null
+        commentIdToHighlight: null,
+        commentIdToScrollTo: initialCommentId,
+        pageUrl
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -160,13 +171,132 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         };
     };
 
-    /** Initialize comments setup once in viewport, fetch data and setup state*/
+    /**
+     * Fetch the target comment and verify it exists and is published.
+     * Returns null if the comment doesn't exist or isn't accessible.
+     */
+    const fetchScrollTarget = async (targetId: string): Promise<Comment | null> => {
+        try {
+            const response = await api.comments.read(targetId);
+            const comment = response.comments?.[0];
+            return (comment && comment.status === 'published') ? comment : null;
+        } catch {
+            return null;
+        }
+    };
+
+    /**
+     * Paginate through comments until the target (or its parent) is found.
+     */
+    const paginateToComment = async (
+        targetId: string,
+        parentId: string | undefined,
+        initialComments: Comment[],
+        initialPagination: {page: number; pages: number}
+    ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
+        let comments = initialComments;
+        let pagination = initialPagination;
+
+        while (!isCommentLoaded(comments, targetId) && pagination.page < pagination.pages) {
+            if (parentId && comments.some(c => c.id === parentId)) {
+                break;
+            }
+
+            const nextPage = await api.comments.browse({
+                page: pagination.page + 1,
+                postId: options.postId,
+                order: state.order
+            });
+            comments = [...comments, ...nextPage.comments];
+            pagination = nextPage.meta.pagination;
+        }
+
+        return {comments, pagination};
+    };
+
+    /**
+     * Load all replies for a parent comment if the target reply isn't already loaded.
+     */
+    const loadRepliesForComment = async (
+        parentId: string,
+        comments: Comment[]
+    ): Promise<Comment[]> => {
+        const parent = comments.find(c => c.id === parentId);
+        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
+
+        if (!hasMoreReplies) {
+            return comments;
+        }
+
+        let allReplies: Comment[] = [];
+        let hasMore = true;
+        let afterReplyId: string | undefined;
+
+        while (hasMore) {
+            const response = await api.comments.replies({
+                commentId: parentId,
+                afterReplyId,
+                limit: 100
+            });
+            allReplies = [...allReplies, ...response.comments];
+            hasMore = !!response.meta?.pagination?.next;
+
+            if (response.comments.length > 0) {
+                afterReplyId = response.comments[response.comments.length - 1]?.id;
+            } else {
+                hasMore = false;
+            }
+        }
+
+        return comments.map(c => (c.id === parentId
+            ? {...c, replies: allReplies}
+            : c
+        ));
+    };
+
+    /**
+     * Load additional comment pages and/or replies until the scroll target is found.
+     */
+    const loadScrollTarget = async (
+        targetId: string,
+        targetComment: Comment,
+        initialComments: Comment[],
+        initialPagination: {page: number; pages: number}
+    ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
+        const parentId = targetComment.parent_id;
+
+        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination);
+        let comments = paginatedComments;
+
+        if (parentId && !isCommentLoaded(comments, targetId)) {
+            comments = await loadRepliesForComment(parentId, comments);
+        }
+
+        return {comments, pagination, found: isCommentLoaded(comments, targetId)};
+    };
+
+    /** Initialize comments setup once in viewport, fetch data and setup state */
     const initSetup = async () => {
         try {
-            // Fetch data from API, links, preview, dev sources
             const {member, labs} = await api.init();
-            const {comments, pagination, count} = await fetchComments();
-            const state = {
+            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
+
+            let comments = initialComments;
+            let pagination = initialPagination;
+            let scrollTargetFound = false;
+
+            const shouldFindScrollTarget = labs?.commentPermalinks && initialCommentId && pagination;
+            if (shouldFindScrollTarget) {
+                const targetComment = await fetchScrollTarget(initialCommentId);
+                if (targetComment) {
+                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination);
+                    comments = result.comments;
+                    pagination = result.pagination;
+                    scrollTargetFound = result.found;
+                }
+            }
+
+            setState({
                 member,
                 initStatus: 'success',
                 comments,
@@ -175,10 +305,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 order: 'count__likes desc, created_at desc',
                 labs: labs,
                 commentsIsLoading: false,
-                commentIdToHighlight: null
-            };
-
-            setState(state);
+                commentIdToHighlight: null,
+                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
+            });
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Comments] Failed to initialize:`, e);
@@ -189,8 +318,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         }
     };
 
-    /** Delay initialization until comments block is in viewport */
+    /** Delay initialization until comments block is in viewport (unless permalink present) */
     useEffect(() => {
+        // If we have a permalink, load immediately (skip lazy loading)
+        if (initialCommentId) {
+            initSetup();
+            return;
+        }
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -215,7 +350,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 observer.unobserve(iframeRef.current);
             }
         };
-    }, [iframeRef.current]);
+    }, [iframeRef.current, initialCommentId]);
 
     const done = state.initStatus === 'success';
 

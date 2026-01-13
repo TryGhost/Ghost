@@ -60,9 +60,13 @@ const features: Feature[] = [{
     description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
     flag: 'commentModeration'
 }, {
-    title: 'Email Size Warnings',
-    description: 'Enable warnings in editor when content exceeds email cut-off size',
-    flag: 'emailSizeWarnings'
+    title: 'Comment Permalinks',
+    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
+    flag: 'commentPermalinks'
+}, {
+    title: 'IndexNow',
+    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
+    flag: 'indexnow'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -96,6 +100,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {allowedFeatures.map(feature => (
                 <LabItem
+                    key={feature.flag}
                     action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />

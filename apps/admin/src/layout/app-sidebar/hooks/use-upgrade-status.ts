@@ -7,8 +7,8 @@ export interface UpgradeStatus {
 
 export function useUpgradeStatus(): UpgradeStatus {
     const subscriptionStatus = useSubscriptionStatus();
-    const showUpgradeBanner = !!subscriptionStatus?.subscription.isActiveTrial;
-    const trialDaysRemaining = subscriptionStatus?.subscription.trial_end ? Math.ceil((new Date(subscriptionStatus.subscription.trial_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+    const showUpgradeBanner = !!subscriptionStatus?.subscription?.isActiveTrial;
+    const trialDaysRemaining = subscriptionStatus?.subscription?.trial_end ? Math.ceil((new Date(subscriptionStatus.subscription.trial_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
 
     return {
         showUpgradeBanner,

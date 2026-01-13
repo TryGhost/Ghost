@@ -25,10 +25,12 @@ export type Comment = {
         title: string;
         slug: string;
         url: string;
+        feature_image?: string;
     };
     count?: {
         replies?: number;
         likes?: number;
+        reports?: number;
     };
 };
 

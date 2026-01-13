@@ -1,13 +1,13 @@
 import baseDebug from '@tryghost/debug';
-import {AnalyticsOverviewPage} from '@/admin-pages';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
-import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/login';
+import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
 import {setupUser} from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
+
 export interface User {
     name: string;
     email: string;
@@ -19,32 +19,20 @@ export interface GhostConfig {
     memberWelcomeEmailTestInbox?: string;
     hostSettings__billing__enabled?: string;
     hostSettings__billing__url?: string;
+    hostSettings__forceUpgrade?: string;
 }
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
     config?: GhostConfig;
+    stripeConnected?: boolean;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
         ghostAccountOwner: User
     };
-}
-
-async function setupLabSettings(page: Page, labsFlags: Record<string, boolean>) {
-    const analyticsPage = new AnalyticsOverviewPage(page);
-    await analyticsPage.goto();
-
-    debug('Updating labs settings:', labsFlags);
-    const settingsService = new SettingsService(page.request);
-    await settingsService.updateLabsSettings(labsFlags);
-
-    // Reload the page to ensure the new labs settings take effect in the UI
-    await page.reload();
-    await analyticsPage.header.waitFor({state: 'visible'});
-    debug('Labs settings applied and page reloaded');
 }
 
 async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
@@ -70,17 +58,18 @@ async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghos
  * Each instance gets its own database, runs on a unique port, and includes authentication
  *
  * Optionally allows setting labs flags via test.use({labs: {featureName: true}})
- * and Ghost config via config settings like:
- *
+ * and Stripe connection via test.use({stripeConnected: true})
+   and Ghost config via config settings: 
  *  test.use({config: {
  *      memberWelcomeEmailSendInstantly: 'true',
  *      memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
  *  }})
  */
 export const test = base.extend<GhostInstanceFixture>({
-    // Define labs as an option that can be set per test or describe block
+    // Define options that can be set per test or describe block
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
+    stripeConnected: [false, {option: true}],
     ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
         const environmentManager = new EnvironmentManager();
@@ -122,14 +111,29 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
     },
-    // Extract the page from pageWithAuthenticatedUser and apply labs settings
-    page: async ({pageWithAuthenticatedUser, labs}, use) => {
-        const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
-        if (labsFlagsSpecified) {
-            await setupLabSettings(pageWithAuthenticatedUser.page, labs);
+    // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
+    page: async ({pageWithAuthenticatedUser, labs, stripeConnected}, use) => {
+        const page = pageWithAuthenticatedUser.page;
+        const settingsService = new SettingsService(page.request);
+
+        if (stripeConnected) {
+            debug('Setting up Stripe connection for test');
+            await settingsService.setStripeConnected();
         }
 
-        await use(pageWithAuthenticatedUser.page);
+        const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
+        if (labsFlagsSpecified) {
+            debug('Updating labs settings:', labs);
+            await settingsService.updateLabsSettings(labs);
+        }
+
+        const needsReload = stripeConnected || labsFlagsSpecified;
+        if (needsReload) {
+            await page.reload({waitUntil: 'load'});
+            debug('Settings applied and page reloaded');
+        }
+
+        await use(page);
     }
 });
 

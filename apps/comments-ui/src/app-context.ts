@@ -15,6 +15,7 @@ export type Member = {
 export type Comment = {
     id: string,
     post_id: string,
+    parent_id?: string,
     in_reply_to_id: string,
     in_reply_to_snippet: string,
     replies: Comment[],
@@ -83,14 +84,15 @@ export type EditableAppContext = {
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
-    commentIdToHighlight: string | null
+    commentIdToHighlight: string | null,
+    commentIdToScrollTo: string | null,
+    pageUrl: string
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
 
 export type AppContextType = EditableAppContext & CommentsOptions & {
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
-    // eslint-disable-next-line @typescript-eslint/ban-types
     t: TranslationFunction,
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends { data: any } ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : any) => T extends ActionType ? Promise<void> : void,
     openFormCount: number
@@ -116,7 +118,7 @@ export const useLabs = () => {
     try {
         const context = useAppContext();
         return context.labs || {};
-    } catch (e) {
+    } catch {
         return {};
     }
 };

@@ -1,6 +1,7 @@
 // Filename must match the docName specified in ../../../automated-emails.js
 /* eslint-disable ghost/filenames/match-regex */
 
+const validator = require('@tryghost/validator');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -12,7 +13,10 @@ const messages = {
     invalidStatus: `Status must be one of: ${ALLOWED_STATUSES.join(', ')}`,
     invalidLexical: 'Lexical must be a valid JSON string',
     invalidSlug: `Slug must be one of: ${ALLOWED_SLUGS.join(', ')}`,
-    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`
+    invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
+    invalidEmailReceived: 'The server did not receive a valid email',
+    subjectRequired: 'Subject is required',
+    lexicalRequired: 'Email content is required'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -63,5 +67,36 @@ module.exports = {
     },
     async edit(apiConfig, frame) {
         await validateAutomatedEmail(frame);
+    },
+    sendTestEmail(apiConfig, frame) {
+        const email = frame.data.email;
+        const subject = frame.data.subject;
+        const lexical = frame.data.lexical;
+
+        if (typeof email !== 'string' || !validator.isEmail(email)) {
+            throw new ValidationError({
+                message: tpl(messages.invalidEmailReceived)
+            });
+        }
+
+        if (typeof subject !== 'string' || !subject.trim()) {
+            throw new ValidationError({
+                message: tpl(messages.subjectRequired)
+            });
+        }
+
+        if (typeof lexical !== 'string' || !lexical.trim()) {
+            throw new ValidationError({
+                message: tpl(messages.lexicalRequired)
+            });
+        }
+
+        try {
+            JSON.parse(lexical);
+        } catch (e) {
+            throw new ValidationError({
+                message: tpl(messages.invalidLexical)
+            });
+        }
     }
 };

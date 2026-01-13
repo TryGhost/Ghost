@@ -1,10 +1,10 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const MembersConfigProvider = require('../../../../../core/server/services/members/MembersConfigProvider');
+const MembersConfigProvider = require('../../../../../core/server/services/members/members-config-provider');
 
-const urlUtils = require('../../../../utils/urlUtils');
-const configUtils = require('../../../../utils/configUtils');
+const urlUtils = require('../../../../utils/url-utils');
+const configUtils = require('../../../../utils/config-utils');
 
 /**
  * @param {object} options

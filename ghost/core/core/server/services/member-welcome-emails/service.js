@@ -7,8 +7,8 @@ const emailAddressService = require('../email-address');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {AutomatedEmail} = require('../../models');
-const MemberWelcomeEmailRenderer = require('./MemberWelcomeEmailRenderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
+const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES, DEFAULT_WELCOME_EMAILS} = require('./constants');
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -21,15 +21,41 @@ class MemberWelcomeEmailService {
         this.#renderer = new MemberWelcomeEmailRenderer();
     }
 
+    #getSiteSettings() {
+        return {
+            title: settingsCache.get('title') || 'Ghost',
+            url: urlUtils.urlFor('home', true),
+            accentColor: settingsCache.get('accent_color') || '#15212A'
+        };
+    }
+
     async loadMemberWelcomeEmails() {
+        const useDefaults = Boolean(config.get('memberWelcomeEmailTestInbox'));
+
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await AutomatedEmail.findOne({slug});
 
-            if (!row || !row.get('lexical')) {
+            if (!row) {
+                // No row - use default template when test inbox is configured
+                if (useDefaults) {
+                    const defaultEmail = DEFAULT_WELCOME_EMAILS[memberStatus];
+                    this.#memberWelcomeEmails[memberStatus] = {
+                        ...defaultEmail,
+                        lexical: urlUtils.transformReadyToAbsolute(defaultEmail.lexical)
+                    };
+                } else {
+                    this.#memberWelcomeEmails[memberStatus] = null;
+                }
+                continue;
+            }
+
+            // Row exists - check if it has content
+            if (!row.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
                 continue;
             }
 
+            // Use DB template (status check happens in send())
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: row.get('lexical'),
                 subject: row.get('subject'),
@@ -59,12 +85,6 @@ class MemberWelcomeEmailService {
             });
         }
 
-        const siteSettings = {
-            title: settingsCache.get('title') || 'Ghost',
-            url: urlUtils.urlFor('home', true),
-            accentColor: settingsCache.get('accent_color') || '#15212A'
-        };
-
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
@@ -72,7 +92,7 @@ class MemberWelcomeEmailService {
                 name: member.name,
                 email: member.email
             },
-            siteSettings
+            siteSettings: this.#getSiteSettings()
         });
 
         const toEmail = config.get('memberWelcomeEmailTestInbox');
@@ -97,9 +117,52 @@ class MemberWelcomeEmailService {
         if (!slug) {
             return false;
         }
-        
+
         const row = await AutomatedEmail.findOne({slug});
         return Boolean(row && row.get('lexical') && row.get('status') === 'active');
+    }
+
+    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+        // Still validate the automated email exists (for permission purposes)
+        const automatedEmail = await AutomatedEmail.findOne({id: automatedEmailId});
+
+        if (!automatedEmail) {
+            throw new errors.NotFoundError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
+        if (!lexical) {
+            throw new errors.ValidationError({
+                message: MESSAGES.MISSING_EMAIL_CONTENT
+            });
+        }
+
+        if (!subject) {
+            throw new errors.ValidationError({
+                message: MESSAGES.MISSING_EMAIL_SUBJECT
+            });
+        }
+
+        const testMember = {
+            name: 'Jamie Larson',
+            email: email
+        };
+
+        const {html, text, subject: renderedSubject} = await this.#renderer.render({
+            lexical,
+            subject,
+            member: testMember,
+            siteSettings: this.#getSiteSettings()
+        });
+
+        await this.#mailer.send({
+            to: email,
+            subject: `[Test] ${renderedSubject}`,
+            html,
+            text,
+            forceTextContent: true
+        });
     }
 }
 

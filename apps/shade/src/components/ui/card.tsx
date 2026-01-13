@@ -216,6 +216,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
 
 const EmptyCard = React.forwardRef<

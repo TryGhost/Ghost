@@ -72,7 +72,7 @@ module.exports = {
 
     async render(lexical, userOptions = {}) {
         if (!postsService) {
-            const getPostServiceInstance = require('../services/posts/posts-service');
+            const getPostServiceInstance = require('../services/posts/posts-service-instance');
             postsService = getPostServiceInstance();
         }
         if (!serializePosts) {

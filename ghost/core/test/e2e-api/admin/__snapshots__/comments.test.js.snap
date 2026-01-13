@@ -4,6 +4,11 @@ exports[`Admin Comments API Browse All Always includes member and post relations
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>This is a comment</p>",
@@ -20,6 +25,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -45,6 +51,11 @@ exports[`Admin Comments API Browse All Can browse all comments across posts 1: [
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Comment on post 1</p>",
@@ -61,6 +72,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "https://example.com/super_photo.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "HTML Ipsum",
         "url": Any<String>,
@@ -69,6 +81,11 @@ Object {
       "status": "published",
     },
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Comment on post 2</p>",
@@ -85,6 +102,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -110,6 +128,11 @@ exports[`Admin Comments API Browse All Can filter by member_id 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>This is a comment</p>",
@@ -126,6 +149,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -151,6 +175,11 @@ exports[`Admin Comments API Browse All Can filter by status 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>This is a comment</p>",
@@ -167,6 +196,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -192,6 +222,11 @@ exports[`Admin Comments API Browse All Can order by created_at asc 1: [body] 1`]
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Older</p>",
@@ -208,6 +243,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -216,6 +252,11 @@ Object {
       "status": "published",
     },
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Newer</p>",
@@ -232,6 +273,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -257,6 +299,11 @@ exports[`Admin Comments API Browse All Excludes deleted comments 1: [body] 1`] =
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Published</p>",
@@ -273,6 +320,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -298,6 +346,11 @@ exports[`Admin Comments API Browse All Excludes deleted comments even when they 
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Published reply</p>",
@@ -314,6 +367,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -339,6 +393,11 @@ exports[`Admin Comments API Browse All Includes hidden comments with full html f
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Hidden comment</p>",
@@ -355,6 +414,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -380,6 +440,11 @@ exports[`Admin Comments API Browse All Orders by created_at desc by default 1: [
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Newer</p>",
@@ -396,6 +461,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -404,6 +470,11 @@ Object {
       "status": "published",
     },
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Older</p>",
@@ -420,6 +491,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -445,6 +517,11 @@ exports[`Admin Comments API Browse All Returns flat list including replies by de
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Parent</p>",
@@ -461,6 +538,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -469,6 +547,11 @@ Object {
       "status": "published",
     },
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Reply</p>",
@@ -485,6 +568,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -510,6 +594,11 @@ exports[`Admin Comments API Browse All Returns only top-level with include_neste
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>Parent</p>",
@@ -526,6 +615,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -551,6 +641,11 @@ exports[`Admin Comments API Browse All Supports pagination 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>This is a comment</p>",
@@ -567,6 +662,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -575,6 +671,11 @@ Object {
       "status": "published",
     },
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+        "reports": Any<Number>,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": Nullable<StringMatching>,
       "html": "<p>This is a comment</p>",
@@ -591,6 +692,7 @@ Object {
       },
       "parent_id": Nullable<StringMatching>,
       "post": Object {
+        "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
         "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "title": "Ghostly Kitchen Sink",
         "url": Any<String>,
@@ -833,6 +935,7 @@ Object {
       "count": Object {
         "likes": Any<Number>,
         "replies": 2,
+        "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
@@ -935,6 +1038,7 @@ Object {
       "count": Object {
         "likes": Any<Number>,
         "replies": 2,
+        "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
@@ -1021,6 +1125,7 @@ Object {
       "count": Object {
         "likes": Any<Number>,
         "replies": 1,
+        "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
@@ -1085,6 +1190,7 @@ Object {
       "count": Object {
         "likes": Any<Number>,
         "replies": 0,
+        "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,

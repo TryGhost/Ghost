@@ -665,6 +665,7 @@ function FilterRemoveButton({className, icon = <X />, ...props}: FilterRemoveBut
 export interface FilterOption<T = unknown> {
     value: T;
     label: string;
+    detail?: string;
     icon?: React.ReactNode;
     metadata?: Record<string, unknown>;
 }
@@ -1048,15 +1049,18 @@ function SelectOptionsPopover<T = unknown>({
 
         if (optionsFromField.length > 0) {
             setCachedSelectedOptions((prev) => {
-                // Merge new options with existing cached ones, avoiding duplicates
-                const merged = [...prev];
-                for (const opt of optionsFromField) {
-                    if (!merged.some(m => m.value === opt.value)) {
-                        merged.push(opt);
+                // Build result by iterating over selected values
+                const result: FilterOption<T>[] = [];
+                for (const value of effectiveValues) {
+                    // Prefer new option, fall back to cached option
+                    const option = optionsFromField.find(opt => opt.value === value) 
+                        ?? prev.find(opt => opt.value === value);
+                    if (option) {
+                        result.push(option);
                     }
                 }
-                // Remove options that are no longer selected
-                return merged.filter(m => effectiveValues.includes(m.value));
+                
+                return result;
             });
         }
     }, [optionsFromField, effectiveValues]);
@@ -1130,7 +1134,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1146,7 +1153,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...effectiveValues, option.value] as T[];
@@ -1174,7 +1181,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
@@ -1217,7 +1227,13 @@ function SelectOptionsPopover<T = unknown>({
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].label
+                                ? selectedOptions[0].detail 
+                                    ? (
+                                        <>
+                                            <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
+                                            <span className="truncate text-sm text-muted-foreground" title={selectedOptions[0].detail}>{selectedOptions[0].detail}</span>
+                                        </>
+                                    ) : <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1271,7 +1287,10 @@ function SelectOptionsPopover<T = unknown>({
                                         }}
                                     >
                                         {option.icon && option.icon}
-                                        <span className="truncate text-accent-foreground">{option.label}</span>
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                            {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                        </div>
                                         <Check className="ms-auto text-primary" />
                                     </CommandItem>
                                 ))}
@@ -1287,7 +1306,7 @@ function SelectOptionsPopover<T = unknown>({
                                         <CommandItem
                                             key={String(option.value)}
                                             className="group flex items-center gap-2"
-                                            value={option.label}
+                                            value={option.label + (option.detail ? ` - ${option.detail}` : '')}
                                             onSelect={() => {
                                                 if (isMultiSelect) {
                                                     const newValues = [...values, option.value] as T[];
@@ -1307,7 +1326,10 @@ function SelectOptionsPopover<T = unknown>({
                                             }}
                                         >
                                             {option.icon && option.icon}
-                                            <span className="truncate text-accent-foreground">{option.label}</span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
+                                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                            </div>
                                             <Check className="ms-auto text-primary opacity-0" />
                                         </CommandItem>
                                     ))}
@@ -1891,6 +1913,7 @@ interface FiltersProps<T = unknown> {
     popoverContentClassName?: string;
     popoverAlign?: 'start' | 'center' | 'end';
     keyboardShortcut?: string;
+    onActiveFieldChange?: (fieldKey: string | null) => void;
 }
 
 export function Filters<T = unknown>({
@@ -1913,11 +1936,17 @@ export function Filters<T = unknown>({
     allowMultiple = true,
     popoverContentClassName,
     popoverAlign = 'start',
-    keyboardShortcut
+    keyboardShortcut,
+    onActiveFieldChange
 }: FiltersProps<T>) {
     const [addFilterOpen, setAddFilterOpen] = useState(false);
     const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
     const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+
+    // Notify parent when active field changes
+    useEffect(() => {
+        onActiveFieldChange?.(selectedFieldKeyForOptions);
+    }, [selectedFieldKeyForOptions, onActiveFieldChange]);
 
     // Keyboard shortcut handler
     useEffect(() => {
