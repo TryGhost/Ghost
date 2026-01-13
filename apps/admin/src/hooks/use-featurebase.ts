@@ -18,7 +18,8 @@ const SDK_URL = 'https://do.featurebase.app/js/sdk.js';
 
 function loadFeaturebaseSDK(): Promise<void> {
     return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${SDK_URL}"]`)) {
+        const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
+        if (existingScript) {
             resolve();
             return;
         }
@@ -26,7 +27,12 @@ function loadFeaturebaseSDK(): Promise<void> {
         const script = document.createElement('script');
         script.src = SDK_URL;
         script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load Featurebase SDK from ${SDK_URL}`));
+        script.onerror = (event) => {
+            script.remove();
+            const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
+            console.error(error);
+            reject(error);
+        };
         document.head.appendChild(script);
 
         // Set up the queue function while script loads
@@ -47,8 +53,8 @@ export function useFeaturebase(): Featurebase {
     const {data: config} = useBrowseConfig();
     const {data: preferences} = useUserPreferences();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
-    const isInitializedRef = useRef(false);
-    const lastThemeRef = useRef<string | null>(null);
+    const isInitializingRef = useRef(false);
+    const initializedThemeRef = useRef<string | null>(null);
 
     const featurebaseConfig = config?.config.featurebase;
     const featurebaseOrg = featurebaseConfig?.organization;
@@ -65,13 +71,12 @@ export function useFeaturebase(): Featurebase {
             return;
         }
 
-        // Skip if already initialized with the same theme
-        if (isInitializedRef.current && lastThemeRef.current === theme) {
+        // Skip if already initialized with the same theme or initialization in progress
+        if (initializedThemeRef.current === theme || isInitializingRef.current) {
             return;
         }
 
-        isInitializedRef.current = true;
-        lastThemeRef.current = theme;
+        isInitializingRef.current = true;
 
         loadFeaturebaseSDK().then(() => {
             window.Featurebase?.('initialize_feedback_widget', {
@@ -80,12 +85,17 @@ export function useFeaturebase(): Featurebase {
                 defaultBoard: 'Feature Request',
                 featurebaseJwt: token
             }, (err) => {
+                isInitializingRef.current = false;
+                initializedThemeRef.current = theme;
+
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
+                    initializedThemeRef.current = null;
                 }
             });
-        }).catch((err) => {
-            console.error('[Featurebase] Failed to load SDK:', err);
+        }).catch(() => {
+            isInitializingRef.current = false;
+            initializedThemeRef.current = null;
         });
     }, [featurebaseEnabled, featurebaseOrg, currentUser, token, theme]);
 
