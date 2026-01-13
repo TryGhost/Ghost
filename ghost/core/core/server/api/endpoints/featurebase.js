@@ -8,6 +8,7 @@ function generateJWTToken(frame) {
     const userData = {
         name: frame.user.get('name'),
         email: frame.user.get('email'),
+        profilePicture: frame.user.get('profile_image'),
 
         companies: [{
             id: settingsCache.get('site_uuid'),
