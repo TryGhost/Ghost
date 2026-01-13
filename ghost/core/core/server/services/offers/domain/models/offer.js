@@ -310,7 +310,8 @@ class Offer {
 
         if (cadence.value === 'year' && duration.value.type === 'repeating') {
             throw new errors.InvalidOfferDuration({
-                message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.'
+                message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.',
+                code: 'INVALID_YEARLY_DURATION'
             });
         }
 

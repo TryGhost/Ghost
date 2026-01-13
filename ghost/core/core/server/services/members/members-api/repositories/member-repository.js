@@ -1048,13 +1048,26 @@ module.exports = class MemberRepository {
             const cadence = _.get(subscriptionPriceData, 'recurring.interval');
             const tier = {id: ghostProduct.get('id'), name: ghostProduct.get('name')};
 
-            const offer = await this._offersAPI.ensureOfferForStripeCoupon(
-                coupon,
-                cadence,
-                tier,
-                options
-            );
-            offerId = offer.id;
+            try {
+                const offer = await this._offersAPI.ensureOfferForStripeCoupon(
+                    coupon,
+                    cadence,
+                    tier,
+                    options
+                );
+                offerId = offer.id;
+            } catch (e) {
+                if (e.code === 'INVALID_YEARLY_DURATION') {
+                    // During migrations, some Stripe coupons from other platforms may not be compatible with Ghost offers.
+                    // For example, a `yearly` coupon set to `repeating` (Ghost only accepts `once` or `forever` for `yearly` coupons).
+                    //
+                    // In this case, we skip creating the offer, but still create the paid member
+                    logging.error(`Failed to create offer for Stripe coupon - ${stripeCouponId}`);
+                    logging.error(e);
+                } else {
+                    throw e;
+                }
+            }
         }
 
         const subscriptionData = {
