@@ -15,6 +15,7 @@ class CommentsServiceWrapper {
         const membersService = require('../members');
         const db = require('../../data/db');
         const settingsHelpers = require('../settings-helpers');
+        const labs = require('../../../shared/labs');
 
         this.api = new CommentsService({
             config,
@@ -25,7 +26,8 @@ class CommentsServiceWrapper {
             settingsHelpers,
             urlService,
             urlUtils,
-            contentGating: membersService.contentGating
+            contentGating: membersService.contentGating,
+            labs
         });
 
         const stats = new CommentsStats({db});
