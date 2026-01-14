@@ -10,10 +10,16 @@ class StatsServiceWrapper {
             return;
         }
 
-        const StatsService = require('@tryghost/stats-service');
+        const StatsService = require('./stats-service');
         const db = require('../../data/db');
+        const models = require('../../models');
+        const urlService = require('../url');
 
-        this.api = StatsService.create({knex: db.knex});
+        this.api = StatsService.create({
+            knex: db.knex,
+            models,
+            urlService
+        });
 
         const adapterManager = require('../adapter-manager');
         const config = require('../../../shared/config');

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
-const BlogIcon = require('../../../../../core/server/lib/image/BlogIcon');
+const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
 
 describe('lib/image: blog icon', function () {
     describe('getIconUrl', function () {

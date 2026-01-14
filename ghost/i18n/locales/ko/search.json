@@ -1,9 +1,9 @@
 {
-    "Authors": "",
-    "Cancel": "",
-    "No matches found": "",
-    "Posts": "",
-    "Search posts, tags and authors": "",
-    "Show more results": "",
-    "Tags": ""
+    "Authors": "작성자",
+    "Cancel": "취소",
+    "No matches found": "일치하는 결과가 없어요",
+    "Posts": "게시물",
+    "Search posts, tags and authors": "게시물, 태그, 작성자 검색",
+    "Show more results": "더 많은 결과 보기",
+    "Tags": "태그"
 }

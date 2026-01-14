@@ -1,7 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const getPostServiceInstance = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
@@ -81,17 +81,15 @@ const controller = {
             docName: 'posts',
             unsafeAttrs: UNSAFE_ATTRS
         },
-        query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.pageNotFound)
-                        });
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Post.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.pageNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -119,15 +117,13 @@ const controller = {
             docName: 'posts',
             unsafeAttrs: UNSAFE_ATTRS
         },
-        query(frame) {
-            return models.Post.add(frame.data.pages[0], frame.options)
-                .then((model) => {
-                    if (model.get('status') === 'published') {
-                        frame.setHeader('X-Cache-Invalidate', '/*');
-                    }
+        async query(frame) {
+            const model = await models.Post.add(frame.data.pages[0], frame.options);
+            if (model.get('status') === 'published') {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
 
-                    return model;
-                });
+            return model;
         }
     },
 

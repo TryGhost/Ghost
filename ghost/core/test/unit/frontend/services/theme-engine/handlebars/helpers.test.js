@@ -10,8 +10,8 @@ describe('Helpers', function () {
     const ghostHelpers = [
         'asset', 'authors', 'body_class', 'cancel_link', 'concat', 'content', 'content_api_key', 'content_api_url', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
         'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'link', 'link_class', 'meta_description', 'meta_title', 'navigation',
-        'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'raw', 'reading_time', 't', 'tags', 'title','total_members', 'total_paid_members', 'twitter_url',
-        'url', 'comment_count', 'collection', 'recommendations', 'readable_url'
+        'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'raw', 'reading_time', 'split', 't', 'tags', 'title','total_members', 'total_paid_members', 'twitter_url',
+        'url', 'comment_count', 'collection', 'recommendations', 'readable_url', 'social_url'
     ];
     const experimentalHelpers = ['match', 'tiers', 'comments', 'search'];
 

@@ -28,7 +28,6 @@ export function getSiteData({
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
     portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
-    allowSelfSignup: allow_self_signup = true,
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',
@@ -56,7 +55,6 @@ export function getSiteData({
         plans,
         products,
         portal_products: portalProducts,
-        allow_self_signup,
         members_signup_access,
         free_price_name,
         free_price_description,
@@ -292,16 +290,16 @@ export function getFreeProduct({
 }
 
 export function getBenefits({numOfBenefits}) {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 100);
+    // Generate a unique suffix for benefit names to avoid clashes across test runs
+    const uniqueId = objectId();
 
-    const beenfits = [
-        getBenefitData({name: `Limited early adopter pricing #${random}-${timestamp}`}),
-        getBenefitData({name: `Latest gear reviews #${random}-${timestamp}`}),
-        getBenefitData({name: `Weekly email newsletter #${random}-${timestamp}`}),
-        getBenefitData({name: `Listen to my podcast #$${random}-${timestamp}`})
+    const benefits = [
+        getBenefitData({name: `Limited early adopter pricing #${uniqueId.substring(0, 6)}`}),
+        getBenefitData({name: `Latest gear reviews #${uniqueId.substring(6, 12)}`}),
+        getBenefitData({name: `Weekly email newsletter #${uniqueId.substring(12, 18)}`}),
+        getBenefitData({name: `Listen to my podcast #${uniqueId.substring(18)}`})
     ];
-    return beenfits.slice(0, numOfBenefits);
+    return benefits.slice(0, numOfBenefits);
 }
 
 export function getBenefitData({

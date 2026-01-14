@@ -55,6 +55,15 @@
         "members_stripe_webhook_secret": {
             "defaultValue": null,
             "type": "string"
+        },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
@@ -406,19 +415,6 @@
             "flags": "RO"
         }
     },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
-        }
-    },
     "firstpromoter": {
         "firstpromoter": {
             "defaultValue": "false",
@@ -503,6 +499,14 @@
     },
     "analytics": {
         "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "web_analytics": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,

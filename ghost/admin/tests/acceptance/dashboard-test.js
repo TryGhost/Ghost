@@ -1,43 +1,33 @@
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentURL, visit} from '@ember/test-helpers';
+import {authenticateSession} from 'ember-simple-auth/test-support';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
 describe('Acceptance: Dashboard', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    beforeEach(async function () {
-        this.server.loadFixtures('configs');
-        this.server.loadFixtures('settings');
-
-        let role = this.server.create('role', {name: 'Administrator'});
-        this.server.create('user', {roles: [role]});
-
-        await authenticateSession();
+    beforeEach(function () {
+        mockAnalyticsApps();
     });
 
-    it('can visit /dashboard', async function () {
-        await visit('/dashboard');
-        expect(currentURL()).to.equal('/dashboard');
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
-    it('/ redirects to /dashboard', async function () {
-        await visit('/');
-        expect(currentURL()).to.equal('/dashboard');
-    });
+    describe('redirects', function () {
+        it('redirects to Analytics (stats-x)', async function () {
+            let role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role]});
 
-    describe('permissions', function () {
-        beforeEach(async function () {
-            this.server.db.users.remove();
-            await invalidateSession();
-        });
-
-        it('is not accessible when logged out', async function () {
+            await authenticateSession();
             await visit('/dashboard');
-            expect(currentURL()).to.equal('/signin');
+
+            expect(currentURL()).to.equal('/analytics');
         });
     });
 });

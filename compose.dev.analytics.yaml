@@ -1,0 +1,86 @@
+# Analytics (Tinybird) configuration for Ghost development environment
+# Use with: docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up
+#
+# This file adds Tinybird analytics services and configuration to ghost-dev.
+
+services:
+  analytics:
+    image: ghost/traffic-analytics:1.0.25
+    container_name: ghost-dev-analytics
+    platform: linux/amd64
+    command: ["node", "--enable-source-maps", "dist/server.js"]
+    entrypoint: ["/app/entrypoint.sh"]
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
+      interval: 1s
+      retries: 120
+    volumes:
+      - ./docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config:ro
+    environment:
+      - PROXY_TARGET=http://tinybird-local:7181/v0/events
+      - TINYBIRD_WAIT=true
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
+  tinybird-local:
+    image: tinybirdco/tinybird-local:latest
+    container_name: ghost-dev-tinybird
+    platform: linux/amd64
+    stop_grace_period: 2s
+    ports:
+      - "7181:7181"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  tb-cli:
+    build:
+      context: ./
+      dockerfile: docker/tb-cli/Dockerfile
+    container_name: ghost-dev-tb-cli
+    working_dir: /home/tinybird
+    environment:
+      - TB_HOST=http://tinybird-local:7181
+      - TB_LOCAL_HOST=tinybird-local
+    volumes:
+      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - shared-config:/mnt/shared-config
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+
+  ghost-dev:
+    volumes:
+      # Mount shared-config volume to access Tinybird tokens created by tb-cli
+      - shared-config:/mnt/shared-config:ro
+    environment:
+      # Analytics configuration
+      analytics__url: http://analytics:3000
+      analytics__enabled: "true"
+      # Tinybird configuration
+      # These static values are set here; workspaceId and adminToken are sourced from
+      # /mnt/shared-config/.env.tinybird by docker/ghost-dev/entrypoint.sh
+      TB_HOST: http://tinybird-local:7181
+      TB_LOCAL_HOST: tinybird-local
+      tinybird__stats__endpoint: http://tinybird-local:7181
+      tinybird__stats__endpointBrowser: http://localhost:7181
+      tinybird__tracker__endpoint: http://localhost:2368/.ghost/analytics/api/v1/page_hit
+      tinybird__tracker__datasource: analytics_events
+    depends_on:
+      analytics:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
+volumes:
+  shared-config:
+
+

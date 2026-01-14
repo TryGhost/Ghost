@@ -160,7 +160,7 @@
 .gh-members-activity-description {
     display: block;
     font-weight: 500;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     letter-spacing: 0;
     color: var(--middarkgrey);
     text-overflow: ellipsis;
@@ -490,6 +490,10 @@
 .gh-member-filter-search-dropdown li span {
     font-weight: 400;
     color: var(--middarkgrey);
+}
+
+.gh-members-activity .gh-canvas-header .view-actions > .ember-basic-dropdown-content-wormhole-origin {
+    position: absolute;
 }
 
 @media (max-width: 800px) {

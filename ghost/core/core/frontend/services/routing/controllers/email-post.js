@@ -51,8 +51,6 @@ module.exports = function emailPostController(req, res, next) {
                 return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
-            post.access = !!post.html;
-
             return renderer.renderEntry(req, res)(post);
         })
         .catch(renderer.handleError(next));

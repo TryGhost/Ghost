@@ -1,7 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
-import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
-import {usersDataType} from './currentUser';
+import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
+import {deleteFromQueryCache, updateQueryCache} from '../utils/api/update-queries';
+import {usersDataType} from './current-user';
 import {UserRole} from './roles';
 
 // Types
@@ -18,6 +18,13 @@ export type User = {
     location: string|null;
     facebook: string|null;
     twitter: string|null;
+    threads: string|null;
+    bluesky: string|null;
+    mastodon: string|null;
+    tiktok: string|null;
+    youtube: string|null;
+    instagram: string|null;
+    linkedin: string|null;
     accessibility: string|null;
     status: string;
     meta_title: string|null;
@@ -41,6 +48,10 @@ export type User = {
 export interface UsersResponseType {
     meta?: Meta;
     users: User[];
+}
+
+export interface UpdateUserRequestBody {
+    users: Array<User>;
 }
 
 interface UpdatePasswordOptions {
@@ -85,6 +96,12 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
+});
+
+export const useGetUserBySlug = createQueryWithId<UsersResponseType>({
+    dataType,
+    path: slug => `/users/slug/${slug}/`,
+    defaultSearchParams: {include: 'roles'}
 });
 
 export const useEditUser = createMutation<UsersResponseType, User>({
@@ -148,7 +165,13 @@ export function isAdminUser(user: User) {
 }
 
 export function isEditorUser(user: User) {
-    return user.roles.some(role => role.name === 'Editor');
+    const isAnyEditor = user.roles.some(role => role.name === 'Editor')
+        || user.roles.some(role => role.name === 'Super Editor');
+    return isAnyEditor;
+}
+
+export function isSuperEditorUser(user: User) {
+    return user.roles.some(role => role.name === 'Super Editor');
 }
 
 export function isAuthorUser(user: User) {
@@ -164,6 +187,16 @@ export function isAuthorOrContributor(user: User) {
 }
 
 export function canAccessSettings(user: User) {
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function canManageMembers(user: User) {
+    // Owner, Admin, or Super Editor can manage members
+    return isOwnerUser(user) || isAdminUser(user) || isSuperEditorUser(user);
+}
+
+export function canManageTags(user: User) {
+    // Owner, Admin or Editor can manage tags
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 

@@ -57,16 +57,19 @@ export default class ResetController extends Controller.extend(ValidationEngine)
         try {
             yield this.validate();
             try {
-                let resp = yield this.ajax.put(authUrl, {
+                let {password_reset: [{message, emailVerificationToken}]} = yield this.ajax.put(authUrl, {
                     data: {
                         password_reset: [{newPassword, ne2Password, token}]
                     }
                 });
+
                 this.notifications.showNotification(
-                    resp.password_reset[0].message,
+                    message,
                     {type: 'info', delayed: true, key: 'password.reset'}
                 );
-                this.session.authenticate('authenticator:cookie', {identification: email, password: newPassword});
+
+                yield this.session.authenticate('authenticator:cookie', {identification: email, password: newPassword, token: emailVerificationToken});
+
                 return true;
             } catch (error) {
                 this.notifications.showAPIError(error, {key: 'password.reset'});

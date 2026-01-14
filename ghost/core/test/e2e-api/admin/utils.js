@@ -202,8 +202,6 @@ _.each(expectedProperties, (value, key) => {
      */
     expectedProperties[key] = value
         .without(
-            'created_by',
-            'updated_by',
             'published_by'
         )
         .value();

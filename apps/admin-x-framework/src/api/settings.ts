@@ -8,6 +8,7 @@ export type SettingValue = string | boolean | null;
 export type Setting = {
     key: string;
     value: SettingValue;
+    is_read_only?: boolean;
 }
 
 export type SettingsResponseMeta = Meta & {
@@ -30,7 +31,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
     defaultSearchParams: {
-        group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations'
+        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore'
     }
 });
 
@@ -45,6 +46,17 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
             ...newData,
             settings: newData.settings
         })
+    },
+    // Whenever we update the settings, we want to make sure we invalidate all
+    // other queries to ensure any ripple effects are reflected in the UI. The
+    // updated settings themselves will have been returned in the settings
+    // response, so we don't need to refetch them.
+    invalidateQueries: {
+        filters: {
+            predicate(query) {
+                return query.queryKey[0] !== dataType;
+            }
+        }
     }
 });
 
@@ -80,6 +92,14 @@ export function getSettingValue<ValueType = SettingValue>(settings: Setting[] | 
     }
     const setting = settings.find(d => d.key === key);
     return setting?.value as ValueType || null;
+}
+
+export function isSettingReadOnly(settings: Setting[] | null | undefined, key: string): boolean | undefined {
+    if (!settings) {
+        return undefined;
+    }
+    const setting = settings.find(d => d.key === key);
+    return setting?.is_read_only || false;
 }
 
 export function checkStripeEnabled(settings: Setting[], config: Config) {

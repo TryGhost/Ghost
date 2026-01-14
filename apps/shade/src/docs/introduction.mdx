@@ -1,0 +1,116 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+<div className="sb-doc">
+
+# Shade Design System
+
+<p className="excerpt">Shade is Ghost's design system for product design. Built on ShadCN/UI and TailwindCSS, it provides a complete set of components and patterns for building consistent user experiences.</p>
+
+## Overview
+
+Shade is built on three powerful foundations:
+- [ShadCN/UI](https://ui.shadcn.com/) - Reusable components built with Radix UI
+- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Radix UI](https://www.radix-ui.com/) - Accessible component primitives
+
+### Scope & Reuse
+
+Shade contains reusable, system-wide components and patterns. Keep one-off, app-specific components in the consuming application rather than adding them to Shade.
+
+### Target Audience
+
+- **Designers**: Understand our design language and component capabilities
+- **Engineers**: Find implementation details and integration examples
+- **AI Agents**: Access machine-readable metadata for automation
+
+### Core Surfaces
+
+Shade components are used across:
+- Admin interfaces
+- Settings panels
+- Portal experiences
+- Email templates
+- Documentation sites
+
+## Getting Started
+
+### Installation
+
+```bash
+# Install Shade
+yarn add @tryghost/shade
+
+# Install peer dependencies
+yarn add react react-dom tailwindcss
+```
+
+> Note: The package is currently private and primarily consumed internally in the monorepo. The snippet above reflects usage once published.
+
+### Basic Usage
+
+```tsx
+import { Button } from '@tryghost/shade';
+
+function MyComponent() {
+    return (
+        <Button variant="solid">
+            Continue
+        </Button>
+    );
+}
+```
+
+### Configure TailwindCSS
+
+Add Shade's preset to your `tailwind.config.js`:
+
+```js
+module.exports = {
+    presets: [require('@tryghost/shade/tailwind')],
+    // Your custom config...
+}
+```
+
+### Scope Styles & Dark Mode
+
+Shade scopes all styles to a `.shade` container and toggles dark mode with a `.dark` class inside that scope.
+
+Use `ShadeApp` to handle scoping and provide context:
+
+```tsx
+import ShadeApp from '@tryghost/shade';
+import {Button} from '@tryghost/shade';
+
+export default function App() {
+    // Toggle dark mode by switching the `darkMode` prop
+    return (
+        <ShadeApp darkMode={false}>
+            <div>
+                <Button>Continue</Button>
+            </div>
+        </ShadeApp>
+    );
+}
+```
+
+Alternatively, wrap your UI in a div with `className="shade"` and toggle a nested `.dark` class when needed.
+
+## Documentation Structure
+
+Our documentation is organized into:
+
+1. **Components** - Individual UI elements with variants and usage
+2. **Patterns** - Common UI patterns and compositions
+3. **Tokens** - Design tokens via TailwindCSS
+4. **Guidelines** - Best practices and standards
+
+## Resources
+
+- [GitHub Repository](https://github.com/TryGhost/Ghost)
+- [ShadCN/UI Documentation](https://ui.shadcn.com)
+- [TailwindCSS Documentation](https://tailwindcss.com/docs)
+- [Radix UI Documentation](https://www.radix-ui.com/docs/primitives)
+
+</div>

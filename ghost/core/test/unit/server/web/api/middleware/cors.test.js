@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../../../../utils/configUtils');
+const configUtils = require('../../../../../utils/config-utils');
 
 let cors = rewire('../../../../../../core/server/web/api/middleware/cors')[1];
 let corsCaching = rewire('../../../../../../core/server/web/api/middleware/cors')[0];

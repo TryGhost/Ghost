@@ -1,5 +1,7 @@
-import PostModel from './post';
+import {Model, hasMany} from 'miragejs';
 
-export default PostModel.extend({
-    postRevisions: null
+export default Model.extend({
+    tags: hasMany(),
+    authors: hasMany('user'),
+    tiers: hasMany()
 });

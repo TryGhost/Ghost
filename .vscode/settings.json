@@ -11,7 +11,6 @@
     }
   ],
   "search.exclude": {
-    "**/*.js.snap": true,
     "**/.git": true,
     "**/build/*": true,
     "**/coverage/**": true,

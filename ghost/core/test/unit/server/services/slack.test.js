@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const rewire = require('rewire');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 // Stuff we test
 const slack = rewire('../../../../core/server/services/slack');
@@ -112,10 +112,11 @@ describe('Slack', function () {
         let settingsCacheStub;
         let slackReset;
         let makeRequestStub;
+        let urlServiceGetUrlByResourceIdStub;
         const ping = slack.__get__('ping');
 
         beforeEach(function () {
-            sinon.stub(urlService, 'getUrlByResourceId');
+            urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
 
@@ -140,7 +141,7 @@ describe('Slack', function () {
                 slug: 'webhook-test',
                 html: `<p>Hello World!</p><p>This is a test post.</p><!--members-only--><p>This is members only content.</p>`
             });
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
+            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
 
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
@@ -149,7 +150,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.true();
-            urlService.getUrlByResourceId.calledOnce.should.be.true();
+            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack_url').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
@@ -177,7 +178,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.true();
-            urlService.getUrlByResourceId.called.should.be.false();
+            urlServiceGetUrlByResourceIdStub.called.should.be.false();
             settingsCacheStub.calledWith('slack_url').should.be.true();
 
             requestUrl = makeRequestStub.firstCall.args[0];
@@ -217,7 +218,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
-            urlService.getUrlByResourceId.calledOnce.should.be.true();
+            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack_url').should.be.true();
         });
 
@@ -230,7 +231,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
-            urlService.getUrlByResourceId.calledOnce.should.be.true();
+            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
             settingsCacheStub.calledWith('slack_url').should.be.true();
         });
 
@@ -243,7 +244,7 @@ describe('Slack', function () {
 
             // assertions
             makeRequestStub.calledOnce.should.be.false();
-            urlService.getUrlByResourceId.called.should.be.true();
+            urlServiceGetUrlByResourceIdStub.called.should.be.true();
             settingsCacheStub.calledWith('slack_url').should.be.true();
         });
     });

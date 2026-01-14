@@ -22,12 +22,6 @@
             ],
             "cache": true
         },
-        "build:ts": {
-            "dependsOn": ["^build:ts"],
-            "inputs": ["default", "^default"],
-            "outputs": ["{projectRoot}/build"],
-            "cache": true
-        },
         "lint": {
             "cache": true
         },
@@ -35,8 +29,11 @@
             "cache": true
         },
         "test:unit": {
-            "dependsOn": ["^build:ts"],
             "cache": true
+        },
+        "dev": {
+          "dependsOn": ["^dev"],
+          "continuous": true
         }
     },
     "cacheDirectory": ".nxcache"

@@ -9,6 +9,7 @@ const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const origCache = _.cloneDeep(settingsCache);
+const {mockManager} = require('../../utils/e2e-framework');
 
 describe('Themes API', function () {
     let ownerRequest;
@@ -34,6 +35,10 @@ describe('Themes API', function () {
 
     after(function () {
         sinon.restore();
+    });
+
+    afterEach(function () {
+        nock.cleanAll();
     });
 
     it('Can request all available themes', async function () {
@@ -323,6 +328,90 @@ describe('Themes API', function () {
             .del(localUtils.API.getApiQuery('themes/test'))
             .set('Origin', config.get('url'))
             .expect(204);
+    });
+
+    it('Can download and install a TryGhost theme from GitHub when customThemes limit is active', async function () {
+        // Mock the limit service to restrict custom themes but specific official Ghost themes
+        mockManager.mockLimitService('customThemes', {
+            isLimited: true,
+            errorIfWouldGoOverLimit: false,
+            allowlist: ['source', 'casper', 'starter', 'edition']
+        });
+
+        const githubZipball = nock('https://api.github.com')
+            .get('/repos/tryghost/starter/zipball')
+            .reply(302, null, {Location: 'https://codeload.github.com/TryGhost/Starter/legacy.zip/main'});
+
+        const githubDownload = nock('https://codeload.github.com')
+            .get('/TryGhost/Starter/legacy.zip/main')
+            .replyWithFile(200, path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip'), {
+                'Content-Type': 'application/zip',
+                'Content-Disposition': 'attachment; filename=TryGhost-Starter-1.0.0.zip'
+            });
+
+        const res = await ownerRequest
+            .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Starter'))
+            .set('Origin', config.get('url'));
+
+        githubZipball.isDone().should.be.true();
+        githubDownload.isDone().should.be.true();
+
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse.themes);
+        localUtils.API.checkResponse(jsonResponse, 'themes');
+        jsonResponse.themes.length.should.eql(1);
+        localUtils.API.checkResponse(jsonResponse.themes[0], 'theme', ['warnings']);
+        jsonResponse.themes[0].name.should.eql('starter');
+        jsonResponse.themes[0].active.should.be.false();
+        jsonResponse.themes[0].warnings.should.be.an.Array();
+
+        // Delete the theme to clean up after the test
+        await ownerRequest
+            .del(localUtils.API.getApiQuery('themes/starter'))
+            .set('Origin', config.get('url'))
+            .expect(204);
+
+        // Clean up only the limit service mocks
+        mockManager.restoreLimitService();
+    });
+
+    it('Cannot download and install a theme from GitHub with customThemes limit and request theme name is not allowed', async function () {
+        // Mock the limit service to restrict custom themes and throw error for non-allowed themes
+        mockManager.mockLimitService('customThemes', {
+            isLimited: true,
+            errorIfWouldGoOverLimit: true,
+            allowlist: ['source']
+        });
+
+        const githubZipball = nock('https://api.github.com')
+            .get('/repos/tryghost/starter/zipball')
+            .reply(302, null, {Location: 'https://codeload.github.com/TryGhost/Starter/legacy.zip/main'});
+
+        const githubDownload = nock('https://codeload.github.com')
+            .get('/TryGhost/Starter/legacy.zip/main')
+            .replyWithFile(200, path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip'), {
+                'Content-Type': 'application/zip',
+                'Content-Disposition': 'attachment; filename=TryGhost-Starter-1.0.0.zip'
+            });
+
+        const res = await ownerRequest
+            .post(localUtils.API.getApiQuery('themes/install/?source=github&ref=TryGhost/Starter'))
+            .set('Origin', config.get('url'))
+            .expect(403);
+
+        // The GitHub API calls should NOT be made (limit check happens before download)
+        githubZipball.isDone().should.be.false();
+        githubDownload.isDone().should.be.false();
+
+        const jsonResponse = res.body;
+
+        should.exist(jsonResponse.errors);
+        jsonResponse.errors[0].type.should.eql('HostLimitError');
+        jsonResponse.errors[0].message.should.match(/Upgrade to use customThemes feature\./);
+
+        // Clean up only the limit service mocks
+        mockManager.restoreLimitService();
     });
 
     it('Can re-upload the active theme to override', async function () {

@@ -1,6 +1,6 @@
 import {Meta, createQuery} from '../utils/api/hooks';
 
-export type UserRoleType = 'Owner' | 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+export type UserRoleType = 'Owner' | 'Administrator' | 'Editor' | 'Author' | 'Contributor' | 'Super Editor';
 
 export type UserRole = {
     id: string;
@@ -20,5 +20,6 @@ const dataType = 'RolesResponseType';
 export const useBrowseRoles = createQuery<RolesResponseType>({
     dataType,
     path: '/roles/',
-    defaultSearchParams: {limit: 'all'}
+    // Ghost has a fixed-by-core number of roles so we know it's less than 100
+    defaultSearchParams: {limit: '100'}
 });

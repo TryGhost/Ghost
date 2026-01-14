@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const MembersSSR = require('@tryghost/members-ssr');
+const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
-const MembersConfigProvider = require('./MembersConfigProvider');
-const makeMembersCSVImporter = require('@tryghost/members-importer');
-const MembersStats = require('./stats/MembersStats');
+const MembersConfigProvider = require('./members-config-provider');
+const makeMembersCSVImporter = require('./importer');
+const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -16,10 +16,10 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
-const VerificationTrigger = require('@tryghost/verification-trigger');
+const VerificationTrigger = require('../verification-trigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
-const RequestIntegrityTokenProvider = require('./RequestIntegrityTokenProvider');
+const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -92,13 +92,8 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            let fromAddress = config.get('user_email');
-            let replyTo = undefined;
-
-            if (settingsHelpers.useNewEmailAddresses()) {
-                replyTo = fromAddress;
-                fromAddress = settingsHelpers.getNoReplyAddress();
-            }
+            const replyTo = config.get('user_email');
+            const fromAddress = settingsHelpers.getDefaultEmailAddress();
 
             if (escalationAddress) {
                 await ghostMailer.send({
@@ -141,6 +136,7 @@ module.exports = {
                 });
             }
         }
+
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 

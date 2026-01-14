@@ -70,4 +70,41 @@ export default function mockStats(server) {
             meta: {}
         };
     });
+
+    server.post('/stats/posts-visitor-counts/', function (schema, request) {
+        const requestBody = JSON.parse(request.requestBody);
+        const postUuids = requestBody.postUuids || [];
+        
+        // Return mock visitor counts for the requested post UUIDs
+        const visitorCounts = {};
+        postUuids.forEach((uuid) => {
+            visitorCounts[uuid] = Math.floor(Math.random() * 1000) + 100; // Random count between 100-1100
+        });
+        
+        return {
+            stats: [{
+                data: {
+                    visitor_counts: visitorCounts
+                }
+            }]
+        };
+    });
+
+    server.post('/stats/posts-member-counts/', function (schema, request) {
+        const requestBody = JSON.parse(request.requestBody);
+        const postIds = requestBody.postIds || [];
+        
+        // Return mock member counts for the requested post IDs
+        const memberCounts = {};
+        postIds.forEach((id) => {
+            memberCounts[id] = {
+                free_members: Math.floor(Math.random() * 50) + 5, // Random count between 5-55
+                paid_members: Math.floor(Math.random() * 20) + 1 // Random count between 1-21
+            };
+        });
+        
+        return {
+            stats: [memberCounts]
+        };
+    });
 }

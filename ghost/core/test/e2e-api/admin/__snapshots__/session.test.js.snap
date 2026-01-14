@@ -1,11 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Sessions API Staff 2FA can login with 2FA code in session creation request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "7",
+  "content-type": "text/plain; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-admin-api-session=/,
+  ],
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Sessions API Staff 2FA can verify a session with 2FA code 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
-      "code": "2FA_TOKEN_REQUIRED",
-      "context": null,
+      "code": "2FA_NEW_DEVICE_DETECTED",
+      "context": "A 6-digit sign-in verification code has been sent to your email to keep your account safe.",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -22,7 +38,7 @@ exports[`Sessions API Staff 2FA can verify a session with 2FA code 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "236",
+  "content-length": "329",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -34,12 +50,12 @@ Object {
 }
 `;
 
-exports[`Sessions API Staff 2FA sends verification email if labs flag enabled 1: [body] 1`] = `
+exports[`Sessions API Staff 2FA sends verification email if staffDeviceVerification is enabled 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
-      "code": "2FA_TOKEN_REQUIRED",
-      "context": null,
+      "code": "2FA_NEW_DEVICE_DETECTED",
+      "context": "A 6-digit sign-in verification code has been sent to your email to keep your account safe.",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -52,11 +68,11 @@ Object {
 }
 `;
 
-exports[`Sessions API Staff 2FA sends verification email if labs flag enabled 2: [headers] 1`] = `
+exports[`Sessions API Staff 2FA sends verification email if staffDeviceVerification is enabled 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "236",
+  "content-length": "329",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -68,7 +84,7 @@ Object {
 }
 `;
 
-exports[`Sessions API can create session (log in) 1: [headers] 1`] = `
+exports[`Sessions API can create session (log in) and access user data 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -84,7 +100,7 @@ Object {
 }
 `;
 
-exports[`Sessions API can delete session (log out) 1: [headers] 1`] = `
+exports[`Sessions API can delete session (log out) and requests will fail 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -94,86 +110,6 @@ Object {
     StringMatching /\\^ghost-admin-api-session=/,
   ],
   "vary": "Accept-Version, Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Sessions API can read session now the owner is logged in 1: [body] 1`] = `
-Object {
-  "accessibility": null,
-  "bio": "bio",
-  "comment_notifications": true,
-  "cover_image": null,
-  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-  "created_by": "1",
-  "donation_notifications": true,
-  "email": "jbloggs@example.com",
-  "facebook": null,
-  "free_member_signup_notification": true,
-  "id": "1",
-  "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-  "locale": null,
-  "location": "location",
-  "mention_notifications": true,
-  "meta_description": null,
-  "meta_title": null,
-  "milestone_notifications": true,
-  "name": "Joe Bloggs",
-  "paid_subscription_canceled_notification": true,
-  "paid_subscription_started_notification": true,
-  "profile_image": "https://example.com/super_photo.jpg",
-  "recommendation_notifications": true,
-  "slug": "joe-bloggs",
-  "status": "active",
-  "tour": null,
-  "twitter": null,
-  "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-  "updated_by": "1",
-  "visibility": "public",
-  "website": null,
-}
-`;
-
-exports[`Sessions API can read session now the owner is logged in 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "802",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Sessions API errors when reading session again now owner is not logged in 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Unable to determine the authenticated user or integration. Check that cookies are being passed through if using session authentication.",
-      "details": null,
-      "ghostErrorCode": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Authorization failed",
-      "property": null,
-      "type": "NoPermissionError",
-    },
-  ],
-}
-`;
-
-exports[`Sessions API errors when reading session again now owner is not logged in 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "343",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

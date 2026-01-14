@@ -1,7 +1,8 @@
 import BaseAdapter from 'ghost-admin/adapters/base';
+import {decamelize, underscore} from '@ember/string';
 import {get} from '@ember/object';
 import {isNone} from '@ember/utils';
-import {underscore} from '@ember/string';
+import {pluralize} from 'ember-inflector';
 
 // EmbeddedRelationAdapter will augment the query object in calls made to
 // DS.Store#findRecord, findAll, query, and queryRecord with the correct "includes"
@@ -34,8 +35,94 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
         return this.ajax(url, 'GET', {data: query});
     }
 
-    query(store, type, query) {
-        return super.query(store, type, this.buildQuery(store, type.modelName, query));
+    // Our API used to support ?limit=all but it was deprecated
+    // and updated in 6.0 to always return at most 100 results.
+    // However, our own code still makes use of it so when it's used
+    // we handle it automatically by paginating through all results.
+    async query(store, type, query) {
+        if (query.limit !== 'all') {
+            return super.query(store, type, this.buildQuery(store, type.modelName, query));
+        }
+
+        // Handle limit: 'all' by paginating through all results
+        let allData = [];
+        let page = 1;
+        let lastMeta = null;
+        const pageSize = 100;
+
+        // Generate the data key using the same logic as the serializer
+        const root = decamelize(type.modelName);
+        const dataKey = pluralize(root);
+
+        let hasMorePages = true;
+        let firstRequestMade = false;
+        while (hasMorePages) {
+            // Create a fresh query object for each iteration,
+            // overriding the limit and page parameters
+            const paginatedQuery = {
+                ...query,
+                limit: pageSize,
+                page: page
+            };
+
+            // Use super.query to get raw API responses
+            const result = await super.query(store, type, this.buildQuery(store, type.modelName, paginatedQuery));
+
+            // Handle the raw API response format
+            const pageData = result[dataKey] || [];
+
+            // Accumulate raw data from this page
+            if (pageData.length > 0) {
+                allData = allData.concat(pageData);
+            }
+
+            // Store metadata from this request (will use the last one)
+            lastMeta = result.meta;
+
+            // Guard: if this is the first request and there's no meta key,
+            // assume the endpoint doesn't support pagination and return the data from this request
+            if (!firstRequestMade) {
+                firstRequestMade = true;
+                if (!result.meta) {
+                    hasMorePages = false;
+                    break;
+                }
+            }
+
+            // Check if we should continue paginating
+            // Stop if this page returned fewer results than requested
+            if (pageData.length < pageSize) {
+                hasMorePages = false;
+            }
+
+            // Also stop if we have pagination info indicating we're done
+            if (hasMorePages && lastMeta?.pagination) {
+                const {page: currentPage, pages} = lastMeta.pagination;
+                if (currentPage && pages && currentPage >= pages) {
+                    hasMorePages = false;
+                }
+            }
+
+            page = page + 1;
+        }
+
+        // Return the same raw response format as super.query()
+        // Build our own metadata to show this as a single page with all results
+        const combinedMeta = {
+            pagination: {
+                page: 1,
+                limit: allData.length,
+                pages: 1,
+                total: allData.length,
+                next: null,
+                prev: null
+            }
+        };
+
+        return {
+            [dataKey]: allData,
+            meta: combinedMeta
+        };
     }
 
     queryRecord(store, type, query) {
@@ -43,7 +130,10 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
     }
 
     createRecord(store, type, snapshot) {
-        return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord');
+        return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord').then((response) => {
+            this.stateBridge.triggerEmberDataChange('create', type.modelName, snapshot.id, response);
+            return response;
+        });
     }
 
     updateRecord(store, type, snapshot) {
@@ -52,7 +142,10 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
             id: get(snapshot, 'id')
         };
 
-        return this.saveRecord(store, type, snapshot, options, 'updateRecord');
+        return this.saveRecord(store, type, snapshot, options, 'updateRecord').then((response) => {
+            this.stateBridge.triggerEmberDataChange('update', type.modelName, snapshot.id, response);
+            return response;
+        });
     }
 
     saveRecord(store, type, snapshot, options, requestType) {
@@ -61,6 +154,13 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
         let payload = this.preparePayload(store, type, snapshot);
 
         return this.ajax(url, _options.method, payload);
+    }
+
+    deleteRecord(store, type, snapshot) {
+        return super.deleteRecord(...arguments).then((response) => {
+            this.stateBridge.triggerEmberDataChange('delete', type.modelName, snapshot.id, null);
+            return response;
+        });
     }
 
     preparePayload(store, type, snapshot) {

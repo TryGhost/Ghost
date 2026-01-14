@@ -1,7 +1,7 @@
 const assert = require('node:assert').strict;
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
 const frontendCaching = require('../../../../../core/frontend/web/middleware/frontend-caching');
 
@@ -64,6 +64,13 @@ describe('frontendCaching', function () {
         assert.equal(res.set.callCount, 2);
         assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.public}));
         assert.ok(res.set.calledWith({'X-Member-Cache-Tier': 'freeTierId'}));
+    });
+
+    it('should set cache control to no-cache if the path starts with /p/', function () {
+        req.path = '/p/test';
+        middleware(req, res, next);
+        assert.equal(res.set.callCount, 1);
+        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.noCache}));
     });
 
     describe('calculateMemberTier', function () {

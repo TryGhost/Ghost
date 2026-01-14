@@ -147,6 +147,46 @@ Object {
 }
 `;
 
+exports[`Stats API Posts Member Counts Returns empty results when postIds is not an array 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {},
+  ],
+}
+`;
+
+exports[`Stats API Posts Member Counts Returns empty results when postIds parameter is missing 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {},
+  ],
+}
+`;
+
+exports[`Stats API Posts Visitor Counts Returns empty results when postUuids is not an array 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {
+      "data": Object {
+        "visitor_counts": Object {},
+      },
+    },
+  ],
+}
+`;
+
+exports[`Stats API Posts Visitor Counts Returns empty results when postUuids parameter is missing 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {
+      "data": Object {
+        "visitor_counts": Object {},
+      },
+    },
+  ],
+}
+`;
+
 exports[`Stats API Referrer source history stats Can fetch attribution stats 1: [body] 1`] = `
 Object {
   "meta": Object {},
@@ -445,6 +485,32 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Top Posts by Attribution Can fetch top posts ordered by free members 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Top Referrers for a post Can fetch top referrers for a post 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

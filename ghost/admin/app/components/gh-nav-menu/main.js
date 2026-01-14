@@ -1,10 +1,8 @@
 import Component from '@ember/component';
 import SearchModal from '../modals/search';
-import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import classic from 'ember-classic-decorator';
-import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {action} from '@ember/object';
-import {and, equal, match, or, reads} from '@ember/object/computed';
+import {and, equal, or, reads} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -13,7 +11,7 @@ import {tagName} from '@ember-decorators/component';
 
 @classic
 @tagName('')
-export default class Main extends Component.extend(ShortcutsMixin) {
+export default class Main extends Component {
     @service billing;
     @service customViews;
     @service feature;
@@ -27,22 +25,20 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service settings;
     @service explore;
     @service notifications;
+    @service notificationsCount;
 
     @inject config;
 
     iconStyle = '';
     iconClass = '';
-    shortcuts = null;
-
-    @match('router.currentRouteName', /^settings\.integration/)
-        isIntegrationRoute;
+    previousRoute = null;
 
     // HACK: {{link-to}} should be doing this automatically but there appears to
     // be a bug in Ember that's preventing it from working immediately after login
     @equal('router.currentRouteName', 'site')
         isOnSite;
 
-    @or('session.user.isAdmin', 'session.user.isEditor')
+    @or('session.user.isAdmin', 'session.user.isEitherEditor')
         showTagsNavigation;
 
     @and('config.clientExtensions.menu', 'session.user.isOwnerOnly')
@@ -54,11 +50,27 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     init() {
         super.init(...arguments);
 
-        let shortcuts = {};
+        // Set initial previous route
+        this.previousRoute = this.router.currentRouteName;
 
-        shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
-        shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
-        this.shortcuts = shortcuts;
+        const currentRoute = this.router.currentRouteName || '';
+        // Fetch notifications count if not on activitypub-x route
+        if (this.settings.socialWebEnabled && !currentRoute.startsWith('activitypub-x')) {
+            this.notificationsCount.fetchCount();
+        }
+
+        this._routeChangeHandler = () => {
+            const current = this.router.currentRouteName || '';
+            const prev = this.previousRoute || '';
+
+            if (this.settings.socialWebEnabled && prev.startsWith('activitypub-x') && !current.startsWith('activitypub-x')) {
+                this.notificationsCount.fetchCount();
+            }
+
+            this.previousRoute = current;
+        };
+
+        this.router.on('routeDidChange', this._routeChangeHandler);
     }
 
     // the menu has a rendering issue (#8307) when the the world is reloaded
@@ -70,14 +82,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         this._setIconStyle();
     }
 
-    didInsertElement() {
-        super.didInsertElement(...arguments);
-        this.registerShortcuts();
-    }
-
     willDestroyElement() {
-        this.removeShortcuts();
         super.willDestroyElement(...arguments);
+        if (this._routeChangeHandler) {
+            this.router.off('routeDidChange', this._routeChangeHandler);
+        }
     }
 
     @action
@@ -97,11 +106,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
-    }
-
-    @action
-    openSettings() {
-        this.router.transitionTo('settings-x');
     }
 
     @action

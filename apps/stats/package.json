@@ -1,0 +1,81 @@
+{
+    "name": "@tryghost/stats",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/stats"
+    },
+    "author": "Ghost Foundation",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "dist/"
+    ],
+    "main": "./dist/stats.umd.cjs",
+    "module": "./dist/stats.js",
+    "private": true,
+    "scripts": {
+        "dev": "vite build --watch",
+        "dev:start": "vite",
+        "test": "yarn test:unit --coverage",
+        "test:unit": "vitest run test/unit",
+        "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
+        "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+        "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "build": "tsc && vite build",
+        "lint": "yarn run lint:code && yarn run lint:test",
+        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
+        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "9.9.0",
+        "@playwright/test": "1.55.1",
+        "@tanstack/react-query": "4.36.1",
+        "@testing-library/jest-dom": "5.17.0",
+        "@testing-library/react": "14.3.1",
+        "@types/jest": "29.5.14",
+        "@types/react": "18.3.26",
+        "@types/react-svg-map": "2.1.4",
+        "@vitejs/plugin-react": "4.7.0",
+        "dotenv": "16.6.1",
+        "msw": "2.11.5",
+        "vite": "5.4.20",
+        "vite-plugin-svgr": "4.5.0",
+        "vitest": "1.6.1"
+    },
+    "dependencies": {
+        "@svg-maps/world": "1.0.1",
+        "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shade": "0.0.0",
+        "i18n-iso-countries": "7.14.0",
+        "moment": "2.24.0",
+        "moment-timezone": "0.5.45",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "react-svg-map": "2.2.0"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:acceptance": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
+}

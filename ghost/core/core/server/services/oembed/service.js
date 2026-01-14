@@ -2,17 +2,17 @@ const config = require('../../../shared/config');
 const storage = require('../../adapters/storage');
 const externalRequest = require('../../lib/request-external');
 
-const OEmbed = require('@tryghost/oembed-service');
-const oembed = new OEmbed({config, externalRequest, storage});
+const OEmbedService = require('./oembed-service');
+const oembed = new OEmbedService({config, externalRequest, storage});
 
-const NFT = require('./NFTOEmbedProvider');
+const NFT = require('./nft-oembed-provider');
 const nft = new NFT({
     config: {
         apiKey: config.get('opensea').privateReadOnlyApiKey
     }
 });
 
-const Twitter = require('./TwitterOEmbedProvider');
+const Twitter = require('./twitter-oembed-provider');
 const twitter = new Twitter({
     config: {
         bearerToken: config.get('twitter').privateReadOnlyToken

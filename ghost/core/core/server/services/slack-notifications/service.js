@@ -3,7 +3,7 @@ const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
-    /** @type {import('@tryghost/slack-notifications/lib/SlackNotificationsService')} */
+    /** @type {import('./slack-notifications-service')} */
     #api;
 
     /**
@@ -14,13 +14,11 @@ class SlackNotificationsServiceWrapper {
      * @param {URL} deps.webhookUrl
      * @param {number} deps.minThreshold
      *
-     * @returns {import('@tryghost/slack-notifications/lib/SlackNotificationsService')}
+     * @returns {import('./slack-notifications-service')}
      */
     static create({siteUrl, isEnabled, webhookUrl, minThreshold}) {
-        const {
-            SlackNotificationsService,
-            SlackNotifications
-        } = require('@tryghost/slack-notifications');
+        const SlackNotificationsService = require('./slack-notifications-service');
+        const SlackNotifications = require('./slack-notifications');
 
         const slackNotifications = new SlackNotifications({
             webhookUrl,

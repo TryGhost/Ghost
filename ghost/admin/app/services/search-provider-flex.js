@@ -1,6 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
+import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -8,47 +9,10 @@ import {task} from 'ember-concurrency';
 
 const {Document} = Flexsearch;
 
-export const SEARCHABLES = [
-    {
-        name: 'Staff',
-        model: 'user',
-        fields: ['id', 'slug', 'url', 'name', 'profile_image'],
-        pathField: 'slug',
-        titleField: 'name',
-        index: ['name']
-    },
-    {
-        name: 'Tags',
-        model: 'tag',
-        fields: ['id', 'slug', 'url', 'name'],
-        pathField: 'slug',
-        titleField: 'name',
-        index: ['name']
-    },
-    {
-        name: 'Posts',
-        model: 'post',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
-        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
-        pathField: 'id',
-        titleField: 'title',
-        index: ['title']
-    },
-    {
-        name: 'Pages',
-        model: 'page',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
-        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
-        pathField: 'id',
-        titleField: 'title',
-        index: ['title']
-    }
-];
-
 export default class SearchProviderFlexService extends Service {
     @service ajax;
     @service notifications;
-    @service store;
+    @service ghostPaths;
 
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
@@ -71,7 +35,7 @@ export default class SearchProviderFlexService extends Service {
         SEARCHABLES.forEach((searchable) => {
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
-            const groupResults = [];
+            let groupResults = [];
 
             searchResults.forEach((field) => {
                 field.result.forEach((searchResult) => {
@@ -83,17 +47,11 @@ export default class SearchProviderFlexService extends Service {
 
                     usedIds.add(id);
 
-                    groupResults.push({
-                        groupName: searchable.name,
-                        id: `${searchable.model}.${doc[searchable.pathField]}`,
-                        title: doc[searchable.titleField],
-                        url: doc.url,
-                        status: doc.status,
-                        visibility: doc.visibility,
-                        publishedAt: doc.published_at
-                    });
+                    groupResults.push(createSearchResult(searchable, doc));
                 });
             });
+
+            groupResults = sortSearchResultsByStatus(groupResults, searchable.model);
 
             if (!isEmpty(groupResults)) {
                 results.push({
@@ -119,8 +77,8 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
-        const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const query = {fields: searchable.fields, limit: 10000, order: searchable.order};
+        const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
+        const query = {};
 
         try {
             const response = await this.ajax.request(url, {data: query});

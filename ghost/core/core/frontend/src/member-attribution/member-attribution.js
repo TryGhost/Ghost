@@ -1,7 +1,15 @@
-// Location where we want to store the history in localStorage
+/* eslint-env browser */
+/* eslint-disable no-console */
+const urlAttribution = require('../utils/url-attribution');
+const parseReferrerData = urlAttribution.parseReferrerData;
+const getReferrer = urlAttribution.getReferrer;
+
+// Location where we want to store the history in sessionStorage
 const STORAGE_KEY = 'ghost-history';
 
 // How long before an item should expire (24h)
+// Note: With sessionStorage, data automatically expires when the session ends,
+// but we still enforce time limits for long-running sessions
 const TIMEOUT = 24 * 60 * 60 * 1000;
 
 // Maximum amount of urls in the history
@@ -27,7 +35,7 @@ const LIMIT = 15;
 
 (async function () {
     try {
-        const storage = window.localStorage;
+        const storage = window.sessionStorage;
         const historyString = storage.getItem(STORAGE_KEY);
         const currentTime = new Date().getTime();
 
@@ -38,7 +46,7 @@ const LIMIT = 15;
             try {
                 history = JSON.parse(historyString);
             } catch (error) {
-                // Ignore invalid JSON, ans clear history
+                // Ignore invalid JSON, and clear history
                 console.warn('[Member Attribution] Error while parsing history', error);
             }
         }
@@ -71,39 +79,41 @@ const LIMIT = 15;
             history = [];
         }
 
-        // Fetch referrer data from query params
-        let refParam;
-        let sourceParam;
-        let utmSourceParam;
-        let utmMediumParam;
-        let referrerSource;
-
+        // Get detailed referrer information using parseReferrerData
+        let referrerData;
         try {
-            // Fetch source/medium from query param
-            const url = new URL(window.location.href);
-            refParam = url.searchParams.get('ref');
-            sourceParam = url.searchParams.get('source');
-            utmSourceParam = url.searchParams.get('utm_source');
-            utmMediumParam = url.searchParams.get('utm_medium');
-
-            referrerSource = refParam || sourceParam || utmSourceParam || null;
-
-            // if referrerSource is not set, check to see if the url contains a hash like ghost.org/#/portal/signup?ref=ghost and pull the ref from the hash
-            if (!referrerSource && url.hash && url.hash.includes('#/portal')) {
-                const hashUrl = new URL(window.location.href.replace('/#/portal', ''));
-                refParam = hashUrl.searchParams.get('ref');
-                sourceParam = hashUrl.searchParams.get('source');
-                utmSourceParam = hashUrl.searchParams.get('utm_source');
-                utmMediumParam = hashUrl.searchParams.get('utm_medium');
-    
-                referrerSource = refParam || sourceParam || utmSourceParam || null;
-            }
+            referrerData = parseReferrerData(window.location.href);
         } catch (e) {
-            console.error('[Member Attribution] Parsing referrer from querystring failed', e);
+            console.error('[Member Attribution] Parsing referrer failed', e);
+            referrerData = {source: null, medium: null, url: null};
         }
 
-        const referrerMedium = utmMediumParam || null;
-        const referrerUrl = window.document.referrer || null;
+        // Store all attribution data together
+        // We'll spread this object when creating history entries
+        const attributionData = {
+            referrerSource: referrerData.source,
+            referrerMedium: referrerData.medium,
+            utmSource: referrerData.utmSource,
+            utmMedium: referrerData.utmMedium,
+            utmCampaign: referrerData.utmCampaign,
+            utmTerm: referrerData.utmTerm,
+            utmContent: referrerData.utmContent
+        };
+        
+        // Use the getReferrer helper to handle same-domain referrer filtering
+        // This will return null if the referrer is from the same domain
+        let referrerUrl;
+        try {
+            referrerUrl = getReferrer(window.location.href);
+            // If no referrer value returned by getReferrer but we have a document.referrer,
+            // use the original URL from parseReferrerData
+            if (!referrerUrl && referrerData.url) {
+                referrerUrl = referrerData.url;
+            }
+        } catch (e) {
+            console.error('[Member Attribution] Getting final referrer failed', e);
+            referrerUrl = referrerData.url;
+        }
 
         // Do we have attributions in the query string?
         try {
@@ -115,8 +125,7 @@ const LIMIT = 15;
                     time: currentTime,
                     id: params.get('attribution_id'),
                     type: params.get('attribution_type'),
-                    referrerSource,
-                    referrerMedium,
+                    ...attributionData,
                     referrerUrl
                 });
 
@@ -136,19 +145,22 @@ const LIMIT = 15;
             history.push({
                 path: currentPath,
                 time: currentTime,
-                referrerSource,
-                referrerMedium,
+                ...attributionData,
                 referrerUrl
             });
         } else if (history.length > 0) {
-            history[history.length - 1].time = currentTime;
-            // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
-            if (referrerSource) {
-                history[history.length - 1].referrerSource = referrerSource;
-                history[history.length - 1].referrerMedium = referrerMedium;
-            }
+            const lastEntry = history[history.length - 1];
+            lastEntry.time = currentTime;
+            
+            // Update with any new attribution data (filters out null/undefined values)
+            Object.entries(attributionData).forEach(([key, value]) => {
+                if (value) {
+                    lastEntry[key] = value;
+                }
+            });
+            
             if (referrerUrl) {
-                history[history.length - 1].referrerUrl = referrerUrl;
+                lastEntry.referrerUrl = referrerUrl;
             }
         }
 

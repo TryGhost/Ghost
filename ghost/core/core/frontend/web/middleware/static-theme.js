@@ -1,8 +1,8 @@
 const path = require('path');
 const config = require('../../../shared/config');
-const constants = require('@tryghost/constants');
 const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
+const AASA_PATH = '/.well-known/apple-app-site-association';
 
 function isDeniedFile(file) {
     const deniedFileTypes = ['.hbs', '.md', '.json', '.lock', '.log'];
@@ -55,23 +55,47 @@ function isAllowedFile(file) {
     return allowedFiles.includes(base) || (normalizedFilePath.startsWith(allowedPath) && !alwaysDeny.includes(ext));
 }
 
-function forwardToExpressStatic(req, res, next) {
+function forwardToExpressStatic(req, res, next, options = {}) {
     if (!themeEngine.getActive()) {
         return next();
     }
 
-    const configMaxAge = config.get('caching:theme:maxAge');
+    // We allow robots.txt to fall through to the next middleware, so that we can return our default robots.txt
+    // We also allow sitemap.xml and sitemap-:resource.xml to fall through so that we can serve our defaults if they're not found in the theme
+    const fallthroughFiles = [
+        '/robots.txt',
+        '/sitemap.xml',
+        '/sitemap-posts.xml',
+        '/sitemap-pages.xml',
+        '/sitemap-tags.xml',
+        '/sitemap-authors.xml',
+        '/sitemap-users.xml',
+        '/sitemap.xsl'
+    ];
+    const fallthrough = fallthroughFiles.includes(req.path) ? true : false;
 
-    // @NOTE: the maxAge config passed below are in milliseconds and the config
-    //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
-    express.static(themeEngine.getActive().path, {
-        maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS
-    }
-    )(req, res, next);
+    express.static(themeEngine.getActive().path, Object.assign({
+        // @NOTE: the maxAge config passed below are in milliseconds and the config
+        //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
+        maxAge: config.get('caching:theme:maxAge') * 1000,
+        fallthrough
+    }, options))(req, res, next);
 }
 
 function staticTheme() {
     return function denyStatic(req, res, next) {
+        if (req.path === AASA_PATH) {
+            return forwardToExpressStatic(req, res, next, {
+                setHeaders(response) {
+                    response.setHeader('Content-Type', 'application/json');
+                }
+            });
+        }
+
+        if (!path.extname(req.path)) {
+            return next();
+        }
+
         if (!isAllowedFile(req.path.toLowerCase()) && isDeniedFile(req.path.toLowerCase())) {
             return next();
         }

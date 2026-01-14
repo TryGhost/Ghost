@@ -1,21 +1,16 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const localUtils = require('./utils');
-
-const config = require('../../../core/shared/config');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid} = matchers;
 
 describe('Custom Theme Settings API', function () {
-    let request;
+    /** @type {import('../../utils/agents').AdminAPITestAgent} */
+    let agent;
 
     before(async function () {
-        // NOTE: needs force start to be able to reinitialize Ghost process with frontend services - custom-theme-settings, to be specific
-        await localUtils.startGhost({
-        });
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'custom_theme_settings');
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('users:extra', 'custom_theme_settings');
+        await agent.loginAsOwner();
 
         // require and init here so we know it's already been set up with models
         const customThemeSettingsService = require('../../../core/server/services/custom-theme-settings');
@@ -46,39 +41,18 @@ describe('Custom Theme Settings API', function () {
 
     describe('Browse', function () {
         it('can fetch settings for current theme', async function () {
-            const res = await request
-                .get(localUtils.API.getApiQuery(`custom_theme_settings/`))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            should.not.exist(res.headers['x-cache-invalidate']);
-            const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.custom_theme_settings);
-
-            jsonResponse.custom_theme_settings.length.should.equal(2);
-
-            jsonResponse.custom_theme_settings[0].should.match({
-                id: /.+/,
-                key: 'header_typography',
-                type: 'select',
-                options: ['Serif', 'Sans-serif'],
-                default: 'Sans-serif',
-                value: 'Serif'
-            });
-
-            jsonResponse.custom_theme_settings[1].should.match({
-                id: /.+/,
-                key: 'footer_type',
-                type: 'select',
-                options: ['Full', 'Minimal', 'CTA'],
-                default: 'Full',
-                value: 'Full',
-                group: 'homepage'
-            });
+            await agent
+                .get(`custom_theme_settings/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    custom_theme_settings: Array(2).fill({
+                        id: anyObjectId
+                    })
+                });
         });
     });
 
@@ -97,40 +71,19 @@ describe('Custom Theme Settings API', function () {
                 value: 'Minimal'
             }];
 
-            const res = await request
-                .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
-                .set('Origin', config.get('url'))
-                .send({custom_theme_settings})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            should.exist(res.headers['x-cache-invalidate']);
-
-            const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.custom_theme_settings);
-
-            jsonResponse.custom_theme_settings.length.should.equal(2);
-
-            jsonResponse.custom_theme_settings[0].should.match({
-                id: /.+/,
-                key: 'header_typography',
-                type: 'select',
-                options: ['Serif', 'Sans-serif'],
-                default: 'Sans-serif',
-                value: 'Sans-serif'
-            });
-
-            jsonResponse.custom_theme_settings[1].should.match({
-                id: /.+/,
-                key: 'footer_type',
-                type: 'select',
-                options: ['Full', 'Minimal', 'CTA'],
-                default: 'Full',
-                value: 'Minimal',
-                group: 'homepage'
-            });
+            await agent
+                .put(`custom_theme_settings/`)
+                .body({custom_theme_settings})
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    custom_theme_settings: Array(2).fill({
+                        id: anyObjectId
+                    })
+                });
         });
 
         it('can update some settings', async function () {
@@ -140,40 +93,19 @@ describe('Custom Theme Settings API', function () {
                 value: 'Minimal'
             }];
 
-            const res = await request
-                .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
-                .set('Origin', config.get('url'))
-                .send({custom_theme_settings})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            should.exist(res.headers['x-cache-invalidate']);
-
-            const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.custom_theme_settings);
-
-            jsonResponse.custom_theme_settings.length.should.equal(2);
-
-            jsonResponse.custom_theme_settings[0].should.match({
-                id: /.+/,
-                key: 'header_typography',
-                type: 'select',
-                options: ['Serif', 'Sans-serif'],
-                default: 'Sans-serif',
-                value: 'Sans-serif' // set in previous test
-            });
-
-            jsonResponse.custom_theme_settings[1].should.match({
-                id: /.+/,
-                key: 'footer_type',
-                type: 'select',
-                options: ['Full', 'Minimal', 'CTA'],
-                default: 'Full',
-                value: 'Minimal',
-                group: 'homepage'
-            });
+            await agent
+                .put(`custom_theme_settings/`)
+                .body({custom_theme_settings})
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    custom_theme_settings: Array(2).fill({
+                        id: anyObjectId
+                    })
+                });
         });
 
         it('errors for unknown key', async function () {
@@ -183,19 +115,20 @@ describe('Custom Theme Settings API', function () {
             }];
 
             const loggingStub = sinon.stub(logging, 'error');
-            const res = await request
-                .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
-                .set('Origin', config.get('url'))
-                .send({custom_theme_settings})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
+            await agent
+                .put(`custom_theme_settings/`)
+                .body({custom_theme_settings})
+                .expectStatus(422)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: Array(1).fill({
+                        id: anyUuid
+                    })
+                });
 
-            should.not.exist(res.headers['x-cache-invalidate']);
-
-            const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.errors);
             sinon.assert.calledOnce(loggingStub);
         });
 
@@ -206,19 +139,20 @@ describe('Custom Theme Settings API', function () {
             }];
 
             const loggingStub = sinon.stub(logging, 'error');
-            const res = await request
-                .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
-                .set('Origin', config.get('url'))
-                .send({custom_theme_settings})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
+            await agent
+                .put(`custom_theme_settings/`)
+                .body({custom_theme_settings})
+                .expectStatus(422)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: Array(1).fill({
+                        id: anyUuid
+                    })
+                });
 
-            should.not.exist(res.headers['x-cache-invalidate']);
-
-            const jsonResponse = res.body;
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.errors);
             sinon.assert.calledOnce(loggingStub);
         });
     });

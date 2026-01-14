@@ -34,8 +34,7 @@ const PostRevision = ghostBookshelf.Model.extend({
     },
 
     toJSON(unfilteredOptions) {
-        const options = PostRevision.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         // We embed the full author object, so no need to send the author_id
         delete attrs.author_id;

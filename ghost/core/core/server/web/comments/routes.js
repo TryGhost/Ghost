@@ -23,6 +23,9 @@ module.exports = function apiRoutes() {
     // Authenticated Routes
     router.use(membersService.middleware.loadMemberSession);
 
+    // Enforce capped limit parameter
+    router.use(shared.middleware.maxLimitCap);
+
     router.get('/', http(api.commentsMembers.browse));
     router.get('/post/:post_id', http(api.commentsMembers.browse));
     router.get('/:id', http(api.commentsMembers.read));

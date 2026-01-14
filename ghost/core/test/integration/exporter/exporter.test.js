@@ -24,6 +24,7 @@ describe('Exporter', function () {
             const tables = [
                 'actions',
                 'api_keys',
+                'automated_emails',
                 'benefits',
                 'brute',
                 'collections',
@@ -68,6 +69,7 @@ describe('Exporter', function () {
                 'newsletters',
                 'offers',
                 'offer_redemptions',
+                'outbox',
                 'permissions',
                 'permissions_roles',
                 'permissions_users',
@@ -93,7 +95,6 @@ describe('Exporter', function () {
                 'subscriptions',
                 'suppressions',
                 'tags',
-                'temp_mail_events',
                 'tokens',
                 'users',
                 'webhooks'
@@ -125,7 +126,7 @@ describe('Exporter', function () {
                 'members_status_events',
                 'members_paid_subscription_events',
                 'members_subscribe_events',
-                'temp_mail_events'
+                'outbox'
             ];
 
             excludedTables.forEach((tableName) => {

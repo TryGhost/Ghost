@@ -36,7 +36,7 @@ body {
 
 /* Blockquotes */
 .gh-comment-content blockquote {
-    border-left: 3px solid rgba(13,13,13,.1);
+    border-left: 3px solid var(--gh-accent-color);
     padding-left: 1rem;
     margin: 0 0 1.2rem;
 }

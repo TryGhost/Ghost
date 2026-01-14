@@ -5,7 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const config = require('../../../shared/config');
-const updateCheck = require('../../update-check');
+const labs = require('../../../shared/labs');
+const updateCheck = require('../../services/update-check');
 
 const messages = {
     templateError: {
@@ -29,7 +30,13 @@ module.exports = function adminController(req, res) {
     // CASE: trigger update check unit and let it run in background, don't block the admin rendering
     updateCheck();
 
-    const templatePath = path.resolve(config.get('paths').adminAssets, 'index.html');
+    const useAdminForward = labs.isSet('adminForward');
+    
+    // Choose the appropriate index file based on feature flag
+    // Default to Ember (index.html), use React (index-forward.html) when flag is enabled
+    const indexFilename = useAdminForward ? 'index-forward.html' : 'index.html';
+    const templatePath = path.resolve(config.get('paths').adminAssets, indexFilename);
+    
     const headers = {};
 
     try {

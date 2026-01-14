@@ -1,0 +1,34 @@
+{
+    "stats": [
+        {
+            "source": "Google",
+            "referrer_url": "https://google.com",
+            "free_members": 120,
+            "paid_members": 25,
+            "mrr": 12500
+        },
+        {
+            "source": "Twitter",
+            "referrer_url": "https://twitter.com",
+            "free_members": 80,
+            "paid_members": 15,
+            "mrr": 7500
+        },
+        {
+            "source": "Direct",
+            "free_members": 50,
+            "paid_members": 10,
+            "mrr": 5000
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "limit": 10,
+            "pages": 1,
+            "total": 3,
+            "next": null,
+            "prev": null
+        }
+    }
+} 

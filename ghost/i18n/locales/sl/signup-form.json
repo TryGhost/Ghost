@@ -1,9 +1,9 @@
 {
-    "Email sent": "",
-    "Now check your email!": "",
-    "Please enter a valid email address": "",
-    "Something went wrong, please try again.": "",
-    "Subscribe": "",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
-    "Your email address": ""
+    "Email sent": "E-pošta poslana",
+    "Now check your email!": "Zdaj preverite svojo e-pošto!",
+    "Please enter a valid email address": "Prosimo vnesite veljaven e-poštni naslov",
+    "Something went wrong, please try again.": "Prišlo je do napake, prosimo, poskusite znova.",
+    "Subscribe": "Naročite se",
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Za dokončanje prijave kliknite potrditveno povezavo v svoji vhodni pošti. Če je ne prejmete v 3 minutah, preverite mapo za vsiljeno pošto!",
+    "Your email address": "Vaš e-poštni naslov"
 }

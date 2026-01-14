@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
-import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
@@ -253,7 +252,7 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
-        this.offers = yield this.store.query('offer', {limit: 'all', filter: 'status:active'});
+        this.offers = yield this.store.query('offer', {filter: 'status:active'});
         return this.offers;
     }
 
@@ -274,24 +273,6 @@ export default class KoenigLexicalEditor extends Component {
                 data: {url, type}
             });
             return response;
-        };
-
-        const fetchCollectionPosts = async (collectionSlug) => {
-            if (!this.contentKey) {
-                const integrations = await this.store.findAll('integration');
-                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
-                this.contentKey = contentIntegration?.contentKey.secret;
-            }
-
-            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
-            postsUrl.searchParams.append('key', this.contentKey);
-            postsUrl.searchParams.append('collection', collectionSlug);
-            postsUrl.searchParams.append('limit', 12);
-
-            const response = await fetch(postsUrl.toString());
-            const {posts} = await response.json();
-
-            return posts;
         };
 
         const fetchAutocompleteLinks = async () => {
@@ -455,14 +436,12 @@ export default class KoenigLexicalEditor extends Component {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchAutocompleteLinks,
-            fetchCollectionPosts,
             fetchEmbed,
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                collectionsCard: this.feature.collectionsCard,
-                collections: this.feature.collections,
-                contentVisibility: this.feature.contentVisibility
+                contentVisibility: this.feature.contentVisibility,
+                contentVisibilityAlpha: this.feature.contentVisibilityAlpha
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
@@ -668,28 +647,14 @@ export default class KoenigLexicalEditor extends Component {
             return {progress, isLoading, upload, errors, filesNumber};
         };
 
-        // TODO: react component isn't re-rendered when its props are changed meaning we don't transition
-        // to enabling multiplayer when a new post is saved and it gets an ID we can use for a YJS doc
-        // - figure out how to re-render the component when its props change
-        // - figure out some other mechanism for handling posts that don't really exist yet with multiplayer
-        const enableMultiplayer = this.feature.lexicalMultiplayer && !cardConfig.post.isNew;
-        const multiplayerWsProtocol = window.location.protocol === 'https:' ? `wss:` : `ws:`;
-        const multiplayerEndpoint = multiplayerWsProtocol + window.location.host + this.ghostPaths.url.api('posts', 'multiplayer');
-        const multiplayerDocId = cardConfig.post.id;
-        const multiplayerUsername = this.session.user.name;
-
         const KGEditorComponent = ({isInitInstance}) => {
             return (
                 <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
-                        enableMultiplayer={enableMultiplayer}
                         fileUploader={{useFileUpload, fileTypes}}
                         initialEditorState={this.args.lexical}
-                        multiplayerUsername={multiplayerUsername}
-                        multiplayerDocId={multiplayerDocId}
-                        multiplayerEndpoint={multiplayerEndpoint}
                         onError={this.onError}
                         darkMode={this.feature.nightShift}
                         isTKEnabled={true}

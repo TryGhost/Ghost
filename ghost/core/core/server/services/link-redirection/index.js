@@ -1,5 +1,5 @@
 const urlUtils = require('../../../shared/url-utils');
-const LinkRedirectRepository = require('./LinkRedirectRepository');
+const LinkRedirectRepository = require('./link-redirect-repository');
 const adapterManager = require('../adapter-manager');
 const config = require('../../../shared/config');
 const EventRegistry = require('../../lib/common/events');
@@ -14,7 +14,7 @@ class LinkRedirectsServiceWrapper {
         // Wire up all the dependencies
         const models = require('../../models');
 
-        const {LinkRedirectsService} = require('@tryghost/link-redirects');
+        const LinkRedirectsService = require('./link-redirects-service');
 
         this.linkRedirectRepository = new LinkRedirectRepository({
             LinkRedirect: models.Redirect,

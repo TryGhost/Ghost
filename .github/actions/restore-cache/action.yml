@@ -1,5 +1,9 @@
-name: "Restore dependency & build cache"
-description: "Restore the dependency & build cache."
+name: "Restore dependency cache"
+description: "Restore the dependency cache."
+outputs:
+  cache-miss:
+    description: "Whether the cache was missed"
+    value: ${{ steps.check-cache.outputs.cache-miss }}
 
 runs:
   using: "composite"
@@ -11,15 +15,35 @@ runs:
         path: ${{ env.CACHED_DEPENDENCY_PATHS }}
         key: ${{ env.DEPENDENCY_CACHE_KEY }}
 
-    - name: Check build cache
-      uses: actions/cache/restore@v4
-      id: build-cache
-      with:
-        path: ${{ env.CACHED_BUILD_PATHS }}
-        key: ${{ github.sha }}
+    - name: Retry cache restore on miss
+      id: dep-cache-retry
+      if: steps.dep-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "::warning::Cache miss detected, waiting 10 seconds and retrying..."
+        sleep 10
 
-    - name: Check if caches are restored
-      uses: actions/github-script@v6
-      if: steps.dep-cache.outputs.cache-hit != 'true' || steps.build-cache.outputs.cache-hit != 'true'
+    - name: Check dependency cache (retry)
+      id: dep-cache-retry-attempt
+      if: steps.dep-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/restore@v4
       with:
-        script: core.setFailed('Dependency or build cache could not be restored - please re-run ALL jobs.')
+        path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+        key: ${{ env.DEPENDENCY_CACHE_KEY }}
+
+    - name: Install dependencies on cache miss
+      if: steps.dep-cache.outputs.cache-hit != 'true' && steps.dep-cache-retry-attempt.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "::warning::Dependency cache could not be restored after retry - installing dependencies from scratch"
+        bash .github/scripts/install-deps.sh
+
+    - name: Set cache miss output
+      id: check-cache
+      shell: bash
+      run: |
+        if [ "${{ steps.dep-cache.outputs.cache-hit }}" = "true" ] || [ "${{ steps.dep-cache-retry-attempt.outputs.cache-hit }}" = "true" ]; then
+          echo "cache-miss=false" >> $GITHUB_OUTPUT
+        else
+          echo "cache-miss=true" >> $GITHUB_OUTPUT
+        fi

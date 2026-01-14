@@ -9,12 +9,12 @@ const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
-
 const errorHandler = (error, workerMeta) => {
     logging.info(`Capturing error for worker during execution of job: ${workerMeta.name}`);
     logging.error(error);
     sentry.captureException(error);
 };
+const events = require('../../lib/common/events');
 
 const workerMessageHandler = ({name, message}) => {
     if (typeof message === 'string') {
@@ -43,7 +43,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, events});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

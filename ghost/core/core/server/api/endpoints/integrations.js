@@ -58,15 +58,16 @@ const controller = {
                 }
             }
         },
-        query({data, options}) {
-            return models.Integration.findOne(data, Object.assign(options, {require: true}))
-                .catch((e) => {
-                    if (e instanceof models.Integration.NotFoundError) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.resourceNotFound, {resource: 'Integration'})
-                        });
-                    }
-                });
+        async query({data, options}) {
+            try {
+                return models.Integration.findOne(data, Object.assign(options, {require: true}));
+            } catch (e) {
+                if (e instanceof models.Integration.NotFoundError) {
+                    throw new errors.NotFoundError({
+                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
+                    });
+                }
+            }
         }
     },
     edit: {
@@ -152,15 +153,16 @@ const controller = {
                 }
             }
         },
-        query({options}) {
-            return models.Integration.destroy(Object.assign(options, {require: true}))
-                .catch((e) => {
-                    if (e instanceof models.Integration.NotFoundError) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.resourceNotFound, {resource: 'Integration'})
-                        }));
-                    }
-                });
+        async query({options}) {
+            try {
+                return models.Integration.destroy(Object.assign(options, {require: true}));
+            } catch (e) {
+                if (e instanceof models.Integration.NotFoundError) {
+                    throw new errors.NotFoundError({
+                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
+                    });
+                }
+            }
         }
     }
 };

@@ -3,6 +3,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const events = require('../../lib/common/events');
 const settingsCache = require('../../../shared/settings-cache');
 const members = require('../members');
+const config = require('../../../shared/config');
 
 class MembersEventsServiceWrapper {
     init() {
@@ -12,7 +13,9 @@ class MembersEventsServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {EventStorage, LastSeenAtUpdater, LastSeenAtCache} = require('@tryghost/members-events-service');
+        const EventStorage = require('./event-storage');
+        const LastSeenAtUpdater = require('./last-seen-at-updater');
+        const LastSeenAtCache = require('./last-seen-at-cache');
         const models = require('../../models');
 
         // Listen for events and store them in the database
@@ -43,7 +46,8 @@ class MembersEventsServiceWrapper {
             },
             db,
             events,
-            lastSeenAtCache: this.lastSeenAtCache
+            lastSeenAtCache: this.lastSeenAtCache,
+            config
         });
 
         // Subscribe to domain events

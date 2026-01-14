@@ -64,7 +64,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
+    const DatabaseStateManager = require('./server/data/db/database-state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -78,10 +78,9 @@ async function initDatabase({config}) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
- * @param {object} options.bootLogger
  * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, bootLogger, frontend}) {
+async function initCore({ghostServer, config, frontend}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -94,6 +93,12 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     const models = require('./server/models');
     models.init();
     debug('End: models');
+
+    // Limit service is booted before settings, so that limits are available for calculated settings
+    debug('Begin: limits');
+    const limits = require('./server/services/limits');
+    await limits.init();
+    debug('End: limits');
 
     // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
     debug('Begin: settings');
@@ -110,15 +115,10 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
-    const urlServiceStart = Date.now();
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in maintenance mode until this finishes
     // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
     urlService.init({
-        onFinished: () => {
-            bootLogger.metric('url-service', urlServiceStart);
-            bootLogger.log('URL Service Ready');
-        },
         urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
     });
     debug('End: Url Service');
@@ -267,29 +267,6 @@ function initPrometheusClient({config}) {
 }
 
 /**
- * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
- * @param {object} ghostServer 
- */
-async function initMetricsServer({prometheusClient, ghostServer, config}) {
-    debug('Begin: initMetricsServer');
-    if (ghostServer && config.get('prometheus:metrics_server:enabled')) {
-        const {MetricsServer} = require('@tryghost/prometheus-metrics');
-        const serverConfig = {
-            host: config.get('prometheus:metrics_server:host') || '127.0.0.1',
-            port: config.get('prometheus:metrics_server:port') || 9416
-        };
-        const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
-        const metricsServer = new MetricsServer({serverConfig, handler});
-        await metricsServer.start();
-        // Ensure the metrics server is cleaned up when the ghost server is shut down
-        ghostServer.registerCleanupTask(async () => {
-            await metricsServer.shutdown();
-        });
-    }
-    debug('End: initMetricsServer');
-}
-
-/**
  * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
@@ -333,15 +310,14 @@ async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const xmlrpc = require('./server/services/xmlrpc');
+    const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const limits = require('./server/services/limits');
-    const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
@@ -358,19 +334,13 @@ async function initServices() {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
-    const collections = require('./server/services/collections');
-    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
-    const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
+    const explorePingService = require('./server/services/explore-ping');
 
     const urlUtils = require('./shared/url-utils');
-
-    // NOTE: limits service has to be initialized first
-    // in case it limits initialization of any other service (e.g. webhooks)
-    await limits.init();
 
     // NOTE: Members service depends on these
     //       so they are initialized before it.
@@ -380,6 +350,7 @@ async function initServices() {
     await emailAddressService.init(),
 
     await Promise.all([
+        identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
         mentionsEmailReport.init(),
@@ -390,13 +361,12 @@ async function initServices() {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        xmlrpc.listen(),
+        indexnow.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
@@ -404,52 +374,15 @@ async function initServices() {
         linkTracking.init(),
         emailSuppressionList.init(),
         slackNotifications.init(),
-        collections.init(),
-        modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
-        mailEvents.init(),
         donationService.init(),
         recommendationsService.init(),
-        statsService.init()
+        statsService.init(),
+        explorePingService.init()
     ]);
     debug('End: Services');
 
     debug('End: initServices');
-}
-
-/**
- * Set up an dependencies that need to be injected into NestJS
- */
-async function initNestDependencies() {
-    debug('Begin: initNestDependencies');
-    const GhostNestApp = require('@tryghost/ghost');
-    const providers = [];
-    providers.push({
-        provide: 'logger',
-        useValue: require('@tryghost/logging')
-    }, {
-        provide: 'SessionService',
-        useValue: require('./server/services/auth/session').sessionService
-    }, {
-        provide: 'AdminAuthenticationService',
-        useValue: require('./server/services/auth/api-key').admin
-    }, {
-        provide: 'DomainEvents',
-        useValue: require('@tryghost/domain-events')
-    }, {
-        provide: 'SettingsCache',
-        useValue: require('./shared/settings-cache')
-    }, {
-        provide: 'knex',
-        useValue: require('./server/data/db').knex
-    }, {
-        provide: 'UrlUtils',
-        useValue: require('./shared/url-utils')
-    });
-    for (const provider of providers) {
-        GhostNestApp.addProvider(provider);
-    }
-    debug('End: initNestDependencies');
 }
 
 /**
@@ -472,17 +405,22 @@ async function initBackgroundServices({config}) {
         return;
     }
 
+    const activitypub = require('./server/services/activitypub');
+    await activitypub.init();
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 
-    const updateCheck = require('./server/update-check');
+    const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
+
+    const outboxService = require('./server/services/outbox');
+    outboxService.init();
 
     debug('End: initBackgroundServices');
 }
@@ -560,7 +498,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/GhostServer');
+            const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
@@ -586,7 +524,14 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, bootLogger, frontend});
+        await initCore({ghostServer, config, frontend});
+
+        // Instrument the knex instance and connection pool if prometheus is enabled
+        // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+        if (prometheusClient) {
+            prometheusClient.instrumentKnex(connection);
+        }
+
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
@@ -599,21 +544,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        // TODO: move this to the correct place once we figure out where that is
-        if (ghostServer) {
-            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
-            await lexicalMultiplayer.init(ghostServer);
-            await lexicalMultiplayer.enable();
-        }
-
-        await initServices({config});
-
-        // Gate the NestJS framework behind an env var to prevent it from being loaded (and slowing down boot)
-        // If we ever ship the new framework, we can remove this
-        // Using an env var because you can't use labs flags here
-        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK) {
-            await initNestDependencies();
-        }
+        await initServices();
         debug('End: Load Ghost Services & Apps');
 
         // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
@@ -629,9 +560,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
-
-        // Step 8 - Init our metrics server, we don't wait for this to finish
-        initMetricsServer({prometheusClient, ghostServer, config});
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

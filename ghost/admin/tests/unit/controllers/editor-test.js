@@ -23,6 +23,28 @@ describe('Unit: Controller: lexical-editor', function () {
     });
 
     describe('generateSlug', function () {
+        it('should generate a slug and set it on the post, passing the id if it exists', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str, id) {
+                    if (id !== 'fake-id') {
+                        throw new Error('Expected id "fake-id" to be passed to generateSlug.');
+                    }
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+            controller.set('post', createPost({id: 'fake-id', slug: ''}));
+
+            controller.set('post.titleScratch', 'title');
+            await settled();
+
+            expect(controller.get('post.slug')).to.equal('');
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('title-slug');
+        });
+
         it('should generate a slug and set it on the post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({

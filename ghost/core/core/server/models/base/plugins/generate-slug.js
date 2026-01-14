@@ -39,6 +39,12 @@ module.exports = function (Bookshelf) {
                         return slugToFind;
                     }
 
+                    if (options.modelId) {
+                        if (found.id === options.modelId) {
+                            return slugToFind;
+                        }
+                    }
+
                     slugTryCount += 1;
 
                     // If we shortened, go back to the full version and try again

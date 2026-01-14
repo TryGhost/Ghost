@@ -3,11 +3,13 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, visit, waitFor, waitUntil} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
 function setupVerificationRequired(server, responseCode = 403) {
     server.post('/session', function () {
@@ -53,13 +55,16 @@ function setupResendFailure(server, {responseCode = 400, timing = 0, message} = 
     }, {timing});
 }
 describe('Acceptance: Authentication', function () {
-    let originalReplaceLocation;
-
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
     beforeEach(async function () {
+        mockAnalyticsApps();
         this.server.loadFixtures('configs');
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     describe('setup redirect', function () {
@@ -77,8 +82,6 @@ describe('Acceptance: Authentication', function () {
     });
 
     describe('general page', function () {
-        let newLocation;
-
         const verifyButton = '[data-test-button="verify"]';
         const resendButton = '[data-test-button="resend-token"]';
         const codeInput = '[data-test-input="token"]';
@@ -117,23 +120,18 @@ describe('Acceptance: Authentication', function () {
         }
 
         beforeEach(function () {
-            originalReplaceLocation = windowProxy.replaceLocation;
-            windowProxy.replaceLocation = function (url) {
-                url = url.replace(/^\/ghost\//, '/');
-                newLocation = url;
-            };
-            newLocation = undefined;
+            sinon.stub(windowProxy, 'replaceLocation');
+            sinon.stub(windowProxy, 'changeLocation');
 
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
-            windowProxy.replaceLocation = originalReplaceLocation;
+            sinon.restore();
         });
 
-        it('invalidates session on 401 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('transitions to signin on 401 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
@@ -143,18 +141,12 @@ describe('Acceptance: Authentication', function () {
             await authenticateSession();
             await visit('/members');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
+            expect(currentURL()).to.equal('/signin');
 
-            expect(currentURL(), 'url after 401').to.equal('/signin');
+            expect(windowProxy.replaceLocation.called).to.be.false;
         });
 
-        it('invalidates session on 403 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('transitions to signin on 403 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
@@ -164,14 +156,27 @@ describe('Acceptance: Authentication', function () {
             await authenticateSession();
             await visit('/members');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
+            expect(currentURL()).to.equal('/signin');
 
-            expect(currentURL(), 'url after 403').to.equal('/signin');
+            expect(windowProxy.replaceLocation.called).to.be.false;
+        });
+
+        // NOTE: The navigation needs to use standard route hooks for loading, if it
+        // triggers fetches in a task or similar then it will error and fail the test
+        // because we can't catch it before it hits global.onerror despite behaving
+        // correctly in the app.
+        it('replaces location with root URL on 403 API response when navigating whilst "authenticated"', async function () {
+            this.server.get(`/pages/`, () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/posts');
+            await click(`[data-test-nav="pages"]`);
+
+            expect(windowProxy.replaceLocation.calledWith('/ghost/'), 'replaceLocation called with /ghost/').to.be.true;
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
@@ -204,7 +209,7 @@ describe('Acceptance: Authentication', function () {
             await completeSignIn();
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
             await completeVerification();
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('handles 2fa code verification failure', async function () {
@@ -294,7 +299,7 @@ describe('Acceptance: Authentication', function () {
             // can correctly submit after failed attempts
             await fillIn(codeInput, '123456');
             await click(verifyButton);
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('can resend verification code', async function () {

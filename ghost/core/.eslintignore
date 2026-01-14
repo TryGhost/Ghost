@@ -1,3 +1,4 @@
 core/frontend/src/**/*.js
 !core/frontend/src/member-attribution/*.js
 core/frontend/public/**/*.js
+core/built

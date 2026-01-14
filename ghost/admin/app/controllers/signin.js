@@ -4,8 +4,7 @@ import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
-import {isTwoFactorTokenRequiredError} from '../services/ajax';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isTwoFactorTokenRequiredError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -58,7 +57,9 @@ export default class SigninController extends Controller.extend(ValidationEngine
             return SUCCESS;
         } catch (error) {
             if (isTwoFactorTokenRequiredError(error)) {
+                let errorCode = error.payload?.errors[0]?.code;
                 // login was successful, but 2FA verification is required
+                this.session.set('errorCode', errorCode);
                 this.router.transitionTo('signin-verify');
                 return SUCCESS;
             }

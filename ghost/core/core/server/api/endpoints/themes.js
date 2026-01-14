@@ -123,14 +123,12 @@ const controller = {
                 name: frame.file.originalname
             };
 
-            return themeService.api.setFromZip(zip)
-                .then(({theme, themeOverridden}) => {
-                    if (themeOverridden) {
-                        frame.setHeader('X-Cache-Invalidate', '/*');
-                    }
-                    events.emit('theme.uploaded', {name: theme.name});
-                    return theme;
-                });
+            const {theme, themeOverridden} = await themeService.api.setFromZip(zip);
+            if (themeOverridden) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+            events.emit('theme.uploaded', {name: theme.name});
+            return theme;
         }
     },
 

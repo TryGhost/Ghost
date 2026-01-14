@@ -1,4 +1,4 @@
-import {MockedApi, initialize} from '../utils/e2e';
+import {MockedApi, initialize, waitForFrameOpacity} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 function rgbToHsl(r: number, g: number, b: number) {
@@ -193,7 +193,15 @@ test.describe('Options', async () => {
 
         test('Uses 100 avatarSaturation', async ({page}) => {
             const mockedApi = new MockedApi({});
-            mockedApi.addComment();
+            mockedApi.addComment({
+                member: {
+                    id: 'test-id',
+                    uuid: 'test-uuid',
+                    name: 'Test User',
+                    avatar: '',
+                    expertise: ''
+                }
+            });
 
             const {frame} = await initialize({
                 mockedApi,
@@ -203,6 +211,10 @@ test.describe('Options', async () => {
             });
 
             const avatars = await frame.getByTestId('avatar-background').first();
+
+            // Comments animate in which can mess with the color saturation check,
+            // wait for full visibility before checking the color
+            await waitForFrameOpacity(frame, '[data-testid="animated-comment"]');
 
             // Get computed background color
             const color = await avatars.evaluate((node) => {

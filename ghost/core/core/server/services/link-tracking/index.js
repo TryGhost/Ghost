@@ -1,5 +1,5 @@
-const LinkClickRepository = require('./LinkClickRepository');
-const PostLinkRepository = require('./PostLinkRepository');
+const LinkClickRepository = require('./link-click-repository');
+const PostLinkRepository = require('./post-link-repository');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 
@@ -17,10 +17,10 @@ class LinkTrackingServiceWrapper {
 
         // Wire up all the dependencies
         const models = require('../../models');
-        const {MemberLinkClickEvent} = require('@tryghost/member-events');
+        const {MemberLinkClickEvent} = require('../../../shared/events');
         const DomainEvents = require('@tryghost/domain-events');
 
-        const {LinkClickTrackingService} = require('@tryghost/link-tracking');
+        const LinkClickTrackingService = require('./link-click-tracking-service');
 
         const postLinkRepository = new PostLinkRepository({
             LinkRedirect: models.Redirect,

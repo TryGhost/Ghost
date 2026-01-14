@@ -1,0 +1,18 @@
+TOKEN "tracker" APPEND
+
+
+SCHEMA >
+    `timestamp` DateTime `json:$.timestamp`,
+    `session_id` String `json:$.session_id`,
+    `action` LowCardinality(String) `json:$.action`,
+    `version` LowCardinality(String) `json:$.version`,
+    `payload` String `json:$.payload`,
+    `site_uuid` LowCardinality(String) `json:$.payload.site_uuid`,
+    `inserted_at` DateTime64(3) DEFAULT now64() `json:$.inserted_at`
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "site_uuid, timestamp"
+
+FORWARD_QUERY >
+    SELECT timestamp, session_id, action, version, toString(payload) as payload, site_uuid, defaultValueOfTypeName('DateTime64(3)') AS inserted_at

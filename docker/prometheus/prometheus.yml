@@ -1,0 +1,26 @@
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'pushgateway'
+
+    scrape_interval: 1s
+
+    static_configs:
+      - targets: ['pushgateway:9091']
+
+    honor_labels: true
+
+remote_write:
+  - url: http://grafana:3000/api/prom/push

@@ -26,6 +26,9 @@
         "signupForm": {
             "url": "https://signup-form.test/signup-form.min.js",
             "version": "0.2"
+        },
+        "security": {
+            "staffDeviceVerification": true
         }
     }
 }

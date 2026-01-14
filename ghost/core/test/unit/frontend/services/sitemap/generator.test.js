@@ -6,11 +6,11 @@ const moment = require('moment');
 const assert = require('assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tags-map-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-map-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
@@ -192,8 +192,10 @@ describe('Generators', function () {
         });
 
         describe('fn: getXml', function () {
+            let urlUtilsUrlForStub;
+
             beforeEach(function () {
-                sinon.stub(urlUtils, 'urlFor');
+                urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
             });
 
             it('get cached xml', function () {
@@ -209,10 +211,10 @@ describe('Generators', function () {
                 let idxSecond;
                 let idxThird;
 
-                urlUtils.urlFor.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
-                urlUtils.urlFor.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
-                urlUtils.urlFor.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
-                urlUtils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
+                urlUtilsUrlForStub.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
+                urlUtilsUrlForStub.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
+                urlUtilsUrlForStub.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
+                urlUtilsUrlForStub.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
 
                 generator.addUrl('http://my-ghost-blog.com/url/100/', testUtils.DataGenerator.forKnex.createPost({
                     feature_image: 'post-100.jpg',
@@ -259,7 +261,7 @@ describe('Generators', function () {
 
             it('creates multiple pages when there are too many posts', function () {
                 generator.maxPerPage = 5;
-                urlUtils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
+                urlUtilsUrlForStub.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
                 for (let i = 0; i < 10; i++) {
                     generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
                         created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,

@@ -3,6 +3,7 @@ import BulkDeleteMembersModal from '../components/members/modals/bulk-delete';
 import BulkRemoveMembersLabelModal from '../components/members/modals/bulk-remove-label';
 import BulkUnsubscribeMembersModal from '../components/members/modals/bulk-unsubscribe';
 import Controller from '@ember/controller';
+import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment-timezone';
 import {A} from '@ember/array';
@@ -60,6 +61,7 @@ export default class MembersController extends Controller {
     @tracked showLabelModal = false;
     @tracked filters = A([]);
     @tracked softFilters = A([]);
+    @tracked isExporting = false;
 
     @tracked _availableLabels = A([]);
 
@@ -373,8 +375,37 @@ export default class MembersController extends Controller {
         let exportUrl = ghostPaths().url.api('members/upload');
         let downloadParams = new URLSearchParams(this.getApiQueryObject());
         downloadParams.set('limit', 'all');
-
-        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
+        
+        const url = `${exportUrl}?${downloadParams.toString()}`;
+        
+        // Set loading state
+        this.isExporting = true;
+        
+        fetch(url, {method: 'GET'})
+            .then(res => res.blob())
+            .then((blob) => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const datetime = (new Date()).toJSON().substring(0, 10);
+                
+                a.href = blobUrl;
+                a.download = `members.${datetime}.csv`;
+                document.body.appendChild(a);
+                
+                a.click();
+                
+                // Cleanup
+                a.remove();
+                URL.revokeObjectURL(blobUrl);
+            })
+            .catch(() => {
+                // Handle errors silently
+                // A more robust implementation would show an error notification
+            })
+            .finally(() => {
+                // Reset loading state
+                this.isExporting = false;
+            });
     }
 
     @action

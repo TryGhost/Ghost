@@ -40,15 +40,10 @@ const setupGhost = async (page) => {
     ]);
 
     // Add owner user data from usual fixture
-    const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+    const ownerUser = DataGenerator.Content.users[0];
 
     if (action === actions.signin) {
-        // Fill email + password
-        await page.locator('#identification').fill(ownerUser.email);
-        await page.locator('#password').fill(ownerUser.password);
-        await page.getByRole('button', {name: 'Sign in'}).click();
-        // Confirm we have reached Ghost Admin
-        await page.locator('.gh-nav').waitFor(options);
+        await signInAsUserById(page, ownerUser.id);
     } else if (action === actions.setup) {
         // Complete setup process
         await page.getByPlaceholder('The Daily Awesome').click();
@@ -63,6 +58,25 @@ const setupGhost = async (page) => {
 
         await page.locator('.gh-nav').waitFor(options);
     }
+};
+
+const signInAsUserById = async (page, userId) => {
+    await page.goto('/ghost');
+    // Add owner user data from usual fixture
+    const user = DataGenerator.Content.users.find(u => u.id === userId);
+
+    // Fill email + password
+    await page.locator('#identification').fill(user.email);
+    await page.locator('#password').fill(user.password);
+    await page.getByRole('button', {name: 'Sign in'}).click();
+    // Confirm we have reached Ghost Admin
+    await page.locator('.gh-nav').waitFor({state: 'visible', timeout: 10000});
+};
+
+const signOutCurrentUser = async (page) => {
+    await page.goto('/ghost/#/signout');
+    await page.waitForLoadState('networkidle');
+    await page.locator('.gh-signin').waitFor({state: 'visible', timeout: 10000});
 };
 
 const disconnectStripe = async (page) => {
@@ -109,22 +123,6 @@ const setupMailgun = async (page) => {
     await section.getByLabel('Mailgun private API key').fill('Not an API key');
     await section.getByRole('button', {name: 'Save'}).click();
     await section.getByText('Mailgun is set up').waitFor();
-
-    await page.getByTestId('exit-settings').click();
-};
-
-/**
- * Enable experimental labs features
- * @param {import('@playwright/test').Page} page
- */
-const enableLabs = async (page) => {
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-
-    const section = page.getByTestId('labs');
-    await section.getByRole('button', {name: 'Open'}).click();
-
-    await section.getByRole('tab', {name: 'Alpha features'}).click();
-    await section.getByLabel('Webmentions').click();
 
     await page.getByTestId('exit-settings').click();
 };
@@ -429,7 +427,8 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
 
-    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
+    const postStatus = await page.locator('[data-test-editor-post-status]');
+    await expect(postStatus).toHaveText('Draft - Saved');
     await page.keyboard.type(body);
 };
 
@@ -524,11 +523,12 @@ module.exports = {
     setupGhost,
     setupStripe,
     disconnectStripe,
-    enableLabs,
     getStripeAccountId,
     generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,
+    signInAsUserById,
+    signOutCurrentUser,
     createTier,
     createOffer,
     createMember,

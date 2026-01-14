@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {arePathsEqual, trimHash, trimSearch, trimSearchAndHash} from '../../../src/utils/url';
+import {arePathsEqual, trimHash, trimSearch, trimSearchAndHash} from '@src/utils/url';
 
 describe('trimSearch', function () {
     it('removes the query parameters from a URL', function () {

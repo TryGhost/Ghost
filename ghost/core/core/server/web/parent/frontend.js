@@ -4,7 +4,7 @@ const shared = require('../shared');
 
 /**
  *
- * @param {import('../../../frontend/services/routing/RouterManager').RouterConfig} routerConfig
+ * @param {import('../../../frontend/services/routing/router-manager').RouterConfig} routerConfig
  * @returns {import('express').Application}
  */
 module.exports = (routerConfig) => {

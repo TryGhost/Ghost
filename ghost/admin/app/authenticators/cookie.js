@@ -20,7 +20,7 @@ export default Authenticator.extend({
     },
 
     authenticate({identification, password, token}) {
-        if (token) {
+        if (token && !identification && !password) {
             const data = {token};
             const options = {
                 data,
@@ -33,6 +33,11 @@ export default Authenticator.extend({
         }
 
         const data = {username: identification, password};
+
+        if (token) {
+            data.token = token;
+        }
+
         const options = {
             data,
             contentType: 'application/json;charset=utf-8',

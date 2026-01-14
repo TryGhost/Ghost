@@ -2,7 +2,9 @@ import {createQuery} from '../utils/api/hooks';
 
 export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
 export interface JSONObject { [key: string]: JSONValue }
-export interface JSONArray extends Array<string|number|boolean|Date|JSONObject|JSONValue> {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface JSONArray extends Array<string|number|boolean|Date|JSONObject|JSONValue> {}
 
 export type Config = {
     version: string;
@@ -21,8 +23,18 @@ export type Config = {
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     mail: string;
+    stats?: JSONObject & {
+        endpoint?: string;
+        id?: string;
+    };
+    emailAnalytics?: boolean;
+    tenor?: {
+        googleApiKey?: string | null;
+        contentFilter?: string;
+    };
     hostSettings?: {
         siteId?: string;
+        forceUpgrade?: boolean;
         limits?: {
             // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
             customIntegrations?: {
@@ -39,6 +51,22 @@ export type Config = {
             newsletters?: {
                 max?: number
                 error?: string
+            },
+            customThemes?: {
+                allowlist?: string[],
+                error?: string
+            },
+            limitStripeConnect?: {
+                disabled: boolean,
+                error?: string
+            },
+            limitAnalytics?: {
+                disabled: boolean,
+                error?: string
+            },
+            limitSocialWeb?: {
+                disabled: boolean,
+                error?: string
             }
         }
         billing?: {
@@ -54,7 +82,9 @@ export type Config = {
             sendingDomain?: string
         },
     }
-
+    security?: {
+        staffDeviceVerification?: boolean;
+    };
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
     [key: string]: JSONValue | undefined;
 };

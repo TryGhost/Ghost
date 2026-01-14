@@ -24,9 +24,7 @@ export default Model.extend({
     feedbackEnabled: attr('boolean'),
 
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr('string'),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('string'),
 
     post: belongsTo('post'),
 

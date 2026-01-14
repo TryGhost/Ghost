@@ -105,7 +105,8 @@ function getWorkspaces(from) {
     const workspaces = getWorkspaces(cwd)
         .filter(w => !w.startsWith(cwd) && fs.existsSync(path.join(w, 'package.json')))
         .filter(w => !w.includes('apps/'))
-        .filter(w => !w.includes('ghost/admin'));
+        .filter(w => !w.includes('/admin/'))
+        .filter(w => !w.includes('/e2e/'));
 
     console.log('workspaces', workspaces);
     console.log('\n-------------------------\n');
@@ -164,7 +165,6 @@ function getWorkspaces(from) {
     const filesToCopy = [
         'README.md',
         'LICENSE',
-        'PRIVACY.md',
         'yarn.lock'
     ];
 

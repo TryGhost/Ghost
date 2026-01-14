@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
 import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -16,7 +17,12 @@ describe('Acceptance: Publish flow', function () {
     setupMirage(hooks);
 
     beforeEach(function () {
+        mockAnalyticsApps();
         this.server.loadFixtures();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     it('has minimal features for contributors', async function () {

@@ -1,13 +1,13 @@
-module.exports = function (data) {
+module.exports = function (data, t) {
     // Be careful when you indent the email, because whitespaces are visible in emails!
-    return `Hey there,
+    return `${t('Hey there,')}
 
-Someone just replied to your comment on "${data.postTitle}"
+${t('Someone just replied to your comment on {postTitle}.', {postTitle: data.postTitle, interpolation: {escapeValue: false}})}
 
-${data.postUrl}#ghost-comments
+${data.postUrl}#ghost-comments-root
 
 ---
 
-Sent to ${data.toEmail} from ${data.siteDomain}.
-You can unsubscribe from these notifications at ${data.profileUrl}.`;
+${t('This message was sent from {siteDomain} to {email}.', {email: data.toEmail, siteDomain: data.siteDomain, interpolation: {escapeValue: false}})}
+${t('You can unsubscribe from these notifications at {profileUrl}.', {profileUrl: data.profileUrl, interpolation: {escapeValue: false}})}`;
 };

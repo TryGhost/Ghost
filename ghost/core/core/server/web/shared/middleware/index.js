@@ -8,7 +8,11 @@ module.exports = {
     },
 
     get cacheControl() {
-        return require('@tryghost/mw-cache-control');
+        return require('./cache-control');
+    },
+
+    get maxLimitCap() {
+        return require('./max-limit-cap');
     },
 
     get prettyUrls() {

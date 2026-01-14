@@ -1,9 +1,9 @@
-<div class="modal-content">
-    <header class="modal-header" data-test-modal="custom-view-form">
-        <h1>{{if @data.customView.isNew "New view" "Edit view"}}</h1>
+<div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="custom-view-modal-title" data-test-modal="custom-view-form">
+    <header class="modal-header">
+        <h1 id="custom-view-modal-title">{{if @data.customView.isNew "New view" "Edit view"}}</h1>
     </header>
     {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-    <button class="close" href title="Close" type="button" {{on "click" @close}} {{on "mousedown" (optional this.noop)}}>
+    <button class="close" href aria-label="Close" type="button" {{on "click" @close}} {{on "mousedown" (optional this.noop)}}>
         {{svg-jar "close"}}
     </button>
 
@@ -28,8 +28,8 @@
             </GhFormGroup>
         </fieldset>
         <div>
-            <label for="view-name" class="dib fw6">Icon color</label>
-            <div class="flex justify-between mt3 nl1">
+            <span id="icon-color-label" class="dib fw6">Icon color</span>
+            <div class="flex justify-between mt3 nl1" role="radiogroup" aria-labelledby="icon-color-label">
                 {{#each this.customViews.availableColors as |color|}}
                     <div class="gh-radio-color">
                         <input
@@ -40,7 +40,7 @@
                             value={{color}}
                             {{on "change" this.changeColor}}
                         >
-                        <label for="view-{{color}}"><span class="gh-radio-color-{{color}}"></span></label>
+                        <label for="view-{{color}}" aria-label={{color}}><span class="gh-radio-color-{{color}}"></span></label>
                     </div>
                 {{/each}}
             </div>

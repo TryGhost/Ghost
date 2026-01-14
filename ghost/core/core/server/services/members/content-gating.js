@@ -61,8 +61,35 @@ function checkPostAccess(post, member) {
     return BLOCK_ACCESS;
 }
 
+function checkGatedBlockAccess(gatedBlockParams, member) {
+    const {nonMember, memberSegment} = gatedBlockParams;
+    const isLoggedIn = !!member;
+
+    if (nonMember && !isLoggedIn) {
+        return PERMIT_ACCESS;
+    }
+
+    if (!memberSegment && isLoggedIn) {
+        return BLOCK_ACCESS;
+    }
+
+    if (memberSegment && member) {
+        const nqlQuery = nql(memberSegment, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys});
+
+        // if we only have unknown keys the NQL query will be empty and "pass" for all members
+        // we should block access in this case to match the memberSegment:"" behaviour
+        const parsedQuery = nqlQuery.parse();
+        if (Object.keys(parsedQuery).length > 0) {
+            return nqlQuery.queryJSON(member) ? PERMIT_ACCESS : BLOCK_ACCESS;
+        }
+    }
+
+    return BLOCK_ACCESS;
+}
+
 module.exports = {
     checkPostAccess,
+    checkGatedBlockAccess,
     PERMIT_ACCESS,
     BLOCK_ACCESS
 };

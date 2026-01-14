@@ -39,13 +39,12 @@ const controller = {
             });
 
             if (notificationsToAdd.length){
-                return await settingsBREADService.edit([{
+                await settingsBREADService.edit([{
                     key: 'notifications',
                     // @NOTE: We always need to store all notifications!
                     value: allNotifications.concat(notificationsToAdd)
-                }], internalContext).then(() => {
-                    return notificationsToAdd;
-                });
+                }], internalContext);
+                return notificationsToAdd;
             }
         }
     },

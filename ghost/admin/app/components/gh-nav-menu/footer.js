@@ -4,7 +4,7 @@ import WhatsNew from '../modals/whats-new';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
-import {and, match} from '@ember/object/computed';
+import {and} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -21,9 +21,6 @@ export default class Footer extends Component {
 
     @and('config.clientExtensions.dropdown', 'session.user.isOwnerOnly')
         showDropdownExtension;
-
-    @match('router.currentRouteName', /^settings/)
-        isSettingsRoute;
 
     @action
     openThemeErrors() {
@@ -65,5 +62,12 @@ export default class Footer extends Component {
     @action
     openWhatsNew() {
         return this.modals.open(WhatsNew);
+    }
+
+    @action
+    toggleNightShift() {
+        const newValue = !this.feature.nightShift;
+        this.feature.nightShift = newValue;
+        document.documentElement.classList.toggle('dark', newValue);
     }
 }

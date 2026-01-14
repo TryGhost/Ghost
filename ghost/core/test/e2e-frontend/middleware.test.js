@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 const membersService = require('../../core/server/services/members');
 
 describe('Middleware Execution', function () {
@@ -12,7 +12,7 @@ describe('Middleware Execution', function () {
         loadMemberSessionMiddlewareSpy = sinon.spy(membersService.middleware, 'loadMemberSession');
 
         // Ensure we do a forced start so that spy is in place when the server starts
-        await testUtils.startGhost({forceStart: true});
+        await testUtils.startGhost();
 
         request = supertest.agent(configUtils.config.get('url'));
     });

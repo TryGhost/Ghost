@@ -148,10 +148,12 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
     if (date) {
         await page.locator('[data-test-date-time-picker-date-input]').fill(date);
+        await page.locator('[data-test-date-time-picker-date-input]').blur();
     }
 
     if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
+        await page.locator('[data-test-date-time-picker-time-input]').blur();
     }
 
     // TODO: set other publish options
@@ -197,7 +199,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
-            await closePublishFlow(sharedPage);
             await checkPostPublished(sharedPage, postData);
         });
 
@@ -229,7 +230,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'send'});
-            await closePublishFlow(sharedPage);
             await checkPostNotPublished(sharedPage, postData);
         });
     });
@@ -427,7 +427,7 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             const editorUrl = await sharedPage.url();
-            
+
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);
@@ -613,12 +613,10 @@ test.describe('Updating post access', () => {
         await page.locator('[data-test-nav="settings"]').click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
-        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('timezone-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
-        await expect(page.getByTestId('timezone-select')).toBeHidden();
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
@@ -635,12 +633,10 @@ test.describe('Updating post access', () => {
     test('default recipient settings - usually nobody', async ({page}) => {
         // switch to "usually nobody" setting
         await page.goto('/ghost/settings/newsletters');
-        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('default-recipients-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
         await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
         await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
 
         await page.goto('/ghost');

@@ -1,3 +1,3 @@
-import AdminRoute from 'ghost-admin/routes/admin';
+import MembersManagementRoute from '../members-management';
 
-export default class MembersImportRoute extends AdminRoute {}
+export default class MembersImportRoute extends MembersManagementRoute {}

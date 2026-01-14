@@ -33,8 +33,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: true}) showFeatureImage;
     @attr({defaultValue: 'sans_serif'}) bodyFontCategory;
     @attr({defaultValue: 'light'}) backgroundColor;
-    @attr({defaultValue: null}) borderColor;
-    @attr({defaultValue: null}) titleColor;
+    @attr({defaultValue: null}) postTitleColor;
     @attr footerContent;
     @attr({defaultValue: true}) showBadge;
     @attr count;

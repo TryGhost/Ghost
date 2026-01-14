@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('History', async () => {
     test('Browsing history', async ({page}) => {
@@ -8,7 +7,7 @@ test.describe('History', async () => {
             ...globalDataRequests,
             browseActionsFiltered: {
                 method: 'GET',
-                path: /\/actions\/.+post/,
+                path: /\/actions\/.*filter=.*(?:post|event)/,
                 response: {
                     ...responseFixtures.actions,
                     actions: responseFixtures.actions.actions.filter(action => action.resource_type !== 'post')
@@ -44,6 +43,10 @@ test.describe('History', async () => {
 
         await popoverContent.getByLabel('Deleted').click();
         await expect(popoverContent.getByLabel('Deleted')).toHaveAttribute('data-state', 'unchecked');
+
+        await page.waitForResponse(response => response.url().includes('/ghost/api/admin/actions/')
+            && response.url().includes('event%3A-%5Bdeleted%5D')
+        );
 
         expect(lastApiRequests.browseActionsFiltered?.url).toEqual('http://localhost:5173/ghost/api/admin/actions/?include=actor%2Cresource&limit=200&filter=event%3A-%5Bdeleted%5D%2Bresource_type%3A-%5Blabel%2Cpost%5D');
     });

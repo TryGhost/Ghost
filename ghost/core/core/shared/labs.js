@@ -1,3 +1,10 @@
+// Feature flags behaviour in tests:
+// By default, all flags listed in GA_FEATURES, BETA_FEATURES, and ALPHA_FEATURES
+// are globally enabled during E2E tests. This ensures flagged code paths are tested
+// automatically.
+// For more details, see the E2E testing documentation:
+// https://www.notion.so/ghost/End-to-end-Testing-6a2ef073b1754b18aff42e24a632a007
+
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -15,52 +22,48 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'collections',
+    'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses'
+    'customFonts',
+    'contentVisibility',
+    'explore'
 ];
 
-// NOTE: this allowlist is meant to be used to filter out any unexpected
-//       input for the "labs" setting value
-const BETA_FEATURES = [
-    'additionalPaymentMethods',
-    'i18n',
-    'activitypub',
+// These features are considered publicly available and can be enabled/disabled by users
+const PUBLIC_BETA_FEATURES = [
+    'superEditors',
+    'editorExcerpt',
+    'additionalPaymentMethods'
+];
+
+// These features are considered private they live in the private tab of the labs settings page
+// Which is only visible if the developer experiments flag is enabled
+const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt',
-    'ActivityPub'
-];
-
-const ALPHA_FEATURES = [
-    'NestPlayground',
-    'urlCache',
-    'lexicalMultiplayer',
-    'emailCustomization',
-    'mailEvents',
-    'collectionsCard',
     'importMemberTier',
+    'urlCache',
     'lexicalIndicators',
-    'adminXDemo',
-    'contentVisibility',
-    'commentImprovements',
-    'staff2fa',
-    'customFonts'
+    'contentVisibilityAlpha',
+    'emailCustomization',
+    'tagsX',
+    'utmTracking',
+    'emailUniqueid',
+    'welcomeEmails',
+    'adminForward',
+    'domainWarmup',
+    'themeTranslation',
+    'commentModeration',
+    'commentPermalinks',
+    'indexnow'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
-module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
+module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
-
-    ALPHA_FEATURES.forEach((alphaKey) => {
-        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.startsWith('test'))) {
-            delete labs[alphaKey];
-        }
-    });
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
@@ -77,7 +80,7 @@ module.exports.getAll = () => {
 };
 
 module.exports.getAllFlags = function () {
-    return [...GA_FEATURES, ...BETA_FEATURES, ...ALPHA_FEATURES];
+    return [...GA_FEATURES, ...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 };
 
 /**

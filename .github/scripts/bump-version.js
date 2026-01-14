@@ -19,7 +19,7 @@ const semver = require('semver');
 
     let newVersion;
 
-    if (firstArg === 'canary') {
+    if (firstArg === 'canary' || firstArg === 'six') {
         const bumpedVersion = semver.inc(current_version, 'minor');
         newVersion = `${bumpedVersion}-pre-g${buildString}`;
     } else {

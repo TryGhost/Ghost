@@ -6,7 +6,7 @@ import {task} from 'ember-concurrency';
 export default Model.extend(ValidationEngine, {
     validationType: 'member',
 
-    name: attr('string'),
+    name: attr('trimmed-string'),
     email: attr('string'),
     note: attr('string'),
     status: attr('string'),

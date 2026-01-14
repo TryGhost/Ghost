@@ -7,14 +7,12 @@ const messages = {
 };
 
 module.exports = {
-    add(apiConfig, frame) {
-        return models.User.findOne({email: frame.data.invites[0].email}, frame.options)
-            .then((user) => {
-                if (user) {
-                    return Promise.reject(new errors.ValidationError({
-                        message: tpl(messages.userAlreadyRegistered)
-                    }));
-                }
+    async add(apiConfig, frame) {
+        const user = await models.User.findOne({email: frame.data.invites[0].email}, frame.options);
+        if (user) {
+            throw new errors.ValidationError({
+                message: tpl(messages.userAlreadyRegistered)
             });
+        }
     }
 };

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const {mockManager} = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');
@@ -9,6 +9,7 @@ const {settingsCache} = proxy;
 
 describe('{{comments}} helper', function () {
     let keyStub;
+    let settingsCacheGetStub;
 
     before(function () {
         keyStub = sinon.stub().resolves('xyz');
@@ -20,7 +21,7 @@ describe('{{comments}} helper', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        sinon.stub(settingsCache, 'get');
+        settingsCacheGetStub = sinon.stub(settingsCache, 'get');
         configUtils.set('comments:version', 'test.version');
     });
 
@@ -31,8 +32,8 @@ describe('{{comments}} helper', function () {
     });
 
     it('returns undefined if not used withing post context', function (done) {
-        settingsCache.get.withArgs('members_enabled').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('all');
+        settingsCacheGetStub.withArgs('members_enabled').returns(true);
+        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
         comments({}).then(function (rendered) {
             should.not.exist(rendered);
@@ -41,8 +42,8 @@ describe('{{comments}} helper', function () {
     });
 
     it('returns a script tag', async function () {
-        settingsCache.get.withArgs('members_enabled').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('all');
+        settingsCacheGetStub.withArgs('members_enabled').returns(true);
+        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
         const rendered = await comments.call({
             comment_id: 'post_test',
@@ -70,8 +71,8 @@ describe('{{comments}} helper', function () {
     });
 
     it('returns a script tag for paid only commenting', async function () {
-        settingsCache.get.withArgs('members_enabled').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('paid');
+        settingsCacheGetStub.withArgs('members_enabled').returns(true);
+        settingsCacheGetStub.withArgs('comments_enabled').returns('paid');
 
         const rendered = await comments.call({
             comment_id: 'post_test',
@@ -99,8 +100,8 @@ describe('{{comments}} helper', function () {
     });
 
     it('returns undefined when comments are disabled', async function () {
-        settingsCache.get.withArgs('members_enabled').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('off');
+        settingsCacheGetStub.withArgs('members_enabled').returns(true);
+        settingsCacheGetStub.withArgs('comments_enabled').returns('off');
 
         const rendered = await comments.call({
             comment_id: 'post_test',
@@ -116,8 +117,8 @@ describe('{{comments}} helper', function () {
     });
 
     it('returns undefined when no access to post', async function () {
-        settingsCache.get.withArgs('members_enabled').returns(true);
-        settingsCache.get.withArgs('comments_enabled').returns('all');
+        settingsCacheGetStub.withArgs('members_enabled').returns(true);
+        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
         const rendered = await comments.call({
             comment_id: 'post_test',

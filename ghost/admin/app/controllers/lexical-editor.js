@@ -10,7 +10,7 @@ import UpdateSnippetModal from '../components/editor/modals/update-snippet';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
-import isNumber from 'ghost-admin/utils/isNumber';
+import isNumber from 'ghost-admin/utils/is-number';
 import microdiff from 'microdiff';
 import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
@@ -261,15 +261,10 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed
-    get collections() {
-        return this.store.peekAll('collection');
-    }
-
-    @computed('session.user.{isAdmin,isEditor}')
+    @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
         let {user} = this.session;
-        if (user.get('isAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
         return false;
@@ -672,7 +667,7 @@ export default class LexicalEditorController extends Controller {
                 yield this.modals.open(ReAuthenticateModal);
 
                 if (this.session.isAuthenticated) {
-                    return this.saveTask.perform(options);
+                    return this.autosaveTask.perform();
                 }
             }
 
@@ -734,26 +729,19 @@ export default class LexicalEditorController extends Controller {
     }
 
     @task
-    *beforeSaveTask(options = {}) {
+    *beforeSaveTask() {
         if (this.post?.isDestroyed || this.post?.isDestroying) {
             return;
         }
 
-        // ensure we remove any blank cards when performing a full save
-        if (!options.backgroundSave) {
-            // TODO: not yet implemented in react editor
-            // if (this._koenig) {
-            //     this._koenig.cleanup();
-            //     this.set('hasDirtyAttributes', true);
-            // }
+        if (this.post.status === 'draft') {
+            if (this.post.titleScratch !== this.post.title) {
+                yield this.generateSlugTask.perform();
+            }
         }
 
-        // Set the properties that are indirected
-
-        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
-        // Set a default title
         if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
@@ -774,7 +762,6 @@ export default class LexicalEditorController extends Controller {
 
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
-
             yield this.generateSlugTask.perform();
         }
     }
@@ -797,8 +784,7 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
-
+        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug, this.get('post.id'));
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -975,7 +961,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         try {
-            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle);
+            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle, this.get('post.id'));
 
             if (!isBlank(newSlug)) {
                 this.set('post.slug', newSlug);
@@ -994,10 +980,6 @@ export default class LexicalEditorController extends Controller {
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
-
-        if (this.post?.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
-            yield this.store.query('collection', {limit: 'all'});
-        }
 
         this.search.refreshContentTask.perform();
         this.syncMobiledocSnippets();
@@ -1234,6 +1216,25 @@ export default class LexicalEditorController extends Controller {
             } else {
                 this._leaveConfirmed = true;
                 return transition.retry();
+            }
+        }
+
+        // Capture posts with untitled slugs and a title set; ref https://linear.app/ghost/issue/ONC-548/
+        if (this.post) {
+            const slug = this.post.get('slug');
+            const title = this.post.get('title');
+            const isDraft = this.post.get('status') === 'draft';
+            const slugContainsUntitled = slug.includes('untitled');
+            const isTitleSet = title && title.trim() !== '' && title !== DEFAULT_TITLE;
+
+            if (isDraft && slugContainsUntitled && isTitleSet) {
+                Sentry.captureException(new Error('Draft post has title set with untitled slug'), {
+                    extra: {
+                        slug: slug,
+                        title: title,
+                        titleScratch: this.post.get('titleScratch')
+                    }
+                });
             }
         }
 

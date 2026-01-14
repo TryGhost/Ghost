@@ -4,7 +4,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
-import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
+import {clickTrigger, selectChoose, selectSearch} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -27,6 +27,7 @@ describe('Acceptance: Posts / Pages', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        this.server.loadFixtures('settings');
     });
 
     this.afterEach(function () {
@@ -117,8 +118,10 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Published posts');
 
                 // API request includes author filter
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
+                // Find the posts API request
+                let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                expect(lastPostsRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
 
                 // only author's post is shown
                 expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
@@ -183,7 +186,6 @@ describe('Acceptance: Posts / Pages', function () {
             let admin, editor, publishedPost, scheduledPost, draftPost, authorPost;
 
             beforeEach(async function () {
-                this.server.loadFixtures('settings');
                 this.server.loadFixtures('tiers');
 
                 let adminRole = this.server.create('role', {name: 'Administrator'});
@@ -230,8 +232,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Draft posts');
 
                     // API request is correct
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
                     // Displays draft post
                     expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
                     expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
@@ -240,8 +243,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Published posts');
 
                     // API request is correct
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+                    postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
                     // Displays three published posts + pages
                     expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
                     expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
@@ -251,8 +255,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Scheduled posts');
 
                     // API request is correct
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+                    let scheduledPostsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastScheduledRequest = scheduledPostsRequests[scheduledPostsRequests.length - 1];
+                    expect(lastScheduledRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
                     // Displays scheduled post
                     expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                     expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
@@ -265,10 +270,11 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-author-select]', editor.name);
 
                     // API request is correct
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"editor" request status filter')
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"editor" request status filter')
                         .to.have.string('status:[draft,scheduled,published,sent]');
-                    expect(lastRequest.queryParams.allFilter, '"editor" request filter param')
+                    expect(lastPostsRequest.queryParams.allFilter, '"editor" request filter param')
                         .to.have.string(`authors:${editor.slug}`);
 
                     // Displays editor post
@@ -279,15 +285,17 @@ describe('Acceptance: Posts / Pages', function () {
                     await visit('/posts');
 
                     await selectChoose('[data-test-visibility-select]', 'Paid members-only');
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"visibility" request filter param')
                         .to.have.string('visibility:[paid,tiers]');
                     let posts = findAll('[data-test-post-id]');
                     expect(posts.length, 'all posts count').to.equal(1);
 
                     await selectChoose('[data-test-visibility-select]', 'Public');
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"visibility" request filter param')
                         .to.have.string('visibility:public');
                     posts = findAll('[data-test-post-id]');
                     expect(posts.length, 'all posts count').to.equal(3);
@@ -301,19 +309,58 @@ describe('Acceptance: Posts / Pages', function () {
                     await visit('/posts');
                     await clickTrigger('[data-test-tag-select]');
 
+                    // defaults to "All tags"
                     let options = findAll('.ember-power-select-option');
-
-                    // check that dropdown sorts alphabetically
+                    expect(options.length, 'options count').to.equal(4); // 3 tags + "All tags", we populate the tags when opening the dropdown
                     expect(options[0].textContent.trim()).to.equal('All tags');
-                    expect(options[1].textContent.trim()).to.equal('A - First');
-                    expect(options[2].textContent.trim()).to.equal('B - Second');
-                    expect(options[3].textContent.trim()).to.equal('Z - Last');
+
+                    // search lazy-loads tags from the API, and sorts them alphabetically
+                    await selectSearch('[data-test-tag-select]', 's');
+
+                    options = findAll('.ember-power-select-option');
+                    expect(options[0].textContent.trim()).to.equal('A - First');
+                    expect(options[1].textContent.trim()).to.equal('B - Second');
+                    expect(options[2].textContent.trim()).to.equal('Z - Last');
 
                     // select one
                     await selectChoose('[data-test-tag-select]', 'B - Second');
                     // affirm request
                     let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"tag" request filter param').to.have.string('tag:second');
+                    expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:second');
+                });
+
+                it('can filter by tag with server-side search', async function () {
+                    this.server.createList('tag', 120);
+                    this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+
+                    await visit('/posts');
+
+                    await selectSearch('[data-test-tag-select]', 'Last');
+
+                    let options = findAll('.ember-power-select-option');
+                    expect(options.length, 'options count').to.equal(1);
+                    expect(options[0].textContent.trim()).to.equal('Z - Last');
+
+                    await selectChoose('[data-test-tag-select]', 'Z - Last');
+
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:last');
+                });
+
+                it('can open with a filtered tag', async function () {
+                    const tag = this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                    this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post with Second tag', tags: [tag]});
+
+                    await visit('/posts?tag=second');
+
+                    // Posts list is filtered by tag
+                    const posts = findAll('[data-test-post-id]');
+                    expect(posts.length, 'all posts count').to.equal(1);
+                    expect(posts[0].querySelector('.gh-content-entry-title').textContent, 'post title').to.contain('Published Post with Second tag');
+
+                    // Filter shows selected tag
+                    const filter = find('[data-test-tag-select]');
+                    expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
                 });
             });
 
@@ -766,7 +813,6 @@ describe('Acceptance: Posts / Pages', function () {
                     });
                 });
             });
-
             it('can add and edit custom views', async function () {
                 // actions are not visible when there's no filter
                 await visit('/posts');
@@ -849,6 +895,195 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
                 expect(find('[data-test-screen-title]').innerText).to.match(/Scheduled/);
             });
+
+            it('Shows edit view if order is null, which indicates a bad state', async function () {
+                this.server.schema.settings.findBy({key: 'shared_views'}).update({
+                    group: 'site',
+                    key: 'shared_views',
+                    value: JSON.stringify([{
+                        route: 'posts',
+                        name: 'My posts',
+                        filter: {
+                            author: admin.slug,
+                            order: null
+                        }
+                    }])
+                });
+
+                await visit('/posts');
+                expect(find('[data-test-nav-custom="posts-My posts"]'), 'my posts nav').to.exist;
+                // click on the custom view
+                await click('[data-test-nav-custom="posts-My posts"]');
+                expect(find('[data-test-button="edit-view"]'), 'edit-view button (on existing view)').to.exist;
+            });
+        });
+
+        describe('analytics visibility', function () {
+            let publishedPost;
+
+            beforeEach(async function () {
+                let adminRole = this.server.create('role', {name: 'Administrator'});
+                this.server.create('user', {roles: [adminRole]});
+
+                publishedPost = this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: this.server.create('email', {
+                        emailCount: 100,
+                        openedCount: 50,
+                        clickedCount: 25,
+                        openRate: 50,
+                        clickRate: 25
+                    })
+                });
+
+                await authenticateSession();
+            });
+
+            it('hides visitor count column when webAnalyticsEnabled is disabled', async function () {
+                // Disable webAnalyticsEnabled setting
+                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that visitor count column is not visible
+                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                expect(visitorsText, 'visitor count column').to.not.exist;
+            });
+
+            it('hides member conversions column when membersTrackSources is disabled', async function () {
+                // Disable membersTrackSources setting
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that member conversions column is not visible
+                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                expect(membersText, 'member conversions column').to.not.exist;
+            });
+
+            it('shows analytics button when post has analytics page', async function () {
+                // Update post to have analytics page
+                publishedPost.update({hasAnalyticsPage: true});
+
+                await visit('/posts');
+
+                // Check that analytics button is visible when post has analytics page
+                expect(find('.gh-post-list-cta.stats'), 'analytics button').to.exist;
+                expect(find('.gh-post-list-cta.edit'), 'edit button').to.not.exist;
+            });
+
+            it('hides all analytics columns when both settings are disabled', async function () {
+                // Disable both settings
+                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that neither analytics column is visible
+                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                expect(visitorsText, 'visitor count column').to.not.exist;
+                expect(membersText, 'member conversions column').to.not.exist;
+            });
+
+            it('shows email analytics columns regardless of webAnalyticsEnabled and membersTrackSources settings', async function () {
+                // Disable both analytics settings
+                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'false'});
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Email analytics should still be visible as they have their own conditions
+                // The metrics container should exist for email analytics even when other analytics are disabled
+                expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
+
+                // The page should load without errors
+                expect(currentURL(), 'current URL').to.equal('/posts');
+            });
+        });
+
+        describe('newsletter analytics display logic', function () {
+            // Note: These tests verify the template logic we implemented.
+            // The showEmailOpenAnalytics and showEmailClickAnalytics are computed
+            // properties that depend on multiple conditions:
+            // - hasBeenEmailed
+            // - user is not contributor
+            // - settings.membersSignupAccess !== 'none'
+            // - email.trackOpens/trackClicks
+            // - settings.emailTrackOpens/emailTrackClicks
+            // 
+            // For full integration testing, these would need to be set up properly
+            // in the test environment, but that's beyond the scope of this template change.
+
+            beforeEach(async function () {
+                let adminRole = this.server.create('role', {name: 'Administrator'});
+                this.server.create('user', {roles: [adminRole]});
+
+                await authenticateSession();
+            });
+
+            it('shows/hides email analytics section based on post.email', async function () {
+                // Create a post with email data
+                let email1 = this.server.create('email', {
+                    emailCount: 1500
+                });
+                
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: email1
+                });
+
+                // Create a post without email data
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: false,
+                    email: null
+                });
+
+                await visit('/posts');
+                
+                let postElements = findAll('.gh-posts-list-item');
+                expect(postElements.length).to.equal(2);
+                
+                // First post should show email analytics section
+                let firstPost = postElements[0];
+                let emailSection = firstPost.querySelector('.gh-post-analytics-email-metrics');
+                expect(emailSection, 'email analytics section for post with email').to.exist;
+                
+                // Second post should not show email analytics section
+                let secondPost = postElements[1];
+                let noEmailSection = secondPost.querySelector('.gh-post-analytics-email-metrics');
+                expect(noEmailSection, 'email analytics section for post without email').to.not.exist;
+            });
+
+            it('displays newsletter columns based on email tracking settings', async function () {
+                // Test 1: When both tracking options are disabled, show sent column
+                let email1 = this.server.create('email', {
+                    emailCount: 15000,
+                    trackOpens: false,
+                    trackClicks: false
+                });
+                
+                // Create post that would show sent column
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: email1,
+                    // Override computed properties for testing
+                    showEmailOpenAnalytics: false,
+                    showEmailClickAnalytics: false
+                });
+
+                await visit('/posts');
+                
+                // Verify sent column appears with proper formatting
+                expect(find('[data-test-analytics-sent]'), 'sent column').to.exist;
+                expect(find('[data-test-analytics-sent] .gh-content-email-stats-value').textContent.trim()).to.equal('15k');
+                expect(find('[data-test-analytics-opens]'), 'opens column when disabled').to.not.exist;
+                expect(find('[data-test-analytics-clicks]'), 'clicks column when disabled').to.not.exist;
+            });
         });
     });
 
@@ -895,8 +1130,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Draft pages');
 
                 // API request is correct
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+                let pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                let lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
                 // Displays draft page
                 expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
                 expect(find('[data-test-post-id="3"]'), 'draft page').to.exist;
@@ -905,8 +1141,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Published pages');
 
                 // API request is correct
-                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+                pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
                 // Displays two published pages
                 expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
                 expect(find('[data-test-post-id="1"]'), 'admin published page').to.exist;
@@ -916,11 +1153,74 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Scheduled pages');
 
                 // API request is correct
-                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+                pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
                 // Displays scheduled page
                 expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                 expect(find('[data-test-post-id="4"]'), 'scheduled page').to.exist;
+            });
+
+            it('can filter by tag', async function () {
+                this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+                this.server.create('tag', {name: 'A - First', slug: 'first'});
+
+                await visit('/pages');
+                await clickTrigger('[data-test-tag-select]');
+
+                // defaults to "All tags"
+                let options = findAll('.ember-power-select-option');
+                expect(options.length, 'options count').to.equal(4); // 3 tags + "All tags", we populate the tags when opening the dropdown
+                expect(options[0].textContent.trim()).to.equal('All tags');
+
+                // search lazy-loads tags from the API, and sorts them alphabetically
+                await selectSearch('[data-test-tag-select]', 's');
+
+                options = findAll('.ember-power-select-option');
+                expect(options[0].textContent.trim()).to.equal('A - First');
+                expect(options[1].textContent.trim()).to.equal('B - Second');
+                expect(options[2].textContent.trim()).to.equal('Z - Last');
+
+                // select one
+                await selectChoose('[data-test-tag-select]', 'B - Second');
+                // affirm request
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:second');
+            });
+
+            it('can filter by tag with server-side search', async function () {
+                this.server.createList('tag', 120);
+                this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+
+                await visit('/pages');
+
+                await selectSearch('[data-test-tag-select]', 'Last');
+
+                let options = findAll('.ember-power-select-option');
+                expect(options.length, 'options count').to.equal(1);
+                expect(options[0].textContent.trim()).to.equal('Z - Last');
+
+                await selectChoose('[data-test-tag-select]', 'Z - Last');
+
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:last');
+            });
+
+            it('can open with a filtered tag', async function () {
+                const tag = this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page with Second tag', tags: [tag]});
+
+                await visit('/pages?tag=second');
+
+                // Pages list is filtered by tag
+                const pages = findAll('[data-test-post-id]');
+                expect(pages.length, 'all pages count').to.equal(1);
+                expect(pages[0].querySelector('.gh-content-entry-title').textContent, 'post title').to.contain('Published Page with Second tag');
+
+                // Filter shows selected tag
+                const filter = find('[data-test-tag-select]');
+                expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
             });
         });
     });

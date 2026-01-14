@@ -1,5 +1,105 @@
 import * as helpers from './helpers';
+import moment, {DurationInputObject} from 'moment';
+import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test/utils/fixtures';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+describe('COMMENT_HASH_PREFIX', function () {
+    it('exports the correct prefix', function () {
+        expect(helpers.COMMENT_HASH_PREFIX).toEqual('ghost-comments-');
+    });
+});
+
+describe('buildCommentPermalink', function () {
+    it('builds permalink with hash', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post', 'abc123'))
+            .toEqual('https://example.com/post#ghost-comments-abc123');
+    });
+
+    it('removes existing hash from base URL', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post#existing', 'abc123'))
+            .toEqual('https://example.com/post#ghost-comments-abc123');
+    });
+
+    it('preserves trailing slash in base URL', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post/', 'abc123'))
+            .toEqual('https://example.com/post/#ghost-comments-abc123');
+    });
+
+    it('handles URL with both trailing slash and hash', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post/#old-hash', 'abc123'))
+            .toEqual('https://example.com/post/#ghost-comments-abc123');
+    });
+
+    it('handles URL with query parameters', function () {
+        expect(helpers.buildCommentPermalink('https://example.com/post?ref=twitter', 'abc123'))
+            .toEqual('https://example.com/post?ref=twitter#ghost-comments-abc123');
+    });
+});
+
+describe('parseCommentIdFromHash', function () {
+    it('extracts comment ID from valid hash', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-abc123'))
+            .toEqual('abc123');
+    });
+
+    it('handles uppercase hex characters', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-ABC123DEF'))
+            .toEqual('ABC123DEF');
+    });
+
+    it('returns null for hash without prefix', function () {
+        expect(helpers.parseCommentIdFromHash('#some-other-hash'))
+            .toBeNull();
+    });
+
+    it('returns null for empty hash', function () {
+        expect(helpers.parseCommentIdFromHash(''))
+            .toBeNull();
+    });
+
+    it('returns null for hash with only prefix', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-'))
+            .toBeNull();
+    });
+
+    it('returns null for hash with non-hex characters in ID', function () {
+        expect(helpers.parseCommentIdFromHash('#ghost-comments-xyz123'))
+            .toBeNull();
+    });
+
+    it('returns null when prefix is not at start', function () {
+        expect(helpers.parseCommentIdFromHash('#other-ghost-comments-abc123'))
+            .toBeNull();
+    });
+});
+
+describe('flattenComments', function () {
+    it('flattens comments and replies', function () {
+        const comments: any[] = [
+            {id: '1', replies: [{id: '2'}]},
+            {id: '3', replies: []}
+        ];
+        expect(helpers.flattenComments(comments)).toEqual([
+            {id: '1', replies: [{id: '2'}]},
+            {id: '2'},
+            {id: '3', replies: []}
+        ]);
+    });
+});
+
+describe('findCommentById', function () {
+    it('finds a top-level comment', function () {
+        const comments: any[] = [{id: '1'}, {id: '2'}, {id: '3'}];
+        expect(helpers.findCommentById(comments, '2')).toEqual({id: '2'});
+    });
+
+    it('finds a reply', function () {
+        const comments: any[] = [{id: '1', replies: [{id: '2'}]}, {id: '3'}];
+        expect(helpers.findCommentById(comments, '2')).toEqual({id: '2'});
+    });
+});
 
 describe('formatNumber', function () {
     it('adds commas to large numbers', function () {
@@ -16,6 +116,65 @@ describe('formatNumber', function () {
 
     it('handles null', function () {
         expect((helpers.formatNumber as any)(null)).toEqual('');
+    });
+});
+
+describe('formatRelativeTime', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    afterEach(() => {
+        clock?.restore();
+    });
+
+    const t = (key: string, vars?: Record<string, string | number>) => {
+        if (vars) {
+            return key.replace('{amount}', vars.amount.toString());
+        }
+        return key;
+    };
+
+    function testFormatRelativeTime(humanDiff: string, duration: DurationInputObject, expected: string, now?: Date) {
+        it(`${humanDiff} = ${expected}`, function () {
+            if (now) {
+                clock = sinon.useFakeTimers(now);
+            } else {
+                clock = sinon.useFakeTimers(new Date('2024-02-15T15:00:00.000Z'));
+            }
+            const time = moment().subtract(duration);
+            expect(helpers.formatRelativeTime(time.toISOString(), t)).toEqual(expected);
+        });
+    }
+
+    it('handles invalid dates', function () {
+        expect(helpers.formatRelativeTime('invalid', t)).toEqual('Just now');
+    });
+
+    const testCases: Array<[string, DurationInputObject, string, Date?]> = [
+        ['3 seconds ago', {seconds: 3}, 'Just now'],
+        ['30 seconds ago', {seconds: 30}, 'Just now'],
+        ['59 seconds ago', {seconds: 59}, 'Just now'],
+        ['60 seconds ago', {seconds: 60}, 'One min ago'],
+        ['2 minutes ago', {minutes: 2}, '2 mins ago'],
+        ['59 minutes ago', {minutes: 59}, '59 mins ago'],
+        ['60 minutes ago', {minutes: 60}, 'One hour ago'],
+        ['89 minutes ago', {minutes: 89}, 'One hour ago'], // rounds to nearest hour
+        ['90 minutes ago', {minutes: 90}, '2 hrs ago'], // rounds to nearest hour
+        ['3 hours ago', {hours: 3}, '3 hrs ago'],
+        ['14 hours ago', {hours: 14}, '14 hrs ago'],
+        ['1 day ago', {days: 1}, 'Yesterday'],
+        ['yesterday < 1min ago', {seconds: 40}, 'Just now', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday < 1hr ago', {minutes: 40}, '40 mins ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday 1hr ago', {minutes: 60}, 'One hour ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday > 1hr < 2hrs ago', {minutes: 65}, 'One hour ago', new Date('2024-02-15T00:00:10.000Z')],
+        ['yesterday > 2hrs ago', {hours: 2}, 'Yesterday', new Date('2024-02-15T00:00:10.000Z')],
+        ['1 month ago', {months: 1}, '15 Jan'],
+        ['1 year ago', {years: 1}, '15 Feb 2023']
+    ];
+
+    describe('in UTC', function () {
+        testCases.forEach(([humanDiff, duration, expected, now]) => {
+            testFormatRelativeTime(humanDiff, duration, expected, now);
+        });
     });
 });
 
@@ -60,5 +219,49 @@ describe('getMemberInitialsFromComment', function () {
 
     it('handles a member with a name', function () {
         testInitials({name: 'Test member'}, 'TM');
+    });
+});
+
+describe('getCommentInReplyToSnippet', function () {
+    function testGetSnippet(comment: {html?: string}, expected: string) {
+        const snippet = helpers.getCommentInReplyToSnippet(comment);
+        expect(snippet).to.equal(expected);
+    }
+
+    it('handles comment with missing html', function () {
+        testGetSnippet({}, '');
+    });
+
+    it('handles comment with blank html', function () {
+        testGetSnippet({html: ''}, '');
+    });
+
+    it('converts html to text', function () {
+        testGetSnippet({html: '<p>Test <strong>comment</strong></p>'}, 'Test comment');
+    });
+
+    it('converts to a single line', function () {
+        testGetSnippet({html: '<p>Test</p>\n<p>comment</p>'}, 'Test comment');
+    });
+
+    it('trims whitespace', function () {
+        testGetSnippet({html: '<p>  Test  <br />New line</p>\n<p>New paragraph</p>'}, 'Test New line New paragraph');
+    });
+
+    it('strips blockquotes', function () {
+        testGetSnippet({html: '<blockquote>Previous comment</blockquote>\n<p>My reply to quote</p>'}, 'My reply to quote');
+    });
+
+    it('ignores scripts', function () {
+        testGetSnippet({html: '<script>alert("XSS")</script>\n<p>Test comment</p>'}, 'Test comment');
+    });
+
+    it('ignores image alt text', function () {
+        testGetSnippet({html: '<img alt="Image alt text" src="image.jpg" />\n<p>Test comment</p>'}, 'Test comment');
+    });
+
+    it('limits length to 100 characters', function () {
+        const longText = 'a'.repeat(200);
+        testGetSnippet({html: `<p>${longText}</p>`}, longText.substring(0, 100));
     });
 });

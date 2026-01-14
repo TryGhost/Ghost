@@ -267,10 +267,9 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn-icon-right svg,
 svg.gh-btn-icon-right {
-    margin-left: 0.5em;
-    margin-right: 0;
-    width: auto;
-    height: 16px;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: 0.4em;
 }
 
 .gh-btn-icon svg path {
@@ -350,23 +349,25 @@ svg.gh-btn-icon-right {
     color: var(--red);
 }
 
-.gh-btn-action-icon {
-    margin-right: 10px
-}
-
 .gh-btn-action-icon svg {
     height: 16px;
     width: 16px;
     margin: 0;
 }
 
-.gh-btn-action-icon:not(.icon-only) svg {
+.gh-btn-action-icon:not(.icon-only):not(.gh-btn-icon-right) svg {
     margin-right: 10px;
 }
 
 .gh-btn-action-icon svg path,
 .gh-btn-action-icon svg circle {
     stroke: currentColor;
+}
+
+.gh-btn-action-icon.gh-btn-icon-right svg {
+    height: 14px;
+    width: 14px;
+    margin-left: 8px;
 }
 
 .gh-btn-label-green {
@@ -437,7 +438,7 @@ Usage: CTA buttons grouped together horizontally.
     box-shadow: none;
     margin: 2px;
     border-radius: 2px;
-    color: var(--midgrey);
+    color: var(--midgrey-l1);
 }
 
 .gh-btn-group .gh-btn span {
@@ -713,4 +714,38 @@ Usage: CTA buttons grouped together horizontally.
     margin: 0 !important;
     border-radius: 999px !important;
     border: 1px solid var(--main-bg-color);
+}
+
+/* Spinner for loading state */
+.is-loading {
+    position: relative;
+    opacity: 0.8;
+}
+
+.is-loading::before {
+    content: '';
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    border: 2px solid var(--midlightgrey);
+    border-top-color: var(--black);
+    border-radius: 100%;
+    animation: spinner 1s linear infinite;
+}
+
+.is-loading span {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+}
+
+.is-loading::after {
+    content: none;
+}
+
+@keyframes spinner {
+    to {transform: rotate(360deg);}
 }

@@ -121,9 +121,7 @@ describe('Unit: endpoints/utils/validators/input/webhooks', function () {
                             last_triggered_status: 'strip me',
                             last_triggered_error: 'strip me',
                             created_at: 'strip me',
-                            created_by: 'strip me',
-                            updated_at: 'strip me',
-                            updated_by: 'strip me'
+                            updated_at: 'strip me'
                         }]
                     }
                 };
@@ -139,9 +137,7 @@ describe('Unit: endpoints/utils/validators/input/webhooks', function () {
                 should.not.exist(frame.data.webhooks[0].last_triggered_status);
                 should.not.exist(frame.data.webhooks[0].last_triggered_error);
                 should.not.exist(frame.data.webhooks[0].created_at);
-                should.not.exist(frame.data.webhooks[0].created_by);
                 should.not.exist(frame.data.webhooks[0].updated_at);
-                should.not.exist(frame.data.webhooks[0].updated_by);
             });
         });
 

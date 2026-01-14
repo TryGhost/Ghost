@@ -1,9 +1,13 @@
 const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const commentFields = [
     'id',
+    'parent_id',
+    'in_reply_to_id',
+    'in_reply_to_snippet',
     'status',
     'html',
     'created_at',
@@ -31,7 +35,8 @@ const postFields = [
     'id',
     'uuid',
     'title',
-    'url'
+    'url',
+    'feature_image'
 ];
 
 const countFields = [
@@ -39,13 +44,33 @@ const countFields = [
     'likes'
 ];
 
+const countFieldsAdmin = [
+    'replies',
+    'likes',
+    'reports'
+];
+
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+
+    const isPublicRequest = utils.isMembersAPI(frame);
+
+    if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
+        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
+    } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
+        jsonModel.in_reply_to_snippet = '[removed]';
+    } else {
+        jsonModel.in_reply_to_snippet = null;
+    }
+
+    if (!jsonModel.inReplyTo) {
+        jsonModel.in_reply_to_id = null;
+    }
 
     const response = _.pick(jsonModel, commentFields);
 
     if (jsonModel.member) {
-        response.member = _.pick(jsonModel.member, utils.isMembersAPI(frame) ? memberFields : memberFieldsAdmin);
+        response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
     } else {
         response.member = null;
     }
@@ -59,7 +84,7 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.post) {
-        // We could use the post mapper here, but we need less field + don't need al the async behavior support
+        // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
         response.post = _.pick(jsonModel.post, postFields);
     }
@@ -69,15 +94,20 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, countFields);
+        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
     }
 
-    if (utils.isMembersAPI(frame)) {
+    if (isPublicRequest) {
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
     }
-    
+
+    // Deleted comments should never expose their content
+    if (jsonModel.status === 'deleted') {
+        response.html = null;
+    }
+
     return response;
 };
 
