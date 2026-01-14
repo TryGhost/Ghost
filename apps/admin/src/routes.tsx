@@ -1,8 +1,7 @@
 import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
-import { FeatureFlagsProvider } from "@tryghost/activitypub/src/lib/feature-flags";
-import { routes as activityPubRoutes } from "@tryghost/activitypub/src/routes";
+import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/src/index";
 
 // Posts (aka tags and post analytics)
 import PostsAppContextProvider from "@tryghost/posts/src/providers/posts-app-context";

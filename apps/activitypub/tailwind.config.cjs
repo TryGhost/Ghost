@@ -1,5 +1,10 @@
 const adminXPreset = require('@tryghost/shade/tailwind.cjs');
 
+/**
+ * Important: Any changes made to this file need to be mirrored to the tailwind
+ * config in the admin package. 
+ */
+
 module.exports = {
     presets: [adminXPreset('.shade-activitypub')],
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}'],
