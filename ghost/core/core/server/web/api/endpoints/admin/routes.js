@@ -22,6 +22,7 @@ module.exports = function apiRoutes() {
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
+    router.get('/config/featurebase', mw.authAdminApi, http(api.config.featurebase));
 
     // ## Ghost Explore
     router.get('/explore', mw.authAdminApi, http(api.explore.read));
@@ -255,6 +256,9 @@ module.exports = function apiRoutes() {
 
     // ## Tinybird
     router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
+
+    // ## Featurebase
+    router.get('/featurebase/token', mw.authAdminApi, http(api.featurebase.token));
 
     // ## Sessions
     // We don't need auth when creating a new session (logging in)

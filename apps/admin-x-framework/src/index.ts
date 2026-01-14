@@ -49,3 +49,5 @@ export {useQueryClient} from '@tanstack/react-query';
 // API
 export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
 export {getTinybirdToken} from './api/tinybird';
+export type {FeaturebaseToken, FeaturebaseTokenResponseType} from './api/featurebase';
+export {getFeaturebaseToken} from './api/featurebase';

@@ -143,5 +143,9 @@ module.exports = {
 
     get tinybird() {
         return require('./tinybird');
+    },
+
+    get featurebase() {
+        return require('./featurebase');
     }
 };
