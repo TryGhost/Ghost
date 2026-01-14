@@ -24,7 +24,7 @@ const DEFAULT_PAID_LEXICAL_CONTENT = '{"root":{"children":[{"children":[{"detail
 const DEFAULT_WELCOME_EMAILS = {
     free: {
         lexical: DEFAULT_FREE_LEXICAL_CONTENT,
-        subject: 'Welcome to {{site.title}}',
+        subject: 'Welcome to {site_title}',
         status: 'active'
     },
     paid: {
