@@ -87,8 +87,8 @@ else
 fi
 
 # Start stripe listen in the background
-echo "Starting Stripe webhook listener forwarding to http://server:2368/members/webhooks/stripe/"
-stripe listen --forward-to http://server:2368/members/webhooks/stripe/ --api-key "${STRIPE_SECRET_KEY}" &
+echo "Starting Stripe webhook listener forwarding to ${GHOST_URL}/members/webhooks/stripe/"
+stripe listen --forward-to ${GHOST_URL}/members/webhooks/stripe/ --api-key "${STRIPE_SECRET_KEY}" &
 child=$!
 
 # Wait for the child process
