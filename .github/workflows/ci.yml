@@ -251,7 +251,7 @@ jobs:
         run: yarn setup -y
 
       # Step 4: Verify yarn dev works (as documented)
-      - name: Run yarn dev and verify Ghost boots
+      - name: Run yarn dev and verify all services boot
         run: |
           # Start yarn dev in background
           yarn dev &
@@ -259,19 +259,44 @@ jobs:
 
           # Wait for Ghost to become available (max 5 minutes)
           echo "Waiting for Ghost to boot..."
+          GHOST_READY=false
           for i in {1..60}; do
             if curl -s -o /dev/null -w "%{http_code}" http://localhost:2368 | grep -q "200\|301\|302"; then
               echo "Ghost is running at http://localhost:2368"
-              kill $DEV_PID 2>/dev/null || true
-              exit 0
+              GHOST_READY=true
+              break
             fi
             echo "Attempt $i/60: Ghost not ready yet, waiting 5s..."
             sleep 5
           done
 
-          echo "Ghost failed to start within 5 minutes"
+          if [ "$GHOST_READY" = false ]; then
+            echo "Ghost failed to start within 5 minutes"
+            kill $DEV_PID 2>/dev/null || true
+            exit 1
+          fi
+
+          # Wait for Admin to become available (max 3 minutes)
+          echo "Waiting for Admin to boot..."
+          ADMIN_READY=false
+          for i in {1..36}; do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:4200 | grep -q "200\|301\|302"; then
+              echo "Admin is running at http://localhost:4200"
+              ADMIN_READY=true
+              break
+            fi
+            echo "Attempt $i/36: Admin not ready yet, waiting 5s..."
+            sleep 5
+          done
+
+          if [ "$ADMIN_READY" = false ]; then
+            echo "Admin failed to start within 3 minutes"
+            kill $DEV_PID 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "All services started successfully"
           kill $DEV_PID 2>/dev/null || true
-          exit 1
 
       - name: Stop Docker services
         if: always()
