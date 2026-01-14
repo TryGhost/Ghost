@@ -1,6 +1,29 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
+export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+
+export interface NavItem {
+    name: string;
+    path: RegExp;
+    directUrl: string;
+    roles: UserRole[];
+}
+
+/**
+ * Navigation items in the sidebar with their expected paths and role visibility.
+ * Used for navigation tests and force upgrade redirect validation.
+ */
+export const NAV_ITEMS: NavItem[] = [
+    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
+    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
+    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
+    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
+    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
+    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
+    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
+];
+
 /**
  * SidebarPage uses semantic, accessibility-first locators.
  * This approach tests the UI as users interact with it, not implementation details.
@@ -18,6 +41,8 @@ export class SidebarPage extends AdminPage {
     public readonly userProfileLink: Locator;
     public readonly signOutLink: Locator;
     public readonly networkNotificationBadge: Locator;
+    public readonly ghostProLink: Locator;
+    public readonly upgradeNowLink: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -33,6 +58,10 @@ export class SidebarPage extends AdminPage {
         this.networkNotificationBadge = this.sidebar
             .getByRole('listitem').filter({hasText: /network/i})
             .locator('[data-sidebar="menu-badge"], .gh-nav-member-count').first();
+        this.ghostProLink = this.sidebar.getByRole('link', {name: 'Ghost(Pro)'});
+        // Matches both React's link and Ember's button for the upgrade action
+        this.upgradeNowLink = this.sidebar.getByRole('link', {name: /upgrade/i})
+            .or(this.sidebar.getByRole('button', {name: /upgrade/i}));
     }
 
     getNavLink(name: string): Locator {

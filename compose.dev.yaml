@@ -69,6 +69,7 @@ services:
     environment:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      DEBUG: ${DEBUG:-}
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -115,6 +116,9 @@ services:
       - "80:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      # Mount Caddyfile for live config changes without rebuilding
+      - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
       ghost-dev:
         condition: service_healthy

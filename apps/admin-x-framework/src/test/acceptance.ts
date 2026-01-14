@@ -25,7 +25,7 @@ import postReferrersFixture from './responses/post_referrers.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
-import {CustomThemeSettingsResponseType} from '../api/customThemeSettings';
+import {CustomThemeSettingsResponseType} from '../api/custom-theme-settings';
 import {InvitesResponseType} from '../api/invites';
 import {LabelsResponseType} from '../api/labels';
 import {NewslettersResponseType} from '../api/newsletters';
@@ -127,7 +127,7 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     let labs: LabsSettings;
     try {
         labs = JSON.parse(labsSetting.value);
-    } catch (e) {
+    } catch {
         throw new Error('Failed to parse labs settings');
     }
 

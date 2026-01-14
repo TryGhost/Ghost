@@ -5,7 +5,11 @@ export type {Post} from './factories/post-factory';
 export {TagFactory} from './factories/tag-factory';
 export type {Tag} from './factories/tag-factory';
 export {MemberFactory} from './factories/member-factory';
-export type {Member} from './factories/member-factory';
+export type {Member, Tier} from './factories/member-factory';
+export {AutomatedEmailFactory} from './factories/automated-email-factory';
+export type {AutomatedEmail} from './factories/automated-email-factory';
+export {CommentFactory} from './factories/comment-factory';
+export type {Comment} from './factories/comment-factory';
 export * from './factories/user-factory';
 
 // Persistence Adapters
@@ -22,3 +26,6 @@ export {generateId, generateUuid, generateSlug} from './utils';
 export {createPostFactory} from './setup';
 export {createTagFactory} from './setup';
 export {createMemberFactory} from './setup';
+export {createAutomatedEmailFactory} from './setup';
+export {createCommentFactory} from './setup';
+export {createFactories} from './setup';

@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
-import {updateQueryCache, insertToQueryCache} from '../utils/api/updateQueries';
+import {updateQueryCache, insertToQueryCache} from '../utils/api/update-queries';
 
 export type Offer = {
     id: string;

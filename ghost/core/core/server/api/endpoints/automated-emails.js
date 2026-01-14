@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
 
 const messages = {
     automatedEmailNotFound: 'Automated email not found.'
@@ -109,6 +110,40 @@ const controller = {
         permissions: true,
         query(frame) {
             return models.AutomatedEmail.destroy({...frame.options, require: true});
+        }
+    },
+
+    sendTestEmail: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        data: [
+            'email',
+            'subject',
+            'lexical'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            memberWelcomeEmailService.init();
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: frame.data.email,
+                subject: frame.data.subject,
+                lexical: frame.data.lexical,
+                automatedEmailId: frame.options.id
+            });
         }
     }
 };

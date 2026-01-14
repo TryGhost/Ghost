@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type {Request, Response, NextFunction, RequestHandler} from 'express';
 import StorageBase from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
@@ -174,7 +175,7 @@ export default class S3Storage extends StorageBase {
     }
 
     private async *readFileInChunks(filePath: string, chunkSize: number): AsyncGenerator<Buffer> {
-        const stream = fs.createReadStream(filePath);
+        const stream = fs.createReadStream(filePath, {highWaterMark: chunkSize});
         let buffer = Buffer.alloc(0);
 
         for await (const chunk of stream) {
@@ -334,9 +335,16 @@ export default class S3Storage extends StorageBase {
         }
     }
 
-    serve() {
-        return function (_req: unknown, _res: unknown, next: (err?: unknown) => void) {
-            next();
+    serve(): RequestHandler {
+        return (req: Request, res: Response, next: NextFunction) => {
+            const relativePath = req.path.replace(/^\/+/, '');
+
+            if (!relativePath) {
+                return next();
+            }
+
+            const key = this.buildKey(relativePath);
+            return res.redirect(301, `${this.cdnUrl}/${key}`);
         };
     }
 

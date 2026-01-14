@@ -162,7 +162,17 @@ export interface UserDetailProps {
 }
 
 const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
-    const {updateRoute} = useRouting();
+    const {updateRoute, route} = useRouting();
+
+    const getTabFromPath = (path: string): string => {
+        const lastSegment = path.split('/').pop() || '';
+
+        if (lastSegment === 'social-links' || lastSegment === 'email-notifications') {
+            return lastSegment;
+        }
+
+        return 'profile';
+    };
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
@@ -210,7 +220,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         if (canAccessSettings(currentUser)) {
             updateRoute('staff');
         } else {
-            updateRoute({isExternal: true, route: 'analytics'});
+            // Contributors can't access settings, exit to let the shell handle navigation
+            updateRoute({isExternal: true, route: ''});
         }
     }, [currentUser, updateRoute]);
 
@@ -402,7 +413,15 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
-    const [selectedTab, setSelectedTab] = useState<string>('profile');
+    const initialTab = getTabFromPath(route);
+    const [selectedTab, setSelectedTab] = useState<string>(initialTab);
+
+    const handleTabChange = (newTabId: string) => {
+        const urlSegment = newTabId === 'profile' ? '' : `/${newTabId}`;
+
+        updateRoute(`staff/${user.slug}${urlSegment}`);
+        setSelectedTab(newTabId);
+    };
 
     return (
         <Modal
@@ -546,7 +565,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
                             }
                         ]}
-                        onTabChange={setSelectedTab}
+                        onTabChange={handleTabChange}
                     />
                 </div>
             </div>

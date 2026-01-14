@@ -1,10 +1,10 @@
 require('should');
 
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 
-const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
+const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 /**
  * Create a mock config object that reads from configUtils

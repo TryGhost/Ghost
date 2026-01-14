@@ -4,7 +4,7 @@
 const should = require('should');
 
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const asset = require('../../../../core/frontend/helpers/asset');
 const settingsCache = require('../../../../core/shared/settings-cache');
 

@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
-const configUtils = require('../utils/configUtils');
+const configUtils = require('../utils/config-utils');
 const membersService = require('../../core/server/services/members');
 
 describe('Middleware Execution', function () {

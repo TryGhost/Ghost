@@ -9,6 +9,8 @@ export interface SettingsResponse {
     settings: Setting[];
 }
 
+export type CommentsEnabled = 'all' | 'paid' | 'off';
+
 export class SettingsService {
     private readonly request: APIRequest;
     private readonly adminEndpoint: string;
@@ -36,6 +38,35 @@ export class SettingsService {
         const data = {settings: updatedSettings};
         const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
 
+        return await response.json() as SettingsResponse;
+    }
+
+    /**
+     * Set comments enabled setting
+     * @param value - 'all' (all members), 'paid' (paid members only), or 'off' (disabled)
+     */
+    async setCommentsEnabled(value: CommentsEnabled) {
+        const data = {settings: [{key: 'comments_enabled', value}]};
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
+        return await response.json() as SettingsResponse;
+    }
+
+    /**
+     * Set Stripe keys to simulate a connected Stripe account
+     * Uses direct Stripe keys (not Connect) as they're not filtered by the API
+     * Uses test keys by default, but can be overridden if needed
+     */
+    async setStripeConnected(
+        secretKey: string = 'sk_test_e2eTestKey',
+        publishableKey: string = 'pk_test_e2eTestKey'
+    ) {
+        const data = {
+            settings: [
+                {key: 'stripe_secret_key', value: secretKey},
+                {key: 'stripe_publishable_key', value: publishableKey}
+            ]
+        };
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
         return await response.json() as SettingsResponse;
     }
 }

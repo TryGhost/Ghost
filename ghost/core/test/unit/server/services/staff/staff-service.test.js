@@ -2,13 +2,13 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
-const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/MilestoneCreatedEvent');
+const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
 
 require('should');
-const StaffService = require('../../../../../core/server/services/staff/StaffService');
+const StaffService = require('../../../../../core/server/services/staff/staff-service');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
     getEmailAlertUsersStub.calledWith(
@@ -46,7 +46,7 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
 
     // Has staff admin url
     mailStub.calledWith(
-        sinon.match.has('html', sinon.match('https://admin.ghost.example/#/settings/staff/ghost'))
+        sinon.match.has('html', sinon.match('https://admin.ghost.example/#/settings/staff/ghost/email-notifications'))
     ).should.be.true();
 }
 

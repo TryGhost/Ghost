@@ -3,19 +3,20 @@ const body = require('body-parser');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const PaymentsService = require('./services/PaymentsService');
-const TokenService = require('./services/TokenService');
-const GeolocationService = require('./services/GeolocationService');
-const MemberBREADService = require('./services/MemberBREADService');
-const MemberRepository = require('./repositories/MemberRepository');
-const EventRepository = require('./repositories/EventRepository');
-const ProductRepository = require('./repositories/ProductRepository');
-const RouterController = require('./controllers/RouterController');
-const MemberController = require('./controllers/MemberController');
-const WellKnownController = require('./controllers/WellKnownController');
+const PaymentsService = require('./services/payments-service');
+const TokenService = require('./services/token-service');
+const GeolocationService = require('./services/geolocation-service');
+const MemberBREADService = require('./services/member-bread-service');
+const MemberRepository = require('./repositories/member-repository');
 
-const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
-const MagicLink = require('../../lib/magic-link/MagicLink');
+const EventRepository = require('./repositories/event-repository');
+const ProductRepository = require('./repositories/product-repository');
+const RouterController = require('./controllers/router-controller');
+const MemberController = require('./controllers/member-controller');
+const WellKnownController = require('./controllers/well-known-controller');
+
+const {EmailSuppressedEvent} = require('../../email-suppression-list/email-suppression-list');
+const MagicLink = require('../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
 
 module.exports = function MembersAPI({
@@ -62,7 +63,8 @@ module.exports = function MembersAPI({
         Settings,
         Comment,
         MemberFeedback,
-        Outbox
+        Outbox,
+        AutomatedEmail
     },
     tiersService,
     stripeAPIService,
@@ -96,6 +98,7 @@ module.exports = function MembersAPI({
         newslettersService,
         labsService,
         productRepository,
+        AutomatedEmail,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
@@ -108,7 +111,7 @@ module.exports = function MembersAPI({
         StripeCustomer,
         StripeCustomerSubscription,
         Outbox,
-        offerRepository: offersAPI.repository
+        offersAPI
     });
 
     const eventRepository = new EventRepository({

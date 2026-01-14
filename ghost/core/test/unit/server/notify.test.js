@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const events = require('../../../core/server/lib/common/events');
 const bootstrapSocket = require('../../../core/server/lib/bootstrap-socket');
 

@@ -6,6 +6,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 
 const emberDataTypeMapping = {
+    AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     OffersResponseType: {type: 'offer'},
@@ -201,9 +202,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     triggerSubscriptionChange(data) {
-        this.trigger('subscriptionChange', {
-            ...data
-        });
+        this.trigger('subscriptionChange', data);
     }
 
     @action

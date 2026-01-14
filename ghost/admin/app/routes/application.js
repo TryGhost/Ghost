@@ -49,6 +49,7 @@ export default Route.extend(ShortcutsRoute, {
     router: service(),
     session: service(),
     settings: service(),
+    stateBridge: service(),
     ui: service(),
     whatsNew: service(),
     billing: service(),
@@ -233,10 +234,19 @@ export default Route.extend(ShortcutsRoute, {
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
 
+        // Notify React of the initial subscription state
+        // React uses this to derive forceUpgrade state (config.forceUpgrade && subscription.status !== 'active')
+        this.stateBridge.triggerSubscriptionChange({
+            subscription: this.billing.subscription
+        });
+
         // Preload settings to avoid a delay when opening
-        setTimeout(() => {
-            importComponent(AdminXSettings.packageName);
-        }, 1000);
+        // Skip preloading when running in AdminForward mode (React handles its own loading)
+        if (!this.feature.inAdminForward) {
+            setTimeout(() => {
+                importComponent(AdminXSettings.packageName);
+            }, 1000);
+        }
     }
 
 });

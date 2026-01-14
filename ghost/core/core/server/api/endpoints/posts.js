@@ -1,6 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
-const getPostServiceInstance = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
     'authors',

@@ -17,3 +17,14 @@ Object {
   ],
 }
 `;
+
+exports[`Authentication API resetPassword returns emailVerificationToken that can be used to bypass 2FA on login 1: [body] 1`] = `
+Object {
+  "password_reset": Array [
+    Object {
+      "emailVerificationToken": StringMatching /\\^\\[0-9\\]\\{6\\}\\$/,
+      "message": "Password updated",
+    },
+  ],
+}
+`;

@@ -1,7 +1,10 @@
 const should = require('should');
+const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
+const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const urlUtilsHelper = require('../../utils/url-utils');
 const escapeRegExp = require('lodash/escapeRegExp');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 
@@ -731,6 +734,109 @@ describe('Posts API', function () {
                         lexical: updatedLexical
                     })]
                 });
+        });
+    });
+
+    describe('URL transformations', function () {
+        const siteUrl = config.get('url');
+        const cdnUrl = 'https://cdn.example.com';
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Can read Mobiledoc post with all URLs as absolute site URLs', async function () {
+            const res = await agent
+                .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+            const mobiledoc = JSON.parse(post.mobiledoc);
+
+            post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+            mobiledoc.cards.find(c => c[0] === 'image')[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+            mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${siteUrl}/content/files/document.pdf`);
+            mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${siteUrl}/content/media/video.mp4`);
+            mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${siteUrl}/content/media/audio.mp3`);
+            post.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            post.mobiledoc.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
+            post.mobiledoc.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
+            post.mobiledoc.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
+            post.mobiledoc.should.not.containEql('__GHOST_URL__');
+        });
+
+        it('Can read Lexical post with all URLs as absolute site URLs', async function () {
+            const res = await agent
+                .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+
+            post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+            post.lexical.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+            post.lexical.should.containEql(`${siteUrl}/content/files/document.pdf`);
+            post.lexical.should.containEql(`${siteUrl}/content/media/video.mp4`);
+            post.lexical.should.containEql(`${siteUrl}/content/media/audio.mp3`);
+            post.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            post.lexical.should.containEql(`${siteUrl}/content/files/snippet-document.pdf`);
+            post.lexical.should.containEql(`${siteUrl}/content/media/snippet-video.mp4`);
+            post.lexical.should.containEql(`${siteUrl}/content/media/snippet-audio.mp3`);
+            post.lexical.should.not.containEql('__GHOST_URL__');
+        });
+
+        it('Can read Mobiledoc post with CDN URLs for media/files when configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const res = await agent
+                .get('posts/slug/post-with-all-media-types-mobiledoc/?formats=mobiledoc')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+            const mobiledoc = JSON.parse(post.mobiledoc);
+
+            // Images stay on site URL
+            post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+            mobiledoc.cards.find(c => c[0] === 'image')[1].src.should.equal(`${siteUrl}/content/images/inline.jpg`);
+            // Media/files use CDN URL
+            mobiledoc.cards.find(c => c[0] === 'file')[1].src.should.equal(`${cdnUrl}/content/files/document.pdf`);
+            mobiledoc.cards.find(c => c[0] === 'video')[1].src.should.equal(`${cdnUrl}/content/media/video.mp4`);
+            mobiledoc.cards.find(c => c[0] === 'audio')[1].src.should.equal(`${cdnUrl}/content/media/audio.mp3`);
+            // Inserted snippet images stay on site URL
+            post.mobiledoc.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            // Inserted snippet media/files use CDN URL
+            post.mobiledoc.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+            post.mobiledoc.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+            post.mobiledoc.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+            post.mobiledoc.should.not.containEql('__GHOST_URL__');
+        });
+
+        it('Can read Lexical post with CDN URLs for media/files when configured', async function () {
+            urlUtilsHelper.stubUrlUtilsWithCdn({
+                assetBaseUrls: {media: cdnUrl, files: cdnUrl}
+            }, sinon);
+
+            const res = await agent
+                .get('posts/slug/post-with-all-media-types-lexical/?formats=lexical')
+                .expectStatus(200);
+
+            const post = res.body.posts[0];
+
+            // Images stay on site URL
+            post.feature_image.should.equal(`${siteUrl}/content/images/feature.jpg`);
+            post.lexical.should.containEql(`${siteUrl}/content/images/inline.jpg`);
+            // Media/files use CDN URL
+            post.lexical.should.containEql(`${cdnUrl}/content/files/document.pdf`);
+            post.lexical.should.containEql(`${cdnUrl}/content/media/video.mp4`);
+            post.lexical.should.containEql(`${cdnUrl}/content/media/audio.mp3`);
+            // Inserted snippet images stay on site URL
+            post.lexical.should.containEql(`${siteUrl}/content/images/snippet-inline.jpg`);
+            // Inserted snippet media/files use CDN URL
+            post.lexical.should.containEql(`${cdnUrl}/content/files/snippet-document.pdf`);
+            post.lexical.should.containEql(`${cdnUrl}/content/media/snippet-video.mp4`);
+            post.lexical.should.containEql(`${cdnUrl}/content/media/snippet-audio.mp3`);
+            post.lexical.should.not.containEql('__GHOST_URL__');
         });
     });
 });

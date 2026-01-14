@@ -1,4 +1,4 @@
-const MailgunEmailProvider = require('../../../../../core/server/services/email-service/MailgunEmailProvider');
+const MailgunEmailProvider = require('../../../../../core/server/services/email-service/mailgun-email-provider');
 const sinon = require('sinon');
 const should = require('should');
 const assert = require('assert/strict');

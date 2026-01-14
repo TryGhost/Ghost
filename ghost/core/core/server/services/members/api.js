@@ -10,7 +10,7 @@ const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/update-email');
-const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const SingleUseTokenProvider = require('./single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
@@ -238,7 +238,8 @@ function createApiInstance(config) {
             Comment: models.Comment,
             MemberFeedback: models.MemberFeedback,
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
-            Outbox: models.Outbox
+            Outbox: models.Outbox,
+            AutomatedEmail: models.AutomatedEmail
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,

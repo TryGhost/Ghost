@@ -98,6 +98,26 @@ const controller = {
             return result;
         }
     },
+    browseAll: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'page',
+            'limit',
+            'filter',
+            'order',
+            'include_nested'
+        ],
+        validation: {},
+        permissions: {
+            method: 'browse'
+        },
+        async query(frame) {
+            const result = await commentsService.controller.adminBrowseAll(frame);
+            return result;
+        }
+    },
     add: {
         statusCode: 201,
         headers: {

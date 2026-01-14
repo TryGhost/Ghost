@@ -5,15 +5,9 @@ const errors = require('@tryghost/errors');
 const emailTemplate = require('./emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got');
+const otp = require('../otp');
 const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
-
-const {totp} = require('otplib');
-totp.options = {
-    digits: 6,
-    step: 60,
-    window: [10, 10]
-};
 
 /**
  * @typedef {object} User
@@ -54,7 +48,7 @@ totp.options = {
  * @param {(req: Req, res: Res) => Promise<Session>} deps.getSession
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
- * @param {(key: 'require_email_mfa' | 'admin_session_secret' | 'title') => boolean | string} deps.getSettingsCache
+ * @param {((key: 'require_email_mfa') => boolean) & ((key: 'admin_session_secret' | 'title') => string)} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
  * @param {import('../../core/core/server/services/i18n').t} deps.t
@@ -128,6 +122,14 @@ module.exports = function createSessionService({
         session.user_agent = req.get('user-agent');
         session.ip = req.ip;
 
+        // If a verification token was provided with the login request, verify it
+        if (req.body && req.body.token) {
+            const secret = getSettingsCache('admin_session_secret');
+            if (otp.verify(session.user_id, req.body.token, secret)) {
+                session.verified = true;
+            }
+        }
+
         if (isStaffDeviceVerificationDisabled()) {
             session.verified = true;
         }
@@ -155,9 +157,8 @@ module.exports = function createSessionService({
      */
     async function generateAuthCodeForUser(req, res) {
         const session = await getSession(req, res);
-        const secret = getSettingsCache('admin_session_secret') + session.user_id;
-        const token = totp.generate(secret);
-        return token;
+        const secret = getSettingsCache('admin_session_secret');
+        return otp.generate(session.user_id, secret);
     }
 
     /**
@@ -169,9 +170,8 @@ module.exports = function createSessionService({
      */
     async function verifyAuthCodeForUser(req, res) {
         const session = await getSession(req, res);
-        const secret = getSettingsCache('admin_session_secret') + session.user_id;
-        const isValid = totp.check(req.body.token, secret);
-        return isValid;
+        const secret = getSettingsCache('admin_session_secret');
+        return otp.verify(session.user_id, req.body.token, secret);
     }
 
     const formatTime = new Intl.DateTimeFormat('en-GB', {

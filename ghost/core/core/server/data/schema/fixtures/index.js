@@ -1,4 +1,4 @@
-const FixtureManager = require('./FixtureManager');
+const FixtureManager = require('./fixture-manager');
 const config = require('../../../../shared/config');
 
 const fixturePath = config.get('paths').fixtures;
