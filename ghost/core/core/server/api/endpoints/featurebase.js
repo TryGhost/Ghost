@@ -19,7 +19,7 @@ function generateJWTToken(frame) {
 
     return jwt.sign(userData, config.get('featurebase:jwtSecret'), {
         algorithm: 'HS256',
-        expiresIn: '30d'
+        expiresIn: '7d'
     });
 }
 

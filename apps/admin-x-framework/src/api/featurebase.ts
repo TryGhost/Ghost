@@ -11,11 +11,12 @@ export interface FeaturebaseTokenResponseType {
 
 const dataType = 'FeaturebaseTokenResponseType';
 
-// Built-in query options for optimal token caching
+// Tokens expire after 7 days - refresh at 6 days
+// Refresh can trigger re-initialization widgets using the token
 const FEATUREBASE_QUERY_OPTIONS = {
-    refetchInterval: 29 * 24 * 60 * 60 * 1000, // 29 days — tokens expire after 30 days
-    refetchIntervalInBackground: true,
-    staleTime: 28 * 24 * 60 * 60 * 1000 // 28 days - shorter than refetch interval so automatic refresh works
+    staleTime: 5 * 24 * 60 * 60 * 1000, // 5 days
+    refetchInterval: 6 * 24 * 60 * 60 * 1000, // 6 days
+    refetchIntervalInBackground: true
 } as const;
 
 const baseFeaturebaseTokenQuery = createQuery<FeaturebaseTokenResponseType>({
