@@ -227,6 +227,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     timeout-minutes: 20
+    env:
+      NX_DAEMON: true
     steps:
       # Step 1: Clone with submodules (as documented: git clone --recurse-submodules)
       - name: Clone repository with submodules
