@@ -51,7 +51,3 @@ export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
 export {getTinybirdToken} from './api/tinybird';
 export type {FeaturebaseToken, FeaturebaseTokenResponseType} from './api/featurebase';
 export {getFeaturebaseToken} from './api/featurebase';
-
-// Koenig editor utilities
-export type {FetchKoenigLexical, EditorResource, FileType, UploadResult, UploadError} from './utils/koenig';
-export {loadKoenig, fileTypes, useFileUpload, koenigFileUploader} from './utils/koenig';
