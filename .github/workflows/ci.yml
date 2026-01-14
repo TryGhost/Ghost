@@ -221,8 +221,8 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
-  job_dev-environment-setup:
-    name: Dev environment setup
+  job_development-environment:
+    name: Development Environment
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
@@ -248,13 +248,28 @@ jobs:
       - name: Run yarn setup
         run: yarn setup -y
 
-      # Step 4: Verify yarn dev works by booting Ghost
-      - name: Verify Ghost boots (yarn dev)
+      # Step 4: Verify yarn dev works (as documented)
+      - name: Run yarn dev and verify Ghost boots
         run: |
-          echo "Verifying Ghost boots successfully..."
-          GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js
-          echo "Ghost booted successfully"
-        working-directory: ghost/core
+          # Start yarn dev in background
+          yarn dev &
+          DEV_PID=$!
+
+          # Wait for Ghost to become available (max 5 minutes)
+          echo "Waiting for Ghost to boot..."
+          for i in {1..60}; do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:2368 | grep -q "200\|301\|302"; then
+              echo "Ghost is running at http://localhost:2368"
+              kill $DEV_PID 2>/dev/null || true
+              exit 0
+            fi
+            echo "Attempt $i/60: Ghost not ready yet, waiting 5s..."
+            sleep 5
+          done
+
+          echo "Ghost failed to start within 5 minutes"
+          kill $DEV_PID 2>/dev/null || true
+          exit 1
 
       - name: Stop Docker services
         if: always()
