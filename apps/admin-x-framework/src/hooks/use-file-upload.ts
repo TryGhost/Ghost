@@ -2,7 +2,7 @@ import {useRef, useState} from 'react';
 import {getGhostPaths} from '../utils/helpers';
 
 // File type configuration interface
-interface FileTypeConfig {
+export interface FileTypeConfig {
     mimeTypes: string[];
     extensions: string[];
     endpoint: string;
