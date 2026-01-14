@@ -15,7 +15,7 @@ interface CommentsFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
     knownPosts: Array<{ id: string; title: string }>;
-    knownMembers: Array<{ id: string; name: string; email: string }>;
+    knownMembers: Array<{ id: string; name?: string; email: string }>;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({

@@ -248,6 +248,14 @@ export const formatTimestamp = (timestamp: string) => {
     }
 };
 
+// Helper function to format relative time (e.g. "5 months ago")
+export const formatRelativeTime = (timestamp: string) => {
+    const date = moment(timestamp);
+    if (!date.isValid()) {
+        return '';
+    }
+    return date.fromNow();
+};
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
     if (isNaN(value) || !isFinite(value)) {

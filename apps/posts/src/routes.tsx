@@ -36,19 +36,29 @@ export const routes: RouteObject[] = [
                 children: [
                     {
                         path: '',
-                        lazy: lazyComponent(() => import('@views/PostAnalytics/Overview/overview'))
+                        lazy: lazyComponent(
+                            () => import('@views/PostAnalytics/Overview/overview')
+                        )
                     },
                     {
                         path: 'web',
-                        lazy: lazyComponent(() => import('@views/PostAnalytics/Web/web'))
+                        lazy: lazyComponent(
+                            () => import('@views/PostAnalytics/Web/web')
+                        )
                     },
                     {
                         path: 'growth',
-                        lazy: lazyComponent(() => import('@views/PostAnalytics/Growth/growth'))
+                        lazy: lazyComponent(
+                            () => import('@views/PostAnalytics/Growth/growth')
+                        )
                     },
                     {
                         path: 'newsletter',
-                        lazy: lazyComponent(() => import('@views/PostAnalytics/Newsletter/newsletter'))
+                        lazy: lazyComponent(
+                            () => import(
+                                '@views/PostAnalytics/Newsletter/newsletter'
+                            )
+                        )
                     }
                 ]
             },
@@ -66,8 +76,11 @@ export const routes: RouteObject[] = [
                 ]
             },
             {
-                path: 'comments',
                 lazy: lazyComponent(() => import('@views/comments/comments'))
+            },
+            {
+                path: 'members-x',
+                lazy: lazyComponent(() => import('@views/members/members'))
             },
 
             // Error handling
