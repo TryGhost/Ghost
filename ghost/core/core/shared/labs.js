@@ -27,7 +27,8 @@ const GA_FEATURES = [
     'announcementBar',
     'customFonts',
     'contentVisibility',
-    'explore'
+    'explore',
+    'utmTracking'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -48,7 +49,6 @@ const PRIVATE_FEATURES = [
     'contentVisibilityAlpha',
     'emailCustomization',
     'tagsX',
-    'utmTracking',
     'emailUniqueid',
     'welcomeEmails',
     'adminForward',
