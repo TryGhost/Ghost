@@ -202,9 +202,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     triggerSubscriptionChange(data) {
-        this.trigger('subscriptionChange', {
-            ...data
-        });
+        this.trigger('subscriptionChange', data);
     }
 
     @action

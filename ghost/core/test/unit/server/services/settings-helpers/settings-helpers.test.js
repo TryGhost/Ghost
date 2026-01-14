@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/configUtils');
-const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
+const configUtils = require('../../../../utils/config-utils');
+const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
 const crypto = require('crypto');
 const assert = require('assert').strict;
 

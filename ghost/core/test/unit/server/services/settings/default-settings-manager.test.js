@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
-const DefaultSettingsManager = require('../../../../../core/server/services/route-settings/DefaultSettingsManager');
+const DefaultSettingsManager = require('../../../../../core/server/services/route-settings/default-settings-manager');
 
 describe('UNIT > Settings Service DefaultSettingsManager:', function () {
     let fsReadFileStub;

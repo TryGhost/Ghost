@@ -1,6 +1,6 @@
 const should = require('should');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('getPaginatedUrl', function () {
     let data;

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const EmailSegmenter = require('../../../../../core/server/services/email-service/EmailSegmenter');
+const EmailSegmenter = require('../../../../../core/server/services/email-service/email-segmenter');
 const sinon = require('sinon');
 
 describe('Email segmenter', function () {

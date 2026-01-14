@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const errors = require('@tryghost/errors');
 
 const Sentry = require('@sentry/node');

@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
 const should = require('should');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
-const urlUtilsHelper = require('../../utils/urlUtils');
+const urlUtilsHelper = require('../../utils/url-utils');
 
 // @TODO: factor out these requires
 const ObjectId = require('bson-objectid').default;
@@ -41,6 +41,8 @@ describe('Email Preview API', function () {
     beforeEach(function () {
         mockManager.mockMailgun();
         sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
+        // Stub Date.getFullYear to return a fixed year for consistent snapshots
+        sinon.stub(Date.prototype, 'getFullYear').returns(2025);
     });
 
     before(async function () {

@@ -2,7 +2,7 @@ const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
 
 let request;

@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 
 describe('Shared Max Limit Cap', function () {
     let maxLimitCap;

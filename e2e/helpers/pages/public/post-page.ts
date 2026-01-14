@@ -5,13 +5,13 @@ import {PublicPage} from './public-page';
 export class PostPage extends PublicPage {
     readonly postTitle: Locator;
     readonly postContent: Locator;
-    readonly comments: CommentsSection;
+    readonly commentsSection: CommentsSection;
 
     constructor(page: Page) {
         super(page);
         this.postTitle = page.locator('article h1').first();
         this.postContent = page.locator('article');
-        this.comments = new CommentsSection(page);
+        this.commentsSection = new CommentsSection(page);
     }
 
     async gotoPost(slug: string): Promise<void> {
@@ -21,5 +21,9 @@ export class PostPage extends PublicPage {
 
     async waitForPostToLoad(): Promise<void> {
         await this.postTitle.waitFor({state: 'visible'});
+    }
+
+    async waitForCommentsToLoad(): Promise<void> {
+        await this.commentsSection.waitForCommentsToLoad();
     }
 }

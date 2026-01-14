@@ -3,8 +3,8 @@ const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../utils/urlUtils');
+const configUtils = require('../../../utils/config-utils');
+const urlUtils = require('../../../utils/url-utils');
 const config = require('../../../../core/shared/config');
 
 describe('api/endpoints/content/posts', function () {
