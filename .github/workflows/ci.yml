@@ -221,6 +221,45 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
 
+  job_dev-environment-setup:
+    name: Dev environment setup
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_any_code == 'true'
+    timeout-minutes: 20
+    steps:
+      # Step 1: Clone with submodules (as documented: git clone --recurse-submodules)
+      - name: Clone repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Step 3: Run yarn setup (as documented)
+      # Uses -y flag to auto-accept prompts in CI
+      - name: Run yarn setup
+        run: yarn setup -y
+
+      # Step 4: Verify yarn dev works by booting Ghost
+      - name: Verify Ghost boots (yarn dev)
+        run: |
+          echo "Verifying Ghost boots successfully..."
+          GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js
+          echo "Ghost booted successfully"
+        working-directory: ghost/core
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose down || true
+
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
