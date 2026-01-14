@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import React, {Suspense, useCallback, useMemo} from 'react';
 import {ErrorBoundary, useDesignSystem, useFocusContext} from '@tryghost/admin-x-design-system';
-import {type EditorResource, koenigFileUploader, loadKoenig} from '@tryghost/admin-x-framework';
+import {type EditorResource, loadKoenig} from '@tryghost/admin-x-framework';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -70,7 +70,6 @@ const KoenigEmailEditorWrapper: React.FC<KoenigEmailEditorWrapperProps> = ({
     return (
         <koenig.KoenigComposer
             darkMode={darkMode}
-            fileUploader={koenigFileUploader}
             initialEditorState={initialEditorState}
             nodes={koenig.EMAIL_NODES}
             onError={onError}

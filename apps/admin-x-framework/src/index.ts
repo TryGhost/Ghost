@@ -53,5 +53,5 @@ export type {FeaturebaseToken, FeaturebaseTokenResponseType} from './api/feature
 export {getFeaturebaseToken} from './api/featurebase';
 
 // Koenig editor utilities
-export type {FetchKoenigLexical, EditorResource, FileType, UploadResult, UploadError} from './utils/koenig';
-export {loadKoenig, fileTypes, useFileUpload, koenigFileUploader} from './utils/koenig';
+export type {FetchKoenigLexical, EditorResource} from './utils/koenig';
+export {loadKoenig} from './utils/koenig';
