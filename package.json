@@ -29,6 +29,7 @@
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:kill": "node .github/scripts/dev-kill.js",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
