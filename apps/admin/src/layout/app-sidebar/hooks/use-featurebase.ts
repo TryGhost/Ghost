@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
@@ -46,6 +46,7 @@ function loadFeaturebaseSDK(): Promise<void> {
 
 interface Featurebase {
     openFeedbackWidget: (options?: {board?: string}) => void;
+    preloadFeedbackWidget: () => void;
 }
 
 export function useFeaturebase(): Featurebase {
@@ -53,56 +54,116 @@ export function useFeaturebase(): Featurebase {
     const {data: config} = useBrowseConfig();
     const {data: preferences} = useUserPreferences();
     const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
-    const isInitializingRef = useRef(false);
-    const initializedWithRef = useRef<{theme: string; token: string} | null>(null);
 
-    const featurebaseConfig = config?.config.featurebase;
-    const featurebaseOrg = featurebaseConfig?.organization;
-    const featurebaseEnabled = !!(featureFlagEnabled && featurebaseConfig?.enabled);
+    const [pendingOpen, setPendingOpen] = useState<{board?: string} | null>(null);
+    const [shouldLoad, setShouldLoad] = useState(false);
+
+    const loadPromiseRef = useRef<Promise<void> | null>(null);
+    const initStateRef = useRef<{
+        ready: {token: string; theme: string} | null;
+        inFlight: {promise: Promise<void>; token: string; theme: string} | null;
+    }>({ready: null, inFlight: null});
+
+    const {organization, enabled} = config?.config.featurebase ?? {};
+    const featurebaseEnabled = !!(featureFlagEnabled && enabled);
     const theme = preferences?.nightShift ? 'dark' : 'light';
 
     const {data: tokenData} = getFeaturebaseToken({
-        enabled: featurebaseEnabled
+        enabled: featurebaseEnabled && shouldLoad
     });
     const token = tokenData?.featurebase?.token;
+    const hasInitPrereqs = !!(featurebaseEnabled && organization && currentUser && token);
 
-    useEffect(() => {
-        if (!featurebaseEnabled || !featurebaseOrg || !currentUser || !token) {
-            return;
+    const ensureSdkLoaded = useCallback(() => {
+        if (!loadPromiseRef.current) {
+            loadPromiseRef.current = loadFeaturebaseSDK().catch((error) => {
+                loadPromiseRef.current = null;
+                throw error;
+            });
         }
 
-        const initializedWith = initializedWithRef.current;
-        const initializedWithSameData = initializedWith && initializedWith.theme === theme && initializedWith.token === token;
+        return loadPromiseRef.current;
+    }, []);
 
-        if (isInitializingRef.current || initializedWithSameData) {
-            return;
+    const ensureInitialized = useCallback(async () => {
+        if (!hasInitPrereqs) {
+            return false;
         }
 
-        isInitializingRef.current = true;
+        const {ready, inFlight} = initStateRef.current;
+        if (ready?.token === token && ready?.theme === theme) {
+            return true;
+        }
 
-        loadFeaturebaseSDK().then(() => {
+        const matchesCurrent = inFlight?.token === token && inFlight?.theme === theme;
+        if (inFlight && matchesCurrent) {
+            try {
+                await inFlight.promise;
+                return true;
+            } catch {
+                if (initStateRef.current.inFlight?.promise === inFlight.promise) {
+                    initStateRef.current.inFlight = null;
+                }
+            }
+        }
+
+        const initPromise = ensureSdkLoaded().then(() => new Promise<void>((resolve, reject) => {
             window.Featurebase?.('initialize_feedback_widget', {
-                organization: featurebaseOrg,
+                organization,
                 theme,
                 defaultBoard: 'Feature Request',
                 featurebaseJwt: token
             }, (err) => {
-                isInitializingRef.current = false;
-
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
-                    initializedWithRef.current = null;
+                    reject(err as Error);
                 } else {
-                    initializedWithRef.current = {theme, token};
+                    resolve();
                 }
             });
-        }).catch(() => {
-            isInitializingRef.current = false;
-            initializedWithRef.current = null;
-        });
-    }, [featurebaseEnabled, featurebaseOrg, currentUser, token, theme]);
+        }));
 
-    const openFeedbackWidget = useCallback((options?: {board?: string}) => {
+        initStateRef.current.inFlight = {promise: initPromise, token, theme};
+
+        try {
+            await initPromise;
+            if (initStateRef.current.inFlight?.promise === initPromise) {
+                initStateRef.current.ready = {theme, token};
+                initStateRef.current.inFlight = null;
+            }
+            return true;
+        } catch {
+            if (initStateRef.current.inFlight?.promise === initPromise) {
+                initStateRef.current.inFlight = null;
+            }
+            return false;
+        }
+    }, [ensureSdkLoaded, organization, hasInitPrereqs, theme, token]);
+
+    const preloadFeedbackWidget = useCallback(() => {
+        if (!featurebaseEnabled || !organization) {
+            return;
+        }
+
+        setShouldLoad(true);
+        void ensureSdkLoaded().catch(() => {
+            // Errors are logged in loadFeaturebaseSDK.
+        });
+    }, [ensureSdkLoaded, featurebaseEnabled, organization]);
+
+    const doOpenFeedbackWidget = useCallback(async (options?: {board?: string}) => {
+        const ready = initStateRef.current.ready;
+        const hasPreviousInit = !!ready;
+
+        if (!hasPreviousInit) {
+            const initialized = await ensureInitialized();
+            if (!initialized) {
+                return;
+            }
+        } else if (ready?.token !== token || ready?.theme !== theme) {
+            void ensureInitialized();
+        }
+
         window.postMessage({
             target: 'FeaturebaseWidget',
             data: {
@@ -110,7 +171,46 @@ export function useFeaturebase(): Featurebase {
                 ...(options?.board && {setBoard: options.board})
             }
         }, '*');
-    }, []);
+    }, [ensureInitialized, theme, token]);
 
-    return {openFeedbackWidget};
+    const openFeedbackWidget = useCallback((options?: {board?: string}) => {
+        if (!featurebaseEnabled || !organization || !currentUser) {
+            return;
+        }
+
+        preloadFeedbackWidget();
+
+        if (!token) {
+            if (!initStateRef.current.ready) {
+                setPendingOpen(options ?? {});
+                return;
+            }
+
+            void doOpenFeedbackWidget(options);
+            return;
+        }
+
+        void doOpenFeedbackWidget(options);
+    }, [currentUser, doOpenFeedbackWidget, featurebaseEnabled, organization, preloadFeedbackWidget, token]);
+
+    // Complete a queued open once the token arrives after a click.
+    useEffect(() => {
+        if (!pendingOpen || !hasInitPrereqs) {
+            return;
+        }
+
+        setPendingOpen(null);
+        void doOpenFeedbackWidget(pendingOpen);
+    }, [doOpenFeedbackWidget, hasInitPrereqs, pendingOpen]);
+
+    // Pre-initialize after hover/click as soon as we have the token + user data.
+    useEffect(() => {
+        if (!shouldLoad || !hasInitPrereqs) {
+            return;
+        }
+
+        void ensureInitialized();
+    }, [ensureInitialized, hasInitPrereqs, shouldLoad]);
+
+    return {openFeedbackWidget, preloadFeedbackWidget};
 }
