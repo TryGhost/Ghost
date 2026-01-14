@@ -279,9 +279,8 @@ async function handleStripe() {
         process.exit(0);
     }
     debug('at least one command provided');
-        debug('resetting nx');
 
-
+    debug('resetting nx');
     await exec("yarn nx reset --onlyDaemon");
     debug('nx reset');
     await exec("yarn nx daemon --start");
