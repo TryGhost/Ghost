@@ -12,7 +12,7 @@ The Caddy reverse proxy container:
 Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy targets:
 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
-- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5173`)
+- `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5174`)
 - `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
 - `PORTAL_DEV_SERVER` - Portal dev server (e.g., `host.docker.internal:4175`)
 - `COMMENTS_DEV_SERVER` - Comments UI (e.g., `host.docker.internal:7173`)
@@ -48,8 +48,8 @@ The Caddyfile defines these routing rules:
 | `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |
 | `/ghost/assets/sodo-search/*`        | Search dev server (port 4178)       | Search widget (JS + CSS)                                               |
 | `/ghost/assets/announcement-bar/*`   | Announcement dev server (port 4177) | Announcement widget                                                    |
-| `/ghost/assets/*`                    | Admin dev server (port 5173)        | Other admin assets (fallback)                                          |
-| `/ghost/*`                           | Admin dev server (port 5173)        | Admin interface                                                        |
+| `/ghost/assets/*`                    | Admin dev server (port 5174)        | Other admin assets (fallback)                                          |
+| `/ghost/*`                           | Admin dev server (port 5174)        | Admin interface                                                        |
 | Everything else                      | Ghost backend                       | Main Ghost application                                                 |
 
 **Note:** All port numbers listed are the host ports where dev servers run by default.
