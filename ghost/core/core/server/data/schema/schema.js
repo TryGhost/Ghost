@@ -492,6 +492,7 @@ module.exports = {
         duration_in_months: {type: 'integer', nullable: true},
         portal_title: {type: 'string', maxlength: 191, nullable: true},
         portal_description: {type: 'string', maxlength: 2000, nullable: true},
+        redemption_type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'signup', validations: {isIn: [['signup', 'retention']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
