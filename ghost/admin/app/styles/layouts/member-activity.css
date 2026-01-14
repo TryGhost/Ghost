@@ -492,6 +492,10 @@
     color: var(--middarkgrey);
 }
 
+.gh-members-activity .gh-canvas-header .view-actions > .ember-basic-dropdown-content-wormhole-origin {
+    position: absolute;
+}
+
 @media (max-width: 800px) {
     .gh-members-activity.gh-canvas {
         padding-left: 0;
