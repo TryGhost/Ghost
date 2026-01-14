@@ -66,6 +66,7 @@ services:
       - ghost-dev-media:/home/ghost/ghost/core/content/media
       - ghost-dev-files:/home/ghost/ghost/core/content/files
       - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+      - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
@@ -98,6 +99,9 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_healthy
+      stripe:
+        condition: service_healthy
+        required: false
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
       timeout: 5s
@@ -123,10 +127,26 @@ services:
       ghost-dev:
         condition: service_healthy
 
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: ghost-dev-stripe
+    entrypoint: ["/entrypoint.sh"]
+    profiles: ["stripe"]
+    volumes:
+      - ./docker/stripe/entrypoint.sh:/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config
+    environment:
+      - GHOST_URL=http://ghost-dev:2368
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    healthcheck:
+      test: ["CMD", "test", "-f", "/mnt/shared-config/.env.stripe"]
+      interval: 1s
+      retries: 120
 
 volumes:
   mysql-data:
   redis-data:
+  shared-config:
   ghost-dev-data:
   ghost-dev-images:
   ghost-dev-media:
