@@ -30,16 +30,7 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        // Custom permissions check: All authenticated users except Contributors
-        // can access this endpoint. Using a custom function avoids adding
-        // featurebase-specific permissions to the core database fixtures.
-        permissions: async (frame) => {
-            await frame.user.load(['roles']);
-            const isContributor = frame.user.hasRole('Contributor');
-            if (isContributor) {
-                throw new errors.NoPermissionError();
-            }
-        },
+        permissions: false,
         async query(frame) {
             const enabled = config.get('featurebase:enabled');
             const jwtSecret = config.get('featurebase:jwtSecret');

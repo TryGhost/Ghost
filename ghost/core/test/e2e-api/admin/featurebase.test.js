@@ -174,8 +174,10 @@ describe('Featurebase API', function () {
             await configUtils.restore();
         });
 
-        it('Cannot get a Featurebase JWT token', async function () {
-            await agent.get('/featurebase/token/').expectStatus(403);
+        it('Can get a Featurebase JWT token', async function () {
+            const response = await agent.get('/featurebase/token/').expectStatus(200);
+            assert(response.body.featurebase);
+            assert(response.body.featurebase.token);
         });
     });
 });
