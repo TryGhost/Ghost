@@ -32,10 +32,6 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
-    title: 'UTM tracking',
-    description: 'Enables UTM tracking for web traffic and member attribution',
-    flag: 'utmTracking'
-}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'

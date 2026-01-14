@@ -3,7 +3,9 @@ import {HomePage} from '@/public-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Web Filters', () => {
-    test.describe('utmTracking flag disabled', () => {
+    test.describe('utmTracking flag explicitly disabled', () => {
+        test.use({labs: {utmTracking: false}});
+
         test('filter ui hidden when flag disabled', async ({page}) => {
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
@@ -12,9 +14,7 @@ test.describe('Ghost Admin - Web Filters', () => {
         });
     });
 
-    test.describe('utmTracking flag enabled', () => {
-        test.use({labs: {utmTracking: true}});
-
+    test.describe('utmTracking enabled by default', () => {
         test('filter ui visible when flag enabled', async ({page}) => {
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
