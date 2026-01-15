@@ -355,22 +355,6 @@ function CommentsList({
                                         />
                                     ) : null}
                                 </div>
-
-                                {/* <div className="flex min-w-0 flex-col p-4 md:relative">
-                                    <div className='flex flex-col gap-3'>
-                                        <div className="flex flex-wrap items-center">
-                                            {item.status === 'hidden' && (
-                                                <>
-                                                    <LucideIcon.Dot className='text-muted-foreground/50' size={16} />
-                                                    <div className='mr-2 flex items-center gap-1 text-muted-foreground'>
-                                                        Hidden from members
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                 */}
                             </div>
                         );
                     })}
