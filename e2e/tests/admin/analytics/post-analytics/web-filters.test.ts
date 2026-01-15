@@ -21,7 +21,9 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
         postSlug = post.slug;
     });
 
-    test.describe('utmTracking flag disabled', () => {
+    test.describe('utmTracking flag explicitly disabled', () => {
+        test.use({labs: {utmTracking: false}});
+
         test('filter ui hidden when flag disabled', async ({page}) => {
             const postAnalyticsPage = new PostAnalyticsWebTrafficPage(page);
             await postAnalyticsPage.gotoForPost(postId);
@@ -30,9 +32,7 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
         });
     });
 
-    test.describe('utmTracking flag enabled', () => {
-        test.use({labs: {utmTracking: true}});
-
+    test.describe('utmTracking enabled by default', () => {
         test('filter ui visible when flag enabled', async ({page, browser, baseURL}) => {
             // Generate traffic to the post
             await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
