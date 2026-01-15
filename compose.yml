@@ -31,7 +31,7 @@ x-service-template: &service-template
   environment:
     - DEBUG=${DEBUG:-}
     - SSH_AUTH_SOCK=/ssh-agent
-    - NX_DAEMON=${NX_DAEMON:-true}
+    - NX_DAEMON=${NX_DAEMON:-false}
     - GHOST_DEV_IS_DOCKER=true
     - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
     - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
