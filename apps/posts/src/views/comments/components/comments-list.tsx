@@ -188,7 +188,7 @@ function CommentsList({
                                 <div className='flex items-start gap-3'>
                                     <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
                                         {item.member?.id && item.member.avatar_image && (
-                                            <div className='absolute inset-0'><img src={item.member.avatar_image} /></div>
+                                            <div className='absolute inset-0'><img alt="Member avatar" src={item.member.avatar_image} /></div>
                                         )}
                                         <div>
                                             <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
@@ -198,7 +198,7 @@ function CommentsList({
                                     <div className='flex min-w-0 flex-col'>
                                         <div className='flex items-baseline gap-4'>
                                             <div className={`mb-1 flex min-w-0 items-center gap-x-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
-                                                <div className='nowrap'>
+                                                <div className='whitespace-nowrap'>
                                                     {item.member?.id ? (
                                                         <>
                                                             <Button
@@ -218,7 +218,7 @@ function CommentsList({
                                                     )}
                                                 </div>
                                                 <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
-                                                <div className='nowrap shrink-0'>
+                                                <div className='shrink-0 whitespace-nowrap'>
                                                     {item.created_at && (
                                                         <TooltipProvider>
                                                             <Tooltip>
@@ -237,12 +237,13 @@ function CommentsList({
                                                 <div className='shrink-0 text-muted-foreground'>on</div>
                                                 <div className='min-w-0 truncate'>
                                                     {item.post?.id && item.post?.title && onAddFilter ? (
-                                                        <div
-                                                            className="block h-auto cursor-pointer truncate p-0 font-medium text-gray-800 hover:opacity-70 dark:text-gray-400"
+                                                        <Button
+                                                            className="block h-auto w-full cursor-pointer truncate p-0 text-left font-medium text-gray-800 hover:opacity-70 dark:text-gray-400"
+                                                            variant='link'
                                                             onClick={() => onAddFilter('post', item.post!.id)}
                                                         >
                                                             {item.post.title}
-                                                        </div>
+                                                        </Button>
                                                     ) : (
                                                         <span className="text-muted-foreground">
                                                     Unknown post
