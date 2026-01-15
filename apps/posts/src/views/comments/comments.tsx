@@ -6,11 +6,14 @@ import CommentsList from './components/comments-list';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters} = useFilterState();
+    const {data: configData} = useBrowseConfig();
+    const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
 
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
@@ -72,6 +75,7 @@ const Comments: React.FC = () => {
                     </div>
                 ) : (
                     <CommentsList
+                        commentPermalinksEnabled={commentPermalinksEnabled}
                         fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}

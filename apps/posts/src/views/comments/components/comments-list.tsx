@@ -133,7 +133,8 @@ function CommentsList({
     isFetchingNextPage,
     fetchNextPage,
     onAddFilter,
-    isLoading
+    isLoading,
+    commentPermalinksEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -142,6 +143,7 @@ function CommentsList({
     fetchNextPage: () => void;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
+    commentPermalinksEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     
@@ -340,9 +342,16 @@ function CommentsList({
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="start">
-                                                    {item.post?.url && (
+                                                    {commentPermalinksEnabled ? (
                                                         <DropdownMenuItem asChild>
-                                                            <a href={item.post.url} rel="noopener noreferrer" target="_blank">
+                                                            <a href={`${item.post!.url}#ghost-comments-${item.id}`} rel="noopener noreferrer" target="_blank">
+                                                                <LucideIcon.ExternalLink className="mr-2 size-4" />
+                                                            View on post
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        <DropdownMenuItem asChild>
+                                                            <a href={item.post!.url} rel="noopener noreferrer" target="_blank">
                                                                 <LucideIcon.ExternalLink className="mr-2 size-4" />
                                                             View post
                                                             </a>
