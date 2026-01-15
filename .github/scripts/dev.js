@@ -1,12 +1,10 @@
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const {spawn} = require('child_process');
 const debug = require('debug')('ghost:dev');
 
 const chalk = require('chalk');
 const concurrently = require('concurrently');
-const chokidar = require('chokidar');
 
 
 debug('loading config');
@@ -111,101 +109,12 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
-function createFileWatcherCommand(projects) {
-    const projectList = projects.split(',');
-    const workspaceRoot = path.join(__dirname, '../..');
-    
-    const watchPaths = projectList.map(project => {
-        const projectPath = project.startsWith('apps/') ? project : `apps/${project}`;
-        return path.join(workspaceRoot, projectPath);
-    });
-
-    return {
-        command: async () => {
-            const buildQueue = new Set();
-            let isBuilding = false;
-
-            async function processBuildQueue() {
-                if (isBuilding || buildQueue.size === 0) {
-                    return;
-                }
-
-                isBuilding = true;
-                const projectsToBuild = Array.from(buildQueue);
-                buildQueue.clear();
-
-                debug(`Building projects: ${projectsToBuild.join(', ')}`);
-
-                for (const project of projectsToBuild) {
-                    try {
-                        const buildCommand = `nx run ${project}:build`;
-                        debug(`Running: ${buildCommand}`);
-                        await exec(buildCommand, {cwd: workspaceRoot});
-                        debug(`Built: ${project}`);
-                    } catch (err) {
-                        console.error(chalk.red(`Error building ${project}:`), err.message);
-                    }
-                }
-
-                isBuilding = false;
-                if (buildQueue.size > 0) {
-                    setTimeout(processBuildQueue, 100);
-                }
-            }
-
-            const watcher = chokidar.watch(watchPaths, {
-                ignored: [
-                    '**/node_modules/**',
-                    '**/dist/**',
-                    '**/build/**',
-                    '**/.turbo/**',
-                    '**/.nx/**'
-                ],
-                persistent: true,
-                ignoreInitial: true,
-                awaitWriteFinish: {
-                    stabilityThreshold: 100,
-                    pollInterval: 100
-                }
-            });
-
-            watcher.on('change', (filePath) => {
-                const relativePath = path.relative(workspaceRoot, filePath);
-                debug(`File changed: ${relativePath}`);
-
-                for (const project of projectList) {
-                    const projectPath = project.startsWith('apps/') ? project : `apps/${project}`;
-                    if (relativePath.startsWith(projectPath)) {
-                        debug(`Queueing build for: ${project}`);
-                        buildQueue.add(project);
-                        setTimeout(processBuildQueue, 300);
-                        break;
-                    }
-                }
-            });
-
-            watcher.on('ready', () => {
-                console.log(chalk.magenta(`Watching for changes in: ${projectList.join(', ')}`));
-                
-                debug('Running initial builds');
-                projectList.forEach(project => buildQueue.add(project));
-                processBuildQueue();
-            });
-
-            watcher.on('error', error => {
-                console.error(chalk.red('Watcher error:'), error);
-            });
-
-            return new Promise(() => {});
-        }
-    };
-}
-
+const adminXDeps = '@tryghost/admin-x-design-system,@tryghost/admin-x-framework,@tryghost/shade,@tryghost/stats';
 const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: createFileWatcherCommand('admin-x-design-system,admin-x-framework,shade,stats').command,
+    command: `nx run-many --projects=${adminXDeps} --parallel=4 --targets=dev`,
     prefixColor: '#C72AF7',
     env: {}
 }, {
