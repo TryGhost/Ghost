@@ -34,6 +34,7 @@ Object {
       "tagsX": true,
       "themeErrorsNotification": true,
       "themeTranslation": true,
+      "transistor": true,
       "urlCache": true,
       "utmTracking": true,
       "webmentions": true,

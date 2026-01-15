@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Featurebase Feedback',
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
+}, {
+    title: 'Transistor',
+    description: 'Enable Transistor podcast integration',
+    flag: 'transistor'
 }];
 
 const AlphaFeatures: React.FC = () => {
