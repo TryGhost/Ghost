@@ -5,24 +5,28 @@ import type {Filter} from '@tryghost/shade';
 /**
  * Comment filter field keys - single source of truth for filter definitions
  */
-export const COMMENT_FILTER_FIELDS = ['status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
+export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
 export function buildNqlFilter(filters: Filter[]): string | undefined {
     const parts: string[] = [];
-    
+
     for (const filter of filters) {
         if (!filter.values[0]) {
             continue;
         }
 
         switch (filter.field) {
-        case 'status': 
+        case 'id':
+            parts.push(`id:'${filter.values[0]}'`);
+            break;
+
+        case 'status':
             parts.push(`status:${filter.values[0]}`);
             break;
 
-        case 'created_at': 
+        case 'created_at':
             if (filter.operator === 'before' && filter.values[0]) {
                 parts.push(`created_at:<'${filter.values[0]}'`);
             } else if (filter.operator === 'after' && filter.values[0]) {
@@ -30,20 +34,20 @@ export function buildNqlFilter(filters: Filter[]): string | undefined {
             } else if (filter.operator === 'is' && filter.values[0]) {
                 // Match all items from the selected day in the user's timezone
                 const dateValue = String(filter.values[0]); // Format: YYYY-MM-DD
-                    
+
                 // Create Date objects in user's local timezone, then convert to UTC
                 const startOfDay = new Date(dateValue + 'T00:00:00').toISOString();
                 const endOfDay = new Date(dateValue + 'T23:59:59.999').toISOString();
-                    
+
                 parts.push(`created_at:>='${startOfDay}'+created_at:<='${endOfDay}'`);
             }
             break;
 
-        case 'body': 
+        case 'body':
             const value = filter.values[0] as string;
             // Escape single quotes in the value
             const escapedValue = value.replace(/'/g, '\\\'');
-                    
+
             if (filter.operator === 'contains') {
                 parts.push(`html:~'${escapedValue}'`);
             } else if (filter.operator === 'not_contains') {
@@ -51,7 +55,7 @@ export function buildNqlFilter(filters: Filter[]): string | undefined {
             }
             break;
 
-        case 'post': 
+        case 'post':
             if (filter.operator === 'is_not') {
                 parts.push(`post_id:-${filter.values[0]}`);
             } else {
@@ -60,7 +64,7 @@ export function buildNqlFilter(filters: Filter[]): string | undefined {
             }
             break;
 
-        case 'author': 
+        case 'author':
             if (filter.operator === 'is_not') {
                 parts.push(`member_id:-${filter.values[0]}`);
             } else {
@@ -78,7 +82,7 @@ export function buildNqlFilter(filters: Filter[]): string | undefined {
             break;
         }
     }
-    
+
     return parts.length ? parts.join('+') : undefined;
 }
 /**
@@ -150,16 +154,23 @@ interface SetFiltersOptions {
     replace?: boolean;
 }
 
+interface ClearFiltersOptions {
+    /** Whether to replace the current history entry (default: true) */
+    replace?: boolean;
+}
+
 interface UseFilterStateReturn {
     filters: Filter[];
     nql: string | undefined;
     setFilters: (action: SetFiltersAction, options?: SetFiltersOptions) => void;
-    clearFilters: () => void;
+    clearFilters: (options?: ClearFiltersOptions) => void;
+    /** True when the only active filter is a single comment ID (used for deep linking) */
+    isSingleIdFilter: boolean;
 }
 
 /**
  * Hook to sync comment filter state with URL query parameters
- * 
+ *
  * URL format: ?status=is:published&author=is:member-id&body=contains:search+term
  */
 export function useFilterState(): UseFilterStateReturn {
@@ -181,11 +192,16 @@ export function useFilterState(): UseFilterStateReturn {
     }, [filters, setSearchParams]);
 
     // Clear all filter params from URL
-    const clearFilters = useCallback(() => {
-        setSearchParams(new URLSearchParams(), {replace: true});
+    const clearFilters = useCallback(({replace = true}: {replace?: boolean} = {}) => {
+        setSearchParams(new URLSearchParams(), {replace});
     }, [setSearchParams]);
 
     const nql = useMemo(() => buildNqlFilter(filters), [filters]);
 
-    return {filters, nql, setFilters, clearFilters};
+    // Check if the only active filter is a single comment ID (used for deep linking)
+    const isSingleIdFilter = useMemo(() => {
+        return filters.length === 1 && filters[0].field === 'id';
+    }, [filters]);
+
+    return {filters, nql, setFilters, clearFilters, isSingleIdFilter};
 }
