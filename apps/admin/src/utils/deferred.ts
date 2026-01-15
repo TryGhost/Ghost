@@ -1,4 +1,4 @@
-export const deferred = <T>() => {
+export const deferred = function deferred<T>() {
     let resolve!: (value: T) => void;
     let reject!: (reason?: unknown) => void;
     const promise = new Promise<T>((_resolve, _reject) => {

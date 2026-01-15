@@ -3,8 +3,7 @@ import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFeatureFlag} from '@/hooks/use-feature-flag';
 import {useUserPreferences} from '@/hooks/user-preferences';
-import {deferred} from '@/utils/deferred';
-import type {Deferred} from '@/utils/deferred';
+import {deferred, type Deferred} from '@/utils/deferred';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
 type FeaturebaseFunction = (action: string, options: Record<string, unknown>, callback?: FeaturebaseCallback) => void;
@@ -16,30 +15,30 @@ declare global {
 }
 
 const SDK_URL = 'https://do.featurebase.app/js/sdk.js';
+const DEFAULT_BOARD = 'Feature Request';
 
 let featurebaseSDKPromise: Promise<void> | null = null;
 function loadFeaturebaseSDK(): Promise<void> {
-    if (featurebaseSDKPromise) {
-        return featurebaseSDKPromise;
-    }
-    featurebaseSDKPromise = new Promise((resolve, reject) => {
-        const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
-        if (existingScript) {
-            resolve();
-            return;
-        }
+    if (!featurebaseSDKPromise) {
+        featurebaseSDKPromise = new Promise((resolve, reject) => {
+            const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
+            if (existingScript) {
+                resolve();
+                return;
+            }
 
-        const script = document.createElement('script');
-        script.src = SDK_URL;
-        script.onload = () => resolve();
-        script.onerror = (event) => {
-            script.remove();
-            const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
-            console.error(error);
-            reject(error);
-        };
-        document.head.appendChild(script);
-    });
+            const script = document.createElement('script');
+            script.src = SDK_URL;
+            script.onload = () => resolve();
+            script.onerror = (event) => {
+                script.remove();
+                const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
+                console.error(error);
+                reject(error);
+            };
+            document.head.appendChild(script);
+        });
+    }
     return featurebaseSDKPromise;
 }
 
@@ -72,37 +71,36 @@ export function useFeaturebase(): Featurebase {
     const token = tokenData?.featurebase?.token;
 
     useEffect(() => {
-        if (shouldLoad ) {
+        if (shouldLoad) {
             loadFeaturebaseSDK().catch((err) => {
                 console.error('[Featurebase] Failed to load SDK:', err);
             });
         }
     }, [shouldLoad]);
 
-    const initPromise = useRef<Deferred<void>>(deferred());
+    const deferredInitRef = useRef<Deferred<void>>(deferred());
     useEffect(() => {
-        if (!shouldLoad || !organization || !theme || !token) {
+        if (!shouldLoad || !organization || !token) {
             return;
         }
         void featurebaseSDKPromise?.then(() => {
             window.Featurebase?.('initialize_feedback_widget', {
                 organization,
                 theme,
-                defaultBoard: 'Feature Request',
+                defaultBoard: DEFAULT_BOARD,
                 featurebaseJwt: token
             }, (err) => {
                 // Only gate actions on first init - re-inits (e.g. theme/token changes) are
                 // best-effort. Resolving/rejecting an already-settled promise is a no-op.
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
-                    initPromise.current.reject(err as Error);
+                    deferredInitRef.current.reject(err);
                 } else {
-                    initPromise.current.resolve();
+                    deferredInitRef.current.resolve();
                 }
             });
         });
-    }
-    , [organization, theme, token, shouldLoad]);
+    }, [organization, theme, token, shouldLoad]);
 
     /**
      * Called on hover/focus to start loading SDK + fetching token in advance.
@@ -117,9 +115,13 @@ export function useFeaturebase(): Featurebase {
     }, [featurebaseEnabled]);
 
     const openFeedbackWidget = useCallback((options?: {board?: string}) => {
+        if (!featurebaseEnabled) {
+            return;
+        }
+
         setShouldLoad(true);
 
-        void initPromise.current.promise.then(() => {
+        void deferredInitRef.current.promise.then(() => {
             window.postMessage({
                 target: 'FeaturebaseWidget',
                 data: {
@@ -128,7 +130,7 @@ export function useFeaturebase(): Featurebase {
                 }
             }, '*');
         });
-    }, []);
+    }, [featurebaseEnabled]);
 
     return {openFeedbackWidget, preloadFeedbackWidget};
 }
