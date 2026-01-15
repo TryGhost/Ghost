@@ -29,6 +29,7 @@ const Comments: React.FC = () => {
         isError,
         isFetching,
         isFetchingNextPage,
+        isRefetching,
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
@@ -37,6 +38,9 @@ const Comments: React.FC = () => {
     });
 
     const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
+
+    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
+    const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
     return (
         <CommentsLayout>
@@ -51,7 +55,7 @@ const Comments: React.FC = () => {
                 )}
             </CommentsHeader>
             <CommentsContent>
-                {(isFetching && !isFetchingNextPage) ? (
+                {shouldShowLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <LoadingIndicator size="lg" />
                     </div>
