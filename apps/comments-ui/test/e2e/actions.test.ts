@@ -611,6 +611,74 @@ test.describe('Actions', async () => {
         );
     });
 
+    test('Reply form does not inherit expertise from parent comment author', async ({page}) => {
+        // Set logged-in member with NO expertise
+        mockedApi.setMember({name: 'Jane Replier', expertise: null});
+
+        // Add a comment from a different member who HAS expertise
+        mockedApi.addComment({
+            html: '<p>This is a comment from someone with expertise</p>',
+            member: buildMember({name: 'Expert User', expertise: 'Head of Comments'})
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Verify the parent comment shows the author's expertise
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        await expect(parentComment).toContainText('Head of Comments');
+
+        // Click reply on the parent comment
+        const replyButton = parentComment.getByTestId('reply-button');
+        await replyButton.click();
+
+        // Wait for reply form to appear
+        const replyForm = frame.getByTestId('reply-form');
+        await expect(replyForm).toBeVisible();
+
+        const editor = replyForm.getByTestId('form-editor');
+        await waitEditorFocused(editor);
+
+        // The reply form should show the logged-in member's info, NOT the parent's
+        await expect(replyForm.getByTestId('member-name')).toHaveText('Jane Replier');
+
+        // The expertise button should show "Add your expertise" since the
+        // logged-in member has no expertise - it should NOT show "Head of Comments"
+        const expertiseButton = replyForm.getByTestId('expertise-button');
+        await expect(expertiseButton).toBeVisible();
+        await expect(expertiseButton).toHaveText('·Add your expertise');
+    });
+
+    test('Reply form does not inherit name from parent comment author', async ({page}) => {
+        // Set logged-in member with NO name (null triggers the fallback bug)
+        mockedApi.setMember({name: null, expertise: 'Some Expertise'});
+
+        // Add a comment from a different member who HAS a name
+        mockedApi.addComment({
+            html: '<p>This is a comment from someone with a name</p>',
+            member: buildMember({name: 'Named Author', expertise: null})
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Verify the parent comment shows the author's name
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        await expect(parentComment).toContainText('Named Author');
+
+        // Click reply on the parent comment
+        const replyButton = parentComment.getByTestId('reply-button');
+        await replyButton.click();
+
+        // Wait for reply form to appear
+        const replyForm = frame.getByTestId('reply-form');
+        await expect(replyForm).toBeVisible();
+
+        // The reply form should NOT show the parent comment author's name
+        // It should either show nothing, "Anonymous", or prompt for a name
+        // but definitely NOT "Named Author"
+        const memberName = replyForm.getByTestId('member-name');
+        await expect(memberName).not.toHaveText('Named Author');
+    });
+
     async function deleteComment(page, frame, commentComponent) {
         await commentComponent.getByTestId('more-button').first().click();
         await frame.getByTestId('delete').click();
