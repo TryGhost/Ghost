@@ -91,11 +91,13 @@ export function useFeaturebase(): Featurebase {
                 defaultBoard: DEFAULT_BOARD,
                 featurebaseJwt: token
             }, (err) => {
-                // Only gate actions on first init - re-inits (e.g. theme/token changes) are
-                // best-effort. Resolving/rejecting an already-settled promise is a no-op.
                 if (err) {
                     console.error('[Featurebase] Failed to initialize widget:', err);
                     deferredInitRef.current.reject(err);
+
+                    // reset so we can retry on next interaction
+                    deferredInitRef.current = deferred();
+                    setShouldLoad(false);
                 } else {
                     deferredInitRef.current.resolve();
                 }
