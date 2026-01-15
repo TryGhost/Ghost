@@ -32,6 +32,7 @@ function loadFeaturebaseSDK(): Promise<void> {
             script.onload = () => resolve();
             script.onerror = (event) => {
                 script.remove();
+                featurebaseSDKPromise = null; // Allow retry on next interaction
                 const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
                 console.error(error);
                 reject(error);
