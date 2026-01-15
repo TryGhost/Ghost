@@ -75,4 +75,44 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await expect(postPage).toHaveURL(new RegExp(`/${post.slug}/.*#ghost-comments-${comment.id}`));
         });
     });
+
+    test.describe('deep linking', () => {
+        test.use({labs: {commentModeration: true}});
+
+        test('can deep link to a specific comment by id', async ({page}) => {
+            const post = await postFactory.create({status: 'published'});
+            const member = await memberFactory.create();
+
+            // Create target comment and another comment
+            const targetComment = await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>This is the target comment</p>'
+            });
+            await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>This is another comment</p>'
+            });
+
+            const commentsPage = new CommentsPage(page);
+            await page.goto(`/ghost/#/comments?id=is:${targetComment.id}`);
+            await commentsPage.waitForComments();
+
+            await expect(commentsPage.getCommentRowByText('This is the target comment')).toBeVisible();
+            await expect(commentsPage.getCommentRowByText('This is another comment')).not.toBeVisible();
+
+            await expect(page.getByRole('button', {name: 'Filter'})).not.toBeVisible();
+
+            const showAllButton = page.getByRole('button', {name: 'Show all comments'});
+            await expect(showAllButton).toBeVisible();
+
+            await showAllButton.click();
+            await expect(commentsPage.getCommentRowByText('This is the target comment')).toBeVisible();
+            await expect(commentsPage.getCommentRowByText('This is another comment')).toBeVisible();
+
+            await expect(page.getByRole('button', {name: 'Filter'})).toBeVisible();
+            await expect(showAllButton).not.toBeVisible();
+        });
+    });
 });
