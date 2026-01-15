@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {KoenigEditorBase, type NodeType} from '@tryghost/admin-x-design-system';
+import {KoenigEditorBase, type KoenigInstance, type NodeType} from '@tryghost/admin-x-design-system';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -13,7 +13,7 @@ export interface MemberEmailsEditorProps {
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes = 'DEFAULT_NODES',
+    nodes = 'EMAIL_NODES',
     singleParagraph = false,
     className,
     onChange
@@ -39,7 +39,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             singleParagraph={singleParagraph}
             onChange={handleChange}
         >
-            {() => null}
+            {(koenig: KoenigInstance) => (
+                <>
+                    <koenig.ReplacementStringsPlugin />
+                    <koenig.ListPlugin />
+                    <koenig.HorizontalRulePlugin />
+                </>
+            )}
         </KoenigEditorBase>
     );
 };
