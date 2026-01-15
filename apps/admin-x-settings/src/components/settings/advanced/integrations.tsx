@@ -2,6 +2,7 @@ import IntegrationsSettingsImg from '../../../assets/images/integrations-setting
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -80,15 +81,17 @@ const BuiltInIntegrations: React.FC = () => {
     };
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+    const transistorFeatureEnabled = useFeatureFlag('transistor');
 
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorActive] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
-        'slack_username'
+        'slack_username',
+        'transistor'
     ]);
 
     return (
@@ -142,6 +145,19 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<Icon name='pintura' size={32} />}
                 testId='pintura-integration'
                 title='Pintura' />
+
+            {transistorFeatureEnabled && (
+                <IntegrationItem
+                    action={() => {
+                        openModal('integrations/transistor');
+                    }}
+                    active={transistorActive}
+                    detail='Podcast hosting platform'
+                    icon={<Icon name='transistor' size={32} />}
+                    testId='transistor-integration'
+                    title='Transistor' />
+            )}
+
         </List>
     );
 };
