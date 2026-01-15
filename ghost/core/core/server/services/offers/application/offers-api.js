@@ -130,6 +130,43 @@ class OffersAPI {
     }
 
     /**
+     * @param {object} options
+     * @param {string} options.subscriptionId
+     * @param {string} options.tierId
+     * @param {'month'|'year'} options.cadence
+     * @param {'signup'|'retention'} [options.redemptionType]
+     * @returns {Promise<OfferMapper.OfferDTO[]>}
+     */
+    async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
+        return await this.repository.createTransaction(async (transaction) => {
+            const allOffers = await this.repository.getAll({
+                transacting: transaction,
+                filter: 'status:active'
+            });
+
+            // Filter by tier and cadence
+            let available = allOffers.filter(offer => offer.tier.id === tierId && offer.cadence.value === cadence);
+
+            // Filter by redemption type if specified
+            if (redemptionType) {
+                available = available.filter(offer => offer.redemptionType.value === redemptionType);
+            }
+
+            // Filter out trial offers (can't apply trials to existing subscriptions)
+            available = available.filter(offer => offer.type.value !== 'trial');
+
+            // Filter out offers already redeemed on this subscription
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
+                subscriptionId,
+                transacting: transaction
+            });
+            available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
+
+            return available.map(OfferMapper.toDTO);
+        });
+    }
+
+    /**
      * @param {object} coupon
      * @param {string} coupon.id
      * @param {number} [coupon.percent_off]
