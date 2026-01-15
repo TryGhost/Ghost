@@ -5,7 +5,6 @@ import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
 import LockIcon from './assets/icons/kg-lock.svg?react';
 import React, {useState} from 'react';
-import ReplacementStringsPlugin from '../src/plugins/ReplacementStringsPlugin';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import Watermark from './components/Watermark';
@@ -16,9 +15,10 @@ import emailContent from './content/email-content.json';
 import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    BASIC_NODES, BASIC_TRANSFORMERS, EMAIL_NODES, EMAIL_TRANSFORMERS,
-    KoenigComposableEditor, KoenigComposer, KoenigEditor, ListPlugin, MINIMAL_NODES,
-    MINIMAL_TRANSFORMERS, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
+    BASIC_NODES, BASIC_TRANSFORMERS, EMAIL_NODES,
+    KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigEmailEditor,
+    MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin,
+    TKCountPlugin, WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
@@ -159,17 +159,13 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
         );
     } else if (editorType === 'email') {
         return (
-            <KoenigComposableEditor
+            <KoenigEmailEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
-                isSnippetsEnabled={false}
-                markdownTransformers={EMAIL_TRANSFORMERS}
                 placeholderText="Begin writing your email..."
                 registerAPI={registerAPI}
             >
-                <ListPlugin />
-                <ReplacementStringsPlugin />
                 <WordCountPlugin onChange={setWordCount} />
-            </KoenigComposableEditor>
+            </KoenigEmailEditor>
         );
     }
 

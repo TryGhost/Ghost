@@ -9,7 +9,6 @@ import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {LinkNode} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 
-import {AsideNode} from './AsideNode';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 
 const EMAIL_NODES = [
@@ -19,7 +18,6 @@ const EMAIL_NODES = [
     ExtendedHeadingNode,
     extendedHeadingNodeReplacement,
     QuoteNode,
-    AsideNode,
     ListNode,
     ListItemNode,
     LinkNode,

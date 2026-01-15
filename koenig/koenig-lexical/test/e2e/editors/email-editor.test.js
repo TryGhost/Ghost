@@ -93,7 +93,7 @@ test.describe('Koenig Editor with email template nodes', async function () {
 
         test('can create horizontal rules with --- shortcut', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">

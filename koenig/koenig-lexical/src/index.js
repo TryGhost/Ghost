@@ -4,6 +4,7 @@ import KoenigCardWrapper from './components/KoenigCardWrapper';
 import KoenigComposableEditor from './components/KoenigComposableEditor';
 import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
+import KoenigEmailEditor from './components/KoenigEmailEditor';
 import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
@@ -64,6 +65,7 @@ export {
     KoenigComposableEditor,
     KoenigComposer,
     KoenigEditor,
+    KoenigEmailEditor,
     KoenigNestedComposer,
     KoenigCardWrapper,
 
