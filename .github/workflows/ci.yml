@@ -246,7 +246,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.base_commit }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -477,7 +477,7 @@ jobs:
       - name: Build remaining assets
         run: yarn nx run-many -t build --exclude=ghost-admin
 
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.base_commit }}
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == env.NODE_VERSION
