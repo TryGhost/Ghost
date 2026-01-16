@@ -49,7 +49,7 @@ describe('Process Outbox Job', function () {
             status: 'active',
             name: 'Free Member Welcome Email',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-            subject: 'Welcome to {{site.title}}',
+            subject: 'Welcome to {site_title}',
             lexical,
             created_at: new Date()
         });

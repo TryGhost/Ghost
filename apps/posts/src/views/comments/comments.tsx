@@ -6,11 +6,14 @@ import CommentsList from './components/comments-list';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
 
 const Comments: React.FC = () => {
-    const {filters, nql, setFilters} = useFilterState();
+    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
+    const {data: configData} = useBrowseConfig();
+    const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
 
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
@@ -20,7 +23,7 @@ const Comments: React.FC = () => {
             return [...filtered, createFilter(field, operator, [value])];
         }, {replace: false});
     }, [setFilters]);
-    
+
     const {
         data,
         isError,
@@ -38,12 +41,14 @@ const Comments: React.FC = () => {
     return (
         <CommentsLayout>
             <CommentsHeader>
-                <CommentsFilters 
-                    filters={filters} 
-                    knownMembers={knownMembers}
-                    knownPosts={knownPosts}
-                    onFiltersChange={setFilters}
-                />
+                {!isSingleIdFilter && (
+                    <CommentsFilters
+                        filters={filters}
+                        knownMembers={knownMembers}
+                        knownPosts={knownPosts}
+                        onFiltersChange={setFilters}
+                    />
+                )}
             </CommentsHeader>
             <CommentsContent>
                 {(isFetching && !isFetchingNextPage) ? (
@@ -71,15 +76,25 @@ const Comments: React.FC = () => {
                         </EmptyIndicator>
                     </div>
                 ) : (
-                    <CommentsList
-                        fetchNextPage={fetchNextPage}
-                        hasNextPage={hasNextPage}
-                        isFetchingNextPage={isFetchingNextPage}
-                        isLoading={isFetching && !isFetchingNextPage}
-                        items={data?.comments ?? []}
-                        totalItems={data?.meta?.pagination?.total ?? 0}
-                        onAddFilter={handleAddFilter}
-                    />
+                    <>
+                        <CommentsList
+                            commentPermalinksEnabled={commentPermalinksEnabled}
+                            fetchNextPage={fetchNextPage}
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            isLoading={isFetching && !isFetchingNextPage}
+                            items={data?.comments ?? []}
+                            totalItems={data?.meta?.pagination?.total ?? 0}
+                            onAddFilter={handleAddFilter}
+                        />
+                        {isSingleIdFilter && (
+                            <div className="flex justify-center py-8">
+                                <Button variant="outline" onClick={() => clearFilters({replace: false})}>
+                                    Show all comments
+                                </Button>
+                            </div>
+                        )}
+                    </>
                 )}
             </CommentsContent>
         </CommentsLayout>

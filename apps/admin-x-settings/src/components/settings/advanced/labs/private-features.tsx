@@ -32,10 +32,6 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
-    title: 'UTM tracking',
-    description: 'Enables UTM tracking for web traffic and member attribution',
-    flag: 'utmTracking'
-}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
@@ -67,6 +63,14 @@ const features: Feature[] = [{
     title: 'IndexNow',
     description: 'Automatically notify search engines when content is published or updated for faster indexing.',
     flag: 'indexnow'
+}, {
+    title: 'Featurebase Feedback',
+    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
+    flag: 'featurebaseFeedback'
+}, {
+    title: 'Transistor',
+    description: 'Enable Transistor podcast integration',
+    flag: 'transistor'
 }];
 
 const AlphaFeatures: React.FC = () => {
