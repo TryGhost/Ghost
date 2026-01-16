@@ -5,7 +5,7 @@ const CommentsServiceEmailRenderer = require('./comments-service-email-renderer'
 const {t} = require('../i18n');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, labs}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
@@ -14,7 +14,22 @@ class CommentsServiceEmails {
         this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
+        this.labs = labs;
         this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({t});
+    }
+
+    /**
+     * Build the post URL with comment fragment for email links
+     * @param {string} postId - The ID of the post
+     * @param {string} commentId - The ID of the comment to link to
+     * @returns {string} The post URL with appropriate comment fragment
+     */
+    getPostUrl(postId, commentId) {
+        const baseUrl = this.urlService.getUrlByResourceId(postId, {absolute: true});
+        if (this.labs.isSet('commentPermalinks')) {
+            return `${baseUrl}#ghost-comments-${commentId}`;
+        }
+        return `${baseUrl}#ghost-comments-root`;
     }
 
     async notifyPostAuthors(comment) {
@@ -36,7 +51,7 @@ class CommentsServiceEmails {
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 postTitle: post.get('title'),
-                postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
+                postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
                 commentHtml: comment.get('html'),
                 commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
                 memberName: memberName,
@@ -98,7 +113,7 @@ class CommentsServiceEmails {
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
+            postUrl: this.getPostUrl(post.get('id'), reply.get('id')),
             replyHtml: reply.get('html'),
             replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             memberName: memberName,
@@ -139,12 +154,14 @@ class CommentsServiceEmails {
 
         const memberName = member.get('name') || 'Anonymous';
 
+        const commentModerationEnabled = this.labs.isSet('commentModeration');
+
         const templateData = {
             siteTitle: this.settingsCache.get('title'),
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
+            postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
             commentHtml: comment.get('html'),
             commentText: htmlToPlaintext.comment(comment.get('html')),
             commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
@@ -160,7 +177,9 @@ class CommentsServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
             toEmail: to,
-            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`)
+            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`),
+            commentModerationEnabled,
+            moderationUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/comments/?id=is:${comment.get('id')}`)
         };
 
         const {html, text} = await this.commentsServiceEmailRenderer.renderEmailTemplate('report', templateData);
