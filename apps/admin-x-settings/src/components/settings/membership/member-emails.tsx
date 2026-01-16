@@ -30,7 +30,7 @@ const EmailPreview: React.FC<{
     const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
 
     return (
-        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5'>
+        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-950'>
             <div className='flex items-start gap-3'>
                 {icon ?
                     <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{

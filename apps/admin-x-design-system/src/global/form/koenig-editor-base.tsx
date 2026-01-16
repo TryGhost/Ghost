@@ -16,6 +16,7 @@ export interface KoenigEditorBaseProps {
     darkMode?: boolean
     singleParagraph?: boolean
     className?: string
+    inheritFontStyles?: boolean
 }
 
 declare global {
@@ -165,14 +166,16 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
     children,
     initialEditorState,
     onChange,
+    inheritFontStyles = true,
     ...props
 }) => {
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const inheritClasses = inheritFontStyles ? '[&_*]:!font-inherit [&_*]:!text-inherit' : '';
 
     return (
         <div className={className || 'w-full'}>
-            <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
+            <div className={`koenig-react-editor w-full ${inheritClasses}`}>
                 <ErrorBoundary name='editor'>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigWrapper

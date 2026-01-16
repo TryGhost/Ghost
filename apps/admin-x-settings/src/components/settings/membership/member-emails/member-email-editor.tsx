@@ -33,6 +33,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         <KoenigEditorBase
             className={className}
             emojiPicker={false}
+            inheritFontStyles={false}
             initialEditorState={value}
             nodes={nodes}
             placeholder={placeholder}
