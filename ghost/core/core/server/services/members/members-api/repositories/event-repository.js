@@ -34,7 +34,7 @@ module.exports = class EventRepository {
         labsService,
         memberAttributionService,
         MemberEmailChangeEvent,
-        MemberAutomatedEmailEvent
+        AutomatedEmailRecipient
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -52,7 +52,7 @@ module.exports = class EventRepository {
         this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
-        this._MemberAutomatedEmailEvent = MemberAutomatedEmailEvent;
+        this._AutomatedEmailRecipient = AutomatedEmailRecipient;
     }
 
     async getEventTimeline(options = {}) {
@@ -316,24 +316,28 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member', 'automatedEmail'],
-            filter: 'custom:true',
+            filter: 'processed_at:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 replaceCustomFilterTransformer(filter),
                 ...mapKeys({
-                    'data.created_at': 'created_at',
+                    'data.created_at': 'processed_at',
                     'data.member_id': 'member_id'
                 })
             )
         };
+        options.order = options.order.replace(/created_at/g, 'processed_at');
 
-        const {data: models, meta} = await this._MemberAutomatedEmailEvent.findPage(options);
+        const {data: models, meta} = await this._AutomatedEmailRecipient.findPage(options);
 
         const data = models.map((model) => {
             return {
                 type: 'automated_email_sent_event',
                 data: {
-                    ...model.toJSON(options),
+                    id: model.id,
+                    member_id: model.get('member_id'),
+                    created_at: model.get('processed_at'),
+                    member: model.related('member').toJSON(),
                     automatedEmail: model.related('automatedEmail')?.toJSON()
                 }
             };

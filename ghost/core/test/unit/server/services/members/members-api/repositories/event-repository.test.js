@@ -307,7 +307,7 @@ describe('EventRepository', function () {
         let fake;
 
         before(function () {
-            fake = sinon.fake.returns({data: [{toJSON: () => ({}), related: () => ({toJSON: () => ({})})}]});
+            fake = sinon.fake.returns({data: [{id: '123', get: () => 'test', related: () => ({toJSON: () => ({})})}]});
             eventRepository = new EventRepository({
                 EmailRecipient: null,
                 MemberSubscribeEvent: null,
@@ -315,7 +315,7 @@ describe('EventRepository', function () {
                 MemberStatusEvent: null,
                 MemberLoginEvent: null,
                 MemberPaidSubscriptionEvent: null,
-                MemberAutomatedEmailEvent: {
+                AutomatedEmailRecipient: {
                     findPage: fake
                 },
                 labsService: null
@@ -328,31 +328,32 @@ describe('EventRepository', function () {
 
         it('works when setting no filters', async function () {
             await eventRepository.getAutomatedEmailSentEvents({
-                filter: 'not used'
+                filter: 'not used',
+                order: 'created_at desc'
             }, {
                 type: 'unused'
             });
             sinon.assert.calledOnce(fake);
             fake.getCall(0).firstArg.should.match({
                 withRelated: ['member', 'automatedEmail'],
-                filter: 'custom:true'
+                filter: 'processed_at:-null+custom:true'
             });
         });
 
         it('works when setting a created_at filter', async function () {
-            await eventRepository.getAutomatedEmailSentEvents({}, {
+            await eventRepository.getAutomatedEmailSentEvents({order: 'created_at desc'}, {
                 'data.created_at': 'data.created_at:123'
             });
 
             sinon.assert.calledOnce(fake);
             fake.getCall(0).firstArg.should.match({
                 withRelated: ['member', 'automatedEmail'],
-                filter: 'custom:true'
+                filter: 'processed_at:-null+custom:true'
             });
         });
 
         it('works when setting a combination of filters', async function () {
-            await eventRepository.getAutomatedEmailSentEvents({}, {
+            await eventRepository.getAutomatedEmailSentEvents({order: 'created_at desc'}, {
                 'data.created_at': 'data.created_at:123+data.created_at:<99999',
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
@@ -360,7 +361,7 @@ describe('EventRepository', function () {
             sinon.assert.calledOnce(fake);
             fake.getCall(0).firstArg.should.match({
                 withRelated: ['member', 'automatedEmail'],
-                filter: 'custom:true'
+                filter: 'processed_at:-null+custom:true'
             });
         });
     });

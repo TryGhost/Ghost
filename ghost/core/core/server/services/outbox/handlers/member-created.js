@@ -1,6 +1,6 @@
 const {OUTBOX_LOG_KEY} = require('../jobs/lib/constants');
 const memberWelcomeEmailService = require('../../member-welcome-emails/service');
-const {MemberAutomatedEmailEvent, AutomatedEmail} = require('../../../models');
+const {AutomatedEmailRecipient, AutomatedEmail, Member} = require('../../../models');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../member-welcome-emails/constants');
 const ObjectId = require('bson-objectid').default;
 
@@ -11,13 +11,17 @@ async function handle({payload}) {
 
     const slug = MEMBER_WELCOME_EMAIL_SLUGS[payload.status];
     const automatedEmail = await AutomatedEmail.findOne({slug});
+    const member = await Member.findOne({id: payload.id});
 
-    if (automatedEmail) {
-        await MemberAutomatedEmailEvent.add({
+    if (automatedEmail && member) {
+        await AutomatedEmailRecipient.add({
             id: ObjectId().toHexString(),
-            member_id: payload.memberId,
             automated_email_id: automatedEmail.id,
-            created_at: new Date()
+            member_id: member.id,
+            processed_at: new Date(),
+            member_uuid: member.get('uuid'),
+            member_email: member.get('email'),
+            member_name: member.get('name')
         });
     }
 }
