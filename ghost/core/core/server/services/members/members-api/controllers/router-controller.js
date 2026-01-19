@@ -195,6 +195,57 @@ module.exports = class RouterController {
         res.end(JSON.stringify(sessionInfo));
     }
 
+    async createBillingPortalSession(req, res) {
+        const identity = req.body.identity;
+
+        if (!identity) {
+            res.writeHead(400);
+            return res.end();
+        }
+
+        let email;
+        try {
+            const claims = await this._tokenService.decodeToken(identity);
+            email = claims && claims.sub;
+        } catch (err) {
+            logging.error(err);
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        const member = email ? await this._memberRepository.get({email}) : null;
+
+        if (!member) {
+            res.writeHead(403);
+            return res.end('Bad Request.');
+        }
+
+        const subscriptions = await member.related('stripeSubscriptions').fetch();
+
+        let customer;
+        if (!req.body.subscription_id) {
+            customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+        } else {
+            const subscription = subscriptions.models.find((sub) => {
+                return sub.get('subscription_id') === req.body.subscription_id;
+            });
+
+            customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+        }
+
+        const session = await this._stripeAPIService.createBillingPortalSession(customer, {
+            returnUrl: req.body.returnUrl
+        });
+        const sessionInfo = {
+            url: session.url
+        };
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        });
+
+        res.end(JSON.stringify(sessionInfo));
+    }
+
     async _setAttributionMetadata(metadata) {
         // Don't allow to set the source manually
         delete metadata.attribution_id;
