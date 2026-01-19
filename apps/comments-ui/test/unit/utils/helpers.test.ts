@@ -1,7 +1,7 @@
-import * as helpers from './helpers';
+import * as helpers from '../../../src/utils/helpers';
 import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
-import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test/utils/fixtures';
+import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
