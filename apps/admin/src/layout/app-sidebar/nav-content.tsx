@@ -135,7 +135,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             <SidebarMenuBadge>
-                                {typeof memberCount === 'number' ? formatNumber(memberCount) : '0'}
+                                {memberCount != null ? formatNumber(memberCount as Number) : '0'}
                             </SidebarMenuBadge>
                         </NavMenuItem>
                     )}
