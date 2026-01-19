@@ -9078,14 +9078,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-5.1.1.tgz#de490aa9847294ee7de70be816ce21e6b8737f1b"
   integrity sha512-VeQOz36U6J+ZNcgiDSJI+qu7MO2ORN8YtDsZoFxhH/EilCHAGWBURgv2qfx3AP4ScI4KCx+cBjt6gm+u1aYI5A==
 
-"@tryghost/kg-default-cards@10.2.3":
-  version "10.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.2.3.tgz#62514f6a3633bd8c177fc15d6283a71c6e4ec34e"
-  integrity sha512-gMccb5uo0f3i44duPT852YhXMT/p2rGW9L6VTBbw2PwVTanSS4D7T+zXAQgvXo/ITkNkCHDngSQt+iFsjCQf3A==
+"@tryghost/kg-default-cards@10.2.4":
+  version "10.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-10.2.4.tgz#66fba24c095e2a4c83da9aa62bc1b15aa876475d"
+  integrity sha512-KAlyreUjqpo668K7z5dNGDWrR/2fWGN+FnVvP/5C1PF20pJQyPHeWrMhhzsAZ21WaDeUhVK3sTKfknCgXjFySw==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "7.1.7"
     "@tryghost/string" "0.2.17"
-    "@tryghost/url-utils" "5.1.0"
+    "@tryghost/url-utils" "5.1.2"
     handlebars "^4.7.6"
     juice "^10.0.0"
     lodash "^4.17.21"
@@ -9456,10 +9456,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/url-utils@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-5.1.0.tgz#61d4275a0071d196bc6daaab100221aa0a2a65e1"
-  integrity sha512-BnHRS3oZwCzkTK0ncaRi0+69EAWjvx6AnJRMas6/oisfu2Rv4ahbne0bI8LmJ4ym7eNLn9M9lA5Cmb4Yjed6xw==
+"@tryghost/url-utils@5.1.2":
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-5.1.2.tgz#bafbdf1224f463fc72207a01a4f0e438d3f584fb"
+  integrity sha512-GGZRfdVdk7jE1puqfBCeaAMeQ/Gd0NUkbqhj4gRSCWKW97JDpoiu5Fwyutt3vq3U3X4ZsfLfKs0NtAfUez0oog==
   dependencies:
     cheerio "^0.22.0"
     lodash "^4.17.21"
