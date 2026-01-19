@@ -896,18 +896,26 @@ module.exports = class RouterController {
             return res.end(tpl(messages.memberNotFound));
         }
 
-        // Find the primary active subscription
+        // Find active subscriptions
         const subscriptions = member.related('stripeSubscriptions');
-        const activeSubscription = subscriptions.models.find((sub) => {
+        const activeSubscriptions = subscriptions.models.filter((sub) => {
             const status = sub.get('status');
             return ['active', 'trialing', 'past_due', 'unpaid'].includes(status);
         });
 
-        if (!activeSubscription) {
+        if (activeSubscriptions.length === 0) {
             // No active subscription - return empty offers
             res.writeHead(200, {'Content-Type': 'application/json'});
             return res.end(JSON.stringify({offers: []}));
         }
+
+        if (activeSubscriptions.length > 1) {
+            // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        const activeSubscription = activeSubscriptions[0];
 
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {

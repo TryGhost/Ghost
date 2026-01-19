@@ -1495,5 +1495,87 @@ describe('RouterController', function () {
             // Should NOT call offersAPI because we return early
             assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
         });
+
+        it('returns empty offers when member has multiple active subscriptions', async function () {
+            const mockOffersAPI = {
+                listOffersAvailableToSubscription: sinon.stub().resolves([])
+            };
+
+            const tokenService = {
+                decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
+            };
+
+            const mockProduct = {
+                id: 'product_123'
+            };
+
+            const mockStripeProduct = {
+                id: 'stripe_product_123',
+                related: sinon.stub().withArgs('product').returns(mockProduct)
+            };
+
+            const mockStripePrice = {
+                id: 'price_123',
+                get: sinon.stub().withArgs('interval').returns('month'),
+                related: sinon.stub().withArgs('stripeProduct').returns(mockStripeProduct)
+            };
+
+            // Two active subscriptions
+            const mockStripeSubscription1 = {
+                id: 'sub_123',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    return null;
+                }),
+                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
+            };
+
+            const mockStripeSubscription2 = {
+                id: 'sub_456',
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'status') {
+                        return 'active';
+                    }
+                    return null;
+                }),
+                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
+            };
+
+            const mockMember = {
+                get: sinon.stub().returns('paid'),
+                related: sinon.stub().withArgs('stripeSubscriptions').returns({
+                    models: [mockStripeSubscription1, mockStripeSubscription2]
+                })
+            };
+
+            const memberRepository = {
+                get: sinon.stub().resolves(mockMember)
+            };
+
+            const routerController = new RouterController({
+                offersAPI: mockOffersAPI,
+                memberRepository,
+                tokenService,
+                stripeAPIService: {configured: true}
+            });
+
+            let responseData;
+            const res = {
+                writeHead: sinon.stub(),
+                end: sinon.stub().callsFake((data) => {
+                    responseData = JSON.parse(data);
+                })
+            };
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: []});
+            // Should NOT call offersAPI because we return early due to multiple subscriptions
+            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+        });
     });
 });
