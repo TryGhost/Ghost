@@ -91,7 +91,8 @@ const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
             label: v === 'mobile-ios' ? 'iOS' :
                 v === 'mobile-android' ? 'Android' :
                     v === 'desktop' ? 'Desktop' :
-                        v === 'bot' ? 'Bot' : v
+                        v === 'bot' ? 'Bot' :
+                            v === 'unknown' ? 'Unknown' : v
         })
     }
 };
