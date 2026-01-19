@@ -14,8 +14,10 @@ export default class EmailSizeWarningComponent extends Component {
     get isEnabled() {
         return this.settings.editorDefaultEmailRecipients !== 'disabled'
             && this.args.post
-            && !this.args.post.email
-            && !this.args.post.isNew;
+            && !this.args.post.isNew
+            && !this.args.post.hasEmail
+            && !this.args.post.isPublished
+            && !this.args.post.isPage;
     }
 
     constructor() {
