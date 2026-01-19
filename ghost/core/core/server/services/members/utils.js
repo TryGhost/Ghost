@@ -1,4 +1,5 @@
-const {serializeCommenting} = require('../../api/endpoints/utils/serializers/output/utils/member-commenting');
+const {z} = require('zod');
+const {MemberCommentingResponseSchema} = require('../../api/endpoints/utils/serializers/output/schemas/member-commenting');
 
 function formatNewsletterResponse(newsletters) {
     return newsletters.map(({id, uuid, name, description, sort_order: sortOrder}) => {
@@ -31,7 +32,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         created_at: member.created_at,
         enable_comment_notifications: member.enable_comment_notifications,
         can_comment: member.can_comment,
-        commenting: serializeCommenting(member.commenting)
+        commenting: z.nullish(MemberCommentingResponseSchema).parse(member.commenting)
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

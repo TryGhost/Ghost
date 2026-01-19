@@ -214,7 +214,8 @@
     "terser": "5.44.0",
     "tiny-glob": "0.2.9",
     "ua-parser-js": "1.0.41",
-    "xml": "1.0.1"
+    "xml": "1.0.1",
+    "zod": "4"
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "3.2.8",

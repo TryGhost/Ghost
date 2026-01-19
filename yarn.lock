@@ -8755,12 +8755,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/adapter-base-cache/-/adapter-base-cache-0.1.17.tgz#f4888df242ed8b43f809400204199a7d1803c8dd"
   integrity sha512-q6eS747LnnuVN4KEolnOHwT8JcjMLA6HCZFIfEBLTVm/a4Gc64kU2L1Usyuxm+QUzwONWSx0eVcsBzcMcjHCBg==
 
-"@tryghost/admin-api-schema@4.5.10":
-  version "4.5.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.5.10.tgz#5c477f80c8773e5c21c527bbf5050a1ac662a8ea"
-  integrity sha512-emM5Dc71aWjibjou0orm6NG7RwJIZ5xF2p4tnV8J4PuqVLZ5MbazvOPgS12ubN+19kYtRoiBnB4vg0A0eSKhLw==
+"@tryghost/admin-api-schema@4.6.1":
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.6.1.tgz#04a8d7d9a95d78357f972f6262bbcfc29af9f305"
+  integrity sha512-krDzxqQaKqqEgv96eReM2pvswsmwB7W7fe4wReWRwH2JgOYJlVxgRa/z9N3Dtop0qHibrI8XAdCTyReoqQ0G/Q==
   dependencies:
-    "@tryghost/errors" "^1.2.26"
+    "@tryghost/errors" "1.3.8"
     ajv "^6.12.6"
     lodash "^4.17.11"
 
@@ -8961,7 +8961,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.3.6", "@tryghost/errors@1.3.8", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.7", "@tryghost/errors@^1.3.8":
+"@tryghost/errors@1.3.6", "@tryghost/errors@1.3.8", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.8":
   version "1.3.8"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.3.8.tgz#d4212b52e876360b4fa8e303ae13ef86f3e95846"
   integrity sha512-2+4ExAAWM0rFWC7FlzxQMzIvIEQKt/vQLxLyqJqCmAcJa4i2uqUPJHqd/X5BBRuSTuftgca7EAo7adESbHEkZw==
@@ -26472,7 +26472,7 @@ numbered@^1.1.0:
   resolved "https://registry.yarnpkg.com/numbered/-/numbered-1.1.0.tgz#9fcd79564c73a84b9574e8370c3d8e58fe3c133c"
   integrity sha512-pv/ue2Odr7IfYOO0byC1KgBI10wo5YDauLhxY6/saNzAdAs0r1SotGCPzzCLNPL0xtrAwWRialLu23AAu9xO1g==
 
-nwsapi@2.2.12, nwsapi@^2.2.0, nwsapi@^2.2.10, nwsapi@^2.2.12:
+nwsapi@^2.2.0, nwsapi@^2.2.10, nwsapi@^2.2.12:
   version "2.2.12"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.12.tgz#fb6af5c0ec35b27b4581eb3bbad34ec9e5c696f8"
   integrity sha512-qXDmcVlZV4XRtKFzddidpfVP4oMSGhga+xdMc25mv8kaLUHtgzCDhUxkrN8exkGdTlLNaXj7CV3GtON7zuGZ+w==
@@ -34712,6 +34712,11 @@ zip-stream@^4.1.0:
     archiver-utils "^2.1.0"
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
+
+zod@4:
+  version "4.3.5"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.3.5.tgz#aeb269a6f9fc259b1212c348c7c5432aaa474d2a"
+  integrity sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==
 
 zod@4.1.12, zod@^4.1.12:
   version "4.1.12"
