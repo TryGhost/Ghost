@@ -20,7 +20,7 @@ async function handle({payload}) {
             await AutomatedEmailRecipient.add({
                 id: ObjectId().toHexString(),
                 automated_email_id: automatedEmail.id,
-                member_id: payload.id,
+                member_id: payload.memberId,
                 processed_at: new Date(),
                 member_uuid: payload.uuid,
                 member_email: payload.email,
@@ -30,10 +30,7 @@ async function handle({payload}) {
             logging.warn(`${LOG_KEY} Could not track welcome email - automated email not found for slug: ${slug}`);
         }
     } catch (err) {
-        logging.error({
-            message: `${LOG_KEY} Failed to track welcome email send for member ${payload.id}`,
-            err
-        });
+        logging.error(`${LOG_KEY} Failed to track welcome email send for member ${payload.memberId}: ${JSON.stringify(err)}`);
     }
 }
 
