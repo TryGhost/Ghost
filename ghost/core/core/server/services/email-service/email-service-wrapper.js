@@ -106,7 +106,6 @@ class EmailServiceWrapper {
 
         const domainWarmingService = new DomainWarmingService({
             models: {Email},
-            labs,
             config: configService
         });
 

@@ -15,10 +15,6 @@ export type EmailAddressesValidation = {
 
 export type EmailAddressType = 'from' | 'replyTo';
 
-type LabsService = {
-    isSet: (flag: string) => boolean
-}
-
 type GetAddressOptions = {
     useFallbackAddress: boolean
 }
@@ -30,7 +26,6 @@ export class EmailAddressService {
     #getFallbackDomain: () => string | null;
     #getFallbackEmail: () => EmailAddress | null;
     #isValidEmailAddress: (email: string) => boolean;
-    #labs: LabsService;
 
     constructor(dependencies: {
         getManagedEmailEnabled: () => boolean,
@@ -38,9 +33,7 @@ export class EmailAddressService {
         getFallbackDomain: () => string | null,
         getDefaultEmail: () => EmailAddress,
         getFallbackEmail: () => string | null,
-        isValidEmailAddress: (email: string) => boolean,
-        labs: LabsService
-
+        isValidEmailAddress: (email: string) => boolean
     }) {
         this.#getManagedEmailEnabled = dependencies.getManagedEmailEnabled;
         this.#getSendingDomain = dependencies.getSendingDomain;
@@ -54,7 +47,6 @@ export class EmailAddressService {
             return EmailAddressParser.parse(fallbackAddress);
         };
         this.#isValidEmailAddress = dependencies.isValidEmailAddress;
-        this.#labs = dependencies.labs;
     }
 
     get sendingDomain(): string | null {
@@ -117,7 +109,7 @@ export class EmailAddressService {
         }
 
         // Case: use fallback address when warming up custom domain
-        if (this.#labs.isSet('domainWarmup') && options.useFallbackAddress) {
+        if (options.useFallbackAddress) {
             const fallbackEmail = this.fallbackEmail;
             if (fallbackEmail) {
                 if (!fallbackEmail.name) {

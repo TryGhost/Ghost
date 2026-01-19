@@ -3,13 +3,11 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
-const labs = require('../../../../core/shared/labs');
 const configUtils = require('../../../utils/config-utils');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
     let clock;
-    let labsStub;
 
     before(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
@@ -93,14 +91,6 @@ describe('Domain Warming Integration Tests', function () {
         mockManager.mockMailgun();
         mockManager.mockStripe();
 
-        // Enable the domain warming labs flag
-        labsStub = sinon.stub(labs, 'isSet').callsFake((key) => {
-            if (key === 'domainWarmup') {
-                return true;
-            }
-            return false;
-        });
-
         // Set required config values for domain warming
         configUtils.set('hostSettings:managedEmail:fallbackDomain', 'fallback.example.com');
         configUtils.set('hostSettings:managedEmail:fallbackAddress', 'noreply@fallback.example.com');
@@ -111,10 +101,7 @@ describe('Domain Warming Integration Tests', function () {
             clock.restore();
             clock = null;
         }
-        if (labsStub) {
-            labsStub.restore();
-            labsStub = null;
-        }
+
         mockManager.restore();
         await configUtils.restore();
         await jobManager.allSettled();
@@ -262,9 +249,9 @@ describe('Domain Warming Integration Tests', function () {
             }
         });
 
-        it('sends all emails via fallback when domain warming is disabled', async function () {
-            labsStub.restore();
-            labsStub = sinon.stub(labs, 'isSet').returns(false);
+        it('does not warm up when fallback domain and address are not set', async function () {
+            configUtils.set('hostSettings:managedEmail:fallbackDomain', null);
+            configUtils.set('hostSettings:managedEmail:fallbackAddress', null);
 
             await createMembers(50, 'nowarmup');
 
