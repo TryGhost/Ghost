@@ -60,13 +60,34 @@ class PostsService {
      * @returns
      */
     async editPost(frame, options) {
-        // Make sure the newsletter is matching an active newsletter
-        // Note that this option is simply ignored if the post isn't published or scheduled
-        if (frame.options.newsletter && frame.options.email_segment) {
-            if (frame.options.email_segment !== 'all') {
+        let sendingEmail = false;
+        let existingPost = null;
+        let newsletter = null;
+
+        // Determine if we'll be sending an email
+        const newStatus = frame.data.posts[0].status;
+        if (['published', 'sent'].includes(newStatus)) {
+            existingPost = await this.models.Post.findOne(
+                {id: frame.options.id, status: 'all'},
+                {columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter']}
+            );
+            const previousStatus = existingPost?.get('status');
+
+            // Check if we'll be sending an email - either via new newsletter param or existing newsletter on post
+            if (frame.options.newsletter || existingPost?.get('newsletter_id')) {
+                sendingEmail = this.shouldSendEmail(newStatus, previousStatus);
+            }
+        }
+
+        // If we'll be sending an email, pre-check email limits before saving
+        // the post to avoid leaving posts in a stuck "sent" state on failure
+        if (sendingEmail) {
+            const emailRecipientFilter = frame.options.email_segment || existingPost?.get('email_recipient_filter') || 'all';
+
+            if (emailRecipientFilter && emailRecipientFilter !== 'all') {
                 // check filter is valid
                 try {
-                    await this.models.Member.findPage({filter: frame.options.email_segment, limit: 1});
+                    await this.models.Member.findPage({filter: emailRecipientFilter, limit: 1});
                 } catch (err) {
                     return Promise.reject(new BadRequestError({
                         message: tpl(messages.invalidEmailSegment),
@@ -74,6 +95,22 @@ class PostsService {
                     }));
                 }
             }
+
+            // Validate newsletter and check limits before making changes
+            if (frame.options.newsletter) {
+                newsletter = await this.models.Newsletter.findOne(
+                    {slug: frame.options.newsletter},
+                    {filter: 'status:active'}
+                );
+            } else if (existingPost?.get('newsletter_id')) {
+                newsletter = await this.models.Newsletter.findOne(
+                    {id: existingPost.get('newsletter_id')},
+                    {filter: 'status:active'}
+                );
+            }
+
+            // Throws if email cannot be sent
+            await this.emailService.checkCanSendEmail(newsletter, emailRecipientFilter);
         }
 
         const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
