@@ -80,5 +80,29 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         await expect(postAnalyticsPage.growthButton).toBeVisible();
         await expect(postAnalyticsPage.growthSection.card).toBeVisible();
     });
+
+    test('Growth page redirects to Overview when navigated to directly with member sources tracking disabled', async ({page}) => {
+        const settingsService = new SettingsService(page.request);
+        const postAnalyticsPage = new PostAnalyticsPage(page);
+
+        // Disable member source tracking
+        await settingsService.setMembersTrackSources(false);
+
+        // Navigate directly to the growth page by modifying the current URL
+        const growthUrl = page.url().replace(/\/posts\/analytics\/([^/]+).*/, '/posts/analytics/$1/growth');
+        await page.goto(growthUrl);
+
+        // Should redirect back to overview - URL should not contain /growth
+        await expect(page).toHaveURL(/\/posts\/analytics\/[^/]+$/);
+
+        // Growth tab should not be visible
+        await expect(postAnalyticsPage.growthButton).toBeHidden();
+
+        // Overview tab should be visible and we should be on the overview page
+        await expect(postAnalyticsPage.overviewButton).toBeVisible();
+
+        // Re-enable member source tracking
+        await settingsService.setMembersTrackSources(true);
+    });
 });
 
