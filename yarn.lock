@@ -9981,6 +9981,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/nconf@^0.10.7":
+  version "0.10.7"
+  resolved "https://registry.yarnpkg.com/@types/nconf/-/nconf-0.10.7.tgz#921830f3180700bef1aed07c36d27efd451d5bc0"
+  integrity sha512-ltJgbQX0XgjkeDrz0anTCXLBLatppWYFCxp88ILEwybfAuyNWr0Qb+ceFFqZ0VDR8fguEjr0hH37ZF+AF4gsxw==
+
 "@types/node-fetch@^2.6.4":
   version "2.6.4"
   resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.4.tgz#1bc3a26de814f6bf466b25aeb1473fa1afe6a660"

@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
-const localUtils = require('../../../../core/shared/config/utils');
+
 describe('Config Loader', function () {
     before(async function () {
         await configUtils.restore();
@@ -25,7 +25,7 @@ describe('Config Loader', function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
             loader = rewire('../../../../core/shared/config/loader');
-            nodeEnvStub = sinon.stub(localUtils, 'getNodeEnv').returns('testing');
+            nodeEnvStub = sinon.stub(process.env, 'NODE_ENV').value('testing');
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
@@ -88,7 +88,7 @@ describe('Config Loader', function () {
         });
 
         it('should load JSONC files', function () {
-            nodeEnvStub.returns('development');
+            nodeEnvStub.value('development');
             customConfig = loader.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
