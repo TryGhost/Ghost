@@ -215,6 +215,38 @@ describe('OffersAPI', function () {
 
             assert.equal(result.length, 2);
         });
+
+        it('throws error when required parameters are missing', async function () {
+            const repository = createMockRepository({});
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    subscriptionId: 'sub_123',
+                    tierId: 'tier_123'
+                    // missing cadence
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    subscriptionId: 'sub_123',
+                    cadence: 'month'
+                    // missing tierId
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    tierId: 'tier_123',
+                    cadence: 'month'
+                    // missing subscriptionId
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+        });
     });
 
     describe('#ensureOfferForStripeCoupon', function () {

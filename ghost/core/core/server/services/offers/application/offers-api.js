@@ -138,6 +138,12 @@ class OffersAPI {
      * @returns {Promise<OfferMapper.OfferDTO[]>}
      */
     async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
+        if (!subscriptionId || !tierId || !cadence) {
+            throw new errors.IncorrectUsageError({
+                message: 'subscriptionId, tierId, and cadence are required'
+            });
+        }
+
         return await this.repository.createTransaction(async (transaction) => {
             const allOffers = await this.repository.getAll({
                 transacting: transaction,
