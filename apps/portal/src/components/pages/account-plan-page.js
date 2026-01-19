@@ -298,7 +298,7 @@ function formatOfferDiscount(offer) {
 
 function formatOfferDuration(offer) {
     if (offer.duration === 'once') {
-        return t('your next renewal');
+        return t('your next payment');
     } else if (offer.duration === 'forever') {
         return t('forever');
     } else if (offer.duration === 'repeating' && offer.duration_in_months) {
