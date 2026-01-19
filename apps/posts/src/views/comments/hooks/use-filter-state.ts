@@ -5,7 +5,7 @@ import type {Filter} from '@tryghost/shade';
 /**
  * Comment filter field keys - single source of truth for filter definitions
  */
-export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
+export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'post', 'author', 'reported', 'thread', 'reply_to'] as const;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
 
@@ -79,6 +79,14 @@ export function buildNqlFilter(filters: Filter[]): string | undefined {
             } else if (filter.values[0] === 'false') {
                 parts.push('count.reports:0');
             }
+            break;
+
+        case 'thread':
+            parts.push(`(parent_id:${filter.values[0]},id:${filter.values[0]})`);
+            break;
+
+        case 'reply_to':
+            parts.push(`(in_reply_to_id:${filter.values[0]},id:${filter.values[0]})`);
             break;
         }
     }

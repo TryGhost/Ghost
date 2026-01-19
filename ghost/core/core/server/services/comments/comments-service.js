@@ -200,7 +200,7 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.likes', 'count.reports'],
+            withRelated: ['member', 'post', 'count.replies', 'count.likes', 'count.reports', 'inReplyTo', 'parent'],
             filter,
             mongoTransformer,
             reportCount,

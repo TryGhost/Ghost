@@ -303,7 +303,7 @@ const Comment = ghostBookshelf.Model.extend({
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
                     qb.count('replies.id')
                         .from('comments AS replies')
-                        .whereRaw('replies.parent_id = comments.id')
+                        .whereRaw('replies.parent_id = comments.id OR replies.in_reply_to_id = comments.id')
                         .whereNotIn('replies.status', excludedCommentStatuses)
                         .as('count__replies');
                 });

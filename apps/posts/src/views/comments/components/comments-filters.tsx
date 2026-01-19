@@ -15,12 +15,16 @@ interface CommentsFiltersProps {
     filters: Filter[];
     onFiltersChange: (filters: Filter[]) => void;
     knownPosts: Array<{ id: string; title: string }>;
-    knownMembers: Array<{ id: string; name?: string; email?: string }>;
+    knownMembers: Array<{ id: string; name: string; email: string }>;
+    knownThreads: Array<{ id: string; snippet: string }>;
+    knownReplyTos: Array<{ id: string; snippet: string }>;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     knownPosts,
     knownMembers,
+    knownThreads,
+    knownReplyTos,
     filters,
     onFiltersChange
 }) => {
@@ -130,9 +134,54 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                     {value: 'before', label: 'before'},
                     {value: 'after', label: 'after'}
                 ]
+            },
+            {
+                key: 'thread',
+                label: 'Thread',
+                type: 'select',
+                icon: <LucideIcon.MessageSquare className="size-4" />,
+                // Map known thread parent IDs to their snippets for display
+                options: knownThreads.map(t => ({
+                    value: t.id,
+                    label: t.snippet
+                })),
+                hideOperatorSelect: true
+            },
+            {
+                key: 'reply_to',
+                label: 'Reply to',
+                type: 'select',
+                icon: <LucideIcon.Reply className="size-4" />,
+                // Map known reply-to IDs to their snippets for display
+                options: knownReplyTos.map(r => ({
+                    value: r.id,
+                    label: r.snippet
+                })),
+                hideOperatorSelect: true
             }
         ],
-        [posts, members]
+        [posts, members, knownThreads, knownReplyTos]
+    );
+
+    // Check if there are active thread/reply_to filters
+    const hasThreadFilter = filters.some(f => f.field === 'thread');
+    const hasReplyToFilter = filters.some(f => f.field === 'reply_to');
+
+    // Only include thread/reply_to fields when there's an active filter
+    // This hides them from the add menu but allows them to render when active
+    const visibleFields = useMemo(
+        () => {
+            return filterFields.filter((f) => {
+                if (f.key === 'thread') {
+                    return hasThreadFilter;
+                }
+                if (f.key === 'reply_to') {
+                    return hasReplyToFilter;
+                }
+                return true;
+            });
+        },
+        [filterFields, hasThreadFilter, hasReplyToFilter]
     );
 
     const hasFilters = filters.length > 0;
@@ -161,7 +210,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 className={`[&>button]:order-last ${
                     hasFilters && '[&>button]:border-none'
                 }`}
-                fields={filterFields}
+                fields={visibleFields}
                 filters={filters}
                 keyboardShortcut="f"
                 popoverAlign={hasFilters ? 'start' : 'end'}

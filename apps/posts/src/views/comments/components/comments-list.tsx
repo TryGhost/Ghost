@@ -29,6 +29,7 @@ import {
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Link} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
@@ -298,6 +299,21 @@ function CommentsList({
                                             )}
                                         </div>
 
+                                        {item.in_reply_to_snippet && (
+                                            <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                                                <Link
+                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                    to={item.in_reply_to_id
+                                                        ? `?thread=is:${item.parent_id}&reply_to=is:${item.in_reply_to_id}`
+                                                        : `?thread=is:${item.parent_id}`
+                                                    }
+                                                >
+                                                    {item.in_reply_to_snippet}
+                                                </Link>
+                                            </div>
+                                        )}
+
                                         <CommentContent item={item} />
 
                                         <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
@@ -317,13 +333,27 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
-                                                                <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                                                <span>{formatNumber(item.count?.replies)}</span>
-                                                            </div>
+                                                            {item.count?.replies ? (
+                                                                <Link
+                                                                    className='ml-2 flex items-center gap-1 text-xs text-gray-800 hover:opacity-70'
+                                                                    to={
+                                                                        item.parent_id
+                                                                            ? `?thread=is:${item.parent_id}&reply_to=is:${item.id}`
+                                                                            : `?thread=is:${item.id}`
+                                                                    }
+                                                                >
+                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
+                                                                    <span>{formatNumber(item.count?.replies)}</span>
+                                                                </Link>
+                                                            ) : (
+                                                                <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
+                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
+                                                                    <span>{formatNumber(item.count?.replies)}</span>
+                                                                </div>
+                                                            )}
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            Replies
+                                                            {item.count?.replies ? 'View replies' : 'Replies'}
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>

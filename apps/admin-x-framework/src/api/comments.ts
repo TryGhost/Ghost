@@ -14,6 +14,8 @@ export type Comment = {
     post_id: string;
     member_id: string;
     parent_id: string | null;
+    in_reply_to_id: string | null;
+    in_reply_to_snippet: string | null;
     member?: {
         id: string;
         name: string;
