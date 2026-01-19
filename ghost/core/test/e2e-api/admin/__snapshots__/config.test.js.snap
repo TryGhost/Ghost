@@ -18,7 +18,6 @@ Object {
       "contentVisibility": true,
       "contentVisibilityAlpha": true,
       "customFonts": true,
-      "domainWarmup": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
