@@ -248,7 +248,7 @@ export default class ParseMemberEventHelper extends Helper {
         if (event.type === 'automated_email_sent_event') {
             const slug = event.data.automatedEmail?.slug || '';
             const emailType = slug.includes('paid') ? 'Paid' : 'Free';
-            return `Sent welcome email (${emailType})`;
+            return `Received welcome email (${emailType})`;
         }
 
         if (event.type === 'donation_event') {
