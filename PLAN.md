@@ -8,32 +8,31 @@ Add welcome emails to the member activity feed so admins can see when members re
 
 ## PR Breakdown
 
-### PR 1: Database Schema & Model (Foundation)
+### PR 1: Database Schema (Foundation)
 
 **Goal:** Create the `automated_email_recipients` table with minimal changes. No behavioral changes.
 
 **Files:**
 - `ghost/core/core/server/data/schema/schema.js` - Add table definition
 - `ghost/core/core/server/data/migrations/versions/6.15/2026-01-12-16-00-00-add-automated-email-recipients-table.js` - Migration
-- `ghost/core/core/server/models/automated-email-recipient.js` - Bookshelf model (immutable)
 - `ghost/core/core/server/data/exporter/table-lists.js` - Add to BACKUP_TABLES
 - `ghost/core/test/unit/server/data/schema/integrity.test.js` - Update schema hash
-- `ghost/core/test/unit/server/models/automated-email-recipient.test.js` - Model tests
 
 **Notes:**
 - Table follows `email_recipients` pattern (no FK on `member_id` to allow member deletion while preserving history)
-- Model is immutable (throws on edit/destroy) - records are audit logs
 - Denormalized member data (`member_uuid`, `member_email`, `member_name`) for point-in-time snapshot
 
-**Testing:** Unit tests for model immutability. Migration can be tested with `yarn knex-migrator migrate`.
+**Testing:** Migration can be tested with `yarn knex-migrator migrate`.
 
 ---
 
 ### PR 2: Backend - Track & Retrieve Welcome Email Events
 
-**Goal:** Record welcome email sends and expose them via the event repository.
+**Goal:** Add the model, record welcome email sends, and expose them via the event repository.
 
 **Files:**
+- `ghost/core/core/server/models/automated-email-recipient.js` - Bookshelf model (immutable)
+- `ghost/core/test/unit/server/models/automated-email-recipient.test.js` - Model tests
 - `ghost/core/core/server/services/outbox/handlers/member-created.js` - Record send to `automated_email_recipients`
 - `ghost/core/core/server/services/members/members-api/repositories/member-repository.js` - Add `uuid` to outbox payload
 - `ghost/core/core/server/services/members/members-api/repositories/event-repository.js` - Add `getAutomatedEmailSentEvents` method
@@ -76,9 +75,9 @@ Add welcome emails to the member activity feed so admins can see when members re
 ## Dependency Graph
 
 ```
-PR 1 (Schema & Model)
+PR 1 (Schema)
     ↓
-PR 2 (Backend Tracking & Retrieval)
+PR 2 (Model + Backend Tracking & Retrieval)
     ↓
 PR 3 (Admin UI)
 ```
