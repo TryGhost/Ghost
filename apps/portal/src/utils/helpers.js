@@ -91,7 +91,7 @@ export function hasNewsletterSendingEnabled({site}) {
 }
 
 export function allowCompMemberUpgrade({member}) {
-    return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
+    return isComplimentaryMember({member});
 }
 
 export function getCompExpiry({member}) {
