@@ -44,6 +44,15 @@ describe('Members API - Member Offers', function () {
                 .expectStatus(401);
         });
 
+        it('returns 400 with invalid redemption_type', async function () {
+            const token = await getIdentityToken('paid@test.com');
+
+            await membersAgent
+                .post('/api/member/offers')
+                .body({identity: token, redemption_type: 'invalid'})
+                .expectStatus(400);
+        });
+
         it('returns empty offers array for free member', async function () {
             const token = await getIdentityToken('member1@test.com');
 

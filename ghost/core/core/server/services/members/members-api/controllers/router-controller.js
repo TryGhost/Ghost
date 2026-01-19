@@ -860,10 +860,16 @@ module.exports = class RouterController {
      */
     async getMemberOffers(req, res) {
         const identity = req.body.identity;
+        const redemptionType = req.body.redemption_type || 'retention';
 
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
+        }
+
+        if (redemptionType !== 'retention') {
+            res.writeHead(400);
+            return res.end('Invalid redemption_type');
         }
 
         let email;
@@ -952,10 +958,10 @@ module.exports = class RouterController {
                 subscriptionId,
                 tierId,
                 cadence,
-                redemptionType: 'retention'
+                redemptionType
             });
         } catch (err) {
-            logging.error('Failed to fetch retention offers:', err);
+            logging.error('Failed to fetch offers:', err);
         }
 
         res.writeHead(200, {'Content-Type': 'application/json'});
