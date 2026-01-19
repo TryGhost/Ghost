@@ -750,7 +750,7 @@ export default class App extends React.Component {
     async handleOfferQuery({site, offerId, member = this.state.member}) {
         const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
-        if (!isPaidMember({member})) {
+        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 const offer = offerData?.offers[0];
