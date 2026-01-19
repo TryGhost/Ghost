@@ -32,8 +32,8 @@ const controller = {
         async query(frame) {
             return membersService.api.memberBREADService.disableCommenting(
                 frame.options.id,
-                frame.data.reason,
-                frame.data.expires_at || null,
+                frame.input.reason,
+                frame.input.expires_at ?? null,
                 frame.options.context
             );
         }

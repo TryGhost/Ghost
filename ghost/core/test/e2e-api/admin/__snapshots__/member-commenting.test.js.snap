@@ -106,21 +106,11 @@ Object {
     Object {
       "code": null,
       "context": null,
-      "details": Array [
-        Object {
-          "dataPath": ".expires_at",
-          "keyword": "format",
-          "message": "should match format \\"date-time\\"",
-          "params": Object {
-            "format": "date-time",
-          },
-          "schemaPath": "member_commenting#/definitions/member_commenting/properties/expires_at/format",
-        },
-      ],
+      "details": null,
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation failed for expires_at.",
+      "message": "Invalid datetime string",
       "property": "expires_at",
       "type": "ValidationError",
     },
@@ -132,7 +122,7 @@ exports[`Member Commenting API POST /members/:id/commenting/disable Returns 422 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "443",
+  "content-length": "219",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -147,22 +137,12 @@ Object {
     Object {
       "code": null,
       "context": null,
-      "details": Array [
-        Object {
-          "dataPath": "",
-          "keyword": "required",
-          "message": "should have required property 'reason'",
-          "params": Object {
-            "missingProperty": "reason",
-          },
-          "schemaPath": "member_commenting#/definitions/member_commenting/required",
-        },
-      ],
+      "details": null,
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation failed for member_commenting.",
-      "property": "member_commenting",
+      "message": "Invalid input: expected string, received undefined",
+      "property": "reason",
       "type": "ValidationError",
     },
   ],
@@ -173,7 +153,7 @@ exports[`Member Commenting API POST /members/:id/commenting/disable Returns 422 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "439",
+  "content-length": "242",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

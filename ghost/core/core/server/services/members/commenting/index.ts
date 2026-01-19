@@ -1,1 +1,1 @@
-export {MemberCommenting, MemberCommentingData} from './member-commenting';
+export {MemberCommenting} from './member-commenting';

@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
-const {MemberCommenting} = require('../../commenting');
+const {MemberCommentingDBCodec, defaultCommenting} = require('../repositories/schemas/member-commenting');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -254,7 +254,7 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
-        const commenting = MemberCommenting.parse(member.commenting);
+        const commenting = MemberCommentingDBCodec.catch(defaultCommenting).parse(member.commenting ?? '{}');
         member.can_comment = commenting.canComment;
         member.commenting = commenting;
 
@@ -385,7 +385,8 @@ module.exports = class MemberBREADService {
      * @returns {Promise<Object>}
      */
     async disableCommenting(memberId, reason, until, context) {
-        const member = await this.memberRepository.get({id: memberId});
+        // 1. Read - get member with parsed commenting
+        const member = await this.read({id: memberId});
 
         if (!member) {
             throw new errors.NotFoundError({
@@ -393,16 +394,18 @@ module.exports = class MemberBREADService {
             });
         }
 
-        const current = MemberCommenting.parse(member.get('commenting'));
-        const updated = current.disable(reason, until);
+        // 2. Mutate - create new commenting state (immutable)
+        const newCommenting = member.commenting.disable(reason, until);
 
+        // 3. Save - serialize via schema and persist
         await this.memberRepository.saveCommenting(
             memberId,
-            updated.format(),
+            newCommenting,
             'commenting_disabled',
             context
         );
 
+        // 4. Read - return updated member
         return this.read({id: memberId});
     }
 
@@ -412,7 +415,8 @@ module.exports = class MemberBREADService {
      * @returns {Promise<Object>}
      */
     async enableCommenting(memberId, context) {
-        const member = await this.memberRepository.get({id: memberId});
+        // 1. Read - get member with parsed commenting
+        const member = await this.read({id: memberId});
 
         if (!member) {
             throw new errors.NotFoundError({
@@ -420,16 +424,18 @@ module.exports = class MemberBREADService {
             });
         }
 
-        const current = MemberCommenting.parse(member.get('commenting'));
-        const updated = current.enable();
+        // 2. Mutate - create new commenting state (immutable)
+        const newCommenting = member.commenting.enable();
 
+        // 3. Save - serialize via schema and persist
         await this.memberRepository.saveCommenting(
             memberId,
-            updated.format(),
+            newCommenting,
             'commenting_enabled',
             context
         );
 
+        // 4. Read - return updated member
         return this.read({id: memberId});
     }
 
@@ -496,7 +502,7 @@ module.exports = class MemberBREADService {
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
 
-            const commenting = MemberCommenting.parse(member.commenting);
+            const commenting = MemberCommentingDBCodec.catch(defaultCommenting).parse(member.commenting ?? '{}');
             member.can_comment = commenting.canComment;
             member.commenting = commenting;
 
