@@ -16,7 +16,7 @@ NODE top_devices
 SQL >
     %
     select
-        device,
+        case when device = 'unknown' then 'desktop' else device end as device,
         count() as visits
     from session_data sd
       inner join filtered_sessions_v2 fs
