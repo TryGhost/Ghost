@@ -2,7 +2,7 @@ import GrowthSources from './components/growth-sources';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardMoreButton, KpiCardValue} from '../components/kpi-card';
 import PostAnalyticsContent from '../components/post-analytics-content';
 import PostAnalyticsHeader from '../components/post-analytics-header';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useGlobalData} from '@src/providers/post-analytics-context';
@@ -22,13 +22,6 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
-
-    // Redirect to Overview if member source tracking is disabled
-    useEffect(() => {
-        if (!appSettings?.analytics.membersTrackSources) {
-            navigate(`/posts/analytics/${postId}`);
-        }
-    }, [appSettings?.analytics.membersTrackSources, navigate, postId]);
 
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
