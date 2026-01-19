@@ -383,9 +383,8 @@ const PlansContainer = ({
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
-    // Plan upgrade flow for free member
-    const allowUpgrade = allowCompMemberUpgrade({member}) && isComplimentaryMember({member});
-    if (!isPaidMember({member}) || allowUpgrade) {
+    // Plan upgrade flow for free member or complimentary member
+    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -500,8 +499,7 @@ export default class AccountPlanPage extends React.Component {
             selectedPlan = priceId;
         }
 
-        const restrictCheckout = allowCompMemberUpgrade({member}) ? !isComplimentaryMember({member}) : true;
-        if (isPaidMember({member}) && restrictCheckout) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -517,9 +515,8 @@ export default class AccountPlanPage extends React.Component {
 
         const {member} = this.context;
 
-        const allowCompMember = allowCompMemberUpgrade({member}) ? isComplimentaryMember({member}) : false;
         // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member}) || allowCompMember) {
+        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
                 this.setState(() => {
