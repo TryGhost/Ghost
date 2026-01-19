@@ -53,6 +53,7 @@ export const STATS_LABEL_MAPPINGS = {
     'duckduckgo.com': 'DuckDuckGo',
 
     // Unknown/Other values - normalize to "Unknown"
+    unknown: 'Unknown',
     Others: 'Unknown',
     Other: 'Unknown',
     NULL: 'Unknown',
