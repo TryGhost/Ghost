@@ -10,13 +10,15 @@ export interface TestEmailDropdownProps {
   subject: string
   lexical: string
   validateForm: () => boolean
+  onClose: () => void
 }
 
 const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     automatedEmailId,
     subject,
     lexical,
-    validateForm
+    validateForm,
+    onClose
 }) => {
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: sendTestEmail} = useSendTestWelcomeEmail();
@@ -39,6 +41,18 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
             setTestEmail(currentUser.email);
         }
     }, [currentUser?.email]);
+
+    // Close dropdown on Escape and stop propagation to prevent modal from *also* closing
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown, true);
+        return () => document.removeEventListener('keydown', handleKeyDown, true);
+    }, [onClose]);
 
     const handleSendTestEmail = async () => {
         setTestEmailError('');
