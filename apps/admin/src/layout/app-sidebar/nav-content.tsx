@@ -2,6 +2,7 @@ import React from "react"
 
 import {
     Button,
+    formatNumber,
     LucideIcon,
     SidebarGroup,
     SidebarGroupContent,
@@ -134,7 +135,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             {memberCount != null && (
-                                <SidebarMenuBadge>{memberCount}</SidebarMenuBadge>
+                                <SidebarMenuBadge>{formatNumber(memberCount)}</SidebarMenuBadge>
                             )}
                         </NavMenuItem>
                     )}
