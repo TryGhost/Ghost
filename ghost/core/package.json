@@ -246,7 +246,7 @@
     "html-validate": "8.29.0",
     "inquirer": "8.2.7",
     "jwk-to-pem": "2.0.7",
-    "jwks-rsa": "3.2.0",
+    "jwks-rsa": "3.2.1",
     "mocha": "11.7.3",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
