@@ -30,7 +30,10 @@ async function handle({payload}) {
             logging.warn(`${LOG_KEY} Could not track welcome email - automated email not found for slug: ${slug}`);
         }
     } catch (err) {
-        logging.error(`${LOG_KEY} Failed to track welcome email send for member ${payload.memberId}: ${JSON.stringify(err)}`);
+        logging.error({
+            message: `${LOG_KEY} Failed to track welcome email send for member ${payload.memberId}`,
+            err
+        });
     }
 }
 
