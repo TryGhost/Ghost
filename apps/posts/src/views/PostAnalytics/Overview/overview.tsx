@@ -1,3 +1,4 @@
+import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/kpi-card';
 import NewsletterOverview from './components/newsletter-overview';
 import PostAnalyticsContent from '../components/post-analytics-content';
@@ -100,7 +101,7 @@ const Overview: React.FC = () => {
     // Only redirect if Growth section is available
     useEffect(() => {
         if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics && showGrowthSection) {
-            navigate(`/posts/analytics/${postId}/growth`);
+            navigate(`/posts/analytics/${postId}/growth`, {replace: true});
         }
     }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId, showGrowthSection]);
 
@@ -188,6 +189,9 @@ const Overview: React.FC = () => {
                                 }
                             </CardContent>
                         </Card>
+                    )}
+                    {!showWebSection && !showNewsletterSection && !showGrowthSection && (
+                        <DisabledSourcesIndicator className='col-span-2 py-20' />
                     )}
                 </div>
             </PostAnalyticsContent>
