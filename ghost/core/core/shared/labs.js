@@ -52,7 +52,6 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'welcomeEmails',
     'adminForward',
-    'domainWarmup',
     'themeTranslation',
     'commentModeration',
     'commentPermalinks',

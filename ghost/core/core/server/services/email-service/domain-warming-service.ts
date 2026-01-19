@@ -1,7 +1,3 @@
-type LabsService = {
-    isSet: (flag: string) => boolean;
-};
-
 type ConfigService = {
     get: (key: string) => string | undefined;
 }
@@ -29,17 +25,14 @@ const DefaultWarmupOptions: WarmupVolumeOptions = {
 
 export class DomainWarmingService {
     #emailModel: EmailModel;
-    #labs: LabsService;
     #config: ConfigService;
     #warmupConfig: WarmupVolumeOptions;
 
     constructor(dependencies: {
         models: {Email: EmailModel};
-        labs: LabsService;
         config: ConfigService;
     }) {
         this.#emailModel = dependencies.models.Email;
-        this.#labs = dependencies.labs;
         this.#config = dependencies.config;
 
         this.#warmupConfig = DefaultWarmupOptions;
@@ -49,12 +42,6 @@ export class DomainWarmingService {
      * @returns Whether the domain warming feature is enabled
      */
     isEnabled(): boolean {
-        const hasLabsFlag = this.#labs.isSet('domainWarmup');
-
-        if (!hasLabsFlag) {
-            return false;
-        }
-
         const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
         const fallbackAddress = this.#config.get('hostSettings:managedEmail:fallbackAddress');
 
