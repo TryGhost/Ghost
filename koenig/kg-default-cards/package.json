@@ -32,7 +32,7 @@
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "7.1.7",
     "@tryghost/string": "0.2.17",
-    "@tryghost/url-utils": "5.1.0",
+    "@tryghost/url-utils": "5.1.2",
     "handlebars": "^4.7.6",
     "juice": "^10.0.0",
     "lodash": "^4.17.21",
