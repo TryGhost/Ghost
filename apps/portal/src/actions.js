@@ -167,10 +167,11 @@ async function verifyOTC({data, api}) {
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+        name = name?.trim();
 
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data});
+            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -447,8 +448,9 @@ async function updateMemberEmail({data, state, api}) {
 }
 
 async function updateMemberData({data, state, api}) {
-    const {name} = data;
+    const name = data?.name?.trim();
     const originalName = getMemberName({member: state.member});
+
     if (originalName !== name) {
         try {
             const member = await api.member.update({name});
