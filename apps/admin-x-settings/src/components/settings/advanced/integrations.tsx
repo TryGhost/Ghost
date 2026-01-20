@@ -152,7 +152,7 @@ const BuiltInIntegrations: React.FC = () => {
                         openModal('integrations/transistor');
                     }}
                     active={transistorEnabled}
-                    detail='Podcast hosting platform'
+                    detail='Give your members access to private podcasts'
                     icon={<Icon name='transistor' size={32} />}
                     testId='transistor-integration'
                     title='Transistor' />

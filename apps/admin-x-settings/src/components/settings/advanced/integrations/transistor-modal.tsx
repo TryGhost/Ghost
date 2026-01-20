@@ -101,7 +101,7 @@ const TransistorModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor</a> integration to connect your Ghost site for podcast publishing</>}
+                        hint={<>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to start offering members private podcasts.</>}
                         label='Enable Transistor'
                         onChange={(e) => {
                             setEnabled(e.target.checked);
