@@ -301,4 +301,68 @@ describe('EventRepository', function () {
             });
         });
     });
+
+    describe('getAutomatedEmailSentEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{id: '123', get: () => 'test', related: () => ({toJSON: () => ({})})}]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                AutomatedEmailRecipient: {
+                    findPage: fake
+                },
+                labsService: null
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                filter: 'not used',
+                order: 'created_at desc'
+            }, {
+                type: 'unused'
+            });
+            sinon.assert.calledOnce(fake);
+            fake.getCall(0).firstArg.should.match({
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'processed_at:-null+custom:true'
+            });
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({order: 'created_at desc'}, {
+                'data.created_at': 'data.created_at:123'
+            });
+
+            sinon.assert.calledOnce(fake);
+            fake.getCall(0).firstArg.should.match({
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'processed_at:-null+custom:true'
+            });
+        });
+
+        it('works when setting a combination of filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({order: 'created_at desc'}, {
+                'data.created_at': 'data.created_at:123+data.created_at:<99999',
+                'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
+            });
+
+            sinon.assert.calledOnce(fake);
+            fake.getCall(0).firstArg.should.match({
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'processed_at:-null+custom:true'
+            });
+        });
+    });
 });
