@@ -1,9 +1,30 @@
 import React, {useMemo} from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, Recharts, formatNumber} from '@tryghost/shade';
 import {useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 type CadenceBreakdownProps = {
     isLoading: boolean;
+};
+
+// Custom tooltip component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CustomTooltip = ({active, payload}: {active?: boolean; payload?: any[]}) => {
+    if (active && payload && payload.length) {
+        const data = payload[0];
+        return (
+            <div className="rounded-lg border bg-background p-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                    <div
+                        className="size-2 rounded-full opacity-50"
+                        style={{backgroundColor: data.payload.color}}
+                    />
+                    <span className="font-medium">{data.name}</span>
+                    <span className="font-mono">{formatNumber(data.value)}</span>
+                </div>
+            </div>
+        );
+    }
+    return null;
 };
 
 const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
@@ -27,22 +48,26 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
 
         // Convert to array format for pie chart
         const chartData = Object.entries(cadenceTotals).map(([cadence, count]) => {
-            // Map cadence values to display labels
+            // Map cadence values to display labels and colors
             let label = cadence;
-            let fillColor = 'hsl(var(--chart-purple))';
+            let fillGradient = 'url(#gradientPurple)';
+            let solidColor = 'hsl(var(--chart-purple))';
 
             if (cadence === 'month') {
                 label = 'Monthly';
-                fillColor = 'hsl(var(--chart-purple))';
+                fillGradient = 'url(#gradientDarkBlue)';
+                solidColor = 'hsl(var(--chart-darkblue))';
             } else if (cadence === 'year') {
                 label = 'Annual';
-                fillColor = 'hsl(var(--chart-teal))';
+                fillGradient = 'url(#gradientTeal)';
+                solidColor = 'hsl(var(--chart-teal))';
             }
 
             return {
                 cadence: label,
                 count,
-                fill: fillColor
+                fill: fillGradient,
+                color: solidColor
             };
         });
 
@@ -63,7 +88,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         cadenceData.forEach((item) => {
             config[item.cadence.toLowerCase()] = {
                 label: item.cadence,
-                color: item.fill
+                color: item.color
             };
         });
 
@@ -76,12 +101,14 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
             return [];
         }
 
-        return cadenceData.map(item => ({
-            label: item.cadence,
-            count: item.count,
-            percentage: ((item.count / totalSubscriptions) * 100).toFixed(1),
-            color: item.fill
-        }));
+        return cadenceData.map((item) => {
+            return {
+                label: item.cadence,
+                count: item.count,
+                percentage: ((item.count / totalSubscriptions) * 100).toFixed(1),
+                color: item.color
+            };
+        });
     }, [cadenceData, totalSubscriptions]);
 
     // Don't render if loading or no data
@@ -101,14 +128,24 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                     config={chartConfig}
                 >
                     <Recharts.PieChart>
+                        <defs>
+                            <linearGradient id="gradientDarkBlue" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.8} />
+                                <stop offset="100%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.6} />
+                            </linearGradient>
+                            <linearGradient id="gradientTeal" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.8} />
+                                <stop offset="100%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.6} />
+                            </linearGradient>
+                        </defs>
                         <ChartTooltip
-                            content={<ChartTooltipContent hideLabel />}
+                            content={<CustomTooltip />}
                             cursor={false}
                         />
                         <Recharts.Pie
                             data={cadenceData}
                             dataKey="count"
-                            innerRadius={60}
+                            innerRadius={70}
                             nameKey="cadence"
                             strokeWidth={5}
                         >
