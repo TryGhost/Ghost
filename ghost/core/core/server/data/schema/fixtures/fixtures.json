@@ -796,6 +796,13 @@
                     "api_keys": [{"type": "admin"}]
                 },
                 {
+                    "slug": "transistor",
+                    "name": "Transistor",
+                    "description": "Built-in Transistor integration",
+                    "type": "builtin",
+                    "api_keys": [{"type": "admin"}]
+                },
+                {
                     "slug": "ghost-explore",
                     "name": "Ghost Explore",
                     "description": "Built-in Ghost Explore integration",

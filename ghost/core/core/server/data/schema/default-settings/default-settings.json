@@ -475,6 +475,15 @@
             "type": "boolean"
         }
     },
+    "transistor": {
+        "transistor": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
     "views": {
         "shared_views": {
             "defaultValue": "[]",

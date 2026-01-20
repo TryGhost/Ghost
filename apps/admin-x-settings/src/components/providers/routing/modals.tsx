@@ -27,6 +27,7 @@ import SlackModal from '../../settings/advanced/integrations/slack-modal';
 import StripeConnectModal from '../../settings/membership/stripe/stripe-connect-modal';
 import TestimonialsModal from '../../settings/growth/explore/testimonials-modal';
 import TierDetailModal from '../../settings/membership/tiers/tier-detail-modal';
+import TransistorModal from '../../settings/advanced/integrations/transistor-modal';
 import UnsplashModal from '../../settings/advanced/integrations/unsplash-modal';
 import UserDetailModal from '../../settings/general/user-detail-modal';
 import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
@@ -49,6 +50,7 @@ const modals = {
     StripeConnectModal,
     TestimonialsModal,
     TierDetailModal,
+    TransistorModal,
     UnsplashModal,
     UserDetailModal,
     ZapierModal,
