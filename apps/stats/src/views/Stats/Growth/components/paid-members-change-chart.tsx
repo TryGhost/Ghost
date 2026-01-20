@@ -195,7 +195,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                             <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
                         </linearGradient>
                     </defs>
-                    <Recharts.CartesianGrid vertical={false} />
+                    <Recharts.CartesianGrid stroke="hsl(var(--border))" vertical={false} />
                     <Recharts.XAxis
                         axisLine={false}
                         dataKey="date"
