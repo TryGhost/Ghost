@@ -50,6 +50,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
  * @prop {string} checkoutSetupSessionCancelUrl
+ * @prop {string} billingPortalReturnUrl
  * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
@@ -712,7 +713,7 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.billingPortal.sessions.create({
             customer: customer.id,
-            return_url: options.returnUrl
+            return_url: options.returnUrl || this._config.billingPortalReturnUrl
         });
 
         return session;
