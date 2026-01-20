@@ -148,23 +148,25 @@ const Growth: React.FC = () => {
                     </CardContent>
                 </Card>
                 {appSettings?.paidMembersEnabled && (
-                    <Card data-testid='paid-members-change-card'>
-                        <CardHeader>
-                            <CardTitle>Paid members change</CardTitle>
-                            <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <PaidMembersChangeChart
-                                isLoading={isPageLoading}
-                                memberData={chartData}
-                                range={range}
-                                subscriptionData={subscriptionData}
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-                {appSettings?.paidMembersEnabled && (
-                    <CadenceBreakdown isLoading={isPageLoading} />
+                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3'>
+                        <Card className='lg:col-span-1 xl:col-span-2' data-testid='paid-members-change-card'>
+                            <CardHeader>
+                                <CardTitle>Paid members change</CardTitle>
+                                <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <PaidMembersChangeChart
+                                    isLoading={isPageLoading}
+                                    memberData={chartData}
+                                    range={range}
+                                    subscriptionData={subscriptionData}
+                                />
+                            </CardContent>
+                        </Card>
+                        <div className='lg:col-span-1 xl:col-span-1'>
+                            <CadenceBreakdown isLoading={isPageLoading} />
+                        </div>
+                    </div>
                 )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
