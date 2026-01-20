@@ -55,6 +55,9 @@ const Growth: React.FC = () => {
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
 
+    // Track current KPI tab to conditionally show paid member charts
+    const [currentKpiTab, setCurrentKpiTab] = useState(initialTab);
+
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
@@ -144,10 +147,11 @@ const Growth: React.FC = () => {
                             initialTab={initialTab}
                             isLoading={isPageLoading}
                             totals={totals}
+                            onTabChange={setCurrentKpiTab}
                         />
                     </CardContent>
                 </Card>
-                {appSettings?.paidMembersEnabled && (
+                {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && (
                     <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3'>
                         <Card className='lg:col-span-1 xl:col-span-2' data-testid='paid-members-change-card'>
                             <CardHeader>

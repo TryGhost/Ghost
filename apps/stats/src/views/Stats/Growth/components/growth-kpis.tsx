@@ -45,7 +45,8 @@ const GrowthKPIs: React.FC<{
     initialTab?: string;
     currencySymbol: string;
     isLoading: boolean;
-}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
+    onTabChange?: (tab: string) => void;
+}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading, onTabChange}) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
@@ -63,6 +64,10 @@ const GrowthKPIs: React.FC<{
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('tab', tabValue);
         navigate(`?${newSearchParams.toString()}`, {replace: true});
+        // Notify parent component of tab change
+        if (onTabChange) {
+            onTabChange(tabValue);
+        }
     };
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
