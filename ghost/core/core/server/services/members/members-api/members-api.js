@@ -64,7 +64,8 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        AutomatedEmail
+        AutomatedEmail,
+        AutomatedEmailRecipient
     },
     tiersService,
     stripeAPIService,
@@ -130,7 +131,8 @@ module.exports = function MembersAPI({
         Comment,
         labsService,
         memberAttributionService,
-        MemberEmailChangeEvent
+        MemberEmailChangeEvent,
+        AutomatedEmailRecipient
     });
 
     const memberBREADService = new MemberBREADService({

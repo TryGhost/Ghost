@@ -33,7 +33,8 @@ module.exports = class EventRepository {
         Comment,
         labsService,
         memberAttributionService,
-        MemberEmailChangeEvent
+        MemberEmailChangeEvent,
+        AutomatedEmailRecipient
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -51,6 +52,7 @@ module.exports = class EventRepository {
         this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
         this._memberAttributionService = memberAttributionService;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
+        this._AutomatedEmailRecipient = AutomatedEmailRecipient;
     }
 
     async getEventTimeline(options = {}) {
@@ -82,6 +84,10 @@ module.exports = class EventRepository {
                 {type: 'payment_event', action: 'getPaymentEvents'},
                 {type: 'email_change_event', action: 'getEmailChangeEvent'}
             );
+        }
+
+        if (this._AutomatedEmailRecipient) {
+            pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
         }
 
         if (this._EmailRecipient) {
@@ -871,6 +877,48 @@ module.exports = class EventRepository {
             return {
                 type: 'email_change_event',
                 data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getAutomatedEmailSentEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['member', 'automatedEmail'],
+            filter: 'custom:true',
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                replaceCustomFilterTransformer(filter),
+                ...mapKeys({
+                    'data.created_at': 'processed_at',
+                    'data.member_id': 'member_id'
+                })
+            )
+        };
+        options.order = options.order.replace(/created_at/g, 'processed_at');
+
+        const {data: models, meta} = await this._AutomatedEmailRecipient.findPage(options);
+
+        const data = models.map((model) => {
+            const automatedEmail = model.related('automatedEmail').toJSON();
+            return {
+                type: 'automated_email_sent_event',
+                data: {
+                    id: model.id,
+                    member_id: model.get('member_id'),
+                    created_at: model.get('processed_at'),
+                    member: model.related('member').toJSON(),
+                    automatedEmail: {
+                        id: automatedEmail.id,
+                        slug: automatedEmail.slug,
+                        email_template: automatedEmail.email_template
+                    }
+                }
             };
         });
 
