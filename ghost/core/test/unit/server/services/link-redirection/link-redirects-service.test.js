@@ -136,6 +136,5 @@ describe('LinkRedirectsService', function () {
             await instance.handleRequest(req, res, next);
             assert.equal(next.callCount, 1);
         });
-
     });
 });
