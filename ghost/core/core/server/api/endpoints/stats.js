@@ -70,31 +70,6 @@ const controller = {
             return await statsService.api.getSubscriptionCountHistory();
         }
     },
-    postReferrers: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        permissions: {
-            docName: 'posts',
-            method: 'browse'
-        },
-        cache: statsService.cache,
-        generateCacheKeyData(frame) {
-            return {
-                method: 'postReferrers',
-                data: {
-                    id: frame.data.id
-                }
-
-            };
-        },
-        async query(frame) {
-            return await statsService.api.getPostReferrers(frame.data.id);
-        }
-    },
     referrersHistory: {
         headers: {
             cacheInvalidate: false
@@ -340,7 +315,7 @@ const controller = {
             return await statsService.api.getNewsletterSubscriberStats(frame.options);
         }
     },
-    postReferrersAlpha: {
+    postReferrers: {
         headers: {
             cacheInvalidate: false
         },
@@ -369,7 +344,7 @@ const controller = {
         cache: statsService.cache,
         generateCacheKeyData(frame) {
             return {
-                method: 'getReferrersForPost',
+                method: 'postReferrers',
                 data: {
                     id: frame.data.id
                 }

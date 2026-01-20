@@ -175,29 +175,6 @@ describe('Stats API', function () {
         });
     });
 
-    describe('Post attribution stats', function () {
-        it('Can fetch attribution stats', async function () {
-            await agent
-                .get(`/stats/referrers/posts/${fixtureManager.get('posts', 1).id}/`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    stats: [
-                        {
-                            source: 'Direct',
-                            signups: 2,
-                            paid_conversions: 1
-                        },
-                        {
-                            source: 'Twitter',
-                            signups: 1,
-                            paid_conversions: 0
-                        }
-                    ],
-                    meta: {}
-                });
-        });
-    });
-
     describe('Referrer source history stats', function () {
         it('Can fetch attribution stats', async function () {
             await agent
