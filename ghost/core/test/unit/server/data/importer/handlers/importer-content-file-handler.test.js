@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const path = require('path');
 const ImporterContentFileHandler = require('../../../../../../core/server/data/importer/handlers/importer-content-file-handler');
 
 describe('ImporterContentFileHandler', function () {
@@ -42,9 +43,9 @@ describe('ImporterContentFileHandler', function () {
             const contentFileImporter = new ImporterContentFileHandler({
                 storage: {
                     staticFileURLPrefix: 'content/media',
-                    getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
+                    // Simulate real getUniqueFileName behavior using path.join
+                    getUniqueFileName: (file, targetDir) => Promise.resolve(path.join(targetDir, path.basename(file.name)))
                 },
-                contentPath: '/var/www/ghost/content/media',
                 urlUtils: {
                     getSubdir: () => 'blog',
                     urlJoin: (...args) => args.join('/')
@@ -60,7 +61,8 @@ describe('ImporterContentFileHandler', function () {
 
             assert.equal(files[0].name, '1.mp4');
             assert.equal(files[0].originalPath, 'content/media/1.mp4');
-            assert.equal(files[0].targetDir, '/var/www/ghost/content/media');
+            // targetDir is now relative (just the directory part, not absolute)
+            assert.equal(files[0].targetDir, '.');
             assert.equal(files[0].newPath, '//blog/content/media/1.mp4');
         });
 
@@ -68,9 +70,8 @@ describe('ImporterContentFileHandler', function () {
             const contentFileImporter = new ImporterContentFileHandler({
                 storage: {
                     staticFileURLPrefix: 'content/media',
-                    getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
+                    getUniqueFileName: (file, targetDir) => Promise.resolve(path.join(targetDir, path.basename(file.name)))
                 },
-                contentPath: '/var/www/ghost/content/media',
                 urlUtils: {
                     getSubdir: () => 'blog',
                     urlJoin: (...args) => args.join('/')
@@ -85,17 +86,41 @@ describe('ImporterContentFileHandler', function () {
 
             assert.equal(files[0].name, '1.mp4');
             assert.equal(files[0].originalPath, 'content/media/1.mp4');
-            assert.equal(files[0].targetDir, '/var/www/ghost/content/media');
+            assert.equal(files[0].targetDir, '.');
             assert.equal(files[0].newPath, '//blog/content/media/1.mp4');
+        });
+
+        it('preserves date subdirectories in targetDir', async function () {
+            const contentFileImporter = new ImporterContentFileHandler({
+                storage: {
+                    staticFileURLPrefix: 'content/media',
+                    getUniqueFileName: (file, targetDir) => Promise.resolve(path.join(targetDir, path.basename(file.name)))
+                },
+                urlUtils: {
+                    getSubdir: () => 'blog',
+                    urlJoin: (...args) => args.join('/')
+                }
+            });
+
+            const files = [{
+                name: 'content/media/2026/01/video.mp4'
+            }];
+
+            await contentFileImporter.loadFile(files);
+
+            assert.equal(files[0].name, '2026/01/video.mp4');
+            assert.equal(files[0].originalPath, 'content/media/2026/01/video.mp4');
+            // targetDir preserves the date path structure
+            assert.equal(files[0].targetDir, '2026/01');
+            assert.equal(files[0].newPath, '//blog/content/media/2026/01/video.mp4');
         });
 
         it('ignores files in root folder', async function () {
             const contentFileImporter = new ImporterContentFileHandler({
                 storage: {
                     staticFileURLPrefix: 'content/media',
-                    getUniqueFileName: (file, targetDir) => Promise.resolve(targetDir + '/' + file.name)
+                    getUniqueFileName: (file, targetDir) => Promise.resolve(path.join(targetDir, path.basename(file.name)))
                 },
-                contentPath: '/var/www/ghost/content/media',
                 ignoreRootFolderFiles: true,
                 urlUtils: {
                     getSubdir: () => 'blog',
@@ -121,7 +146,7 @@ describe('ImporterContentFileHandler', function () {
 
             assert.equal(files[1].name, '1.mp4');
             assert.equal(files[1].originalPath, 'content/media/1.mp4');
-            assert.equal(files[1].targetDir, '/var/www/ghost/content/media');
+            assert.equal(files[1].targetDir, '.');
             assert.equal(files[1].newPath, '//blog/content/media/1.mp4');
         });
     });
