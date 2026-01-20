@@ -1,5 +1,5 @@
-import Content from './content';
-import {AppContext} from '../../app-context';
+import Content from '../../../../src/components/content/content';
+import {AppContext} from '../../../../src/app-context';
 import {render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {

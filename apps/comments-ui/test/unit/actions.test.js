@@ -1,4 +1,4 @@
-import {Actions} from './actions';
+import {Actions} from '../../src/actions';
 
 describe('Actions', function () {
     describe('loadMoreComments', function () {
