@@ -54,16 +54,6 @@ class StatsService {
     /**
      * @param {string} postId
      */
-    async getPostReferrers(postId) {
-        return {
-            data: await this.referrers.getForPost(postId),
-            meta: {}
-        };
-    }
-
-    /**
-     * @param {string} postId
-     */
     async getReferrersForPost(postId, options) {
         const result = await this.posts.getReferrersForPost(postId, options);
         return result;

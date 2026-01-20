@@ -129,55 +129,6 @@ class ReferrersStatsService {
     }
 
     /**
-     * Return a list of all the attribution sources for a given post, with their signup and conversion counts
-     * @param {string} postId
-     * @returns {Promise<AttributionCountStat[]>}
-     */
-    async getForPost(postId) {
-        const knex = this.knex;
-        const signupRows = await knex('members_created_events')
-            .select('referrer_source')
-            .select(knex.raw('COUNT(id) AS total'))
-            .where('attribution_id', postId)
-            .where('attribution_type', 'post')
-            .groupBy('referrer_source');
-
-        const conversionRows = await knex('members_subscription_created_events')
-            .select('referrer_source')
-            .select(knex.raw('COUNT(id) AS total'))
-            .where('attribution_id', postId)
-            .where('attribution_type', 'post')
-            .groupBy('referrer_source');
-
-        // Stitch them toghether, grouping them by source
-
-        const map = new Map();
-        for (const row of signupRows) {
-            const normalizedSource = normalizeSource(row.referrer_source);
-            const existing = map.get(normalizedSource) || {
-                source: normalizedSource,
-                signups: 0,
-                paid_conversions: 0
-            };
-            existing.signups += row.total;
-            map.set(normalizedSource, existing);
-        }
-
-        for (const row of conversionRows) {
-            const normalizedSource = normalizeSource(row.referrer_source);
-            const existing = map.get(normalizedSource) || {
-                source: normalizedSource,
-                signups: 0,
-                paid_conversions: 0
-            };
-            existing.paid_conversions += row.total;
-            map.set(normalizedSource, existing);
-        }
-
-        return [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
-    }
-
-    /**
      * Return a list of all the attribution sources, with their signup and conversion counts on each date
      * @returns {Promise<{data: AttributionCountStat[], meta: {}}>}
      */
