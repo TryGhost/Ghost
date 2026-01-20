@@ -429,6 +429,218 @@ describe('Logged-in free member', () => {
 
 describe('Logged-in complimentary member', () => {
     describe('can upgrade on single tier site', () => {
+        test('with default settings on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            fireEvent.click(monthlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+        });
+
+        test('with default settings on yearly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+            const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
+            fireEvent.click(yearlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+
+        test('with cancelled subscription on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentaryWithCancelledSubscription
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            fireEvent.click(monthlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+        });
+    });
+
+    describe('can upgrade on multi tier site', () => {
+        test('with default settings', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+
+            // allow default checkbox switch to yearly
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+
+            fireEvent.click(chooseBtns[0]);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+
+        test('with cancelled subscription', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.basic,
+                member: FixtureMember.complimentaryWithCancelledSubscription
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+
+            // allow default checkbox switch to yearly
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+
+            fireEvent.click(chooseBtns[0]);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+    });
+});
+
+describe('Logged-in complimentary member', () => {
+    describe('can upgrade on single tier site', () => {
         test('to an offer via link', async () => {
             window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
             const {
