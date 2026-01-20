@@ -1,7 +1,7 @@
 const {InternalServerError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const security = require('@tryghost/security');
-const {default: ObjectID} = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
