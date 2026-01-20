@@ -86,7 +86,7 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorActive] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
@@ -151,7 +151,7 @@ const BuiltInIntegrations: React.FC = () => {
                     action={() => {
                         openModal('integrations/transistor');
                     }}
-                    active={transistorActive}
+                    active={transistorEnabled}
                     detail='Podcast hosting platform'
                     icon={<Icon name='transistor' size={32} />}
                     testId='transistor-integration'
