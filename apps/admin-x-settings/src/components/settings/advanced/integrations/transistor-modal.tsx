@@ -34,7 +34,7 @@ const TransistorModal = NiceModal.create(() => {
 
     const handleRegenerate = () => {
         if (!integration || !adminApiKey) {
-            return;
+            throw new Error('Transistor integration or Admin API key not found');
         }
 
         setRegenerated(false);
@@ -89,9 +89,7 @@ const TransistorModal = NiceModal.create(() => {
             okLabel={okLabel}
             testId='transistor-modal'
             title=''
-            onOk={async () => {
-                await handleSave();
-            }}
+            onOk={handleSave}
         >
             <IntegrationHeader
                 detail='Podcast hosting platform'
