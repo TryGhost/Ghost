@@ -2,6 +2,7 @@ const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetR
 const should = require('should');
 const sinon = require('sinon');
 const assert = require('assert/strict');
+const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
@@ -330,13 +331,13 @@ describe('sendMagicLink', function () {
         it('matches snapshot', async function () {
             const mail = await sendSigninRequest();
             const scrubbedEmail = scrubEmailContent(mail);
-            should(scrubbedEmail).matchSnapshot();
+            assertMatchSnapshot(scrubbedEmail);
         });
 
         it('matches OTC snapshot', async function () {
             const mail = await sendSigninRequest({includeOTC: true});
             const scrubbedEmail = scrubEmailContent(mail);
-            should(scrubbedEmail).matchSnapshot();
+            assertMatchSnapshot(scrubbedEmail);
         });
     });
 

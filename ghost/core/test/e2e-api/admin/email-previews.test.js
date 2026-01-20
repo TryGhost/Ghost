@@ -1,10 +1,10 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
 const assert = require('assert/strict');
+const {assertMatchSnapshot} = require('../../utils/assertions');
 const config = require('../../../core/shared/config');
 const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
-const should = require('should');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const urlUtilsHelper = require('../../utils/url-utils');
 
@@ -18,7 +18,7 @@ function testCleanedSnapshot(html, cleaned) {
     for (const [key, value] of Object.entries(cleaned)) {
         html = html.replace(new RegExp(escapeRegExp(key), 'g'), value);
     }
-    should({html}).matchSnapshot();
+    assertMatchSnapshot({html});
 }
 
 const matchEmailPreviewBody = {

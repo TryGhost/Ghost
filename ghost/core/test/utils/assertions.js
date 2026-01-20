@@ -1,4 +1,11 @@
-const should = require('should');
-const {matchSnapshotAssertion} = require('@tryghost/express-test').snapshot;
+const assert = require('node:assert/strict');
+const {snapshotManager} = require('@tryghost/express-test').snapshot;
 
-should.Assertion.add('matchSnapshot', matchSnapshotAssertion);
+function assertMatchSnapshot(obj, properties) {
+    const result = snapshotManager.match(obj, properties);
+    assert(result.pass, result.message());
+}
+
+module.exports = {
+    assertMatchSnapshot
+};

@@ -2,6 +2,7 @@
 const should = require('should');
 
 const sinon = require('sinon');
+const {assertMatchSnapshot} = require('../../../utils/assertions');
 const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../../utils');
@@ -34,7 +35,7 @@ async function testGhostHead(options) {
 
     should.exist(rendered);
     // Note: we need to convert the string to an object in order to use the snapshot feature
-    should({rendered}).matchSnapshot();
+    assertMatchSnapshot({rendered});
     return rendered;
 }
 
