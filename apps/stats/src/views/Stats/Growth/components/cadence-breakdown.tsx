@@ -55,8 +55,8 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
 
             if (cadence === 'month') {
                 label = 'Monthly';
-                fillGradient = 'url(#gradientDarkBlue)';
-                solidColor = 'hsl(var(--chart-darkblue))';
+                fillGradient = 'url(#gradientPurple)';
+                solidColor = 'hsl(var(--chart-purple))';
             } else if (cadence === 'year') {
                 label = 'Annual';
                 fillGradient = 'url(#gradientTeal)';
@@ -129,9 +129,9 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                 >
                     <Recharts.PieChart>
                         <defs>
-                            <linearGradient id="gradientDarkBlue" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.8} />
-                                <stop offset="100%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.6} />
+                            <linearGradient id="gradientPurple" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.8} />
+                                <stop offset="100%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.6} />
                             </linearGradient>
                             <linearGradient id="gradientTeal" x1="0" x2="0" y1="0" y2="1">
                                 <stop offset="0%" stopColor="hsl(var(--chart-teal))" stopOpacity={0.8} />
