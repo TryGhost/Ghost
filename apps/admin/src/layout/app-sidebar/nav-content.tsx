@@ -134,6 +134,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 <LucideIcon.Users />
                                 <NavMenuItem.Label>Members</NavMenuItem.Label>
                             </NavMenuItem.Link>
+                            {memberCount != null && !isNaN(memberCount) && (
+                                <SidebarMenuBadge>{formatNumber(memberCount)}</SidebarMenuBadge>
+                            )}
                             <SidebarMenuBadge>
                                 {memberCount != null ? formatNumber(memberCount) : '0'}
                             </SidebarMenuBadge>
