@@ -87,11 +87,11 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
 interface TopContentProps {
     range: number;
     totalVisitors: number;
+    audience: number;
     utmFilterParams?: Record<string, string>;
 }
 
-const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, utmFilterParams = {}}) => {
-    const {audience} = useGlobalData();
+const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, utmFilterParams = {}}) => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
