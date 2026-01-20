@@ -6,9 +6,6 @@ export const AUDIENCE_TYPES = [
     {name: 'Paid members', value: 'paid', bit: AUDIENCE_BITS.PAID}
 ];
 
-// Re-export ALL_AUDIENCES for convenience
-export {ALL_AUDIENCES};
-
 /**
  * Derive audience bitmask from filter values
  * If no filter values provided, returns ALL_AUDIENCES

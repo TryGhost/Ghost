@@ -1,13 +1,10 @@
-import {AUDIENCE_BITS} from '@src/utils/constants';
+import {ALL_AUDIENCES, AUDIENCE_BITS} from '@src/utils/constants';
 
 export const AUDIENCE_TYPES = [
     {name: 'Public visitors', value: 'undefined', bit: AUDIENCE_BITS.PUBLIC},
     {name: 'Free members', value: 'free', bit: AUDIENCE_BITS.FREE},
     {name: 'Paid members', value: 'paid', bit: AUDIENCE_BITS.PAID}
 ];
-
-// Default: all audiences selected (binary 111 = 7)
-export const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
 
 /**
  * Derive audience bitmask from filter values
