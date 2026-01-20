@@ -426,6 +426,67 @@ describe('staticTheme', function () {
             });
         });
 
+        it('should set fallthrough to true for paginated sitemaps like /sitemap-posts-2.xml', function (done) {
+            req.path = '/sitemap-posts-2.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for higher page numbers like /sitemap-posts-99.xml', function (done) {
+            req.path = '/sitemap-posts-99.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated tag sitemaps like /sitemap-tags-3.xml', function (done) {
+            req.path = '/sitemap-tags-3.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated author sitemaps like /sitemap-authors-2.xml', function (done) {
+            req.path = '/sitemap-authors-2.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
         it('should set fallthrough to false for other static files', function (done) {
             req.path = '/style.css';
 
