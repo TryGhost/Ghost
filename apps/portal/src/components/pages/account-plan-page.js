@@ -79,7 +79,7 @@ function getConfirmationPageTitle({confirmationType}) {
     } else if (confirmationType === 'subscribe') {
         return t('Subscribe');
     } else if (confirmationType === 'offerRetention') {
-        return t('Before you go');
+        return 'Before you go';
     }
 }
 
@@ -272,25 +272,25 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
 
 function formatOfferDiscount(offer) {
     if (offer.type === 'percent') {
-        return t('{amount}% off', {amount: offer.amount});
+        return `${offer.amount}% off`;
     } else if (offer.type === 'fixed') {
         const symbol = offer.currency ? getCurrencySymbol(offer.currency) : '';
-        return t('{symbol}{amount} off', {symbol, amount: offer.amount / 100});
+        return `${symbol}${offer.amount / 100} off`;
     }
     return '';
 }
 
 function formatOfferDuration(offer) {
     if (offer.duration === 'once') {
-        return t('your next payment');
+        return 'your next payment';
     } else if (offer.duration === 'forever') {
-        return t('forever');
+        return 'forever';
     } else if (offer.duration === 'repeating' && offer.duration_in_months) {
         const months = offer.duration_in_months;
         if (months === 1) {
-            return t('the next month');
+            return 'for the next month';
         }
-        return t('the next {months} months', {months});
+        return `for the next ${months} months`;
     }
     return '';
 }
@@ -301,14 +301,16 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptin
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
 
+    // TODO: Add i18n once copy is finalized
+    /* eslint-disable i18next/no-literal-string */
     return (
         <div className="gh-portal-logged-out-form-container gh-portal-retention-offer">
             <p className="gh-portal-retention-offer-message">
-                {t('We\'d hate to see you go! How about a special offer to stay?')}
+                {'We\'d hate to see you go! How about a special offer to stay?'}
             </p>
             <div className="gh-portal-retention-offer-card">
                 <div className="gh-portal-retention-offer-discount">{discountText}</div>
-                <div className="gh-portal-retention-offer-duration">{t('for')} {durationText}</div>
+                <div className="gh-portal-retention-offer-duration">{durationText}</div>
             </div>
             <ActionButton
                 dataTestId={'accept-retention-offer'}
@@ -317,7 +319,7 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptin
                 disabled={isAcceptingOffer}
                 isPrimary={true}
                 brandColor={brandColor}
-                label={t('Accept offer')}
+                label="Accept offer"
                 style={{
                     width: '100%',
                     height: '40px'
@@ -330,7 +332,7 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptin
                 isDestructive={true}
                 classes={'gh-portal-btn-text'}
                 brandColor={brandColor}
-                label={t('Continue to cancellation')}
+                label="Continue to cancellation"
                 style={{
                     width: '100%',
                     marginTop: '24px',
@@ -339,6 +341,7 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptin
             />
         </div>
     );
+    /* eslint-enable i18next/no-literal-string */
 };
 
 // For free members
