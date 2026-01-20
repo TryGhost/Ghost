@@ -57,6 +57,7 @@ COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/emb
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
+COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
 
 COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \

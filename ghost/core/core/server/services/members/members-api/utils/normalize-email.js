@@ -1,4 +1,4 @@
-const punycode = require('punycode/');
+const {parseEmailAddress} = require('@tryghost/parse-email-address');
 
 /**
  * Normalizes email addresses by converting Unicode domains to ASCII (punycode)
@@ -6,26 +6,20 @@ const punycode = require('punycode/');
  * domains
  *
  * @param {string} email The email address to normalize
- * @returns {string} The normalized email address
- * @throws {Error} When punycode conversion fails
+ * @returns {null | string} The normalized email address, nor null if the email can't be normalized
  */
 function normalizeEmail(email) {
-    if (!email || typeof email !== 'string') {
+    if (typeof email !== 'string') {
         return null;
     }
 
-    const atIndex = email.lastIndexOf('@');
-
-    if (atIndex === -1) {
-        return email;
+    const parsedEmail = parseEmailAddress(email);
+    if (!parsedEmail) {
+        return null;
     }
 
-    const localPart = email.substring(0, atIndex);
-    const domainPart = email.substring(atIndex + 1);
-
-    const asciiDomain = punycode.toASCII(domainPart);
-
-    return `${localPart}@${asciiDomain}`;
+    const {local, domain} = parsedEmail;
+    return `${local}@${domain}`;
 }
 
 module.exports = normalizeEmail;
