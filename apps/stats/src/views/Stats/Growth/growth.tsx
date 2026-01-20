@@ -1,3 +1,4 @@
+import CadenceBreakdown from './components/cadence-breakdown';
 import DateRangeSelect from '../components/date-range-select';
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
@@ -161,6 +162,9 @@ const Growth: React.FC = () => {
                             />
                         </CardContent>
                     </Card>
+                )}
+                {appSettings?.paidMembersEnabled && (
+                    <CadenceBreakdown isLoading={isPageLoading} />
                 )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
