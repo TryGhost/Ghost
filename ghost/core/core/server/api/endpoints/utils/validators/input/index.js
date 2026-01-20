@@ -79,9 +79,5 @@ module.exports = {
 
     get snippets() {
         return require('./snippets');
-    },
-
-    get member_commenting() {
-        return require('./member-commenting');
     }
 };

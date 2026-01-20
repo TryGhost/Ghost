@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
+const {byNQL} = require('../../models/base/plugins/bulk-operations');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -450,6 +451,18 @@ class CommentsService {
         });
 
         return model;
+    }
+
+    /**
+     * Bulk update comment status based on NQL filter
+     * @param {string} filter - NQL filter string (e.g., "member_id:'abc123'+status:published")
+     * @param {string} status - New status ('hidden', 'published', 'deleted')
+     */
+    async bulkUpdateStatus(filter, status) {
+        await this.models.Comment.bulkUpdate('comments', {
+            data: {status},
+            where: byNQL(filter)
+        });
     }
 
     async getMemberIdByUUID(uuid, options) {
