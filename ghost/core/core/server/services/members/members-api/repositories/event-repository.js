@@ -84,10 +84,10 @@ module.exports = class EventRepository {
                 {type: 'payment_event', action: 'getPaymentEvents'},
                 {type: 'email_change_event', action: 'getEmailChangeEvent'}
             );
-        }
 
-        if (this._AutomatedEmailRecipient) {
-            pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
+            if (this._AutomatedEmailRecipient) {
+                pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
+            }
         }
 
         if (this._EmailRecipient) {
