@@ -90,8 +90,9 @@ module.exports = class EventRepository {
             }
         }
 
-        if (this._AutomatedEmailRecipient) {
-            pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
+            if (this._AutomatedEmailRecipient) {
+                pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
+            }
         }
 
         if (this._EmailRecipient) {
