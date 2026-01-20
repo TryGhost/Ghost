@@ -2,6 +2,7 @@ import DateRangeSelect from '../components/date-range-select';
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
+import PaidMembersChangeChart from './components/paid-members-change-chart';
 import React, {useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
@@ -141,11 +142,26 @@ const Growth: React.FC = () => {
                             currencySymbol={currencySymbol}
                             initialTab={initialTab}
                             isLoading={isPageLoading}
-                            subscriptionData={subscriptionData}
                             totals={totals}
                         />
                     </CardContent>
                 </Card>
+                {appSettings?.paidMembersEnabled && (
+                    <Card data-testid='paid-members-change-card'>
+                        <CardHeader>
+                            <CardTitle>Paid members change</CardTitle>
+                            <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <PaidMembersChangeChart
+                                isLoading={isPageLoading}
+                                memberData={chartData}
+                                range={range}
+                                subscriptionData={subscriptionData}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
                         <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
