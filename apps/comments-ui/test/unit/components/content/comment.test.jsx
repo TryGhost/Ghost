@@ -1,6 +1,6 @@
-import {AppContext} from '../../app-context';
-import {CommentComponent, RepliedToSnippet} from './comment';
-import {buildComment} from '../../../test/utils/fixtures';
+import {AppContext} from '../../../../src/app-context';
+import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
+import {buildComment} from '../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {

@@ -1,16 +1,16 @@
-import ContentBox from './content-box';
+import ContentBox from '../../../src/components/content-box';
 import React from 'react';
-import {AppContext} from '../app-context';
-import {ROOT_DIV_ID} from '../utils/constants';
+import {AppContext} from '../../../src/app-context';
+import {ROOT_DIV_ID} from '../../../src/utils/constants';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
 // Mock the Content and Loading components
-vi.mock('./content/content', () => ({
+vi.mock('../../../src/components/content/content', () => ({
     default: () => <div data-testid="content">${`Content component`}</div>
 }));
 
-vi.mock('./content/loading', () => ({
+vi.mock('../../../src/components/content/loading', () => ({
     default: () => <div data-testid="loading">${`Loading component`}</div>
 }));
 

@@ -1,8 +1,8 @@
-import CommentContextMenu from './comment-context-menu';
+import CommentContextMenu from '../../../../../src/components/content/context-menus/comment-context-menu';
 import React from 'react';
 import sinon from 'sinon';
-import {AppContext} from '../../../app-context';
-import {buildComment} from '../../../../test/utils/fixtures';
+import {AppContext} from '../../../../../src/app-context';
+import {buildComment} from '../../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {

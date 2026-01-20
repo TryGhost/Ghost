@@ -1,5 +1,5 @@
 import * as vi from 'vitest';
-import {setupAdminAPI} from './admin-api';
+import {setupAdminAPI} from '../../../src/utils/admin-api';
 
 describe('setupAdminAPI', () => {
     let addEventListenerSpy: vi.SpyInstance;
