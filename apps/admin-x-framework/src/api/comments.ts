@@ -19,6 +19,7 @@ export type Comment = {
         name: string;
         email: string;
         avatar_image?: string;
+        can_comment?: boolean;
     };
     post?: {
         id: string;

@@ -5,6 +5,7 @@ import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;
+
     test.beforeEach(async ({page}) => {
         tagFactory = createTagFactory(page.request);
     });
