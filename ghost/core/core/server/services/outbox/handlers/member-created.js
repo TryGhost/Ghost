@@ -23,7 +23,7 @@ async function handle({payload}) {
         }
 
         await AutomatedEmailRecipient.add({
-            member_id: payload.uuid,
+            member_id: payload.memberId,
             automated_email_id: automatedEmail.id,
             processed_at: new Date()
         });
