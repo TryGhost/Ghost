@@ -69,22 +69,6 @@ export const AccountPlanPageStyles = `
         color: var(--grey5);
         margin-top: 4px;
     }
-
-    .gh-portal-btn-link {
-        background: none;
-        border: none;
-        color: var(--grey5);
-        cursor: pointer;
-        font-size: 1.45rem;
-        padding: 12px 8px;
-        margin-top: 12px;
-        display: block;
-        width: 100%;
-    }
-
-    .gh-portal-btn-link:hover {
-        color: var(--grey3);
-    }
 `;
 
 function getConfirmationPageTitle({confirmationType}) {
@@ -339,12 +323,20 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptin
                     height: '40px'
                 }}
             />
-            <button
-                className="gh-portal-btn gh-portal-btn-link"
+            <ActionButton
+                dataTestId={'decline-retention-offer'}
                 onClick={onDeclineOffer}
-            >
-                {t('Continue to cancellation')}
-            </button>
+                isPrimary={false}
+                isDestructive={true}
+                classes={'gh-portal-btn-text'}
+                brandColor={brandColor}
+                label={t('Continue to cancellation')}
+                style={{
+                    width: '100%',
+                    marginTop: '24px',
+                    marginBottom: '24px'
+                }}
+            />
         </div>
     );
 };
