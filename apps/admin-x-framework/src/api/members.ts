@@ -27,12 +27,13 @@ export const useBrowseMembers = createQuery<MembersResponseType>({
 
 export const useDisableMemberCommenting = createMutation<
     MembersResponseType,
-    {id: string; reason: string}
+    {id: string; reason: string; hideComments?: boolean}
 >({
     method: 'POST',
     path: ({id}) => `/members/${id}/commenting/disable`,
-    body: ({reason}) => ({
-        reason
+    body: ({reason, hideComments}) => ({
+        reason,
+        hide_comments: hideComments
     }),
     invalidateQueries: {
         dataType: 'CommentsResponseType'

@@ -124,6 +124,86 @@ test.describe('Ghost Admin - Disable Commenting', () => {
         expect(requestBody.reason).toContain(comment.id);
     });
 
+    test.describe('with hide comments enabled', () => {
+        test.use({labs: {disableMemberCommenting: true, disableMemberCommentingHideComments: true}});
+
+        test('hide comments checkbox appears in modal', async ({page}) => {
+            const post = await postFactory.create({status: 'published'});
+            const member = await memberFactory.create();
+            await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Test comment for hide checkbox</p>'
+            });
+
+            const commentsPage = new CommentsPage(page);
+            await commentsPage.goto();
+            await commentsPage.waitForComments();
+
+            const commentRow = commentsPage.getCommentRowByText('Test comment for hide checkbox');
+            await commentsPage.openMoreMenu(commentRow);
+            await commentsPage.clickDisableCommenting();
+
+            await expect(commentsPage.getHideCommentsCheckbox()).toBeVisible();
+        });
+
+        test('checking hide comments sends hide_comments true to API', async ({page}) => {
+            const post = await postFactory.create({status: 'published'});
+            const member = await memberFactory.create();
+            await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Test comment for hide API</p>'
+            });
+
+            const commentsPage = new CommentsPage(page);
+            await commentsPage.goto();
+            await commentsPage.waitForComments();
+
+            const apiCallPromise = page.waitForRequest(request => request.url().includes(`/members/${member.id}/commenting/disable`) &&
+                request.method() === 'POST'
+            );
+
+            const commentRow = commentsPage.getCommentRowByText('Test comment for hide API');
+            await commentsPage.openMoreMenu(commentRow);
+            await commentsPage.clickDisableCommenting();
+            await commentsPage.getHideCommentsCheckbox().check();
+            await commentsPage.confirmDisableCommenting();
+
+            const apiCall = await apiCallPromise;
+            const requestBody = apiCall.postDataJSON();
+            expect(requestBody.hide_comments).toBe(true);
+        });
+
+        test('unchecked hide comments sends hide_comments false to API', async ({page}) => {
+            const post = await postFactory.create({status: 'published'});
+            const member = await memberFactory.create();
+            await commentFactory.create({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Test comment for no hide API</p>'
+            });
+
+            const commentsPage = new CommentsPage(page);
+            await commentsPage.goto();
+            await commentsPage.waitForComments();
+
+            const apiCallPromise = page.waitForRequest(request => request.url().includes(`/members/${member.id}/commenting/disable`) &&
+                request.method() === 'POST'
+            );
+
+            const commentRow = commentsPage.getCommentRowByText('Test comment for no hide API');
+            await commentsPage.openMoreMenu(commentRow);
+            await commentsPage.clickDisableCommenting();
+            // Don't check the checkbox
+            await commentsPage.confirmDisableCommenting();
+
+            const apiCall = await apiCallPromise;
+            const requestBody = apiCall.postDataJSON();
+            expect(requestBody.hide_comments).toBe(false);
+        });
+    });
+
     // Note: These tests require backend support for can_comment field on member
     // They will pass once the backend API is merged
 

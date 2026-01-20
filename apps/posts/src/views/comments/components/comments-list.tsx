@@ -135,7 +135,8 @@ function CommentsList({
     onAddFilter,
     isLoading,
     commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    disableMemberCommentingEnabled,
+    hideCommentsEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -146,6 +147,7 @@ function CommentsList({
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
     disableMemberCommentingEnabled?: boolean;
+    hideCommentsEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +170,7 @@ function CommentsList({
     const {mutate: enableCommenting} = useEnableMemberCommenting();
     const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
     const [memberToDisable, setMemberToDisable] = useState<{member: Comment['member']; commentId: string} | null>(null);
+    const [hideComments, setHideComments] = useState(false);
 
     const confirmDelete = () => {
         if (commentToDelete) {
@@ -180,9 +183,11 @@ function CommentsList({
         if (memberToDisable?.member?.id) {
             disableCommenting({
                 id: memberToDisable.member.id,
-                reason: `Disabled from comment ${memberToDisable.commentId}`
+                reason: `Disabled from comment ${memberToDisable.commentId}`,
+                ...(hideCommentsEnabled && {hideComments})
             });
             setMemberToDisable(null);
+            setHideComments(false);
         }
     };
 
@@ -247,7 +252,7 @@ function CommentsList({
                                                         </span>
                                                     )}
                                                 </div>
-                                                {disableMemberCommentingEnabled && item.member!.can_comment === false && (
+                                                {disableMemberCommentingEnabled && item.member?.can_comment === false && (
                                                     <TooltipProvider>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
@@ -392,8 +397,8 @@ function CommentsList({
                                                             </a>
                                                         </DropdownMenuItem>
                                                     )}
-                                                    {disableMemberCommentingEnabled && (
-                                                        item.member!.can_comment !== false ? (
+                                                    {disableMemberCommentingEnabled && item.member && (
+                                                        item.member.can_comment !== false ? (
                                                             <DropdownMenuItem onClick={() => {
                                                                 // Workaround for Radix UI bug where opening Dialog from DropdownMenu
                                                                 // leaves pointer-events: none on body, freezing the UI
@@ -455,6 +460,7 @@ function CommentsList({
             <Dialog open={!!memberToDisable} onOpenChange={(open) => {
                 if (!open) {
                     setMemberToDisable(null);
+                    setHideComments(false);
                 }
             }}>
                 <DialogContent>
@@ -465,6 +471,21 @@ function CommentsList({
                             in the future. You can re-enable commenting anytime.
                         </DialogDescription>
                     </DialogHeader>
+
+                    {hideCommentsEnabled && (
+                        <div className="flex items-center gap-2 py-2">
+                            <input
+                                checked={hideComments}
+                                className="size-4 rounded border-gray-300"
+                                id="hide-comments"
+                                type="checkbox"
+                                onChange={e => setHideComments(e.target.checked)}
+                            />
+                            <label className="text-sm" htmlFor="hide-comments">
+                                Hide all previous comments
+                            </label>
+                        </div>
+                    )}
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setMemberToDisable(null)}>

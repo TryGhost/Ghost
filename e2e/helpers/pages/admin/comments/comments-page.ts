@@ -61,6 +61,10 @@ export class CommentsPage extends AdminPage {
         return row.getByTestId('commenting-disabled-indicator');
     }
 
+    getHideCommentsCheckbox(): Locator {
+        return this.page.getByRole('checkbox', {name: 'Hide all previous comments'});
+    }
+
     async openMoreMenu(row: Locator): Promise<void> {
         await this.getMoreMenuButton(row).click();
     }
