@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const rewire = require('rewire');
@@ -31,9 +32,9 @@ describe('Slack', function () {
 
     it('listen() should initialise event correctly', function () {
         slack.listen();
-        eventStub.calledTwice.should.be.true();
-        eventStub.firstCall.calledWith('post.published', slack.__get__('slackListener')).should.be.true();
-        eventStub.secondCall.calledWith('slack.test', slack.__get__('slackTestPing')).should.be.true();
+        sinon.assert.calledTwice(eventStub);
+        sinon.assert.calledWith(eventStub.firstCall, 'post.published', slack.__get__('slackListener'));
+        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', slack.__get__('slackTestPing'));
     });
 
     it('listener() calls ping() with toJSONified model', function () {
@@ -63,11 +64,11 @@ describe('Slack', function () {
 
         listener(testModel);
 
-        pingStub.calledOnce.should.be.true();
-        pingStub.calledWith({
+        sinon.assert.calledOnce(pingStub);
+        sinon.assert.calledWith(pingStub, {
             ...testPost,
             authors: [testAuthor]
-        }).should.be.true();
+        });
 
         // Reset slack ping method
         resetSlack();
@@ -88,7 +89,7 @@ describe('Slack', function () {
 
         listener(testModel, {importing: true});
 
-        pingStub.calledOnce.should.be.false();
+        sinon.assert.notCalled(pingStub);
 
         // Reset slack ping method
         resetSlack();
@@ -101,8 +102,8 @@ describe('Slack', function () {
 
         testPing();
 
-        pingStub.calledOnce.should.be.true();
-        pingStub.calledWith(sinon.match.has('message')).should.be.true();
+        sinon.assert.calledOnce(pingStub);
+        sinon.assert.calledWith(pingStub, sinon.match.has('message'));
 
         // Reset slack ping method
         resetSlack();
@@ -149,22 +150,22 @@ describe('Slack', function () {
             ping(post);
 
             // assertions
-            makeRequestStub.calledOnce.should.be.true();
-            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack_url').should.be.true();
+            sinon.assert.calledOnce(makeRequestStub);
+            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
             requestUrl = makeRequestStub.firstCall.args[0];
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestUrl.should.equal(slackURL);
-            requestData.attachments[0].title.should.equal(post.title);
-            requestData.attachments[0].title_link.should.equal('http://myblog.com/webhook-test/');
-            requestData.attachments[0].fields[0].value.should.equal('Hello World!This is a test post.');
-            requestData.attachments[0].should.not.have.property('author_name');
-            requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
+            assert.equal(requestUrl, slackURL);
+            assert.equal(requestData.attachments[0].title, post.title);
+            assert.equal(requestData.attachments[0].title_link, 'http://myblog.com/webhook-test/');
+            assert.equal(requestData.attachments[0].fields[0].value, 'Hello World!This is a test post.');
+            assert(!('author_name' in requestData.attachments[0]));
+            assert.equal(requestData.icon_url, 'http://myblog.com/favicon.ico');
 
-            requestData.username.should.equal('Ghost');
-            requestData.unfurl_links.should.equal(true);
+            assert.equal(requestData.username, 'Ghost');
+            assert.equal(requestData.unfurl_links, true);
         });
 
         it('makes a request for a message if url is provided', function () {
@@ -177,18 +178,18 @@ describe('Slack', function () {
             ping({message: 'Hi!'});
 
             // assertions
-            makeRequestStub.calledOnce.should.be.true();
-            urlServiceGetUrlByResourceIdStub.called.should.be.false();
-            settingsCacheStub.calledWith('slack_url').should.be.true();
+            sinon.assert.calledOnce(makeRequestStub);
+            sinon.assert.notCalled(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
             requestUrl = makeRequestStub.firstCall.args[0];
             requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            requestUrl.should.equal(slackURL);
-            requestData.text.should.equal('Hi!');
-            requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
-            requestData.username.should.equal('Ghost');
-            requestData.unfurl_links.should.equal(true);
+            assert.equal(requestUrl, slackURL);
+            assert.equal(requestData.text, 'Hi!');
+            assert.equal(requestData.icon_url, 'http://myblog.com/favicon.ico');
+            assert.equal(requestData.username, 'Ghost');
+            assert.equal(requestData.unfurl_links, true);
         });
 
         it('makes a request and errors', function (done) {
@@ -201,7 +202,8 @@ describe('Slack', function () {
 
             (function retry() {
                 if (loggingStub.calledOnce) {
-                    makeRequestStub.calledOnce.should.be.true();
+                    sinon.assert.calledOnce(makeRequestStub);
+                    sinon.assert.calledOnce(loggingStub);
                     return done();
                 }
 
@@ -217,9 +219,9 @@ describe('Slack', function () {
             ping(post);
 
             // assertions
-            makeRequestStub.calledOnce.should.be.false();
-            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack_url').should.be.true();
+            sinon.assert.notCalled(makeRequestStub);
+            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
         it('does not send webhook for \'welcome\' post', function () {
@@ -230,9 +232,9 @@ describe('Slack', function () {
             ping(post);
 
             // assertions
-            makeRequestStub.calledOnce.should.be.false();
-            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
-            settingsCacheStub.calledWith('slack_url').should.be.true();
+            sinon.assert.notCalled(makeRequestStub);
+            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
         it('handles broken slack settings', function () {
@@ -243,9 +245,9 @@ describe('Slack', function () {
             ping(post);
 
             // assertions
-            makeRequestStub.calledOnce.should.be.false();
-            urlServiceGetUrlByResourceIdStub.called.should.be.true();
-            settingsCacheStub.calledWith('slack_url').should.be.true();
+            sinon.assert.notCalled(makeRequestStub);
+            sinon.assert.called(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
     });
 });
