@@ -158,8 +158,9 @@ export const formatQueryDate = (date: Moment) => {
     return date.format('YYYY-MM-DD');
 };
 
-// Format date for UI, result is in the formate of `12 Jun 2025`
-export const formatDisplayDate = (dateString: string): string => {
+// Format date for UI, result is in the format of `12 Jun 2025`
+// When timezone is provided, the date will be converted to that timezone before formatting
+export const formatDisplayDate = (dateString: string, timezone?: string): string => {
     // If the date is a Date object, convert it to a string
     // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
     if (dateString instanceof Date) {
@@ -172,28 +173,41 @@ export const formatDisplayDate = (dateString: string): string => {
 
     // Check if this is a datetime string (contains time) or just a date
     const hasTime = dateString.includes(':');
-
-    const date = new Date(dateString);
-    const today = new Date();
+    const isISOFormat = dateString.includes('T') || dateString.includes('Z');
 
     let day, month, year, isToday, isCurrentYear;
 
-    if (hasTime && !dateString.includes('T') && !dateString.includes('Z')) {
-        // This is a localized datetime string like "2025-07-29 19:00:00"
-        // Use local date methods to avoid timezone conversion
-        day = date.getDate();
-        month = date.getMonth();
-        year = date.getFullYear();
-        isToday = date.toDateString() === today.toDateString();
-        isCurrentYear = year === today.getFullYear();
+    // If timezone is provided and this is an ISO format date, use moment-timezone to convert
+    if (timezone && isISOFormat) {
+        const dateMoment = moment.tz(dateString, timezone);
+        const todayMoment = moment.tz(timezone);
+
+        day = dateMoment.date();
+        month = dateMoment.month();
+        year = dateMoment.year();
+        isToday = dateMoment.isSame(todayMoment, 'day');
+        isCurrentYear = year === todayMoment.year();
     } else {
-        // This is either a date-only string or an ISO format with timezone
-        // Use UTC methods as before
-        day = date.getUTCDate();
-        month = date.getUTCMonth();
-        year = date.getUTCFullYear();
-        isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-        isCurrentYear = year === today.getUTCFullYear();
+        const date = new Date(dateString);
+        const today = new Date();
+
+        if (hasTime && !isISOFormat) {
+            // This is a localized datetime string like "2025-07-29 19:00:00"
+            // Use local date methods to avoid timezone conversion
+            day = date.getDate();
+            month = date.getMonth();
+            year = date.getFullYear();
+            isToday = date.toDateString() === today.toDateString();
+            isCurrentYear = year === today.getFullYear();
+        } else {
+            // This is either a date-only string or an ISO format with timezone (without explicit timezone param)
+            // Use UTC methods as before
+            day = date.getUTCDate();
+            month = date.getUTCMonth();
+            year = date.getUTCFullYear();
+            isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
+            isCurrentYear = year === today.getUTCFullYear();
+        }
     }
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
