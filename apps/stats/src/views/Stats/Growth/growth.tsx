@@ -4,7 +4,7 @@ import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
 import PaidMembersChangeChart from './components/paid-members-change-chart';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
@@ -57,6 +57,13 @@ const Growth: React.FC = () => {
 
     // Track current KPI tab to conditionally show paid member charts
     const [currentKpiTab, setCurrentKpiTab] = useState(initialTab);
+
+    // Sync currentKpiTab with URL changes
+    useEffect(() => {
+        if (initialTab !== currentKpiTab) {
+            setCurrentKpiTab(initialTab);
+        }
+    }, [initialTab, currentKpiTab]);
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
