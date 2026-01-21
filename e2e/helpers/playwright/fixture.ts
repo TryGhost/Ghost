@@ -1,6 +1,6 @@
 import baseDebug from '@tryghost/debug';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '@/helpers/environment';
+import {getProvider, TestContext} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
@@ -23,7 +23,7 @@ export interface GhostConfig {
 }
 
 export interface GhostInstanceFixture {
-    ghostInstance: GhostInstance;
+    testContext: TestContext;
     labs?: Record<string, boolean>;
     config?: GhostConfig;
     stripeConnected?: boolean;
@@ -70,21 +70,23 @@ export const test = base.extend<GhostInstanceFixture>({
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
     stripeConnected: [false, {option: true}],
-    ghostInstance: async ({config}, use, testInfo: TestInfo) => {
-        debug('Setting up Ghost instance for test:', testInfo.title);
-        const environmentManager = new EnvironmentManager();
-        const ghostInstance = await environmentManager.perTestSetup({config});
-        debug('Ghost instance ready for test:', {
-            testTitle: testInfo.title,
-            ...ghostInstance
+    testContext: async ({config}, use, testInfo: TestInfo) => {
+        debug('Setting up test context for test:', testInfo.title);
+        const provider = getProvider();
+        const testContext = await provider.createTestContext({
+            ghostConfig: config as Record<string, string> | undefined
         });
-        await use(ghostInstance);
-        debug('Tearing down Ghost instance for test:', testInfo.title);
-        await environmentManager.perTestTeardown(ghostInstance);
+        debug('Test context ready for test:', {
+            testTitle: testInfo.title,
+            ...testContext
+        });
+        await use(testContext);
+        debug('Tearing down test context for test:', testInfo.title);
+        await provider.destroyTestContext(testContext);
         debug('Teardown completed for test:', testInfo.title);
     },
-    baseURL: async ({ghostInstance}, use) => {
-        await use(ghostInstance.baseUrl);
+    baseURL: async ({testContext}, use) => {
+        await use(testContext.baseUrl);
     },
     // Create user credentials only (no authentication)
     ghostAccountOwner: async ({baseURL}, use) => {
