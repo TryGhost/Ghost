@@ -60,3 +60,7 @@ In either case, you need sufficient permissions to release `@tryghost` packages 
 3. Wait until a new version of Ghost is released
 
 To use the new version of signup form in Ghost, update the version in Ghost core's default configuration (currently at `core/shared/config/default.json`)
+
+# Copyright & License
+
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
