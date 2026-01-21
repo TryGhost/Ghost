@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import moment from 'moment';
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
-import {determineAggregationStrategy, sanitizeChartData} from '@src/utils/chart-helpers';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
+import {determineAggregationStrategy, getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 
 type PaidMembersChangeChartProps = {
     subscriptionData?: {date: string; signups: number; cancellations: number}[];
@@ -177,81 +177,87 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     }
 
     return (
-        <div>
-            <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[260px]' config={paidChangeChartConfig}>
-                <Recharts.BarChart
-                    data={paidChangeChartData}
-                    stackOffset='sign'
-                >
-                    <defs>
-                        <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
-                            <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
-                        </linearGradient>
-                    </defs>
-                    <defs>
-                        <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
-                            <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
-                        </linearGradient>
-                    </defs>
-                    <Recharts.CartesianGrid stroke="hsl(var(--border))" vertical={false} />
-                    <Recharts.XAxis
-                        axisLine={false}
-                        dataKey="date"
-                        tickFormatter={() => ('')}
-                        tickLine={false}
-                        tickMargin={10}
-                    />
-                    <Recharts.YAxis
-                        axisLine={false}
-                        tickFormatter={(value) => {
-                            return value < 0 ? formatNumber(value * -1) : formatNumber(value);
-                        }}
-                        tickLine={false}
-                    />
-                    <ChartTooltip
-                        content={<ChartTooltipContent
-                            className='!min-w-[120px] px-3 py-2'
-                            formatter={(value, name, payload, index) => {
-                                const rawValue = Number(value);
-                                let displayValue = '0';
-                                if (rawValue === 0) {
-                                    displayValue = '0';
-                                } else {
-                                    displayValue = rawValue < 0 ? formatNumber(rawValue * -1) : formatNumber(rawValue);
-                                }
+        <Card data-testid='paid-members-change-card'>
+            <CardHeader>
+                <CardTitle>Paid members change</CardTitle>
+                <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div>
+                    <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[260px]' config={paidChangeChartConfig}>
+                        <Recharts.BarChart
+                            data={paidChangeChartData}
+                            stackOffset='sign'
+                        >
+                            <defs>
+                                <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
+                                    <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
+                                </linearGradient>
+                            </defs>
+                            <defs>
+                                <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
+                                    <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
+                                </linearGradient>
+                            </defs>
+                            <Recharts.CartesianGrid stroke="hsl(var(--border))" vertical={false} />
+                            <Recharts.XAxis
+                                axisLine={false}
+                                dataKey="date"
+                                tickFormatter={() => ('')}
+                                tickLine={false}
+                                tickMargin={10}
+                            />
+                            <Recharts.YAxis
+                                axisLine={false}
+                                tickFormatter={(value) => {
+                                    return value < 0 ? formatNumber(value * -1) : formatNumber(value);
+                                }}
+                                tickLine={false}
+                            />
+                            <ChartTooltip
+                                content={<ChartTooltipContent
+                                    className='!min-w-[120px] px-3 py-2'
+                                    formatter={(value, name, payload, index) => {
+                                        const rawValue = Number(value);
+                                        let displayValue = '0';
+                                        if (rawValue === 0) {
+                                            displayValue = '0';
+                                        } else {
+                                            displayValue = rawValue < 0 ? formatNumber(rawValue * -1) : formatNumber(rawValue);
+                                        }
 
-                                // Calculate net change (new + cancelled, since cancelled is negative)
-                                const newValue = Number(payload?.payload?.new || 0);
-                                const cancelledValue = Number(payload?.payload?.cancelled || 0);
-                                const netChange = newValue + cancelledValue;
-                                const netChangeFormatted = netChange === 0 ? '0' : (netChange > 0 ? `+${formatNumber(netChange)}` : formatNumber(netChange));
+                                        // Calculate net change (new + cancelled, since cancelled is negative)
+                                        const newValue = Number(payload?.payload?.new || 0);
+                                        const cancelledValue = Number(payload?.payload?.cancelled || 0);
+                                        const netChange = newValue + cancelledValue;
+                                        const netChangeFormatted = netChange === 0 ? '0' : (netChange > 0 ? `+${formatNumber(netChange)}` : formatNumber(netChange));
 
-                                return (
-                                    <div className='flex w-full flex-col'>
-                                        {index === 0 &&
+                                        return (
+                                            <div className='flex w-full flex-col'>
+                                                {index === 0 &&
                                             <div className="mb-1 text-sm font-medium text-foreground">
                                                 {payload?.payload?.date}
                                             </div>
-                                        }
-                                        <div className='flex w-full items-center justify-between gap-4'>
-                                            <div className='flex items-center gap-1'>
-                                                <div
-                                                    className="size-2 shrink-0 rounded-full bg-[var(--color-bg)] opacity-50"
-                                                    style={{
-                                                        '--color-bg': `var(--color-${name})`
-                                                    } as React.CSSProperties}
-                                                />
-                                                <span className='text-sm text-muted-foreground'>
-                                                    {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
-                                                </span>
-                                            </div>
-                                            <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                                                {displayValue}
-                                            </div>
-                                        </div>
-                                        {index === 1 &&
+                                                }
+                                                <div className='flex w-full items-center justify-between gap-4'>
+                                                    <div className='flex items-center gap-1'>
+                                                        <div
+                                                            className="size-2 shrink-0 rounded-full bg-[var(--color-bg)] opacity-50"
+                                                            style={{
+                                                                '--color-bg': `var(--color-${name})`
+                                                            } as React.CSSProperties}
+                                                        />
+                                                        <span className='text-sm text-muted-foreground'>
+                                                            {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                        {displayValue}
+                                                    </div>
+                                                </div>
+                                                {index === 1 &&
                                             <div className='mt-1 flex w-full items-center justify-between gap-4 border-t pt-1'>
                                                 <span className='text-sm text-muted-foreground'>
                                                     Net change
@@ -260,56 +266,58 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                     {netChangeFormatted}
                                                 </div>
                                             </div>
-                                        }
-                                    </div>
-                                );
-                            }}
-                            hideLabel
-                        />}
-                        cursor={false}
-                        isAnimationActive={false}
-                        position={{y: 10}}
-                    />
-                    <Recharts.Bar
-                        activeBar={{fillOpacity: 1}}
-                        dataKey="new"
-                        fill='url(#tealGradient)'
-                        fillOpacity={0.75}
-                        maxBarSize={32}
-                        minPointSize={3}
-                        radius={[4, 4, 0, 0]}
-                        stackId="a"
-                    />
-                    <Recharts.Bar
-                        activeBar={{fillOpacity: 1}}
-                        dataKey="cancelled"
-                        fill='url(#roseGradient)'
-                        fillOpacity={0.75}
-                        maxBarSize={32}
-                        radius={[4, 4, 0, 0]}
-                        stackId="a"
-                    />
-                </Recharts.BarChart>
-            </ChartContainer>
-            <div className='mt-3 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
-                <div className='flex items-center gap-1'>
-                    <span className='size-2 rounded-full opacity-50'
-                        style={{
-                            backgroundColor: paidChangeChartConfig.new.color
-                        }}
-                    ></span>
+                                                }
+                                            </div>
+                                        );
+                                    }}
+                                    hideLabel
+                                />}
+                                cursor={false}
+                                isAnimationActive={false}
+                                position={{y: 10}}
+                            />
+                            <Recharts.Bar
+                                activeBar={{fillOpacity: 1}}
+                                dataKey="new"
+                                fill='url(#tealGradient)'
+                                fillOpacity={0.75}
+                                maxBarSize={32}
+                                minPointSize={3}
+                                radius={[4, 4, 0, 0]}
+                                stackId="a"
+                            />
+                            <Recharts.Bar
+                                activeBar={{fillOpacity: 1}}
+                                dataKey="cancelled"
+                                fill='url(#roseGradient)'
+                                fillOpacity={0.75}
+                                maxBarSize={32}
+                                radius={[4, 4, 0, 0]}
+                                stackId="a"
+                            />
+                        </Recharts.BarChart>
+                    </ChartContainer>
+                    <div className='mt-3 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
+                        <div className='flex items-center gap-1'>
+                            <span className='size-2 rounded-full opacity-50'
+                                style={{
+                                    backgroundColor: paidChangeChartConfig.new.color
+                                }}
+                            ></span>
                     New
-                </div>
-                <div className='flex items-center gap-1'>
-                    <span className='size-2 rounded-full opacity-50'
-                        style={{
-                            backgroundColor: paidChangeChartConfig.cancelled.color
-                        }}
-                    ></span>
+                        </div>
+                        <div className='flex items-center gap-1'>
+                            <span className='size-2 rounded-full opacity-50'
+                                style={{
+                                    backgroundColor: paidChangeChartConfig.cancelled.color
+                                }}
+                            ></span>
                     Cancelled
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };
 

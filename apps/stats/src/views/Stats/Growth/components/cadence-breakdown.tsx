@@ -153,7 +153,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                             <SelectTrigger className="w-full max-w-[120px]">
                                 <SelectValue placeholder="Select tier" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent align='end'>
                                 <SelectItem value="all">All tiers</SelectItem>
                                 {availableTiers.map((tier) => {
                                     return (
