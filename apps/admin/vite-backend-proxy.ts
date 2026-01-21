@@ -1,17 +1,6 @@
 import type { Plugin, ProxyOptions } from "vite";
 import type { IncomingMessage } from "http";
-
-const GHOST_URL = process.env.GHOST_URL ?? "http://localhost:2368/";
-
-/**
- * Extracts the subdirectory path from GHOST_URL.
- * e.g., "http://localhost:2368/blog/" -> "/blog"
- *       "http://localhost:2368/" -> ""
- */
-function getSubdir(): string {
-    const url = new URL(GHOST_URL);
-    return url.pathname.replace(/\/$/, '');
-}
+import { getSubdir, GHOST_URL } from "./vite.config";
 
 /**
  * Resolves the configured Ghost site URL by calling the admin api site endpoint

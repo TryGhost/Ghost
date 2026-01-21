@@ -90,11 +90,14 @@ export function emberAssetsPlugin() {
                 dev: true,
                 etag: true
             });
-            
+
+            const base = (server.config.base ?? '/ghost').replace(/\/$/, '');
+            const assetsPrefix = `${base}/assets/`;
+
             server.middlewares.use((req, res, next) => {
-                if (req.url?.startsWith('/ghost/assets/')) {
+                if (req.url?.startsWith(assetsPrefix)) {
                     const originalUrl = req.url;
-                    req.url = req.url.replace('/ghost/assets', '');
+                    req.url = req.url.replace(assetsPrefix, '/');
                     assetsMiddleware(req, res, () => {
                         req.url = originalUrl;
                         next();
