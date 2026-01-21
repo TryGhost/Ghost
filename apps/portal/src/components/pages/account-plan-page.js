@@ -295,8 +295,9 @@ function formatOfferDuration(offer) {
     return '';
 }
 
-const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptingOffer}) => {
-    const {brandColor} = useContext(AppContext);
+const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
+    const {brandColor, action} = useContext(AppContext);
+    const isAcceptingOffer = action === 'applyOffer:running';
 
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
@@ -379,7 +380,7 @@ const UpgradePlanSection = ({
 
 const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
-    pendingOffer, isAcceptingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
+    pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
@@ -409,7 +410,6 @@ const PlansContainer = ({
                 offer={pendingOffer}
                 onAcceptOffer={onAcceptRetentionOffer}
                 onDeclineOffer={onDeclineRetentionOffer}
-                isAcceptingOffer={isAcceptingOffer}
             />
         );
     }
@@ -464,8 +464,7 @@ export default class AccountPlanPage extends React.Component {
         const selectedPriceId = selectedPrice ? selectedPrice.id : null;
         return {
             selectedPlan: selectedPriceId,
-            pendingOffer: null,
-            isAcceptingOffer: false
+            pendingOffer: null
         };
     }
 
@@ -487,8 +486,7 @@ export default class AccountPlanPage extends React.Component {
             showConfirmation: false,
             confirmationPlan: null,
             confirmationType: null,
-            pendingOffer: null,
-            isAcceptingOffer: false
+            pendingOffer: null
         });
     }
 
@@ -564,16 +562,19 @@ export default class AccountPlanPage extends React.Component {
         }
     }
 
-    async onAcceptRetentionOffer() {
-        this.setState({isAcceptingOffer: true});
+    onAcceptRetentionOffer() {
+        const {member} = this.context;
+        const {pendingOffer} = this.state;
+        const subscription = getMemberSubscription({member});
 
-        // TODO: Implement apply offer endpoint call
-        await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
+        if (!subscription || !pendingOffer) {
+            return;
+        }
+
+        this.context.doAction('applyOffer', {
+            subscriptionId: subscription.id,
+            offerId: pendingOffer.id
         });
-
-        this.setState({isAcceptingOffer: false});
-        this.context.doAction('switchPage', {page: 'accountHome'});
     }
 
     onDeclineRetentionOffer() {
@@ -616,7 +617,7 @@ export default class AccountPlanPage extends React.Component {
 
     render() {
         const plans = this.prices;
-        const {selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer, isAcceptingOffer} = this.state;
+        const {selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer} = this.state;
         const {lastPage} = this.context;
         return (
             <>
@@ -629,7 +630,7 @@ export default class AccountPlanPage extends React.Component {
                         showConfirmation={showConfirmation}
                     />
                     <PlansContainer
-                        {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer, isAcceptingOffer}}
+                        {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer}}
                         onConfirm={(...args) => this.onConfirm(...args)}
                         onCancelSubscription = {data => this.onCancelSubscription(data)}
                         onAcceptRetentionOffer = {() => this.onAcceptRetentionOffer()}
