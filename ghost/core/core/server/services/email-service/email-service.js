@@ -102,15 +102,12 @@ class EmailService {
     }
 
     /**
-     * Pre-check if email sending would be allowed before making any post changes.
-     * This validates limits and verification requirements early to avoid leaving
-     * posts in a stuck "sent" state if email creation would fail.
      *
-     * @param {object} newsletter - The newsletter model to send to
-     * @param {string} emailRecipientFilter - The recipient filter for the email
-     * @returns {Promise<{emailCount: number}>} The email count if checks pass, throws if email cannot be sent
+     * @param {Post} post
+     * @returns {Promise<Email>}
      */
-    async checkCanSendEmail(newsletter, emailRecipientFilter) {
+    async createEmail(post) {
+        let newsletter = await post.getLazyRelation('newsletter');
         if (!newsletter) {
             throw new errors.EmailError({
                 message: tpl(messages.missingNewsletterError)
@@ -120,27 +117,14 @@ class EmailService {
         if (newsletter.get('status') !== 'active') {
             // A post might have been scheduled to an archived newsletter.
             // Don't send it (people can't unsubscribe any longer).
-            throw new errors.BadRequestError({
+            throw new errors.EmailError({
                 message: tpl(messages.archivedNewsletterError)
             });
         }
 
+        const emailRecipientFilter = post.get('email_recipient_filter');
         const emailCount = await this.#emailSegmenter.getMembersCount(newsletter, emailRecipientFilter);
         await this.checkLimits(emailCount);
-
-        return {emailCount};
-    }
-
-    /**
-     *
-     * @param {Post} post
-     * @returns {Promise<Email>}
-     */
-    async createEmail(post) {
-        const newsletter = await post.getLazyRelation('newsletter');
-        const emailRecipientFilter = post.get('email_recipient_filter');
-
-        const {emailCount} = await this.checkCanSendEmail(newsletter, emailRecipientFilter);
 
         const csdEmailCount = this.#domainWarmingService.isEnabled()
             ? await this.#domainWarmingService.getWarmupLimit(emailCount)
