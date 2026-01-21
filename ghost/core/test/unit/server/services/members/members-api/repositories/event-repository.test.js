@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const EventRepository = require('../../../../../../../core/server/services/members/members-api/repositories/event-repository');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -21,48 +20,48 @@ describe('EventRepository', function () {
         });
 
         it('throws when using invalid filter', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('undefined');
             }, errors.BadRequestError);
         });
 
         it('throws when using properties that aren\'t in the allowlist', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('(types:1)');
             }, errors.IncorrectUsageError);
         });
 
         it('throws when using an OR', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1,data.created_at:1');
             }, errors.IncorrectUsageError);
 
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1+data.created_at:1,data.member_id:1');
             }, errors.IncorrectUsageError);
 
-            should.throws(() => {
+            assert.throws(() => {
                 eventRepository.getNQLSubset('type:1,data.created_at:1+data.member_id:1');
             }, errors.IncorrectUsageError);
         });
 
         it('passes when using it correctly with one filter', function () {
             const res = eventRepository.getNQLSubset('type:email_delivered_event');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
 
-            res[0].should.eql({
+            assert.deepEqual(res[0], {
                 type: 'email_delivered_event'
             });
-            should(res[1]).be.undefined();
+            assert.equal(res[1], undefined);
         });
 
         it('passes when using it correctly with multiple filters', function () {
             const res = eventRepository.getNQLSubset('type:-[email_delivered_event,email_opened_event,email_failed_event]+data.created_at:<0+data.member_id:123');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
 
-            res[0].should.eql({
+            assert.deepEqual(res[0], {
                 type: {
                     $nin: [
                         'email_delivered_event',
@@ -71,7 +70,7 @@ describe('EventRepository', function () {
                     ]
                 }
             });
-            res[1].should.eql({
+            assert.deepEqual(res[1], {
                 $and: [{
                     'data.created_at': {
                         $lt: 0
@@ -84,9 +83,9 @@ describe('EventRepository', function () {
 
         it('passes when using it correctly with multiple filters used several times', function () {
             const res = eventRepository.getNQLSubset('type:-email_delivered_event+data.created_at:<0+data.member_id:123+type:-[email_opened_event,email_failed_event]+data.created_at:>10');
-            res.should.be.an.Array();
-            res.should.have.lengthOf(2);
-            res[0].should.eql({
+            assert.ok(Array.isArray(res));
+            assert.equal(res.length, 2);
+            assert.deepEqual(res[0], {
                 $and: [{
                     type: {
                         $ne: 'email_delivered_event'
@@ -100,7 +99,7 @@ describe('EventRepository', function () {
                     }
                 }]
             });
-            res[1].should.eql({
+            assert.deepEqual(res[1], {
                 $and: [{
                     'data.created_at': {
                         $lt: 0
@@ -198,8 +197,7 @@ describe('EventRepository', function () {
             }, {
                 type: 'unused'
             });
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -210,8 +208,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
 
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -223,8 +220,7 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
 
-            sinon.assert.calledOnce(fake);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'newsletter'],
                 filter: 'custom:true'
             });
@@ -262,8 +258,7 @@ describe('EventRepository', function () {
                 type: 'unused'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'failed_at:-null+custom:true',
                 order: 'failed_at desc, id desc'
@@ -277,8 +272,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'delivered_at:-null+custom:true',
                 order: 'delivered_at desc, id desc'
@@ -293,8 +287,7 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'email'],
                 filter: 'opened_at:-null+custom:true',
                 order: 'opened_at desc, id desc'
