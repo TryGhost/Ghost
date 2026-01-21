@@ -35,7 +35,6 @@ Object {
       "themeTranslation": true,
       "transistor": true,
       "urlCache": true,
-      "utmTracking": true,
       "webmentions": true,
       "welcomeEmails": true,
     },

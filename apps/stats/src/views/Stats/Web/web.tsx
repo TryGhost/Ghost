@@ -58,9 +58,6 @@ const Web: React.FC = () => {
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
 
-    // Check if UTM tracking is enabled in labs (defaults to true / GA)
-    const utmTrackingEnabled = data?.labs?.utmTracking ?? true;
-
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
         const audienceFilter = utmFilters.find(f => f.field === 'audience');
@@ -196,7 +193,6 @@ const Web: React.FC = () => {
                 <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={utmFilters}
-                        utmTrackingEnabled={utmTrackingEnabled}
                         onChange={setUtmFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}
@@ -227,14 +223,14 @@ const Web: React.FC = () => {
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
-                        onSourceClick={utmTrackingEnabled ? handleSourceClick : undefined}
+                        onSourceClick={handleSourceClick}
                     />
                 </div>
                 <LocationsCard
                     data={locationsData}
                     isLoading={isLocationsLoading}
                     range={range}
-                    onLocationClick={utmTrackingEnabled ? handleLocationClick : undefined}
+                    onLocationClick={handleLocationClick}
                 />
             </StatsView>
         </StatsLayout>

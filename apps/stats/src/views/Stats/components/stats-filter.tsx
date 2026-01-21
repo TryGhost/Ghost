@@ -14,7 +14,6 @@ countries.registerLocale(enLocale);
 
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
-    utmTrackingEnabled?: boolean;
     onChange?: (filters: Filter[]) => void;
 }
 
@@ -274,7 +273,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     return {options, loading: isLoading};
 };
 
-function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: StatsFilterProps) {
+function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
 
     // Track which filter field is currently being selected (lazy loading)
@@ -339,7 +338,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
 
     // Grouped fields - memoized to avoid recreation on every render
     const groupedFields: FilterFieldConfig[] = useMemo(() => {
-        const utmFields: FilterFieldConfig[] = utmTrackingEnabled ? [
+        const utmFields: FilterFieldConfig[] = [
             {
                 key: 'utm_source',
                 label: 'UTM Source',
@@ -418,7 +417,7 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                 searchable: true,
                 selectedOptionsClassName: 'hidden'
             }
-        ] : [];
+        ];
 
         return [
             {
@@ -494,12 +493,12 @@ function StatsFilter({filters, utmTrackingEnabled = false, onChange, ...props}: 
                     }
                 ]
             },
-            ...(utmTrackingEnabled ? [{
+            {
                 group: 'UTM parameters',
                 fields: utmFields
-            }] : [])
+            }
         ];
-    }, [utmTrackingEnabled, utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
