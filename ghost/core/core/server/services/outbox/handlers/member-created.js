@@ -12,13 +12,13 @@ async function handle({payload}) {
     try {
         const slug = MEMBER_WELCOME_EMAIL_SLUGS[payload.status];
         if (!slug) {
-            logging.warn(`No automated email slug found for member status: ${payload.status}`);
+            logging.warn(`${LOG_KEY} No automated email slug found for member status: ${payload.status}`);
             return;
         }
 
         const automatedEmail = await AutomatedEmail.findOne({slug});
         if (!automatedEmail) {
-            logging.warn(`No automated email found for slug: ${slug}`);
+            logging.warn(`${LOG_KEY} No automated email found for slug: ${slug}`);
             return;
         }
 
@@ -32,7 +32,7 @@ async function handle({payload}) {
         });
     } catch (err) {
         logging.error({
-            message: 'Failed to track automated email send',
+            message: `${LOG_KEY} Failed to track automated email send`,
             err
         });
     }
