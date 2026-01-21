@@ -464,7 +464,8 @@ export default class AccountPlanPage extends React.Component {
         const selectedPriceId = selectedPrice ? selectedPrice.id : null;
         return {
             selectedPlan: selectedPriceId,
-            pendingOffer: null
+            pendingOffer: null,
+            targetSubscriptionId: null
         };
     }
 
@@ -486,7 +487,8 @@ export default class AccountPlanPage extends React.Component {
             showConfirmation: false,
             confirmationPlan: null,
             confirmationType: null,
-            pendingOffer: null
+            pendingOffer: null,
+            targetSubscriptionId: null
         });
     }
 
@@ -549,7 +551,8 @@ export default class AccountPlanPage extends React.Component {
                 showConfirmation: true,
                 confirmationPlan: subscriptionPlan,
                 confirmationType: 'offerRetention',
-                pendingOffer: retentionOffers[0] // Show first available offer
+                pendingOffer: retentionOffers[0], // Show first available offer
+                targetSubscriptionId: subscriptionId
             });
         } else {
             // No retention offers, go straight to cancellation
@@ -557,22 +560,21 @@ export default class AccountPlanPage extends React.Component {
                 showConfirmation: true,
                 confirmationPlan: subscriptionPlan,
                 confirmationType: 'cancel',
-                pendingOffer: null
+                pendingOffer: null,
+                targetSubscriptionId: subscriptionId
             });
         }
     }
 
     onAcceptRetentionOffer() {
-        const {member} = this.context;
-        const {pendingOffer} = this.state;
-        const subscription = getMemberSubscription({member});
+        const {pendingOffer, targetSubscriptionId} = this.state;
 
-        if (!subscription || !pendingOffer) {
+        if (!targetSubscriptionId || !pendingOffer) {
             return;
         }
 
         this.context.doAction('applyOffer', {
-            subscriptionId: subscription.id,
+            subscriptionId: targetSubscriptionId,
             offerId: pendingOffer.id
         });
     }
@@ -586,13 +588,12 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onCancelSubscriptionConfirmation(reason) {
-        const {member} = this.context;
-        const subscription = getMemberSubscription({member});
-        if (!subscription) {
+        const {targetSubscriptionId} = this.state;
+        if (!targetSubscriptionId) {
             return null;
         }
         this.context.doAction('cancelSubscription', {
-            subscriptionId: subscription.id,
+            subscriptionId: targetSubscriptionId,
             cancelAtPeriodEnd: true,
             cancellationReason: reason
         });
