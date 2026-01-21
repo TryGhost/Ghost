@@ -622,7 +622,7 @@ export const getMemberInitials = (member: {name?: string}) => {
     const name = formatMemberName(member);
     const words = name.split(' ');
     if (words.length >= 2) {
-        return (words[0][0] + words[1][0]).toUpperCase();
+        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 };
