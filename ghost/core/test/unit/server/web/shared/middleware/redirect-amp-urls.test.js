@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const redirectAmpUrls = require('../../../../../../core/server/web/shared/middleware/redirect-amp-urls');
 
@@ -25,8 +26,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
 
         it('should call next() when URL contains amp but not at the end', function () {
@@ -34,8 +35,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
 
         it('should call next() when URL has amp in the middle', function () {
@@ -43,8 +44,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
 
         it('should call next() when URL is root path', function () {
@@ -52,8 +53,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
 
         it('should call next() when URL is empty', function () {
@@ -61,8 +62,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
     });
 
@@ -72,9 +73,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
 
         it('should redirect nested path /blog/post/amp/ to /blog/post/', function () {
@@ -82,9 +83,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/post/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/blog/post/');
         });
 
         it('should redirect root /amp/ to /', function () {
@@ -92,9 +93,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/');
         });
     });
 
@@ -104,9 +105,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
 
         it('should redirect nested path /blog/post/amp to /blog/post/', function () {
@@ -114,9 +115,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/post/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/blog/post/');
         });
 
         it('should redirect root /amp to /', function () {
@@ -124,9 +125,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/');
         });
     });
 
@@ -136,9 +137,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
 
         it('should redirect /welcome/Amp to /welcome/ (mixed case)', function () {
@@ -146,9 +147,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
 
         it('should redirect /welcome/AmP/ to /welcome/ (mixed case with trailing slash)', function () {
@@ -156,9 +157,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
     });
 
@@ -168,9 +169,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/qs-check/?q=1').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/qs-check/?q=1');
         });
 
         it('should preserve query string when redirecting /welcome/amp?q=1&r=2', function () {
@@ -178,9 +179,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/?q=1&r=2').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/?q=1&r=2');
         });
 
         it('should preserve complex query string when redirecting root /amp/?search=test&page=2', function () {
@@ -188,9 +189,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/?search=test&page=2').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/?search=test&page=2');
         });
 
         it('should handle encoded query parameters', function () {
@@ -198,9 +199,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome/?q=hello%20world').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/?q=hello%20world');
         });
     });
 
@@ -210,9 +211,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/welcome%20post/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/welcome%20post/');
         });
     });
 
@@ -222,9 +223,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/subdir/welcome/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/blog/subdir/welcome/');
         });
 
         it('should handle complex subdirectory paths with query strings', function () {
@@ -232,9 +233,9 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/blog/2023/post-title/?utm_source=test').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/ghost/blog/2023/post-title/?utm_source=test');
         });
     });
 
@@ -245,11 +246,11 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             // The exact result depends on removeOpenRedirectFromUrl implementation
             // but we're testing that the middleware calls it
-            res.redirect.firstCall.args[1].should.be.a.String();
+            assert.equal(typeof res.redirect.firstCall.args[1], 'string');
         });
     });
 
@@ -259,8 +260,8 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.calledOnce.should.be.true();
-            res.redirect.called.should.be.false();
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(res.redirect);
         });
 
         it('should handle multiple consecutive slashes', function () {
@@ -268,10 +269,10 @@ describe('Middleware: redirectAmpUrls', function () {
 
             redirectAmpUrls(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
             // The removeOpenRedirectFromUrl should clean up double slashes
-            res.redirect.calledWith(301, '/welcome/').should.be.true();
+            sinon.assert.calledWith(res.redirect, 301, '/welcome/');
         });
     });
 });
