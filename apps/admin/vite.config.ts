@@ -11,7 +11,7 @@ const GHOST_CARDS_PATH = resolve(__dirname, "../../ghost/core/core/frontend/src/
 
 // https://vite.dev/config/
 export default defineConfig({
-    base: process.env.GHOST_CDN_URL ?? "/ghost",
+    base: process.env.GHOST_CDN_URL ?? "./",
     plugins: [react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), deepLinksPlugin(), tsconfigPaths()],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package

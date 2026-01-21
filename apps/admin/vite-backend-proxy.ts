@@ -4,6 +4,16 @@ import type { IncomingMessage } from "http";
 const GHOST_URL = process.env.GHOST_URL ?? "http://localhost:2368/";
 
 /**
+ * Extracts the subdirectory path from GHOST_URL.
+ * e.g., "http://localhost:2368/blog/" -> "/blog"
+ *       "http://localhost:2368/" -> ""
+ */
+function getSubdir(): string {
+    const url = new URL(GHOST_URL);
+    return url.pathname.replace(/\/$/, '');
+}
+
+/**
  * Resolves the configured Ghost site URL by calling the admin api site endpoint
  * with retries (up to 20 seconds).
  */
@@ -11,7 +21,7 @@ async function resolveGhostSiteUrl() {
     const MAX_ATTEMPTS = 20;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
-            const siteEndpoint = new URL("/ghost/api/admin/site/", GHOST_URL);
+            const siteEndpoint = new URL('ghost/api/admin/site/', GHOST_URL);
             const response = await fetch(siteEndpoint);
             const data = (await response.json()) as { site: { url: string } };
             return {
@@ -51,8 +61,10 @@ function createAdminApiProxy(site: {
         }
     };
 
+    const subdir = getSubdir();
+
     return {
-        "^/ghost/api/.*": {
+        [`^${subdir}/ghost/api/.*`]: {
             target: site.url,
             changeOrigin: true,
             followRedirects: true,
