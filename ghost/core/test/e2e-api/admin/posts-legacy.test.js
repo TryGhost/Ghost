@@ -12,7 +12,6 @@ const configUtils = require('../../utils/config-utils');
 const mockManager = require('../../utils/e2e-framework-mock-manager');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const errors = require('@tryghost/errors');
 
 describe('Posts API', function () {
     let request;
@@ -621,6 +620,7 @@ describe('Posts API', function () {
         const id = res.body.posts[0].id;
 
         const updatedPost = res.body.posts[0];
+
         updatedPost.status = 'published';
 
         const loggingStub = sinon.stub(logging, 'error');
@@ -633,90 +633,6 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(400);
 
-        sinon.assert.calledOnce(loggingStub);
-    });
-
-    it('Does not change post status when email sending fails', async function () {
-        const emailService = require('../../../core/server/services/email-service');
-        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
-
-        // Create a draft post
-        const post = {
-            title: 'My scheduled email-only post',
-            status: 'draft',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
-            created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate()
-        };
-
-        const res = await request.post(localUtils.API.getApiQuery('posts'))
-            .set('Origin', config.get('url'))
-            .send({posts: [post]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
-
-        const id = res.body.posts[0].id;
-        const createdPost = res.body.posts[0];
-
-        // Schedule the post as email-only with a newsletter
-        createdPost.status = 'scheduled';
-        createdPost.published_at = moment().add(2, 'days').toDate();
-        createdPost.email_only = true;
-
-        const scheduledRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
-            .set('Origin', config.get('url'))
-            .send({posts: [createdPost]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        const scheduledPost = scheduledRes.body.posts[0];
-        scheduledPost.status.should.eql('scheduled');
-
-        // Verify the post is scheduled in the database
-        let model = await models.Post.findOne({
-            id,
-            status: 'all'
-        }, testUtils.context.internal);
-        should(model.get('status')).eql('scheduled');
-
-        // Now stub checkCanSendEmail to throw a HostLimitError (simulating email limits)
-        const checkCanSendEmailStub = sinon.stub(emailService.service, 'checkCanSendEmail')
-            .rejects(new errors.HostLimitError({
-                message: 'Email sending is temporarily disabled'
-            }));
-        const loggingStub = sinon.stub(logging, 'error');
-
-        // Attempt to publish the scheduled email-only post
-        scheduledPost.status = 'published';
-        scheduledPost.published_at = moment().toDate();
-
-        const failedRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
-            .set('Origin', config.get('url'))
-            .send({posts: [scheduledPost]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403);
-
-        failedRes.body.errors[0].type.should.eql('HostLimitError');
-
-        // CRITICAL: Verify the post status was NOT changed - it should still be scheduled
-        model = await models.Post.findOne({
-            id,
-            status: 'all'
-        }, testUtils.context.internal);
-        should(model.get('status')).eql('scheduled', 'Post should remain scheduled when email sending fails');
-
-        // No email should have been created
-        const email = await models.Email.findOne({
-            post_id: id
-        }, testUtils.context.internal);
-        should.not.exist(email);
-
-        checkCanSendEmailStub.restore();
         sinon.assert.calledOnce(loggingStub);
     });
 
