@@ -88,10 +88,10 @@ interface TopContentProps {
     range: number;
     totalVisitors: number;
     audience: number;
-    utmFilterParams?: Record<string, string>;
+    filterParams?: Record<string, string>;
 }
 
-const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, utmFilterParams = {}}) => {
+const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, filterParams = {}}) => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
@@ -101,7 +101,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
             member_status: getAudienceQueryParam(audience),
-            ...utmFilterParams
+            ...filterParams
         };
 
         if (timezone) {
@@ -117,7 +117,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
         // For POSTS_AND_PAGES, don't add post_type filter to get both
 
         return params;
-    }, [startDate, endDate, timezone, audience, selectedContentType, utmFilterParams]);
+    }, [startDate, endDate, timezone, audience, selectedContentType, filterParams]);
 
     // Get filtered content data
     const {data: topContentData, isLoading: isLoading} = useTopContent({

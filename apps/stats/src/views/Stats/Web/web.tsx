@@ -56,13 +56,13 @@ const Web: React.FC = () => {
     const {appSettings} = useAppContext();
 
     // Use URL-synced filter state for bookmarking and sharing
-    const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
+    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
 
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
-        const audienceFilter = utmFilters.find(f => f.field === 'audience');
+        const audienceFilter = analyticsFilters.find(f => f.field === 'audience');
         return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [utmFilters]);
+    }, [analyticsFilters]);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -81,7 +81,7 @@ const Web: React.FC = () => {
     const filterParams = useMemo(() => {
         const params: Record<string, string> = {};
 
-        utmFilters.forEach((filter) => {
+        analyticsFilters.forEach((filter) => {
             const fieldKey = filter.field;
             const values = filter.values;
 
@@ -115,11 +115,11 @@ const Web: React.FC = () => {
         });
 
         return params;
-    }, [utmFilters]);
+    }, [analyticsFilters]);
 
     // Generic handler for click-to-filter on any field (source, location, etc.)
     const handleFilterClick = useCallback((field: string, value: string) => {
-        setUtmFilters((prevFilters) => {
+        setAnalyticsFilters((prevFilters) => {
             const existingFilter = prevFilters.find(f => f.field === field);
             if (existingFilter) {
                 // Update the existing filter
@@ -131,7 +131,7 @@ const Web: React.FC = () => {
             return [...prevFilters, createFilter(field, 'is', [value])];
         });
         scrollToTop();
-    }, [setUtmFilters, scrollToTop]);
+    }, [setAnalyticsFilters, scrollToTop]);
 
     const handleLocationClick = useCallback((location: string) => handleFilterClick('location', location), [handleFilterClick]);
     const handleSourceClick = useCallback((source: string) => handleFilterClick('source', source), [handleFilterClick]);
@@ -180,7 +180,7 @@ const Web: React.FC = () => {
     }
 
     // Check if filters are applied
-    const hasFilters = utmFilters.length > 0;
+    const hasFilters = analyticsFilters.length > 0;
 
     return (
         <StatsLayout>
@@ -192,8 +192,8 @@ const Web: React.FC = () => {
                 }
                 <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
                     <StatsFilter
-                        filters={utmFilters}
-                        onChange={setUtmFilters}
+                        filters={analyticsFilters}
+                        onChange={setAnalyticsFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}
                 </NavbarActions>
@@ -211,9 +211,9 @@ const Web: React.FC = () => {
                 <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
                         audience={audience}
+                        filterParams={filterParams}
                         range={range}
                         totalVisitors={totalVisitors}
-                        utmFilterParams={filterParams}
                     />
                     <SourcesCard
                         data={sourcesData as SourcesData[] | null}
