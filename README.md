@@ -37,4 +37,4 @@ If the image output changes, one way to compare the output is with [git diff ima
 
 # Copyright & License
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
