@@ -57,6 +57,7 @@ describe('Offers API', function () {
             currency: null,
             status: 'active',
             redemption_count: 0,
+            redemption_type: 'signup',
             tier: {
                 id: defaultTier.id
             }

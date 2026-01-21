@@ -123,6 +123,7 @@ class OfferBookshelfRepository {
                 duration_in_months: json.duration_in_months,
                 stripe_coupon_id: json.stripe_coupon_id,
                 redemptionCount: count,
+                redemption_type: json.redemption_type,
                 status: json.active ? 'active' : 'archived',
                 tier: {
                     id: json.product.id,
@@ -195,6 +196,20 @@ class OfferBookshelfRepository {
     }
 
     /**
+     * @param {object} options
+     * @param {string} options.subscriptionId
+     * @param {import('knex').Knex.Transaction} [options.transacting]
+     * @returns {Promise<string[]>}
+     */
+    async getRedeemedOfferIdsForSubscription({subscriptionId, transacting}) {
+        const redemptions = await this.OfferRedemptionModel.where({
+            subscription_id: subscriptionId
+        }).fetchAll({transacting, columns: ['offer_id']});
+
+        return redemptions.map(r => r.get('offer_id'));
+    }
+
+    /**
      * @param {import('./domain/models/offer')} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
@@ -214,7 +229,8 @@ class OfferBookshelfRepository {
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,
-            active: offer.status.value === 'active'
+            active: offer.status.value === 'active',
+            redemption_type: offer.redemptionType.value
         };
 
         if (offer.stripeCouponId !== undefined) {

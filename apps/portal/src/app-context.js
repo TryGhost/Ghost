@@ -4,6 +4,7 @@ import React from 'react';
 const AppContext = React.createContext({
     site: {},
     member: {},
+    offers: [],
     action: '',
     actionErrorMessage: null,
     lastPage: '',
