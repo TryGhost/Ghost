@@ -22,21 +22,29 @@ function createMockRepository(overrides = {}) {
     };
 }
 
-function createMockOffer(id) {
+function createMockOffer(id, {
+    tierId,
+    tierName = 'Test Tier',
+    cadence = 'month',
+    type = 'percent',
+    status = 'active',
+    redemptionType = 'signup'
+} = {}) {
     return {
         id,
         name: {value: 'Test Offer'},
         code: {value: 'test-code'},
         displayTitle: {value: 'Test Title'},
         displayDescription: {value: 'Test Description'},
-        type: {value: 'percent'},
-        cadence: {value: 'month'},
+        type: {value: type},
+        cadence: {value: cadence},
         amount: {value: 10},
         duration: {value: {type: 'once', months: null}},
         currency: {value: null},
-        status: {value: 'active'},
+        status: {value: status},
+        redemptionType: {value: redemptionType},
         redemptionCount: 0,
-        tier: {id, name: 'Test Tier'},
+        tier: {id: tierId || id, name: tierName},
         createdAt: new Date().toISOString(),
         lastRedeemed: null
     };
@@ -53,6 +61,192 @@ function createMockCoupon(id) {
 describe('OffersAPI', function () {
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('#listOffersAvailableToSubscription', function () {
+        it('returns offers matching tier, cadence, and redemption type', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId, cadence: 'month', redemptionType: 'retention'}),
+                createMockOffer('offer-2', {tierId, cadence: 'month', redemptionType: 'signup'}),
+                createMockOffer('offer-3', {tierId, cadence: 'year', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].id, 'offer-1');
+        });
+
+        it('excludes trial offers', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId, cadence: 'month', type: 'percent', redemptionType: 'retention'}),
+                createMockOffer('offer-2', {tierId, cadence: 'month', type: 'trial', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].id, 'offer-1');
+        });
+
+        it('excludes already redeemed offers', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId, cadence: 'month', redemptionType: 'retention'}),
+                createMockOffer('offer-2', {tierId, cadence: 'month', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves(['offer-1'])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].id, 'offer-2');
+        });
+
+        it('excludes inactive offers', async function () {
+            const tierId = new ObjectID().toHexString();
+            const activeOffer = createMockOffer('offer-1', {tierId, cadence: 'month', status: 'active', redemptionType: 'retention'});
+
+            const repository = createMockRepository({
+                // Emulate real repository behavior: getAll with filter 'status:active' returns only active offers
+                getAll: sinon.stub().resolves([activeOffer]),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            // Verify getAll was called with status:active filter
+            assert(repository.getAll.calledOnce);
+            assert.equal(repository.getAll.firstCall.args[0].filter, 'status:active');
+
+            // Only active offer returned
+            assert.equal(result.length, 1);
+            assert.equal(result[0].id, 'offer-1');
+        });
+
+        it('returns empty array when no offers match', async function () {
+            const tierId = new ObjectID().toHexString();
+            const differentTierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId: differentTierId, cadence: 'month', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            assert.equal(result.length, 0);
+        });
+
+        it('returns all redemption types when redemptionType is not specified', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId, cadence: 'month', redemptionType: 'signup'}),
+                createMockOffer('offer-2', {tierId, cadence: 'month', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month'
+                // no redemptionType specified
+            });
+
+            assert.equal(result.length, 2);
+        });
+
+        it('throws error when required parameters are missing', async function () {
+            const repository = createMockRepository({});
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    subscriptionId: 'sub_123',
+                    tierId: 'tier_123'
+                    // missing cadence
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    subscriptionId: 'sub_123',
+                    cadence: 'month'
+                    // missing tierId
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+
+            await assert.rejects(
+                api.listOffersAvailableToSubscription({
+                    tierId: 'tier_123',
+                    cadence: 'month'
+                    // missing subscriptionId
+                }),
+                /subscriptionId, tierId, and cadence are required/
+            );
+        });
     });
 
     describe('#ensureOfferForStripeCoupon', function () {

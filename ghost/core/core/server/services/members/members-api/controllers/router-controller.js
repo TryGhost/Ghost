@@ -853,6 +853,120 @@ module.exports = class RouterController {
             .filter(newsletter => newsletter.status === 'active')
             .map(newsletter => ({id: newsletter.id}));
     }
+
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     */
+    async getMemberOffers(req, res) {
+        const identity = req.body.identity;
+        const redemptionType = req.body.redemption_type || 'retention';
+
+        if (!identity) {
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        if (redemptionType !== 'retention') {
+            res.writeHead(400);
+            return res.end('Invalid redemption_type');
+        }
+
+        let email;
+        try {
+            const claims = await this._tokenService.decodeToken(identity);
+            email = claims && claims.sub;
+        } catch (err) {
+            logging.error(err);
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        if (!email) {
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        // Get member with subscriptions
+        const member = await this._memberRepository.get({email}, {
+            withRelated: [
+                'stripeSubscriptions',
+                'stripeSubscriptions.stripePrice',
+                'stripeSubscriptions.stripePrice.stripeProduct',
+                'stripeSubscriptions.stripePrice.stripeProduct.product'
+            ]
+        });
+
+        if (!member) {
+            res.writeHead(404);
+            return res.end(tpl(messages.memberNotFound));
+        }
+
+        // Find active subscriptions
+        const subscriptions = member.related('stripeSubscriptions');
+        const activeSubscriptions = subscriptions.models.filter((sub) => {
+            const status = sub.get('status');
+            return ['active', 'trialing', 'past_due', 'unpaid'].includes(status);
+        });
+
+        if (activeSubscriptions.length === 0) {
+            // No active subscription - return empty offers
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        if (activeSubscriptions.length > 1) {
+            // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        const activeSubscription = activeSubscriptions[0];
+
+        // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
+        if (activeSubscription.get('offer_id')) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        // Get tier and cadence from the subscription
+        const stripePrice = activeSubscription.related('stripePrice');
+        if (!stripePrice || !stripePrice.id) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        const stripeProduct = stripePrice.related('stripeProduct');
+        if (!stripeProduct || !stripeProduct.id) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        const product = stripeProduct.related('product');
+        if (!product || !product.id) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers: []}));
+        }
+
+        const tierId = product.id;
+        const cadence = stripePrice.get('interval');
+        const subscriptionId = activeSubscription.id; // Ghost's internal ID, not Stripe's
+
+        let offers = [];
+        try {
+            offers = await this._offersAPI.listOffersAvailableToSubscription({
+                subscriptionId,
+                tierId,
+                cadence,
+                redemptionType
+            });
+        } catch (err) {
+            logging.error('Failed to fetch offers:', err);
+        }
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        return res.end(JSON.stringify({offers}));
+    }
 };
 
 function parsePersonalNote(rawText) {

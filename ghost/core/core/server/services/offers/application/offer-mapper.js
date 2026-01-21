@@ -24,6 +24,7 @@
  *
  * @prop {'active'|'archived'} status
  * @prop {number} redemption_count
+ * @prop {'signup'|'retention'} redemption_type
  *
  * @prop {object} tier
  * @prop {string} tier.id
@@ -53,6 +54,7 @@ class OfferMapper {
             currency: offer.type.value === 'fixed' ? offer.currency.value : null,
             status: offer.status.value,
             redemption_count: offer.redemptionCount,
+            redemption_type: offer.redemptionType.value,
             tier: {
                 id: offer.tier.id,
                 name: offer.tier.name
