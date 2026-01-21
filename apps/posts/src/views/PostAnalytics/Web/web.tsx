@@ -1,4 +1,3 @@
-import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import Kpis from './components/kpis';
 import Locations from './components/locations';
@@ -9,13 +8,12 @@ import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, LucideIcon, NavbarActions, createFilter, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
 import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-
+import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
+import {getPeriodText} from '@src/utils/chart-helpers';
 import {useCallback, useEffect, useMemo} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/post-analytics-context';
-
-import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
-import {getPeriodText} from '@src/utils/chart-helpers';
 
 interface ProcessedLocationData {
     location: string;
@@ -29,7 +27,7 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading, range, audience: globalAudience, data: globalData, post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
 
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
@@ -37,15 +35,11 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Check if UTM tracking is enabled in labs (defaults to true / GA)
     const utmTrackingEnabled = globalData?.labs?.utmTracking ?? true;
 
-    // Derive audience from filters when UTM tracking is enabled, otherwise use global state
-    // This makes the URL the single source of truth for filters
+    // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
-        if (!utmTrackingEnabled) {
-            return globalAudience;
-        }
         const audienceFilter = utmFilters.find(f => f.field === 'audience');
         return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [utmTrackingEnabled, globalAudience, utmFilters]);
+    }, [utmFilters]);
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
@@ -217,28 +211,19 @@ const Web: React.FC<postAnalyticsProps> = () => {
     return (
         <>
             <PostAnalyticsHeader currentTab='Web'>
-                {!utmTrackingEnabled ?
-                    <NavbarActions>
-                        <AudienceSelect />
-                        <DateRangeSelect />
-                    </NavbarActions>
-                    :
-                    <>
-                        {hasFilters &&
-                        <NavbarActions>
-                            <DateRangeSelect />
-                        </NavbarActions>
-                        }
-                        <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
-                            <StatsFilter
-                                filters={utmFilters}
-                                utmTrackingEnabled={utmTrackingEnabled}
-                                onChange={setUtmFilters}
-                            />
-                            {!hasFilters && <DateRangeSelect />}
-                        </NavbarActions>
-                    </>
+                {hasFilters &&
+                <NavbarActions>
+                    <DateRangeSelect />
+                </NavbarActions>
                 }
+                <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                    <StatsFilter
+                        filters={utmFilters}
+                        utmTrackingEnabled={utmTrackingEnabled}
+                        onChange={setUtmFilters}
+                    />
+                    {!hasFilters && <DateRangeSelect />}
+                </NavbarActions>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
                 {isPageLoading ?

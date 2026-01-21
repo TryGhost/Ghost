@@ -13,18 +13,14 @@ vi.mock('@tryghost/admin-x-framework/api/referrers', () => ({
     useTopSourcesGrowth: vi.fn()
 }));
 
-vi.mock('@src/providers/global-data-provider', () => ({
-    useGlobalData: vi.fn()
-}));
-
 vi.mock('@src/views/Stats/components/audience-select', () => ({
-    getAudienceQueryParam: vi.fn()
+    getAudienceQueryParam: vi.fn(),
+    ALL_AUDIENCES: 7 // Binary 111 = all audiences
 }));
 
 const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade')).formatQueryDate;
 const mockGetRangeDates = vi.mocked(await import('@tryghost/shade')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/referrers')).useTopSourcesGrowth;
-const mockUseGlobalData = vi.mocked(await import('@src/providers/global-data-provider')).useGlobalData;
 const mockGetAudienceQueryParam = vi.mocked(await import('@views/Stats/components/audience-select')).getAudienceQueryParam;
 
 describe('useTopSourcesGrowth', () => {
@@ -43,11 +39,6 @@ describe('useTopSourcesGrowth', () => {
         });
 
         mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
-
-        mockUseGlobalData.mockReturnValue({
-            audience: 'all-members'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
 
         mockGetAudienceQueryParam.mockReturnValue('all');
 
@@ -79,28 +70,6 @@ describe('useTopSourcesGrowth', () => {
                 member_status: 'all',
                 order: 'clicks desc',
                 limit: '25',
-                timezone: 'UTC'
-            }
-        });
-    });
-
-    it('handles different audience types', () => {
-        mockUseGlobalData.mockReturnValue({
-            audience: 2 // Represents paid members (binary representation)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-        mockGetAudienceQueryParam.mockReturnValue('paid');
-
-        renderHook(() => useTopSourcesGrowth(30));
-
-        expect(mockGetAudienceQueryParam).toHaveBeenCalledWith(2);
-        expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
-            searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
-                member_status: 'paid',
-                order: 'signups desc',
-                limit: '50',
                 timezone: 'UTC'
             }
         });

@@ -16,8 +16,6 @@ interface GlobalData {
     tinybirdToken: string | undefined;
     isLoading: boolean;
     range: number;
-    audience: number;
-    setAudience: (value: number) => void;
     setRange: (value: number) => void;
     settings: Setting[];
     selectedNewsletterId: string | null;
@@ -43,8 +41,6 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
-    // Initialize with all audiences selected (binary 111 = 7)
-    const [audience, setAudience] = useState(7);
     const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
     // Check for errors in the main requests
@@ -77,8 +73,6 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         isLoading,
         range,
         setRange,
-        audience,
-        setAudience,
         settings: settings.data?.settings || [],
         selectedNewsletterId,
         setSelectedNewsletterId

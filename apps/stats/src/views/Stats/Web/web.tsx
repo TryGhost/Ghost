@@ -1,4 +1,3 @@
-import AudienceSelect, {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import DateRangeSelect from '../components/date-range-select';
 import LocationsCard from '../Locations/components/locations-card';
 import React, {useCallback, useMemo} from 'react';
@@ -13,6 +12,7 @@ import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNu
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -51,7 +51,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience: globalAudience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
@@ -61,15 +61,11 @@ const Web: React.FC = () => {
     // Check if UTM tracking is enabled in labs (defaults to true / GA)
     const utmTrackingEnabled = data?.labs?.utmTracking ?? true;
 
-    // Derive audience from filters when UTM tracking is enabled, otherwise use global state
-    // This makes the URL the single source of truth for filters
+    // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
-        if (!utmTrackingEnabled) {
-            return globalAudience;
-        }
         const audienceFilter = utmFilters.find(f => f.field === 'audience');
         return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [utmTrackingEnabled, globalAudience, utmFilters]);
+    }, [utmFilters]);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -192,28 +188,19 @@ const Web: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                {!utmTrackingEnabled ?
-                    <NavbarActions>
-                        <AudienceSelect />
-                        <DateRangeSelect />
-                    </NavbarActions>
-                    :
-                    <>
-                        {hasFilters &&
-                        <NavbarActions>
-                            <DateRangeSelect />
-                        </NavbarActions>
-                        }
-                        <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
-                            <StatsFilter
-                                filters={utmFilters}
-                                utmTrackingEnabled={utmTrackingEnabled}
-                                onChange={setUtmFilters}
-                            />
-                            {!hasFilters && <DateRangeSelect />}
-                        </NavbarActions>
-                    </>
+                {hasFilters &&
+                <NavbarActions>
+                    <DateRangeSelect />
+                </NavbarActions>
                 }
+                <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                    <StatsFilter
+                        filters={utmFilters}
+                        utmTrackingEnabled={utmTrackingEnabled}
+                        onChange={setUtmFilters}
+                    />
+                    {!hasFilters && <DateRangeSelect />}
+                </NavbarActions>
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <Card>
@@ -227,6 +214,7 @@ const Web: React.FC = () => {
                 </Card>
                 <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
+                        audience={audience}
                         range={range}
                         totalVisitors={totalVisitors}
                         utmFilterParams={filterParams}
