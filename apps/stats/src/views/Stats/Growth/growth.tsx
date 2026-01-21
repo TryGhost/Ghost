@@ -40,7 +40,10 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const {range, site} = useGlobalData();
+    const {range, site, settings} = useGlobalData();
+
+    // Get site timezone from settings for displaying dates consistently
+    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
     const navigate = useNavigate();
     const [sortBy, setSortBy] = useState<UnifiedSortOrder>('free_members desc');
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
@@ -232,7 +235,7 @@ const Growth: React.FC = () => {
                                                                 </span>
                                                             }
                                                             {post.published_at && formatDisplayDate && new Date(post.published_at).getTime() > 0 && (
-                                                                <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at)}</span>
+                                                                <span className='text-muted-foreground'>Published on {formatDisplayDate(post.published_at, siteTimezone)}</span>
                                                             )}
                                                         </div>
                                                     </TableCell>

@@ -34,6 +34,10 @@ const NewsletterTableRows: React.FC<{
     sortBy: TopNewslettersOrder;
 }> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy}) => {
     const navigate = useNavigate();
+    const {settings} = useGlobalData();
+
+    // Get site timezone from settings for displaying dates consistently
+    const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
 
     // Fetch newsletter stats with reactive sort order - isolated to this component
     const {data: newsletterStatsData, isLoading: isStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
@@ -85,7 +89,7 @@ const NewsletterTableRows: React.FC<{
                                 </div>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(post.send_date)}
+                                {formatDisplayDate(post.send_date, siteTimezone)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
