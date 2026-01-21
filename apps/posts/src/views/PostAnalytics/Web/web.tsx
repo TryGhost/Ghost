@@ -32,9 +32,6 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
 
-    // Check if UTM tracking is enabled in labs (defaults to true / GA)
-    const utmTrackingEnabled = globalData?.labs?.utmTracking ?? true;
-
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
         const audienceFilter = analyticsFilters.find(f => f.field === 'audience');
@@ -218,9 +215,8 @@ const Web: React.FC<postAnalyticsProps> = () => {
                 }
                 <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
                     <StatsFilter
-                        filters={analyticsFilters}
-                        utmTrackingEnabled={utmTrackingEnabled}
-                        onChange={setAnalyticsFilters}
+                        filters={utmFilters}
+                        onChange={setUtmFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}
                 </NavbarActions>
@@ -243,7 +239,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                 <Locations
                                     data={processedLocationsData}
                                     isLoading={isLocationsLoading}
-                                    onLocationClick={utmTrackingEnabled ? handleLocationClick : undefined}
+                                    onLocationClick={handleLocationClick}
                                 />
                                 <Sources
                                     data={sourcesData as BaseSourceData[] | null}
@@ -251,7 +247,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                     siteIcon={siteIcon}
                                     siteUrl={siteUrl}
                                     totalVisitors={totalSourcesVisits}
-                                    onSourceClick={utmTrackingEnabled ? handleSourceClick : undefined}
+                                    onSourceClick={handleSourceClick}
                                 />
                             </div>
                         </>
