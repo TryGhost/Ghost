@@ -5,13 +5,13 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
-const PostEmailHandler = require('./post-email-handler');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
     invalidVisibility: 'Invalid visibility value.',
     invalidTiers: 'Invalid tiers value.',
     invalidTags: 'Invalid tags value.',
+    invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
     postNotFound: 'Post not found.'
 };
@@ -24,7 +24,6 @@ class PostsService {
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
-        this.postEmailHandler = new PostEmailHandler({models, emailService});
     }
 
     /**
@@ -61,11 +60,79 @@ class PostsService {
      * @returns
      */
     async editPost(frame, options) {
-        await this.postEmailHandler.validateBeforeSave(frame);
+        let sendingEmail = false;
+        let existingPost = null;
+        let newsletter = null;
+
+        // Determine if we'll be sending an email
+        const newStatus = frame.data.posts[0].status;
+        if (['published', 'sent'].includes(newStatus)) {
+            existingPost = await this.models.Post.findOne(
+                {id: frame.options.id, status: 'all'},
+                {columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter']}
+            );
+            const previousStatus = existingPost?.get('status');
+
+            // Check if we'll be sending an email - either via new newsletter param or existing newsletter on post
+            if (frame.options.newsletter || existingPost?.get('newsletter_id')) {
+                sendingEmail = this.shouldSendEmail(newStatus, previousStatus);
+            }
+        }
+
+        // If we'll be sending an email, pre-check email limits before saving
+        // the post to avoid leaving posts in a stuck "sent" state on failure
+        if (sendingEmail) {
+            const emailRecipientFilter = frame.options.email_segment || existingPost?.get('email_recipient_filter') || 'all';
+
+            if (emailRecipientFilter && emailRecipientFilter !== 'all') {
+                // check filter is valid
+                try {
+                    await this.models.Member.findPage({filter: emailRecipientFilter, limit: 1});
+                } catch (err) {
+                    return Promise.reject(new BadRequestError({
+                        message: tpl(messages.invalidEmailSegment),
+                        context: err.message
+                    }));
+                }
+            }
+
+            // Validate newsletter and check limits before making changes
+            if (frame.options.newsletter) {
+                newsletter = await this.models.Newsletter.findOne(
+                    {slug: frame.options.newsletter},
+                    {filter: 'status:active'}
+                );
+            } else if (existingPost?.get('newsletter_id')) {
+                newsletter = await this.models.Newsletter.findOne(
+                    {id: existingPost.get('newsletter_id')},
+                    {filter: 'status:active'}
+                );
+            }
+
+            // Throws if email cannot be sent
+            await this.emailService.checkCanSendEmail(newsletter, emailRecipientFilter);
+        }
 
         const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
 
-        await this.postEmailHandler.createOrRetryEmail(model);
+        /**Handle newsletter email */
+        if (model.get('newsletter_id')) {
+            const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
+
+            if (sendEmail) {
+                let postEmail = model.relations.email;
+                let email;
+
+                if (!postEmail) {
+                    email = await this.emailService.createEmail(model);
+                } else if (postEmail && postEmail.get('status') === 'failed') {
+                    email = await this.emailService.retryEmail(postEmail);
+                }
+                if (email) {
+                    model.set('email', email);
+                }
+            }
+        }
 
         const dto = model.toJSON(frame.options);
 
@@ -75,7 +142,6 @@ class PostsService {
 
         return dto;
     }
-
     /**
      * @param {any} model
      * @returns {EventString}
@@ -417,6 +483,18 @@ class PostsService {
                 context: err.message
             }));
         }
+    }
+
+    /**
+     * Calculates if the email should be tried to be sent out
+     * @private
+     * @param {String} currentStatus current status from the post model
+     * @param {String} previousStatus previous status from the post model
+     * @returns {Boolean}
+     */
+    shouldSendEmail(currentStatus, previousStatus) {
+        return (['published', 'sent'].includes(currentStatus))
+            && (!['published', 'sent'].includes(previousStatus));
     }
 
     handleCacheInvalidation(model) {
