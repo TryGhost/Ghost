@@ -915,8 +915,7 @@ module.exports = class EventRepository {
                     member: model.related('member').toJSON(),
                     automatedEmail: {
                         id: automatedEmail.id,
-                        slug: automatedEmail.slug,
-                        email_template: automatedEmail.email_template
+                        slug: automatedEmail.slug
                     }
                 }
             };

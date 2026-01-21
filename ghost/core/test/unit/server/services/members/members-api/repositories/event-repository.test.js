@@ -317,8 +317,7 @@ describe('EventRepository', function () {
                         return {
                             toJSON: () => ({
                                 id: 'ae123',
-                                slug: 'member-welcome-email-free',
-                                email_template: 'welcome'
+                                slug: 'member-welcome-email-free'
                             })
                         };
                     }
@@ -409,8 +408,7 @@ describe('EventRepository', function () {
             result.data[0].data.should.have.property('automatedEmail');
             result.data[0].data.automatedEmail.should.have.properties({
                 id: 'ae123',
-                slug: 'member-welcome-email-free',
-                email_template: 'welcome'
+                slug: 'member-welcome-email-free'
             });
         });
     });
