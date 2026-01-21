@@ -12,7 +12,7 @@ import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNu
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
 

@@ -43,3 +43,9 @@ export const AUDIENCE_BITS = {
 
 // All audiences selected (PUBLIC | FREE | PAID = 7)
 export const ALL_AUDIENCES = AUDIENCE_BITS.PUBLIC | AUDIENCE_BITS.FREE | AUDIENCE_BITS.PAID;
+
+export const AUDIENCE_TYPES = [
+    {name: 'Public visitors', value: 'undefined', bit: AUDIENCE_BITS.PUBLIC},
+    {name: 'Free members', value: 'free', bit: AUDIENCE_BITS.FREE},
+    {name: 'Paid members', value: 'paid', bit: AUDIENCE_BITS.PAID}
+];

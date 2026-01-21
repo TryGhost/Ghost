@@ -4,7 +4,7 @@ import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Button, Filter, FilterFieldConfig, Filters, LucideIcon} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience-select';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';

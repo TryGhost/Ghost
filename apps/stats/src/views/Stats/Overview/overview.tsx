@@ -8,7 +8,7 @@ import StatsView from '../layout/stats-view';
 import TopPosts from './components/top-posts';
 import {ALL_AUDIENCES} from '@src/utils/constants';
 import {GhAreaChartDataItem, H3, LucideIcon, NavbarActions, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
-import {getAudienceQueryParam} from '../components/audience-select';
+import {getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useGrowthStats} from '@hooks/use-growth-stats';
