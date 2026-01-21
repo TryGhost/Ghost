@@ -30,16 +30,16 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
 
     // Use URL-synced filter state for bookmarking and sharing
-    const {filters: utmFilters, setFilters: setUtmFilters} = useFilterParams();
+    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
 
     // Check if UTM tracking is enabled in labs (defaults to true / GA)
     const utmTrackingEnabled = globalData?.labs?.utmTracking ?? true;
 
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
-        const audienceFilter = utmFilters.find(f => f.field === 'audience');
+        const audienceFilter = analyticsFilters.find(f => f.field === 'audience');
         return getAudienceFromFilterValues(audienceFilter?.values as string[] | undefined);
-    }, [utmFilters]);
+    }, [analyticsFilters]);
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
@@ -75,7 +75,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const filterParams = useMemo(() => {
         const params: Record<string, string> = {};
 
-        utmFilters.forEach((filter) => {
+        analyticsFilters.forEach((filter) => {
             const fieldKey = filter.field;
             const values = filter.values;
 
@@ -96,11 +96,11 @@ const Web: React.FC<postAnalyticsProps> = () => {
         });
 
         return params;
-    }, [utmFilters]);
+    }, [analyticsFilters]);
 
     // Generic handler for click-to-filter on any field (source, location, etc.)
     const handleFilterClick = useCallback((field: string, value: string) => {
-        setUtmFilters((prevFilters) => {
+        setAnalyticsFilters((prevFilters) => {
             const existingFilter = prevFilters.find(f => f.field === field);
             if (existingFilter) {
                 // Update the existing filter
@@ -112,7 +112,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
             return [...prevFilters, createFilter(field, 'is', [value])];
         });
         scrollToTop();
-    }, [setUtmFilters, scrollToTop]);
+    }, [setAnalyticsFilters, scrollToTop]);
 
     const handleLocationClick = useCallback((location: string) => handleFilterClick('location', location), [handleFilterClick]);
     const handleSourceClick = useCallback((source: string) => handleFilterClick('source', source), [handleFilterClick]);
@@ -206,7 +206,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const kpiValues = getWebKpiValues(kpiData as unknown as KpiDataItem[] | null);
 
     // Check if filters are applied
-    const hasFilters = utmFilters.length > 0;
+    const hasFilters = analyticsFilters.length > 0;
 
     return (
         <>
@@ -218,9 +218,9 @@ const Web: React.FC<postAnalyticsProps> = () => {
                 }
                 <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
                     <StatsFilter
-                        filters={utmFilters}
+                        filters={analyticsFilters}
                         utmTrackingEnabled={utmTrackingEnabled}
-                        onChange={setUtmFilters}
+                        onChange={setAnalyticsFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}
                 </NavbarActions>
