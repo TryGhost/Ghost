@@ -343,9 +343,7 @@ describe('Logged-in free member', () => {
             window.location.hash = '';
         });
     });
-});
 
-describe('Logged-in free member', () => {
     describe('can upgrade on multi tier site', () => {
         test('with default settings', async () => {
             const {
@@ -552,6 +550,88 @@ describe('Logged-in complimentary member', () => {
                 cadence: 'month'
             });
         });
+
+        test('to an offer via link', async () => {
+            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.altComplimentary,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+
+            expect(emailInput).toHaveValue('jimmie@example.com');
+            expect(nameInput).toHaveValue('Jimmie Larson');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jimmie@example.com',
+                name: 'Jimmie Larson',
+                offerId,
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+
+            window.location.hash = '';
+        });
+
+        test('to an offer via link with portal disabled', async () => {
+            let site = {
+                ...FixtureSite.singleTier.basic,
+                portal_button: false
+            };
+
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: site,
+                member: FixtureMember.altComplimentary,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).not.toBeInTheDocument();
+            expect(siteTitle).not.toBeInTheDocument();
+            expect(emailInput).not.toBeInTheDocument();
+            expect(nameInput).not.toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).not.toBeInTheDocument();
+            expect(offerName).not.toBeInTheDocument();
+            expect(offerDescription).not.toBeInTheDocument();
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: offerId,
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+
+            window.location.hash = '';
+        });
     });
 
     describe('can upgrade on multi tier site', () => {
@@ -636,97 +716,7 @@ describe('Logged-in complimentary member', () => {
                 cadence: 'year'
             });
         });
-    });
-});
 
-describe('Logged-in complimentary member', () => {
-    describe('can upgrade on single tier site', () => {
-        test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
-            const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
-            } = await offerSetup({
-                site: FixtureSite.singleTier.basic,
-                member: FixtureMember.altComplimentary,
-                offer: FixtureOffer
-            });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
-            expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
-            expect(offerDescription).toBeInTheDocument();
-
-            expect(emailInput).toHaveValue('jimmie@example.com');
-            expect(nameInput).toHaveValue('Jimmie Larson');
-            fireEvent.click(submitButton);
-
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: 'jimmie@example.com',
-                name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
-                cadence: 'month'
-            });
-
-            window.location.hash = '';
-        });
-
-        test('to an offer via link with portal disabled', async () => {
-            let site = {
-                ...FixtureSite.singleTier.basic,
-                portal_button: false
-            };
-
-            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
-            const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
-            } = await offerSetup({
-                site: site,
-                member: FixtureMember.altComplimentary,
-                offer: FixtureOffer
-            });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
-            expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).not.toBeInTheDocument();
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
-            expect(offerName).not.toBeInTheDocument();
-            expect(offerDescription).not.toBeInTheDocument();
-
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
-                cadence: 'month'
-            });
-
-            window.location.hash = '';
-        });
-    });
-});
-
-describe('Logged-in complimentary member', () => {
-    describe('can upgrade on multi tier site', () => {
         test('to an offer via link', async () => {
             window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
             const {
@@ -768,3 +758,4 @@ describe('Logged-in complimentary member', () => {
         });
     });
 });
+
