@@ -138,7 +138,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     onClick={() => setShowTestDropdown(!showTestDropdown)}
                                 />
                                 {showTestDropdown && (
-                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
+                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
                                 )}
                             </div>
                             <Button
