@@ -144,13 +144,13 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         <Card>
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <div>
+                    <div className='flex flex-col gap-y-1.5'>
                         <CardTitle>Subscription breakdown</CardTitle>
                         <CardDescription>Paid members by billing period</CardDescription>
                     </div>
                     {showTierFilter && (
                         <Select value={selectedTier} onValueChange={setSelectedTier}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-full max-w-[120px]">
                                 <SelectValue placeholder="Select tier" />
                             </SelectTrigger>
                             <SelectContent>
