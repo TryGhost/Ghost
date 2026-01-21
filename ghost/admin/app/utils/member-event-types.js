@@ -8,7 +8,8 @@ export const ALL_EVENT_TYPES = [
     {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Email received', group: 'emails'},
     {event: 'email_complaint_event', icon: 'filter-dropdown-email-flagged-as-spam', name: 'Email flagged as spam', group: 'emails'},
     {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Email bounced', group: 'emails'},
-    {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'}
+    {event: 'email_change_event', icon: 'filter-dropdown-email-address-changed', name: 'Email address changed', group: 'emails'},
+    {event: 'automated_email_sent_event', icon: 'filter-dropdown-email-sent', name: 'Welcome email received', group: 'emails'}
 ];
 
 export function getAvailableEventTypes(settings, feature, hiddenEvents = []) {
