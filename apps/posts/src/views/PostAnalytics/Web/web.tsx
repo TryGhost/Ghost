@@ -9,7 +9,7 @@ import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, LucideIcon,
 import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from '../components/audience-select';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useCallback, useEffect, useMemo} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
