@@ -14,7 +14,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 const DEV_MODE_DATA = {
@@ -936,10 +936,6 @@ export default class App extends React.Component {
         if (!page || page === 'default') {
             const loggedOutPage = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
             page = member ? 'accountHome' : loggedOutPage;
-        }
-
-        if (page === 'accountPlan' && isComplimentaryMember({member}) && !allowCompMemberUpgrade({member})) {
-            page = 'accountHome';
         }
 
         return getActivePage({page});
