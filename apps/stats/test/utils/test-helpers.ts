@@ -32,8 +32,6 @@ export const defaultMockData = {
         data: undefined,
         statsConfig: undefined,
         range: 30,
-        audience: 7,
-        setAudience: vi.fn(),
         setRange: vi.fn(),
         selectedNewsletterId: null,
         setSelectedNewsletterId: vi.fn()
