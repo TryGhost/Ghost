@@ -282,7 +282,7 @@ const GrowthKPIs: React.FC<{
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
                     className={areaChartClassname}
-                    color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                    color={tabConfig[currentTab as keyof typeof tabConfig]?.color ?? tabConfig['total-members'].color}
                     data={chartData}
                     dataFormatter={currentTab === 'mrr'
                         ?
