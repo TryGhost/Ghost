@@ -13,15 +13,14 @@ vi.mock('@tryghost/admin-x-framework/api/referrers', () => ({
     useTopSourcesGrowth: vi.fn()
 }));
 
-vi.mock('@src/views/Stats/components/audience-select', () => ({
-    getAudienceQueryParam: vi.fn(),
-    ALL_AUDIENCES: 7 // Binary 111 = all audiences
+vi.mock('@src/utils/audience', () => ({
+    getAudienceQueryParam: vi.fn()
 }));
 
 const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade')).formatQueryDate;
 const mockGetRangeDates = vi.mocked(await import('@tryghost/shade')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/referrers')).useTopSourcesGrowth;
-const mockGetAudienceQueryParam = vi.mocked(await import('@views/Stats/components/audience-select')).getAudienceQueryParam;
+const mockGetAudienceQueryParam = vi.mocked(await import('@src/utils/audience')).getAudienceQueryParam;
 
 describe('useTopSourcesGrowth', () => {
     const mockStartDate = new Date('2024-01-01');
