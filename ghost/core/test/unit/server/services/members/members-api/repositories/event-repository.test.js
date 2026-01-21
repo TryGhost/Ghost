@@ -350,8 +350,7 @@ describe('EventRepository', function () {
                 type: 'unused'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
                 order: 'processed_at desc, id desc'
@@ -365,8 +364,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
                 order: 'processed_at desc, id desc'
@@ -381,8 +379,7 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
 
-            fake.calledOnce.should.be.eql(true);
-            fake.getCall(0).firstArg.should.match({
+            sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
                 order: 'processed_at desc, id desc'
@@ -394,21 +391,19 @@ describe('EventRepository', function () {
                 order: 'created_at desc, id desc'
             }, {});
 
-            result.data.should.be.an.Array();
-            result.data.should.have.lengthOf(1);
-            result.data[0].should.have.properties({
-                type: 'automated_email_sent_event'
-            });
-            result.data[0].data.should.have.properties({
-                id: 'aer123',
-                member_id: '123',
-                created_at: new Date('2024-01-01')
-            });
-            result.data[0].data.should.have.property('member');
-            result.data[0].data.should.have.property('automatedEmail');
-            result.data[0].data.automatedEmail.should.have.properties({
-                id: 'ae123',
-                slug: 'member-welcome-email-free'
+            assert.equal(result.data.length, 1);
+            assert.deepEqual(result.data[0], {
+                type: 'automated_email_sent_event',
+                data: {
+                    id: 'aer123',
+                    member_id: '123',
+                    created_at: new Date('2024-01-01'),
+                    member: {id: '123', email: 'test@example.com'},
+                    automatedEmail: {
+                        id: 'ae123',
+                        slug: 'member-welcome-email-free'
+                    }
+                }
             });
         });
     });
