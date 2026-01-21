@@ -457,6 +457,44 @@ describe('Members API - Member Offers', function () {
             }
         });
 
+        it('returns 400 when offer is a signup offer', async function () {
+            const {subscription} = await getMemberSubscription('paid@test.com');
+            const stripePrice = subscription.related('stripePrice');
+            const stripeProduct = stripePrice.related('stripeProduct');
+            const product = stripeProduct.related('product');
+
+            const stripeSubscriptionId = subscription.get('subscription_id');
+            const tierId = product.id;
+            const cadence = stripePrice.get('interval');
+
+            // Create a signup offer (not allowed for existing subscriptions)
+            const signupOffer = await models.Offer.add({
+                name: 'Signup Only Offer',
+                code: 'signup-only',
+                portal_title: '20% off',
+                portal_description: 'New members only!',
+                discount_type: 'percent',
+                discount_amount: 20,
+                duration: 'once',
+                interval: cadence,
+                product_id: tierId,
+                currency: null,
+                active: true,
+                redemption_type: 'signup'
+            });
+
+            try {
+                const token = await getIdentityToken('paid@test.com');
+
+                await membersAgent
+                    .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
+                    .body({identity: token, offer_id: signupOffer.id})
+                    .expectStatus(400);
+            } finally {
+                await models.Offer.destroy({id: signupOffer.id});
+            }
+        });
+
         it('returns 400 when subscription is canceled', async function () {
             const {subscription} = await getMemberSubscription('paid@test.com');
             const stripePrice = subscription.related('stripePrice');

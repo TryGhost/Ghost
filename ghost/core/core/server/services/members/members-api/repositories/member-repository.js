@@ -25,6 +25,7 @@ const messages = {
     offerNotFound: 'Could not find Offer {id}',
     offerNotActive: 'Offer is not active',
     offerIsTrialOffer: 'Trial offers cannot be applied to existing subscriptions',
+    offerIsSignupOffer: 'Signup offers cannot be applied to existing subscriptions',
     offerNoCoupon: 'Offer does not have a valid coupon',
     offerTierMismatch: 'Offer is not valid for this subscription tier',
     offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
@@ -1726,6 +1727,12 @@ module.exports = class MemberRepository {
         if (offer.type === 'trial') {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerIsTrialOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'signup') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsSignupOffer)
             });
         }
 
