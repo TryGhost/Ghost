@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('assert/strict');
+const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent;
 let membersService;
@@ -615,6 +616,9 @@ describe('Members API - Member Offers', function () {
                     .post(`/api/subscriptions/${stripeSubscriptionId}/apply-offer`)
                     .body({identity: token, offer_id: retentionOffer.id})
                     .expectStatus(204);
+
+                // Wait for domain events (offer redemption is created via event)
+                await DomainEvents.allSettled();
 
                 // Verify the subscription was updated with the offer
                 await subscription.refresh();
