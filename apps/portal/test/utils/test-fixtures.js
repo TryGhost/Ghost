@@ -303,6 +303,13 @@ export const member = {
         paid: true,
         subscriptions: []
     }),
+    altComplimentary: getMemberData({
+        name: 'Jimmie Larson',
+        email: 'jimmie@example.com',
+        firstname: 'Jimmie',
+        paid: true,
+        subscriptions: []
+    }),
     complimentaryWithSubscription: getMemberData({
         paid: true,
         subscriptions: [
