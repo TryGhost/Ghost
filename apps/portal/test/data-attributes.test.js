@@ -170,6 +170,35 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
 
+        test('trims whitespace from name on signup', async () => {
+            // Simulate a name input with leading/trailing whitespace
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+            const originalQuerySelector = event.target.querySelector;
+            event.target.querySelector = vi.fn((selector) => {
+                if (selector === 'input[data-members-name]') {
+                    return {value: '  Jamie Larsen  '};
+                }
+                return originalQuerySelector(selector);
+            });
+
+            // Capture the request body sent to the API
+            let capturedRequestBody;
+            window.fetch.mockImplementation((url, options) => {
+                if (url.includes('send-magic-link')) {
+                    capturedRequestBody = JSON.parse(options.body);
+                    return Promise.resolve({ok: true, json: async () => ({success: true})});
+                }
+                if (url.includes('integrity-token')) {
+                    return Promise.resolve({ok: true, text: async () => 'token'});
+                }
+                return Promise.resolve({});
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(capturedRequestBody.name).toBe('Jamie Larsen');
+        });
+
         test('requests OTC magic link and opens Portal when flagged with data-members-otc=true', async () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
             form.dataset.membersForm = 'signin';

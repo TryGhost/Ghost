@@ -1,6 +1,51 @@
 import ActionHandler from '../src/actions';
 import {vi} from 'vitest';
 
+describe('updateProfile action', () => {
+    test('trims whitespace from name before saving', async () => {
+        const mockApi = {
+            member: {
+                update: vi.fn(() => Promise.resolve({name: 'John Doe', email: 'john@example.com'}))
+            }
+        };
+        const state = {
+            member: {name: 'Old Name', email: 'john@example.com'}
+        };
+
+        await ActionHandler({
+            action: 'updateProfile',
+            data: {name: '  John Doe  ', email: 'john@example.com'},
+            state,
+            api: mockApi
+        });
+
+        expect(mockApi.member.update).toHaveBeenCalledWith({name: 'John Doe'});
+    });
+});
+
+describe('signup action', () => {
+    test('trims whitespace from name', async () => {
+        const mockApi = {
+            member: {
+                getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+                sendMagicLink: vi.fn(() => Promise.resolve())
+            }
+        };
+        const state = {site: {}};
+
+        await ActionHandler({
+            action: 'signup',
+            data: {plan: 'free', email: 'john@example.com', name: '  John Doe  '},
+            state,
+            api: mockApi
+        });
+
+        expect(mockApi.member.sendMagicLink).toHaveBeenCalledWith(
+            expect.objectContaining({name: 'John Doe'})
+        );
+    });
+});
+
 describe('startSigninOTCFromCustomForm action', () => {
     test('opens magic link popup with otcRef', async () => {
         const state = {
