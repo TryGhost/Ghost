@@ -318,6 +318,24 @@ export const member = {
             })
         ]
     }),
+    complimentaryWithCancelledSubscription: getMemberData({
+        name: 'Comped Former Paid',
+        email: 'comped-former-paid@example.com',
+        firstname: 'Comped',
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                status: 'canceled',
+                currency: 'USD',
+                interval: 'year',
+                amount: 5000,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            })
+        ]
+    }),
     preview: getMemberData({
         paid: true,
         subscriptions: [
