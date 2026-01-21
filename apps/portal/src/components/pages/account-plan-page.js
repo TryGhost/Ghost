@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
