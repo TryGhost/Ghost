@@ -192,8 +192,8 @@ const Web: React.FC = () => {
                 }
                 <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
                     <StatsFilter
-                        filters={utmFilters}
-                        onChange={setUtmFilters}
+                        filters={analyticsFilters}
+                        onChange={setAnalyticsFilters}
                     />
                     {!hasFilters && <DateRangeSelect />}
                 </NavbarActions>
