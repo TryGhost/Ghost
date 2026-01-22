@@ -1,6 +1,6 @@
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import moment from 'moment';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
 import {determineAggregationStrategy, getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
 
 type PaidMembersChangeChartProps = {
@@ -16,7 +16,7 @@ type PaidMembersChangeChartProps = {
 
 // Helper function to fill missing data points with zeros
 // Moved outside component to prevent recreation on each render
-const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number) => {
+const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number, overrideStrategy?: 'none' | 'weekly' | 'monthly' | 'monthly-exact') => {
     // For "Today" (dateRange = 1), show just one data point for the current date
     if (dateRange === 1) {
         const today = moment().format('YYYY-MM-DD');
@@ -31,7 +31,7 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
 
     const {startDate, endDate} = getRangeDates(dateRange);
     const dateSpan = moment(endDate).diff(moment(startDate), 'days');
-    const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
+    const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum', overrideStrategy);
 
     // Create a map of existing data by date
     const dataMap = new Map(data.map(item => [item.date, item]));
@@ -78,12 +78,73 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
     return filledData;
 };
 
+type ResolutionOption = 'daily' | 'weekly' | 'monthly';
+
+// Helper to calculate actual date span for YTD ranges
+const getActualDateSpan = (range: number): number => {
+    if (range === -1) {
+        // Year to date - calculate days from Jan 1 to today
+        const {startDate, endDate} = getRangeDates(range);
+        return moment(endDate).diff(moment(startDate), 'days');
+    }
+    return range;
+};
+
+// Helper to determine available resolutions based on range
+const getAvailableResolutions = (range: number): ResolutionOption[] => {
+    const actualSpan = getActualDateSpan(range);
+
+    if (actualSpan < 30) {
+        return ['daily']; // No dropdown for < 30 days
+    } else if (actualSpan >= 91) {
+        return ['weekly', 'monthly'];
+    } else {
+        return ['daily', 'weekly'];
+    }
+};
+
+// Helper to get default resolution for a range
+const getDefaultResolution = (range: number): ResolutionOption => {
+    const actualSpan = getActualDateSpan(range);
+
+    if (actualSpan < 30) {
+        return 'daily';
+    } else if (actualSpan >= 91) {
+        return 'monthly';
+    } else {
+        return 'weekly';
+    }
+};
+
 const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     subscriptionData,
     memberData,
     range,
     isLoading
 }) => {
+    // State for user-selected resolution
+    const [selectedResolution, setSelectedResolution] = useState<ResolutionOption>(() => getDefaultResolution(range));
+
+    // Reset to default when range changes
+    useEffect(() => {
+        setSelectedResolution(getDefaultResolution(range));
+    }, [range]);
+
+    // Get available resolutions for current range
+    const availableResolutions = useMemo(() => getAvailableResolutions(range), [range]);
+
+    // Map resolution to aggregation strategy
+    const aggregationStrategy = useMemo(() => {
+        switch (selectedResolution) {
+        case 'daily':
+            return 'none' as const;
+        case 'weekly':
+            return 'weekly' as const;
+        case 'monthly':
+            return 'monthly' as const;
+        }
+    }, [selectedResolution]);
+
     const paidChangeChartData = useMemo(() => {
         // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
         if (subscriptionData && subscriptionData.length > 0) {
@@ -101,8 +162,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
 
             // Apply proper aggregation to subscription data using 'sum' aggregation type FIRST
             // This will properly sum signups and cancellations within each time period
-            const signupsData = sanitizeChartData(subscriptionData, range, 'signups', 'sum');
-            const cancellationsData = sanitizeChartData(subscriptionData, range, 'cancellations', 'sum');
+            const signupsData = sanitizeChartData(subscriptionData, range, 'signups', 'sum', aggregationStrategy);
+            const cancellationsData = sanitizeChartData(subscriptionData, range, 'cancellations', 'sum', aggregationStrategy);
 
             // Combine the aggregated data
             const combinedData = signupsData.map(item => ({
@@ -126,11 +187,19 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
             // Now fill missing data points with zeros to ensure consistent display
-            const filledData = fillMissingDataPoints(combinedData, range);
+            const filledData = fillMissingDataPoints(combinedData, range, aggregationStrategy);
 
             return filledData.map((item) => {
+                // Use effective range for formatting based on selected resolution
+                let effectiveRange = range;
+                if (selectedResolution === 'weekly' && range < 91) {
+                    effectiveRange = 91; // Force "Week of" formatting
+                } else if (selectedResolution === 'monthly' && range < 365) {
+                    effectiveRange = 365; // Force "MMM YYYY" formatting
+                }
+
                 return {
-                    date: formatDisplayDateWithRange(item.date, range),
+                    date: formatDisplayDateWithRange(item.date, effectiveRange),
                     new: item.signups || 0,
                     cancelled: -(item.cancellations || 0) // Negative for the stacked bar chart
                 };
@@ -163,7 +232,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 };
             });
         }
-    }, [memberData, subscriptionData, range]);
+    }, [memberData, subscriptionData, range, aggregationStrategy, selectedResolution]);
 
     const paidChangeChartConfig = {
         new: {
@@ -180,11 +249,36 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         return null;
     }
 
+    // Capitalize first letter for display
+    const formatResolution = (resolution: ResolutionOption): string => {
+        return resolution.charAt(0).toUpperCase() + resolution.slice(1);
+    };
+
     return (
         <Card data-testid='paid-members-change-card'>
             <CardHeader>
-                <CardTitle>Paid members change</CardTitle>
-                <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
+                <div className="flex items-start justify-between">
+                    <div className='flex flex-col gap-y-1.5'>
+                        <CardTitle>Paid members change</CardTitle>
+                        <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
+                    </div>
+                    {availableResolutions.length > 1 && (
+                        <div>
+                            <Select value={selectedResolution} onValueChange={value => setSelectedResolution(value as ResolutionOption)}>
+                                <SelectTrigger className="w-[110px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent align='end'>
+                                    {availableResolutions.map(resolution => (
+                                        <SelectItem key={resolution} value={resolution}>
+                                            {formatResolution(resolution)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                </div>
             </CardHeader>
             <CardContent>
                 <div>

@@ -85,7 +85,12 @@ function calculateOutlierThreshold(values: number[]): {threshold: number; averag
 /**
  * Determines the appropriate aggregation strategy based on range and date span
  */
-function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType): AggregationStrategy {
+function determineAggregationStrategy(range: number, dateSpan: number, aggregationType: AggregationType, overrideStrategy?: AggregationStrategy): AggregationStrategy {
+    // If an override strategy is provided, use it
+    if (overrideStrategy) {
+        return overrideStrategy;
+    }
+
     // Normalize YTD range
     if (range === -1) {
         if (dateSpan > 150) {
@@ -278,7 +283,8 @@ export const sanitizeChartData = <T extends {date: string}>(
     data: T[],
     range: number,
     fieldName: keyof T = 'value' as keyof T,
-    aggregationType: AggregationType = 'avg'
+    aggregationType: AggregationType = 'avg',
+    overrideStrategy?: AggregationStrategy
 ): T[] => {
     if (!data.length) {
         return [];
@@ -288,7 +294,7 @@ export const sanitizeChartData = <T extends {date: string}>(
     const dateSpan = data.length > 1 ? calculateDateSpan(data[0].date, data[data.length - 1].date) : 0;
 
     // Determine aggregation strategy
-    const strategy = determineAggregationStrategy(range, dateSpan, aggregationType);
+    const strategy = determineAggregationStrategy(range, dateSpan, aggregationType, overrideStrategy);
 
     // Apply the appropriate aggregation
     let result: T[];

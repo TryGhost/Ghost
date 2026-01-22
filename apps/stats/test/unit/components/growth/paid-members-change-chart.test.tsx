@@ -196,4 +196,102 @@ describe('PaidMembersChangeChart Component', () => {
         expect(todayEntry?.paid_subscribed).toBe(12);
         expect(todayEntry?.paid_canceled).toBe(1);
     });
+
+    it('shows resolution dropdown for ranges >= 30 days', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={30}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // Should show the resolution dropdown for 30-day range
+        const dropdown = screen.getByRole('combobox');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown).toHaveTextContent('Weekly');
+    });
+
+    it('hides resolution dropdown for ranges < 30 days', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={7}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // Should not show the resolution dropdown for 7-day range
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    });
+
+    it('shows monthly as default for ranges >= 91 days', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={91}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // Should show the resolution dropdown with monthly as default
+        const dropdown = screen.getByRole('combobox');
+        expect(dropdown).toHaveTextContent('Monthly');
+    });
+
+    it('shows weekly as default for ranges between 30-90 days', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={60}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // Should show the resolution dropdown with weekly as default
+        const dropdown = screen.getByRole('combobox');
+        expect(dropdown).toHaveTextContent('Weekly');
+    });
+
+    it('handles Year to Date range (range=-1) based on actual date span', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        // For YTD, the behavior depends on how far into the year we are
+        // The component will calculate the actual date span from Jan 1 to today
+        // and apply the same rules as other ranges
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={-1}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // The component should render successfully
+        expect(screen.getByTestId('paid-members-change-card')).toBeInTheDocument();
+
+        // Based on the mock getRangeDates (2024-01-01 to 2024-01-31), YTD is 30 days
+        // This equals 30 days threshold, so dropdown should be shown with weekly default
+        const dropdown = screen.getByRole('combobox');
+        expect(dropdown).toBeInTheDocument();
+        expect(dropdown).toHaveTextContent('Weekly');
+    });
 });
