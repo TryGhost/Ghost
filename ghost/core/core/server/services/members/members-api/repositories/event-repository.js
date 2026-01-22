@@ -895,12 +895,11 @@ module.exports = class EventRepository {
             mongoTransformer: chainTransformers(
                 replaceCustomFilterTransformer(filter),
                 ...mapKeys({
-                    'data.created_at': 'processed_at',
+                    'data.created_at': 'created_at',
                     'data.member_id': 'member_id'
                 })
             )
         };
-        options.order = options.order.replace(/created_at/g, 'processed_at');
 
         const {data: models, meta} = await this._AutomatedEmailRecipient.findPage(options);
 
@@ -911,7 +910,7 @@ module.exports = class EventRepository {
                 data: {
                     id: model.id,
                     member_id: model.get('member_id'),
-                    created_at: model.get('processed_at'),
+                    created_at: model.get('created_at'),
                     member: model.related('member').toJSON(),
                     automatedEmail: {
                         id: automatedEmail.id,

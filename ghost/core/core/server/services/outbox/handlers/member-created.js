@@ -25,7 +25,6 @@ async function handle({payload}) {
         await AutomatedEmailRecipient.add({
             member_id: payload.memberId,
             automated_email_id: automatedEmail.id,
-            processed_at: new Date(),
             member_uuid: payload.uuid,
             member_email: payload.email,
             member_name: payload.name

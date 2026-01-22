@@ -305,7 +305,7 @@ describe('EventRepository', function () {
                     if (key === 'member_id') {
                         return '123';
                     }
-                    if (key === 'processed_at') {
+                    if (key === 'created_at') {
                         return new Date('2024-01-01');
                     }
                 },
@@ -353,7 +353,7 @@ describe('EventRepository', function () {
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
-                order: 'processed_at desc, id desc'
+                order: 'created_at desc, id desc'
             });
         });
 
@@ -367,7 +367,7 @@ describe('EventRepository', function () {
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
-                order: 'processed_at desc, id desc'
+                order: 'created_at desc, id desc'
             });
         });
 
@@ -382,7 +382,7 @@ describe('EventRepository', function () {
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail'],
                 filter: 'custom:true',
-                order: 'processed_at desc, id desc'
+                order: 'created_at desc, id desc'
             });
         });
 

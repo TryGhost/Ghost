@@ -2,7 +2,7 @@ const ghostBookshelf = require('./base');
 
 const AutomatedEmailRecipient = ghostBookshelf.Model.extend({
     tableName: 'automated_email_recipients',
-    hasTimestamps: false,
+    hasTimestamps: true,
 
     automatedEmail() {
         return this.belongsTo('AutomatedEmail', 'automated_email_id');
