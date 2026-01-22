@@ -59,6 +59,7 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
@@ -293,6 +294,45 @@ describe('Member Welcome Emails Integration', function () {
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 1);
             assert.ok(entriesAfterJob.models[0].get('message'));
+        });
+
+        it('creates automated_email_recipients record when welcome email is sent', async function () {
+            const memberId = ObjectId().toHexString();
+            const memberUuid = '550e8400-e29b-41d4-a716-446655440000';
+            const memberEmail = 'tracking-test@example.com';
+            const memberName = 'Tracking Test Member';
+
+            await models.Outbox.add({
+                event_type: 'MemberCreatedEvent',
+                payload: JSON.stringify({
+                    memberId,
+                    uuid: memberUuid,
+                    email: memberEmail,
+                    name: memberName,
+                    status: 'free'
+                }),
+                status: OUTBOX_STATUSES.PENDING
+            });
+
+            await scheduleInlineJob();
+
+            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+
+            const trackingRecords = await db.knex('automated_email_recipients')
+                .where('member_id', memberId);
+
+            assert.equal(trackingRecords.length, 1);
+
+            const record = trackingRecords[0];
+            assert.equal(record.member_id, memberId);
+            assert.equal(record.member_uuid, memberUuid);
+            assert.equal(record.member_email, memberEmail);
+            assert.equal(record.member_name, memberName);
+
+            const automatedEmail = await db.knex('automated_emails')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+            assert.equal(record.automated_email_id, automatedEmail.id);
         });
     });
 });

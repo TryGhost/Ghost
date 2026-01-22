@@ -377,6 +377,7 @@ module.exports = class MemberRepository {
                         event_type: MemberCreatedEvent.name,
                         payload: JSON.stringify({
                             memberId: newMember.id,
+                            uuid: newMember.get('uuid'),
                             email: newMember.get('email'),
                             name: newMember.get('name'),
                             source,
@@ -1462,6 +1463,7 @@ module.exports = class MemberRepository {
                     event_type: MemberCreatedEvent.name,
                     payload: JSON.stringify({
                         memberId: memberModel.id,
+                        uuid: memberModel.get('uuid'),
                         email: memberModel.get('email'),
                         name: memberModel.get('name'),
                         source,
