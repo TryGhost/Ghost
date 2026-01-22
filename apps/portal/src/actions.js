@@ -88,22 +88,11 @@ async function signin({data, api, state}) {
             includeOTC: true
         };
         const response = await api.member.sendMagicLink(payload);
-
-        if (response?.otc_ref) {
-            return {
-                page: 'magiclink',
-                lastPage: 'signin',
-                otcRef: response.otc_ref,
-                pageData: {
-                    ...(state.pageData || {}),
-                    email: (data?.email || '').trim()
-                }
-            };
-        }
-
+        const otcRef = response.otc_ref;
         return {
             page: 'magiclink',
             lastPage: 'signin',
+            ...(otcRef ? {otcRef} : {}),
             pageData: {
                 ...(state.pageData || {}),
                 email: (data?.email || '').trim()
