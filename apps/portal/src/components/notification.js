@@ -228,11 +228,10 @@ export default class Notification extends React.Component {
     }
 
     renderFrameStyles() {
-        const styles = `
-            :root {
-                --brandcolor: ${this.context.brandColor}
-            }
-        ` + NotificationStyle;
+        const {brandColor} = this.context;
+        const styles = brandColor
+            ? `:root { --brandcolor: ${brandColor} }` + NotificationStyle
+            : NotificationStyle;
         return (
             <style dangerouslySetInnerHTML={{__html: styles}} />
         );

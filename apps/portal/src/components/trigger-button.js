@@ -265,11 +265,10 @@ export default class TriggerButton extends React.Component {
     }
 
     renderFrameStyles() {
-        const styles = `
-            :root {
-                --brandcolor: ${this.context.brandColor}
-            }
-        ` + TriggerButtonStyle;
+        const {brandColor} = this.context;
+        const styles = brandColor
+            ? `:root { --brandcolor: ${brandColor} }` + TriggerButtonStyle
+            : TriggerButtonStyle;
         return (
             <style dangerouslySetInnerHTML={{__html: styles}} />
         );

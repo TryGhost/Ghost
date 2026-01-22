@@ -15,6 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
 import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
 const DEV_MODE_DATA = {
@@ -927,7 +928,7 @@ export default class App extends React.Component {
     /**Get Accent color from site data*/
     getAccentColor() {
         const {accent_color: accentColor} = this.state.site || {};
-        return accentColor;
+        return validateHexColor(accentColor);
     }
 
     /**Get final page set in App context from state data*/
