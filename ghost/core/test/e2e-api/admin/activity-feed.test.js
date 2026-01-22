@@ -183,7 +183,7 @@ describe('Activity Feed API', function () {
                 .get(`/members/events?filter=${encodeURIComponent(`(type:comment_event,type:click_event)+(data.post_id:'${postId}',data.member_id:'${memberId}')`)}`)
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    events: new Array(3).fill({
+                    events: new Array(4).fill({
                         type: anyString,
                         data: anyObject
                     })
@@ -201,7 +201,7 @@ describe('Activity Feed API', function () {
             // If that is ever fixed (it is difficult) we can update this test to not use a filter
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
-            await testPagination(skippedTypes, null, 36, 36);
+            await testPagination(skippedTypes, null, 40, 36);
         });
 
         it('Can do filter based pagination for one post', async function () {
@@ -226,7 +226,7 @@ describe('Activity Feed API', function () {
         it('Can do filter based pagination for aggregated clicks for all posts', async function () {
             // Same as previous but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
-            await testPagination(skippedTypes, null, 33, 32);
+            await testPagination(skippedTypes, null, 35, 32);
         });
     });
 
@@ -262,7 +262,7 @@ describe('Activity Feed API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                events: new Array(8).fill({
+                events: new Array(10).fill({
                     type: anyString,
                     data: {
                         id: anyObjectId,
@@ -295,7 +295,7 @@ describe('Activity Feed API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                events: new Array(8).fill({
+                events: new Array(10).fill({
                     type: anyString,
                     data: {
                         created_at: anyISODate,

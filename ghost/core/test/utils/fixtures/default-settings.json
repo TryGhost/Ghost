@@ -60,6 +60,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "members_track_sources": {
             "defaultValue": "true",
             "validations": {
@@ -421,19 +425,6 @@
             },
             "type": "boolean",
             "flags": "RO"
-        }
-    },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
         }
     },
     "firstpromoter": {

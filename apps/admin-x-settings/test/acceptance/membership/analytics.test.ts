@@ -2,16 +2,11 @@ import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 // Helper functions to reduce mockApi boilerplate
-const createConfigWithFeatureFlags = (trafficAnalytics: boolean, ui60 = false, limits?: any) => ({
+const createConfigWithFeatureFlags = (limits?: any) => ({
     ...globalDataRequests.browseConfig,
     response: {
         config: {
             ...responseFixtures.config.config,
-            labs: {
-                ...responseFixtures.config.config.labs,
-                trafficAnalytics,
-                ui60
-            },
             hostSettings: limits ? {
                 ...responseFixtures.config.config.hostSettings,
                 limits
@@ -32,16 +27,12 @@ const createSettingsWithAnalytics = (additionalSettings: Array<{key: string, val
 });
 
 const createMockApiConfig = (options: {
-    trafficAnalytics?: boolean;
-    ui60?: boolean;
     limits?: any;
     analyticsSettings?: Array<{key: string, value: any, is_read_only?: boolean}>;
     editSettingsResponse?: Array<{key: string, value: any}>;
     additionalRequests?: any;
 }) => {
     const {
-        trafficAnalytics = false,
-        ui60 = false,
         limits,
         analyticsSettings = [],
         editSettingsResponse,
@@ -50,7 +41,7 @@ const createMockApiConfig = (options: {
 
     const requests: any = {
         ...globalDataRequests,
-        browseConfig: createConfigWithFeatureFlags(trafficAnalytics, ui60, limits),
+        browseConfig: createConfigWithFeatureFlags(limits),
         ...additionalRequests
     };
 
@@ -72,7 +63,6 @@ const createMockApiConfig = (options: {
 test.describe('Analytics settings', async () => {
     test('Supports toggling analytics settings', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
                 {key: 'web_analytics_enabled', value: true},
@@ -133,9 +123,11 @@ test.describe('Analytics settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('analytics');
+        const section = page.getByTestId('migrationtools');
 
-        await section.getByRole('button', {name: 'Export'}).click();
+        await section.getByRole('tab', {name: 'Export'}).click();
+
+        await section.getByRole('button', {name: 'Post analytics'}).click();
 
         const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);
@@ -164,60 +156,8 @@ test.describe('Analytics settings', async () => {
 
         await expect(newsletterClicksToggle).toBeDisabled();
     });
-
-    test('Shows web analytics toggle when feature flag is enabled', async ({page}) => {
-        await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            analyticsSettings: [
-                {key: 'web_analytics', value: true},
-                {key: 'web_analytics_enabled', value: true},
-                {key: 'web_analytics_configured', value: true}
-            ]
-        })});
-
-        await page.goto('/');
-
-        const section = page.getByTestId('analytics');
-
-        await expect(section).toBeVisible();
-
-        // Web analytics toggle should be visible when feature flag is enabled
-        await expect(section.getByLabel('Web analytics')).toBeVisible();
-        await expect(section.getByLabel('Web analytics')).toBeEnabled();
-        await expect(section.getByLabel('Web analytics')).toBeChecked();
-
-        // Other analytics toggles should still be visible
-        await expect(section.getByLabel('Newsletter opens')).toBeVisible();
-        await expect(section.getByLabel('Newsletter clicks')).toBeVisible();
-        await expect(section.getByLabel('Member sources')).toBeVisible();
-        await expect(section.getByLabel('Outbound link tagging')).toBeVisible();
-    });
-
-    test('Hides web analytics toggle when feature flag is disabled', async ({page}) => {
-        await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: false
-        })});
-
-        await page.goto('/');
-
-        const section = page.getByTestId('analytics');
-
-        await expect(section).toBeVisible();
-
-        // Web analytics toggle should not be visible when feature flag is disabled
-        await expect(section.getByLabel('Web analytics')).not.toBeVisible();
-
-        // Other analytics toggles should still be visible
-        await expect(section.getByLabel('Newsletter opens')).toBeVisible();
-        await expect(section.getByLabel('Newsletter clicks')).toBeVisible();
-        await expect(section.getByLabel('Member sources')).toBeVisible();
-        await expect(section.getByLabel('Outbound link tagging')).toBeVisible();
-    });
-
     test('Shows web analytics toggle as disabled when web_analytics_configured is false', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
                 {key: 'web_analytics_enabled', value: false},
@@ -245,7 +185,6 @@ test.describe('Analytics settings', async () => {
 
     test('Shows web analytics toggle as enabled and respects user setting', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
                 {key: 'web_analytics_enabled', value: true},
@@ -281,7 +220,6 @@ test.describe('Analytics settings', async () => {
 
     test('Cannot toggle web analytics when disabled', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: false},
                 {key: 'web_analytics_enabled', value: false}
@@ -306,7 +244,6 @@ test.describe('Analytics settings', async () => {
 
     test('Can enable web analytics when it starts deselected', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: false}, // Starts as false
                 {key: 'web_analytics_enabled', value: false}, // Feature is OFF but configurable
@@ -340,39 +277,8 @@ test.describe('Analytics settings', async () => {
         });
     });
 
-    test('Does not show hint text when ui60 flag is disabled', async ({page}) => {
-        await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: false,
-            analyticsSettings: [
-                {key: 'web_analytics', value: true},
-                {key: 'web_analytics_enabled', value: false},
-                {key: 'web_analytics_configured', value: false}
-            ]
-        })});
-
-        await page.goto('/');
-
-        const section = page.getByTestId('analytics');
-
-        await expect(section).toBeVisible();
-
-        // Web analytics toggle should be visible but disabled
-        const webAnalyticsToggle = section.getByLabel('Web analytics');
-        await expect(webAnalyticsToggle).toBeVisible();
-        await expect(webAnalyticsToggle).toBeDisabled();
-
-        // Should still show the configuration help block (not controlled by ui60)
-        await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
-
-        // The hint text on the toggle should not be shown when ui60 is disabled
-        // (This is what ui60 controls - the hint text on toggles, not the help blocks)
-    });
-
     test('Shows upgrade CTA when analytics is limited (trial plan)', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: true,
             limits: {
                 ...responseFixtures.config.config.hostSettings?.limits,
                 limitAnalytics: {
@@ -409,8 +315,6 @@ test.describe('Analytics settings', async () => {
 
     test('Shows configuration message when not limited but not configured', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: true,
             limits: {}, // No limits
             analyticsSettings: [
                 {key: 'web_analytics', value: false},
@@ -435,8 +339,6 @@ test.describe('Analytics settings', async () => {
 
     test('Shows separator when configured and not limited', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: true,
             limits: {}, // No limits
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
@@ -461,8 +363,6 @@ test.describe('Analytics settings', async () => {
 
     test('Upgrade now button navigates to /pro', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: true,
             limits: {
                 ...responseFixtures.config.config.hostSettings?.limits,
                 limitAnalytics: {

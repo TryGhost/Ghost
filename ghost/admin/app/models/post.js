@@ -111,7 +111,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     status: attr('string', {defaultValue: 'draft'}),
     title: attr('string', {defaultValue: ''}),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
     emailSegment: attr('members-segment-string', {defaultValue: null}),
@@ -123,7 +122,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
-    createdBy: belongsTo('user', {async: true}),
     email: belongsTo('email', {async: false}),
     newsletter: belongsTo('newsletter', {embedded: 'always', async: false}),
     publishedBy: belongsTo('user', {async: true}),

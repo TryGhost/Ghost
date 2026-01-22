@@ -1,4 +1,4 @@
-const EmailService = require('../../../../../core/server/services/email-service/EmailService');
+const EmailService = require('../../../../../core/server/services/email-service/email-service');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
@@ -11,6 +11,7 @@ describe('Email Service', function () {
     let emailRenderer;
     let sendingService;
     let scheduleRecurringJobs;
+    let domainWarmingService;
 
     beforeEach(function () {
         memberCount = 123;
@@ -51,6 +52,10 @@ describe('Email Service', function () {
         sendingService = {
             send: sinon.stub().returns()
         };
+        domainWarmingService = {
+            isEnabled: sinon.stub().returns(false),
+            getWarmupLimit: sinon.stub()
+        };
 
         service = new EmailService({
             emailSegmenter: {
@@ -90,7 +95,8 @@ describe('Email Service', function () {
             sendingService,
             emailAnalyticsJobs: {
                 scheduleRecurringJobs
-            }
+            },
+            domainWarmingService: domainWarmingService
         });
     });
 
@@ -119,6 +125,67 @@ describe('Email Service', function () {
             limited.members = false;
             limited.emails = false;
             await assert.doesNotReject(service.checkLimits());
+        });
+    });
+
+    describe('checkCanSendEmail', function () {
+        it('Throws if newsletter is null', async function () {
+            await assert.rejects(
+                service.checkCanSendEmail(null, 'all'),
+                /The post does not have a newsletter relation/
+            );
+        });
+
+        it('Throws if newsletter is archived', async function () {
+            const newsletter = createModel({
+                status: 'archived'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Cannot send email to archived newsletters/
+            );
+        });
+
+        it('Throws if over member limit', async function () {
+            limited.members = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Over limit/
+            );
+        });
+
+        it('Throws if over email limit', async function () {
+            limited.emails = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Would go over limit/
+            );
+        });
+
+        it('Throws if verification is required', async function () {
+            verificicationRequired = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Email sending is temporarily disabled/
+            );
+        });
+
+        it('Does not throw for active newsletter within limits', async function () {
+            limited.members = false;
+            limited.emails = false;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
         });
     });
 
@@ -161,6 +228,67 @@ describe('Email Service', function () {
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
             sinon.assert.calledOnce(scheduleRecurringJobs);
+        });
+
+        describe('Domain warming', function () {
+            it('Creates email without csd_email_count when domain warming is disabled', async function () {
+                domainWarmingService.isEnabled.returns(false);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.isEnabled);
+                sinon.assert.notCalled(domainWarmingService.getWarmupLimit);
+                assert.equal(email.get('csd_email_count'), undefined);
+            });
+
+            it('Creates email with csd_email_count when domain warming is enabled', async function () {
+                domainWarmingService.isEnabled.returns(true);
+                domainWarmingService.getWarmupLimit.resolves(500);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.isEnabled);
+                sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
+                sinon.assert.calledWith(domainWarmingService.getWarmupLimit, memberCount);
+                assert.equal(email.get('csd_email_count'), 500);
+            });
+
+            it('Creates email with correct email_count passed to getWarmupLimit', async function () {
+                memberCount = 2500;
+                domainWarmingService.isEnabled.returns(true);
+                domainWarmingService.getWarmupLimit.resolves(1000);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
+                sinon.assert.calledWith(domainWarmingService.getWarmupLimit, 2500);
+                assert.equal(email.get('email_count'), 2500);
+                assert.equal(email.get('csd_email_count'), 1000);
+            });
         });
 
         it('Ignores analytics job scheduling errors', async function () {

@@ -283,16 +283,6 @@
 /* NEW editor
 /* ---------------------------------------------------------- */
 
-.gh-main>section.gh-editor-fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-}
-
 .gh-editor {
     max-width: calc(100vw - var(--editor-sidebar-width))
 }
@@ -430,6 +420,99 @@
     color: var(--midgrey-l2);
     font-size: 1.3rem;
     font-weight: 400;
+}
+
+.gh-editor-email-size-warning-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.gh-editor-email-size-warning {
+    display: flex;
+    align-items: center;
+    margin-left: 0;
+    cursor: pointer;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+}
+
+.gh-editor-email-size-warning[data-warning-active="true"] {
+    max-width: 40px;
+    opacity: 1;
+    margin-left: 8px;
+}
+
+.gh-editor-email-warning-icon-red {
+    color: var(--red);
+}
+
+.gh-editor-email-warning-icon-yellow {
+    color: var(--yellow);
+}
+
+.gh-editor-email-size-warning svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-editor-email-size-warning svg path {
+    stroke: var(--yellow) !important;
+}
+
+.gh-editor-email-size-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    width: 280px;
+    padding: 20px;
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0px 50px 100px -25px rgba(50, 50, 93, .2), 0px 30px 60px -20px rgba(0, 0, 0, .25), 0px 0px 1px 0px rgba(0, 0, 0, .2);
+    z-index: 1000;
+    opacity: 0;
+    animation: emailSizePopupfadeIn 0.2s ease-in forwards;
+}
+
+@keyframes emailSizePopupfadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gh-editor-email-size-warning:hover ~ .gh-editor-email-size-popup {
+    display: flex;
+}
+
+.gh-editor-email-size-popup-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-editor-email-size-popup-text {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--midgrey);
+    margin-top: 4px;
+}
+
+.gh-editor-email-size-popup-used {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+    margin-top: 4px;
 }
 
 .gh-editor-feedback-trigger {
@@ -894,7 +977,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1.2rem;
     height: 1.2rem;
     margin-right: .5em;
-    padding-top: 2px;
     fill: var(--darkgrey);
 }
 

@@ -14,7 +14,7 @@ Object {
       "email": "test@example.com",
       "facebook": null,
       "free_member_signup_notification": true,
-      "id": "1",
+      "id": "5951f5fc0000000000000000",
       "instagram": null,
       "last_seen": null,
       "linkedin": null,
@@ -48,7 +48,7 @@ exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "830",
+  "content-length": "853",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -249,6 +249,9 @@ Object {
   "encoding": "base64",
   "from": "\\"a test blog\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
   "replyTo": null,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
@@ -300,7 +303,7 @@ Object {
       "email": "test@example.com",
       "facebook": null,
       "free_member_signup_notification": true,
-      "id": "1",
+      "id": "5951f5fc0000000000000000",
       "instagram": null,
       "last_seen": null,
       "linkedin": null,
@@ -334,7 +337,7 @@ exports[`Authentication API Blog setup complete setup with default theme 2: [hea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "830",
+  "content-length": "853",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -535,6 +538,9 @@ Object {
   "encoding": "base64",
   "from": "\\"a test blog\\" <noreply@127.0.0.1>",
   "generateTextFromHTML": true,
+  "headers": Object {
+    "Sender": "\\"a test blog\\" <noreply@127.0.0.1>",
+  },
   "replyTo": null,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
@@ -601,7 +607,7 @@ Object {
       "email": "test-edit@example.com",
       "facebook": null,
       "free_member_signup_notification": true,
-      "id": "1",
+      "id": "5951f5fc0000000000000000",
       "instagram": null,
       "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "linkedin": null,
@@ -635,7 +641,7 @@ exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "901",
+  "content-length": "924",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -775,6 +781,7 @@ exports[`Authentication API Password reset reset password 1: [body] 1`] = `
 Object {
   "password_reset": Array [
     Object {
+      "emailVerificationToken": StringMatching /\\^\\[0-9\\]\\{6\\}\\$/,
       "message": "Password updated",
     },
   ],
@@ -785,7 +792,7 @@ exports[`Authentication API Password reset reset password 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "51",
+  "content-length": "85",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

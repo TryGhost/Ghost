@@ -56,6 +56,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "site_uuid": {
             "defaultValue": null,
             "type": "string",
@@ -409,19 +413,6 @@
             },
             "type": "boolean",
             "flags": "RO"
-        }
-    },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
         }
     },
     "firstpromoter": {

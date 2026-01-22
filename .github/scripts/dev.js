@@ -6,14 +6,6 @@ const debug = require('debug')('ghost:dev');
 const chalk = require('chalk');
 const concurrently = require('concurrently');
 
-// check we're running on Node 18 and above
-debug('checking node version');
-const nodeVersion = parseInt(process.versions.node.split('.')[0]);
-if (nodeVersion < 18) {
-    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
-    process.exit(1);
-}
-debug('node version check passed');
 
 debug('loading config');
 const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
@@ -49,9 +41,18 @@ const availableAppFlags = {
     https: 'Serve apps using HTTPS',
     offline: 'Run in offline mode (no Stripe webhooks will be forwarded)'
 }
-const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
+
+// Split args on '--' separator to separate app flags from pass-through args
+const doubleDashIndex = process.argv.lastIndexOf('--');
+const devArgs = doubleDashIndex === -1 ? process.argv : process.argv.slice(0, doubleDashIndex);
+const passThroughArgs = doubleDashIndex === -1 ? [] : process.argv.slice(doubleDashIndex + 1);
+
+const DASH_DASH_ARGS = devArgs.filter(a => a.startsWith('--')).map(a => a.slice(2));
 const ENV_ARGS = process.env.GHOST_DEV_APP_FLAGS?.split(',') || [];
 const GHOST_APP_FLAGS = [...ENV_ARGS, ...DASH_DASH_ARGS].filter(flag => flag.trim().length > 0);
+
+// Format pass-through args for command usage
+const PASS_THROUGH_FLAGS = passThroughArgs.join(' ');
 
 function showAvailableAppFlags() {
     console.log(chalk.blue('App flags can be enabled by setting the GHOST_DEV_APP_FLAGS environment variable to a comma separated list of flags.'));
@@ -86,7 +87,6 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    // Note: if this isn't working for you, please use Node 18 and above
     command: 'nx run ghost:dev',
     prefixColor: 'blue',
     env: {
@@ -104,12 +104,12 @@ const COMMAND_ADMIN = {
 
 const COMMAND_BROWSERTESTS = {
     name: 'browser-tests',
-    command: 'nx run ghost:test:browser',
+    command: `nx run ghost:test:browser${PASS_THROUGH_FLAGS ? ` -- ${PASS_THROUGH_FLAGS}`: ''}`,
     prefixColor: 'blue',
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
+const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
@@ -281,7 +281,6 @@ async function handleStripe() {
     debug('at least one command provided');
 
     debug('resetting nx');
-    process.env.NX_DISABLE_DB = "true";
     await exec("yarn nx reset --onlyDaemon");
     debug('nx reset');
     await exec("yarn nx daemon --start");

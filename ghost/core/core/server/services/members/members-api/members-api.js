@@ -3,19 +3,20 @@ const body = require('body-parser');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const PaymentsService = require('./services/PaymentsService');
-const TokenService = require('./services/TokenService');
-const GeolocationService = require('./services/GeolocationService');
-const MemberBREADService = require('./services/MemberBREADService');
-const MemberRepository = require('./repositories/MemberRepository');
-const EventRepository = require('./repositories/EventRepository');
-const ProductRepository = require('./repositories/ProductRepository');
-const RouterController = require('./controllers/RouterController');
-const MemberController = require('./controllers/MemberController');
-const WellKnownController = require('./controllers/WellKnownController');
+const PaymentsService = require('./services/payments-service');
+const TokenService = require('./services/token-service');
+const GeolocationService = require('./services/geolocation-service');
+const MemberBREADService = require('./services/member-bread-service');
+const MemberRepository = require('./repositories/member-repository');
 
-const {EmailSuppressedEvent} = require('../../email-suppression-list/EmailSuppressionList');
-const MagicLink = require('../../lib/magic-link/MagicLink');
+const EventRepository = require('./repositories/event-repository');
+const ProductRepository = require('./repositories/product-repository');
+const RouterController = require('./controllers/router-controller');
+const MemberController = require('./controllers/member-controller');
+const WellKnownController = require('./controllers/well-known-controller');
+
+const {EmailSuppressedEvent} = require('../../email-suppression-list/email-suppression-list');
+const MagicLink = require('../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
 
 module.exports = function MembersAPI({
@@ -61,7 +62,9 @@ module.exports = function MembersAPI({
         Product,
         Settings,
         Comment,
-        MemberFeedback
+        MemberFeedback,
+        Outbox,
+        AutomatedEmail
     },
     tiersService,
     stripeAPIService,
@@ -95,6 +98,7 @@ module.exports = function MembersAPI({
         newslettersService,
         labsService,
         productRepository,
+        AutomatedEmail,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
@@ -106,7 +110,8 @@ module.exports = function MembersAPI({
         OfferRedemption,
         StripeCustomer,
         StripeCustomerSubscription,
-        offerRepository: offersAPI.repository
+        Outbox,
+        offersAPI
     });
 
     const eventRepository = new EventRepository({
@@ -158,7 +163,8 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry
+        sentry,
+        labsService
     });
 
     const paymentsService = new PaymentsService({
@@ -207,7 +213,7 @@ module.exports = function MembersAPI({
 
     const users = memberRepository;
 
-    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null}) {
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null, includeOTC = false}) {
         let type = requestedType;
         if (!options.forceEmailType) {
             const member = await users.get({email});
@@ -217,7 +223,7 @@ module.exports = function MembersAPI({
                 type = 'signup';
             }
         }
-        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer});
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer, includeOTC});
     }
 
     /**
@@ -234,12 +240,12 @@ module.exports = function MembersAPI({
         });
     }
 
-    async function getTokenDataFromMagicLinkToken(token) {
-        return await magicLinkService.getDataFromToken(token);
+    async function getTokenDataFromMagicLinkToken(token, otcVerification) {
+        return await magicLinkService.getDataFromToken(token, otcVerification);
     }
 
-    async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token);
+    async function getMemberDataFromMagicLinkToken(token, otcVerification) {
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
@@ -339,6 +345,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
+        verifyOTC: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.verifyOTC(req, res))
+        ),
         createCheckoutSession: Router().use(
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSession(req, res))
@@ -354,6 +364,14 @@ module.exports = function MembersAPI({
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
+        ),
+        applyOfferToSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
+        ),
+        getMemberOffers: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.getMemberOffers(req, res))
         ),
         wellKnown: Router()
             .get('/jwks.json',

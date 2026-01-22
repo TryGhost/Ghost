@@ -32,6 +32,10 @@ async function getMember(memberId) {
     // eslint-disable-next-line dot-notation
     return await models['Member'].where('id', memberId).fetch({require: true});
 }
+async function getOfferByStripeCoupon(stripeCouponId) {
+    // eslint-disable-next-line dot-notation
+    return await models['Offer'].findOne({stripe_coupon_id: stripeCouponId});
+}
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
@@ -1680,17 +1684,22 @@ describe('Members API', function () {
             });
         });
 
-        it('Silently ignores an invalid offer id in metadata', async function () {
+        it('Supports creating an offer from a Stripe coupon', async function () {
             const interval = 'month';
             const unit_amount = 500;
             const mrr_with = 400;
+
+            const stripeCouponId = 'stripe-coupon-id';
+
+            const existingOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.equal(existingOffer, null, `No offer should exist with coupon ID: ${stripeCouponId}`);
 
             const discount = {
                 id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                 object: 'discount',
                 checkout_session: null,
                 coupon: {
-                    id: 'unknownCoupon', // this one is unknown in Ghost
+                    id: stripeCouponId,
                     object: 'coupon',
                     amount_off: null,
                     created: 1649774041,
@@ -1786,6 +1795,13 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
+            // Offer should now exist and have expected name, code and status
+            const createdOffer = await getOfferByStripeCoupon(stripeCouponId);
+            assert.notEqual(createdOffer, null, `An offer should now have been created with coupon ID: ${stripeCouponId}`);
+            assert.equal(createdOffer.get('code'), stripeCouponId, 'Offer code should match Stripe coupon ID');
+            assert.equal(createdOffer.get('active'), false, 'Imported offer should be archived (not active)');
+            assert.equal(createdOffer.get('name'), '20% off forever (stripe-coupon-id)', 'Offer name should be auto-generated from coupon');
+
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
                 subscription_id: subscription.id,
@@ -1796,12 +1812,14 @@ describe('Members API', function () {
                 plan_currency: 'usd',
                 current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
                 mrr: mrr_with,
-                offer_id: null
+                offer_id: createdOffer.id
             });
 
             // Check whether the offer attribute is passed correctly in the response when fetching a single member
             member.subscriptions[0].should.match({
-                offer: null
+                offer: {
+                    id: createdOffer.id
+                }
             });
 
             await assertMemberEvents({
@@ -1902,7 +1920,19 @@ describe('Members API', function () {
                 start_date: beforeNow / 1000,
                 current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                 cancel_at_period_end: false,
-                metadata: {}
+                metadata: attribution ? {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type,
+                    referrer_source: attribution.referrerSource,
+                    referrer_medium: attribution.referrerMedium,
+                    referrer_url: attribution.referrerUrl,
+                    utm_source: attribution.utmSource,
+                    utm_medium: attribution.utmMedium,
+                    utm_campaign: attribution.utmCampaign,
+                    utm_term: attribution.utmTerm,
+                    utm_content: attribution.utmContent
+                } : {}
             });
 
             set(customer, {
@@ -1925,7 +1955,15 @@ describe('Members API', function () {
                         metadata: attribution ? {
                             attribution_id: attribution.id,
                             attribution_url: attribution.url,
-                            attribution_type: attribution.type
+                            attribution_type: attribution.type,
+                            referrer_source: attribution.referrerSource,
+                            referrer_medium: attribution.referrerMedium,
+                            referrer_url: attribution.referrerUrl,
+                            utm_source: attribution.utmSource,
+                            utm_medium: attribution.utmMedium,
+                            utm_campaign: attribution.utmCampaign,
+                            utm_term: attribution.utmTerm,
+                            utm_content: attribution.utmContent
                         } : {}
                     }
                 }
@@ -2170,6 +2208,62 @@ describe('Members API', function () {
             });
         });
 
+        it('Creates a SubscriptionCreatedEvent with UTM parameters', async function () {
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url',
+                referrerSource: 'Google',
+                referrerMedium: 'cpc',
+                referrerUrl: 'google.com',
+                utmSource: 'newsletter',
+                utmMedium: 'email',
+                utmCampaign: 'spring_sale',
+                utmTerm: 'ghost_pro',
+                utmContent: 'header_link'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            const memberModel = await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: 'Google',
+                referrer_medium: 'cpc',
+                referrer_url: 'google.com'
+            });
+
+            // Fetch the member via API to get subscription data
+            const {body} = await adminAgent.get(`/members/${memberModel.id}/`);
+            const member = body.members[0];
+
+            // Verify UTM parameters are stored in SubscriptionCreatedEvent
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+                        attribution_id: null,
+                        attribution_url: '/',
+                        attribution_type: 'url',
+                        referrer_source: 'Google',
+                        referrer_medium: 'cpc',
+                        referrer_url: 'google.com',
+                        utm_source: 'newsletter',
+                        utm_medium: 'email',
+                        utm_campaign: 'spring_sale',
+                        utm_term: 'ghost_pro',
+                        utm_content: 'header_link'
+                    }
+                ]
+            });
+        });
+
         it('The customer.subscription.created webhook should set the attribution metadata', async function () {
             // set up all necessary resources
             const customer_id = createStripeID('cust');
@@ -2228,7 +2322,7 @@ describe('Members API', function () {
                 subscribed: false,
                 stripe_customer_id: customer_id
             };
-    
+
             // create our free member
             const res = await adminAgent
                 .post(`/members/`)

@@ -2,7 +2,7 @@ const ObjectId = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
 
 const {createTransactionalMigration} = require('./migrations');
-const {MIGRATION_USER} = require('./constants');
+const MIGRATION_USER = 1;
 
 /**
  * Creates a migration which will insert a new setting in settings table
@@ -28,17 +28,25 @@ function addSetting({key, value, type, group, flags = null}) {
             logging.info(`Adding setting: ${key}`);
             const now = connection.raw('CURRENT_TIMESTAMP');
 
-            return connection('settings')
-                .insert({
-                    id: ObjectId().toHexString(),
-                    key,
-                    value,
-                    group,
-                    type,
-                    flags,
-                    created_at: now,
-                    created_by: MIGRATION_USER
-                });
+            const data = {
+                id: ObjectId().toHexString(),
+                key,
+                value,
+                group,
+                type,
+                flags,
+                created_at: now
+            };
+
+            if (await connection.schema.hasColumn('settings', 'created_by')) {
+                data.created_by = MIGRATION_USER;
+            }
+
+            if (await connection.schema.hasColumn('settings', 'updated_by')) {
+                data.updated_by = MIGRATION_USER;
+            }
+
+            return connection('settings').insert(data);
         },
         async function down(connection) {
             const settingExists = await connection('settings')
@@ -99,17 +107,26 @@ function removeSetting(key) {
             logging.info(`Restoring setting: ${key}`);
             const now = connection.raw('CURRENT_TIMESTAMP');
 
+            const data = {
+                id: ObjectId().toHexString(),
+                key,
+                value: originalSetting.value,
+                group: originalSetting.group,
+                type: originalSetting.type,
+                flags: originalSetting.flags,
+                created_at: now
+            };
+
+            if (await connection.schema.hasColumn('settings', 'created_by')) {
+                data.created_by = MIGRATION_USER;
+            }
+
+            if (await connection.schema.hasColumn('settings', 'updated_by')) {
+                data.updated_by = MIGRATION_USER;
+            }
+
             return connection('settings')
-                .insert({
-                    id: ObjectId().toHexString(),
-                    key,
-                    value: originalSetting.value,
-                    group: originalSetting.group,
-                    type: originalSetting.type,
-                    flags: originalSetting.flags,
-                    created_at: now,
-                    created_by: MIGRATION_USER
-                });
+                .insert(data);
         }
     );
 }

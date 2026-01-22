@@ -3,7 +3,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e
 const models = require('../../../../core/server/models');
 const labs = require('../../../../core/shared/labs');
 const assert = require('assert/strict');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
 const fs = require('fs-extra');
@@ -86,6 +86,7 @@ describe('Can send cards via email', function () {
     beforeEach(function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
+        sinon.stub(Date.prototype, 'getFullYear').returns(2025); // for consistent snapshots
     });
 
     afterEach(async function () {

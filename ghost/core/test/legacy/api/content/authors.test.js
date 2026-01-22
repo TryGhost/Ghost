@@ -2,8 +2,9 @@ const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
+const DataGenerator = require('../../../utils/fixtures/data-generator');
 
 describe('Authors Content API', function () {
     const validKey = localUtils.getValidKey();
@@ -30,8 +31,7 @@ describe('Authors Content API', function () {
             email: 'bruteforcepasswordtestuser@example.com',
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
@@ -70,8 +70,7 @@ describe('Authors Content API', function () {
             email: userEmail,
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
@@ -99,7 +98,7 @@ describe('Authors Content API', function () {
     });
 
     it('can read authors with fields', function () {
-        return request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&fields=name`))
+        return request.get(localUtils.API.getApiQuery(`authors/${DataGenerator.Content.users[0].id}/?key=${validKey}&fields=name`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)

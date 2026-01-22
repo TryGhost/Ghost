@@ -394,7 +394,7 @@
 
 .gh-post-list-feature-image-placeholder {
     position: relative;
-    height: 100%;
+    height: auto;
     width: 100%;
     opacity: 0.5;
     display: flex;

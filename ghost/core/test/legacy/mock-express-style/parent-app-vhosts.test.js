@@ -4,8 +4,8 @@ const path = require('path');
 
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtils = require('../../utils/url-utils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
 describe('Integration - Web - vhosts', function () {
@@ -17,13 +17,13 @@ describe('Integration - Web - vhosts', function () {
 
     after(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         sinon.restore();
     });
 
     describe('no separate admin', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -37,7 +37,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -128,7 +128,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -144,7 +144,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -191,7 +191,7 @@ describe('Integration - Web - vhosts', function () {
                 });
         });
 
-        it('404s the api on configured url', function () {
+        it('redirects the api on configured url', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -201,11 +201,12 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
-        it('404s the api on localhost', function () {
+        it('redirects the api on localhost', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -215,7 +216,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
@@ -279,7 +281,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host w/ admin redirects disabled', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -296,7 +298,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -313,12 +315,26 @@ describe('Integration - Web - vhosts', function () {
                     response.statusCode.should.eql(404);
                 });
         });
+
+        it('404s the api on configured url', function () {
+            const req = {
+                secure: false,
+                method: 'GET',
+                url: `${ADMIN_API_URL}/site/`,
+                host: 'example.com'
+            };
+
+            return localUtils.mockExpress.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
     });
 
     describe('same host separate protocol', function () {
         before(async function () {
             localUtils.urlService.resetGenerators();
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');

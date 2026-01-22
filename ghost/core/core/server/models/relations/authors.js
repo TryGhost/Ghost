@@ -75,10 +75,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return proto.onFetchedCollection.call(this, collection, attrs, options);
         },
 
-        onCreating: function onCreating(model, attrs, options) {
+        onCreating: async function onCreating(model, attrs, options) {
             if (!model.get('authors')) {
                 model.set('authors', [{
-                    id: this.contextUser(options)
+                    id: await this.contextUser(options)
                 }]);
             }
 

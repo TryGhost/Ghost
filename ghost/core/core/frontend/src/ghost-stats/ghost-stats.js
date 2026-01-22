@@ -1,5 +1,5 @@
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { parseReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrerData } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -161,15 +161,32 @@ export class GhostStats {
         const navigator = this.browser.getNavigator();
         const location = this.browser.getLocation();
 
-        // Wait a bit for SPA routers
+        const referrerData = parseReferrerData(location?.href);
+        // WORKAROUND: The downstream referrer-parser library requires the 'url' field to be populated
+        // even when attribution comes from query params (e.g., ?ref=ghost-newsletter) with no document.referrer.
+        // We use getReferrer() to get the primary attribution source and fall back to document.referrer.
+        // This means 'url' might contain non-URL values like "ghost-newsletter" when there's no actual referrer.
+        // TODO: Refactor the referrer-parser to handle query param attribution without requiring this hack.
+        referrerData.url = getReferrer(location?.href) || referrerData.url;
+
+        // Debounce tracking to avoid duplicates and ensure page has settled
         this.browser.setTimeout(() => {
             this.trackEvent('page_hit', {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
+                parsedReferrer: {
+                    url: referrerData.url,
+                    source: referrerData.source,
+                    medium: referrerData.medium,
+                },
                 pathname: location?.pathname,
                 href: location?.href,
+                utm_source: referrerData.utmSource,
+                utm_medium: referrerData.utmMedium,
+                utm_campaign: referrerData.utmCampaign,
+                utm_term: referrerData.utmTerm,
+                utm_content: referrerData.utmContent
             });
         }, 300);
     }
@@ -178,13 +195,6 @@ export class GhostStats {
         if (this.isListenersAttached) {
             return;
         }
-
-        // Track history navigation
-        this.browser.addEventListener('window', 'hashchange', () => this.trackPageHit());
-        
-        // Handle SPA navigation
-        this.browser.wrapHistoryMethod('pushState', () => this.trackPageHit());
-        this.browser.addEventListener('window', 'popstate', () => this.trackPageHit());
 
         // Handle visibility changes for prerendering
         if (this.browser.getVisibilityState() !== 'hidden') {
@@ -207,6 +217,11 @@ export class GhostStats {
     init() {
         // Skip in test environments
         if (this.isTestEnv) {
+            return false;
+        }
+
+        // Skip if page is loaded in an iframe (admin preview, embeds, etc.)
+        if (this.browser.window && this.browser.window.self !== this.browser.window.top) {
             return false;
         }
 

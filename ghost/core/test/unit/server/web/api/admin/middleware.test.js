@@ -6,7 +6,7 @@ const errors = require('@tryghost/errors');
 const middleware = require('../../../../../../core/server/web/api/endpoints/admin/middleware');
 
 describe('Admin API Middleware', function () {
-    describe('notImplemented', function () {
+    describe('tokenPermissionCheck', function () {
         let req, res, next;
 
         beforeEach(function () {
@@ -30,8 +30,8 @@ describe('Admin API Middleware', function () {
                 req.user = {id: 'abcd1234'};
 
                 // Get the notImplemented middleware from the authAdminApi array
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -51,8 +51,8 @@ describe('Admin API Middleware', function () {
                 req.path = '/posts/';
                 req.method = 'GET';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -62,8 +62,8 @@ describe('Admin API Middleware', function () {
                 req.path = '/db/';
                 req.method = 'DELETE';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 const error = next.firstCall.args[0];
@@ -75,8 +75,8 @@ describe('Admin API Middleware', function () {
                 req.path = '/users/owner/';
                 req.method = 'PUT';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 const error = next.firstCall.args[0];
@@ -88,8 +88,8 @@ describe('Admin API Middleware', function () {
                 req.path = '/db/';
                 req.method = 'POST';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -99,8 +99,8 @@ describe('Admin API Middleware', function () {
                 req.path = '/users/owner/';
                 req.method = 'GET';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -117,16 +117,30 @@ describe('Admin API Middleware', function () {
                 assert.equal(next.firstCall.args.length, 0);
             });
 
-            it('should not block staff tokens from DELETE /db (without trailing slash)', function () {
+            it('should block staff tokens from DELETE /db (without trailing slash)', function () {
                 req.path = '/db';
                 req.method = 'DELETE';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
-                // Should pass through since we're checking for exact match with trailing slash
                 assert.equal(next.calledOnce, true);
-                assert.equal(next.firstCall.args.length, 0);
+                const error = next.firstCall.args[0];
+                assert.equal(error instanceof errors.NoPermissionError, true);
+                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
+            });
+
+            it('should block staff tokens from PUT /users/owner (without trailing slash)', function () {
+                req.path = '/users/owner';
+                req.method = 'PUT';
+
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
+
+                assert.equal(next.calledOnce, true);
+                const error = next.firstCall.args[0];
+                assert.equal(error instanceof errors.NoPermissionError, true);
+                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
             });
         });
 
@@ -154,21 +168,21 @@ describe('Admin API Middleware', function () {
                 req.url = '/non-existent';
                 req.method = 'GET';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.InternalServerError, true);
-                assert.equal(error.statusCode, 501);
+                assert.equal(error instanceof errors.NoPermissionError, true);
+                assert.equal(error.statusCode, 403);
             });
 
             it('should allow integration tokens to POST to /db endpoint', function () {
                 req.url = '/db';
                 req.method = 'POST';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -178,13 +192,13 @@ describe('Admin API Middleware', function () {
                 req.url = '/db';
                 req.method = 'DELETE';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.InternalServerError, true);
-                assert.equal(error.statusCode, 501);
+                assert.equal(error instanceof errors.NoPermissionError, true);
+                assert.equal(error.statusCode, 403);
             });
         });
 
@@ -200,8 +214,8 @@ describe('Admin API Middleware', function () {
                 req.query.god_mode = 'true';
                 req.url = '/non-existent';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 assert.equal(next.firstCall.args.length, 0);
@@ -220,12 +234,12 @@ describe('Admin API Middleware', function () {
                 req.query.god_mode = 'true';
                 req.url = '/non-existent';
 
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
+                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+                tokenPermissionCheck(req, res, next);
 
                 assert.equal(next.calledOnce, true);
                 const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.InternalServerError, true);
+                assert.equal(error instanceof errors.NoPermissionError, true);
 
                 process.env.NODE_ENV = originalEnv;
             });

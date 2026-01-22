@@ -26,12 +26,12 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility'
+    'contentVisibility',
+    'explore'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
-    'ActivityPub',
     'superEditors',
     'editorExcerpt',
     'additionalPaymentMethods'
@@ -42,15 +42,22 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'trafficAnalytics',
     'importMemberTier',
     'urlCache',
-    'mailEvents',
     'lexicalIndicators',
-    'ui60',
     'contentVisibilityAlpha',
-    'explore',
-    'emailCustomization'
+    'emailCustomization',
+    'tagsX',
+    'emailUniqueid',
+    'welcomeEmails',
+    'adminForward',
+    'themeTranslation',
+    'commentModeration',
+    'commentPermalinks',
+    'indexnow',
+    'featurebaseFeedback',
+    'transistor',
+    'disableMemberCommenting'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

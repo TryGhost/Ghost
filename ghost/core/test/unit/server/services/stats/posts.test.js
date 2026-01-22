@@ -1,6 +1,7 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
-const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
+const moment = require('moment-timezone');
+const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
 
 /**
  * @typedef {object} TestPost
@@ -53,7 +54,8 @@ describe('PostsStatsService', function () {
             feature_image: details.feature_image || null,
             published_at: details.published_at || now,
             uuid: details.uuid || null,
-            newsletter_id: details.newsletter_id || null
+            newsletter_id: details.newsletter_id || null,
+            type: details.type || 'post'
         };
         await db('posts').insert(data);
         return data;
@@ -72,15 +74,20 @@ describe('PostsStatsService', function () {
     async function _createFreeSignupEvent(postId, memberId, referrerSource, createdAt = new Date()) {
         eventIdCounter += 1;
         const eventId = `free_event_${eventIdCounter}`;
+
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_created_events').insert({
             id: eventId,
             member_id: memberId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt,
+            created_at: moment(createdAt).utc().toISOString(),
             source: 'member'
         });
     }
@@ -90,16 +97,20 @@ describe('PostsStatsService', function () {
         const subCreatedEventId = `sub_created_${eventIdCounter}`;
         const paidEventId = `paid_event_${eventIdCounter}`;
 
+        // Look up the post type from the database
+        const post = await db('posts').where('id', postId).first();
+        const type = post ? post.type : 'post';
+
         await db('members_subscription_created_events').insert({
             id: subCreatedEventId,
             member_id: memberId,
             subscription_id: subscriptionId,
             attribution_id: postId,
-            attribution_type: 'post',
-            attribution_url: `/${postId.replace('post', 'post-')}/`,
+            attribution_type: type,
+            attribution_url: `/${postId.replace(type, `${type}-`)}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
 
         await db('members_paid_subscription_events').insert({
@@ -107,14 +118,14 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             subscription_id: subscriptionId,
             mrr_delta: mrr,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
-    async function _createFreeSignup(postId, referrerSource,memberId = null) {
+    async function _createFreeSignup(postId, referrerSource, memberId = null) {
         memberIdCounter += 1;
         const finalMemberId = memberId || `member_${memberIdCounter}`;
-        await _createFreeSignupEvent(postId, finalMemberId);
+        await _createFreeSignupEvent(postId, finalMemberId, referrerSource);
     }
 
     async function _createPaidSignup(postId, mrr, referrerSource, memberId = null, subscriptionId = null) {
@@ -142,7 +153,7 @@ describe('PostsStatsService', function () {
             post_id: postId,
             from: `/r/${finalRedirectId}`,
             to: `https://example.com/external-link`,
-            created_at: new Date()
+            created_at: new Date().toISOString()
         });
         return finalRedirectId;
     }
@@ -154,7 +165,7 @@ describe('PostsStatsService', function () {
             id: clickEventId,
             member_id: memberId,
             redirect_id: redirectId,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
@@ -171,6 +182,41 @@ describe('PostsStatsService', function () {
             post_id: postId,
             author_id: authorId,
             sort_order: sortOrder
+        });
+    }
+
+    async function _createNewsletterSubscription(newsletterId, memberId, subscribed, createdAt) {
+        eventIdCounter += 1;
+        const eventId = `newsletter_event_${eventIdCounter}`;
+        await db('members_subscribe_events').insert({
+            id: eventId,
+            newsletter_id: newsletterId,
+            member_id: memberId,
+            subscribed: subscribed ? 1 : 0,
+            created_at: createdAt.toISOString()
+        });
+    }
+
+    async function _createMember(memberId, emailDisabled = false, email = null) {
+        await db('members').insert({
+            id: memberId,
+            email: email || `${memberId}@test.com`,
+            email_disabled: emailDisabled ? 1 : 0
+        });
+    }
+
+    async function _createMemberNewsletterSubscription(memberId, newsletterId) {
+        await db('members_newsletters').insert({
+            id: `mn_${memberId}_${newsletterId}`,
+            member_id: memberId,
+            newsletter_id: newsletterId
+        });
+    }
+
+    async function _createNewsletter(newsletterId, name = null) {
+        await db('newsletters').insert({
+            id: newsletterId,
+            name: name || `Newsletter ${newsletterId}`
         });
     }
 
@@ -192,6 +238,7 @@ describe('PostsStatsService', function () {
             table.dateTime('published_at');
             table.string('uuid').unique();
             table.string('newsletter_id');
+            table.string('type').defaultTo('post');
         });
 
         await db.schema.createTable('members_created_events', function (table) {
@@ -415,8 +462,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Only post1 should be returned since post2 has no events in the date range
@@ -426,8 +474,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Both posts should be returned
@@ -583,8 +632,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have the result for referrer_past
@@ -594,17 +644,18 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have results for both referrers
             const pastResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_past');
             const futureResult = lastThirtyDaysResult.data.find(r => r.source === 'referrer_future');
-            
+
             assert.ok(pastResult, 'Should have results for referrer_past');
             assert.equal(pastResult.free_members, 1, 'Recent referrer should have 1 free member');
-            
+
             assert.ok(futureResult, 'Should have results for referrer_future');
             assert.equal(futureResult.free_members, 1, 'Older referrer should have 1 free member');
         });
@@ -621,15 +672,15 @@ describe('PostsStatsService', function () {
 
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 2, 'Should return only 2 referrers');
-            
+
             // All referrers have 1 free member, so we just check that we got 2 out of the 3 possible sources
             const validSources = ['referrer_1', 'referrer_2', 'referrer_3'];
             const returnedSources = result.data.map(item => item.source);
-            
+
             // Both returned sources should be from our valid sources list
-            assert.equal(returnedSources.every(source => validSources.includes(source)), true, 
+            assert.equal(returnedSources.every(source => validSources.includes(source)), true,
                 'All returned sources should be from our test data');
-                
+
             // We should have exactly 2 different sources
             assert.equal(new Set(returnedSources).size, 2, 'Should return 2 different sources');
         });
@@ -649,6 +700,20 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
+
+        it('returns growth stats for a page', async function () {
+            await _createFreeSignup('page1', 'referrer_1');
+            await _createPaidSignup('page1', 500, 'referrer_1');
+            await _createPaidConversion('page1', 'page2', 500, 'referrer_1');
+
+            const result = await service.getGrowthStatsForPost('page1');
+
+            const expectedResults = [
+                {post_id: 'page1', free_members: 2, paid_members: 1, mrr: 500}
+            ];
+
+            assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
+        });
     });
 
     describe('getTopPostsViews', function () {
@@ -659,11 +724,11 @@ describe('PostsStatsService', function () {
                 date_to: '2025-01-31',
                 timezone: 'UTC'
             });
-            
+
             // Should return the latest posts ordered by published_at desc with 0 views and 0 members (no attribution events)
             assert.ok(result.data, 'Result should have a data property');
             assert.equal(result.data.length, 4, 'Should return 4 posts (all published posts)');
-            
+
             // All posts should have zero views since there's no Tinybird client
             result.data.forEach((post) => {
                 assert.equal(post.views, 0, 'All posts should have 0 views');
@@ -672,7 +737,7 @@ describe('PostsStatsService', function () {
                 assert.ok(post.title, 'Post should have a title');
                 assert.ok(typeof post.published_at === 'number', 'Post should have a published_at timestamp');
             });
-            
+
             // Posts should be ordered by published_at desc (newest first)
             for (let i = 1; i < result.data.length; i++) {
                 assert.ok(result.data[i - 1].published_at >= result.data[i].published_at, 'Posts should be ordered by published_at desc');
@@ -684,10 +749,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -805,10 +870,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -859,7 +924,7 @@ describe('PostsStatsService', function () {
             const redirect2 = await _createRedirect('post2');
             const redirect3 = await _createRedirect('post3');
             const redirect4 = await _createRedirect('post4');
-            
+
             await _createClickEvent(redirect1, 'member_1', new Date('2025-01-16'));
             await _createClickEvent(redirect1, 'member_2', new Date('2025-01-16'));
             await _createClickEvent(redirect2, 'member_3', new Date('2025-01-17'));
@@ -1022,10 +1087,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1073,7 +1138,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works and returns expected structure
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // With current implementation and date filtering issues, we expect posts but with 0 members
             // This test mainly verifies the method structure works correctly
             if (result.data.length > 0) {
@@ -1101,10 +1166,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1136,7 +1201,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // This test verifies that the method handles the free + paid member scenario
             // The current implementation counts them separately (no deduplication)
             if (result.data.length > 0) {
@@ -1162,10 +1227,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1206,7 +1271,7 @@ describe('PostsStatsService', function () {
 
             // Basic verification that the method works for cross-post scenarios
             assert.ok(result.data && Array.isArray(result.data), 'Result should have data array');
-            
+
             // This test verifies cross-post attribution handling
             // post1: should get credit for free signups
             // post2: should get credit for paid conversions
@@ -1220,10 +1285,10 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create users
             await _createUser('author1', 'Test Author');
-            
+
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2020-01-15'),
@@ -1277,18 +1342,18 @@ describe('PostsStatsService', function () {
 
             // Verify that we get member attribution data (since date filtering was removed for members)
             assert.ok(result.data.length >= 2, 'Should return at least 2 posts');
-            
+
             // Find the posts in the results
             const post1Result = result.data.find(p => p.post_id === 'post1');
             const post2Result = result.data.find(p => p.post_id === 'post2');
-            
+
             assert.ok(post1Result, 'Post 1 should be in results');
             assert.ok(post2Result, 'Post 2 should be in results');
-            
+
             // Verify click tracking is working
             assert.equal(post1Result.clicked_count, 1, 'Post 1 should have 1 click');
             assert.equal(post2Result.clicked_count, 1, 'Post 2 should have 1 click');
-            
+
             // Member attribution might be 0 due to date filtering logic, but we've verified the infrastructure works
             // The important thing is that the API returns the expected structure with all fields
             assert.ok(typeof post1Result.members === 'number', 'Members should be a number');
@@ -1313,12 +1378,12 @@ describe('PostsStatsService', function () {
             await db('posts').truncate();
             await db('users').truncate();
             await db('posts_authors').truncate();
-            
+
             // Create multiple users with different names to test comma formatting
             await _createUser('author1', 'Alice Johnson');
             await _createUser('author2', 'Bob Wilson');
             await _createUser('author3', 'Carol Smith');
-            
+
             await _createPostWithDetails('post1', 'Multi-Author Post', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1327,7 +1392,7 @@ describe('PostsStatsService', function () {
 
             // Assign multiple authors to the post in a specific order
             await _createPostAuthor('post1', 'author1', 0); // First author
-            await _createPostAuthor('post1', 'author2', 1); // Second author  
+            await _createPostAuthor('post1', 'author2', 1); // Second author
             await _createPostAuthor('post1', 'author3', 2); // Third author
 
             // Add email stats
@@ -1342,40 +1407,669 @@ describe('PostsStatsService', function () {
 
             // Should return the post with properly formatted authors
             assert.ok(result.data.length >= 1, 'Should return at least 1 post');
-            
+
             const post1Result = result.data.find(p => p.post_id === 'post1');
             assert.ok(post1Result, 'Post 1 should be in results');
-            
+
             // Verify authors field exists and has proper comma formatting
             assert.ok(post1Result.authors, 'Authors field should exist');
             assert.equal(typeof post1Result.authors, 'string', 'Authors should be a string');
-            
+
             // Test that authors are properly comma-separated with single commas
             const authorsString = post1Result.authors;
-            
+
             // Should contain all three author names
             assert.ok(authorsString.includes('Alice Johnson'), 'Should contain Alice Johnson');
-            assert.ok(authorsString.includes('Bob Wilson'), 'Should contain Bob Wilson'); 
+            assert.ok(authorsString.includes('Bob Wilson'), 'Should contain Bob Wilson');
             assert.ok(authorsString.includes('Carol Smith'), 'Should contain Carol Smith');
-            
+
             // Should have exactly 2 commas for 3 authors
             const commaCount = (authorsString.match(/,/g) || []).length;
             assert.equal(commaCount, 2, 'Should have exactly 2 commas for 3 authors');
-            
+
             // Should not have trailing comma
             assert.ok(!authorsString.endsWith(','), 'Should not have trailing comma');
-            
-            // Should not have leading comma  
+
+            // Should not have leading comma
             assert.ok(!authorsString.startsWith(','), 'Should not have leading comma');
-            
+
             // Should not have multiple consecutive commas
             assert.ok(!authorsString.includes(',,'), 'Should not have consecutive commas');
-            
+
             // Should have proper spacing after commas (should be "Name1, Name2, Name3")
             assert.ok(!authorsString.includes(', ,'), 'Should not have empty values between commas');
-            
+
             // Verify the exact format matches expected pattern
             assert.equal(authorsString, 'Alice Johnson, Bob Wilson, Carol Smith', 'Authors should be formatted as "Alice Johnson, Bob Wilson, Carol Smith"');
+        });
+
+        it('filters out pages when no Tinybird client exists (fallback)', async function () {
+            service = new PostsStatsService({knex: db}); // No Tinybird client
+
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+
+            // Create user
+            await _createUser('author1', 'Test Author');
+
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+
+            // Create pages (type = 'page')
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-17'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 10
+            });
+
+            // Should only return posts, not pages
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
+
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+        });
+
+        it('filters out pages when no views data from Tinybird', async function () {
+            const mockTinybirdClient = {
+                fetch: () => Promise.resolve([]) // No views data
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+
+            // Create user
+            await _createUser('author1', 'Test Author');
+
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+
+            // Create pages (type = 'page')
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-17'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 10
+            });
+
+            // Should only return posts, not pages
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
+
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+        });
+
+        it('filters out pages when backfilling additional posts', async function () {
+            const mockTinybirdClient = {
+                fetch: () => Promise.resolve([
+                    {post_uuid: 'post-uuid1', visits: 1000} // Only one post has views
+                ])
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+
+            // Create user
+            await _createUser('author1', 'Test Author');
+
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post3', 'Test Post 3', 'published', {
+                uuid: 'post-uuid3',
+                published_at: new Date('2025-01-17'),
+                type: 'post'
+            });
+
+            // Create pages (type = 'page') - these should be newer but still excluded
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-19'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('post3', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 5 // Request 5 items to trigger backfilling
+            });
+
+            // Should return only posts, not pages, even when backfilling
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 3, 'Should return only 3 posts, not pages');
+
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2', 'post3'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2', 'Test Post 3'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+
+            // Verify the first post has views data from Tinybird and others have 0 views
+            const post1Result = result.data.find(p => p.post_id === 'post1');
+            assert.ok(post1Result, 'Should find post1 in results');
+            assert.equal(post1Result.views, 1000, 'Post1 should have 1000 views from Tinybird');
+
+            // Other posts should have 0 views (backfilled)
+            const otherPosts = result.data.filter(p => p.post_id !== 'post1');
+            otherPosts.forEach((post) => {
+                assert.equal(post.views, 0, `Backfilled post ${post.post_id} should have 0 views`);
+            });
+        });
+    });
+
+    describe('getNewsletterSubscriberStats', function () {
+        beforeEach(async function () {
+            // Create newsletters table
+            await db.schema.createTable('newsletters', function (table) {
+                table.string('id').primary();
+                table.string('name');
+            });
+
+            // Create members table
+            await db.schema.createTable('members', function (table) {
+                table.string('id').primary();
+                table.string('email');
+                table.boolean('email_disabled').defaultTo(false);
+            });
+
+            // Create members_newsletters table
+            await db.schema.createTable('members_newsletters', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+            });
+
+            // Create members_subscribe_events table
+            await db.schema.createTable('members_subscribe_events', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+                table.boolean('subscribed');
+                table.dateTime('created_at');
+            });
+        });
+
+        afterEach(async function () {
+            await db.schema.dropTableIfExists('members_subscribe_events');
+            await db.schema.dropTableIfExists('members_newsletters');
+            await db.schema.dropTableIfExists('members');
+            await db.schema.dropTableIfExists('newsletters');
+        });
+
+        it('should return cumulative values instead of deltas', async function () {
+            const newsletterId = 'newsletter1';
+
+            // Create newsletter
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create members
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current subscriptions (total = 2)
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Subscribe/unsubscribe events
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-03T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-03T01:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data, 'Should have data property');
+            assert.equal(result.data.length, 1, 'Should return one stats object');
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 2, 'Total subscribers should be 2');
+            assert.ok(Array.isArray(stats.values), 'Should have values array');
+            assert.equal(stats.values.length, 3, 'Should have 3 days of data');
+
+            // Verify cumulative values (not deltas)
+            assert.equal(stats.values[0].date, '2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Day 1: cumulative total of 1');
+
+            assert.equal(stats.values[1].date, '2024-01-02');
+            assert.equal(stats.values[1].value, 2, 'Day 2: cumulative total of 2');
+
+            assert.equal(stats.values[2].date, '2024-01-03');
+            assert.equal(stats.values[2].value, 2, 'Day 3: cumulative total of 2 (one unsubscribe, one resubscribe)');
+        });
+
+        it('should handle empty date range', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data);
+            assert.equal(result.data.length, 1);
+            assert.equal(result.data[0].total, 0);
+            // Should backfill all dates in range even when there are no events
+            assert.equal(result.data[0].values.length, 3, 'Should have 3 days of data');
+            assert.equal(result.data[0].values[0].date, '2024-01-01');
+            assert.equal(result.data[0].values[0].value, 0);
+            assert.equal(result.data[0].values[1].date, '2024-01-02');
+            assert.equal(result.data[0].values[1].value, 0);
+            assert.equal(result.data[0].values[2].date, '2024-01-03');
+            assert.equal(result.data[0].values[2].value, 0);
+        });
+
+        it('should exclude email_disabled members', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1', false);
+            await _createMember('member2', true); // email_disabled
+
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Total should exclude email_disabled member');
+            assert.equal(stats.values.length, 2, 'Should backfill all dates in range');
+            assert.equal(stats.values[0].date, '2024-01-01', 'First date should be 2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Should show 1 on first day (member1 subscribes)');
+            assert.equal(stats.values[1].date, '2024-01-02', 'Second date should be 2024-01-02');
+            assert.equal(stats.values[1].value, 1, 'Should stay 1 on second day (member2 excluded due to email_disabled)');
+        });
+
+        it('should calculate correct starting point for historical data', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 5 members
+            for (let i = 1; i <= 5; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: all 5 are subscribers
+            for (let i = 1; i <= 5; i++) {
+                await _createMemberNewsletterSubscription(`member${i}`, newsletterId);
+            }
+
+            // Historical events showing growth from 3 to 5
+            await _createNewsletterSubscription(newsletterId, 'member4', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member5', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 5, 'Current total should be 5');
+            assert.equal(stats.values[0].value, 4, 'Day 1: should show 4 cumulative (3 initial + 1 new)');
+            assert.equal(stats.values[1].value, 5, 'Day 2: should show 5 cumulative (4 + 1 new)');
+        });
+
+        it('should handle negative growth correctly', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 3 members
+            for (let i = 1; i <= 3; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: only member1 is still subscribed
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+
+            // Historical events showing decline from 3 to 1
+            await _createNewsletterSubscription(newsletterId, 'member2', false, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Current total should be 1');
+            assert.equal(stats.values[0].value, 2, 'Day 1: should show 2 cumulative (3 initial - 1)');
+            assert.equal(stats.values[1].value, 1, 'Day 2: should show 1 cumulative (2 - 1)');
+        });
+
+        it('should handle multiple events on same day', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state: 2 subscribers
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Multiple events on the same day
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T08:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-01T10:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-01T12:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-01T14:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-01',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 1, 'Should have one day of data');
+            assert.equal(stats.values[0].value, 2, 'Net change for the day: +3 -1 = +2, starting from 0 = 2');
+        });
+
+        it('should respect date filters', async function () {
+            const newsletterId = 'newsletter1';
+
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+            await _createMemberNewsletterSubscription('member3', newsletterId);
+
+            // Events spanning multiple days
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-05T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-10T00:00:00Z'));
+
+            // Request only middle date range
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-04',
+                date_to: '2024-01-06',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
+            // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+            assert.equal(stats.values[0].date, '2024-01-04');
+            assert.equal(stats.values[0].value, 2, 'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)');
+            assert.equal(stats.values[1].date, '2024-01-05');
+            assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+            assert.equal(stats.values[2].date, '2024-01-06');
+            assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+        });
+    });
+
+    describe('_fillMissingDates', function () {
+        it('fills in all missing dates in the range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-03', value: 15}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 5, 'Should have 5 days');
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 10);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 10, 'Should carry forward from Jan 1');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 15);
+            assert.equal(result[3].date, '2024-01-04');
+            assert.equal(result[3].value, 15, 'Should carry forward from Jan 3');
+            assert.equal(result[4].date, '2024-01-05');
+            assert.equal(result[4].value, 15, 'Should carry forward from Jan 3');
+        });
+
+        it('uses startingValue when no events exist at the beginning', function () {
+            const sparseValues = [
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-05',
+                'UTC',
+                100
+            );
+
+            assert.equal(result.length, 5);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 100, 'Should use startingValue for first day');
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 100, 'Should carry forward startingValue');
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 20, 'Should use actual value when event exists');
+        });
+
+        it('handles empty values array', function () {
+            const result = service._fillMissingDates(
+                [],
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                50
+            );
+
+            assert.equal(result.length, 3);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 50);
+            assert.equal(result[1].date, '2024-01-02');
+            assert.equal(result[1].value, 50);
+            assert.equal(result[2].date, '2024-01-03');
+            assert.equal(result[2].value, 50);
+        });
+
+        it('returns values as-is when no date range provided', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 10}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, sparseValues, 'Should return input values unchanged when no date range');
+        });
+
+        it('returns empty array when values is null and no dates', function () {
+            const result = service._fillMissingDates(
+                null,
+                null,
+                null,
+                'UTC',
+                0
+            );
+
+            assert.deepEqual(result, []);
+        });
+
+        it('handles single day range', function () {
+            const sparseValues = [
+                {date: '2024-01-01', value: 25}
+            ];
+
+            const result = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-01',
+                'UTC',
+                10
+            );
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].date, '2024-01-01');
+            assert.equal(result[0].value, 25);
+        });
+
+        it('respects timezone when parsing dates', function () {
+            const sparseValues = [
+                {date: '2024-01-02', value: 30}
+            ];
+
+            // Using different timezones shouldn't affect YYYY-MM-DD date strings
+            const resultUTC = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                20
+            );
+
+            const resultNY = service._fillMissingDates(
+                sparseValues,
+                '2024-01-01',
+                '2024-01-03',
+                'America/New_York',
+                20
+            );
+
+            assert.equal(resultUTC.length, 3);
+            assert.equal(resultNY.length, 3);
+            assert.deepEqual(resultUTC, resultNY, 'Should produce same results for date-only strings');
+        });
+
+        it('handles values with all dates already present', function () {
+            const completeValues = [
+                {date: '2024-01-01', value: 10},
+                {date: '2024-01-02', value: 15},
+                {date: '2024-01-03', value: 20}
+            ];
+
+            const result = service._fillMissingDates(
+                completeValues,
+                '2024-01-01',
+                '2024-01-03',
+                'UTC',
+                5
+            );
+
+            assert.equal(result.length, 3);
+            assert.deepEqual(result, completeValues, 'Should return same values when all dates present');
         });
     });
 });

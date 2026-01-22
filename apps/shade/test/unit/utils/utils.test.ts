@@ -124,11 +124,57 @@ describe('utils', function () {
     });
 
     describe('formatDisplayDate function', function () {
+        it('returns an empty string if the date string is an empty string', function () {
+            const formatted = formatDisplayDate('');
+            assert.equal(formatted, '');
+        });
+
+        it('returns an empty string if the date string is an invalid type', function () {
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(123);
+            assert.equal(formatted, '');
+        });
+
+        it('does not throw an error if the date string is a Date object', function () {
+            const date = new Date('2023-04-15');
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(date);
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles a date string with time but without a timezone', function () {
+            const formatted = formatDisplayDate('2023-04-15 12:00:00');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles an ISO8601 date string', function () {
+            const formatted = formatDisplayDate('2023-04-15T12:00:00Z');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
         it('formats a date string to display format', function () {
             // Using a predefined date for testing, bypassing the current date check
             // Test different year formatting without mocking Date
             const differentYearFormatted = formatDisplayDate('2020-12-31');
             assert.equal(differentYearFormatted, '31 Dec 2020');
+        });
+
+        it('converts ISO date to site timezone when timezone is provided', function () {
+            // July 31, 2023 at midnight UTC - in America/New_York (UTC-4 in summer) this is July 30
+            const formatted = formatDisplayDate('2023-07-31T00:00:00Z', 'America/New_York');
+            assert.equal(formatted, '30 Jul 2023');
+        });
+
+        it('converts ISO date to site timezone correctly for positive offset', function () {
+            // July 30, 2023 at 11pm UTC - in Europe/Berlin (UTC+2 in summer) this is July 31
+            const formatted = formatDisplayDate('2023-07-30T23:00:00Z', 'Europe/Berlin');
+            assert.equal(formatted, '31 Jul 2023');
+        });
+
+        it('formats date in UTC when no timezone is provided for ISO dates', function () {
+            // July 31, 2023 at midnight UTC - should show July 31 without timezone conversion
+            const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
+            assert.equal(formatted, '31 Jul 2023');
         });
     });
 
@@ -174,12 +220,44 @@ describe('utils', function () {
         it('formats a decimal as a percentage', function () {
             let formatted = formatPercentage(0.123);
             assert.equal(formatted, '12%');
-            
+
             formatted = formatPercentage(0.789);
             assert.equal(formatted, '79%');
-            
+
             formatted = formatPercentage(1);
             assert.equal(formatted, '100%');
+        });
+
+        it('formats zero percentage', function () {
+            const formatted = formatPercentage(0);
+            assert.equal(formatted, '0%');
+        });
+
+        it('formats very small percentages with 2 decimal places', function () {
+            let formatted = formatPercentage(0.0005);
+            assert.equal(formatted, '0.05%');
+
+            formatted = formatPercentage(0.0009);
+            assert.equal(formatted, '0.09%');
+        });
+
+        it('formats small percentages with 1 decimal place', function () {
+            let formatted = formatPercentage(0.005);
+            assert.equal(formatted, '0.5%');
+
+            formatted = formatPercentage(0.009);
+            assert.equal(formatted, '0.9%');
+        });
+
+        it('formats large percentages with thousand separators', function () {
+            let formatted = formatPercentage(10);
+            assert.equal(formatted, '1,000%');
+
+            formatted = formatPercentage(12.34567);
+            assert.equal(formatted, '1,235%');
+
+            formatted = formatPercentage(100);
+            assert.equal(formatted, '10,000%');
         });
     });
 }); 

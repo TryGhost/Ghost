@@ -3,7 +3,7 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 require('should');
-const VerificationTrigger = require('../../../../core/server/services/VerificationTrigger');
+const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');
 
@@ -27,7 +27,8 @@ describe('Import threshold', function () {
                         }
                     }
                 })
-            }
+            },
+            isVerified: () => false
         });
 
         const result = await trigger.getImportThreshold();
@@ -45,7 +46,8 @@ describe('Import threshold', function () {
                         }
                     }
                 })
-            }
+            },
+            isVerified: () => false
         });
 
         const result = await trigger.getImportThreshold();
@@ -58,7 +60,8 @@ describe('Import threshold', function () {
             getImportTriggerThreshold: () => Infinity,
             eventRepository: {
                 getSignupEvents: membersStub
-            }
+            },
+            isVerified: () => false
         });
 
         const result = await trigger.getImportThreshold();
@@ -234,6 +237,34 @@ describe('Email verification flow', function () {
         eventStub.lastCall.lastArg.should.have.property('created_at');
         eventStub.lastCall.lastArg.created_at.should.have.property('$gt');
         eventStub.lastCall.lastArg.created_at.$gt.should.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+    });
+
+    it('Does not trigger when site is already verified', async function () {
+        // We need to use the real event repository here to test event handling
+        domainEventsStub.restore();
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub();
+
+        new VerificationTrigger({
+            getApiTriggerThreshold: () => 2,
+            Settings: {
+                edit: settingsStub
+            },
+            isVerified: () => true,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getSignupEvents: eventStub
+            }
+        });
+
+        DomainEvents.dispatch(MemberCreatedEvent.create({
+            memberId: 'hello!',
+            source: 'api'
+        }, new Date()));
+
+        eventStub.callCount.should.eql(0);
     });
 
     it('Triggers when a number of members are imported', async function () {

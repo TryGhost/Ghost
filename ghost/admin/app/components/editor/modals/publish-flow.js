@@ -82,12 +82,7 @@ export default class PublishModalComponent extends Component {
             }
             if (this.args.data.publishOptions.post.displayName !== 'page') {
                 if (this.args.data.publishOptions.post.hasEmail) {
-                    // Route to beta analytics if trafficAnalytics feature flag is enabled
-                    if (this.feature.trafficAnalytics || this.feature.ui60) {
-                        this.router.transitionTo('posts-x', this.args.data.publishOptions.post.id);
-                    } else {
-                        this.router.transitionTo('posts.analytics', this.args.data.publishOptions.post.id);
-                    }
+                    this.router.transitionTo('posts-x', this.args.data.publishOptions.post.id);
                 } else {
                     this.router.transitionTo('posts');
                 }

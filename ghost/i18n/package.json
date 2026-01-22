@@ -5,6 +5,10 @@
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./lib/locale-data.json": "./lib/locale-data.json"
+  },
   "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
@@ -29,7 +33,7 @@
   "devDependencies": {
     "c8": "10.1.3",
     "i18next-parser": "8.13.0",
-    "mocha": "11.7.1"
+    "mocha": "11.7.3"
   },
   "dependencies": {
     "i18next": "23.16.8"

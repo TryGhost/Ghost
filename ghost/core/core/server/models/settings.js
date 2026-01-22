@@ -57,9 +57,11 @@ function parseDefaultSettings() {
         members_public_key: () => getMembersKey('public'),
         members_private_key: () => getMembersKey('private'),
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
+        members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
-        site_uuid: () => getOrGenerateSiteUuid()
+        site_uuid: () => getOrGenerateSiteUuid(),
+        indexnow_api_key: () => crypto.randomBytes(16).toString('hex')
     };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
@@ -292,25 +294,12 @@ Settings = ghostBookshelf.Model.extend({
 
             // fetch other data that is used when inserting new settings
             const date = ghostBookshelf.knex.raw('CURRENT_TIMESTAMP');
-            let owner;
-            try {
-                owner = await ghostBookshelf.model('User').getOwnerUser();
-            } catch (e) {
-                // in some tests the owner is deleted and not recreated before setup
-                if (e.errorType === 'NotFoundError') {
-                    owner = {id: 1};
-                } else {
-                    throw e;
-                }
-            }
 
             const settingsDataToInsert = settingsToInsert.map((setting) => {
                 const settingValues = Object.assign({}, setting, {
                     id: ObjectID().toHexString(),
                     created_at: date,
-                    created_by: owner.id,
-                    updated_at: date,
-                    updated_by: owner.id
+                    updated_at: date
                 });
 
                 return _.pick(settingValues, columns);

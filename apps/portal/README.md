@@ -55,12 +55,11 @@ yarn test
 
 ### Ghost e2e browser tests
 
-Portal is primarily tested via Ghost's e2e browser tests. In order to test against your local changes rather than the last published package on npm you need to have the local portal build being served and to configure Ghost to use the local URL.
+Portal is primarily tested via Ghost's e2e browser tests, see [our Playwright docs](https://ghost.notion.site/Playwright-Tests-b49ccb6e2b4a40f1a4f8df5261391218) for more details.
 
-1. Run `yarn dev` in `ghost/apps/portal` to serve the local portal build on http://localhost:4175/portal.min.js
-2. Run the Ghost e2e tests in `ghost/core`, providing an ENV variable to override the portal URL:
+1. Run the Ghost e2e tests in the top-level of the monorepo, providing ENV variables for Stripe:
    ```
-   portal__url=http://localhost:4175/portal.min.js STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser:portal
+   STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser
    ```
 
 ## Release
@@ -88,4 +87,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).

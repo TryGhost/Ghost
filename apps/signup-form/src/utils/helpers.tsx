@@ -1,4 +1,4 @@
-import {SignupFormOptions} from '../AppContext';
+import {SignupFormOptions} from '../app-context';
 
 export type URLHistory = {
     type?: 'post',
@@ -20,7 +20,7 @@ export function getDefaultUrlHistory() {
     const STORAGE_KEY = 'ghost-history';
 
     try {
-        const historyString = localStorage.getItem(STORAGE_KEY);
+        const historyString = sessionStorage.getItem(STORAGE_KEY);
         if (historyString) {
             const parsed = JSON.parse(historyString);
 
@@ -29,7 +29,7 @@ export function getDefaultUrlHistory() {
             }
         }
     } catch (error) {
-        // Failed to access localStorage or something related to that.
+        // Failed to access sessionStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
 
         /* eslint-disable no-console */
@@ -38,7 +38,7 @@ export function getDefaultUrlHistory() {
 }
 
 export function getUrlHistory({siteUrl}: {siteUrl: string}): URLHistory {
-    // If we are embedded on the site itself, use the default attribution localStorage, just like Portal
+    // If we are embedded on the site itself, use the default attribution sessionStorage, just like Portal
     try {
         if (window.location.host === new URL(siteUrl).host) {
             const history = getDefaultUrlHistory();

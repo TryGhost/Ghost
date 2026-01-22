@@ -6,6 +6,7 @@ export default class HomeRoute extends AuthenticatedRoute {
     @inject config;
     @service feature;
     @service router;
+    @service session;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
@@ -14,11 +15,13 @@ export default class HomeRoute extends AuthenticatedRoute {
         if (transition.to?.queryParams?.firstStart === 'true') {
             return this.router.transitionTo('setup.done');
         }
-        
-        if (this.feature.ui60 || this.feature.trafficAnalytics) {
+
+        if (this.session.user?.isAdmin) {
             this.router.transitionTo('stats-x');
+        } else if (this.session.user?.isContributor) {
+            this.router.transitionTo('posts');
         } else {
-            this.router.transitionTo('dashboard');
+            this.router.transitionTo('site');
         }
     }
 }

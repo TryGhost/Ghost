@@ -265,7 +265,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -280,7 +280,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 honeypot: phonenumber,
                 token,
-                autoRedirect
+                autoRedirect,
+                includeOTC
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
@@ -297,6 +298,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
+                const contentType = (res.headers.get('content-type') || '').toLowerCase();
+                if (contentType.includes('application/json')) {
+                    try {
+                        return await res.json();
+                    } catch (e) {
+                        // fall through to response used pre-OTC
+                    }
+                }
                 return 'Success';
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
@@ -304,6 +313,35 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw humanError;
                 }
                 throw new Error('Failed to send magic link email');
+            }
+        },
+
+        async verifyOTC({otc, otcRef, redirect, integrityToken}) {
+            const url = endpointFor({type: 'members', resource: 'verify-otc'});
+            const body = {
+                otc,
+                otcRef,
+                redirect,
+                integrityToken
+            };
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                return await res.json();
+            } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to verify code');
             }
         },
 
@@ -574,6 +612,51 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 },
                 body: JSON.stringify(body)
             });
+        },
+
+        async offers() {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'member/offers'});
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({identity})
+            }).then(function (res) {
+                if (!res.ok) {
+                    return {offers: []};
+                }
+                return res.json();
+            }).catch(function () {
+                return {offers: []};
+            });
+        },
+
+        async applyOffer({offerId, subscriptionId}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: `subscriptions/${subscriptionId}/apply-offer`});
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity,
+                    offer_id: offerId
+                })
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || 'Failed to apply offer');
+            }
+
+            return true;
         }
     };
 
@@ -585,6 +668,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
+        let offers = [];
 
         try {
             [{settings}, {tiers}, {newsletters}] = await Promise.all([
@@ -601,9 +685,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             // Ignore
         }
 
+        if (member && member.paid) {
+            try {
+                const offersData = await api.member.offers();
+
+                offers = offersData.offers || [];
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[Portal] Failed to load member offers:', e);
+            }
+        }
+
         site = transformApiSiteData({site});
 
-        return {site, member};
+        return {site, member, offers};
     };
 
     return api;

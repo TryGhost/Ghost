@@ -3,8 +3,8 @@ const sinon = require('sinon');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtils = require('../../utils/url-utils');
 
 const routeSettingsService = require('../../../core/server/services/route-settings');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
@@ -20,7 +20,7 @@ describe('Frontend behavior tests', function () {
 
     describe('default routes.yaml', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             app = await localUtils.initGhost();
@@ -44,7 +44,7 @@ describe('Frontend behavior tests', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -61,40 +61,6 @@ describe('Frontend behavior tests', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
                     });
-            });
-
-            describe('AMP enabled', function () {
-                it('serve amp', function () {
-                    localUtils.defaultMocks(sinon, {amp: true});
-                    const req = {
-                        method: 'GET',
-                        url: '/html-ipsum/amp/',
-                        host: 'example.com'
-                    };
-
-                    return localUtils.mockExpress.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(200);
-                            response.template.should.match(/amp\.hbs/);
-                            response.body.should.match(/<h1>HTML Ipsum Presents<\/h1>/);
-                        });
-                });
-            });
-
-            describe('AMP disabled', function () {
-                it('serve amp', function () {
-                    localUtils.defaultMocks(sinon, {amp: false});
-                    const req = {
-                        method: 'GET',
-                        url: '/html-ipsum/amp/',
-                        host: 'example.com'
-                    };
-
-                    return localUtils.mockExpress.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(301);
-                        });
-                });
             });
 
             it('post not found', function () {
@@ -290,7 +256,7 @@ describe('Frontend behavior tests', function () {
         });
 
         after(async function () {
-            urlUtils.restore();
+            await urlUtils.restore();
             await configUtils.restore();
         });
 
@@ -397,7 +363,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -502,7 +468,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -555,7 +521,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -647,7 +613,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -723,7 +689,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -870,7 +836,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -975,7 +941,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
                 sinon.restore();
             });
 
@@ -1033,7 +999,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -1084,7 +1050,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
                 sinon.restore();
             });
 
@@ -1259,7 +1225,7 @@ describe('Frontend behavior tests', function () {
 
             afterEach(async function () {
                 await configUtils.restore();
-                urlUtils.restore();
+                await urlUtils.restore();
             });
 
             after(function () {
@@ -1345,7 +1311,7 @@ describe('Frontend behavior tests', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
 
-                        $('.post-card').length.should.equal(4);
+                        $('.post-card').length.should.equal(6);
                     });
             });
 
@@ -1490,7 +1456,7 @@ describe('Frontend behavior tests', function () {
 
         afterEach(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
         });
 
         after(function () {

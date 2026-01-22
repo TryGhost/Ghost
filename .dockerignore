@@ -24,5 +24,11 @@ Dockerfile
 .editorconfig
 compose.yml
 
-.docker
-!.docker/development.entrypoint.sh
+docker
+!docker/**/*.entrypoint.sh
+!docker/**/*entrypoint.sh
+
+ghost/core/core/built/admin
+
+# Ignore local config files (.json and .jsonc)
+ghost/core/config.local.json*

@@ -60,6 +60,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "site_uuid": {
             "defaultValue": null,
             "type": "string",
@@ -427,19 +431,6 @@
             "flags": "RO"
         }
     },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
-        }
-    },
     "firstpromoter": {
         "firstpromoter": {
             "defaultValue": "false",
@@ -479,6 +470,15 @@
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "transistor": {
+        "transistor": {
+            "defaultValue": "false",
+            "validations": {
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
@@ -645,6 +645,12 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        }
+    },
+    "indexnow": {
+        "indexnow_api_key": {
+            "defaultValue": null,
+            "type": "string"
         }
     }
 }

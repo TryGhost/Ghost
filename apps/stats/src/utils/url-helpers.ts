@@ -12,13 +12,13 @@ export function getFrontendUrl(attributionUrl: string, siteUrl: string): string 
     try {
         const baseUrl = new URL(siteUrl);
         const subdir = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : `${baseUrl.pathname}/`;
-        
+
         // Remove leading slash from attribution URL to avoid double slashes
         const cleanPath = attributionUrl.replace(/^\//, '');
         const fullPath = `${subdir}${cleanPath}`;
 
         return `${baseUrl.origin}${fullPath}`;
-    } catch (error) {
+    } catch {
         // Silently handle URL construction errors
         return '';
     }
@@ -34,7 +34,7 @@ export function generateTitleFromPath(path: string): string {
     if (!path) {
         return 'Unknown';
     }
-    
+
     // Handle common Ghost paths
     if (path === '/') {
         return 'Homepage';
@@ -50,12 +50,12 @@ export function generateTitleFromPath(path: string): string {
     if (path.startsWith('/author/')) {
         const segments = path.split('/');
         return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
-    }  
+    }
     if (path.startsWith('/authors/')) {
         const segments = path.split('/');
         return segments.length > 2 && segments[2] ? `author/${segments[2]}` : 'author/unknown';
     }
-    
+
     // For other paths, just return the path itself
     return path;
 }
@@ -100,10 +100,10 @@ export function getClickHandler(
     return () => {
         // For posts with analytics, go to analytics page
         if (postId && attributionUrl && attributionType === 'post') {
-            navigate(`/posts/analytics/beta/${postId}`, {crossApp: true});
+            navigate(`/posts/analytics/${postId}`, {crossApp: true});
             return;
         }
-        
+
         // For all other cases (pages, system pages), open frontend URL in new tab
         if (attributionUrl && siteUrl) {
             const frontendUrl = getFrontendUrl(attributionUrl, siteUrl);
@@ -112,4 +112,4 @@ export function getClickHandler(
             }
         }
     };
-} 
+}

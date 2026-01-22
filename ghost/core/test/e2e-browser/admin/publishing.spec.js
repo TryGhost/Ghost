@@ -166,7 +166,8 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
     // (we need force because the button is animating)
     await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').click({force: true});
 
-    // TODO: assert publish flow has expected completion details
+    // Wait for the publish flow to complete by checking the confirm button is no longer visible
+    await page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]').waitFor({state: 'hidden'});
 };
 
 /**
@@ -199,7 +200,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
-            await closePublishFlow(sharedPage);
             await checkPostPublished(sharedPage, postData);
         });
 
@@ -231,7 +231,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'send'});
-            await closePublishFlow(sharedPage);
             await checkPostNotPublished(sharedPage, postData);
         });
     });

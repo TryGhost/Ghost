@@ -10,7 +10,7 @@ const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/update-email');
-const SingleUseTokenProvider = require('./SingleUseTokenProvider');
+const SingleUseTokenProvider = require('./single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
@@ -57,7 +57,8 @@ function createApiInstance(config) {
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
                 validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+                secret: settingsCache.get('members_otc_secret')
             })
         },
         mail: {
@@ -75,7 +76,7 @@ function createApiInstance(config) {
                     return ghostMailer.send(msg);
                 }
             },
-            getSubject(type) {
+            getSubject(type, otc) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
@@ -88,10 +89,14 @@ function createApiInstance(config) {
                     return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signin':
                 default:
-                    return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    if (otc) {
+                        return `🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}`;
+                    } else {
+                        return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                    }
                 }
             },
-            getText(url, type, email) {
+            getText(url, type, email, otc) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
@@ -162,10 +167,14 @@ function createApiInstance(config) {
                         `;
                 case 'signin':
                 default:
+                    /* eslint-disable indent */
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
-                        ${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}
+                        ${otc
+                            ? `${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}: ${otc}\n\n${t('Or use this link to securely sign in', {interpolation: {escapeValue: false}})}:`
+                            : `${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}`
+                        }
 
                         ${url}
 
@@ -177,10 +186,11 @@ function createApiInstance(config) {
 
                         ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can safely ignore this email.')}
-                        `;
+                    `;
+                    /* eslint-enable indent */
                 }
             },
-            getHTML(url, type, email) {
+            getHTML(url, type, email, otc) {
                 const siteTitle = settingsCache.get('title');
                 const siteUrl = urlUtils.urlFor('home', true);
                 const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -197,7 +207,7 @@ function createApiInstance(config) {
                     return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
-                    return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return signinEmail({t, url, otc, email, siteTitle, accentColor, siteDomain, siteUrl});
                 }
             }
         },
@@ -227,7 +237,9 @@ function createApiInstance(config) {
             Settings: models.Settings,
             Comment: models.Comment,
             MemberFeedback: models.MemberFeedback,
-            EmailSpamComplaintEvent: models.EmailSpamComplaintEvent
+            EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
+            Outbox: models.Outbox,
+            AutomatedEmail: models.AutomatedEmail
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,

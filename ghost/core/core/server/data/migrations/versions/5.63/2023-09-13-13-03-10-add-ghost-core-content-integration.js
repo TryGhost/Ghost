@@ -2,7 +2,9 @@
 
 const logging = require('@tryghost/logging');
 const {default: ObjectID} = require('bson-objectid');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
+
+const MIGRATION_USER = 1;
 
 const coreContentIntegration = {
     slug: 'ghost-core-content',
@@ -26,7 +28,7 @@ const addIntegration = async (knex, integration) => {
     const now = knex.raw('CURRENT_TIMESTAMP');
     integration.id = (new ObjectID()).toHexString();
     integration.created_at = now;
-    integration.created_by = meta.MIGRATION_USER;
+    integration.created_by = MIGRATION_USER;
 
     await knex('integrations').insert(integration);
 };

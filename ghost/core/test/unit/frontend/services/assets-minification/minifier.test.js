@@ -3,7 +3,7 @@ const should = require('should');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const Minifier = require('../../../../../core/frontend/services/assets-minification/Minifier');
+const Minifier = require('../../../../../core/frontend/services/assets-minification/minifier');
 
 describe('Minifier', function () {
     let minifier;

@@ -136,6 +136,10 @@
     padding-bottom: 12px;
 }
 
+.gh-members-activity .gh-list-scrolling tbody tr:hover > .gh-list-data {
+    background: var(--whitegrey-l2);
+}
+
 .gh-members-activity .gh-list h3 {
     margin-bottom: 4px;
 }
@@ -490,6 +494,10 @@
 .gh-member-filter-search-dropdown li span {
     font-weight: 400;
     color: var(--middarkgrey);
+}
+
+.gh-members-activity .gh-canvas-header .view-actions > .ember-basic-dropdown-content-wormhole-origin {
+    position: absolute;
 }
 
 @media (max-width: 800px) {

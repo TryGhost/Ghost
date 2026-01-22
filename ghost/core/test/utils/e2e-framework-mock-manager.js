@@ -4,7 +4,7 @@ const assert = require('assert/strict');
 const nock = require('nock');
 
 // Helper services
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
 const EmailMockReceiver = require('@tryghost/email-mock-receiver');
 const {snapshotManager} = require('@tryghost/express-test').snapshot;
@@ -13,7 +13,7 @@ let mocks = {};
 let emailCount = 0;
 
 // Mockable services
-const MailgunClient = require('../../core/server/services/lib/MailgunClient');
+const MailgunClient = require('../../core/server/services/lib/mailgun-client');
 const mailService = require('../../core/server/services/mail/index');
 const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
@@ -274,6 +274,7 @@ const mockLimitService = (limit, options) => {
     if (!mocks.limitService) {
         mocks.limitService = {
             isLimited: sinon.stub(limitService, 'isLimited'),
+            isDisabled: sinon.stub(limitService, 'isDisabled'),
             checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
             errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
             originalLimits: limitService.limits || {},
@@ -282,6 +283,7 @@ const mockLimitService = (limit, options) => {
     }
 
     mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
+    mocks.limitService.isDisabled.withArgs(limit).returns(options.isDisabled);
     mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
 
     // Mock the limits property for checking allowlist
@@ -295,14 +297,14 @@ const mockLimitService = (limit, options) => {
 
     // If errorIfWouldGoOverLimit is true, reject with HostLimitError
     if (options.errorIfWouldGoOverLimit === true) {
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).rejects(
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).rejects(
             new errors.HostLimitError({
                 message: `Upgrade to use ${limit} feature.`
             })
         );
     } else {
         // Otherwise, resolve normally
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).resolves();
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).resolves();
     }
 };
 
@@ -316,6 +318,9 @@ const restoreLimitService = () => {
         }
         if (mocks.limitService.errorIfWouldGoOverLimit) {
             mocks.limitService.errorIfWouldGoOverLimit.restore();
+        }
+        if (mocks.limitService.isDisabled) {
+            mocks.limitService.isDisabled.restore();
         }
 
         // Remove any limits we mocked

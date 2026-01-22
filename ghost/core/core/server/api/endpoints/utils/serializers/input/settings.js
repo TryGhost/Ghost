@@ -53,8 +53,6 @@ const EDITABLE_SETTINGS = [
     'email_track_clicks',
     'members_track_sources',
     'web_analytics',
-    'amp',
-    'amp_gtag_id',
     'slack_url',
     'slack_username',
     'unsplash',
@@ -80,7 +78,8 @@ const EDITABLE_SETTINGS = [
     'require_email_mfa',
     'social_web',
     'explore_ping',
-    'explore_ping_growth'
+    'explore_ping_growth',
+    'indexnow_api_key'
 ];
 
 module.exports = {

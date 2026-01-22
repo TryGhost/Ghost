@@ -1,12 +1,11 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const moment = require('moment');
-const ObjectId = require('bson-objectid').default;
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
@@ -532,9 +531,7 @@ describe.skip('Batch sending tests', function () {
             feature_image_alt: 'Testing sending',
             feature_image_caption: 'Testing <b>feature image caption</b>',
             created_at: moment().subtract(2, 'days').toISOString(),
-            updated_at: moment().subtract(2, 'days').toISOString(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toISOString()
         };
 
         const res = await agent.post('posts/')

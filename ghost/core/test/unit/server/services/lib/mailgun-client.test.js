@@ -3,7 +3,7 @@ const nock = require('nock');
 const sinon = require('sinon');
 
 // module under test
-const MailgunClient = require('../../../../../core/server/services/lib/MailgunClient');
+const MailgunClient = require('../../../../../core/server/services/lib/mailgun-client');
 
 // Some sample Mailgun API options we might want to use
 const MAILGUN_OPTIONS = {
@@ -1077,6 +1077,117 @@ describe('MailgunClient', function () {
                 },
                 id: 'pl271FzxTTmGRW8Uj3dUWw'
             });
+        });
+    });
+
+    describe('fetchEvents() - Domain Warming', function () {
+        // Helper to setup config with domain warming
+        const setupDomainWarmingConfig = (domainWarmingEnabled = true, fallbackDomain = 'fallback.com') => {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'primary.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1000
+            });
+            configStub.withArgs('hostSettings:managedEmail:fallbackDomain').returns(
+                domainWarmingEnabled ? fallbackDomain : null);
+
+            return configStub;
+        };
+
+        beforeEach(function () {
+            nock.cleanAll();
+        });
+
+        it('fetches from both primary and fallback domains when enabled', async function () {
+            setupDomainWarmingConfig(true);
+
+            const primaryMock = nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+            const fallbackMock = nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
+            nock('https://api.mailgun.net').get('/v3/fallback.com/events/all-2-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+
+            const counter = createBatchCounter();
+            const mailgunClient = new MailgunClient({config, settings});
+            await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+
+            assert.equal(primaryMock.isDone(), true);
+            assert.equal(fallbackMock.isDone(), true);
+            assert.equal(counter.batches, 2);
+            assert.equal(counter.events, 6);
+        });
+
+        it('only fetches from primary when disabled', async function () {
+            setupDomainWarmingConfig(false);
+
+            const primaryMock = nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+            const fallbackMock = nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
+
+            const counter = createBatchCounter();
+            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+
+            assert.equal(primaryMock.isDone(), true);
+            assert.equal(fallbackMock.isDone(), false);
+            assert.equal(counter.events, 4);
+        });
+
+        it('only fetches from primary when no fallback configured', async function () {
+            setupDomainWarmingConfig(true, null);
+
+            const primaryMock = nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+
+            const counter = createBatchCounter();
+            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+
+            assert.equal(primaryMock.isDone(), true);
+            assert.equal(counter.events, 4);
+        });
+
+        it('only fetches from primary when fallback matches primary', async function () {
+            setupDomainWarmingConfig(true, 'primary.com');
+
+            const primaryMock = nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+
+            const counter = createBatchCounter();
+            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+
+            assert.equal(primaryMock.isDone(), true);
+            assert.equal(counter.events, 4);
+        });
+
+        it('stops on error from primary domain', async function () {
+            setupDomainWarmingConfig(true);
+
+            nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).reply(500);
+            const fallbackMock = nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
+
+            await assert.rejects(
+                new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, () => {})
+            );
+
+            assert.equal(fallbackMock.isDone(), false);
+        });
+
+        it('fetches multiple pages from both domains', async function () {
+            setupDomainWarmingConfig(true);
+
+            nock('https://api.mailgun.net').get('/v3/primary.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-2.json`);
+            nock('https://api.mailgun.net').get('/v3/primary.com/events/all-2-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+            nock('https://api.mailgun.net').get('/v3/fallback.com/events').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/all-1.json`);
+            nock('https://api.mailgun.net').get('/v3/fallback.com/events/all-1-next').query(MAILGUN_OPTIONS).replyWithFile(200, `${__dirname}/fixtures/empty.json`);
+
+            const counter = createBatchCounter();
+            await new MailgunClient({config, settings}).fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+
+            assert.equal(counter.batches, 3);
+            assert(counter.events >= 8);
         });
     });
 });

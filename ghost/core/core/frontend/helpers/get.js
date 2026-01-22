@@ -3,6 +3,7 @@
 // Fetches data from the API
 const {config, api, prepareContextResource} = require('../services/proxy');
 const {hbs, SafeString} = require('../services/handlebars');
+const {applyLimitCap} = require('../../shared/max-limit-cap');
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -114,8 +115,9 @@ function parseOptions(globals, data, options) {
         options.filter = resolvePaths(globals, data, options.filter);
     }
 
-    if (options.limit === 'all' && config.get('getHelperLimitAllMax')) {
-        options.limit = config.get('getHelperLimitAllMax');
+    // Adjust limit to Ghost's max allowed value (default: 100 and no limit=all)
+    if (options.limit) {
+        options.limit = applyLimitCap(options.limit);
     }
 
     return options;

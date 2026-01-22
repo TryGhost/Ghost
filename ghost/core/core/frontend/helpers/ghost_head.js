@@ -171,7 +171,7 @@ function getTinybirdTrackerScript(dataRoot) {
     const tbParams = _.map({
         site_uuid: settingsCache.get('site_uuid'),
         post_uuid: dataRoot.post?.uuid,
-        post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
+        post_type: dataRoot.context?.includes('post') ? 'post' : dataRoot.context?.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
@@ -271,11 +271,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
                 }
             }
-            // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-            if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
-                head.push('<link rel="amphtml" href="' +
-                    escapeExpression(meta.ampUrl) + '">');
-            }
 
             if (meta.previousUrl) {
                 head.push('<link rel="prev" href="' +
@@ -306,93 +301,92 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
             escapeExpression(meta.rssUrl) + '">');
-        // no code injection for amp context!!!
-        if (!_.includes(context, 'amp')) {
-            head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
-            if (!excludeList.has('search')) {
-                head.push(getSearchHelper(frontendKey));
-            }
-            if (!excludeList.has('announcement')) {
-                head.push(getAnnouncementBarHelper(options.data));
-            }
-            try {
-                head.push(getWebmentionDiscoveryLink());
-            } catch (err) {
-                logging.warn(err);
-            }
 
-            // @TODO do this in a more "frameworky" way
+        head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
+        if (!excludeList.has('search')) {
+            head.push(getSearchHelper(frontendKey));
+        }
+        if (!excludeList.has('announcement')) {
+            head.push(getAnnouncementBarHelper(options.data));
+        }
+        try {
+            head.push(getWebmentionDiscoveryLink());
+        } catch (err) {
+            logging.warn(err);
+        }
 
-            if (!excludeList.has('card_assets')) {
-                if (cardAssets.hasFile('js')) {
-                    head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
-                }
-                if (cardAssets.hasFile('css')) {
-                    head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
-                }
-            }
+        // @TODO do this in a more "frameworky" way
 
-            if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
-                head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
+        if (!excludeList.has('card_assets')) {
+            if (cardAssets.hasFile('js')) {
+                head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
             }
+            if (cardAssets.hasFile('css')) {
+                head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+            }
+        }
 
-            if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
-                head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
-            }
+        if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
+            head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
+        }
 
-            if (options.data.site.accent_color) {
-                const accentColor = escapeExpression(options.data.site.accent_color);
-                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+        if (settingsCache.get('members_enabled') && settingsCache.get('members_track_sources')) {
+            head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
+        }
 
-                if (existingScriptIndex !== -1) {
-                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-                } else {
-                    head.push(styleTag);
-                }
+        // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
+        if (settingsHelpers.isWebAnalyticsEnabled()) {
+            head.push(getTinybirdTrackerScript(dataRoot));
+            // Set a flag in response locals to indicate tracking script is being served
+            if (dataRoot._locals) {
+                dataRoot._locals.ghostAnalytics = true;
             }
-            if (!_.isEmpty(globalCodeinjection)) {
-                head.push(globalCodeinjection);
-            }
+        }
 
-            if (!_.isEmpty(postCodeInjection)) {
-                head.push(postCodeInjection);
-            }
+        if (options.data.site.accent_color) {
+            const accentColor = escapeExpression(options.data.site.accent_color);
+            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
 
-            if (!_.isEmpty(tagCodeInjection)) {
-                head.push(tagCodeInjection);
+            if (existingScriptIndex !== -1) {
+                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+            } else {
+                head.push(styleTag);
             }
-            // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
-            if (settingsHelpers.isWebAnalyticsEnabled()) {
-                head.push(getTinybirdTrackerScript(dataRoot));
-                // Set a flag in response locals to indicate tracking script is being served
-                if (dataRoot._locals) {
-                    dataRoot._locals.ghostAnalytics = true;
-                }
-            }
+        }
+        if (!_.isEmpty(globalCodeinjection)) {
+            head.push(globalCodeinjection);
+        }
 
-            // Check if if the request is for a site preview, in which case we **always** use the custom font values
-            // from the passed in data, even when they're empty strings or settings cache has values.
-            const isSitePreview = options.data?.site?._preview ?? false;
-            // Taking the fonts straight from the passed in data, as they can't be used from the
-            // settings cache for the theme preview until the settings are saved. Once saved,
-            // we need to use the settings cache to provide the correct CSS injection.
-            const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
-            const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
-            if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+        if (!_.isEmpty(postCodeInjection)) {
+            head.push(postCodeInjection);
+        }
+
+        if (!_.isEmpty(tagCodeInjection)) {
+            head.push(tagCodeInjection);
+        }
+
+        // Check if if the request is for a site preview, in which case we **always** use the custom font values
+        // from the passed in data, even when they're empty strings or settings cache has values.
+        const isSitePreview = options.data?.site?._preview ?? false;
+        // Taking the fonts straight from the passed in data, as they can't be used from the
+        // settings cache for the theme preview until the settings are saved. Once saved,
+        // we need to use the settings cache to provide the correct CSS injection.
+        const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
+        const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
+        if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
                 (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
-                /** @type FontSelection */
-                const fontSelection = {};
+            /** @type FontSelection */
+            const fontSelection = {};
 
-                if (headingFont) {
-                    fontSelection.heading = headingFont;
-                }
-                if (bodyFont) {
-                    fontSelection.body = bodyFont;
-                }
-                const customCSS = generateCustomFontCss(fontSelection);
-                head.push(new SafeString(customCSS));
+            if (headingFont) {
+                fontSelection.heading = headingFont;
             }
+            if (bodyFont) {
+                fontSelection.body = bodyFont;
+            }
+            const customCSS = generateCustomFontCss(fontSelection);
+            head.push(new SafeString(customCSS));
         }
 
         debug('end');

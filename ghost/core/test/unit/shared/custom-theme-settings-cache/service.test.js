@@ -1,12 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const _ = require('lodash');
 const sinon = require('sinon');
-const {ValidationError} = require('@tryghost/errors');
 const nql = require('@tryghost/nql-lang');
 
-const Cache = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsCache');
-const Service = require('../../../../core/shared/custom-theme-settings-cache/CustomThemeSettingsService');
+const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
+const Service = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-service');
 
 function makeModelInstance(data) {
     const instance = Object.assign({}, data, {
@@ -92,12 +91,12 @@ describe('Service', function () {
 
     describe('activateTheme()', function () {
         it('sets .activeThemeName correctly', function () {
-            should(service.activeThemeName).equal(null);
+            assert.equal(service.activeThemeName, null);
 
             // theme names do not always match the name in package.json
             service.activateTheme('Test-test', {name: 'test'});
 
-            service.activeThemeName.should.equal('Test-test');
+            assert.equal(service.activeThemeName, 'Test-test');
         });
 
         it('handles known settings not seen in theme', async function () {
@@ -114,16 +113,16 @@ describe('Service', function () {
                 }
             });
 
-            model.findAll.callCount.should.equal(2);
-            model.findAll.getCall(0).firstArg.should.deepEqual({filter: `theme:'test'`});
-            model.findAll.getCall(1).firstArg.should.deepEqual({filter: `theme:'test'`});
+            assert.equal(model.findAll.callCount, 2);
+            assert.deepEqual(model.findAll.getCall(0).firstArg, {filter: `theme:'test'`});
+            assert.deepEqual(model.findAll.getCall(1).firstArg, {filter: `theme:'test'`});
 
             // destroys records that no longer exist in theme
-            model.destroy.callCount.should.equal(1);
-            model.destroy.getCall(0).firstArg.should.deepEqual({id: 1});
+            assert.equal(model.destroy.callCount, 1);
+            assert.deepEqual(model.destroy.getCall(0).firstArg, {id: 1});
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 2,
                 key: 'two',
                 type: 'select',
@@ -133,7 +132,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 two: '2'
             });
         });
@@ -157,11 +156,11 @@ describe('Service', function () {
             });
 
             // destroys and recreates record
-            model.destroy.callCount.should.equal(1);
-            model.destroy.getCall(0).firstArg.should.deepEqual({id: 2});
+            assert.equal(model.destroy.callCount, 1);
+            assert.deepEqual(model.destroy.getCall(0).firstArg, {id: 2});
 
-            model.add.callCount.should.equal(1);
-            model.add.getCall(0).firstArg.should.deepEqual({
+            assert.equal(model.add.callCount, 1);
+            assert.deepEqual(model.add.getCall(0).firstArg, {
                 theme: 'test',
                 key: 'two',
                 type: 'boolean',
@@ -169,7 +168,7 @@ describe('Service', function () {
             });
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -185,7 +184,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 one: '1',
                 two: true
             });
@@ -211,9 +210,9 @@ describe('Service', function () {
             });
 
             // updates known setting to match new default
-            model.edit.callCount.should.equal(1);
-            model.edit.getCall(0).firstArg.should.deepEqual({value: 'two'});
-            model.edit.getCall(0).lastArg.should.deepEqual({id: 2, method: 'update'});
+            assert.equal(model.edit.callCount, 1);
+            assert.deepEqual(model.edit.getCall(0).firstArg, {value: 'two'});
+            assert.deepEqual(model.edit.getCall(0).lastArg, {id: 2, method: 'update'});
         });
 
         it('handles new settings', async function () {
@@ -242,8 +241,8 @@ describe('Service', function () {
             });
 
             // new setting is created
-            model.add.callCount.should.equal(1);
-            model.add.getCall(0).firstArg.should.deepEqual({
+            assert.equal(model.add.callCount, 1);
+            assert.deepEqual(model.add.getCall(0).firstArg, {
                 theme: 'test',
                 key: 'three',
                 type: 'select',
@@ -251,7 +250,7 @@ describe('Service', function () {
             });
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -275,7 +274,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 one: '1',
                 two: '2',
                 three: 'tres'
@@ -318,23 +317,23 @@ describe('Service', function () {
             });
 
             // looks for existing settings, then re-fetches after sync. Twice for each activation
-            model.findAll.callCount.should.equal(4);
-            model.findAll.getCall(0).firstArg.should.deepEqual({filter: `theme:'test'`});
-            model.findAll.getCall(1).firstArg.should.deepEqual({filter: `theme:'test'`});
-            model.findAll.getCall(2).firstArg.should.deepEqual({filter: `theme:'new'`});
-            model.findAll.getCall(3).firstArg.should.deepEqual({filter: `theme:'new'`});
+            assert.equal(model.findAll.callCount, 4);
+            assert.deepEqual(model.findAll.getCall(0).firstArg, {filter: `theme:'test'`});
+            assert.deepEqual(model.findAll.getCall(1).firstArg, {filter: `theme:'test'`});
+            assert.deepEqual(model.findAll.getCall(2).firstArg, {filter: `theme:'new'`});
+            assert.deepEqual(model.findAll.getCall(3).firstArg, {filter: `theme:'new'`});
 
             // adds new settings
-            model.add.callCount.should.equal(2);
+            assert.equal(model.add.callCount, 2);
 
-            model.add.firstCall.firstArg.should.deepEqual({
+            assert.deepEqual(model.add.firstCall.firstArg, {
                 theme: 'new',
                 key: 'typography',
                 type: 'select',
                 value: 'Sans-serif'
             });
 
-            model.add.secondCall.firstArg.should.deepEqual({
+            assert.deepEqual(model.add.secondCall.firstArg, {
                 theme: 'new',
                 key: 'full_cover_image',
                 type: 'boolean',
@@ -342,7 +341,7 @@ describe('Service', function () {
             });
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 3,
                 key: 'typography',
                 type: 'select',
@@ -359,7 +358,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 typography: 'Sans-serif',
                 full_cover_image: true
             });
@@ -368,7 +367,7 @@ describe('Service', function () {
         it('exits early if both repository and theme have no settings', async function () {
             await service.activateTheme('no-custom', {name: 'no-custom'});
 
-            model.findAll.callCount.should.equal(1);
+            assert.equal(model.findAll.callCount, 1);
         });
 
         it('generates a valid filter string for theme names with dots', async function () {
@@ -385,13 +384,13 @@ describe('Service', function () {
                 }
             });
 
-            model.findAll.callCount.should.equal(2);
+            assert.equal(model.findAll.callCount, 2);
 
-            should.exist(model.findAll.getCall(0).firstArg.filter);
-            should.doesNotThrow(() => nql.parse(model.findAll.getCall(0).firstArg.filter));
+            assert(model.findAll.getCall(0).firstArg.filter);
+            assert.doesNotThrow(() => nql.parse(model.findAll.getCall(0).firstArg.filter));
 
-            should.exist(model.findAll.getCall(1).firstArg.filter);
-            should.doesNotThrow(() => nql.parse(model.findAll.getCall(1).firstArg.filter));
+            assert(model.findAll.getCall(1).firstArg.filter);
+            assert.doesNotThrow(() => nql.parse(model.findAll.getCall(1).firstArg.filter));
         });
 
         it('does not allow simultaneous calls for same theme', async function () {
@@ -444,11 +443,11 @@ describe('Service', function () {
             });
 
             // model methods are only called enough times for one .activate call despite being called twice
-            model.findAll.callCount.should.equal(2);
-            model.add.callCount.should.equal(1);
+            assert.equal(model.findAll.callCount, 2);
+            assert.equal(model.add.callCount, 1);
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -472,7 +471,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 one: '1',
                 two: '2',
                 three: 'tres'
@@ -482,7 +481,7 @@ describe('Service', function () {
 
     describe('listSettings()', function () {
         it('returns empty array when internal cache is empty', function () {
-            service.listSettings().should.deepEqual([]);
+            assert.deepEqual(service.listSettings(), []);
         });
     });
 
@@ -524,15 +523,15 @@ describe('Service', function () {
 
             // set + save called on each record
             const firstRecord = model.knownSettings.find(s => s.id === 1);
-            firstRecord.set.calledOnceWith('value', '2').should.be.true();
-            firstRecord.save.calledOnceWith(null).should.be.true();
+            sinon.assert.calledOnceWithExactly(firstRecord.set, 'value', '2');
+            sinon.assert.calledOnceWithExactly(firstRecord.save, null);
 
             const secondRecord = model.knownSettings.find(s => s.id === 2);
-            secondRecord.set.calledOnceWith('value', '1').should.be.true();
-            secondRecord.save.calledOnceWith(null).should.be.true();
+            sinon.assert.calledOnceWithExactly(secondRecord.set, 'value', '1');
+            sinon.assert.calledOnceWithExactly(secondRecord.save, null);
 
             // return value is correct
-            result.should.deepEqual([{
+            assert.deepEqual(result, [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -549,7 +548,7 @@ describe('Service', function () {
             }]);
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -566,7 +565,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 one: '2',
                 two: '1'
             });
@@ -609,15 +608,15 @@ describe('Service', function () {
 
             // set + save called on each record
             const firstRecord = model.knownSettings.find(s => s.id === 1);
-            firstRecord.set.calledOnceWith('value', '2').should.be.true();
-            firstRecord.save.calledOnceWith(null).should.be.true();
+            sinon.assert.calledOnceWithExactly(firstRecord.set, 'value', '2');
+            sinon.assert.calledOnceWithExactly(firstRecord.save, null);
 
             const secondRecord = model.knownSettings.find(s => s.id === 2);
-            secondRecord.set.calledOnceWith('value', '1').should.be.true();
-            secondRecord.save.calledOnceWith(null).should.be.true();
+            sinon.assert.calledOnceWithExactly(secondRecord.set, 'value', '1');
+            sinon.assert.calledOnceWithExactly(secondRecord.save, null);
 
             // return value is correct
-            result.should.deepEqual([{
+            assert.deepEqual(result, [{
                 id: 1, // change not applied
                 key: 'one',
                 type: 'select', // change not applied
@@ -634,7 +633,7 @@ describe('Service', function () {
             }]);
 
             // internal cache is correct
-            service.listSettings().should.deepEqual([{
+            assert.deepEqual(service.listSettings(), [{
                 id: 1,
                 key: 'one',
                 type: 'select',
@@ -651,7 +650,7 @@ describe('Service', function () {
             }]);
 
             // external cache is correct
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 one: '2',
                 two: '1'
             });
@@ -676,23 +675,29 @@ describe('Service', function () {
             });
 
             // update with known and unknown keys
-            await service.updateSettings(
-                [{
-                    id: 1,
-                    key: 'one',
-                    type: 'select',
-                    options: ['1', '2'],
-                    default: '2',
-                    value: '1'
-                }, {
-                    id: 2,
-                    key: 'test',
-                    type: 'select',
-                    options: ['valid', 'invalid'],
-                    default: 'valid',
-                    value: 'invalid'
-                }]
-            ).should.be.rejectedWith(ValidationError, {message: 'Unknown setting: test.'});
+            await assert.rejects(
+                service.updateSettings(
+                    [{
+                        id: 1,
+                        key: 'one',
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '2',
+                        value: '1'
+                    }, {
+                        id: 2,
+                        key: 'test',
+                        type: 'select',
+                        options: ['valid', 'invalid'],
+                        default: 'valid',
+                        value: 'invalid'
+                    }]
+                ),
+                {
+                    name: 'ValidationError',
+                    message: 'Unknown setting: test.'
+                }
+            );
         });
 
         it('errors on unallowed select value', async function () {
@@ -714,16 +719,22 @@ describe('Service', function () {
             });
 
             // update with invalid option value
-            await service.updateSettings(
-                [{
-                    id: 1,
-                    key: 'one',
-                    type: 'select',
-                    options: ['1', '2'],
-                    default: '2',
-                    value: 'invalid'
-                }]
-            ).should.be.rejectedWith(ValidationError, {message: 'Unallowed value for \'one\'. Allowed values: 1, 2.'});
+            await assert.rejects(
+                service.updateSettings(
+                    [{
+                        id: 1,
+                        key: 'one',
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '2',
+                        value: 'invalid'
+                    }]
+                ),
+                {
+                    name: 'ValidationError',
+                    message: 'Unallowed value for \'one\'. Allowed values: 1, 2.'
+                }
+            );
         });
 
         it('allows any valid color value', async function () {
@@ -745,7 +756,7 @@ describe('Service', function () {
                     type: 'image',
                     value: '#123456'
                 }]
-            ).should.be.resolved();
+            );
 
             await service.updateSettings(
                 [{
@@ -754,7 +765,7 @@ describe('Service', function () {
                     type: 'image',
                     value: '#FFFFff'
                 }]
-            ).should.be.resolved();
+            );
         });
 
         it('errors on invalid color values', async function () {
@@ -770,15 +781,21 @@ describe('Service', function () {
             });
 
             // update with invalid option value
-            await service.updateSettings(
-                [{
-                    id: 1,
-                    key: 'one',
-                    type: 'color',
-                    default: '#FFFFFF',
-                    value: '#FFFFFFAA'
-                }]
-            ).should.be.rejectedWith(ValidationError, {message: 'Invalid value for \'one\'. The value must follow this format: #1234AF.'});
+            await assert.rejects(
+                service.updateSettings(
+                    [{
+                        id: 1,
+                        key: 'one',
+                        type: 'color',
+                        default: '#FFFFFF',
+                        value: '#FFFFFFAA'
+                    }]
+                ),
+                {
+                    name: 'ValidationError',
+                    message: 'Invalid value for \'one\'. The value must follow this format: #1234AF.'
+                }
+            );
         });
 
         it('allows any valid boolean value', async function () {
@@ -800,7 +817,7 @@ describe('Service', function () {
                     type: 'boolean',
                     value: true
                 }]
-            ).should.be.resolved();
+            );
 
             await service.updateSettings(
                 [{
@@ -809,7 +826,7 @@ describe('Service', function () {
                     type: 'boolean',
                     value: false
                 }]
-            ).should.be.resolved();
+            );
         });
 
         it('errors on invalid boolean values', async function () {
@@ -825,15 +842,21 @@ describe('Service', function () {
             });
 
             // update with invalid option value
-            await service.updateSettings(
-                [{
-                    id: 1,
-                    key: 'one',
-                    type: 'boolean',
-                    default: 'false',
-                    value: 'true'
-                }]
-            ).should.be.rejectedWith(ValidationError, {message: 'Unallowed value for \'one\'. Allowed values: true, false.'});
+            await assert.rejects(
+                service.updateSettings(
+                    [{
+                        id: 1,
+                        key: 'one',
+                        type: 'boolean',
+                        default: 'false',
+                        value: 'true'
+                    }]
+                ),
+                {
+                    name: 'ValidationError',
+                    message: 'Unallowed value for \'one\'. Allowed values: true, false.'
+                }
+            );
         });
 
         it('allows any text value', async function () {
@@ -854,7 +877,7 @@ describe('Service', function () {
                     type: 'text',
                     value: ''
                 }]
-            ).should.be.resolved();
+            );
 
             await service.updateSettings(
                 [{
@@ -863,7 +886,7 @@ describe('Service', function () {
                     type: 'text',
                     value: null
                 }]
-            ).should.be.resolved();
+            );
 
             await service.updateSettings(
                 [{
@@ -872,7 +895,7 @@ describe('Service', function () {
                     type: 'text',
                     value: 'Long string Long string Long string Long string Long string Long string Long string Long string'
                 }]
-            ).should.be.resolved();
+            );
         });
 
         it('does not expose hidden settings in the public cache', async function () {
@@ -901,7 +924,7 @@ describe('Service', function () {
                 }]
             );
 
-            cache.getAll().should.deepEqual({
+            assert.deepEqual(cache.getAll(), {
                 [settingName]: HIDDEN_SETTING_VALUE
             });
         });

@@ -1,0 +1,219 @@
+{
+    admin off
+}
+
+:80 {
+    # Compact log format for development
+    log {
+        output stdout
+        format transform "{common_log}"
+    }
+
+    # Ember live reload (runs on separate port 4201)
+    # This handles both the script injection and WebSocket connections
+    handle /ember-cli-live-reload.js {
+        reverse_proxy {env.ADMIN_LIVE_RELOAD_SERVER} {
+            header_up Host {http.reverse_proxy.upstream.hostport}
+            header_up X-Forwarded-Host {host}
+            # Enable WebSocket support for live reload
+            header_up Connection {>Connection}
+            header_up Upgrade {>Upgrade}
+        }
+    }
+
+    # Ghost API - must go to Ghost backend, not admin dev server
+    handle /ghost/api/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+
+            # Always tell Ghost requests are HTTPS to prevent redirects
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Analytics API - proxy analytics requests to analytics service
+    # Handles paths like /.ghost/analytics/* or /blog/.ghost/analytics/*
+    @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
+    handle @analytics_paths {
+        rewrite * {re.analytics_match.2}
+        reverse_proxy {env.ANALYTICS_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Forwarded-Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+
+    # ActivityPub API - proxy activityPub requests to activityPub service (running in separate project)
+    # Requires activitypub containers to be running via the ActivityPub project's docker-compose
+    handle /.ghost/activitypub/* {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # WebFinger - required for ActivityPub federation
+    handle /.well-known/webfinger {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # NodeInfo - required for ActivityPub federation
+    handle /.well-known/nodeinfo {
+        reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Public app dev server assets - must come BEFORE general /ghost/* handler
+    # Ghost is configured to load these from /ghost/assets/* via compose.dev.yaml
+    handle /ghost/assets/* {
+        # Strip /ghost/assets/ prefix
+        uri strip_prefix /ghost/assets
+
+        # Koenig Lexical Editor (optional - for developing Lexical in separate Koenig repo)
+        # Requires EDITOR_URL=/ghost/assets/koenig-lexical/ when starting admin dev server
+        # Falls back to Ghost backend (built package) via handle_errors if dev server isn't running
+        @lexical path /koenig-lexical/*
+        handle @lexical {
+            uri strip_prefix /koenig-lexical
+            reverse_proxy {env.LEXICAL_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+                # Fail quickly if dev server is down
+                fail_duration 1s
+                unhealthy_request_count 1
+            }
+        }
+
+        # Portal
+        @portal path /portal/*
+        handle @portal {
+            uri strip_prefix /portal
+            reverse_proxy {env.PORTAL_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
+        # Comments UI
+        @comments path /comments-ui/*
+        handle @comments {
+            uri strip_prefix /comments-ui
+            reverse_proxy {env.COMMENTS_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
+        # Signup Form
+        @signup path /signup-form/*
+        handle @signup {
+            uri strip_prefix /signup-form
+            reverse_proxy {env.SIGNUP_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
+        # Sodo Search
+        @search path /sodo-search/*
+        handle @search {
+            uri strip_prefix /sodo-search
+            reverse_proxy {env.SEARCH_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
+        # Announcement Bar
+        @announcement path /announcement-bar/*
+        handle @announcement {
+            uri strip_prefix /announcement-bar
+            reverse_proxy {env.ANNOUNCEMENT_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
+        # Everything else under /ghost/assets/* goes to admin dev server
+        handle {
+            # Re-add the prefix we stripped for admin dev server
+            rewrite * /ghost/assets{path}
+            reverse_proxy {env.ADMIN_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+    }
+
+    # Auth frame - must go to Ghost backend for comment admin authentication
+    handle /ghost/auth-frame/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # JWKS endpoint - must go to Ghost backend for JWT verification
+    handle /ghost/.well-known/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Admin interface - served from admin dev server
+    # This includes /ghost/, etc. (but /ghost/assets/* is handled above)
+    # Also handles WebSocket upgrade requests for HMR
+    handle /ghost* {
+        reverse_proxy {env.ADMIN_DEV_SERVER} {
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Everything else goes to Ghost backend
+    handle {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+
+            # Always tell Ghost requests are HTTPS to prevent redirects
+            header_up X-Forwarded-Proto https
+        }
+    }
+
+    # Handle errors
+    handle_errors {
+        # Fallback for Lexical when dev server is unavailable (502/503/504)
+        # Forwards to Ghost backend which serves the built koenig-lexical package
+        @lexical_fallback `{http.request.orig_uri.path}.startsWith("/ghost/assets/koenig-lexical/")`
+        handle @lexical_fallback {
+            rewrite * {http.request.orig_uri.path}
+            reverse_proxy {env.GHOST_BACKEND} {
+                header_up Host {host}
+                header_up X-Forwarded-Proto https
+            }
+        }
+
+        # Default error response
+        respond "{err.status_code} {err.status_text}"
+    }
+}

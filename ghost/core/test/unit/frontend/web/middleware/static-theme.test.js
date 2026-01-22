@@ -13,13 +13,17 @@ describe('staticTheme', function () {
 
     beforeEach(function () {
         req = {};
-        res = {};
+        res = {
+            setHeader: sinon.stub()
+        };
 
         activeThemeStub = sinon.stub(themeEngine, 'getActive').returns({
             path: 'my/fake/path'
         });
 
-        expressStaticStub = sinon.spy(express, 'static');
+        expressStaticStub = sinon.stub(express, 'static').returns(function (_req, _res, _next) {
+            _next();
+        });
     });
 
     afterEach(function () {
@@ -223,6 +227,327 @@ describe('staticTheme', function () {
             expressStaticStub.called.should.be.false();
 
             done();
+        });
+    });
+
+    describe('paths without file extensions', function () {
+        it('should skip for root path /', function (done) {
+            req.path = '/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for /about/', function (done) {
+            req.path = '/about/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for /blog/my-post/', function (done) {
+            req.path = '/blog/my-post/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for path without trailing slash /contact', function (done) {
+            req.path = '/contact';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should NOT skip for file with extension without trailing slash', function (done) {
+            req.path = '/somefile.txt';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
+        });
+
+        it('should NOT skip for file with extension with trailing slash', function (done) {
+            req.path = '/somefile.txt/';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
+        });
+
+        it('should NOT skip for deeply nested file with extension', function (done) {
+            req.path = '/deep/nested/path/file.css';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
+        });
+    });
+
+    describe('apple-app-site-association handling', function () {
+        beforeEach(function () {
+            activeThemeStub.returns({
+                path: 'my/fake/path'
+            });
+        });
+
+        it('should serve .well-known/apple-app-site-association despite missing extension', function (done) {
+            req.path = '/.well-known/apple-app-site-association';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                should.exist(options.setHeaders);
+
+                const setHeaderStub = sinon.stub();
+                options.setHeaders({setHeader: setHeaderStub});
+                setHeaderStub.calledWith('Content-Type', 'application/json').should.be.true();
+
+                done();
+            });
+        });
+
+        it('should fall through when request differs from exact path', function (done) {
+            req.path = '/.WELL-KNOWN/apple-app-site-association.json';
+
+            staticTheme()(req, res, function next() {
+                expressStaticStub.called.should.be.false();
+                done();
+            });
+        });
+    });
+
+    describe('fallthrough behavior', function () {
+        it('should set fallthrough to true for /robots.txt', function (done) {
+            req.path = '/robots.txt';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for /sitemap.xml', function (done) {
+            req.path = '/sitemap.xml';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for /sitemap-posts.xml', function (done) {
+            req.path = '/sitemap-posts.xml';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated sitemaps like /sitemap-posts-2.xml', function (done) {
+            req.path = '/sitemap-posts-2.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for higher page numbers like /sitemap-posts-99.xml', function (done) {
+            req.path = '/sitemap-posts-99.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated tag sitemaps like /sitemap-tags-3.xml', function (done) {
+            req.path = '/sitemap-tags-3.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to true for paginated author sitemaps like /sitemap-authors-2.xml', function (done) {
+            req.path = '/sitemap-authors-2.xml';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.have.property('fallthrough', true);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to false for other static files', function (done) {
+            req.path = '/style.css';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', false);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to false for nested files', function (done) {
+            req.path = '/assets/style.css';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', false);
+
+                done();
+            });
+        });
+
+        it('should set fallthrough to false for allowed special files like manifest.json', function (done) {
+            req.path = '/manifest.json';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with correct options
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+
+                const options = expressStaticStub.firstCall.args[1];
+                options.should.be.an.Object();
+                options.should.have.property('maxAge');
+                options.should.have.property('fallthrough', false);
+
+                done();
+            });
         });
     });
 });

@@ -5,13 +5,14 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
+const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
-const SettingsBREADService = require('./SettingsBREADService');
+const SettingsBREADService = require('./settings-bread-service');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
@@ -30,6 +31,7 @@ const getSettingsBREADServiceInstance = () => {
         SettingsModel: models.Settings,
         settingsCache: SettingsCache,
         labsService: labs,
+        limitsService: limits,
         mail,
         singleUseTokenProvider: new SingleUseTokenProvider({
             SingleUseTokenModel: models.SingleUseToken,
@@ -107,10 +109,10 @@ module.exports = {
         fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
 
         // Social web (ActivityPub)
-        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
+        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs', 'is_private']}));
 
         // Web analytics
-        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics', 'labs']}));
+        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));
         fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
 
         return fields;

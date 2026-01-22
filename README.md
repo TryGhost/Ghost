@@ -32,7 +32,7 @@
 
 &nbsp;
 
-> [!NOTE]  
+> [!NOTE]
 > Love open source? We're hiring! Ghost is looking staff engineers to [join the team](https://careers.ghost.org) and work with us full-time
 
 <a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/353959/169805900-66be5b89-0859-4816-8da9-528ed7534704.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
@@ -86,7 +86,7 @@ For anyone wishing to contribute to Ghost or to hack/customize core files we rec
 
 A big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
 
-**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)**
+**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)** • **[Tinybird](https://tbrd.co/ghost)**
 
 &nbsp;
 
@@ -98,7 +98,7 @@ To stay up to date with all the latest news and product updates, make sure you [
 
 &nbsp;
 
-# Copyright & license
+# License & trademark
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE). 
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
 Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.

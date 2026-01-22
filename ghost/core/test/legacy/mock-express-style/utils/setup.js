@@ -9,7 +9,7 @@ const imageLib = require('../../../../core/server/lib/image');
 const boot = require('../../../../core/boot');
 
 // Other Test Utilities
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const urlServiceUtils = require('../../../utils/url-service-utils');
 
 module.exports = {
@@ -30,10 +30,6 @@ module.exports = {
         cacheStub.withArgs('permalinks').returns('/:slug/');
         cacheStub.withArgs('ghost_private_key').returns('-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n');
         cacheStub.withArgs('ghost_public_key').returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
-
-        if (options.amp) {
-            cacheStub.withArgs('amp').returns(true);
-        }
 
         sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
     },

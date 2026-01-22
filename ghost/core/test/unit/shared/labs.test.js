@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const labs = require('../../../core/shared/labs');
 const settingsCache = require('../../../core/shared/settings-cache');
 

@@ -1,12 +1,11 @@
 const {fixtureManager, mockManager} = require('./e2e-framework');
 const moment = require('moment');
-const ObjectId = require('bson-objectid').default;
 const models = require('../../core/server/models');
 const sinon = require('sinon');
 const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
-const should = require('should');
 const assert = require('assert/strict');
+const {assertMatchSnapshot} = require('./assertions');
 
 const getDefaultNewsletter = async function () {
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
@@ -23,8 +22,6 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
         feature_image_caption: 'Testing <b>feature image caption</b>',
         created_at: moment().subtract(2, 'days').toISOString(),
         updated_at: moment().subtract(2, 'days').toISOString(),
-        created_by: ObjectId().toHexString(),
-        updated_by: ObjectId().toHexString(),
         ...settings
     };
 
@@ -156,7 +153,7 @@ function testCleanedSnapshot({html, plaintext}, ignoreReplacements) {
             plaintext = plaintext.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
         }
     }
-    should({html, plaintext}).matchSnapshot();
+    assertMatchSnapshot({html, plaintext});
 }
 
 async function matchEmailSnapshot() {

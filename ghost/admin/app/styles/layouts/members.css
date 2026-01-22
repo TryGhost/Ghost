@@ -98,6 +98,10 @@
     margin: 0 -48px;
 }
 
+.members-header .gh-canvas-header-content {
+    z-index: 1100; /* Ensure the header content is above loading spinner */
+}
+
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 32px;
@@ -317,6 +321,51 @@ p.gh-members-list-email {
     width: 30%;
     min-width: 360px;
     padding-right: 20px !important;
+}
+
+.gh-members-list-row .gh-list-data[data-test-table-data="status"],
+ .gh-members-list-row .gh-list-data[data-test-table-data="open-rate"] {
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+}
+
+.gh-members-list-row .gh-list-data[data-test-table-data="location"] {
+    width: 150px;
+    max-width: 150px;
+    min-width: 150px;
+}
+
+.gh-members-list-row .gh-list-data[data-test-table-data="created-at"] {
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
+}
+
+.gh-members-list-row .gh-list-data.member-filter-column {
+    width: 250px;
+    max-width: 250px;
+    min-width: 250px;
+}
+
+/* Ensure table headers have consistent widths with data cells */
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="status"],
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="email_open_rate"] {
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+}
+
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="location"] {
+    width: 150px;
+    max-width: 150px;
+    min-width: 150px;
+}
+
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="created"] {
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
 }
 
 @media (max-width: 1100px) {
@@ -613,9 +662,9 @@ p.gh-members-list-email {
 
 
 .gh-members-help-card:hover {
-    box-shadow: 
-        0 0 1px rgba(0,0,0,.12), 
-        0 1px 6px rgba(0,0,0,.03), 
+    box-shadow:
+        0 0 1px rgba(0,0,0,.12),
+        0 1px 6px rgba(0,0,0,.03),
         0 8px 10px -8px rgba(0,0,0,.1);
     transition: all 0.15s ease-in-out;
 }
@@ -2788,6 +2837,10 @@ a.gh-members-emailpreview-subscription-link {
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 16px;
+}
+
+.members-header .view-actions-top-row > .ember-basic-dropdown-content-wormhole-origin {
+    position: absolute;
 }
 
 .gh-members-filter-builder {

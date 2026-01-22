@@ -22,14 +22,11 @@ export default class MentionsRoute extends AuthenticatedRoute {
 
     perPage = 10;
 
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+        const params = transition.to.params;
         if (!this.feature.webmentions) {
-            if (this.config?.labs?.ui60) {
-                return this.transitionTo('stats-x');
-            } else {
-                return this.transitionTo('dashboard');
-            }
+            return this.transitionTo('posts-x', params.post_id);
         }
     }
 

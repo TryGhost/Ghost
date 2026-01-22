@@ -951,23 +951,6 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
-            it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
-                // Enable webAnalyticsEnabled setting
-                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
-
-                // Enable trafficAnalytics feature flag
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
-
-                await visit('/posts');
-
-                // When both settings are enabled, the visitor count column container should exist
-                // even if it shows "—" without actual data
-                expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
-
-                // The page should load without errors when analytics are enabled
-                expect(currentURL(), 'current URL').to.equal('/posts');
-            });
-
             it('hides member conversions column when membersTrackSources is disabled', async function () {
                 // Disable membersTrackSources setting
                 this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
@@ -977,17 +960,6 @@ describe('Acceptance: Posts / Pages', function () {
                 // Check that member conversions column is not visible
                 let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
                 expect(membersText, 'member conversions column').to.not.exist;
-            });
-
-            it('shows member conversions column when membersTrackSources is enabled', async function () {
-                // Enable membersTrackSources setting
-                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'true'});
-
-                await visit('/posts');
-
-                // Check that member conversions column is visible
-                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
-                expect(membersText, 'member conversions column').to.exist;
             });
 
             it('shows analytics button when post has analytics page', async function () {
@@ -1029,24 +1001,88 @@ describe('Acceptance: Posts / Pages', function () {
                 // The page should load without errors
                 expect(currentURL(), 'current URL').to.equal('/posts');
             });
+        });
 
-            it('shows different template based on trafficAnalytics feature flag', async function () {
-                // Test with trafficAnalytics disabled (standard template)
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: false})});
+        describe('newsletter analytics display logic', function () {
+            // Note: These tests verify the template logic we implemented.
+            // The showEmailOpenAnalytics and showEmailClickAnalytics are computed
+            // properties that depend on multiple conditions:
+            // - hasBeenEmailed
+            // - user is not contributor
+            // - settings.membersSignupAccess !== 'none'
+            // - email.trackOpens/trackClicks
+            // - settings.emailTrackOpens/emailTrackClicks
+            // 
+            // For full integration testing, these would need to be set up properly
+            // in the test environment, but that's beyond the scope of this template change.
+
+            beforeEach(async function () {
+                let adminRole = this.server.create('role', {name: 'Administrator'});
+                this.server.create('user', {roles: [adminRole]});
+
+                await authenticateSession();
+            });
+
+            it('shows/hides email analytics section based on post.email', async function () {
+                // Create a post with email data
+                let email1 = this.server.create('email', {
+                    emailCount: 1500
+                });
+                
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: email1
+                });
+
+                // Create a post without email data
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: false,
+                    email: null
+                });
 
                 await visit('/posts');
+                
+                let postElements = findAll('.gh-posts-list-item');
+                expect(postElements.length).to.equal(2);
+                
+                // First post should show email analytics section
+                let firstPost = postElements[0];
+                let emailSection = firstPost.querySelector('.gh-post-analytics-email-metrics');
+                expect(emailSection, 'email analytics section for post with email').to.exist;
+                
+                // Second post should not show email analytics section
+                let secondPost = postElements[1];
+                let noEmailSection = secondPost.querySelector('.gh-post-analytics-email-metrics');
+                expect(noEmailSection, 'email analytics section for post without email').to.not.exist;
+            });
 
-                // Standard template should not have enhanced analytics features
-                expect(find('.gh-post-list-analytics'), 'analytics template class').to.not.exist;
-
-                // Enable trafficAnalytics feature flag
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
+            it('displays newsletter columns based on email tracking settings', async function () {
+                // Test 1: When both tracking options are disabled, show sent column
+                let email1 = this.server.create('email', {
+                    emailCount: 15000,
+                    trackOpens: false,
+                    trackClicks: false
+                });
+                
+                // Create post that would show sent column
+                this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: email1,
+                    // Override computed properties for testing
+                    showEmailOpenAnalytics: false,
+                    showEmailClickAnalytics: false
+                });
 
                 await visit('/posts');
-
-                // Check that the enhanced template features are present
-                // The analytics template may not have the exact class name, so let's check for general presence
-                expect(findAll('.gh-posts-list-item').length, 'posts list items').to.be.greaterThan(0);
+                
+                // Verify sent column appears with proper formatting
+                expect(find('[data-test-analytics-sent]'), 'sent column').to.exist;
+                expect(find('[data-test-analytics-sent] .gh-content-email-stats-value').textContent.trim()).to.equal('15k');
+                expect(find('[data-test-analytics-opens]'), 'opens column when disabled').to.not.exist;
+                expect(find('[data-test-analytics-clicks]'), 'clicks column when disabled').to.not.exist;
             });
         });
     });

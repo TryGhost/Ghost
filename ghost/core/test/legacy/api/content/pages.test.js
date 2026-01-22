@@ -2,7 +2,7 @@ const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 const config = require('../../../../core/shared/config');
 
 let request;
@@ -31,8 +31,7 @@ describe('api/endpoints/content/pages', function () {
             email: 'bruteforcepasswordtestuseremail@example.com',
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('type', 'page');
@@ -71,8 +70,7 @@ describe('api/endpoints/content/pages', function () {
             email: userEmail,
             password: hashedPassword,
             status: 'active',
-            created_at: '2019-01-01 00:00:00',
-            created_by: '1'
+            created_at: '2019-01-01 00:00:00'
         });
 
         const {id: postId} = await testUtils.knex('posts').first('id').where('type', 'page');

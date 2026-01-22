@@ -13,9 +13,5 @@ export default class StatsXRoute extends AuthenticatedRoute {
         } else if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
         }
-
-        if (!this.feature.trafficAnalytics && !this.feature.ui60) {
-            return this.transitionTo('home');
-        }
     }
 }

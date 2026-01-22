@@ -21,14 +21,14 @@ export default class NotificationsCountService extends Service {
                 return 0;
             }
 
-            const siteInfoResponse = await this.ajax.request('/ghost/api/admin/site');
+            const siteInfoResponse = await this.ajax.request('/ghost/api/admin/site/');
             const siteUrl = siteInfoResponse?.site?.url;
 
             if (!siteUrl) {
                 this.count = 0;
                 return 0;
             }
-            const notificationCountUrl = new URL('/.ghost/activitypub/v1/notifications/unread/count', siteUrl).toString();
+            const notificationCountUrl = new URL('/.ghost/activitypub/stable/notifications/unread/count', siteUrl).toString();
             const response = await this.ajax.request(notificationCountUrl, {
                 headers: {
                     Authorization: `Bearer ${token}`,

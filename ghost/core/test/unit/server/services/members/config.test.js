@@ -1,10 +1,10 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const MembersConfigProvider = require('../../../../../core/server/services/members/MembersConfigProvider');
+const MembersConfigProvider = require('../../../../../core/server/services/members/members-config-provider');
 
-const urlUtils = require('../../../../utils/urlUtils');
-const configUtils = require('../../../../utils/configUtils');
+const urlUtils = require('../../../../utils/url-utils');
+const configUtils = require('../../../../utils/config-utils');
 
 /**
  * @param {object} options
@@ -61,7 +61,7 @@ describe('Members - config', function () {
 
     afterEach(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         sinon.restore();
     });
 
@@ -74,7 +74,26 @@ describe('Members - config', function () {
     });
 
     it('can get correct signinUrl', function () {
-        const signinUrl = membersConfig.getSigninURL('a', 'b');
-        assert.equal(signinUrl, 'http://domain.tld/subdir/members/?token=a&action=b');
+        const signinUrl = new URL(membersConfig.getSigninURL('a', 'b'));
+        assert.equal(signinUrl.origin + signinUrl.pathname, 'http://domain.tld/subdir/members/');
+        assert.equal(signinUrl.searchParams.get('token'), 'a');
+        assert.equal(signinUrl.searchParams.get('action'), 'b');
+    });
+
+    it('can get correct signinUrl with referrer', function () {
+        const signinUrl = new URL(membersConfig.getSigninURL('a', 'b', 'http://domain.tld/my-post/'));
+        assert.equal(signinUrl.origin + signinUrl.pathname, 'http://domain.tld/subdir/members/');
+        assert.equal(signinUrl.searchParams.get('token'), 'a');
+        assert.equal(signinUrl.searchParams.get('action'), 'b');
+        assert.equal(signinUrl.searchParams.get('r'), 'http://domain.tld/my-post/');
+    });
+
+    it('can get correct signinUrl with referrer and otcVerification', function () {
+        const signinUrl = new URL(membersConfig.getSigninURL('a', 'b', 'c', 'd'));
+        assert.equal(signinUrl.origin + signinUrl.pathname, 'http://domain.tld/subdir/members/');
+        assert.equal(signinUrl.searchParams.get('token'), 'a');
+        assert.equal(signinUrl.searchParams.get('action'), 'b');
+        assert.equal(signinUrl.searchParams.get('r'), 'c');
+        assert.equal(signinUrl.searchParams.get('otc_verification'), 'd');
     });
 });

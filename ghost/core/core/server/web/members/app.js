@@ -41,7 +41,7 @@ module.exports = function setupMembersApp() {
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
     // Manage newsletter subscription via unsubscribe link - these should be authenticated by uuid and hashed key
-    membersApp.get('/api/member/newsletters', 
+    membersApp.get('/api/member/newsletters',
         middleware.authMemberByUuid,
         middleware.getMemberNewsletters
     );
@@ -59,9 +59,14 @@ module.exports = function setupMembersApp() {
     } else {
         membersApp.get('/api/member', middleware.getMemberData);
     }
-    
+
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
     membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
+
+    // Member offers (retention etc.)
+    membersApp.post('/api/member/offers', bodyParser.json(), function lazyGetMemberOffersMw(req, res, next) {
+        return membersService.api.middleware.getMemberOffers(req, res, next);
+    });
 
     // Remove email from suppression list
     membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
@@ -72,7 +77,6 @@ module.exports = function setupMembersApp() {
 
     membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
 
-    // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post(
         '/api/send-magic-link',
         bodyParser.json(),
@@ -81,8 +85,20 @@ module.exports = function setupMembersApp() {
         shared.middleware.brute.membersAuthEnumeration,
         // Prevent brute forcing passwords for the same email address
         shared.middleware.brute.membersAuth,
+        // NOTE: this is wrapped in a function to ensure we always go via the getter
         function lazySendMagicLinkMw(req, res, next) {
             return membersService.api.middleware.sendMagicLink(req, res, next);
+        }
+    );
+    membersApp.post(
+        '/api/verify-otc',
+        bodyParser.json(),
+        middleware.verifyIntegrityToken,
+        shared.middleware.brute.otcVerificationEnumeration,
+        shared.middleware.brute.otcVerification,
+        // NOTE: this is wrapped in a function to ensure we always go via the getter
+        function lazyVerifyOTCMw(req, res, next) {
+            return membersService.api.middleware.verifyOTC(req, res, next);
         }
     );
     membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
@@ -93,6 +109,9 @@ module.exports = function setupMembersApp() {
     });
     membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
         return membersService.api.middleware.updateSubscription(req, res, next);
+    });
+    membersApp.post('/api/subscriptions/:id/apply-offer', function lazyApplyOfferMw(req, res, next) {
+        return membersService.api.middleware.applyOfferToSubscription(req, res, next);
     });
 
     // Comments

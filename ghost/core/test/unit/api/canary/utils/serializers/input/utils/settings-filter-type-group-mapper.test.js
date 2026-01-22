@@ -8,7 +8,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/settings-type-group-mapp
         });
 
         it('maps type to multiple groups', function () {
-            mapper('blog').should.eql('site,amp,labs,slack,unsplash,views');
+            mapper('blog').should.eql('site,labs,slack,unsplash,views');
         });
 
         it('maps multiple types to multiple groups', function () {

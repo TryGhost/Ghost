@@ -1,11 +1,7 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Network settings', async () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('ui60', true);
-    });
-
     test('Network toggle is disabled if the feature is disabled by config', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -37,6 +33,32 @@ test.describe('Network settings', async () => {
 
         // Should show disabled message
         await expect(section.getByText('You need to configure a supported custom domain to use this feature.')).toBeVisible();
+    });
+
+    test('Network toggle is disabled if the site is in private mode', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: updatedSettingsResponse([
+                    {key: 'social_web', value: true},
+                    {key: 'is_private', value: true}
+                ])
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('network');
+        const toggle = section.getByRole('switch');
+
+        // Toggle should be unchecked and disabled
+        await expect(toggle).not.toBeChecked();
+        await expect(toggle).toBeDisabled();
+
+        // Should show contextual disabled message with link to private mode settings
+        await expect(section.getByText(/Network is automatically disabled while your site is in/)).toBeVisible();
+        await expect(section.getByText('private mode')).toBeVisible();
     });
 
     test('Network toggle can be turned off', async ({page}) => {

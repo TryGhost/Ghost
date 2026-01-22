@@ -17,7 +17,7 @@ module.exports = function getConfigProperties() {
         enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
         stripeDirect: config.get('stripeDirect'),
         mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
-        emailAnalytics: config.get('emailAnalytics'),
+        emailAnalytics: config.get('emailAnalytics:enabled'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
         pintura: config.get('pintura'),
@@ -35,6 +35,14 @@ module.exports = function getConfigProperties() {
         configProperties.stats = {
             ...statsConfig,
             id: siteUuid
+        };
+    }
+
+    if (labs.isSet('featurebaseFeedback') && config.get('featurebase')) {
+        // Expose only the public featurebase config properties
+        configProperties.featurebase = {
+            enabled: config.get('featurebase:enabled'),
+            organization: config.get('featurebase:organization')
         };
     }
 
