@@ -544,6 +544,9 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      - name: Build TS packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
+
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@v2.0
         with:
@@ -626,6 +629,9 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Build TS packages
+        run: yarn nx run-many -t build --exclude=ghost-admin
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
