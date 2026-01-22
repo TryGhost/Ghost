@@ -14,72 +14,76 @@ type PaidMembersChangeChartProps = {
     isLoading: boolean;
 };
 
+// Helper function to fill missing data points with zeros
+// Moved outside component to prevent recreation on each render
+const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number) => {
+    // For "Today" (dateRange = 1), show just one data point for the current date
+    if (dateRange === 1) {
+        const today = moment().format('YYYY-MM-DD');
+        const todayData = data.find(item => item.date === today);
+
+        return [{
+            date: today,
+            signups: todayData?.signups || 0,
+            cancellations: todayData?.cancellations || 0
+        }];
+    }
+
+    const {startDate, endDate} = getRangeDates(dateRange);
+    const dateSpan = moment(endDate).diff(moment(startDate), 'days');
+    const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
+
+    // Create a map of existing data by date
+    const dataMap = new Map(data.map(item => [item.date, item]));
+
+    const filledData: {date: string; signups: number; cancellations: number}[] = [];
+    const currentDate = moment(startDate);
+    const endMoment = moment(endDate);
+
+    while (currentDate.isSameOrBefore(endMoment)) {
+        let dateKey: string;
+        let increment: moment.unitOfTime.DurationConstructor;
+
+        switch (strategy) {
+        case 'weekly':
+            // Use clone() to avoid mutating currentDate when computing the period key
+            dateKey = currentDate.clone().startOf('week').format('YYYY-MM-DD');
+            increment = 'week';
+            break;
+        case 'monthly':
+            // Use clone() to avoid mutating currentDate when computing the period key
+            dateKey = currentDate.clone().startOf('month').format('YYYY-MM-DD');
+            increment = 'month';
+            break;
+        default:
+            dateKey = currentDate.format('YYYY-MM-DD');
+            increment = 'day';
+        }
+
+        const existingData = dataMap.get(dateKey);
+        if (existingData) {
+            filledData.push(existingData);
+        } else {
+            filledData.push({
+                date: dateKey,
+                signups: 0,
+                cancellations: 0
+            });
+        }
+
+        // Only mutate currentDate here for loop progression
+        currentDate.add(1, increment);
+    }
+
+    return filledData;
+};
+
 const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     subscriptionData,
     memberData,
     range,
     isLoading
 }) => {
-    // Helper function to fill missing data points with zeros
-    const fillMissingDataPoints = (data: {date: string; signups: number; cancellations: number}[], dateRange: number) => {
-        // For "Today" (dateRange = 1), show just one data point for the current date
-        if (dateRange === 1) {
-            const today = moment().format('YYYY-MM-DD');
-            const todayData = data.find(item => item.date === today);
-
-            return [{
-                date: today,
-                signups: todayData?.signups || 0,
-                cancellations: todayData?.cancellations || 0
-            }];
-        }
-
-        const {startDate, endDate} = getRangeDates(dateRange);
-        const dateSpan = moment(endDate).diff(moment(startDate), 'days');
-        const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
-
-        // Create a map of existing data by date
-        const dataMap = new Map(data.map(item => [item.date, item]));
-
-        const filledData: {date: string; signups: number; cancellations: number}[] = [];
-        const currentDate = moment(startDate);
-        const endMoment = moment(endDate);
-
-        while (currentDate.isSameOrBefore(endMoment)) {
-            let dateKey: string;
-            let increment: moment.unitOfTime.DurationConstructor;
-
-            switch (strategy) {
-            case 'weekly':
-                dateKey = currentDate.startOf('week').format('YYYY-MM-DD');
-                increment = 'week';
-                break;
-            case 'monthly':
-                dateKey = currentDate.startOf('month').format('YYYY-MM-DD');
-                increment = 'month';
-                break;
-            default:
-                dateKey = currentDate.format('YYYY-MM-DD');
-                increment = 'day';
-            }
-
-            const existingData = dataMap.get(dateKey);
-            if (existingData) {
-                filledData.push(existingData);
-            } else {
-                filledData.push({
-                    date: dateKey,
-                    signups: 0,
-                    cancellations: 0
-                });
-            }
-
-            currentDate.add(1, increment);
-        }
-
-        return filledData;
-    };
-
     const paidChangeChartData = useMemo(() => {
         // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
         if (subscriptionData && subscriptionData.length > 0) {
