@@ -1649,6 +1649,15 @@ module.exports = class MemberRepository {
             });
         }
 
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.applyOfferToSubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         // Find member
         let findQuery = null;
         if (data.id) {
@@ -1663,7 +1672,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const member = await this._Member.findOne(findQuery);
+        const member = await this._Member.findOne(findQuery, options);
         if (!member) {
             throw new errors.NotFoundError({
                 message: tpl(messages.memberNotFound, {id: data.id || data.email})
@@ -1677,6 +1686,7 @@ module.exports = class MemberRepository {
             }
         }).fetchOne({
             ...options,
+            forUpdate: true,
             withRelated: ['stripePrice', 'stripePrice.stripeProduct', 'stripePrice.stripeProduct.product']
         });
 
@@ -1710,7 +1720,7 @@ module.exports = class MemberRepository {
         const cadence = stripePrice.get('interval');
 
         // Fetch and validate offer
-        const offer = await this._offersAPI.getOffer({id: data.offerId});
+        const offer = await this._offersAPI.getOffer({id: data.offerId}, options);
 
         if (!offer) {
             throw new errors.NotFoundError({

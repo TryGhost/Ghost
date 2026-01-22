@@ -25,14 +25,19 @@ class OffersAPI {
     /**
      * @param {object} data
      * @param {string} data.id
+     * @param {Object} [options]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
-    async getOffer(data) {
-        return this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
-
+    async getOffer(data, options = {}) {
+        if (options.transacting) {
             const offer = await this.repository.getById(data.id, options);
+
+            return offer ? OfferMapper.toDTO(offer) : null;
+        }
+
+        return this.repository.createTransaction(async (transaction) => {
+            const offer = await this.repository.getById(data.id, {transacting: transaction});
 
             if (!offer) {
                 return null;
