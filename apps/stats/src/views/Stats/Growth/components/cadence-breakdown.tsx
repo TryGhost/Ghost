@@ -62,7 +62,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         }, {} as Record<string, number>);
 
         // Convert to array format for pie chart
-        const chartData = Object.entries(cadenceTotals).map(([cadence, count]) => {
+        const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
             // Map cadence values to display labels and colors
             let label = cadence;
             let fillGradient = 'url(#gradientPurple)';
@@ -79,6 +79,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
             }
 
             return {
+                id: `cadence-${index}`,
                 name: label,
                 count,
                 fill: fillGradient,
@@ -120,6 +121,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
             const count = tierTotals[tier.id] || 0;
 
             return {
+                id: tier.id,
                 name: tier.name,
                 count,
                 fill: tierColors[colorIndex].gradient,
@@ -145,7 +147,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         };
 
         chartData.forEach((item) => {
-            config[item.name.toLowerCase()] = {
+            config[item.id] = {
                 label: item.name,
                 color: item.color
             };
