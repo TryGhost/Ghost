@@ -171,8 +171,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
     }, [chartData, totalSubscriptions]);
 
     // Get dynamic labels based on breakdown type
-    const cardTitle = breakdownType === 'billing-period' ? 'Subscription breakdown' : 'Tier breakdown';
-    const cardDescription = breakdownType === 'billing-period' ? 'Paid members by billing period' : 'Paid members by tier';
+    const cardDescription = breakdownType === 'billing-period' ? 'Paid subscriptions by billing period' : 'Paid subscriptions by tier';
 
     // Don't render if loading or no data at all
     if (isLoading || !subscriptionStatsResponse?.meta?.totals || subscriptionStatsResponse.meta.totals.length === 0) {
@@ -187,7 +186,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
             <CardHeader>
                 <div className="flex items-start justify-between">
                     <div className='flex flex-col gap-y-1.5'>
-                        <CardTitle>{cardTitle}</CardTitle>
+                        <CardTitle>Subscription breakdown</CardTitle>
                         <CardDescription>{cardDescription}</CardDescription>
                     </div>
                     <div>
