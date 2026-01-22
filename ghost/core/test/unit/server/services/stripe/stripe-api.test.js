@@ -34,6 +34,7 @@ describe('StripeAPI', function () {
                 checkoutSessionCancelUrl: '/cancel',
                 checkoutSetupSessionSuccessUrl: '/setup-success',
                 checkoutSetupSessionCancelUrl: '/setup-cancel',
+                billingPortalReturnUrl: '/billing-return',
                 secretKey: ''
             });
         });

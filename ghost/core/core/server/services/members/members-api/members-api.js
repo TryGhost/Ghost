@@ -357,6 +357,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
+        createBillingPortalSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createBillingPortalSession(req, res))
+        ),
         updateEmailAddress: Router().use(
             body.json(),
             forwardError((req, res) => memberController.updateEmailAddress(req, res))
