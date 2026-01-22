@@ -29,7 +29,10 @@ const dataType = 'SettingsResponseType';
 
 export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
-    path: '/settings/'
+    path: '/settings/',
+    defaultSearchParams: {
+        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor'
+    }
 });
 
 export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
