@@ -104,15 +104,12 @@ describe('Acceptance: Post email preview', function () {
         expect(requestBody.memberSegment).to.equal('status:-free');
     });
 
-    it('hides paid member option when paid members is disabled', async function () {
+    it('hides segment dropdown when only one option is available', async function () {
         disablePaidMembers(this.server);
 
         await openEmailPreviewModal.call(this);
 
-        await clickTrigger('[data-test-select="preview-segment"]');
-
-        const options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(1);
-        expect(options[0].textContent.trim()).to.equal('Free member');
+        // segment dropdown should be hidden when there's only one option
+        expect(find('[data-test-select="preview-segment"]'), 'segment select').not.to.exist;
     });
 });
