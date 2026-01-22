@@ -72,7 +72,7 @@ COPY apps/shade apps/shade
 RUN cd apps/shade && yarn build
 
 # --------------------
-# Parse Email Address Builder
+# parse-email-address Builder
 # --------------------
 FROM development-base AS parse-email-address-builder
 WORKDIR /home/ghost
