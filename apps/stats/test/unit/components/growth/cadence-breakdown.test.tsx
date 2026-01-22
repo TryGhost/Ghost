@@ -55,7 +55,7 @@ describe('CadenceBreakdown Component', () => {
 
         // Check that the component renders
         expect(screen.getByText('Subscription breakdown')).toBeInTheDocument();
-        expect(screen.getByText('Paid members by billing period')).toBeInTheDocument();
+        expect(screen.getByText('Paid subscriptions by billing period')).toBeInTheDocument();
 
         // Check that both cadence types are shown
         expect(screen.getByText('Monthly')).toBeInTheDocument();
