@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Transistor',
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
+}, {
+    title: 'Disable Member Commenting',
+    description: 'Allow staff to disable commenting for individual members',
+    flag: 'disableMemberCommenting'
 }];
 
 const AlphaFeatures: React.FC = () => {
