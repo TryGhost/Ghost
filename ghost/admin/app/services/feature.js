@@ -83,6 +83,7 @@ export default class FeatureService extends Service {
     // labs flags
     @feature('adminForward') adminForward;
     @feature('audienceFeedback') audienceFeedback;
+    @feature('welcomeEmails') welcomeEmails;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
