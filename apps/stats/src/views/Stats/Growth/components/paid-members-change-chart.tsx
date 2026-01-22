@@ -155,6 +155,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
 
                 return [{
                     date: formatDisplayDateWithRange(today, range),
+                    rawDate: today, // Keep raw date for dynamic tooltip formatting
                     new: todayData?.signups || 0,
                     cancelled: -(todayData?.cancellations || 0) // Negative for the stacked bar chart
                 }];
@@ -200,6 +201,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
 
                 return {
                     date: formatDisplayDateWithRange(item.date, effectiveRange),
+                    rawDate: item.date, // Keep raw date for dynamic tooltip formatting
                     new: item.signups || 0,
                     cancelled: -(item.cancellations || 0) // Negative for the stacked bar chart
                 };
@@ -217,6 +219,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
 
                 return [{
                     date: formatDisplayDateWithRange(today, range),
+                    rawDate: today, // Keep raw date for dynamic tooltip formatting
                     new: todayData?.paid_subscribed || 0,
                     cancelled: -(todayData?.paid_canceled || 0) // Negative for the stacked bar chart
                 }];
@@ -227,6 +230,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             return sanitizedData.map((item) => {
                 return {
                     date: formatDisplayDateWithRange(item.date, range),
+                    rawDate: item.date, // Keep raw date for dynamic tooltip formatting
                     new: item.paid_subscribed || 0,
                     cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
                 };
@@ -332,11 +336,24 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                         const netChange = newValue + cancelledValue;
                                         const netChangeFormatted = netChange === 0 ? '0' : (netChange > 0 ? `+${formatNumber(netChange)}` : formatNumber(netChange));
 
+                                        // Format tooltip date based ONLY on selectedResolution, not the global range
+                                        let tooltipDate = payload?.payload?.date;
+                                        if (payload?.payload?.rawDate) {
+                                            // Map resolution directly to date format
+                                            if (selectedResolution === 'monthly') {
+                                                tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 366); // Force "MMM YYYY"
+                                            } else if (selectedResolution === 'weekly') {
+                                                tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 91); // Force "Week of"
+                                            } else {
+                                                tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 30); // Daily format
+                                            }
+                                        }
+
                                         return (
                                             <div className='flex w-full flex-col'>
                                                 {index === 0 &&
                                             <div className="mb-1 text-sm font-medium text-foreground">
-                                                {payload?.payload?.date}
+                                                {tooltipDate}
                                             </div>
                                                 }
                                                 <div className='flex w-full items-center justify-between gap-4'>
