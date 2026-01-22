@@ -18,6 +18,7 @@ Object {
       "contentVisibility": true,
       "contentVisibilityAlpha": true,
       "customFonts": true,
+      "disableMemberCommenting": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,
