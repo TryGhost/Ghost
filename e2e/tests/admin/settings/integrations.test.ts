@@ -138,6 +138,11 @@ test.describe('Ghost Admin - Integrations', () => {
 
             await unsplash.goto();
             await unsplash.openModal();
+            await unsplash.enable();
+            await unsplash.save();
+
+            await unsplash.closeModal();
+            await unsplash.openModal();
             await unsplash.disable();
             await unsplash.save();
 
@@ -173,6 +178,11 @@ test.describe('Ghost Admin - Integrations', () => {
             const pintura = new IntegrationModal(page, 'pintura');
 
             await pintura.goto();
+            await pintura.openModal();
+            await pintura.enable();
+            await pintura.save();
+
+            await pintura.closeModal();
             await pintura.openModal();
             await pintura.disable();
             await pintura.save();
