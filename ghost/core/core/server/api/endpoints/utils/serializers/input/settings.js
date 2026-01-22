@@ -79,7 +79,8 @@ const EDITABLE_SETTINGS = [
     'social_web',
     'explore_ping',
     'explore_ping_growth',
-    'indexnow_api_key'
+    'indexnow_api_key',
+    'transistor'
 ];
 
 module.exports = {
