@@ -88,22 +88,11 @@ async function signin({data, api, state}) {
             includeOTC: true
         };
         const response = await api.member.sendMagicLink(payload);
-
-        if (response?.otc_ref) {
-            return {
-                page: 'magiclink',
-                lastPage: 'signin',
-                otcRef: response.otc_ref,
-                pageData: {
-                    ...(state.pageData || {}),
-                    email: (data?.email || '').trim()
-                }
-            };
-        }
-
+        const otcRef = response.otc_ref;
         return {
             page: 'magiclink',
             lastPage: 'signin',
+            ...(otcRef ? {otcRef} : {}),
             pageData: {
                 ...(state.pageData || {}),
                 email: (data?.email || '').trim()
@@ -342,15 +331,15 @@ async function applyOffer({data, state, api}) {
     }
 }
 
-async function editBilling({data, state, api}) {
+async function manageBilling({data, state, api}) {
     try {
-        await api.member.editBilling(data);
+        await api.member.manageBilling(data);
     } catch (e) {
         return {
-            action: 'editBilling:failed',
+            action: 'manageBilling:failed',
             popupNotification: createPopupNotification({
-                type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: t('Failed to update billing information, please try again')
+                type: 'manageBilling:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to open billing portal, please try again')
             })
         };
     }
@@ -664,7 +653,7 @@ const Actions = {
     updateProfile,
     refreshMemberData,
     clearPopupNotification,
-    editBilling,
+    manageBilling,
     checkoutPlan,
     updateNewsletterPreference,
     showPopupNotification,
