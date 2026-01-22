@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const ObjectId = require('bson-objectid').default;
 const {
     agentProvider,
     fixtureManager,
@@ -8,6 +9,8 @@ const {
 } = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
+const security = require('@tryghost/security');
 
 const membersCommentMatcher = {
     id: anyObjectId,
@@ -1530,6 +1533,92 @@ describe(`Admin Comments API`, function () {
             const res = await adminApi.get('/comments/?filter=' + filter);
             assert.equal(res.body.comments.length, 1);
             assert.equal(res.body.comments[0].html, '<p>Reported published</p>');
+        });
+    });
+
+    describe('API Key Permissions', function () {
+        let restrictedApiKeyId;
+        let restrictedApiKeySecret;
+
+        before(async function () {
+            // Create a role with NO comment permissions for testing
+            const roleId = ObjectId().toHexString();
+            await db.knex('roles').insert({
+                id: roleId,
+                name: 'Test No Comment Permissions',
+                description: 'Test role with no comment permissions',
+                created_at: new Date(),
+                updated_at: new Date()
+            });
+
+            // Create integration
+            const integrationId = ObjectId().toHexString();
+            await db.knex('integrations').insert({
+                id: integrationId,
+                name: 'Test No Comment Permissions Integration',
+                slug: 'test-no-comment-perms',
+                type: 'custom',
+                created_at: new Date(),
+                updated_at: new Date()
+            });
+
+            // Create API key with the restricted role (bypass model hooks)
+            restrictedApiKeyId = ObjectId().toHexString();
+            restrictedApiKeySecret = security.secret.create('admin');
+            await db.knex('api_keys').insert({
+                id: restrictedApiKeyId,
+                type: 'admin',
+                secret: restrictedApiKeySecret,
+                role_id: roleId,
+                integration_id: integrationId,
+                created_at: new Date(),
+                updated_at: new Date()
+            });
+        });
+
+        afterEach(async function () {
+            await adminApi.loginAsOwner();
+        });
+
+        it('API key without comment permissions cannot hide comments', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Comment to hide</p>',
+                status: 'published'
+            });
+
+            await adminApi.useToken(restrictedApiKeyId, restrictedApiKeySecret);
+
+            await adminApi.put(`comments/${comment.id}/`)
+                .body({
+                    comments: [{
+                        id: comment.id,
+                        status: 'hidden'
+                    }]
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                });
+        });
+
+        it('API key without comment permissions cannot browse comments', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Test comment</p>'
+            });
+
+            await adminApi.useToken(restrictedApiKeyId, restrictedApiKeySecret);
+
+            await adminApi.get('/comments/')
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                });
         });
     });
 });

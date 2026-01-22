@@ -1,6 +1,5 @@
 const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
-const UNSAFE_ATTRS = ['status'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -25,7 +24,7 @@ const controller = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
+        permissions: false,
         query(frame) {
             return commentsService.controller.browse(frame);
         }
@@ -50,7 +49,7 @@ const controller = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: 'browse',
+        permissions: false,
         query(frame) {
             return commentsService.controller.replies(frame);
         }
@@ -72,7 +71,7 @@ const controller = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
+        permissions: false,
         query(frame) {
             return commentsService.controller.read(frame);
         }
@@ -96,7 +95,7 @@ const controller = {
                 }
             }
         },
-        permissions: true,
+        permissions: false,
         query(frame) {
             return commentsService.controller.edit(frame);
         }
@@ -120,9 +119,7 @@ const controller = {
                 }
             }
         },
-        permissions: {
-            unsafeAttrs: UNSAFE_ATTRS
-        },
+        permissions: false,
         query(frame) {
             return commentsService.controller.add(frame);
         }
@@ -142,7 +139,7 @@ const controller = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
+        permissions: false,
         query() {
             return commentsService.controller.destroy();
         }
@@ -171,7 +168,7 @@ const controller = {
         ],
         validation: {
         },
-        permissions: true,
+        permissions: false,
         async query(frame) {
             return await commentsService.controller.like(frame);
         }
@@ -186,7 +183,7 @@ const controller = {
             'id'
         ],
         validation: {},
-        permissions: true,
+        permissions: false,
         async query(frame) {
             return await commentsService.controller.unlike(frame);
         }
@@ -201,7 +198,7 @@ const controller = {
             'id'
         ],
         validation: {},
-        permissions: true,
+        permissions: false,
         async query(frame) {
             await commentsService.controller.report(frame);
         }
