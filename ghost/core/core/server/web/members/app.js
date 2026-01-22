@@ -107,6 +107,9 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/create-stripe-update-session', function lazyCreateCheckoutSetupSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
     });
+    membersApp.post('/api/create-stripe-billing-portal-session', function lazyCreateBillingPortalSessionMw(req, res, next) {
+        return membersService.api.middleware.createBillingPortalSession(req, res, next);
+    });
     membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
         return membersService.api.middleware.updateSubscription(req, res, next);
     });

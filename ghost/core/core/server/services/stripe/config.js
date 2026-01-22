@@ -14,6 +14,7 @@ const messages = {
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
  * @prop {string} checkoutSetupSessionCancelUrl
+ * @prop {string} billingPortalReturnUrl
  */
 
 module.exports = {
@@ -34,11 +35,15 @@ module.exports = {
             const billingCancelUrl = new URL(siteUrl);
             billingCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
 
+            const billingPortalReturnUrl = new URL(siteUrl);
+            billingPortalReturnUrl.searchParams.set('stripe', 'return');
+
             return {
                 checkoutSessionSuccessUrl: checkoutSuccessUrl.href,
                 checkoutSessionCancelUrl: checkoutCancelUrl.href,
                 checkoutSetupSessionSuccessUrl: billingSuccessUrl.href,
-                checkoutSetupSessionCancelUrl: billingCancelUrl.href
+                checkoutSetupSessionCancelUrl: billingCancelUrl.href,
+                billingPortalReturnUrl: billingPortalReturnUrl.href
             };
         }
 
