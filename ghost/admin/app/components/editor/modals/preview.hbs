@@ -17,22 +17,24 @@
                 <button type="button" class="gh-btn {{if (eq this.previewSize "desktop") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "desktop")}}><span>{{svg-jar "laptop"}}</span></button>
                 <button type="button" class="gh-btn {{if (eq this.previewSize "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
-            <div class="gh-contentfilter-divider"></div>
-            <span class="gh-select gh-web-preview-segment" data-test-select="preview-segment">
-                <PowerSelect
-                    @selected={{this.selectedPreviewAsOption}}
-                    @options={{this.previewAsOptions}}
-                    @onChange={{this.changePreviewAsOption}}
-                    @triggerComponent={{component "gh-power-select/trigger"}}
-                    @triggerClass="gh-preview-segment-trigger"
-                    @dropdownClass="gh-preview-segment-dropdown"
-                    @matchTriggerWidth={{false}}
-                    @onOpen={{this.dropdown.closeDropdowns}}
-                    as |option|
-                >
-                    {{option.label}}
-                </PowerSelect>
-            </span>
+            {{#if this.showMemberSegmentDropdown}}
+                <div class="gh-contentfilter-divider"></div>
+                <span class="gh-select gh-web-preview-segment" data-test-select="preview-segment">
+                    <PowerSelect
+                        @selected={{this.selectedPreviewAsOption}}
+                        @options={{this.previewAsOptions}}
+                        @onChange={{this.changePreviewAsOption}}
+                        @triggerComponent={{component "gh-power-select/trigger"}}
+                        @triggerClass="gh-preview-segment-trigger"
+                        @dropdownClass="gh-preview-segment-dropdown"
+                        @matchTriggerWidth={{false}}
+                        @onOpen={{this.dropdown.closeDropdowns}}
+                        as |option|
+                    >
+                        {{option.label}}
+                    </PowerSelect>
+                </span>
+            {{/if}}
         </div>
         <div class="right">
             <div class="gh-post-test-email-group">
