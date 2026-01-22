@@ -7,6 +7,7 @@ import InputForm from '../common/input-form';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
+import {sanitizeHtml} from '../../utils/sanitize-html';
 import NewsletterSelectionPage from './newsletter-selection-page';
 import {t} from '../../utils/i18n';
 
@@ -237,7 +238,7 @@ export default class OfferPage extends React.Component {
 
         const termsText = (
             <div className="gh-portal-signup-terms-content"
-                dangerouslySetInnerHTML={{__html: site.portal_signup_terms_html}}
+                dangerouslySetInnerHTML={{__html: sanitizeHtml(site.portal_signup_terms_html)}}
             ></div>
         );
 
