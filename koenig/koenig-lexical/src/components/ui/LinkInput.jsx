@@ -54,8 +54,10 @@ export function LinkInput({href, update, cancel}) {
                 ref={inputRef}
                 className="mb-[1px] h-8 w-full pl-3 pr-9 leading-loose text-grey-900 selection:bg-grey/40 dark:bg-grey-950 dark:text-grey-300 dark:selection:bg-grey-800/40 dark:selection:text-grey-100"
                 data-testid="link-input"
+                name="link-input"
                 placeholder="Enter url"
                 value={_href}
+                data-kg-link-input
                 onInput={(e) => {
                     setHref(e.target.value);
                 }}

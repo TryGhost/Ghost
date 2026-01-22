@@ -86,8 +86,10 @@ export function LinkInputWithSearch({href, update, cancel}) {
                 autoFocus={true}
                 className="my-1 h-auto w-full rounded-md border border-transparent bg-grey-100 px-4 py-2 text-left text-sm font-medium leading-snug text-black placeholder:text-sm placeholder:font-medium placeholder:leading-snug placeholder:text-grey-500 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:border-grey-800/80 dark:bg-grey-900 dark:text-white dark:selection:bg-grey-600/40 dark:selection:text-grey-100 dark:focus:border-green dark:focus:bg-grey-900"
                 dataTestId={testId}
+                name="link-input"
                 placeholder="Search or enter URL to link"
                 value={_href}
+                data-kg-link-input
                 onChange={(e) => {
                     // update local value to allow searching
                     setHref(e.target.value);
