@@ -110,6 +110,9 @@ module.exports = function setupMembersApp() {
     membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
         return membersService.api.middleware.updateSubscription(req, res, next);
     });
+    membersApp.post('/api/subscriptions/:id/apply-offer', function lazyApplyOfferMw(req, res, next) {
+        return membersService.api.middleware.applyOfferToSubscription(req, res, next);
+    });
 
     // Comments
     membersApp.use('/api/comments', commentRouter());

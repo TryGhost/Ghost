@@ -816,6 +816,22 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Add a coupon to the Stripe Subscription by ID.
+     * 
+     * @param {string} id - The ID of the subscription to add coupon to
+     * @param {string} couponId - The ID of the coupon to apply
+     *
+     * @returns {Promise<ISubscription>}
+     */
+    async addCouponToSubscription(id, couponId) {
+        await this._rateLimitBucket.throttle();
+        const subscription = await this._stripe.subscriptions.update(id, {
+            coupon: couponId
+        });
+        return subscription;
+    }
+
+    /**
      * Update the price of the Stripe SubscriptionItem by Subscription ID, 
      * SubscriptionItem ID, and Price ID.
      * 

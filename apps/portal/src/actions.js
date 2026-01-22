@@ -312,6 +312,36 @@ async function continueSubscription({data, state, api}) {
     }
 }
 
+async function applyOffer({data, state, api}) {
+    try {
+        const {offerId, subscriptionId} = data;
+        await api.member.applyOffer({
+            offerId,
+            subscriptionId
+        });
+        const member = await api.member.sessionData();
+        const action = 'applyOffer:success';
+        return {
+            action,
+            page: 'accountHome',
+            member: member,
+            offers: [],
+            popupNotification: createPopupNotification({
+                type: 'applyOffer:success', autoHide: true, closeable: true, state, status: 'success',
+                message: 'Offer applied successfully!'
+            })
+        };
+    } catch (e) {
+        return {
+            action: 'applyOffer:failed',
+            popupNotification: createPopupNotification({
+                type: 'applyOffer:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to apply offer, please try again'
+            })
+        };
+    }
+}
+
 async function editBilling({data, state, api}) {
     try {
         await api.member.editBilling(data);
@@ -629,6 +659,7 @@ const Actions = {
     updateSubscription,
     cancelSubscription,
     continueSubscription,
+    applyOffer,
     updateNewsletter,
     updateProfile,
     refreshMemberData,

@@ -295,8 +295,9 @@ function formatOfferDuration(offer) {
     return '';
 }
 
-const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer, isAcceptingOffer}) => {
-    const {brandColor} = useContext(AppContext);
+const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
+    const {brandColor, action} = useContext(AppContext);
+    const isAcceptingOffer = action === 'applyOffer:running';
 
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
@@ -379,7 +380,7 @@ const UpgradePlanSection = ({
 
 const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
-    pendingOffer, isAcceptingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
+    pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
@@ -409,7 +410,6 @@ const PlansContainer = ({
                 offer={pendingOffer}
                 onAcceptOffer={onAcceptRetentionOffer}
                 onDeclineOffer={onDeclineRetentionOffer}
-                isAcceptingOffer={isAcceptingOffer}
             />
         );
     }
@@ -465,7 +465,7 @@ export default class AccountPlanPage extends React.Component {
         return {
             selectedPlan: selectedPriceId,
             pendingOffer: null,
-            isAcceptingOffer: false
+            targetSubscriptionId: null
         };
     }
 
@@ -488,7 +488,7 @@ export default class AccountPlanPage extends React.Component {
             confirmationPlan: null,
             confirmationType: null,
             pendingOffer: null,
-            isAcceptingOffer: false
+            targetSubscriptionId: null
         });
     }
 
@@ -551,7 +551,8 @@ export default class AccountPlanPage extends React.Component {
                 showConfirmation: true,
                 confirmationPlan: subscriptionPlan,
                 confirmationType: 'offerRetention',
-                pendingOffer: retentionOffers[0] // Show first available offer
+                pendingOffer: retentionOffers[0], // Show first available offer
+                targetSubscriptionId: subscriptionId
             });
         } else {
             // No retention offers, go straight to cancellation
@@ -559,21 +560,23 @@ export default class AccountPlanPage extends React.Component {
                 showConfirmation: true,
                 confirmationPlan: subscriptionPlan,
                 confirmationType: 'cancel',
-                pendingOffer: null
+                pendingOffer: null,
+                targetSubscriptionId: subscriptionId
             });
         }
     }
 
-    async onAcceptRetentionOffer() {
-        this.setState({isAcceptingOffer: true});
+    onAcceptRetentionOffer() {
+        const {pendingOffer, targetSubscriptionId} = this.state;
 
-        // TODO: Implement apply offer endpoint call
-        await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
+        if (!targetSubscriptionId || !pendingOffer) {
+            return;
+        }
+
+        this.context.doAction('applyOffer', {
+            subscriptionId: targetSubscriptionId,
+            offerId: pendingOffer.id
         });
-
-        this.setState({isAcceptingOffer: false});
-        this.context.doAction('switchPage', {page: 'accountHome'});
     }
 
     onDeclineRetentionOffer() {
@@ -585,13 +588,12 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onCancelSubscriptionConfirmation(reason) {
-        const {member} = this.context;
-        const subscription = getMemberSubscription({member});
-        if (!subscription) {
+        const {targetSubscriptionId} = this.state;
+        if (!targetSubscriptionId) {
             return null;
         }
         this.context.doAction('cancelSubscription', {
-            subscriptionId: subscription.id,
+            subscriptionId: targetSubscriptionId,
             cancelAtPeriodEnd: true,
             cancellationReason: reason
         });
@@ -616,7 +618,7 @@ export default class AccountPlanPage extends React.Component {
 
     render() {
         const plans = this.prices;
-        const {selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer, isAcceptingOffer} = this.state;
+        const {selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer} = this.state;
         const {lastPage} = this.context;
         return (
             <>
@@ -629,7 +631,7 @@ export default class AccountPlanPage extends React.Component {
                         showConfirmation={showConfirmation}
                     />
                     <PlansContainer
-                        {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer, isAcceptingOffer}}
+                        {...{plans, selectedPlan, showConfirmation, confirmationPlan, confirmationType, pendingOffer}}
                         onConfirm={(...args) => this.onConfirm(...args)}
                         onCancelSubscription = {data => this.onCancelSubscription(data)}
                         onAcceptRetentionOffer = {() => this.onAcceptRetentionOffer()}

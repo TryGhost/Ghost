@@ -365,6 +365,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
+        applyOfferToSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
+        ),
         getMemberOffers: Router().use(
             body.json(),
             forwardError((req, res) => routerController.getMemberOffers(req, res))
