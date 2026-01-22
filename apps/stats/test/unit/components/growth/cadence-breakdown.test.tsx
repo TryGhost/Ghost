@@ -131,7 +131,7 @@ describe('CadenceBreakdown Component', () => {
         expect(screen.queryByText('Monthly')).not.toBeInTheDocument();
     });
 
-    it('does not show tier dropdown with single tier', () => {
+    it('shows breakdown type selector with correct options', () => {
         const mockSubscriptionData = {
             meta: {
                 totals: [
@@ -144,11 +144,11 @@ describe('CadenceBreakdown Component', () => {
 
         render(<CadenceBreakdown isLoading={false} />);
 
-        // Should not have a Select component visible when only one tier exists
-        expect(screen.queryByText('All tiers')).not.toBeInTheDocument();
+        // Should show breakdown type selector
+        expect(screen.getByText('Billing period')).toBeInTheDocument();
     });
 
-    it('shows tier dropdown with multiple tiers', () => {
+    it('aggregates across all tiers for billing period breakdown', () => {
         const mockMultipleTiers = {
             tiers: [
                 {id: 'tier-1', name: 'Premium', type: 'paid', active: true},
@@ -161,8 +161,10 @@ describe('CadenceBreakdown Component', () => {
         const mockSubscriptionData = {
             meta: {
                 totals: [
-                    {tier: 'tier-1', cadence: 'month', count: 100},
-                    {tier: 'tier-2', cadence: 'month', count: 50}
+                    {tier: 'tier-1', cadence: 'month', count: 60},
+                    {tier: 'tier-1', cadence: 'year', count: 40},
+                    {tier: 'tier-2', cadence: 'month', count: 15},
+                    {tier: 'tier-2', cadence: 'year', count: 10}
                 ]
             }
         };
@@ -171,34 +173,10 @@ describe('CadenceBreakdown Component', () => {
 
         render(<CadenceBreakdown isLoading={false} />);
 
-        // Should show the tier dropdown when multiple tiers exist
-        expect(screen.getByText('All tiers')).toBeInTheDocument();
-    });
-
-    it('shows empty state when selected tier has no subscriptions', () => {
-        const mockMultipleTiers = {
-            tiers: [
-                {id: 'tier-1', name: 'Premium', type: 'paid', active: true},
-                {id: 'tier-2', name: 'Pro', type: 'paid', active: true}
-            ]
-        };
-
-        mockSuccess(mockedUseBrowseTiers, mockMultipleTiers);
-
-        const mockSubscriptionData = {
-            meta: {
-                totals: [
-                    {tier: 'tier-1', cadence: 'month', count: 100}
-                    // tier-2 has no subscriptions
-                ]
-            }
-        };
-
-        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
-
-        render(<CadenceBreakdown isLoading={false} />);
-
-        // Component should still render with the tier dropdown
-        expect(screen.getByText('All tiers')).toBeInTheDocument();
+        // Should aggregate: (60 + 15) / 125 = 60%, (40 + 10) / 125 = 40%
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Annual')).toBeInTheDocument();
+        expect(screen.getByText('60.0%')).toBeInTheDocument();
+        expect(screen.getByText('40.0%')).toBeInTheDocument();
     });
 });
