@@ -9,7 +9,12 @@
 
 ### Running via Ghost `yarn dev` in root folder
 
-You can automatically start the announcement-bar dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --announcementbar`.
+Announcement Bar runs automatically when using Ghost's development command from the monorepo root:
+```bash
+yarn dev
+```
+
+This starts all frontend apps (including Announcement Bar.)
 
 ## Release
 
