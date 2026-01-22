@@ -1207,6 +1207,29 @@ describe('Comments API', function () {
                     });
             });
 
+            it('Can not delete a comment which does not belong to you', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                // Members delete comments by setting status to 'deleted' via PUT
+                await membersAgent2
+                    .put(`/api/comments/${comment.get('id')}`)
+                    .body({comments: [{
+                        status: 'deleted'
+                    }]})
+                    .expectStatus(403)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            type: 'NoPermissionError',
+                            id: anyUuid
+                        }]
+                    });
+            });
+
             it('Can not edit a comment as a member who is not you', async function () {
                 const comment = await dbFns.addComment({
                     member_id: loggedInMember.id

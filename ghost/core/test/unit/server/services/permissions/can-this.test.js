@@ -652,16 +652,10 @@ describe('Permissions', function () {
                     done(new Error('was able to edit post without permission'));
                 })
                 .catch(function (err) {
-                    permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(8);
-
-                    permissibleStub.firstCall.args[0].should.eql(1);
-                    permissibleStub.firstCall.args[1].should.eql('edit');
-                    permissibleStub.firstCall.args[2].should.be.an.Object();
-                    permissibleStub.firstCall.args[3].should.be.an.Object();
-                    permissibleStub.firstCall.args[4].should.be.an.Object();
-                    permissibleStub.firstCall.args[5].should.be.true();
-                    permissibleStub.firstCall.args[6].should.be.true();
+                    sinon.assert.calledOnce(permissibleStub);
+                    sinon.assert.calledWith(permissibleStub,
+                        1, 'edit', sinon.match.object, sinon.match.object, sinon.match.object, true, true
+                    );
 
                     userProviderStub.callCount.should.eql(1);
                     err.message.should.eql('Hello World!');
@@ -687,16 +681,10 @@ describe('Permissions', function () {
                 .edit
                 .post({id: 1}) // tag id in model syntax
                 .then(function (res) {
-                    permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(8);
-                    permissibleStub.firstCall.args[0].should.eql(1);
-                    permissibleStub.firstCall.args[1].should.eql('edit');
-                    permissibleStub.firstCall.args[2].should.be.an.Object();
-                    permissibleStub.firstCall.args[3].should.be.an.Object();
-                    permissibleStub.firstCall.args[4].should.be.an.Object();
-                    permissibleStub.firstCall.args[5].should.be.true();
-                    permissibleStub.firstCall.args[6].should.be.true();
-                    permissibleStub.firstCall.args[7].should.be.false();
+                    sinon.assert.calledOnce(permissibleStub);
+                    sinon.assert.calledWith(permissibleStub,
+                        1, 'edit', sinon.match.object, sinon.match.object, sinon.match.object, true, true
+                    );
 
                     userProviderStub.callCount.should.eql(1);
                     should.not.exist(res);
