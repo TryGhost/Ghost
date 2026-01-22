@@ -1770,17 +1770,10 @@ module.exports = class MemberRepository {
         const stripeSubscriptionId = subscriptionModel.get('subscription_id');
 
         // Apply coupon to Stripe subscription
-        let updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
+        const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
             stripeSubscriptionId,
             data.couponId
         );
-
-        // If subscription has pending cancellation, reverse it
-        if (subscriptionModel.get('cancel_at_period_end')) {
-            updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
-                stripeSubscriptionId
-            );
-        }
 
         // Sync local state with Stripe
         await this.linkSubscription({
