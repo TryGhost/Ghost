@@ -607,6 +607,142 @@ describe('MemberRepository', function () {
             assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, null);
         });
 
+        it('persists discount_start and discount_end from Stripe subscription discount', async function () {
+            const discountStart = 1768940436;
+            const discountEnd = 1784578836;
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
+                    coupon: {
+                        id: 'H4H47PbG',
+                        percent_off: 20,
+                        duration: 'repeating',
+                        duration_in_months: 6
+                    },
+                    start: discountStart,
+                    end: discountEnd
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            // Verify discount_start and discount_end are set correctly
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.ok(addedSubscriptionData.discount_end instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
+        });
+
+        it('sets discount_start and discount_end to null when no discount exists', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.equal(addedSubscriptionData.discount_start, null);
+            assert.equal(addedSubscriptionData.discount_end, null);
+        });
+
+        it('handles discount with no end date (forever discount)', async function () {
+            const discountStart = 1768940436;
+
+            const subscriptionWithForeverDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_forever',
+                    coupon: {
+                        id: 'forever_coupon',
+                        percent_off: 20,
+                        duration: 'forever'
+                    },
+                    start: discountStart,
+                    end: null
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithForeverDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithForeverDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end, null);
+        });
+
         it('throws other validation errors from ensureOfferForStripeCoupon', async function () {
             const otherValidationError = new errors.ValidationError({
                 message: 'Some other validation error'
