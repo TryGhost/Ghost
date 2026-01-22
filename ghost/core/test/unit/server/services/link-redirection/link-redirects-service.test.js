@@ -236,7 +236,7 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
-        it('removes %%{member_uuid}%% placeholder when m param contains raw Mailgun variable', async function () {
+        it('substitutes %%{member_uuid}%% placeholder with raw Mailgun variable if present', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
@@ -254,7 +254,6 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                // Mailgun didn't substitute the variable for some reason
                 originalUrl: '/r/abc?m=%%{uuid}%%'
             };
             const res = {
@@ -263,7 +262,7 @@ describe('LinkRedirectsService', function () {
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
+            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%');
         });
 
         it('does not modify redirect URL when no %%{member_uuid}%% placeholder is present', async function () {
