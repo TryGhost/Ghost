@@ -90,11 +90,6 @@ module.exports = class EventRepository {
             }
         }
 
-            if (this._AutomatedEmailRecipient) {
-                pageActions.push({type: 'automated_email_sent_event', action: 'getAutomatedEmailSentEvents'});
-            }
-        }
-
         if (this._EmailRecipient) {
             pageActions.push({type: 'email_sent_event', action: 'getEmailSentEvents'});
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
