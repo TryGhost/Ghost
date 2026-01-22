@@ -24,6 +24,7 @@ describe('Exporter', function () {
             const tables = [
                 'actions',
                 'api_keys',
+                'automated_email_recipients',
                 'automated_emails',
                 'benefits',
                 'brute',
