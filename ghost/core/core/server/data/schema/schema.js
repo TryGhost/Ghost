@@ -698,6 +698,8 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         mrr: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         offer_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'offers.id'},
+        discount_start: {type: 'dateTime', nullable: true},
+        discount_end: {type: 'dateTime', nullable: true},
         trial_start_at: {type: 'dateTime', nullable: true},
         trial_end_at: {type: 'dateTime', nullable: true},
         /* Below fields are now redundant as we link stripe_price_id to stripe_prices table */
