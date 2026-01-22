@@ -3,27 +3,21 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator, LucideIcon, createFilter} from '@tryghost/shade';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFilterState} from './hooks/use-filter-state';
 import {useKnownFilterValues} from './hooks/use-known-filter-values';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import type {Filter} from '@tryghost/shade';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
     const {data: configData} = useBrowseConfig();
     const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
-    const disableMemberCommentingEnabled = configData?.config?.labs?.disableMemberCommenting === true;
-
-    const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
-        setFilters((prevFilters) => {
-            // Remove any existing filter for the same field
-            const filtered = prevFilters.filter(f => f.field !== field);
-            // Add the new filter
-            return [...filtered, createFilter(field, operator, [value])];
-        }, {replace: false});
-    }, [setFilters]);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const {
         data,
@@ -37,6 +31,23 @@ const Comments: React.FC = () => {
         searchParams: nql ? {filter: nql} : {},
         keepPreviousData: true
     });
+
+    useEffect(() => {
+        const state = location.state as {filters?: Filter[]} | null;
+
+        if (state?.filters && state.filters.length > 0 && !isSingleIdFilter && !isFetching) {
+            setFilters(state.filters, {replace: true});
+            
+            navigate(location.pathname, {replace: true, state: {}});
+        }
+    }, [location.state, navigate, location.pathname, setFilters, isSingleIdFilter, isFetching]);
+
+    const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
+        setFilters((prevFilters) => {
+            const filtered = prevFilters.filter(f => f.field !== field);
+            return [...filtered, createFilter(field, operator, [value])];
+        }, {replace: false});
+    }, [setFilters]);
 
     const {knownPosts, knownMembers, knownThreads, knownReplyTos} = useKnownFilterValues({comments: data?.comments ?? []});
 
@@ -88,6 +99,7 @@ const Comments: React.FC = () => {
                             commentPermalinksEnabled={commentPermalinksEnabled}
                             disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             fetchNextPage={fetchNextPage}
+                            filters={filters}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}
                             isLoading={isFetching && !isFetchingNextPage}

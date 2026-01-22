@@ -2,7 +2,8 @@ import {InfiniteData} from '@tanstack/react-query';
 import {
     Meta,
     createInfiniteQuery,
-    createMutation
+    createMutation,
+    createQuery
 } from '../utils/api/hooks';
 
 export type Comment = {
@@ -119,3 +120,15 @@ export const useDeleteComment = createMutation<CommentsResponseType, {id: string
         dataType: 'CommentsResponseType'
     }
 });
+
+export const useReadComment = (params: {id: string}, options?: Parameters<ReturnType<typeof createQuery<CommentsResponseType>>>[0]) => {
+    const queryHook = createQuery<CommentsResponseType>({
+        dataType,
+        path: `/comments/${params.id}/`,
+        returnData: (originalData) => originalData,
+        defaultSearchParams: {
+            include: 'member,post,replies,replies.member,replies.count'
+        }
+    });
+    return queryHook(options);
+};

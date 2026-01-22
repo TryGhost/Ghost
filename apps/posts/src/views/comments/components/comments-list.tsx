@@ -29,36 +29,11 @@ import {
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
-import {Link} from '@tryghost/admin-x-framework';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
-import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
+import type {Filter} from '@tryghost/shade';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
-
-const SpacerRow = ({height}: { height: number }) => (
-    <div aria-hidden="true" className="flex">
-        <div className="flex" style={{height}} />
-    </div>
-);
-
-// TODO: Remove forwardRef once we have upgraded to React 19
-const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
-    props,
-    ref
-) {
-    return (
-        <div
-            ref={ref}
-            {...props}
-            aria-hidden="true"
-            className="relative flex flex-col"
-        >
-            <div className="relative z-10 h-24 animate-pulse">
-                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
-            </div>
-        </div>
-    );
-});
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -69,7 +44,6 @@ function formatDate(dateString: string): string {
         hour: 'numeric',
         minute: 'numeric'
     }).format(date);
-    // Remove comma between day and year (e.g., "Dec 17, 2025" -> "Dec 17 2025")
     return formatted.replace(/(\d+),(\s+\d{4})/, '$1$2');
 }
 
@@ -94,13 +68,11 @@ function CommentContent({item}: {item: Comment}) {
     useEffect(() => {
         const checkIfClamped = () => {
             if (contentRef.current) {
-                // Check if the content is clamped by comparing scrollHeight with clientHeight
                 setIsClamped(contentRef.current.scrollHeight > contentRef.current.clientHeight);
             }
         };
 
         checkIfClamped();
-        // Recheck on window resize
         window.addEventListener('resize', checkIfClamped);
         return () => window.removeEventListener('resize', checkIfClamped);
     }, [item.html]);
@@ -127,6 +99,32 @@ function CommentContent({item}: {item: Comment}) {
     );
 }
 
+const SpacerRow = ({height}: { height: number }) => (
+    <div aria-hidden="true" className="flex">
+        <div className="flex" style={{height}} />
+    </div>
+);
+
+// TODO: Remove forwardRef once we have upgraded to React 19
+const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
+    props,
+    ref
+) {
+    return (
+        <div
+            ref={ref}
+            {...props}
+            aria-hidden="true"
+            className="relative flex flex-col"
+        >
+            <div className="relative z-10 h-24 animate-pulse">
+                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
+            </div>
+        </div>
+    );
+});
+
+
 function CommentsList({
     items,
     totalItems,
@@ -136,7 +134,7 @@ function CommentsList({
     onAddFilter,
     isLoading,
     commentPermalinksEnabled,
-    disableMemberCommentingEnabled
+    filters
 }: {
     items: Comment[];
     totalItems: number;
@@ -146,8 +144,9 @@ function CommentsList({
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
-    disableMemberCommentingEnabled?: boolean;
+    filters?: Filter[];
 }) {
+    const navigate = useNavigate();
     const parentRef = useRef<HTMLDivElement>(null);
 
     // Restore scroll position when navigating back from filtered views
@@ -215,6 +214,7 @@ function CommentsList({
                                 {...props}
                                 className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                                 data-testid="comment-list-row"
+                                data-comment-id={item.id}
                             >
                                 <div className='flex items-start gap-3'>
                                     <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
@@ -302,15 +302,21 @@ function CommentsList({
                                         {item.in_reply_to_snippet && (
                                             <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
                                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                                                <Link
-                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
-                                                    to={item.in_reply_to_id
-                                                        ? `?thread=is:${item.parent_id}&reply_to=is:${item.in_reply_to_id}`
-                                                        : `?thread=is:${item.parent_id}`
-                                                    }
+                                                <button
+                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground cursor-pointer"
+                                                    onClick={() => {
+                                                        const targetCommentId = item.in_reply_to_id || item.parent_id;
+                                                        if (targetCommentId) {
+                                                            navigate(`/comments/${targetCommentId}`, {
+                                                                state: {
+                                                                    filters: filters || []
+                                                                }
+                                                            });
+                                                        }
+                                                    }}
                                                 >
                                                     {item.in_reply_to_snippet}
-                                                </Link>
+                                                </button>
                                             </div>
                                         )}
 
@@ -334,17 +340,17 @@ function CommentsList({
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             {item.count?.replies ? (
-                                                                <Link
-                                                                    className='ml-2 flex items-center gap-1 text-xs text-gray-800 hover:opacity-70'
-                                                                    to={
-                                                                        item.parent_id
-                                                                            ? `?thread=is:${item.parent_id}&reply_to=is:${item.id}`
-                                                                            : `?thread=is:${item.id}`
-                                                                    }
+                                                                <button
+                                                                    className='ml-2 flex items-center gap-1 text-xs text-gray-800 hover:opacity-70 cursor-pointer'
+                                                                    onClick={() => navigate(`/comments/${item.id}`, {
+                                                                        state: {
+                                                                            filters: filters || []
+                                                                        }
+                                                                    })}
                                                                 >
                                                                     <LucideIcon.Reply size={16} strokeWidth={1.5} />
                                                                     <span>{formatNumber(item.count?.replies)}</span>
-                                                                </Link>
+                                                                </button>
                                                             ) : (
                                                                 <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
                                                                     <LucideIcon.Reply size={16} strokeWidth={1.5} />
