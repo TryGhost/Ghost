@@ -238,6 +238,8 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                                     cursor={false}
                                 />
                                 <Recharts.Pie
+                                    animationBegin={0}
+                                    animationDuration={1000}
                                     data={chartData}
                                     dataKey="count"
                                     innerRadius={70}
