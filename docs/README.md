@@ -38,7 +38,7 @@ yarn setup
 #### 3. Start Ghost
 
 ```bash
-# Start development server
+# Start development server (uses Docker for backend services)
 yarn dev
 ```
 
