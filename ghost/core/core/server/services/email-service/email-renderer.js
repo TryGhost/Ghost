@@ -718,6 +718,12 @@ class EmailRenderer {
                 }
             },
             {
+                id: 'member_uuid',
+                getValue: (member) => {
+                    return member.uuid;
+                }
+            },
+            {
                 id: 'key',
                 getValue: (member) => {
                     return crypto.createHmac('sha256', this.#settingsHelpers.getMembersValidationKey()).update(member.uuid).digest('hex');

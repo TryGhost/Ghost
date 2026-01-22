@@ -11,6 +11,10 @@ const LinkRedirect = require('./link-redirect');
  * @prop {(linkRedirect: LinkRedirect) => Promise<void>} save
  */
 
+// Placeholder pattern for member UUID in redirect destinations
+// %%{member_uuid}%% is substituted with the actual UUID at redirect time
+const MEMBER_UUID_PLACEHOLDER = '%%{member_uuid}%%';
+
 class LinkRedirectsService {
     /** @type ILinkRedirectRepository */
     #linkRedirectRepository;
@@ -112,8 +116,29 @@ class LinkRedirectsService {
 
             DomainEvents.dispatch(event);
 
+            // Substitute %%{member_uuid}%% placeholder if present in the destination URL
+            // This allows tracked links to include dynamic member UUIDs (e.g., for Transistor embeds)
+            // Note: The URL may be stored with URL-encoded placeholder (%25%25%7Bmember_uuid%7D%25%25)
+            // so we decode it first to check and perform substitution
+            let redirectUrl = link.to.href;
+            let decodedUrl;
+            try {
+                decodedUrl = decodeURIComponent(redirectUrl);
+            } catch (e) {
+                decodedUrl = redirectUrl;
+            }
+            const hasMemberUuidPlaceholder = decodedUrl.includes(MEMBER_UUID_PLACEHOLDER);
+            if (hasMemberUuidPlaceholder) {
+                const memberUuid = url.searchParams.get('m');
+                if (memberUuid) { // assume valid if present as m={uuid}
+                    redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join(memberUuid);
+                } else { // remove if no member UUID is present
+                    redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join('');
+                }
+            }
+
             res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-            return res.redirect(link.to.href);
+            return res.redirect(redirectUrl);
         } catch (e) {
             return next(e);
         }
