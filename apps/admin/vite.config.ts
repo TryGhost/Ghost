@@ -47,7 +47,6 @@ export default defineConfig(({ command }) => ({
     },
     server: {
         port: 5174,
-        host: true,
         allowedHosts: true
     },
     resolve: {
