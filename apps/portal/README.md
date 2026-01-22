@@ -28,13 +28,12 @@ Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings
 
 ## Develop
 
-Run Portal within the Ghost monorepo with:
+Portal runs automatically when using Ghost's development command from the monorepo root:
 ```
-yarn dev --portal
+yarn dev
 ```
 
-Alternatively, use  `yarn dev --all` to load Portal and other supported apps/services, see [dev.js](https://github.com/TryGhost/Ghost/blob/main/.github/scripts/dev.js) for more information.
-
+This starts all frontend apps (including Portal.)
 ---
 
 To run Portal in a standalone fashion, use `yarn start` and open [http://localhost:3000](http://localhost:3000).
