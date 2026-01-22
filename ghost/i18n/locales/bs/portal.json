@@ -123,6 +123,7 @@
     "Not receiving emails?": "Ne primaš Email poruke?",
     "Now check your email!": "Provjeri svoju Email adresu!",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "Nakon što se ponovno pretplatite, ako još uvijek ne vidiš Email u svom inboxu, provjeri spam folder. Neki pružatelji Email usluga čuvaju zapis prethodnih pritužbi na spam i nastavit će ih označavati kao takve. Ako se to dogodi, označite najnoviji newsletter Email kao \"Nije neželjena pošta\" da biste ga vratili u primarni inbox.",
+    "Open email": "",
     "Permanent failure (bounce)": "Trajna greška (odbacivanje nakon više neuspjelih pokušaja)",
     "Phone number": "",
     "Plan": "Plan",

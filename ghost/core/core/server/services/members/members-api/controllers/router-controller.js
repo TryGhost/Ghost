@@ -5,6 +5,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const {getSniperLinks} = require('../../../../lib/get-sniper-links');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -69,6 +70,7 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
+     * @param {any} deps.settingsHelpers
      * @param {any} deps.urlUtils
      */
     constructor({
@@ -87,6 +89,7 @@ module.exports = class RouterController {
         newslettersService,
         sentry,
         settingsCache,
+        settingsHelpers,
         urlUtils
     }) {
         this._offersAPI = offersAPI;
@@ -104,6 +107,7 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
+        this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
     }
 
@@ -712,19 +716,28 @@ module.exports = class RouterController {
         }
 
         try {
+            /** @type {{sniperLinks?: {desktop: string; android: string}; otc_ref?: string}} */
+            const resBody = {};
+
             if (emailType === 'signup' || emailType === 'subscribe') {
                 await this._handleSignup(req, normalizedEmail, referrer);
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
-
                 if (signIn.otcRef) {
-                    res.writeHead(201, {'Content-Type': 'application/json'});
-                    return res.end(JSON.stringify({otc_ref: signIn.otcRef}));
+                    resBody.otc_ref = signIn.otcRef;
                 }
             }
 
-            res.writeHead(201);
-            return res.end('Created.');
+            const sniperLinks = await getSniperLinks({
+                recipient: normalizedEmail,
+                sender: this._settingsHelpers.getMembersSupportAddress()
+            });
+            if (sniperLinks) {
+                resBody.sniperLinks = sniperLinks;
+            }
+
+            res.writeHead(201, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify(resBody));
         } catch (err) {
             if (err.code === 'EENVELOPE') {
                 logging.error(err);

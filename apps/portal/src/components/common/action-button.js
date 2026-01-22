@@ -82,7 +82,7 @@ const Styles = ({brandColor, disabled, style = {}, isPrimary}) => {
 };
 
 function ActionButton({
-    label, onClick, disabled = false, retry = false,
+    label, href, target, rel, onClick, disabled = false, retry = false,
     brandColor, isRunning, isPrimary = true, isDestructive = false, classes = '',
     style = {}, tabIndex = undefined, dataTestId
 }) {
@@ -101,12 +101,23 @@ function ActionButton({
     if (isCookiesDisabled()) {
         disabled = true;
     }
+
+    const commonProps = {
+        className,
+        style: Style.button,
+        disabled,
+        tabIndex,
+        'data-test-button': dataTestId
+    };
+
     const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
-    return (
-        <button className={className} style={Style.button} onClick={e => onClick(e)} disabled={disabled} type='submit' tabIndex={tabIndex} data-test-button={dataTestId}>
-            {isRunning ? <LoaderIcon className={loaderClassName} /> : label}
-        </button>
-    );
+    const children = isRunning ? <LoaderIcon className={loaderClassName} /> : label;
+
+    if (href) {
+        return <a {...commonProps} href={href} target={target} rel={rel}>{children}</a>;
+    } else {
+        return <button {...commonProps} onClick={onClick} type='submit'>{children}</button>;
+    }
 }
 
 export default ActionButton;

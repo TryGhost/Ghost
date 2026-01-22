@@ -123,6 +123,7 @@
     "Not receiving emails?": "Får du inga e-postmeddelanden?",
     "Now check your email!": "Kolla nu din e-post!",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "Om du fortfarande inte ser e-post i din inkorg efter att du återaktiverat utskicken, kontrollera din skräppostmapp. Vissa e-postleverantörer behåller en historik över tidigare spamklagomål och fortsätter att markera e-post som spam. Om detta händer, markera det senaste nyhetsbrevet som 'Inte spam' för att flytta tillbaka det till din huvudsakliga inkorg.",
+    "Open email": "",
     "Permanent failure (bounce)": "Permanent fel vid e-postutsskick (studs)",
     "Phone number": "Telefonnummer",
     "Plan": "Plan",

@@ -205,6 +205,7 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
+        settingsHelpers,
         sentry,
         urlUtils
     });

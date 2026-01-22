@@ -4,6 +4,7 @@ import CloseButton from '../common/close-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
+import {isAndroid} from '../../utils/is-android';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -285,15 +286,44 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
+    /**
+     * @param {object} sniperLinks
+     * @param {string} sniperLinks.android
+     * @param {string} sniperLinks.desktop
+     * @returns {ReactNode}
+     */
+    renderSniperLinkButton(sniperLinks) {
+        const label = t('Open email');
+        const href = isAndroid(navigator) ? sniperLinks.android : sniperLinks.desktop;
+        return (
+            <ActionButton
+                style={{width: '100%'}}
+                href={href}
+                target='_blank'
+                rel='noreferrer noopener'
+                brandColor={this.context.brandColor}
+                label={label}
+            />
+        );
+    }
+
     render() {
-        const {otcRef} = this.context;
-        const showOTCForm = !!otcRef;
+        const {otcRef, sniperLinks} = this.context;
+
+        /** @type {ReactNode} */ let footer;
+        if (otcRef) {
+            footer = this.renderOTCForm();
+        } else if (sniperLinks) {
+            footer = this.renderSniperLinkButton(sniperLinks);
+        } else {
+            footer = this.renderCloseButton();
+        }
 
         return (
             <div className='gh-portal-content'>
                 <CloseButton />
                 {this.renderFormHeader()}
-                {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
+                {footer}
             </div>
         );
     }

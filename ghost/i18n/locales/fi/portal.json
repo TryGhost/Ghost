@@ -123,6 +123,7 @@
     "Not receiving emails?": "Etkö saa sähköposteja?",
     "Now check your email!": "Nyt tarkista sähköpostisi",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "Kun olet tilannut sähköpostit uudelleen ja et vieläkään saa posteja, katso ensimmäiseksi spam-kansio. Jotkut tarjoajat pitävät listaa ennen merkityistä viesteistä ja estävät niitä jatkossakin. Jos näin tapahtuu, merkitse viesti Not Spam ja siirrä se postilaatikkoosi.",
+    "Open email": "",
     "Permanent failure (bounce)": "Pysyvä virhe (bounce)",
     "Phone number": "Puhelinnumero",
     "Plan": "Tilaus",

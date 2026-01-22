@@ -123,6 +123,7 @@
     "Not receiving emails?": "Имэйл ирээгүй юу?",
     "Now check your email!": "Одоо имэйлээ шалгана уу!",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "Дахин бүртгүүлсний дараа, хэрэв та имэйлүүдийг инбоксдоо харахгүй байвал спам хавтсаа шалгана уу. Зарим имэйл үйлчилгээ үзүүлэгчид өмнөх спам тэмдэглэгээнүүдийг хадгалдаг бөгөөд имэйлүүдийг тэмдэглэсээр байна. Хэрэв ийм байдал үүсвэл, сүүлийн үеийн товхимолыг 'Спам биш' гэж тэмдэглэж үндсэн инбокс руугаа буцааж зөөнө үү.",
+    "Open email": "",
     "Permanent failure (bounce)": "Байнгын алдаа (баунс)",
     "Phone number": "Утасны дугаар",
     "Plan": "Багц",
