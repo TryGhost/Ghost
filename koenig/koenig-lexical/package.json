@@ -101,7 +101,7 @@
     "concurrently": "^9.2.0",
     "cross-fetch": "^4.0.0",
     "dompurify": "^3.3.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.0.0",
     "emoji-mart": "^5.5.2",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.9.0",
