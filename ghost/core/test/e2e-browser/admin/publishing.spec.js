@@ -5,6 +5,14 @@ const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
 
 /**
+ * Get today's date as a string in YYYY-MM-DD format.
+ * Used for scheduling tests to ensure the date is always "today" regardless of time.
+ */
+const getTodayDateString = () => {
+    return DateTime.now().toFormat('yyyy-MM-dd');
+};
+
+/**
  * Test the status of a post in the post editor.
  * @param {import('@playwright/test').Page} page
  * @param {string} status The status you expect to see
@@ -274,8 +282,9 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPage(sharedPage, pageData);
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: null});
+            // Schedule the post to publish asap (setting today's date with time 00:00 ensures
+            // the datetime is in the past and gets auto-corrected to 5 seconds in the future)
+            await publishPost(sharedPage, {date: getTodayDateString(), time: '00:00', type: null});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -375,8 +384,9 @@ test.describe('Publishing', () => {
 
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
+            // Schedule the post to publish asap (setting today's date with time 00:00 ensures
+            // the datetime is in the past and gets auto-corrected to 5 seconds in the future)
+            await publishPost(sharedPage, {date: getTodayDateString(), time: '00:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
             await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
@@ -406,8 +416,9 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
 
             const editorUrl = await sharedPage.url();
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00'});
+            // Schedule the post to publish asap (setting today's date with time 00:00 ensures
+            // the datetime is in the past and gets auto-corrected to 5 seconds in the future)
+            await publishPost(sharedPage, {date: getTodayDateString(), time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
@@ -438,8 +449,9 @@ test.describe('Publishing', () => {
             await createPostDraft(sharedPage, postData);
             const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {type: 'send', time: '00:00'});
+            // Schedule the post to publish asap (setting today's date with time 00:00 ensures
+            // the datetime is in the past and gets auto-corrected to 5 seconds in the future)
+            await publishPost(sharedPage, {date: getTodayDateString(), time: '00:00', type: 'send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
 
