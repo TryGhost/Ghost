@@ -6,8 +6,9 @@ import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopPosts from './components/top-posts';
+import {ALL_AUDIENCES} from '@src/utils/constants';
 import {GhAreaChartDataItem, H3, LucideIcon, NavbarActions, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
-import {getAudienceQueryParam} from '../components/audience-select';
+import {getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useGrowthStats} from '@hooks/use-growth-stats';
@@ -64,7 +65,7 @@ type GrowthChartDataItem = {
 
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
-    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -84,7 +85,7 @@ const Overview: React.FC = () => {
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
+        member_status: getAudienceQueryParam(ALL_AUDIENCES)
     };
 
     const {data: visitorsData, loading: isVisitorsLoading} = useTinybirdQuery({

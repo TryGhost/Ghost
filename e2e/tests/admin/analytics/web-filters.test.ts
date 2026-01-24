@@ -3,19 +3,8 @@ import {HomePage} from '@/public-pages';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Web Filters', () => {
-    test.describe('utmTracking flag explicitly disabled', () => {
-        test.use({labs: {utmTracking: false}});
-
-        test('filter ui hidden when flag disabled', async ({page}) => {
-            const webTrafficPage = new AnalyticsWebTrafficPage(page);
-            await webTrafficPage.goto();
-
-            await expect(webTrafficPage.filterContainer).toBeHidden();
-        });
-    });
-
-    test.describe('utmTracking enabled by default', () => {
-        test('filter ui visible when flag enabled', async ({page}) => {
+    test.describe('web filters functionality', () => {
+        test('filter ui visible', async ({page}) => {
             const webTrafficPage = new AnalyticsWebTrafficPage(page);
             await webTrafficPage.goto();
 

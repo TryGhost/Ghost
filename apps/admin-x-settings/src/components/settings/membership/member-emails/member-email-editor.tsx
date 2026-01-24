@@ -29,25 +29,34 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         }
     }, [onChange, value]);
 
+    // Stop Cmd+K from bubbling to global search handler
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.stopPropagation();
+        }
+    }, []);
+
     return (
-        <KoenigEditorBase
-            className={className}
-            emojiPicker={false}
-            inheritFontStyles={false}
-            initialEditorState={value}
-            nodes={nodes}
-            placeholder={placeholder}
-            singleParagraph={singleParagraph}
-            onChange={handleChange}
-        >
-            {(koenig: KoenigInstance) => (
-                <>
-                    <koenig.ReplacementStringsPlugin />
-                    <koenig.ListPlugin />
-                    <koenig.HorizontalRulePlugin />
-                </>
-            )}
-        </KoenigEditorBase>
+        <div onKeyDown={handleKeyDown}>
+            <KoenigEditorBase
+                className={className}
+                emojiPicker={false}
+                inheritFontStyles={false}
+                initialEditorState={value}
+                nodes={nodes}
+                placeholder={placeholder}
+                singleParagraph={singleParagraph}
+                onChange={handleChange}
+            >
+                {(koenig: KoenigInstance) => (
+                    <>
+                        <koenig.ReplacementStringsPlugin />
+                        <koenig.ListPlugin />
+                        <koenig.HorizontalRulePlugin />
+                    </>
+                )}
+            </KoenigEditorBase>
+        </div>
     );
 };
 

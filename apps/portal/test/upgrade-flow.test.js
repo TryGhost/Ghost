@@ -343,9 +343,7 @@ describe('Logged-in free member', () => {
             window.location.hash = '';
         });
     });
-});
 
-describe('Logged-in free member', () => {
     describe('can upgrade on multi tier site', () => {
         test('with default settings', async () => {
             const {
@@ -426,3 +424,338 @@ describe('Logged-in free member', () => {
         });
     });
 });
+
+describe('Logged-in complimentary member', () => {
+    describe('can upgrade on single tier site', () => {
+        test('with default settings on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            fireEvent.click(monthlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+        });
+
+        test('with default settings on yearly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+            const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
+            fireEvent.click(yearlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+
+        test('with cancelled subscription on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.complimentaryWithCancelledSubscription
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            fireEvent.click(monthlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+        });
+
+        test('to an offer via link', async () => {
+            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.altComplimentary,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+
+            expect(emailInput).toHaveValue('jimmie@example.com');
+            expect(nameInput).toHaveValue('Jimmie Larson');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jimmie@example.com',
+                name: 'Jimmie Larson',
+                offerId,
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+
+            window.location.hash = '';
+        });
+
+        test('to an offer via link with portal disabled', async () => {
+            let site = {
+                ...FixtureSite.singleTier.basic,
+                portal_button: false
+            };
+
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: site,
+                member: FixtureMember.altComplimentary,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).not.toBeInTheDocument();
+            expect(siteTitle).not.toBeInTheDocument();
+            expect(emailInput).not.toBeInTheDocument();
+            expect(nameInput).not.toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).not.toBeInTheDocument();
+            expect(offerName).not.toBeInTheDocument();
+            expect(offerDescription).not.toBeInTheDocument();
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: offerId,
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+
+            window.location.hash = '';
+        });
+    });
+
+    describe('can upgrade on multi tier site', () => {
+        test('with default settings', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.basic,
+                member: FixtureMember.complimentary
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+
+            // allow default checkbox switch to yearly
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+
+            fireEvent.click(chooseBtns[0]);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+
+        test('with cancelled subscription', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame,
+                popupIframeDocument, accountHomeTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.basic,
+                member: FixtureMember.complimentaryWithCancelledSubscription
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(accountHomeTitle).toBeInTheDocument();
+
+            // Complimentary members see "Change" button instead of "View plans"
+            const changePlanButton = within(popupIframeDocument).queryByRole('button', {name: 'Change'});
+            expect(changePlanButton).toBeInTheDocument();
+
+            const singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
+            fireEvent.click(changePlanButton);
+            await within(popupIframeDocument).findByText('Monthly');
+
+            // allow default checkbox switch to yearly
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
+
+            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+
+            fireEvent.click(chooseBtns[0]);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
+            });
+        });
+
+        test('to an offer via link', async () => {
+            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: FixtureSite.multipleTiers.basic,
+                member: FixtureMember.altComplimentary,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+
+            expect(emailInput).toHaveValue('jimmie@example.com');
+            expect(nameInput).toHaveValue('Jimmie Larson');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jimmie@example.com',
+                name: 'Jimmie Larson',
+                offerId,
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
+            });
+
+            window.location.hash = '';
+        });
+    });
+});
+

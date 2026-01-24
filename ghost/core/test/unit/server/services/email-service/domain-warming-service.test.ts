@@ -4,9 +4,6 @@ import sinon from 'sinon';
 import assert from 'assert/strict';
 
 describe('Domain Warming Service', function () {
-    let labs: {
-        isSet: sinon.SinonStub;
-    };
     let config: {
         get: sinon.SinonStub;
     };
@@ -16,10 +13,6 @@ describe('Domain Warming Service', function () {
     let clock: sinon.SinonFakeTimers;
 
     beforeEach(function () {
-        labs = {
-            isSet: sinon.stub().returns(false)
-        };
-
         config = {
             get: sinon.stub().returns(undefined)
         };
@@ -41,7 +34,6 @@ describe('Domain Warming Service', function () {
         it('should instantiate with required dependencies', function () {
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
             assert.ok(service);
@@ -49,27 +41,11 @@ describe('Domain Warming Service', function () {
     });
 
     describe('isEnabled', function () {
-        it('should return false when domainWarmup flag is not set', function () {
-            labs.isSet.withArgs('domainWarmup').returns(false);
-            const service = new DomainWarmingService({
-                models: {Email},
-                labs,
-                config
-            });
-
-            const result = service.isEnabled();
-            assert.equal(result, false);
-            sinon.assert.calledOnce(labs.isSet);
-            sinon.assert.calledWith(labs.isSet, 'domainWarmup');
-        });
-
-        it('should return false when domainWarmup flag is set but fallback domain is missing', function () {
-            labs.isSet.withArgs('domainWarmup').returns(true);
+        it('should return false when fallback domain is missing', function () {
             config.get.withArgs('hostSettings:managedEmail:fallbackDomain').returns(undefined);
             config.get.withArgs('hostSettings:managedEmail:fallbackAddress').returns('noreply@fallback.com');
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -77,13 +53,11 @@ describe('Domain Warming Service', function () {
             assert.equal(result, false);
         });
 
-        it('should return false when domainWarmup flag is set but fallback address is missing', function () {
-            labs.isSet.withArgs('domainWarmup').returns(true);
+        it('should return false when fallback address is missing', function () {
             config.get.withArgs('hostSettings:managedEmail:fallbackDomain').returns('fallback.example.com');
             config.get.withArgs('hostSettings:managedEmail:fallbackAddress').returns(undefined);
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -91,13 +65,11 @@ describe('Domain Warming Service', function () {
             assert.equal(result, false);
         });
 
-        it('should return true when domainWarmup flag is set and fallback config is present', function () {
-            labs.isSet.withArgs('domainWarmup').returns(true);
+        it('should return true when fallback config is present', function () {
             config.get.withArgs('hostSettings:managedEmail:fallbackDomain').returns('fallback.example.com');
             config.get.withArgs('hostSettings:managedEmail:fallbackAddress').returns('noreply@fallback.com');
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -121,7 +93,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -139,7 +110,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -158,7 +128,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -178,7 +147,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -197,7 +165,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -215,7 +182,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -231,7 +197,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -272,7 +237,6 @@ describe('Domain Warming Service', function () {
 
                 const service = new DomainWarmingService({
                     models: {Email: EmailModel},
-                    labs,
                     config
                 });
 
@@ -292,7 +256,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 
@@ -311,7 +274,6 @@ describe('Domain Warming Service', function () {
 
             const service = new DomainWarmingService({
                 models: {Email},
-                labs,
                 config
             });
 

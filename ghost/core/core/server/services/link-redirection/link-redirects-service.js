@@ -78,6 +78,15 @@ class LinkRedirectsService {
     }
 
     /**
+     * Returns the relative path prefix without subdirectory (e.g., /r/)
+     * Used for Express route matching where subdirectory is already stripped
+     * @return {string}
+     **/
+    relativeRedirectPrefix() {
+        return '/' + this.#redirectURLPrefix;
+    }
+
+    /**
      * @param {import('express').Request} req
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
@@ -86,18 +95,6 @@ class LinkRedirectsService {
      */
     async handleRequest(req, res, next) {
         try {
-            // skip handling if original url doesn't match the prefix
-            const fullURLWithRedirectPrefix = `${this.#baseURL.pathname}${this.#redirectURLPrefix}`;
-            // @NOTE: below is equivalent to doing:
-            //          router.get('/r/'), (req, res) ...
-            //        To make it cleaner we should rework it to:
-            //          linkRedirects.service.handleRequest(router);
-            //        and mount routes on top like for example sitemapHandler does
-            //        Cleanup issue: https://github.com/TryGhost/Toolbox/issues/516
-            if (!req.originalUrl.startsWith(fullURLWithRedirectPrefix)) {
-                return next();
-            }
-
             const url = new URL(req.originalUrl, this.#baseURL);
             const link = await this.#linkRedirectRepository.getByURL(url);
 

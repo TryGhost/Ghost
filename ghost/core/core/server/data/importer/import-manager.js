@@ -64,7 +64,6 @@ class ImportManager {
             ignoreRootFolderFiles: true,
             extensions: config.get('uploads').media.extensions,
             contentTypes: config.get('uploads').media.contentTypes,
-            contentPath: config.getContentPath('media'),
             urlUtils: urlUtils,
             storage: mediaStorage
         });
@@ -78,7 +77,6 @@ class ImportManager {
             ignoreRootFolderFiles: true,
             extensions: config.get('uploads').files.extensions,
             contentTypes: config.get('uploads').files.contentTypes,
-            contentPath: config.getContentPath('files'),
             urlUtils: urlUtils,
             storage: fileStorage
         });

@@ -14,7 +14,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 const DEV_MODE_DATA = {
@@ -51,6 +51,7 @@ export default class App extends React.Component {
         this.state = {
             site: null,
             member: null,
+            offers: [],
             page: 'loading',
             showPopup: false,
             action: 'init:running',
@@ -197,13 +198,14 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
             const state = {
                 site,
                 member,
+                offers,
                 page,
                 lastPage,
                 pageQuery,
@@ -254,7 +256,7 @@ export default class App extends React.Component {
 
     /** Fetch state data from all available sources */
     async fetchData() {
-        const {site: apiSiteData, member} = await this.fetchApiData();
+        const {site: apiSiteData, member, offers} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
         const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
@@ -262,6 +264,7 @@ export default class App extends React.Component {
         let page = '';
         return {
             member,
+            offers,
             page,
             site: {
                 ...apiSiteData,
@@ -585,12 +588,12 @@ export default class App extends React.Component {
         return false;
     }
 
-    /** Fetch site and member session data with Ghost Apis  */
+    /** Fetch site, member session data and member offers with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
-            const {site, member} = await this.GhostApi.init();
+            const {site, member, offers} = await this.GhostApi.init();
 
             const colorOverride = this.getColorOverride();
             if (colorOverride) {
@@ -599,7 +602,7 @@ export default class App extends React.Component {
 
             this.setupFirstPromoter({site, member});
             this.setupSentry({site});
-            return {site, member};
+            return {site, member, offers};
         } catch (e) {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
                 return {};
@@ -750,7 +753,7 @@ export default class App extends React.Component {
     async handleOfferQuery({site, offerId, member = this.state.member}) {
         const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
-        if (!isPaidMember({member})) {
+        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 const offer = offerData?.offers[0];
@@ -935,10 +938,6 @@ export default class App extends React.Component {
             page = member ? 'accountHome' : loggedOutPage;
         }
 
-        if (page === 'accountPlan' && isComplimentaryMember({member}) && !allowCompMemberUpgrade({member})) {
-            page = 'accountHome';
-        }
-
         return getActivePage({page});
     }
 
@@ -964,12 +963,13 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
+        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
             api: this.GhostApi,
             site,
+            offers,
             action,
             actionErrorMessage,
             brandColor: this.getAccentColor(),

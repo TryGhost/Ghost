@@ -7,40 +7,6 @@ describe('Posts Service', function () {
         new PostsService({});
     });
 
-    describe('shouldSendEmail', function () {
-        it('calculates if an email should be sent', async function () {
-            const postsService = new PostsService({});
-
-            assert.deepEqual([
-                postsService.shouldSendEmail('published', 'draft'),
-                postsService.shouldSendEmail('published', 'scheduled'),
-                postsService.shouldSendEmail('sent', 'draft'),
-                postsService.shouldSendEmail('sent', 'scheduled'),
-
-                postsService.shouldSendEmail('published', 'published'),
-                postsService.shouldSendEmail('published', 'sent'),
-                postsService.shouldSendEmail('published', 'published'),
-                postsService.shouldSendEmail('published', 'sent'),
-                postsService.shouldSendEmail('sent', 'published'),
-                postsService.shouldSendEmail('sent', 'sent'),
-                postsService.shouldSendEmail()
-            ], [
-                true,
-                true,
-                true,
-                true,
-
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-            ]);
-        });
-    });
-
     describe('copyPost', function () {
         const makeModelStub = (key, value) => ({
             get(k) {
@@ -295,6 +261,166 @@ describe('Posts Service', function () {
                     '/p/123/?member_status=paid'
                 ].join(', ')
             });
+        });
+    });
+
+    describe('editPost', function () {
+        let postsService;
+        let mockModels;
+        let mockEmailService;
+        let postEmailHandlerStub;
+
+        beforeEach(function () {
+            mockModels = {
+                Post: {
+                    findOne: sinon.stub(),
+                    edit: sinon.stub()
+                },
+                Member: {
+                    findPage: sinon.stub()
+                },
+                Newsletter: {
+                    findOne: sinon.stub()
+                }
+            };
+
+            mockEmailService = {
+                checkCanSendEmail: sinon.stub().resolves(),
+                createEmail: sinon.stub(),
+                retryEmail: sinon.stub()
+            };
+
+            postsService = new PostsService({
+                models: mockModels,
+                emailService: mockEmailService
+            });
+
+            // Stub the postEmailHandler methods
+            postEmailHandlerStub = {
+                validateBeforeSave: sinon.stub().resolves(),
+                createOrRetryEmail: sinon.stub().resolves()
+            };
+
+            postsService.postEmailHandler = postEmailHandlerStub;
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('calls postEmailHandler.validateBeforeSave', async function () {
+            const model = {
+                get: sinon.stub().returns(null),
+                toJSON: sinon.stub().returns({id: 'post-123'}),
+                wasChanged: sinon.stub().returns(false)
+            };
+            mockModels.Post.edit.resolves(model);
+
+            const frame = {
+                data: {posts: [{status: 'draft'}]},
+                options: {id: 'post-123'}
+            };
+
+            await postsService.editPost(frame);
+
+            sinon.assert.calledOnceWithExactly(postEmailHandlerStub.validateBeforeSave, frame);
+        });
+
+        it('propagates validation errors from validateBeforeSave', async function () {
+            const validationError = new Error('Email limit exceeded');
+            postEmailHandlerStub.validateBeforeSave.rejects(validationError);
+
+            const frame = {
+                data: {posts: [{status: 'published'}]},
+                options: {id: 'post-123', newsletter: 'default'}
+            };
+
+            await assert.rejects(
+                postsService.editPost(frame),
+                (err) => {
+                    assert.equal(err.message, 'Email limit exceeded');
+                    return true;
+                }
+            );
+
+            sinon.assert.notCalled(mockModels.Post.edit);
+        });
+
+        it('calls createOrRetryEmail after editing post', async function () {
+            const model = {
+                toJSON: sinon.stub().returns({id: 'post-123'})
+            };
+            mockModels.Post.edit.resolves(model);
+
+            const frame = {
+                data: {posts: [{status: 'published'}]},
+                options: {id: 'post-123'}
+            };
+
+            await postsService.editPost(frame);
+
+            sinon.assert.calledOnceWithExactly(postEmailHandlerStub.createOrRetryEmail, model);
+        });
+
+        it('returns post JSON and calls eventHandler', async function () {
+            const postData = {id: 'post-123', title: 'Test Post'};
+            const model = {
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'newsletter_id') {
+                        return null;
+                    }
+                    if (key === 'status') {
+                        return 'published';
+                    }
+                }),
+                previous: sinon.stub().withArgs('status').returns('draft'),
+                toJSON: sinon.stub().returns(postData),
+                wasChanged: sinon.stub().returns(true)
+            };
+            mockModels.Post.edit.resolves(model);
+
+            const frame = {
+                data: {posts: [{status: 'published'}]},
+                options: {id: 'post-123'}
+            };
+
+            const eventHandler = sinon.stub();
+            const result = await postsService.editPost(frame, {eventHandler});
+
+            assert.deepEqual(result, postData);
+            sinon.assert.calledOnceWithExactly(eventHandler, 'published_updated', postData);
+        });
+    });
+
+    describe('getChanges', function () {
+        let postsService;
+
+        beforeEach(function () {
+            postsService = new PostsService({});
+        });
+
+        it('returns correct change type for status transitions', function () {
+            const testCases = [
+                // [currentStatus, previousStatus, expected]
+                ['published', 'draft', 'published_updated'],
+                ['draft', 'published', 'unpublished'],
+                ['draft', 'draft', 'draft_updated'],
+                ['scheduled', 'draft', 'scheduled_updated']
+            ];
+
+            for (const [currentStatus, previousStatus, expected] of testCases) {
+                const model = {
+                    get: sinon.stub().withArgs('status').returns(currentStatus),
+                    previous: sinon.stub().withArgs('status').returns(previousStatus),
+                    wasChanged: sinon.stub().returns(true)
+                };
+
+                assert.equal(
+                    postsService.getChanges(model),
+                    expected,
+                    `getChanges with status ${currentStatus} (prev: ${previousStatus}) should be ${expected}`
+                );
+            }
         });
     });
 });

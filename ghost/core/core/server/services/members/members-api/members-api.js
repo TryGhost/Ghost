@@ -64,7 +64,8 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        AutomatedEmail
+        AutomatedEmail,
+        AutomatedEmailRecipient
     },
     tiersService,
     stripeAPIService,
@@ -130,7 +131,8 @@ module.exports = function MembersAPI({
         Comment,
         labsService,
         memberAttributionService,
-        MemberEmailChangeEvent
+        MemberEmailChangeEvent,
+        AutomatedEmailRecipient
     });
 
     const memberBREADService = new MemberBREADService({
@@ -357,6 +359,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
+        createBillingPortalSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createBillingPortalSession(req, res))
+        ),
         updateEmailAddress: Router().use(
             body.json(),
             forwardError((req, res) => memberController.updateEmailAddress(req, res))
@@ -364,6 +370,14 @@ module.exports = function MembersAPI({
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
+        ),
+        applyOfferToSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
+        ),
+        getMemberOffers: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.getMemberOffers(req, res))
         ),
         wellKnown: Router()
             .get('/jwks.json',

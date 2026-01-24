@@ -44,8 +44,6 @@ type PostAnalyticsContextType = {
     tinybirdToken: string | undefined;
     isLoading: boolean;
     range: number;
-    audience: number;
-    setAudience: (value: number) => void;
     setRange: (value: number) => void;
     settings: Setting[];
     postId: string;
@@ -79,9 +77,6 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     // Only fetch Tinybird token if stats config is present
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
-
-    // Initialize with all audiences selected (binary 111 = 7)
-    const [audience, setAudience] = useState(7);
 
     // Fetch post data with all required includes
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
@@ -120,11 +115,9 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         isLoading,
         range,
         setRange,
-        audience,
-        setAudience,
         settings: settings.data?.settings || [],
-        postId: postId, 
-        post: post as Post | undefined, 
+        postId: postId,
+        post: post as Post | undefined,
         isPostLoading
     }}>
         {children}

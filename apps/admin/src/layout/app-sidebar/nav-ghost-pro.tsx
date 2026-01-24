@@ -16,7 +16,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: config } = useBrowseConfig();
     const featurebaseFeedbackFlag = useFeatureFlag('featurebaseFeedback');
-    const { openFeedbackWidget } = useFeaturebase();
+    const { openFeedbackWidget, preloadFeedbackWidget } = useFeaturebase();
 
     if (!currentUser) {
         return null;
@@ -44,7 +44,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     )}
                     {showFeedback && (
                         <NavMenuItem>
-                            <NavMenuItem.Button onClick={openFeedbackWidget}>
+                            <NavMenuItem.Button onClick={openFeedbackWidget} onMouseEnter={preloadFeedbackWidget} onFocus={preloadFeedbackWidget}>
                                 <LucideIcon.MessageCircle />
                                 <NavMenuItem.Label>Feedback</NavMenuItem.Label>
                             </NavMenuItem.Button>

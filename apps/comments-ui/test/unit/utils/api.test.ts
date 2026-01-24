@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import setupGhostApi from './api';
+import setupGhostApi from '../../../src/utils/api';
 import {vi} from 'vitest';
 
 test('should call counts endpoint', () => {

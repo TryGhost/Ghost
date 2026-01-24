@@ -7,14 +7,12 @@ const errors = require('@tryghost/errors');
 module.exports = class MailgunClient {
     #config;
     #settings;
-    #labs;
 
     static DEFAULT_BATCH_SIZE = 1000;
 
-    constructor({config, settings, labs}) {
+    constructor({config, settings}) {
         this.#config = config;
         this.#settings = settings;
-        this.#labs = labs;
     }
 
     /**
@@ -194,13 +192,10 @@ module.exports = class MailgunClient {
     #getDomainsToFetch(mailgunConfig) {
         const domains = [mailgunConfig.domain];
 
-        // Check if domain warming is enabled
-        if (this.#labs.isSet('domainWarmup')) {
-            const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
-            if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
-                domains.push(fallbackDomain);
-                logging.info(`[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`);
-            }
+        const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
+        if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
+            domains.push(fallbackDomain);
+            logging.info(`[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`);
         }
 
         return domains;

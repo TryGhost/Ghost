@@ -1,6 +1,6 @@
-import {AppContext} from '../../app-context';
-import {Avatar} from './avatar';
-import {buildDeletedMember, buildMember} from '../../../test/utils/fixtures';
+import {AppContext} from '../../../../src/app-context';
+import {Avatar} from '../../../../src/components/content/avatar';
+import {buildDeletedMember, buildMember} from '../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {

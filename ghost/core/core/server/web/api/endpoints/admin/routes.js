@@ -155,7 +155,6 @@ module.exports = function apiRoutes() {
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
-    router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
     router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
     router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
@@ -165,10 +164,9 @@ module.exports = function apiRoutes() {
     router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
     router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
     router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
-    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
+    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
     router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
-    router.get('/stats/utm-growth', mw.authAdminApi, http(api.stats.utmGrowth));
     router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
     router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
 

@@ -88,22 +88,11 @@ async function signin({data, api, state}) {
             includeOTC: true
         };
         const response = await api.member.sendMagicLink(payload);
-
-        if (response?.otc_ref) {
-            return {
-                page: 'magiclink',
-                lastPage: 'signin',
-                otcRef: response.otc_ref,
-                pageData: {
-                    ...(state.pageData || {}),
-                    email: (data?.email || '').trim()
-                }
-            };
-        }
-
+        const otcRef = response.otc_ref;
         return {
             page: 'magiclink',
             lastPage: 'signin',
+            ...(otcRef ? {otcRef} : {}),
             pageData: {
                 ...(state.pageData || {}),
                 email: (data?.email || '').trim()
@@ -167,10 +156,11 @@ async function verifyOTC({data, api}) {
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+        name = name?.trim();
 
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data});
+            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -311,15 +301,45 @@ async function continueSubscription({data, state, api}) {
     }
 }
 
-async function editBilling({data, state, api}) {
+async function applyOffer({data, state, api}) {
     try {
-        await api.member.editBilling(data);
+        const {offerId, subscriptionId} = data;
+        await api.member.applyOffer({
+            offerId,
+            subscriptionId
+        });
+        const member = await api.member.sessionData();
+        const action = 'applyOffer:success';
+        return {
+            action,
+            page: 'accountHome',
+            member: member,
+            offers: [],
+            popupNotification: createPopupNotification({
+                type: 'applyOffer:success', autoHide: true, closeable: true, state, status: 'success',
+                message: 'Offer applied successfully!'
+            })
+        };
     } catch (e) {
         return {
-            action: 'editBilling:failed',
+            action: 'applyOffer:failed',
             popupNotification: createPopupNotification({
-                type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: t('Failed to update billing information, please try again')
+                type: 'applyOffer:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to apply offer, please try again'
+            })
+        };
+    }
+}
+
+async function manageBilling({data, state, api}) {
+    try {
+        await api.member.manageBilling(data);
+    } catch (e) {
+        return {
+            action: 'manageBilling:failed',
+            popupNotification: createPopupNotification({
+                type: 'manageBilling:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to open billing portal, please try again')
             })
         };
     }
@@ -447,8 +467,9 @@ async function updateMemberEmail({data, state, api}) {
 }
 
 async function updateMemberData({data, state, api}) {
-    const {name} = data;
+    const name = data?.name?.trim();
     const originalName = getMemberName({member: state.member});
+
     if (originalName !== name) {
         try {
             const member = await api.member.update({name});
@@ -627,11 +648,12 @@ const Actions = {
     updateSubscription,
     cancelSubscription,
     continueSubscription,
+    applyOffer,
     updateNewsletter,
     updateProfile,
     refreshMemberData,
     clearPopupNotification,
-    editBilling,
+    manageBilling,
     checkoutPlan,
     updateNewsletterPreference,
     showPopupNotification,
