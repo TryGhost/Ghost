@@ -24,6 +24,12 @@ export const LoginResponseSchema = z.object({
     session: StaffSessionSchema
 });
 
+export const StaffMeResponseSchema = z.object({
+    staff: StaffSchema
+});
+
+export const LoginRequestBodySchema = LoginRequestSchema;
+
 export type StaffResponse = z.infer<typeof StaffSchema>;
 export type StaffSessionResponse = z.infer<typeof StaffSessionSchema>;
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;

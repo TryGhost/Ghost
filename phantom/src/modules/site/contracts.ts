@@ -15,5 +15,12 @@ export const SiteUpdateSchema = z.object({
     locale: z.string().min(2).optional()
 });
 
+export const SiteResponseSchema = z.object({
+    site: SiteSchema
+});
+
+export const SiteUpdateRequestSchema = SiteUpdateSchema;
+export const SiteUpdateResponseSchema = SiteResponseSchema;
+
 export type SiteResponse = z.infer<typeof SiteSchema>;
 export type SiteUpdateInput = z.infer<typeof SiteUpdateSchema>;

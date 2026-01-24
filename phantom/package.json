@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hono/node-server": "1.13.1",
+    "@hono/zod-openapi": "0.19.2",
     "@libsql/client": "0.14.0",
     "drizzle-orm": "0.38.2",
     "hono": "4.6.2",
