@@ -4409,13 +4409,13 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@number-flow/react@0.5.10":
-  version "0.5.10"
-  resolved "https://registry.yarnpkg.com/@number-flow/react/-/react-0.5.10.tgz#7468384c0aaf03148986e4948d534ac832fe42e9"
-  integrity sha512-a8Wh5eNITn7Km4xbddAH7QH8eNmnduR6k34ER1hkHSGO4H2yU1DDnuAWLQM99vciGInFODemSc0tdxrXkJEpbA==
+"@number-flow/react@0.5.11":
+  version "0.5.11"
+  resolved "https://registry.yarnpkg.com/@number-flow/react/-/react-0.5.11.tgz#d108e37a3e1e8c7fd98e986b288a91ac8c767fe9"
+  integrity sha512-xo7QFAfQlKiIRbLjoIjZNXsNQmY+QxkyxkNWy+BCP9u1/SkqyqQ/1pYWa7d175V2r4OdmvCvlAnACSYOP1pTaw==
   dependencies:
     esm-env "^1.1.4"
-    number-flow "0.5.8"
+    number-flow "0.5.9"
 
 "@nx/nx-darwin-arm64@22.0.4":
   version "22.0.4"
@@ -26438,10 +26438,10 @@ num2fraction@^1.2.2:
   resolved "https://registry.yarnpkg.com/num2fraction/-/num2fraction-1.2.2.tgz#6f682b6a027a4e9ddfa4564cd2589d1d4e669ede"
   integrity sha512-Y1wZESM7VUThYY+4W+X4ySH2maqcA+p7UR+w8VWNWVAd6lwuXXWz/w/Cz43J/dI2I+PS6wD5N+bJUF+gjWvIqg==
 
-number-flow@0.5.8:
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/number-flow/-/number-flow-0.5.8.tgz#39bbf5fbce414513f1add06d717c27a299f1e433"
-  integrity sha512-FPr1DumWyGi5Nucoug14bC6xEz70A1TnhgSHhKyfqjgji2SOTz+iLJxKtv37N5JyJbteGYCm6NQ9p1O4KZ7iiA==
+number-flow@0.5.9:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/number-flow/-/number-flow-0.5.9.tgz#0f817a6321da366dc49aca74252185336c9239d0"
+  integrity sha512-o3102c/4qRd6eV4n+rw6B/UP8+FosbhIxj4uA6GsjhryrGZRVtCtKIKEeBiOwUV52cUGJneeu0treELcV7U/lw==
   dependencies:
     esm-env "^1.1.4"
 
