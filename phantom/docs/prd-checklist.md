@@ -25,10 +25,10 @@ References:
 - [ ] Partner audit logging
 
 ## 3) Member authentication and signup policy
-- [ ] Magic-link login tokens
-- [ ] SignupPolicy enforcement
-- [ ] AbuseGuard rate limits
-- [ ] Member auth events persisted
+- [x] Magic-link login tokens
+- [x] SignupPolicy enforcement
+- [x] AbuseGuard rate limits
+- [x] Member auth events persisted
 - [ ] Session verification for gated content
 
 ## 4) Member subscriptions and payments

@@ -4,5 +4,16 @@ export {
     roleTable,
     staffRoleTable,
     staffSessionTable,
+    staffInviteTable,
+    staffApiTokenTable,
+    integrationTokenTable,
+    staffAuthEventTable,
+    staffAuthFactorTable,
     resetTokenTable
 } from '../../modules/identity/db.js';
+export {
+    memberTable,
+    memberAuthTokenTable,
+    memberSessionTable,
+    memberAuthEventTable
+} from '../../modules/members/db.js';

@@ -3,6 +3,7 @@ import {createApp} from '../src/app/app.js';
 import type {SiteService} from '../src/modules/site/service.js';
 import type {StaffAuthService} from '../src/modules/identity/service.js';
 import type {SiteUpdateInput} from '../src/modules/site/contracts.js';
+import type {MemberAuthService} from '../src/modules/members/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -80,9 +81,28 @@ const staffAuthService: StaffAuthService = {
     })
 };
 
+const memberAuthService: MemberAuthService = {
+    requestMagicLink: async () => ({issued: true, token: 'token'}),
+    verifyMagicLink: async () => ({
+        member: {
+            id: 'member',
+            email: 'member@example.com',
+            status: 'free',
+            createdAt: 1,
+            updatedAt: 2
+        },
+        session: {
+            id: 'member-session',
+            memberId: 'member',
+            createdAt: 1,
+            expiresAt: 2
+        }
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
-        const app = createApp({siteService, staffAuthService});
+        const app = createApp({siteService, staffAuthService, memberAuthService});
 
         const response = await app.request('/health');
         const body = await response.json();
@@ -92,7 +112,7 @@ describe('app routes', () => {
     });
 
     it('updates site details', async () => {
-        const app = createApp({siteService, staffAuthService});
+        const app = createApp({siteService, staffAuthService, memberAuthService});
 
         const response = await app.request('/site', {
             method: 'PUT',
@@ -114,7 +134,7 @@ describe('app routes', () => {
     });
 
     it('returns validation errors for invalid updates', async () => {
-        const app = createApp({siteService, staffAuthService});
+        const app = createApp({siteService, staffAuthService, memberAuthService});
 
         const response = await app.request('/site', {
             method: 'PUT',

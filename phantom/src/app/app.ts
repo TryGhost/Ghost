@@ -5,13 +5,16 @@ import {handleError} from '../platform/http/error-handler.js';
 import type {StaffAuthService} from '../modules/identity/service.js';
 import {createIdentityRouter} from '../modules/identity/routes.js';
 import {createStaffSessionGuard} from '../modules/identity/auth.js';
+import type {MemberAuthService} from '../modules/members/service.js';
+import {createMembersRouter} from '../modules/members/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
     staffAuthService: StaffAuthService;
+    memberAuthService: MemberAuthService;
 };
 
-export const createApp = ({siteService, staffAuthService}: AppDependencies) => {
+export const createApp = ({siteService, staffAuthService, memberAuthService}: AppDependencies) => {
     const app = new Hono();
 
     app.get('/health', (context) => {
@@ -24,6 +27,7 @@ export const createApp = ({siteService, staffAuthService}: AppDependencies) => {
 
     app.route('/site', createSiteRouter(siteService));
     app.route('/staff', createIdentityRouter(staffAuthService));
+    app.route('/members', createMembersRouter(memberAuthService));
 
     app.onError(handleError);
 
