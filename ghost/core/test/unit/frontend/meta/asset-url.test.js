@@ -1,10 +1,15 @@
 const should = require('should');
 const sinon = require('sinon');
+const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const configUtils = require('../../../utils/config-utils');
 const config = configUtils.config;
+const themeEngine = require('../../../../core/frontend/services/theme-engine');
+const assetHash = require('../../../../core/frontend/services/asset-hash');
 
 const getAssetUrl = require('../../../../core/frontend/meta/asset-url');
 
@@ -26,11 +31,13 @@ describe('getAssetUrl', function () {
 
     it('should not add asset to url if ghost.css for default templates', function () {
         const testUrl = getAssetUrl('public/ghost.css');
-        testUrl.should.equal('/public/ghost.css?v=' + config.get('assetHash'));
+        // Public assets now use file-based hash when file exists, otherwise global hash
+        testUrl.should.match(/^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
     });
 
     it('should not add asset to url has public in it', function () {
         const testUrl = getAssetUrl('public/myfile.js');
+        // Non-existent public files fall back to global hash
         testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
     });
 
@@ -115,11 +122,13 @@ describe('getAssetUrl', function () {
 
         it('should not add asset to url if ghost.css for default templates', function () {
             const testUrl = getAssetUrl('public/ghost.css');
-            testUrl.should.equal('/blog/public/ghost.css?v=' + config.get('assetHash'));
+            // Public assets now use file-based hash when file exists
+            testUrl.should.match(/^\/blog\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
         });
 
         it('should not add asset to url has public in it', function () {
             const testUrl = getAssetUrl('public/myfile.js');
+            // Non-existent public files fall back to global hash
             testUrl.should.equal('/blog/public/myfile.js?v=' + config.get('assetHash'));
         });
 
@@ -168,6 +177,88 @@ describe('getAssetUrl', function () {
                 const testUrl = getAssetUrl('test.page/myfile.js', true);
                 testUrl.should.equal('/blog/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
             });
+        });
+    });
+
+    describe('file-based hash', function () {
+        const fixturesPath = path.join(__dirname, '../../../utils/fixtures/themes/casper');
+
+        afterEach(function () {
+            assetHash.clearCache();
+            sinon.restore();
+        });
+
+        it('should use SHA256 hash of file content when theme asset exists', function () {
+            // Mock active theme
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            // Use the built/screen.css file that exists in the casper fixture
+            const testFile = 'built/screen.css';
+            const fullPath = path.join(fixturesPath, 'assets', testFile);
+            const content = fs.readFileSync(fullPath);
+            const expectedHash = crypto.createHash('sha256')
+                .update(content)
+                .digest('hex')
+                .substring(0, 16);
+
+            const testUrl = getAssetUrl(testFile);
+            testUrl.should.equal(`/assets/${testFile}?v=${expectedHash}`);
+        });
+
+        it('should fallback to global hash when theme asset file does not exist', function () {
+            // Mock active theme
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            // Request a non-existent file
+            const testUrl = getAssetUrl('nonexistent/file.js');
+
+            // Should use global hash since file doesn't exist
+            testUrl.should.equal('/assets/nonexistent/file.js?v=' + config.get('assetHash'));
+        });
+
+        it('should fallback to global hash when no active theme', function () {
+            // Mock no active theme
+            sinon.stub(themeEngine, 'getActive').returns(null);
+
+            const testUrl = getAssetUrl('myfile.js');
+
+            // Should use global hash
+            testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
+        });
+
+        it('should use file-based hash for public assets when file exists', function () {
+            // Public assets use file-based hash when the file exists
+            const testUrl = getAssetUrl('public/ghost.css');
+            // ghost.css exists in the static public path, so it should have a file-based hash
+            testUrl.should.match(/^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+        });
+
+        it('should fallback to global hash for non-existent public assets', function () {
+            // Non-existent public files fall back to global hash
+            const testUrl = getAssetUrl('public/nonexistent.css');
+            testUrl.should.equal('/public/nonexistent.css?v=' + config.get('assetHash'));
+        });
+
+        it('should return different hashes for different theme asset files', function () {
+            // Mock active theme with real files
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            // Use built/screen.css and built/casper.js which exist in casper fixture
+            const cssUrl = getAssetUrl('built/screen.css');
+            const jsUrl = getAssetUrl('built/casper.js');
+
+            // Extract hashes
+            const cssHash = cssUrl.match(/\?v=([a-f0-9]+)/)[1];
+            const jsHash = jsUrl.match(/\?v=([a-f0-9]+)/)[1];
+
+            // Hashes should be different for different files
+            cssHash.should.not.equal(jsHash);
         });
     });
 });

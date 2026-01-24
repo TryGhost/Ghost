@@ -36,7 +36,8 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('/public/ghost.css?v=abc');
+            // ghost.css exists in static public path, so it gets a file-based hash
+            String(rendered).should.match(/^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
         });
 
         it('handles custom favicon correctly', function () {
@@ -105,7 +106,8 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             should.exist(rendered);
-            String(rendered).should.equal('http://127.0.0.1/public/ghost.css?v=abc');
+            // ghost.css exists in static public path, so it gets a file-based hash
+            String(rendered).should.match(/^http:\/\/127\.0\.0\.1\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
         });
     });
 });

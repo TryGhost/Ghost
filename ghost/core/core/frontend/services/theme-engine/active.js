@@ -21,6 +21,7 @@ const engine = require('./engine');
 const themeI18n = require('./i18n');
 const themeI18next = require('./i18next');
 const labs = require('../../../shared/labs');
+const assetHash = require('../asset-hash');
 // Current instance of ActiveTheme
 let currentActiveTheme;
 
@@ -119,9 +120,10 @@ class ActiveTheme {
     }
 
     mount(siteApp) {
-        // reset the asset hash
-        // @TODO: set this on the theme instead of globally, or use proper file-based hash
+        // Reset the global asset hash (used as fallback for non-theme assets)
         config.set('assetHash', null);
+        // Clear the file-based asset hash cache (for theme assets)
+        assetHash.clearCache();
         // clear the view cache
         siteApp.cache = {};
         // Set the views and engine
