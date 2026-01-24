@@ -1,7 +1,19 @@
 import {randomUUID} from 'node:crypto';
-import type {LoginRequest, StaffResponse, StaffSessionResponse} from './contracts.js';
+import type {
+    LoginRequest,
+    PasswordResetConfirmRequest,
+    PasswordResetConfirmResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
+    StaffInviteAcceptRequest,
+    StaffInviteAcceptResponse,
+    StaffInviteRequest,
+    StaffInviteResponse,
+    StaffResponse,
+    StaffSessionResponse
+} from './contracts.js';
 import type {StaffRepository} from './repo.js';
-import {verifyPassword} from '../../platform/auth/passwords.js';
+import {hashPassword, verifyPassword} from '../../platform/auth/passwords.js';
 import {createRateLimiter} from '../../platform/auth/rate-limiter.js';
 import {HttpError} from '../../platform/http/errors.js';
 
@@ -9,9 +21,15 @@ export type StaffAuthService = {
     login: (input: LoginRequest, ipAddress: string) => Promise<{staff: StaffResponse; session: StaffSessionResponse}>;
     getStaffBySession: (sessionId: string) => Promise<StaffResponse>;
     logout: (sessionId: string) => Promise<void>;
+    requestPasswordReset: (input: PasswordResetRequest) => Promise<PasswordResetResponse>;
+    resetPassword: (input: PasswordResetConfirmRequest) => Promise<PasswordResetConfirmResponse>;
+    createStaffInvite: (input: StaffInviteRequest) => Promise<StaffInviteResponse>;
+    acceptStaffInvite: (input: StaffInviteAcceptRequest) => Promise<StaffInviteAcceptResponse>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
+const resetTokenTtlMs = 1000 * 60 * 60;
+const inviteTtlMs = 1000 * 60 * 60 * 24 * 7;
 
 const mapStaff = (record: {
     id: string;
@@ -86,9 +104,123 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         await repository.revokeSession(sessionId, Date.now());
     };
 
+    const requestPasswordReset = async (input: PasswordResetRequest) => {
+        const staff = await repository.getStaffByEmail(input.email);
+        if (!staff) {
+            return {issued: false};
+        }
+
+        const now = Date.now();
+        const token = randomUUID();
+        const resetToken = await repository.createResetToken({
+            id: randomUUID(),
+            staffId: staff.id,
+            token,
+            expiresAt: now + resetTokenTtlMs,
+            usedAt: null
+        });
+
+        return {
+            issued: true,
+            resetToken: {
+                token: resetToken.token,
+                expiresAt: resetToken.expiresAt
+            }
+        };
+    };
+
+    const resetPassword = async (input: PasswordResetConfirmRequest) => {
+        const token = await repository.getResetTokenByToken(input.token);
+        if (!token || token.usedAt || token.expiresAt <= Date.now()) {
+            throw new HttpError(400, 'invalid_reset_token', 'Reset token is invalid or expired');
+        }
+
+        const staff = await repository.getStaffById(token.staffId);
+        if (!staff) {
+            throw new HttpError(400, 'invalid_reset_token', 'Reset token is invalid or expired');
+        }
+
+        const now = Date.now();
+        await repository.updateStaffPassword(staff.id, hashPassword(input.password), now);
+        await repository.markResetTokenUsed(token.id, now);
+        await repository.revokeSessionsForStaff(staff.id, now);
+
+        return {
+            staffId: staff.id,
+            verificationToken: randomUUID()
+        };
+    };
+
+    const createStaffInvite = async (input: StaffInviteRequest) => {
+        const existing = await repository.getStaffByEmail(input.email);
+        if (existing) {
+            throw new HttpError(409, 'staff_exists', 'Staff already exists');
+        }
+
+        const now = Date.now();
+        const invite = await repository.createInvite({
+            id: randomUUID(),
+            email: input.email,
+            role: input.role,
+            token: randomUUID(),
+            createdAt: now,
+            expiresAt: now + inviteTtlMs,
+            acceptedAt: null
+        });
+
+        return {
+            invite: {
+                id: invite.id,
+                email: invite.email,
+                role: invite.role,
+                token: invite.token,
+                expiresAt: invite.expiresAt
+            }
+        };
+    };
+
+    const acceptStaffInvite = async (input: StaffInviteAcceptRequest) => {
+        const invite = await repository.getInviteByToken(input.token);
+        if (!invite || invite.acceptedAt || invite.expiresAt <= Date.now()) {
+            throw new HttpError(400, 'invalid_invite', 'Invite is invalid or expired');
+        }
+
+        const existing = await repository.getStaffByEmail(invite.email);
+        if (existing) {
+            throw new HttpError(409, 'staff_exists', 'Staff already exists');
+        }
+
+        const now = Date.now();
+        const staffId = randomUUID();
+        await repository.createStaff({
+            id: staffId,
+            email: invite.email,
+            name: input.name,
+            status: 'active',
+            passwordHash: hashPassword(input.password),
+            createdAt: now,
+            updatedAt: now
+        });
+
+        let role = await repository.getRoleByName(invite.role);
+        if (!role) {
+            role = {id: randomUUID(), name: invite.role};
+            await repository.createRole(role);
+        }
+
+        await repository.assignRoleToStaff(staffId, role.id);
+        await repository.markInviteAccepted(invite.id, now);
+
+        return {staffId};
+    };
+
     return {
         login,
         getStaffBySession,
-        logout
+        logout,
+        requestPasswordReset,
+        resetPassword,
+        createStaffInvite,
+        acceptStaffInvite
     };
 };

@@ -3,10 +3,18 @@ import type {DbClient} from '../../db/client.js';
 import {
     staffTable,
     staffSessionTable,
+    staffInviteTable,
+    roleTable,
+    staffRoleTable,
     resetTokenTable,
     type StaffRecord,
+    type NewStaffRecord,
+    type RoleRecord,
+    type NewRoleRecord,
     type StaffSessionRecord,
     type NewStaffSessionRecord,
+    type StaffInviteRecord,
+    type NewStaffInviteRecord,
     type ResetTokenRecord,
     type NewResetTokenRecord
 } from './db.js';
@@ -14,10 +22,21 @@ import {
 export type StaffRepository = {
     getStaffByEmail: (email: string) => Promise<StaffRecord | null>;
     getStaffById: (id: string) => Promise<StaffRecord | null>;
+    createStaff: (staff: NewStaffRecord) => Promise<StaffRecord>;
+    updateStaffPassword: (id: string, passwordHash: string, updatedAt: number) => Promise<void>;
     createSession: (session: NewStaffSessionRecord) => Promise<StaffSessionRecord>;
     getSession: (id: string) => Promise<StaffSessionRecord | null>;
     revokeSession: (id: string, revokedAt: number) => Promise<void>;
+    revokeSessionsForStaff: (staffId: string, revokedAt: number) => Promise<void>;
     createResetToken: (token: NewResetTokenRecord) => Promise<ResetTokenRecord>;
+    getResetTokenByToken: (token: string) => Promise<ResetTokenRecord | null>;
+    markResetTokenUsed: (id: string, usedAt: number) => Promise<void>;
+    createInvite: (invite: NewStaffInviteRecord) => Promise<StaffInviteRecord>;
+    getInviteByToken: (token: string) => Promise<StaffInviteRecord | null>;
+    markInviteAccepted: (id: string, acceptedAt: number) => Promise<void>;
+    getRoleByName: (name: string) => Promise<RoleRecord | null>;
+    createRole: (role: NewRoleRecord) => Promise<void>;
+    assignRoleToStaff: (staffId: string, roleId: string) => Promise<void>;
 };
 
 export const createStaffRepository = (db: DbClient): StaffRepository => {
@@ -31,6 +50,15 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         return rows[0] ?? null;
     };
 
+    const createStaff = async (staff: NewStaffRecord) => {
+        await db.insert(staffTable).values(staff);
+        const rows = await db.select().from(staffTable).where(eq(staffTable.id, staff.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Staff record missing after insert');
+        }
+        return rows[0];
+    };
+
     const createSession = async (session: NewStaffSessionRecord) => {
         await db.insert(staffSessionTable).values(session);
         const rows = await db.select().from(staffSessionTable).where(eq(staffSessionTable.id, session.id)).limit(1);
@@ -38,6 +66,13 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
             throw new Error('Session record missing after insert');
         }
         return rows[0];
+    };
+
+    const updateStaffPassword = async (id: string, passwordHash: string, updatedAt: number) => {
+        await db
+            .update(staffTable)
+            .set({passwordHash, updatedAt})
+            .where(eq(staffTable.id, id));
     };
 
     const getSession = async (id: string) => {
@@ -52,6 +87,13 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
             .where(eq(staffSessionTable.id, id));
     };
 
+    const revokeSessionsForStaff = async (staffId: string, revokedAt: number) => {
+        await db
+            .update(staffSessionTable)
+            .set({revokedAt})
+            .where(eq(staffSessionTable.staffId, staffId));
+    };
+
     const createResetToken = async (token: NewResetTokenRecord) => {
         await db.insert(resetTokenTable).values(token);
         const rows = await db.select().from(resetTokenTable).where(eq(resetTokenTable.id, token.id)).limit(1);
@@ -61,12 +103,69 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         return rows[0];
     };
 
+    const getResetTokenByToken = async (token: string) => {
+        const rows = await db.select().from(resetTokenTable).where(eq(resetTokenTable.token, token)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const markResetTokenUsed = async (id: string, usedAt: number) => {
+        await db
+            .update(resetTokenTable)
+            .set({usedAt})
+            .where(eq(resetTokenTable.id, id));
+    };
+
+    const createInvite = async (invite: NewStaffInviteRecord) => {
+        await db.insert(staffInviteTable).values(invite);
+        const rows = await db.select().from(staffInviteTable).where(eq(staffInviteTable.id, invite.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Invite record missing after insert');
+        }
+        return rows[0];
+    };
+
+    const getInviteByToken = async (token: string) => {
+        const rows = await db.select().from(staffInviteTable).where(eq(staffInviteTable.token, token)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const markInviteAccepted = async (id: string, acceptedAt: number) => {
+        await db
+            .update(staffInviteTable)
+            .set({acceptedAt})
+            .where(eq(staffInviteTable.id, id));
+    };
+
+    const getRoleByName = async (name: string) => {
+        const rows = await db.select().from(roleTable).where(eq(roleTable.name, name)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const createRole = async (role: NewRoleRecord) => {
+        await db.insert(roleTable).values(role);
+    };
+
+    const assignRoleToStaff = async (staffId: string, roleId: string) => {
+        await db.insert(staffRoleTable).values({staffId, roleId});
+    };
+
     return {
         getStaffByEmail,
         getStaffById,
+        createStaff,
+        updateStaffPassword,
         createSession,
         getSession,
         revokeSession,
-        createResetToken
+        revokeSessionsForStaff,
+        createResetToken,
+        getResetTokenByToken,
+        markResetTokenUsed,
+        createInvite,
+        getInviteByToken,
+        markInviteAccepted,
+        getRoleByName,
+        createRole,
+        assignRoleToStaff
     };
 };

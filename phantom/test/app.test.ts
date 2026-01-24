@@ -34,7 +34,19 @@ const staffAuthService: StaffAuthService = {
         name: 'Jamie',
         status: 'active'
     }),
-    logout: async () => undefined
+    logout: async () => undefined,
+    requestPasswordReset: async () => ({issued: true}),
+    resetPassword: async () => ({staffId: 'staff', verificationToken: 'verification'}),
+    createStaffInvite: async () => ({
+        invite: {
+            id: 'invite',
+            email: 'new@example.com',
+            role: 'editor',
+            token: 'invite-token',
+            expiresAt: 2
+        }
+    }),
+    acceptStaffInvite: async () => ({staffId: 'staff-2'})
 };
 
 describe('app routes', () => {
