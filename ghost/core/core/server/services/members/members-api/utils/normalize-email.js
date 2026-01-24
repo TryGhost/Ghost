@@ -6,7 +6,7 @@ const {parseEmailAddress} = require('@tryghost/parse-email-address');
  * domains
  *
  * @param {string} email The email address to normalize
- * @returns {null | string} The normalized email address, nor null if the email can't be normalized
+ * @returns {null | string} The normalized email address, or null if the email can't be normalized
  */
 function normalizeEmail(email) {
     if (typeof email !== 'string') {
