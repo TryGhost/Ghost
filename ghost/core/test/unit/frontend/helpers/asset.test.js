@@ -3,8 +3,6 @@
 
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
-
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
 const asset = require('../../../../core/frontend/helpers/asset');
@@ -38,7 +36,8 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            assert.equal(String(rendered), '/public/ghost.css?v=abc');
+            // ghost.css exists in static public path, so it gets a file-based hash
+            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
         });
 
         it('handles custom favicon correctly', function () {
@@ -107,7 +106,8 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            assert.equal(String(rendered), 'http://127.0.0.1/public/ghost.css?v=abc');
+            // ghost.css exists in static public path, so it gets a file-based hash
+            assert.match(String(rendered), /^http:\/\/127\.0\.0\.1\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
         });
     });
 });
