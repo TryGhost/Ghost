@@ -1,7 +1,6 @@
 import {eq} from 'drizzle-orm';
-import type {DbClient} from '../../../db/client.js';
-import {siteTable} from '../schema/site.schema.js';
-import type {SiteRecord} from '../schema/site.schema.js';
+import type {DbClient} from '../../db/client.js';
+import {siteTable, type SiteRecord} from './db.js';
 
 export type SiteRepository = {
     getSite: () => Promise<SiteRecord | null>;

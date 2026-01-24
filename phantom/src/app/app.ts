@@ -1,8 +1,8 @@
 import {Hono} from 'hono';
-import type {SiteService} from '../modules/site/service/site.service.js';
+import type {SiteService} from '../modules/site/service.js';
 import {createSiteRouter} from '../modules/site/routes.js';
 import {handleError} from '../platform/http/error-handler.js';
-import type {StaffAuthService} from '../modules/identity/service/staff-auth.service.js';
+import type {StaffAuthService} from '../modules/identity/service.js';
 import {createIdentityRouter} from '../modules/identity/routes.js';
 
 export type AppDependencies = {

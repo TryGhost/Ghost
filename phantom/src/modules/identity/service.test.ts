@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'vitest';
-import {createStaffAuthService} from './staff-auth.service.js';
-import type {StaffRepository} from '../repo/staff.repo.js';
-import {hashPassword} from '../../../platform/auth/passwords.js';
-import {HttpError} from '../../../platform/http/errors.js';
-import type {StaffRecord, StaffSessionRecord} from '../schema/staff.schema.js';
+import {createStaffAuthService} from './service.js';
+import type {StaffRepository} from './repo.js';
+import {hashPassword} from '../../platform/auth/passwords.js';
+import {HttpError} from '../../platform/http/errors.js';
+import type {StaffRecord, StaffSessionRecord} from './db.js';
 
 const createRepository = (staff: StaffRecord): StaffRepository => {
     let sessions: StaffSessionRecord[] = [];

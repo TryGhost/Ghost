@@ -1,9 +1,9 @@
 import {randomUUID} from 'node:crypto';
-import type {LoginRequest, StaffResponse, StaffSessionResponse} from '../contracts/staff.contracts.js';
-import type {StaffRepository} from '../repo/staff.repo.js';
-import {verifyPassword} from '../../../platform/auth/passwords.js';
-import {createRateLimiter} from '../../../platform/auth/rate-limiter.js';
-import {HttpError} from '../../../platform/http/errors.js';
+import type {LoginRequest, StaffResponse, StaffSessionResponse} from './contracts.js';
+import type {StaffRepository} from './repo.js';
+import {verifyPassword} from '../../platform/auth/passwords.js';
+import {createRateLimiter} from '../../platform/auth/rate-limiter.js';
+import {HttpError} from '../../platform/http/errors.js';
 
 export type StaffAuthService = {
     login: (input: LoginRequest, ipAddress: string) => Promise<{staff: StaffResponse; session: StaffSessionResponse}>;

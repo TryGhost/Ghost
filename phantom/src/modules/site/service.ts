@@ -1,7 +1,7 @@
-import type {SiteUpdateInput} from '../contracts/site.contracts.js';
-import type {Site} from '../model/site.js';
-import type {SiteRepository} from '../repo/site.repo.js';
-import {defaultSiteId} from '../repo/site.repo.js';
+import type {SiteUpdateInput} from './contracts.js';
+import type {Site} from './model.js';
+import type {SiteRepository} from './repo.js';
+import {defaultSiteId} from './repo.js';
 
 export type SiteService = {
     getSite: () => Promise<Site>;

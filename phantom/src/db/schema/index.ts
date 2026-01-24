@@ -1,8 +1,8 @@
-export {siteTable} from '../../modules/site/schema/site.schema.js';
+export {siteTable} from '../../modules/site/db.js';
 export {
     staffTable,
     roleTable,
     staffRoleTable,
     staffSessionTable,
     resetTokenTable
-} from '../../modules/identity/schema/staff.schema.js';
+} from '../../modules/identity/db.js';

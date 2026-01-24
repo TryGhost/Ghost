@@ -1,13 +1,21 @@
 import {Hono} from 'hono';
-import {createSiteHandlers} from './handlers/site.handlers.js';
-import type {SiteService} from './service/site.service.js';
+import type {SiteService} from './service.js';
+import {SiteUpdateSchema} from './contracts.js';
 
 export const createSiteRouter = (service: SiteService) => {
     const router = new Hono();
-    const handlers = createSiteHandlers(service);
 
-    router.get('/', handlers.getSite);
-    router.put('/', handlers.updateSite);
+    router.get('/', async (context) => {
+        const site = await service.getSite();
+        return context.json({site});
+    });
+
+    router.put('/', async (context) => {
+        const body = await context.req.json();
+        const input = SiteUpdateSchema.parse(body);
+        const site = await service.updateSite(input);
+        return context.json({site});
+    });
 
     return router;
 };

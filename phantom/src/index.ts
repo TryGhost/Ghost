@@ -2,10 +2,10 @@ import {serve} from '@hono/node-server';
 import {createApp} from './app/app.js';
 import {createDb} from './db/client.js';
 import {loadConfig} from './platform/config/config.js';
-import {createSiteRepository} from './modules/site/repo/site.repo.js';
-import {createSiteService} from './modules/site/service/site.service.js';
-import {createStaffRepository} from './modules/identity/repo/staff.repo.js';
-import {createStaffAuthService} from './modules/identity/service/staff-auth.service.js';
+import {createSiteRepository} from './modules/site/repo.js';
+import {createSiteService} from './modules/site/service.js';
+import {createStaffRepository} from './modules/identity/repo.js';
+import {createStaffAuthService} from './modules/identity/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);

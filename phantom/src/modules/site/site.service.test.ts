@@ -1,8 +1,8 @@
 import {describe, expect, it} from 'vitest';
-import {createSiteService} from './site.service.js';
-import type {SiteRepository} from '../repo/site.repo.js';
-import {defaultSiteId} from '../repo/site.repo.js';
-import type {SiteRecord} from '../schema/site.schema.js';
+import {createSiteService} from './service.js';
+import type {SiteRepository} from './repo.js';
+import {defaultSiteId} from './repo.js';
+import type {SiteRecord} from './db.js';
 
 const createMemoryRepository = (): SiteRepository => {
     let record: SiteRecord | null = null;

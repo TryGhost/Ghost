@@ -1,5 +1,5 @@
 import {eq} from 'drizzle-orm';
-import type {DbClient} from '../../../db/client.js';
+import type {DbClient} from '../../db/client.js';
 import {
     staffTable,
     staffSessionTable,
@@ -9,7 +9,7 @@ import {
     type NewStaffSessionRecord,
     type ResetTokenRecord,
     type NewResetTokenRecord
-} from '../schema/staff.schema.js';
+} from './db.js';
 
 export type StaffRepository = {
     getStaffByEmail: (email: string) => Promise<StaffRecord | null>;
