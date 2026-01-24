@@ -11,6 +11,11 @@ import {
     StaffInviteAcceptResponseSchema,
     StaffInviteRequestBodySchema,
     StaffInviteResponseSchema,
+    StaffApiTokenCreateBodySchema,
+    StaffApiTokenCreateResponseSchema,
+    IntegrationTokenCreateBodySchema,
+    IntegrationTokenCreateResponseSchema,
+    TokenIdParamRequestSchema,
     StaffMeResponseSchema
 } from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
@@ -162,6 +167,80 @@ const staffInviteAcceptRoute = createRoute({
     }
 });
 
+const staffApiTokenCreateRoute = createRoute({
+    method: 'post',
+    path: '/api-tokens',
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: StaffApiTokenCreateBodySchema
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Staff API token created',
+            content: {
+                'application/json': {
+                    schema: StaffApiTokenCreateResponseSchema
+                }
+            }
+        }
+    }
+});
+
+const staffApiTokenRevokeRoute = createRoute({
+    method: 'delete',
+    path: '/api-tokens/{id}',
+    request: {
+        params: TokenIdParamRequestSchema
+    },
+    responses: {
+        204: {
+            description: 'Staff API token revoked'
+        }
+    }
+});
+
+const integrationTokenCreateRoute = createRoute({
+    method: 'post',
+    path: '/integration-tokens',
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: IntegrationTokenCreateBodySchema
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Integration token created',
+            content: {
+                'application/json': {
+                    schema: IntegrationTokenCreateResponseSchema
+                }
+            }
+        }
+    }
+});
+
+const integrationTokenRevokeRoute = createRoute({
+    method: 'delete',
+    path: '/integration-tokens/{id}',
+    request: {
+        params: TokenIdParamRequestSchema
+    },
+    responses: {
+        204: {
+            description: 'Integration token revoked'
+        }
+    }
+});
+
 export const createIdentityRouter = (service: StaffAuthService) => {
     const router = createOpenApiRouter();
 
@@ -222,6 +301,54 @@ export const createIdentityRouter = (service: StaffAuthService) => {
         const input = context.req.valid('json');
         const result = await service.acceptStaffInvite(input);
         return context.json(result);
+    });
+
+    router.openapi(staffApiTokenCreateRoute, async (context) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        const staff = await service.getStaffBySession(token);
+        const input = context.req.valid('json');
+        const result = await service.createStaffApiToken(staff.id, input);
+        return context.json(result);
+    });
+
+    router.openapi(staffApiTokenRevokeRoute, async (context) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        const staff = await service.getStaffBySession(token);
+        const params = context.req.valid('param');
+        await service.revokeStaffApiToken(staff.id, params.id);
+        return context.body(null, 204);
+    });
+
+    router.openapi(integrationTokenCreateRoute, async (context) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        await service.getStaffBySession(token);
+        const input = context.req.valid('json');
+        const result = await service.createIntegrationToken(input);
+        return context.json(result);
+    });
+
+    router.openapi(integrationTokenRevokeRoute, async (context) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        await service.getStaffBySession(token);
+        const params = context.req.valid('param');
+        await service.revokeIntegrationToken(params.id);
+        return context.body(null, 204);
     });
 
     return router;

@@ -3,7 +3,14 @@ import {createStaffAuthService} from './service.js';
 import type {StaffRepository} from './repo.js';
 import {hashPassword, verifyPassword} from '../../platform/auth/passwords.js';
 import {HttpError} from '../../platform/http/errors.js';
-import type {NewResetTokenRecord, ResetTokenRecord, StaffRecord, StaffSessionRecord} from './db.js';
+import type {
+    IntegrationTokenRecord,
+    NewResetTokenRecord,
+    ResetTokenRecord,
+    StaffApiTokenRecord,
+    StaffRecord,
+    StaffSessionRecord
+} from './db.js';
 
 const createRepository = (staff: StaffRecord) => {
     let staffRecords: StaffRecord[] = [{...staff}];
@@ -20,6 +27,8 @@ const createRepository = (staff: StaffRecord) => {
     }[] = [];
     const roles: {id: string; name: string}[] = [];
     const staffRoles: {staffId: string; roleId: string}[] = [];
+    const staffApiTokens: StaffApiTokenRecord[] = [];
+    const integrationTokens: IntegrationTokenRecord[] = [];
 
     const repository: StaffRepository = {
         getStaffByEmail: async (email) => staffRecords.find((record) => record.email === email) ?? null,
@@ -88,6 +97,44 @@ const createRepository = (staff: StaffRecord) => {
         },
         assignRoleToStaff: async (staffId, roleId) => {
             staffRoles.push({staffId, roleId});
+        },
+        createStaffApiToken: async (token) => {
+            const record: StaffApiTokenRecord = {
+                ...token,
+                revokedAt: token.revokedAt ?? null
+            };
+            staffApiTokens.push(record);
+            return record;
+        },
+        getStaffApiTokenById: async (id) => staffApiTokens.find((record) => record.id === id) ?? null,
+        getStaffApiTokenByToken: async (token) => staffApiTokens.find((record) => record.token === token) ?? null,
+        revokeStaffApiToken: async (id, revokedAt) => {
+            const index = staffApiTokens.findIndex((record) => record.id === id);
+            const existing = staffApiTokens[index];
+            if (!existing) {
+                return;
+            }
+
+            staffApiTokens[index] = {...existing, revokedAt};
+        },
+        createIntegrationToken: async (token) => {
+            const record: IntegrationTokenRecord = {
+                ...token,
+                revokedAt: token.revokedAt ?? null
+            };
+            integrationTokens.push(record);
+            return record;
+        },
+        getIntegrationTokenById: async (id) => integrationTokens.find((record) => record.id === id) ?? null,
+        getIntegrationTokenByToken: async (token) => integrationTokens.find((record) => record.token === token) ?? null,
+        revokeIntegrationToken: async (id, revokedAt) => {
+            const index = integrationTokens.findIndex((record) => record.id === id);
+            const existing = integrationTokens[index];
+            if (!existing) {
+                return;
+            }
+
+            integrationTokens[index] = {...existing, revokedAt};
         }
     };
 
@@ -97,7 +144,9 @@ const createRepository = (staff: StaffRecord) => {
             staffRecords: () => staffRecords,
             staffRoles: () => staffRoles,
             invites: () => invites,
-            roles: () => roles
+            roles: () => roles,
+            staffApiTokens: () => staffApiTokens,
+            integrationTokens: () => integrationTokens
         }
     };
 };
@@ -230,5 +279,51 @@ describe('staff auth service', () => {
         expect(staffRecords.some((record) => record.email === 'new@example.com')).toBe(true);
         expect(role).not.toBeNull();
         expect(staffRoles.some((entry) => entry.staffId === accepted.staffId)).toBe(true);
+    });
+
+    it('creates and revokes staff API tokens', async () => {
+        const staff: StaffRecord = {
+            id: 'staff-6',
+            email: 'token-owner@example.com',
+            name: 'Token Owner',
+            status: 'active',
+            passwordHash: hashPassword('password-123'),
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        const {repository, state} = createRepository(staff);
+        const service = createStaffAuthService(repository);
+
+        const created = await service.createStaffApiToken(staff.id, {name: 'CLI'});
+        await service.revokeStaffApiToken(staff.id, created.apiToken.id);
+
+        const stored = state.staffApiTokens()[0];
+
+        expect(created.apiToken.token).toBeTruthy();
+        expect(stored?.revokedAt).not.toBeNull();
+    });
+
+    it('creates and revokes integration tokens', async () => {
+        const staff: StaffRecord = {
+            id: 'staff-7',
+            email: 'integration-owner@example.com',
+            name: 'Integration Owner',
+            status: 'active',
+            passwordHash: hashPassword('password-123'),
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        const {repository, state} = createRepository(staff);
+        const service = createStaffAuthService(repository);
+
+        const created = await service.createIntegrationToken({name: 'Zapier'});
+        await service.revokeIntegrationToken(created.apiToken.id);
+
+        const stored = state.integrationTokens()[0];
+
+        expect(created.apiToken.token).toBeTruthy();
+        expect(stored?.revokedAt).not.toBeNull();
     });
 });

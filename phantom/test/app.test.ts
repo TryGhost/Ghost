@@ -46,7 +46,28 @@ const staffAuthService: StaffAuthService = {
             expiresAt: 2
         }
     }),
-    acceptStaffInvite: async () => ({staffId: 'staff-2'})
+    acceptStaffInvite: async () => ({staffId: 'staff-2'}),
+    createStaffApiToken: async () => ({
+        apiToken: {
+            id: 'token',
+            staffId: 'staff',
+            name: 'CLI',
+            token: 'token-value',
+            createdAt: 1,
+            revokedAt: null
+        }
+    }),
+    revokeStaffApiToken: async () => undefined,
+    createIntegrationToken: async () => ({
+        apiToken: {
+            id: 'integration-token',
+            name: 'Zapier',
+            token: 'token-value',
+            createdAt: 1,
+            revokedAt: null
+        }
+    }),
+    revokeIntegrationToken: async () => undefined
 };
 
 describe('app routes', () => {

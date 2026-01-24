@@ -9,6 +9,10 @@ import type {
     StaffInviteAcceptResponse,
     StaffInviteRequest,
     StaffInviteResponse,
+    StaffApiTokenCreateRequest,
+    StaffApiTokenCreateResponse,
+    IntegrationTokenCreateRequest,
+    IntegrationTokenCreateResponse,
     StaffResponse,
     StaffSessionResponse
 } from './contracts.js';
@@ -25,6 +29,10 @@ export type StaffAuthService = {
     resetPassword: (input: PasswordResetConfirmRequest) => Promise<PasswordResetConfirmResponse>;
     createStaffInvite: (input: StaffInviteRequest) => Promise<StaffInviteResponse>;
     acceptStaffInvite: (input: StaffInviteAcceptRequest) => Promise<StaffInviteAcceptResponse>;
+    createStaffApiToken: (staffId: string, input: StaffApiTokenCreateRequest) => Promise<StaffApiTokenCreateResponse>;
+    revokeStaffApiToken: (staffId: string, tokenId: string) => Promise<void>;
+    createIntegrationToken: (input: IntegrationTokenCreateRequest) => Promise<IntegrationTokenCreateResponse>;
+    revokeIntegrationToken: (tokenId: string) => Promise<void>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
@@ -214,6 +222,68 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         return {staffId};
     };
 
+    const createStaffApiToken = async (staffId: string, input: StaffApiTokenCreateRequest) => {
+        const now = Date.now();
+        const apiToken = await repository.createStaffApiToken({
+            id: randomUUID(),
+            staffId,
+            name: input.name,
+            token: randomUUID(),
+            createdAt: now,
+            revokedAt: null
+        });
+
+        return {
+            apiToken: {
+                id: apiToken.id,
+                staffId: apiToken.staffId,
+                name: apiToken.name,
+                token: apiToken.token,
+                createdAt: apiToken.createdAt,
+                revokedAt: apiToken.revokedAt ?? null
+            }
+        };
+    };
+
+    const revokeStaffApiToken = async (staffId: string, tokenId: string) => {
+        const token = await repository.getStaffApiTokenById(tokenId);
+        if (!token || token.staffId !== staffId || token.revokedAt) {
+            throw new HttpError(404, 'staff_api_token_not_found', 'API token not found');
+        }
+
+        await repository.revokeStaffApiToken(tokenId, Date.now());
+    };
+
+    const createIntegrationToken = async (input: IntegrationTokenCreateRequest) => {
+        const now = Date.now();
+        const apiToken = await repository.createIntegrationToken({
+            id: randomUUID(),
+            name: input.name,
+            token: randomUUID(),
+            createdAt: now,
+            revokedAt: null
+        });
+
+        return {
+            apiToken: {
+                id: apiToken.id,
+                name: apiToken.name,
+                token: apiToken.token,
+                createdAt: apiToken.createdAt,
+                revokedAt: apiToken.revokedAt ?? null
+            }
+        };
+    };
+
+    const revokeIntegrationToken = async (tokenId: string) => {
+        const token = await repository.getIntegrationTokenById(tokenId);
+        if (!token || token.revokedAt) {
+            throw new HttpError(404, 'integration_token_not_found', 'Integration token not found');
+        }
+
+        await repository.revokeIntegrationToken(tokenId, Date.now());
+    };
+
     return {
         login,
         getStaffBySession,
@@ -221,6 +291,10 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         requestPasswordReset,
         resetPassword,
         createStaffInvite,
-        acceptStaffInvite
+        acceptStaffInvite,
+        createStaffApiToken,
+        revokeStaffApiToken,
+        createIntegrationToken,
+        revokeIntegrationToken
     };
 };

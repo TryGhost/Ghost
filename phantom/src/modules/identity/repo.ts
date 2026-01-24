@@ -6,6 +6,8 @@ import {
     staffInviteTable,
     roleTable,
     staffRoleTable,
+    staffApiTokenTable,
+    integrationTokenTable,
     resetTokenTable,
     type StaffRecord,
     type NewStaffRecord,
@@ -15,6 +17,10 @@ import {
     type NewStaffSessionRecord,
     type StaffInviteRecord,
     type NewStaffInviteRecord,
+    type StaffApiTokenRecord,
+    type NewStaffApiTokenRecord,
+    type IntegrationTokenRecord,
+    type NewIntegrationTokenRecord,
     type ResetTokenRecord,
     type NewResetTokenRecord
 } from './db.js';
@@ -37,6 +43,14 @@ export type StaffRepository = {
     getRoleByName: (name: string) => Promise<RoleRecord | null>;
     createRole: (role: NewRoleRecord) => Promise<void>;
     assignRoleToStaff: (staffId: string, roleId: string) => Promise<void>;
+    createStaffApiToken: (token: NewStaffApiTokenRecord) => Promise<StaffApiTokenRecord>;
+    getStaffApiTokenById: (id: string) => Promise<StaffApiTokenRecord | null>;
+    getStaffApiTokenByToken: (token: string) => Promise<StaffApiTokenRecord | null>;
+    revokeStaffApiToken: (id: string, revokedAt: number) => Promise<void>;
+    createIntegrationToken: (token: NewIntegrationTokenRecord) => Promise<IntegrationTokenRecord>;
+    getIntegrationTokenById: (id: string) => Promise<IntegrationTokenRecord | null>;
+    getIntegrationTokenByToken: (token: string) => Promise<IntegrationTokenRecord | null>;
+    revokeIntegrationToken: (id: string, revokedAt: number) => Promise<void>;
 };
 
 export const createStaffRepository = (db: DbClient): StaffRepository => {
@@ -149,6 +163,58 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         await db.insert(staffRoleTable).values({staffId, roleId});
     };
 
+    const createStaffApiToken = async (token: NewStaffApiTokenRecord) => {
+        await db.insert(staffApiTokenTable).values(token);
+        const rows = await db.select().from(staffApiTokenTable).where(eq(staffApiTokenTable.id, token.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Staff API token missing after insert');
+        }
+        return rows[0];
+    };
+
+    const getStaffApiTokenById = async (id: string) => {
+        const rows = await db.select().from(staffApiTokenTable).where(eq(staffApiTokenTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const getStaffApiTokenByToken = async (token: string) => {
+        const rows = await db.select().from(staffApiTokenTable).where(eq(staffApiTokenTable.token, token)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const revokeStaffApiToken = async (id: string, revokedAt: number) => {
+        await db
+            .update(staffApiTokenTable)
+            .set({revokedAt})
+            .where(eq(staffApiTokenTable.id, id));
+    };
+
+    const createIntegrationToken = async (token: NewIntegrationTokenRecord) => {
+        await db.insert(integrationTokenTable).values(token);
+        const rows = await db.select().from(integrationTokenTable).where(eq(integrationTokenTable.id, token.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Integration token missing after insert');
+        }
+        return rows[0];
+    };
+
+    const getIntegrationTokenById = async (id: string) => {
+        const rows = await db.select().from(integrationTokenTable).where(eq(integrationTokenTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const getIntegrationTokenByToken = async (token: string) => {
+        const rows = await db.select().from(integrationTokenTable).where(eq(integrationTokenTable.token, token)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const revokeIntegrationToken = async (id: string, revokedAt: number) => {
+        await db
+            .update(integrationTokenTable)
+            .set({revokedAt})
+            .where(eq(integrationTokenTable.id, id));
+    };
+
     return {
         getStaffByEmail,
         getStaffById,
@@ -166,6 +232,14 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         markInviteAccepted,
         getRoleByName,
         createRole,
-        assignRoleToStaff
+        assignRoleToStaff,
+        createStaffApiToken,
+        getStaffApiTokenById,
+        getStaffApiTokenByToken,
+        revokeStaffApiToken,
+        createIntegrationToken,
+        getIntegrationTokenById,
+        getIntegrationTokenByToken,
+        revokeIntegrationToken
     };
 };

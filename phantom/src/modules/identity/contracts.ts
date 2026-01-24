@@ -75,6 +75,41 @@ export const StaffInviteAcceptResponseSchema = z.object({
     staffId: z.string().min(1)
 });
 
+export const StaffApiTokenSchema = z.object({
+    id: z.string().min(1),
+    staffId: z.string().min(1),
+    name: z.string().min(1),
+    createdAt: z.number().int(),
+    revokedAt: z.number().int().nullable()
+});
+
+export const IntegrationTokenSchema = z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    createdAt: z.number().int(),
+    revokedAt: z.number().int().nullable()
+});
+
+export const StaffApiTokenCreateSchema = z.object({
+    name: z.string().min(1)
+});
+
+export const IntegrationTokenCreateSchema = z.object({
+    name: z.string().min(1)
+});
+
+export const StaffApiTokenCreateResponseSchema = z.object({
+    apiToken: StaffApiTokenSchema.extend({token: z.string().min(1)})
+});
+
+export const IntegrationTokenCreateResponseSchema = z.object({
+    apiToken: IntegrationTokenSchema.extend({token: z.string().min(1)})
+});
+
+export const TokenIdParamSchema = z.object({
+    id: z.string().min(1)
+});
+
 export const StaffMeResponseSchema = z.object({
     staff: StaffSchema
 });
@@ -84,6 +119,9 @@ export const PasswordResetRequestBodySchema = PasswordResetRequestSchema;
 export const PasswordResetConfirmBodySchema = PasswordResetConfirmSchema;
 export const StaffInviteRequestBodySchema = StaffInviteRequestSchema;
 export const StaffInviteAcceptBodySchema = StaffInviteAcceptSchema;
+export const StaffApiTokenCreateBodySchema = StaffApiTokenCreateSchema;
+export const IntegrationTokenCreateBodySchema = IntegrationTokenCreateSchema;
+export const TokenIdParamRequestSchema = TokenIdParamSchema;
 
 export type StaffResponse = z.infer<typeof StaffSchema>;
 export type StaffSessionResponse = z.infer<typeof StaffSessionSchema>;
@@ -96,3 +134,7 @@ export type StaffInviteRequest = z.infer<typeof StaffInviteRequestSchema>;
 export type StaffInviteResponse = z.infer<typeof StaffInviteResponseSchema>;
 export type StaffInviteAcceptRequest = z.infer<typeof StaffInviteAcceptSchema>;
 export type StaffInviteAcceptResponse = z.infer<typeof StaffInviteAcceptResponseSchema>;
+export type StaffApiTokenCreateRequest = z.infer<typeof StaffApiTokenCreateSchema>;
+export type StaffApiTokenCreateResponse = z.infer<typeof StaffApiTokenCreateResponseSchema>;
+export type IntegrationTokenCreateRequest = z.infer<typeof IntegrationTokenCreateSchema>;
+export type IntegrationTokenCreateResponse = z.infer<typeof IntegrationTokenCreateResponseSchema>;

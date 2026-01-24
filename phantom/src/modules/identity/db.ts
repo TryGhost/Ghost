@@ -38,6 +38,23 @@ export const staffInviteTable = sqliteTable('staff_invites', {
     acceptedAt: integer('accepted_at')
 });
 
+export const staffApiTokenTable = sqliteTable('staff_api_tokens', {
+    id: text('id').primaryKey(),
+    staffId: text('staff_id').notNull(),
+    name: text('name').notNull(),
+    token: text('token').notNull(),
+    createdAt: integer('created_at').notNull(),
+    revokedAt: integer('revoked_at')
+});
+
+export const integrationTokenTable = sqliteTable('integration_tokens', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    token: text('token').notNull(),
+    createdAt: integer('created_at').notNull(),
+    revokedAt: integer('revoked_at')
+});
+
 export const resetTokenTable = sqliteTable('staff_reset_tokens', {
     id: text('id').primaryKey(),
     staffId: text('staff_id').notNull(),
@@ -56,5 +73,9 @@ export type StaffRoleRecord = typeof staffRoleTable.$inferSelect;
 export type NewStaffRoleRecord = typeof staffRoleTable.$inferInsert;
 export type StaffInviteRecord = typeof staffInviteTable.$inferSelect;
 export type NewStaffInviteRecord = typeof staffInviteTable.$inferInsert;
+export type StaffApiTokenRecord = typeof staffApiTokenTable.$inferSelect;
+export type NewStaffApiTokenRecord = typeof staffApiTokenTable.$inferInsert;
+export type IntegrationTokenRecord = typeof integrationTokenTable.$inferSelect;
+export type NewIntegrationTokenRecord = typeof integrationTokenTable.$inferInsert;
 export type ResetTokenRecord = typeof resetTokenTable.$inferSelect;
 export type NewResetTokenRecord = typeof resetTokenTable.$inferInsert;
