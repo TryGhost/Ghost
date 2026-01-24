@@ -16,7 +16,7 @@ const siteService = createSiteService(siteRepository);
 const staffRepository = createStaffRepository(db);
 const staffAuthService = createStaffAuthService(staffRepository);
 const memberRepository = createMemberRepository(db);
-const memberAuthService = createMemberAuthService(memberRepository, 'open');
+const memberAuthService = createMemberAuthService(memberRepository, config.memberAuth.signupPolicy);
 
 const app = createApp({
     siteService,
