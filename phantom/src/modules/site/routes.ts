@@ -2,6 +2,7 @@ import {createRoute} from '@hono/zod-openapi';
 import type {SiteService} from './service.js';
 import {SiteResponseSchema, SiteUpdateRequestSchema, SiteUpdateResponseSchema} from './contracts.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
+import {toSiteResponse} from './mappers.js';
 
 const getSiteRoute = createRoute({
     method: 'get',
@@ -47,13 +48,13 @@ export const createSiteRouter = (service: SiteService) => {
 
     router.openapi(getSiteRoute, async (context) => {
         const site = await service.getSite();
-        return context.json({site});
+        return context.json(toSiteResponse(site));
     });
 
     router.openapi(updateSiteRoute, async (context) => {
         const input = context.req.valid('json');
         const site = await service.updateSite(input);
-        return context.json({site});
+        return context.json(toSiteResponse(site));
     });
 
     return router;

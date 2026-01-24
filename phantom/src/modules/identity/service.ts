@@ -20,6 +20,14 @@ import type {
     StaffVerificationResponse
 } from './contracts.js';
 import type {StaffRepository} from './repo.js';
+import {
+    toIntegrationTokenResponse,
+    toStaffApiTokenResponse,
+    toStaffInviteResponse,
+    toStaffResponse,
+    toStaffSessionResponse,
+    toVerificationResponse
+} from './mappers.js';
 import {hashPassword, verifyPassword} from '../../platform/auth/passwords.js';
 import {createRateLimiter} from '../../platform/auth/rate-limiter.js';
 import {HttpError} from '../../platform/http/errors.js';
@@ -60,18 +68,6 @@ const createAuthEvent = async (repository: StaffRepository, input: {
         createdAt: Date.now()
     });
 };
-
-const mapStaff = (record: {
-    id: string;
-    email: string;
-    name: string;
-    status: string;
-}) => ({
-    id: record.id,
-    email: record.email,
-    name: record.name,
-    status: record.status === 'suspended' ? 'suspended' : 'active'
-} as const);
 
 export const createStaffAuthService = (repository: StaffRepository): StaffAuthService => {
     const login = async (input: LoginRequest, ipAddress: string) => {
@@ -128,12 +124,8 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
             });
 
             return {
-                staff: mapStaff(staff),
-                verification: {
-                    token: authFactor.token,
-                    type: 'device' as const,
-                    expiresAt: authFactor.expiresAt
-                }
+                staff: toStaffResponse(staff),
+                verification: toVerificationResponse(authFactor)
             };
         }
 
@@ -153,13 +145,8 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         });
 
         return {
-            staff: mapStaff(staff),
-            session: {
-                id: session.id,
-                staffId: session.staffId,
-                createdAt: session.createdAt,
-                expiresAt: session.expiresAt
-            }
+            staff: toStaffResponse(staff),
+            session: toStaffSessionResponse(session)
         };
     };
 
@@ -174,7 +161,7 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
             throw new HttpError(401, 'invalid_session', 'Session is invalid');
         }
 
-        return mapStaff(staff);
+        return toStaffResponse(staff);
     };
 
     const logout = async (sessionId: string) => {
@@ -269,13 +256,7 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         });
 
         return {
-            invite: {
-                id: invite.id,
-                email: invite.email,
-                role: invite.role,
-                token: invite.token,
-                expiresAt: invite.expiresAt
-            }
+            invite: toStaffInviteResponse(invite)
         };
     };
 
@@ -328,12 +309,8 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
 
         return {
             apiToken: {
-                id: apiToken.id,
-                staffId: apiToken.staffId,
-                name: apiToken.name,
-                token: apiToken.token,
-                createdAt: apiToken.createdAt,
-                revokedAt: apiToken.revokedAt ?? null
+                ...toStaffApiTokenResponse(apiToken),
+                token: apiToken.token
             }
         };
     };
@@ -359,11 +336,8 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
 
         return {
             apiToken: {
-                id: apiToken.id,
-                name: apiToken.name,
-                token: apiToken.token,
-                createdAt: apiToken.createdAt,
-                revokedAt: apiToken.revokedAt ?? null
+                ...toIntegrationTokenResponse(apiToken),
+                token: apiToken.token
             }
         };
     };
@@ -404,13 +378,8 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         });
 
         return {
-            staff: mapStaff(staff),
-            session: {
-                id: session.id,
-                staffId: session.staffId,
-                createdAt: session.createdAt,
-                expiresAt: session.expiresAt
-            }
+            staff: toStaffResponse(staff),
+            session: toStaffSessionResponse(session)
         };
     };
 
