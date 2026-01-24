@@ -21,4 +21,4 @@ Use `yarn` (v1).
 ## Testing
 - Use Vitest.
 - Unit tests are colocated as `*.test.ts` files next to source.
-- Integration and e2e tests can live in top-level `test/` or other dedicated folders.
+- Integration and e2e tests can live in top-level `integration/` or other dedicated folders.

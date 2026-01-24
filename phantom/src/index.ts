@@ -4,14 +4,19 @@ import {createDb} from './db/client.js';
 import {loadConfig} from './platform/config/config.js';
 import {createSiteRepository} from './modules/site/repo/site.repo.js';
 import {createSiteService} from './modules/site/service/site.service.js';
+import {createStaffRepository} from './modules/identity/repo/staff.repo.js';
+import {createStaffAuthService} from './modules/identity/service/staff-auth.service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
 const siteRepository = createSiteRepository(db);
 const siteService = createSiteService(siteRepository);
+const staffRepository = createStaffRepository(db);
+const staffAuthService = createStaffAuthService(staffRepository);
 
 const app = createApp({
-    siteService
+    siteService,
+    staffAuthService
 });
 
 serve({

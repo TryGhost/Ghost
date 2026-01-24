@@ -20,9 +20,22 @@ const siteService = {
     })
 };
 
+const staffAuthService = {
+    login: async () => ({
+        staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active'},
+        session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
+    }),
+    getStaffBySession: async () => ({
+        id: 'staff',
+        email: 'jamie@example.com',
+        name: 'Jamie',
+        status: 'active'
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
-        const app = createApp({siteService});
+        const app = createApp({siteService, staffAuthService});
 
         const response = await app.request('/health');
         const body = await response.json();
@@ -32,7 +45,7 @@ describe('app routes', () => {
     });
 
     it('updates site details', async () => {
-        const app = createApp({siteService});
+        const app = createApp({siteService, staffAuthService});
 
         const response = await app.request('/site', {
             method: 'PUT',
@@ -51,7 +64,7 @@ describe('app routes', () => {
     });
 
     it('returns validation errors for invalid updates', async () => {
-        const app = createApp({siteService});
+        const app = createApp({siteService, staffAuthService});
 
         const response = await app.request('/site', {
             method: 'PUT',
