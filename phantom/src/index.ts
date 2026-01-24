@@ -14,7 +14,9 @@ const db = createDb(config.db);
 const siteRepository = createSiteRepository(db);
 const siteService = createSiteService(siteRepository);
 const staffRepository = createStaffRepository(db);
-const staffAuthService = createStaffAuthService(staffRepository);
+const staffAuthService = createStaffAuthService(staffRepository, {
+    ssoProviders: config.identity.ssoProviders
+});
 const memberRepository = createMemberRepository(db);
 const memberAuthService = createMemberAuthService(memberRepository, config.memberAuth.signupPolicy);
 

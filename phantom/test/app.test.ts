@@ -29,6 +29,10 @@ const staffAuthService: StaffAuthService = {
         staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active'},
         session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
     }),
+    loginWithSso: async () => ({
+        staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active'},
+        session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
+    }),
     getStaffBySession: async () => ({
         id: 'staff',
         email: 'jamie@example.com',

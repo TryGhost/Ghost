@@ -6,6 +6,7 @@ import type {
     PasswordResetConfirmResponse,
     PasswordResetRequest,
     PasswordResetResponse,
+    SsoLoginRequest,
     StaffInviteAcceptRequest,
     StaffInviteAcceptResponse,
     StaffInviteRequest,
@@ -34,6 +35,7 @@ import {HttpError} from '../../platform/http/errors.js';
 
 export type StaffAuthService = {
     login: (input: LoginRequest, ipAddress: string) => Promise<LoginResponse>;
+    loginWithSso: (input: SsoLoginRequest, ipAddress: string) => Promise<LoginResponse>;
     getStaffBySession: (sessionId: string) => Promise<StaffResponse>;
     logout: (sessionId: string) => Promise<void>;
     requestPasswordReset: (input: PasswordResetRequest) => Promise<PasswordResetResponse>;
@@ -70,7 +72,18 @@ const createAuthEvent = async (repository: StaffRepository, input: {
     });
 };
 
-export const createStaffAuthService = (repository: StaffRepository): StaffAuthService => {
+export const createStaffAuthService = (
+    repository: StaffRepository,
+    options: {ssoProviders?: string[]} = {}
+): StaffAuthService => {
+    const ssoProviders = options.ssoProviders ?? [];
+
+    const validateSsoProvider = (provider: string, providers: string[]) => {
+        if (!providers.includes(provider)) {
+            throw new HttpError(401, 'invalid_sso', 'SSO provider is not configured');
+        }
+    };
+
     const login = async (input: LoginRequest, ipAddress: string) => {
         const key = `${input.email}:${ipAddress}`;
         const rate = loginLimiter.check(key);
@@ -388,8 +401,69 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         return repository.getRolesForStaff(staffId);
     };
 
+    const loginWithSso = async (input: SsoLoginRequest, ipAddress: string) => {
+        validateSsoProvider(input.provider, ssoProviders);
+
+        const staff = await repository.getStaffByEmail(input.email);
+        if (!staff) {
+            throw new HttpError(401, 'invalid_sso', 'SSO user is not recognized');
+        }
+
+        if (staff.status !== 'active') {
+            throw new HttpError(403, 'staff_suspended', 'Staff account is suspended');
+        }
+
+        if (staff.twoFactorEnabled === 1) {
+            const now = Date.now();
+            await repository.invalidateAuthFactors(staff.id, 'device', now);
+            const authFactor = await repository.createAuthFactor({
+                id: randomUUID(),
+                staffId: staff.id,
+                type: 'device',
+                token: randomUUID(),
+                createdAt: now,
+                expiresAt: now + resetTokenTtlMs,
+                usedAt: null,
+                invalidatedAt: null
+            });
+
+            await createAuthEvent(repository, {
+                staffId: staff.id,
+                action: 'verification_issued',
+                outcome: 'success',
+                ipAddress
+            });
+
+            return {
+                staff: toStaffResponse(staff),
+                verification: toVerificationResponse(authFactor)
+            };
+        }
+
+        const now = Date.now();
+        const session = await repository.createSession({
+            id: randomUUID(),
+            staffId: staff.id,
+            createdAt: now,
+            expiresAt: now + 1000 * 60 * 60 * 24 * 7
+        });
+
+        await createAuthEvent(repository, {
+            staffId: staff.id,
+            action: 'sso_login',
+            outcome: 'success',
+            ipAddress
+        });
+
+        return {
+            staff: toStaffResponse(staff),
+            session: toStaffSessionResponse(session)
+        };
+    };
+
     return {
         login,
+        loginWithSso,
         getStaffBySession,
         logout,
         requestPasswordReset,

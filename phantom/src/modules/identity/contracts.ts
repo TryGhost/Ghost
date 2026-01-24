@@ -25,6 +25,13 @@ export const LoginRequestSchema = z.object({
     password: z.string().min(8)
 });
 
+export const SsoLoginRequestSchema = z.object({
+    provider: z.string().min(1),
+    subject: z.string().min(1),
+    email: z.string().email(),
+    name: z.string().min(1)
+});
+
 export const LoginResponseSchema = z.object({
     staff: StaffSchema,
     session: StaffSessionSchema.optional(),
@@ -131,6 +138,7 @@ export const StaffVerificationResponseSchema = z.object({
 });
 
 export const LoginRequestBodySchema = LoginRequestSchema;
+export const SsoLoginRequestBodySchema = SsoLoginRequestSchema;
 export const PasswordResetRequestBodySchema = PasswordResetRequestSchema;
 export const PasswordResetConfirmBodySchema = PasswordResetConfirmSchema;
 export const StaffInviteRequestBodySchema = StaffInviteRequestSchema;
@@ -144,6 +152,7 @@ export type StaffResponse = z.infer<typeof StaffSchema>;
 export type StaffSessionResponse = z.infer<typeof StaffSessionSchema>;
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+export type SsoLoginRequest = z.infer<typeof SsoLoginRequestSchema>;
 export type PasswordResetRequest = z.infer<typeof PasswordResetRequestSchema>;
 export type PasswordResetResponse = z.infer<typeof PasswordResetResponseSchema>;
 export type PasswordResetConfirmRequest = z.infer<typeof PasswordResetConfirmSchema>;

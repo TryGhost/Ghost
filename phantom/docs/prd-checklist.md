@@ -14,7 +14,7 @@ References:
 - [x] Staff invitations with role assignment
 - [x] Staff sessions with role/permission enforcement
 - [x] Staff API tokens vs integration tokens
-- [ ] SSO adapters
+- [x] SSO adapters
 - [x] Audit trail for staff auth events
 
 ## 2) Partner access via Partner Portal

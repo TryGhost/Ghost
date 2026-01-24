@@ -278,6 +278,31 @@ describe('staff auth service', () => {
         expect(factor?.usedAt).not.toBeNull();
     });
 
+    it('logs in with SSO for configured providers', async () => {
+        const staff: StaffRecord = {
+            id: 'staff-10',
+            email: 'sso@example.com',
+            name: 'SSO User',
+            status: 'active',
+            passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        const {repository} = createRepository(staff);
+        const service = createStaffAuthService(repository, {ssoProviders: ['google']});
+
+        const result = await service.loginWithSso({
+            provider: 'google',
+            subject: 'sso-subject',
+            email: staff.email,
+            name: staff.name
+        }, '127.0.0.1');
+
+        expect(result.session?.staffId).toBe(staff.id);
+    });
+
     it('rate limits repeated failures', async () => {
         const staff: StaffRecord = {
             id: 'staff-2',

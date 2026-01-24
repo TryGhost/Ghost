@@ -3,6 +3,7 @@ import type {StaffAuthService} from './service.js';
 import {
     LoginRequestBodySchema,
     LoginResponseSchema,
+    SsoLoginRequestBodySchema,
     PasswordResetConfirmBodySchema,
     PasswordResetConfirmResponseSchema,
     PasswordResetRequestBodySchema,
@@ -39,6 +40,30 @@ const loginRoute = createRoute({
     responses: {
         200: {
             description: 'Staff login response',
+            content: {
+                'application/json': {
+                    schema: LoginResponseSchema
+                }
+            }
+        }
+    }
+});
+
+const ssoLoginRoute = createRoute({
+    method: 'post',
+    path: '/sso',
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: SsoLoginRequestBodySchema
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Staff SSO login response',
             content: {
                 'application/json': {
                     schema: LoginResponseSchema
@@ -274,6 +299,14 @@ export const createIdentityRouter = (service: StaffAuthService) => {
         const input = context.req.valid('json');
         const ipAddress = context.req.header('x-forwarded-for') ?? 'unknown';
         const result = await service.login(input, ipAddress);
+
+        return context.json(result);
+    });
+
+    router.openapi(ssoLoginRoute, async (context) => {
+        const input = context.req.valid('json');
+        const ipAddress = context.req.header('x-forwarded-for') ?? 'unknown';
+        const result = await service.loginWithSso(input, ipAddress);
 
         return context.json(result);
     });
