@@ -68,6 +68,7 @@ const staffAuthService: StaffAuthService = {
         }
     }),
     revokeIntegrationToken: async () => undefined,
+    getStaffRoles: async () => ['admin'],
     verifyStaffAuthFactor: async () => ({
         staff: {
             id: 'staff',

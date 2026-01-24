@@ -22,7 +22,7 @@ import {
 } from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
-import {getBearerToken} from './auth.js';
+import {getBearerToken, requireStaffRole} from './auth.js';
 
 const loginRoute = createRoute({
     method: 'post',
@@ -311,12 +311,7 @@ export const createIdentityRouter = (service: StaffAuthService) => {
     });
 
     router.openapi(staffInviteRoute, async (context) => {
-        const token = getBearerToken(context);
-        if (!token) {
-            throw new HttpError(401, 'missing_session', 'Missing session token');
-        }
-
-        await service.getStaffBySession(token);
+        await requireStaffRole(context, service, ['admin']);
 
         const input = context.req.valid('json');
         const result = await service.createStaffInvite(input);
@@ -330,48 +325,28 @@ export const createIdentityRouter = (service: StaffAuthService) => {
     });
 
     router.openapi(staffApiTokenCreateRoute, async (context) => {
-        const token = getBearerToken(context);
-        if (!token) {
-            throw new HttpError(401, 'missing_session', 'Missing session token');
-        }
-
-        const staff = await service.getStaffBySession(token);
+        const staff = await requireStaffRole(context, service, ['admin']);
         const input = context.req.valid('json');
         const result = await service.createStaffApiToken(staff.id, input);
         return context.json(result);
     });
 
     router.openapi(staffApiTokenRevokeRoute, async (context) => {
-        const token = getBearerToken(context);
-        if (!token) {
-            throw new HttpError(401, 'missing_session', 'Missing session token');
-        }
-
-        const staff = await service.getStaffBySession(token);
+        const staff = await requireStaffRole(context, service, ['admin']);
         const params = context.req.valid('param');
         await service.revokeStaffApiToken(staff.id, params.id);
         return context.body(null, 204);
     });
 
     router.openapi(integrationTokenCreateRoute, async (context) => {
-        const token = getBearerToken(context);
-        if (!token) {
-            throw new HttpError(401, 'missing_session', 'Missing session token');
-        }
-
-        await service.getStaffBySession(token);
+        await requireStaffRole(context, service, ['admin']);
         const input = context.req.valid('json');
         const result = await service.createIntegrationToken(input);
         return context.json(result);
     });
 
     router.openapi(integrationTokenRevokeRoute, async (context) => {
-        const token = getBearerToken(context);
-        if (!token) {
-            throw new HttpError(401, 'missing_session', 'Missing session token');
-        }
-
-        await service.getStaffBySession(token);
+        await requireStaffRole(context, service, ['admin']);
         const params = context.req.valid('param');
         await service.revokeIntegrationToken(params.id);
         return context.body(null, 204);

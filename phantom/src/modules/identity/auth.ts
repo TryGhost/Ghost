@@ -29,3 +29,20 @@ export const createStaffSessionGuard = (service: StaffAuthService): MiddlewareHa
         await next();
     };
 };
+
+export const requireStaffRole = async (context: Context, service: StaffAuthService, roles: string[]) => {
+    const token = getBearerToken(context);
+    if (!token) {
+        throw new HttpError(401, 'missing_session', 'Missing session token');
+    }
+
+    const staff = await service.getStaffBySession(token);
+    const staffRoles = await service.getStaffRoles(staff.id);
+    const allowed = staffRoles.some((role: string) => roles.includes(role));
+
+    if (!allowed) {
+        throw new HttpError(403, 'forbidden', 'Insufficient role');
+    }
+
+    return staff;
+};

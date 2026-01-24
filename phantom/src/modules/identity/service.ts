@@ -45,6 +45,7 @@ export type StaffAuthService = {
     createIntegrationToken: (input: IntegrationTokenCreateRequest) => Promise<IntegrationTokenCreateResponse>;
     revokeIntegrationToken: (tokenId: string) => Promise<void>;
     verifyStaffAuthFactor: (input: StaffVerificationRequest) => Promise<StaffVerificationResponse>;
+    getStaffRoles: (staffId: string) => Promise<string[]>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
@@ -383,6 +384,10 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         };
     };
 
+    const getStaffRoles = async (staffId: string) => {
+        return repository.getRolesForStaff(staffId);
+    };
+
     return {
         login,
         getStaffBySession,
@@ -395,6 +400,7 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         revokeStaffApiToken,
         createIntegrationToken,
         revokeIntegrationToken,
-        verifyStaffAuthFactor
+        verifyStaffAuthFactor,
+        getStaffRoles
     };
 };

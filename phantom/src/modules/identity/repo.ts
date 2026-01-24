@@ -49,6 +49,7 @@ export type StaffRepository = {
     getRoleByName: (name: string) => Promise<RoleRecord | null>;
     createRole: (role: NewRoleRecord) => Promise<void>;
     assignRoleToStaff: (staffId: string, roleId: string) => Promise<void>;
+    getRolesForStaff: (staffId: string) => Promise<string[]>;
     createStaffApiToken: (token: NewStaffApiTokenRecord) => Promise<StaffApiTokenRecord>;
     getStaffApiTokenById: (id: string) => Promise<StaffApiTokenRecord | null>;
     getStaffApiTokenByToken: (token: string) => Promise<StaffApiTokenRecord | null>;
@@ -174,6 +175,15 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         await db.insert(staffRoleTable).values({staffId, roleId});
     };
 
+    const getRolesForStaff = async (staffId: string) => {
+        const rows = await db
+            .select({name: roleTable.name})
+            .from(staffRoleTable)
+            .innerJoin(roleTable, eq(staffRoleTable.roleId, roleTable.id))
+            .where(eq(staffRoleTable.staffId, staffId));
+        return rows.map((row) => row.name);
+    };
+
     const createStaffApiToken = async (token: NewStaffApiTokenRecord) => {
         await db.insert(staffApiTokenTable).values(token);
         const rows = await db.select().from(staffApiTokenTable).where(eq(staffApiTokenTable.id, token.id)).limit(1);
@@ -285,6 +295,7 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         getRoleByName,
         createRole,
         assignRoleToStaff,
+        getRolesForStaff,
         createStaffApiToken,
         getStaffApiTokenById,
         getStaffApiTokenByToken,

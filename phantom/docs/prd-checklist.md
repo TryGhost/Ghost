@@ -12,7 +12,7 @@ References:
 - [x] 2FA/device verification flow
 - [x] Staff password reset
 - [x] Staff invitations with role assignment
-- [ ] Staff sessions with role/permission enforcement
+- [x] Staff sessions with role/permission enforcement
 - [x] Staff API tokens vs integration tokens
 - [ ] SSO adapters
 - [x] Audit trail for staff auth events

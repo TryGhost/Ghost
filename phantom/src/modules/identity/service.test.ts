@@ -110,6 +110,12 @@ const createRepository = (staff: StaffRecord) => {
         assignRoleToStaff: async (staffId, roleId) => {
             staffRoles.push({staffId, roleId});
         },
+        getRolesForStaff: async (staffId) => {
+            return staffRoles
+                .filter((entry) => entry.staffId === staffId)
+                .map((entry) => roles.find((role) => role.id === entry.roleId)?.name)
+                .filter((name): name is string => Boolean(name));
+        },
         createStaffApiToken: async (token) => {
             const record: StaffApiTokenRecord = {
                 ...token,
