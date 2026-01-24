@@ -67,7 +67,16 @@ const staffAuthService: StaffAuthService = {
             revokedAt: null
         }
     }),
-    revokeIntegrationToken: async () => undefined
+    revokeIntegrationToken: async () => undefined,
+    verifyStaffAuthFactor: async () => ({
+        staff: {
+            id: 'staff',
+            email: 'jamie@example.com',
+            name: 'Jamie',
+            status: 'active'
+        },
+        session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
+    })
 };
 
 describe('app routes', () => {

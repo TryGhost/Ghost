@@ -6,6 +6,7 @@ export const staffTable = sqliteTable('staff_accounts', {
     name: text('name').notNull(),
     status: text('status').notNull(),
     passwordHash: text('password_hash').notNull(),
+    twoFactorEnabled: integer('two_factor_enabled').notNull(),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
 });
@@ -55,6 +56,27 @@ export const integrationTokenTable = sqliteTable('integration_tokens', {
     revokedAt: integer('revoked_at')
 });
 
+export const staffAuthEventTable = sqliteTable('staff_auth_events', {
+    id: text('id').primaryKey(),
+    staffId: text('staff_id').notNull(),
+    action: text('action').notNull(),
+    outcome: text('outcome').notNull(),
+    ipAddress: text('ip_address'),
+    deviceId: text('device_id'),
+    createdAt: integer('created_at').notNull()
+});
+
+export const staffAuthFactorTable = sqliteTable('staff_auth_factors', {
+    id: text('id').primaryKey(),
+    staffId: text('staff_id').notNull(),
+    type: text('type').notNull(),
+    token: text('token').notNull(),
+    createdAt: integer('created_at').notNull(),
+    expiresAt: integer('expires_at').notNull(),
+    usedAt: integer('used_at'),
+    invalidatedAt: integer('invalidated_at')
+});
+
 export const resetTokenTable = sqliteTable('staff_reset_tokens', {
     id: text('id').primaryKey(),
     staffId: text('staff_id').notNull(),
@@ -77,5 +99,9 @@ export type StaffApiTokenRecord = typeof staffApiTokenTable.$inferSelect;
 export type NewStaffApiTokenRecord = typeof staffApiTokenTable.$inferInsert;
 export type IntegrationTokenRecord = typeof integrationTokenTable.$inferSelect;
 export type NewIntegrationTokenRecord = typeof integrationTokenTable.$inferInsert;
+export type StaffAuthEventRecord = typeof staffAuthEventTable.$inferSelect;
+export type NewStaffAuthEventRecord = typeof staffAuthEventTable.$inferInsert;
+export type StaffAuthFactorRecord = typeof staffAuthFactorTable.$inferSelect;
+export type NewStaffAuthFactorRecord = typeof staffAuthFactorTable.$inferInsert;
 export type ResetTokenRecord = typeof resetTokenTable.$inferSelect;
 export type NewResetTokenRecord = typeof resetTokenTable.$inferInsert;

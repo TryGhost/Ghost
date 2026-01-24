@@ -14,6 +14,12 @@ export const StaffSessionSchema = z.object({
     expiresAt: z.number().int()
 });
 
+export const AuthVerificationSchema = z.object({
+    token: z.string().min(1),
+    type: z.enum(['device']),
+    expiresAt: z.number().int()
+});
+
 export const LoginRequestSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8)
@@ -21,7 +27,8 @@ export const LoginRequestSchema = z.object({
 
 export const LoginResponseSchema = z.object({
     staff: StaffSchema,
-    session: StaffSessionSchema
+    session: StaffSessionSchema.optional(),
+    verification: AuthVerificationSchema.optional()
 });
 
 export const ResetTokenSchema = z.object({
@@ -114,6 +121,15 @@ export const StaffMeResponseSchema = z.object({
     staff: StaffSchema
 });
 
+export const StaffVerificationRequestSchema = z.object({
+    token: z.string().min(1)
+});
+
+export const StaffVerificationResponseSchema = z.object({
+    staff: StaffSchema,
+    session: StaffSessionSchema
+});
+
 export const LoginRequestBodySchema = LoginRequestSchema;
 export const PasswordResetRequestBodySchema = PasswordResetRequestSchema;
 export const PasswordResetConfirmBodySchema = PasswordResetConfirmSchema;
@@ -122,10 +138,12 @@ export const StaffInviteAcceptBodySchema = StaffInviteAcceptSchema;
 export const StaffApiTokenCreateBodySchema = StaffApiTokenCreateSchema;
 export const IntegrationTokenCreateBodySchema = IntegrationTokenCreateSchema;
 export const TokenIdParamRequestSchema = TokenIdParamSchema;
+export const StaffVerificationRequestBodySchema = StaffVerificationRequestSchema;
 
 export type StaffResponse = z.infer<typeof StaffSchema>;
 export type StaffSessionResponse = z.infer<typeof StaffSessionSchema>;
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
+export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 export type PasswordResetRequest = z.infer<typeof PasswordResetRequestSchema>;
 export type PasswordResetResponse = z.infer<typeof PasswordResetResponseSchema>;
 export type PasswordResetConfirmRequest = z.infer<typeof PasswordResetConfirmSchema>;
@@ -138,3 +156,5 @@ export type StaffApiTokenCreateRequest = z.infer<typeof StaffApiTokenCreateSchem
 export type StaffApiTokenCreateResponse = z.infer<typeof StaffApiTokenCreateResponseSchema>;
 export type IntegrationTokenCreateRequest = z.infer<typeof IntegrationTokenCreateSchema>;
 export type IntegrationTokenCreateResponse = z.infer<typeof IntegrationTokenCreateResponseSchema>;
+export type StaffVerificationRequest = z.infer<typeof StaffVerificationRequestSchema>;
+export type StaffVerificationResponse = z.infer<typeof StaffVerificationResponseSchema>;

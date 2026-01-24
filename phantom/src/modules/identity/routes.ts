@@ -16,6 +16,8 @@ import {
     IntegrationTokenCreateBodySchema,
     IntegrationTokenCreateResponseSchema,
     TokenIdParamRequestSchema,
+    StaffVerificationRequestBodySchema,
+    StaffVerificationResponseSchema,
     StaffMeResponseSchema
 } from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
@@ -241,6 +243,30 @@ const integrationTokenRevokeRoute = createRoute({
     }
 });
 
+const verificationRoute = createRoute({
+    method: 'post',
+    path: '/verify',
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: StaffVerificationRequestBodySchema
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Staff verification complete',
+            content: {
+                'application/json': {
+                    schema: StaffVerificationResponseSchema
+                }
+            }
+        }
+    }
+});
+
 export const createIdentityRouter = (service: StaffAuthService) => {
     const router = createOpenApiRouter();
 
@@ -349,6 +375,12 @@ export const createIdentityRouter = (service: StaffAuthService) => {
         const params = context.req.valid('param');
         await service.revokeIntegrationToken(params.id);
         return context.body(null, 204);
+    });
+
+    router.openapi(verificationRoute, async (context) => {
+        const input = context.req.valid('json');
+        const result = await service.verifyStaffAuthFactor(input);
+        return context.json(result);
     });
 
     return router;

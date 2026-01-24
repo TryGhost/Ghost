@@ -9,13 +9,13 @@ References:
 
 ## 1) Staff authentication and access control
 - [x] Password-based staff login with rate limiting
-- [ ] 2FA/device verification flow
-- [ ] Staff password reset
-- [ ] Staff invitations with role assignment
+- [x] 2FA/device verification flow
+- [x] Staff password reset
+- [x] Staff invitations with role assignment
 - [ ] Staff sessions with role/permission enforcement
-- [ ] Staff API tokens vs integration tokens
+- [x] Staff API tokens vs integration tokens
 - [ ] SSO adapters
-- [ ] Audit trail for staff auth events
+- [x] Audit trail for staff auth events
 
 ## 2) Partner access via Partner Portal
 - [ ] Access grants with scoped roles and TTL

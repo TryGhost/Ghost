@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {
     LoginRequest,
+    LoginResponse,
     PasswordResetConfirmRequest,
     PasswordResetConfirmResponse,
     PasswordResetRequest,
@@ -14,7 +15,9 @@ import type {
     IntegrationTokenCreateRequest,
     IntegrationTokenCreateResponse,
     StaffResponse,
-    StaffSessionResponse
+    StaffSessionResponse,
+    StaffVerificationRequest,
+    StaffVerificationResponse
 } from './contracts.js';
 import type {StaffRepository} from './repo.js';
 import {hashPassword, verifyPassword} from '../../platform/auth/passwords.js';
@@ -22,7 +25,7 @@ import {createRateLimiter} from '../../platform/auth/rate-limiter.js';
 import {HttpError} from '../../platform/http/errors.js';
 
 export type StaffAuthService = {
-    login: (input: LoginRequest, ipAddress: string) => Promise<{staff: StaffResponse; session: StaffSessionResponse}>;
+    login: (input: LoginRequest, ipAddress: string) => Promise<LoginResponse>;
     getStaffBySession: (sessionId: string) => Promise<StaffResponse>;
     logout: (sessionId: string) => Promise<void>;
     requestPasswordReset: (input: PasswordResetRequest) => Promise<PasswordResetResponse>;
@@ -33,11 +36,30 @@ export type StaffAuthService = {
     revokeStaffApiToken: (staffId: string, tokenId: string) => Promise<void>;
     createIntegrationToken: (input: IntegrationTokenCreateRequest) => Promise<IntegrationTokenCreateResponse>;
     revokeIntegrationToken: (tokenId: string) => Promise<void>;
+    verifyStaffAuthFactor: (input: StaffVerificationRequest) => Promise<StaffVerificationResponse>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
 const resetTokenTtlMs = 1000 * 60 * 60;
 const inviteTtlMs = 1000 * 60 * 60 * 24 * 7;
+
+const createAuthEvent = async (repository: StaffRepository, input: {
+    staffId: string;
+    action: string;
+    outcome: string;
+    ipAddress?: string | null;
+    deviceId?: string | null;
+}) => {
+    await repository.createStaffAuthEvent({
+        id: randomUUID(),
+        staffId: input.staffId,
+        action: input.action,
+        outcome: input.outcome,
+        ipAddress: input.ipAddress ?? null,
+        deviceId: input.deviceId ?? null,
+        createdAt: Date.now()
+    });
+};
 
 const mapStaff = (record: {
     id: string;
@@ -61,14 +83,59 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
 
         const staff = await repository.getStaffByEmail(input.email);
         if (!staff || !verifyPassword(input.password, staff.passwordHash)) {
+            if (staff) {
+                await createAuthEvent(repository, {
+                    staffId: staff.id,
+                    action: 'login',
+                    outcome: 'failed',
+                    ipAddress
+                });
+            }
             throw new HttpError(401, 'invalid_credentials', 'Invalid email or password');
         }
 
         if (staff.status !== 'active') {
+            await createAuthEvent(repository, {
+                staffId: staff.id,
+                action: 'login',
+                outcome: 'blocked',
+                ipAddress
+            });
             throw new HttpError(403, 'staff_suspended', 'Staff account is suspended');
         }
 
         loginLimiter.reset(key);
+
+        if (staff.twoFactorEnabled === 1) {
+            const now = Date.now();
+            await repository.invalidateAuthFactors(staff.id, 'device', now);
+            const authFactor = await repository.createAuthFactor({
+                id: randomUUID(),
+                staffId: staff.id,
+                type: 'device',
+                token: randomUUID(),
+                createdAt: now,
+                expiresAt: now + resetTokenTtlMs,
+                usedAt: null,
+                invalidatedAt: null
+            });
+
+            await createAuthEvent(repository, {
+                staffId: staff.id,
+                action: 'verification_issued',
+                outcome: 'success',
+                ipAddress
+            });
+
+            return {
+                staff: mapStaff(staff),
+                verification: {
+                    token: authFactor.token,
+                    type: 'device' as const,
+                    expiresAt: authFactor.expiresAt
+                }
+            };
+        }
 
         const now = Date.now();
         const session = await repository.createSession({
@@ -76,6 +143,13 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
             staffId: staff.id,
             createdAt: now,
             expiresAt: now + 1000 * 60 * 60 * 24 * 7
+        });
+
+        await createAuthEvent(repository, {
+            staffId: staff.id,
+            action: 'login',
+            outcome: 'success',
+            ipAddress
         });
 
         return {
@@ -110,6 +184,12 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         }
 
         await repository.revokeSession(sessionId, Date.now());
+
+        await createAuthEvent(repository, {
+            staffId: session.staffId,
+            action: 'logout',
+            outcome: 'success'
+        });
     };
 
     const requestPasswordReset = async (input: PasswordResetRequest) => {
@@ -126,6 +206,12 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
             token,
             expiresAt: now + resetTokenTtlMs,
             usedAt: null
+        });
+
+        await createAuthEvent(repository, {
+            staffId: staff.id,
+            action: 'reset_requested',
+            outcome: 'success'
         });
 
         return {
@@ -152,6 +238,12 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         await repository.updateStaffPassword(staff.id, hashPassword(input.password), now);
         await repository.markResetTokenUsed(token.id, now);
         await repository.revokeSessionsForStaff(staff.id, now);
+
+        await createAuthEvent(repository, {
+            staffId: staff.id,
+            action: 'reset_completed',
+            outcome: 'success'
+        });
 
         return {
             staffId: staff.id,
@@ -206,6 +298,7 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
             name: input.name,
             status: 'active',
             passwordHash: hashPassword(input.password),
+            twoFactorEnabled: 0,
             createdAt: now,
             updatedAt: now
         });
@@ -284,6 +377,43 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         await repository.revokeIntegrationToken(tokenId, Date.now());
     };
 
+    const verifyStaffAuthFactor = async (input: StaffVerificationRequest) => {
+        const authFactor = await repository.getAuthFactorByToken(input.token);
+        if (!authFactor || authFactor.usedAt || authFactor.invalidatedAt || authFactor.expiresAt <= Date.now()) {
+            throw new HttpError(400, 'invalid_verification', 'Verification token is invalid or expired');
+        }
+
+        const staff = await repository.getStaffById(authFactor.staffId);
+        if (!staff) {
+            throw new HttpError(400, 'invalid_verification', 'Verification token is invalid or expired');
+        }
+
+        const now = Date.now();
+        const session = await repository.createSession({
+            id: randomUUID(),
+            staffId: staff.id,
+            createdAt: now,
+            expiresAt: now + 1000 * 60 * 60 * 24 * 7
+        });
+
+        await repository.markAuthFactorUsed(authFactor.id, now);
+        await createAuthEvent(repository, {
+            staffId: staff.id,
+            action: 'verification_completed',
+            outcome: 'success'
+        });
+
+        return {
+            staff: mapStaff(staff),
+            session: {
+                id: session.id,
+                staffId: session.staffId,
+                createdAt: session.createdAt,
+                expiresAt: session.expiresAt
+            }
+        };
+    };
+
     return {
         login,
         getStaffBySession,
@@ -295,6 +425,7 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         createStaffApiToken,
         revokeStaffApiToken,
         createIntegrationToken,
-        revokeIntegrationToken
+        revokeIntegrationToken,
+        verifyStaffAuthFactor
     };
 };

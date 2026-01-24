@@ -1,4 +1,4 @@
-import {eq} from 'drizzle-orm';
+import {and, eq, isNull} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     staffTable,
@@ -8,6 +8,8 @@ import {
     staffRoleTable,
     staffApiTokenTable,
     integrationTokenTable,
+    staffAuthEventTable,
+    staffAuthFactorTable,
     resetTokenTable,
     type StaffRecord,
     type NewStaffRecord,
@@ -21,6 +23,10 @@ import {
     type NewStaffApiTokenRecord,
     type IntegrationTokenRecord,
     type NewIntegrationTokenRecord,
+    type StaffAuthEventRecord,
+    type NewStaffAuthEventRecord,
+    type StaffAuthFactorRecord,
+    type NewStaffAuthFactorRecord,
     type ResetTokenRecord,
     type NewResetTokenRecord
 } from './db.js';
@@ -51,6 +57,11 @@ export type StaffRepository = {
     getIntegrationTokenById: (id: string) => Promise<IntegrationTokenRecord | null>;
     getIntegrationTokenByToken: (token: string) => Promise<IntegrationTokenRecord | null>;
     revokeIntegrationToken: (id: string, revokedAt: number) => Promise<void>;
+    createStaffAuthEvent: (event: NewStaffAuthEventRecord) => Promise<StaffAuthEventRecord>;
+    createAuthFactor: (factor: NewStaffAuthFactorRecord) => Promise<StaffAuthFactorRecord>;
+    getAuthFactorByToken: (token: string) => Promise<StaffAuthFactorRecord | null>;
+    invalidateAuthFactors: (staffId: string, type: string, invalidatedAt: number) => Promise<void>;
+    markAuthFactorUsed: (id: string, usedAt: number) => Promise<void>;
 };
 
 export const createStaffRepository = (db: DbClient): StaffRepository => {
@@ -215,6 +226,47 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
             .where(eq(integrationTokenTable.id, id));
     };
 
+    const createStaffAuthEvent = async (event: NewStaffAuthEventRecord) => {
+        await db.insert(staffAuthEventTable).values(event);
+        const rows = await db.select().from(staffAuthEventTable).where(eq(staffAuthEventTable.id, event.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Auth event missing after insert');
+        }
+        return rows[0];
+    };
+
+    const createAuthFactor = async (factor: NewStaffAuthFactorRecord) => {
+        await db.insert(staffAuthFactorTable).values(factor);
+        const rows = await db.select().from(staffAuthFactorTable).where(eq(staffAuthFactorTable.id, factor.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Auth factor missing after insert');
+        }
+        return rows[0];
+    };
+
+    const getAuthFactorByToken = async (token: string) => {
+        const rows = await db.select().from(staffAuthFactorTable).where(eq(staffAuthFactorTable.token, token)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const invalidateAuthFactors = async (staffId: string, type: string, invalidatedAt: number) => {
+        await db
+            .update(staffAuthFactorTable)
+            .set({invalidatedAt})
+            .where(and(
+                eq(staffAuthFactorTable.staffId, staffId),
+                eq(staffAuthFactorTable.type, type),
+                isNull(staffAuthFactorTable.invalidatedAt)
+            ));
+    };
+
+    const markAuthFactorUsed = async (id: string, usedAt: number) => {
+        await db
+            .update(staffAuthFactorTable)
+            .set({usedAt})
+            .where(eq(staffAuthFactorTable.id, id));
+    };
+
     return {
         getStaffByEmail,
         getStaffById,
@@ -240,6 +292,11 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         createIntegrationToken,
         getIntegrationTokenById,
         getIntegrationTokenByToken,
-        revokeIntegrationToken
+        revokeIntegrationToken,
+        createStaffAuthEvent,
+        createAuthFactor,
+        getAuthFactorByToken,
+        invalidateAuthFactors,
+        markAuthFactorUsed
     };
 };

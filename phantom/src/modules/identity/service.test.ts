@@ -8,6 +8,7 @@ import type {
     NewResetTokenRecord,
     ResetTokenRecord,
     StaffApiTokenRecord,
+    StaffAuthEventRecord,
     StaffRecord,
     StaffSessionRecord
 } from './db.js';
@@ -29,6 +30,17 @@ const createRepository = (staff: StaffRecord) => {
     const staffRoles: {staffId: string; roleId: string}[] = [];
     const staffApiTokens: StaffApiTokenRecord[] = [];
     const integrationTokens: IntegrationTokenRecord[] = [];
+    const authEvents: StaffAuthEventRecord[] = [];
+    const authFactors: {
+        id: string;
+        staffId: string;
+        type: string;
+        token: string;
+        createdAt: number;
+        expiresAt: number;
+        usedAt: number | null;
+        invalidatedAt: number | null;
+    }[] = [];
 
     const repository: StaffRepository = {
         getStaffByEmail: async (email) => staffRecords.find((record) => record.email === email) ?? null,
@@ -135,6 +147,40 @@ const createRepository = (staff: StaffRecord) => {
             }
 
             integrationTokens[index] = {...existing, revokedAt};
+        },
+        createStaffAuthEvent: async (event) => {
+            const record: StaffAuthEventRecord = {
+                ...event,
+                ipAddress: event.ipAddress ?? null,
+                deviceId: event.deviceId ?? null
+            };
+            authEvents.push(record);
+            return record;
+        },
+        createAuthFactor: async (factor) => {
+            const record = {
+                ...factor,
+                usedAt: factor.usedAt ?? null,
+                invalidatedAt: factor.invalidatedAt ?? null
+            };
+            authFactors.push(record);
+            return record;
+        },
+        getAuthFactorByToken: async (token) => authFactors.find((record) => record.token === token) ?? null,
+        invalidateAuthFactors: async (staffId, type, invalidatedAt) => {
+            authFactors.forEach((record, index) => {
+                if (record.staffId === staffId && record.type === type && record.invalidatedAt === null) {
+                    authFactors[index] = {...record, invalidatedAt};
+                }
+            });
+        },
+        markAuthFactorUsed: async (id, usedAt) => {
+            const index = authFactors.findIndex((record) => record.id === id);
+            const existing = authFactors[index];
+            if (!existing) {
+                return;
+            }
+            authFactors[index] = {...existing, usedAt};
         }
     };
 
@@ -146,7 +192,9 @@ const createRepository = (staff: StaffRecord) => {
             invites: () => invites,
             roles: () => roles,
             staffApiTokens: () => staffApiTokens,
-            integrationTokens: () => integrationTokens
+            integrationTokens: () => integrationTokens,
+            authEvents: () => authEvents,
+            authFactors: () => authFactors
         }
     };
 };
@@ -159,6 +207,7 @@ describe('staff auth service', () => {
             name: 'Jamie',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -169,7 +218,58 @@ describe('staff auth service', () => {
         const result = await service.login({email: staff.email, password: 'password-123'}, '127.0.0.1');
 
         expect(result.staff.email).toBe(staff.email);
-        expect(result.session.staffId).toBe(staff.id);
+        expect(result.session?.staffId).toBe(staff.id);
+    });
+
+    it('records auth events on login', async () => {
+        const staff: StaffRecord = {
+            id: 'staff-8',
+            email: 'log@example.com',
+            name: 'Log',
+            status: 'active',
+            passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        const {repository, state} = createRepository(staff);
+        const service = createStaffAuthService(repository);
+
+        await service.login({email: staff.email, password: 'password-123'}, '127.0.0.1');
+
+        const events = state.authEvents();
+        const event = events.find((record) => record.action === 'login');
+
+        expect(event?.outcome).toBe('success');
+    });
+
+    it('requires verification when 2FA is enabled', async () => {
+        const staff: StaffRecord = {
+            id: 'staff-9',
+            email: '2fa@example.com',
+            name: 'Two Factor',
+            status: 'active',
+            passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 1,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        const {repository, state} = createRepository(staff);
+        const service = createStaffAuthService(repository);
+
+        const login = await service.login({email: staff.email, password: 'password-123'}, '127.0.0.1');
+        const token = login.verification?.token ?? '';
+
+        const verified = await service.verifyStaffAuthFactor({token});
+
+        const factor = state.authFactors()[0];
+
+        expect(login.session).toBeUndefined();
+        expect(login.verification?.token).toBeTruthy();
+        expect(verified.session.staffId).toBe(staff.id);
+        expect(factor?.usedAt).not.toBeNull();
     });
 
     it('rate limits repeated failures', async () => {
@@ -179,6 +279,7 @@ describe('staff auth service', () => {
             name: 'Casey',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -209,6 +310,7 @@ describe('staff auth service', () => {
             name: 'Alex',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -230,6 +332,7 @@ describe('staff auth service', () => {
             name: 'Taylor',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: now,
             updatedAt: now
         };
@@ -256,6 +359,7 @@ describe('staff auth service', () => {
             name: 'Owner',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -288,6 +392,7 @@ describe('staff auth service', () => {
             name: 'Token Owner',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -311,6 +416,7 @@ describe('staff auth service', () => {
             name: 'Integration Owner',
             status: 'active',
             passwordHash: hashPassword('password-123'),
+            twoFactorEnabled: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
