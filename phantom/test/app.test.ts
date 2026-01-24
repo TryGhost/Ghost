@@ -97,6 +97,15 @@ const memberAuthService: MemberAuthService = {
             createdAt: 1,
             expiresAt: 2
         }
+    }),
+    verifySession: async () => ({
+        member: {
+            id: 'member',
+            email: 'member@example.com',
+            status: 'free',
+            createdAt: 1,
+            updatedAt: 2
+        }
     })
 };
 

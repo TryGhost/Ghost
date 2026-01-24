@@ -4,7 +4,9 @@ import {
     MagicLinkRequestBodySchema,
     MagicLinkResponseSchema,
     MagicLinkVerifyBodySchema,
-    MagicLinkVerifyResponseSchema
+    MagicLinkVerifyResponseSchema,
+    MemberSessionVerifyBodySchema,
+    MemberSessionVerifyResponseSchema
 } from './contracts.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
 
@@ -56,6 +58,30 @@ const magicLinkVerifyRoute = createRoute({
     }
 });
 
+const memberSessionVerifyRoute = createRoute({
+    method: 'post',
+    path: '/sessions/verify',
+    request: {
+        body: {
+            content: {
+                'application/json': {
+                    schema: MemberSessionVerifyBodySchema
+                }
+            }
+        }
+    },
+    responses: {
+        200: {
+            description: 'Member session verified',
+            content: {
+                'application/json': {
+                    schema: MemberSessionVerifyResponseSchema
+                }
+            }
+        }
+    }
+});
+
 export const createMembersRouter = (service: MemberAuthService) => {
     const router = createOpenApiRouter();
 
@@ -69,6 +95,12 @@ export const createMembersRouter = (service: MemberAuthService) => {
     router.openapi(magicLinkVerifyRoute, async (context) => {
         const input = context.req.valid('json');
         const result = await service.verifyMagicLink(input);
+        return context.json(result);
+    });
+
+    router.openapi(memberSessionVerifyRoute, async (context) => {
+        const input = context.req.valid('json');
+        const result = await service.verifySession(input);
         return context.json(result);
     });
 

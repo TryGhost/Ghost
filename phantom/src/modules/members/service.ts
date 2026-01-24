@@ -2,6 +2,8 @@ import {randomUUID} from 'node:crypto';
 import type {
     MagicLinkRequest,
     MagicLinkResponse,
+    MemberSessionVerifyRequest,
+    MemberSessionVerifyResponse,
     MagicLinkVerifyRequest,
     MagicLinkVerifyResponse,
     MemberResponse,
@@ -16,6 +18,7 @@ export type SignupPolicy = 'open' | 'invite-only' | 'paid-only' | 'none';
 export type MemberAuthService = {
     requestMagicLink: (input: MagicLinkRequest, ipAddress: string) => Promise<MagicLinkResponse & {token?: string}>;
     verifyMagicLink: (input: MagicLinkVerifyRequest) => Promise<MagicLinkVerifyResponse>;
+    verifySession: (input: MemberSessionVerifyRequest) => Promise<MemberSessionVerifyResponse>;
 };
 
 const magicLinkLimiter = createRateLimiter(10, 5 * 60 * 1000);
@@ -122,8 +125,27 @@ export const createMemberAuthService = (repository: MemberRepository, signupPoli
         };
     };
 
+    const verifySession = async (input: MemberSessionVerifyRequest) => {
+        const session = await repository.getSessionById(input.sessionId);
+        if (!session || session.revokedAt || session.expiresAt <= Date.now()) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+
+        const member = await repository.getMemberById(session.memberId);
+        if (!member) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+
+        if (input.requiresPaid && member.status !== 'paid') {
+            throw new HttpError(403, 'paid_required', 'Paid membership required');
+        }
+
+        return {member: toMemberResponse(member)};
+    };
+
     return {
         requestMagicLink,
-        verifyMagicLink
+        verifyMagicLink,
+        verifySession
     };
 };

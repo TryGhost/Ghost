@@ -32,8 +32,18 @@ export const MagicLinkVerifyResponseSchema = z.object({
     session: MemberSessionSchema
 });
 
+export const MemberSessionVerifyRequestSchema = z.object({
+    sessionId: z.string().min(1),
+    requiresPaid: z.boolean().optional()
+});
+
+export const MemberSessionVerifyResponseSchema = z.object({
+    member: MemberSchema
+});
+
 export const MagicLinkRequestBodySchema = MagicLinkRequestSchema;
 export const MagicLinkVerifyBodySchema = MagicLinkVerifyRequestSchema;
+export const MemberSessionVerifyBodySchema = MemberSessionVerifyRequestSchema;
 
 export type MemberResponse = z.infer<typeof MemberSchema>;
 export type MemberSessionResponse = z.infer<typeof MemberSessionSchema>;
@@ -41,3 +51,5 @@ export type MagicLinkRequest = z.infer<typeof MagicLinkRequestSchema>;
 export type MagicLinkResponse = z.infer<typeof MagicLinkResponseSchema>;
 export type MagicLinkVerifyRequest = z.infer<typeof MagicLinkVerifyRequestSchema>;
 export type MagicLinkVerifyResponse = z.infer<typeof MagicLinkVerifyResponseSchema>;
+export type MemberSessionVerifyRequest = z.infer<typeof MemberSessionVerifyRequestSchema>;
+export type MemberSessionVerifyResponse = z.infer<typeof MemberSessionVerifyResponseSchema>;

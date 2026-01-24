@@ -29,7 +29,7 @@ References:
 - [x] SignupPolicy enforcement
 - [x] AbuseGuard rate limits
 - [x] Member auth events persisted
-- [ ] Session verification for gated content
+- [x] Session verification for gated content
 
 ## 4) Member subscriptions and payments
 - [ ] Plans/tiers with pricing and benefits

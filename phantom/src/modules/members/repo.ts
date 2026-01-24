@@ -23,6 +23,7 @@ export type MemberRepository = {
     getAuthTokenByToken: (token: string) => Promise<MemberAuthTokenRecord | null>;
     markAuthTokenUsed: (id: string, usedAt: number) => Promise<void>;
     createSession: (session: NewMemberSessionRecord) => Promise<MemberSessionRecord>;
+    getSessionById: (id: string) => Promise<MemberSessionRecord | null>;
     createAuthEvent: (event: NewMemberAuthEventRecord) => Promise<MemberAuthEventRecord>;
 };
 
@@ -76,6 +77,11 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
         return rows[0];
     };
 
+    const getSessionById = async (id: string) => {
+        const rows = await db.select().from(memberSessionTable).where(eq(memberSessionTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
     const createAuthEvent = async (event: NewMemberAuthEventRecord) => {
         await db.insert(memberAuthEventTable).values(event);
         const rows = await db.select().from(memberAuthEventTable).where(eq(memberAuthEventTable.id, event.id)).limit(1);
@@ -93,6 +99,7 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
         getAuthTokenByToken,
         markAuthTokenUsed,
         createSession,
+        getSessionById,
         createAuthEvent
     };
 };

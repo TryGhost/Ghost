@@ -43,10 +43,14 @@ const createRepository = (): MemberRepository & {state: () => {
             tokens[index] = {...existing, usedAt};
         },
         createSession: async (session) => {
-            const record = session as MemberSessionRecord;
+            const record: MemberSessionRecord = {
+                ...session,
+                revokedAt: session.revokedAt ?? null
+            };
             sessions.push(record);
             return record;
         },
+        getSessionById: async (id) => sessions.find((session) => session.id === id) ?? null,
         createAuthEvent: async (event) => {
             const record = event as MemberAuthEventRecord;
             events.push(record);
@@ -99,5 +103,31 @@ describe('member auth service', () => {
         expect(verified.session.memberId).toBe(verified.member.id);
         expect(state.sessions.length).toBe(1);
         expect(state.events.length).toBe(1);
+    });
+
+    it('verifies member sessions with paid checks', async () => {
+        const repository = createRepository();
+        const service = createMemberAuthService(repository, 'open');
+
+        const now = Date.now();
+        const member = await repository.createMember({
+            id: 'member-1',
+            email: 'paid@example.com',
+            status: 'paid',
+            createdAt: now,
+            updatedAt: now
+        });
+
+        const session = await repository.createSession({
+            id: 'session-1',
+            memberId: member.id,
+            createdAt: now,
+            expiresAt: now + 1000,
+            revokedAt: null
+        });
+
+        const result = await service.verifySession({sessionId: session.id, requiresPaid: true});
+
+        expect(result.member.email).toBe(member.email);
     });
 });
