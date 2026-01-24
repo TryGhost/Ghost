@@ -1,22 +1,9 @@
-import {OpenAPIHono, createRoute} from '@hono/zod-openapi';
-import type {Context} from 'hono';
+import {createRoute} from '@hono/zod-openapi';
 import type {StaffAuthService} from './service.js';
 import {LoginRequestBodySchema, LoginResponseSchema, StaffMeResponseSchema} from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
-
-const getBearerToken = (context: Context) => {
-    const header = context.req.header('authorization');
-    if (!header) {
-        return null;
-    }
-
-    const [scheme, token] = header.split(' ');
-    if (scheme?.toLowerCase() !== 'bearer' || !token) {
-        return null;
-    }
-
-    return token;
-};
+import {createOpenApiRouter} from '../../platform/http/openapi.js';
+import {getBearerToken} from './auth.js';
 
 const loginRoute = createRoute({
     method: 'post',
@@ -57,8 +44,18 @@ const meRoute = createRoute({
     }
 });
 
+const logoutRoute = createRoute({
+    method: 'post',
+    path: '/logout',
+    responses: {
+        204: {
+            description: 'Session revoked'
+        }
+    }
+});
+
 export const createIdentityRouter = (service: StaffAuthService) => {
-    const router = new OpenAPIHono();
+    const router = createOpenApiRouter();
 
     router.openapi(loginRoute, async (context) => {
         const input = context.req.valid('json');
@@ -76,6 +73,16 @@ export const createIdentityRouter = (service: StaffAuthService) => {
 
         const staff = await service.getStaffBySession(token);
         return context.json({staff});
+    });
+
+    router.openapi(logoutRoute, async (context) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        await service.logout(token);
+        return context.body(null, 204);
     });
 
     return router;

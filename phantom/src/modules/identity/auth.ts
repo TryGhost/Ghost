@@ -1,0 +1,31 @@
+import type {Context, MiddlewareHandler} from 'hono';
+import {HttpError} from '../../platform/http/errors.js';
+import type {StaffAuthService} from './service.js';
+
+export const getBearerToken = (context: Context) => {
+    const header = context.req.header('authorization');
+    if (!header) {
+        return null;
+    }
+
+    const [scheme, token] = header.split(' ');
+    if (scheme?.toLowerCase() !== 'bearer' || !token) {
+        return null;
+    }
+
+    return token;
+};
+
+export const createStaffSessionGuard = (service: StaffAuthService): MiddlewareHandler => {
+    return async (context, next) => {
+        const token = getBearerToken(context);
+        if (!token) {
+            throw new HttpError(401, 'missing_session', 'Missing session token');
+        }
+
+        const staff = await service.getStaffBySession(token);
+        context.set('staff', staff);
+
+        await next();
+    };
+};

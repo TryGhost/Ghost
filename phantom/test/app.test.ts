@@ -1,7 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {createApp} from '../src/app/app.js';
+import type {SiteService} from '../src/modules/site/service.js';
+import type {StaffAuthService} from '../src/modules/identity/service.js';
+import type {SiteUpdateInput} from '../src/modules/site/contracts.js';
 
-const siteService = {
+const siteService: SiteService = {
     getSite: async () => ({
         id: 'site',
         title: 'Ghost',
@@ -10,7 +13,7 @@ const siteService = {
         createdAt: 1,
         updatedAt: 1
     }),
-    updateSite: async (input: {title?: string; description?: string | null; locale?: string}) => ({
+    updateSite: async (input: SiteUpdateInput) => ({
         id: 'site',
         title: input.title ?? 'Ghost',
         description: input.description ?? null,
@@ -20,7 +23,7 @@ const siteService = {
     })
 };
 
-const staffAuthService = {
+const staffAuthService: StaffAuthService = {
     login: async () => ({
         staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active'},
         session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
@@ -30,7 +33,8 @@ const staffAuthService = {
         email: 'jamie@example.com',
         name: 'Jamie',
         status: 'active'
-    })
+    }),
+    logout: async () => undefined
 };
 
 describe('app routes', () => {
@@ -49,7 +53,10 @@ describe('app routes', () => {
 
         const response = await app.request('/site', {
             method: 'PUT',
-            headers: {'content-type': 'application/json'},
+            headers: {
+                authorization: 'Bearer session',
+                'content-type': 'application/json'
+            },
             body: JSON.stringify({
                 title: 'Ghost Daily',
                 locale: 'en-us'
@@ -68,7 +75,10 @@ describe('app routes', () => {
 
         const response = await app.request('/site', {
             method: 'PUT',
-            headers: {'content-type': 'application/json'},
+            headers: {
+                authorization: 'Bearer session',
+                'content-type': 'application/json'
+            },
             body: JSON.stringify({
                 title: ''
             })

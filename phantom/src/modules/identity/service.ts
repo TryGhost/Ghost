@@ -8,6 +8,7 @@ import {HttpError} from '../../platform/http/errors.js';
 export type StaffAuthService = {
     login: (input: LoginRequest, ipAddress: string) => Promise<{staff: StaffResponse; session: StaffSessionResponse}>;
     getStaffBySession: (sessionId: string) => Promise<StaffResponse>;
+    logout: (sessionId: string) => Promise<void>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
@@ -76,8 +77,18 @@ export const createStaffAuthService = (repository: StaffRepository): StaffAuthSe
         return mapStaff(staff);
     };
 
+    const logout = async (sessionId: string) => {
+        const session = await repository.getSession(sessionId);
+        if (!session || session.revokedAt || session.expiresAt <= Date.now()) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+
+        await repository.revokeSession(sessionId, Date.now());
+    };
+
     return {
         login,
-        getStaffBySession
+        getStaffBySession,
+        logout
     };
 };

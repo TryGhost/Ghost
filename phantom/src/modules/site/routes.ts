@@ -1,6 +1,7 @@
-import {OpenAPIHono, createRoute} from '@hono/zod-openapi';
+import {createRoute} from '@hono/zod-openapi';
 import type {SiteService} from './service.js';
 import {SiteResponseSchema, SiteUpdateRequestSchema, SiteUpdateResponseSchema} from './contracts.js';
+import {createOpenApiRouter} from '../../platform/http/openapi.js';
 
 const getSiteRoute = createRoute({
     method: 'get',
@@ -42,7 +43,7 @@ const updateSiteRoute = createRoute({
 });
 
 export const createSiteRouter = (service: SiteService) => {
-    const router = new OpenAPIHono();
+    const router = createOpenApiRouter();
 
     router.openapi(getSiteRoute, async (context) => {
         const site = await service.getSite();

@@ -4,6 +4,7 @@ import {createSiteRouter} from '../modules/site/routes.js';
 import {handleError} from '../platform/http/error-handler.js';
 import type {StaffAuthService} from '../modules/identity/service.js';
 import {createIdentityRouter} from '../modules/identity/routes.js';
+import {createStaffSessionGuard} from '../modules/identity/auth.js';
 
 export type AppDependencies = {
     siteService: SiteService;
@@ -16,6 +17,10 @@ export const createApp = ({siteService, staffAuthService}: AppDependencies) => {
     app.get('/health', (context) => {
         return context.json({status: 'ok'});
     });
+
+    const staffSessionGuard = createStaffSessionGuard(staffAuthService);
+    app.use('/site', staffSessionGuard);
+    app.use('/site/*', staffSessionGuard);
 
     app.route('/site', createSiteRouter(siteService));
     app.route('/staff', createIdentityRouter(staffAuthService));
