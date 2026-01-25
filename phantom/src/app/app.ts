@@ -15,6 +15,8 @@ import type {ContentService} from '../modules/content/service.js';
 import {createContentRouter} from '../modules/content/routes.js';
 import type {NewsletterService} from '../modules/newsletters/service.js';
 import {createNewsletterRouter} from '../modules/newsletters/routes.js';
+import type {AnalyticsService} from '../modules/analytics/service.js';
+import {createAnalyticsRouter} from '../modules/analytics/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
@@ -24,6 +26,7 @@ export type AppDependencies = {
     subscriptionService: SubscriptionService;
     contentService: ContentService;
     newsletterService: NewsletterService;
+    analyticsService: AnalyticsService;
 };
 
 export const createApp = ({
@@ -33,7 +36,8 @@ export const createApp = ({
     partnerService,
     subscriptionService,
     contentService,
-    newsletterService
+    newsletterService,
+    analyticsService
 }: AppDependencies) => {
     const app = new Hono();
 
@@ -52,6 +56,7 @@ export const createApp = ({
     app.route('/subscriptions', createSubscriptionsRouter(subscriptionService, staffAuthService));
     app.route('/content', createContentRouter(contentService, staffAuthService));
     app.route('/newsletters', createNewsletterRouter(newsletterService, staffAuthService));
+    app.route('/analytics', createAnalyticsRouter(analyticsService));
 
     app.onError(handleError);
 

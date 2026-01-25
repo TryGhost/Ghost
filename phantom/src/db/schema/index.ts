@@ -45,3 +45,6 @@ export {
     issueTable,
     deliveryJobTable
 } from '../../modules/newsletters/db.js';
+export {
+    analyticsEventTable
+} from '../../modules/analytics/db.js';

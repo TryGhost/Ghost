@@ -56,7 +56,7 @@ References:
 - [ ] Email lifecycle events
 
 ## 7) Activity feed and analytics
-- [ ] Activity event store + query
+- [x] Activity event store + query
 - [ ] Aggregated event types
 - [ ] Snapshot pipeline
 - [ ] Explore attribution integration

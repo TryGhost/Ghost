@@ -8,6 +8,7 @@ import type {PartnerService} from '../src/modules/partners/service.js';
 import type {SubscriptionService} from '../src/modules/subscriptions/service.js';
 import type {ContentService} from '../src/modules/content/service.js';
 import type {NewsletterService} from '../src/modules/newsletters/service.js';
+import type {AnalyticsService} from '../src/modules/analytics/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -224,6 +225,13 @@ const newsletterService: NewsletterService = {
     })
 };
 
+const analyticsService: AnalyticsService = {
+    recordEvent: async () => undefined,
+    listEvents: async () => ({
+        events: [{id: 'event', memberId: 'member', type: 'signup', createdAt: 1}]
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -233,7 +241,8 @@ describe('app routes', () => {
             partnerService,
             subscriptionService,
             contentService,
-            newsletterService
+            newsletterService,
+            analyticsService
         });
 
         const response = await app.request('/health');
@@ -251,7 +260,8 @@ describe('app routes', () => {
             partnerService,
             subscriptionService,
             contentService,
-            newsletterService
+            newsletterService,
+            analyticsService
         });
 
         const response = await app.request('/site', {
@@ -281,7 +291,8 @@ describe('app routes', () => {
             partnerService,
             subscriptionService,
             contentService,
-            newsletterService
+            newsletterService,
+            analyticsService
         });
 
         const response = await app.request('/site', {
