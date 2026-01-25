@@ -62,9 +62,9 @@ References:
 - [ ] Explore attribution integration
 
 ## 8) Link tracking and redirects
-- [ ] Canonical tracked links
-- [ ] Bulk link updates with redirects
-- [ ] Click events + attribution
+- [x] Canonical tracked links
+- [x] Bulk link updates with redirects
+- [x] Click events + attribution
 
 ## 9) Media storage and CDN configuration
 - [ ] File uploads with metadata

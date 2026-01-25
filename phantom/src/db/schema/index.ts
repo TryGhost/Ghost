@@ -48,3 +48,8 @@ export {
 export {
     analyticsEventTable
 } from '../../modules/analytics/db.js';
+export {
+    linkTable,
+    linkRedirectTable,
+    linkClickTable
+} from '../../modules/links/db.js';

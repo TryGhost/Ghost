@@ -9,6 +9,7 @@ import type {SubscriptionService} from '../src/modules/subscriptions/service.js'
 import type {ContentService} from '../src/modules/content/service.js';
 import type {NewsletterService} from '../src/modules/newsletters/service.js';
 import type {AnalyticsService} from '../src/modules/analytics/service.js';
+import type {LinkService} from '../src/modules/links/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -232,6 +233,18 @@ const analyticsService: AnalyticsService = {
     })
 };
 
+const linkService: LinkService = {
+    createLink: async () => ({
+        link: {
+            id: 'link',
+            url: 'https://example.com',
+            createdAt: 1
+        }
+    }),
+    bulkUpdateLinks: async () => ({updated: 1}),
+    recordClick: async () => ({recorded: true})
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -242,7 +255,8 @@ describe('app routes', () => {
             subscriptionService,
             contentService,
             newsletterService,
-            analyticsService
+            analyticsService,
+            linkService
         });
 
         const response = await app.request('/health');
@@ -261,7 +275,8 @@ describe('app routes', () => {
             subscriptionService,
             contentService,
             newsletterService,
-            analyticsService
+            analyticsService,
+            linkService
         });
 
         const response = await app.request('/site', {
@@ -292,7 +307,8 @@ describe('app routes', () => {
             subscriptionService,
             contentService,
             newsletterService,
-            analyticsService
+            analyticsService,
+            linkService
         });
 
         const response = await app.request('/site', {
