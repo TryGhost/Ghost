@@ -14,6 +14,7 @@ const createSubscriptionRepository = (): SubscriptionRepository & {state: () => 
     const billingAccounts: {id: string; memberId: string; provider: string; providerCustomerId: string; createdAt: number; updatedAt: number}[] = [];
     const entitlements: {id: string}[] = [];
     const redemptions: {id: string}[] = [];
+    const events: {id: string}[] = [];
 
     return {
         createPlan: async (plan) => {
@@ -69,6 +70,10 @@ const createSubscriptionRepository = (): SubscriptionRepository & {state: () => 
         createContentEntitlement: async (entitlement) => {
             entitlements.push(entitlement as {id: string});
             return entitlement as {id: string; memberId: string; source: string; sourceId: string; createdAt: number};
+        },
+        createSubscriptionEvent: async (event) => {
+            events.push(event as {id: string});
+            return event as {id: string; memberId: string; subscriptionId: string; type: string; createdAt: number};
         },
         state: () => ({
             sessions: sessions.map((session) => session.id),

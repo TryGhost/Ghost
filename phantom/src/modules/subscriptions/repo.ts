@@ -4,6 +4,7 @@ import {
     billingAccountTable,
     checkoutSessionTable,
     contentEntitlementTable,
+    subscriptionEventTable,
     offerRedemptionTable,
     offerTable,
     planTable,
@@ -20,11 +21,13 @@ import {
     type NewPlanRecord,
     type NewPriceRecord,
     type NewSubscriptionRecord,
+    type NewSubscriptionEventRecord,
     type OfferRecord,
     type OfferRedemptionRecord,
     type PlanRecord,
     type PriceRecord,
-    type SubscriptionRecord
+    type SubscriptionRecord,
+    type SubscriptionEventRecord
 } from './db.js';
 
 export type SubscriptionRepository = {
@@ -44,6 +47,7 @@ export type SubscriptionRepository = {
     createBillingAccount: (account: NewBillingAccountRecord) => Promise<BillingAccountRecord>;
     getBillingAccountByMember: (memberId: string) => Promise<BillingAccountRecord | null>;
     createContentEntitlement: (entitlement: NewContentEntitlementRecord) => Promise<ContentEntitlementRecord>;
+    createSubscriptionEvent: (event: NewSubscriptionEventRecord) => Promise<SubscriptionEventRecord>;
 };
 
 export const createSubscriptionRepository = (db: DbClient): SubscriptionRepository => {
@@ -168,6 +172,15 @@ export const createSubscriptionRepository = (db: DbClient): SubscriptionReposito
         return rows[0];
     };
 
+    const createSubscriptionEvent = async (event: NewSubscriptionEventRecord) => {
+        await db.insert(subscriptionEventTable).values(event);
+        const rows = await db.select().from(subscriptionEventTable).where(eq(subscriptionEventTable.id, event.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Subscription event missing after insert');
+        }
+        return rows[0];
+    };
+
     return {
         createPlan,
         createPrice,
@@ -184,6 +197,7 @@ export const createSubscriptionRepository = (db: DbClient): SubscriptionReposito
         getSubscriptionByMember,
         createBillingAccount,
         getBillingAccountByMember,
-        createContentEntitlement
+        createContentEntitlement,
+        createSubscriptionEvent
     };
 };

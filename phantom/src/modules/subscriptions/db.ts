@@ -65,6 +65,14 @@ export const contentEntitlementTable = sqliteTable('content_entitlements', {
     createdAt: integer('created_at').notNull()
 });
 
+export const subscriptionEventTable = sqliteTable('subscription_events', {
+    id: text('id').primaryKey(),
+    memberId: text('member_id').notNull(),
+    subscriptionId: text('subscription_id').notNull(),
+    type: text('type').notNull(),
+    createdAt: integer('created_at').notNull()
+});
+
 export type PlanRecord = typeof planTable.$inferSelect;
 export type NewPlanRecord = typeof planTable.$inferInsert;
 export type PriceRecord = typeof priceTable.$inferSelect;
@@ -81,3 +89,5 @@ export type BillingAccountRecord = typeof billingAccountTable.$inferSelect;
 export type NewBillingAccountRecord = typeof billingAccountTable.$inferInsert;
 export type ContentEntitlementRecord = typeof contentEntitlementTable.$inferSelect;
 export type NewContentEntitlementRecord = typeof contentEntitlementTable.$inferInsert;
+export type SubscriptionEventRecord = typeof subscriptionEventTable.$inferSelect;
+export type NewSubscriptionEventRecord = typeof subscriptionEventTable.$inferInsert;

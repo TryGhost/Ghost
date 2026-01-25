@@ -38,7 +38,7 @@ References:
 - [x] Prevent duplicate checkout for active subs
 - [x] BillingAccount maintenance
 - [x] ContentEntitlements
-- [ ] Subscription lifecycle events
+- [x] Subscription lifecycle events
 
 ## 5) Content authoring and publishing
 - [ ] Posts/pages with Lexical content + revisions

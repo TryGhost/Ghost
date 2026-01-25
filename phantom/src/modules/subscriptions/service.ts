@@ -159,6 +159,14 @@ export const createSubscriptionService = (
             cancelledAt: null
         });
 
+        await repository.createSubscriptionEvent({
+            id: randomUUID(),
+            memberId: session.memberId,
+            subscriptionId: subscription.id,
+            type: 'created',
+            createdAt: now
+        });
+
         let billingAccount = await repository.getBillingAccountByMember(session.memberId);
         if (!billingAccount) {
             billingAccount = await repository.createBillingAccount({
