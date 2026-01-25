@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const uncapitalise = require('../../../../../../core/server/web/shared/middleware/uncapitalise');
 
@@ -27,7 +26,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/ghost/signup/';
             uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
+            sinon.assert.calledOnce(next);
             done();
         });
 
@@ -36,7 +35,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '';
             uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
+            sinon.assert.calledOnce(next);
             done();
         });
 
@@ -46,7 +45,7 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
+            sinon.assert.calledOnce(next);
             done();
         });
 
@@ -55,7 +54,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
             uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
+            sinon.assert.calledOnce(next);
             done();
         });
 
@@ -65,9 +64,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/signup/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
             done();
         });
 
@@ -79,9 +78,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/signup/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
             done();
         });
 
@@ -93,9 +92,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/ghost/signup/').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/signup/');
             done();
         });
 
@@ -105,9 +104,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/ghost/signup/XEB123').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/XEB123');
             done();
         });
 
@@ -119,9 +118,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/blog/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54');
             done();
         });
     });
@@ -137,7 +136,7 @@ describe('Middleware: uncapitalise', function () {
                     req.path = `/ghost/api${getApiPath(apiVersion)}/endpoint/`;
                     uncapitalise(req, res, next);
 
-                    next.calledOnce.should.be.true();
+                    sinon.assert.calledOnce(next);
                     done();
                 });
 
@@ -153,9 +152,9 @@ describe('Middleware: uncapitalise', function () {
 
                     uncapitalise(req, res, next);
 
-                    next.called.should.be.false();
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/ghost/api${getApiPath(apiVersion)}/endpoint/`).should.be.true();
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/endpoint/`);
                     done();
                 });
 
@@ -165,9 +164,9 @@ describe('Middleware: uncapitalise', function () {
 
                     uncapitalise(req, res, next);
 
-                    next.called.should.be.false();
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/ghost/api${getApiPath(apiVersion)}/asdfj/`).should.be.true();
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/asdfj/`);
                     done();
                 });
 
@@ -179,9 +178,9 @@ describe('Middleware: uncapitalise', function () {
 
                     uncapitalise(req, res, next);
 
-                    next.called.should.be.false();
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/blog/ghost/api${getApiPath(apiVersion)}/asdfj/`).should.be.true();
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/asdfj/`);
                     done();
                 });
 
@@ -192,9 +191,9 @@ describe('Middleware: uncapitalise', function () {
 
                     uncapitalise(req, res, next);
 
-                    next.called.should.be.false();
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/ghost/api${getApiPath(apiVersion)}/settings/is_private/${query}`).should.be.true();
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/settings/is_private/${query}`);
                     done();
                 });
 
@@ -207,9 +206,9 @@ describe('Middleware: uncapitalise', function () {
 
                     uncapitalise(req, res, next);
 
-                    next.called.should.be.false();
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/blog/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/${query}`).should.be.true();
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/${query}`);
                     done();
                 });
             });
@@ -221,7 +220,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/this-is-my-blog-post';
             uncapitalise(req, res, next);
 
-            next.calledOnce.should.be.true();
+            sinon.assert.calledOnce(next);
             done();
         });
 
@@ -231,9 +230,9 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.called.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.calledWith(301, '/this-is-my-blog-post').should.be.true();
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 301, '/this-is-my-blog-post');
             done();
         });
     });
