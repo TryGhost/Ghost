@@ -6,6 +6,7 @@ import type {SiteUpdateInput} from '../src/modules/site/contracts.js';
 import type {MemberAuthService} from '../src/modules/members/service.js';
 import type {PartnerService} from '../src/modules/partners/service.js';
 import type {SubscriptionService} from '../src/modules/subscriptions/service.js';
+import type {ContentService} from '../src/modules/content/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -171,6 +172,36 @@ const subscriptionService: SubscriptionService = {
     confirmCheckoutSession: async () => ({subscriptionId: 'sub'})
 };
 
+const contentService: ContentService = {
+    createPost: async () => ({
+        post: {
+            id: 'post',
+            title: 'Hello',
+            status: 'draft',
+            publishedAt: null,
+            createdAt: 1,
+            updatedAt: 2
+        }
+    }),
+    getPost: async () => ({
+        post: {
+            id: 'post',
+            title: 'Hello',
+            status: 'draft',
+            publishedAt: null,
+            createdAt: 1,
+            updatedAt: 2
+        }
+    }),
+    createTag: async () => ({
+        tag: {
+            id: 'tag',
+            name: 'News',
+            slug: 'news'
+        }
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -178,7 +209,8 @@ describe('app routes', () => {
             staffAuthService,
             memberAuthService,
             partnerService,
-            subscriptionService
+            subscriptionService,
+            contentService
         });
 
         const response = await app.request('/health');
@@ -194,7 +226,8 @@ describe('app routes', () => {
             staffAuthService,
             memberAuthService,
             partnerService,
-            subscriptionService
+            subscriptionService,
+            contentService
         });
 
         const response = await app.request('/site', {
@@ -222,7 +255,8 @@ describe('app routes', () => {
             staffAuthService,
             memberAuthService,
             partnerService,
-            subscriptionService
+            subscriptionService,
+            contentService
         });
 
         const response = await app.request('/site', {

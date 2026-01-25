@@ -31,5 +31,12 @@ export {
     checkoutSessionTable,
     subscriptionTable,
     billingAccountTable,
-    contentEntitlementTable
+    contentEntitlementTable,
+    subscriptionEventTable
 } from '../../modules/subscriptions/db.js';
+export {
+    postTable,
+    postRevisionTable,
+    tagTable,
+    postTagTable
+} from '../../modules/content/db.js';

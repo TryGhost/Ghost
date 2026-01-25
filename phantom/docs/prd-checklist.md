@@ -43,7 +43,7 @@ References:
 ## 5) Content authoring and publishing
 - [ ] Posts/pages with Lexical content + revisions
 - [ ] Tags, collections, author profiles
-- [ ] Draft/scheduled/published states
+- [x] Draft/scheduled/published states
 - [ ] Domain events for content lifecycle
 - [ ] URL routing + cache invalidation
 

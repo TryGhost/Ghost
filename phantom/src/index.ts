@@ -12,6 +12,8 @@ import {createPartnerRepository} from './modules/partners/repo.js';
 import {createPartnerService} from './modules/partners/service.js';
 import {createSubscriptionRepository} from './modules/subscriptions/repo.js';
 import {createSubscriptionService} from './modules/subscriptions/service.js';
+import {createContentRepository} from './modules/content/repo.js';
+import {createContentService} from './modules/content/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
@@ -27,13 +29,16 @@ const partnerRepository = createPartnerRepository(db);
 const partnerService = createPartnerService(partnerRepository, staffRepository);
 const subscriptionRepository = createSubscriptionRepository(db);
 const subscriptionService = createSubscriptionService(subscriptionRepository, memberRepository);
+const contentRepository = createContentRepository(db);
+const contentService = createContentService(contentRepository);
 
 const app = createApp({
     siteService,
     staffAuthService,
     memberAuthService,
     partnerService,
-    subscriptionService
+    subscriptionService,
+    contentService
 });
 
 serve({
