@@ -13,6 +13,8 @@ import type {SubscriptionService} from '../modules/subscriptions/service.js';
 import {createSubscriptionsRouter} from '../modules/subscriptions/routes.js';
 import type {ContentService} from '../modules/content/service.js';
 import {createContentRouter} from '../modules/content/routes.js';
+import type {NewsletterService} from '../modules/newsletters/service.js';
+import {createNewsletterRouter} from '../modules/newsletters/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
@@ -21,6 +23,7 @@ export type AppDependencies = {
     partnerService: PartnerService;
     subscriptionService: SubscriptionService;
     contentService: ContentService;
+    newsletterService: NewsletterService;
 };
 
 export const createApp = ({
@@ -29,7 +32,8 @@ export const createApp = ({
     memberAuthService,
     partnerService,
     subscriptionService,
-    contentService
+    contentService,
+    newsletterService
 }: AppDependencies) => {
     const app = new Hono();
 
@@ -47,6 +51,7 @@ export const createApp = ({
     app.route('/partners', createPartnersRouter(partnerService, staffAuthService));
     app.route('/subscriptions', createSubscriptionsRouter(subscriptionService, staffAuthService));
     app.route('/content', createContentRouter(contentService, staffAuthService));
+    app.route('/newsletters', createNewsletterRouter(newsletterService, staffAuthService));
 
     app.onError(handleError);
 

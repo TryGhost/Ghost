@@ -48,9 +48,9 @@ References:
 - [ ] URL routing + cache invalidation
 
 ## 6) Newsletters and email delivery
-- [ ] Newsletters with branding and defaults
-- [ ] Issues linked to content or standalone
-- [ ] Queue-backed email sending
+- [x] Newsletters with branding and defaults
+- [x] Issues linked to content or standalone
+- [x] Queue-backed email sending
 - [ ] Delivery status tracking
 - [ ] Suppression lists + automated emails
 - [ ] Email lifecycle events

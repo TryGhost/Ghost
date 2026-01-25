@@ -7,6 +7,7 @@ import type {MemberAuthService} from '../src/modules/members/service.js';
 import type {PartnerService} from '../src/modules/partners/service.js';
 import type {SubscriptionService} from '../src/modules/subscriptions/service.js';
 import type {ContentService} from '../src/modules/content/service.js';
+import type {NewsletterService} from '../src/modules/newsletters/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -202,6 +203,27 @@ const contentService: ContentService = {
     })
 };
 
+const newsletterService: NewsletterService = {
+    createNewsletter: async () => ({
+        newsletter: {
+            id: 'newsletter',
+            name: 'Weekly',
+            senderEmail: 'hello@example.com',
+            createdAt: 1,
+            updatedAt: 2
+        }
+    }),
+    createIssue: async () => ({
+        issue: {
+            id: 'issue',
+            newsletterId: 'newsletter',
+            subject: 'Update',
+            status: 'draft',
+            sendAt: null
+        }
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -210,7 +232,8 @@ describe('app routes', () => {
             memberAuthService,
             partnerService,
             subscriptionService,
-            contentService
+            contentService,
+            newsletterService
         });
 
         const response = await app.request('/health');
@@ -227,7 +250,8 @@ describe('app routes', () => {
             memberAuthService,
             partnerService,
             subscriptionService,
-            contentService
+            contentService,
+            newsletterService
         });
 
         const response = await app.request('/site', {
@@ -256,7 +280,8 @@ describe('app routes', () => {
             memberAuthService,
             partnerService,
             subscriptionService,
-            contentService
+            contentService,
+            newsletterService
         });
 
         const response = await app.request('/site', {

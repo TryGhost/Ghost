@@ -40,3 +40,8 @@ export {
     tagTable,
     postTagTable
 } from '../../modules/content/db.js';
+export {
+    newsletterTable,
+    issueTable,
+    deliveryJobTable
+} from '../../modules/newsletters/db.js';

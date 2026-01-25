@@ -14,6 +14,8 @@ import {createSubscriptionRepository} from './modules/subscriptions/repo.js';
 import {createSubscriptionService} from './modules/subscriptions/service.js';
 import {createContentRepository} from './modules/content/repo.js';
 import {createContentService} from './modules/content/service.js';
+import {createNewsletterRepository} from './modules/newsletters/repo.js';
+import {createNewsletterService} from './modules/newsletters/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
@@ -31,6 +33,8 @@ const subscriptionRepository = createSubscriptionRepository(db);
 const subscriptionService = createSubscriptionService(subscriptionRepository, memberRepository);
 const contentRepository = createContentRepository(db);
 const contentService = createContentService(contentRepository);
+const newsletterRepository = createNewsletterRepository(db);
+const newsletterService = createNewsletterService(newsletterRepository);
 
 const app = createApp({
     siteService,
@@ -38,7 +42,8 @@ const app = createApp({
     memberAuthService,
     partnerService,
     subscriptionService,
-    contentService
+    contentService,
+    newsletterService
 });
 
 serve({
