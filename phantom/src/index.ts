@@ -20,6 +20,8 @@ import {createAnalyticsRepository} from './modules/analytics/repo.js';
 import {createAnalyticsService} from './modules/analytics/service.js';
 import {createLinkRepository} from './modules/links/repo.js';
 import {createLinkService} from './modules/links/service.js';
+import {createMediaRepository} from './modules/media/repo.js';
+import {createMediaService} from './modules/media/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
@@ -43,6 +45,8 @@ const analyticsRepository = createAnalyticsRepository(db);
 const analyticsService = createAnalyticsService(analyticsRepository);
 const linkRepository = createLinkRepository(db);
 const linkService = createLinkService(linkRepository);
+const mediaRepository = createMediaRepository(db);
+const mediaService = createMediaService(mediaRepository);
 
 const app = createApp({
     siteService,
@@ -53,7 +57,8 @@ const app = createApp({
     contentService,
     newsletterService,
     analyticsService,
-    linkService
+    linkService,
+    mediaService
 });
 
 serve({

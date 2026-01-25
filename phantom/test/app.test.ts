@@ -10,6 +10,7 @@ import type {ContentService} from '../src/modules/content/service.js';
 import type {NewsletterService} from '../src/modules/newsletters/service.js';
 import type {AnalyticsService} from '../src/modules/analytics/service.js';
 import type {LinkService} from '../src/modules/links/service.js';
+import type {MediaService} from '../src/modules/media/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -245,6 +246,24 @@ const linkService: LinkService = {
     recordClick: async () => ({recorded: true})
 };
 
+const mediaService: MediaService = {
+    uploadAsset: async () => ({
+        asset: {
+            id: 'asset',
+            url: 'https://cdn.example/asset.png',
+            mimeType: 'image/png',
+            size: 10
+        }
+    }),
+    updateStorageConfig: async () => ({
+        config: {
+            id: 'storage',
+            adapter: 's3',
+            baseUrl: 'https://cdn.example'
+        }
+    })
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -256,7 +275,8 @@ describe('app routes', () => {
             contentService,
             newsletterService,
             analyticsService,
-            linkService
+            linkService,
+            mediaService
         });
 
         const response = await app.request('/health');
@@ -276,7 +296,8 @@ describe('app routes', () => {
             contentService,
             newsletterService,
             analyticsService,
-            linkService
+            linkService,
+            mediaService
         });
 
         const response = await app.request('/site', {
@@ -308,7 +329,8 @@ describe('app routes', () => {
             contentService,
             newsletterService,
             analyticsService,
-            linkService
+            linkService,
+            mediaService
         });
 
         const response = await app.request('/site', {

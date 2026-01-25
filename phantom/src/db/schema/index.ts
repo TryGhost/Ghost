@@ -53,3 +53,7 @@ export {
     linkRedirectTable,
     linkClickTable
 } from '../../modules/links/db.js';
+export {
+    mediaAssetTable,
+    storageConfigTable
+} from '../../modules/media/db.js';

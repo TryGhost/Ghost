@@ -19,6 +19,8 @@ import type {AnalyticsService} from '../modules/analytics/service.js';
 import {createAnalyticsRouter} from '../modules/analytics/routes.js';
 import type {LinkService} from '../modules/links/service.js';
 import {createLinksRouter} from '../modules/links/routes.js';
+import type {MediaService} from '../modules/media/service.js';
+import {createMediaRouter} from '../modules/media/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
@@ -30,6 +32,7 @@ export type AppDependencies = {
     newsletterService: NewsletterService;
     analyticsService: AnalyticsService;
     linkService: LinkService;
+    mediaService: MediaService;
 };
 
 export const createApp = ({
@@ -41,7 +44,8 @@ export const createApp = ({
     contentService,
     newsletterService,
     analyticsService,
-    linkService
+    linkService,
+    mediaService
 }: AppDependencies) => {
     const app = new Hono();
 
@@ -62,6 +66,7 @@ export const createApp = ({
     app.route('/newsletters', createNewsletterRouter(newsletterService, staffAuthService));
     app.route('/analytics', createAnalyticsRouter(analyticsService));
     app.route('/links', createLinksRouter(linkService, staffAuthService));
+    app.route('/media', createMediaRouter(mediaService, staffAuthService));
 
     app.onError(handleError);
 

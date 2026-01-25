@@ -67,9 +67,9 @@ References:
 - [x] Click events + attribution
 
 ## 9) Media storage and CDN configuration
-- [ ] File uploads with metadata
-- [ ] Switchable storage adapters
-- [ ] CDN base URL rewriting
+- [x] File uploads with metadata
+- [x] Switchable storage adapters
+- [x] CDN base URL rewriting
 - [ ] Asset URL integrity in Lexical content
 
 ## 10) Integrations and webhooks
