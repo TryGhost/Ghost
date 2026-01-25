@@ -260,5 +260,26 @@ describe('getAssetUrl', function () {
             // Hashes should be different for different files
             assert.notEqual(cssHash, jsHash);
         });
+
+        it('should prevent path traversal in theme assets', function () {
+            // Mock active theme
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            // Attempt path traversal - should fallback to global hash, not read arbitrary files
+            const testUrl = getAssetUrl('../../../package.json');
+
+            // Should use global hash because path traversal is blocked
+            testUrl.should.equal('/assets/../../../package.json?v=' + config.get('assetHash'));
+        });
+
+        it('should prevent path traversal in public assets', function () {
+            // Attempt path traversal in public assets
+            const testUrl = getAssetUrl('public/../../../package.json');
+
+            // Should use global hash because path traversal is blocked
+            testUrl.should.equal('/public/../../../package.json?v=' + config.get('assetHash'));
+        });
     });
 });
