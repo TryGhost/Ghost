@@ -32,12 +32,12 @@ References:
 - [x] Session verification for gated content
 
 ## 4) Member subscriptions and payments
-- [ ] Plans/tiers with pricing and benefits
-- [ ] Offers/discounts with redemption
-- [ ] CheckoutSession creation
-- [ ] Prevent duplicate checkout for active subs
-- [ ] BillingAccount maintenance
-- [ ] ContentEntitlements
+- [x] Plans/tiers with pricing and benefits
+- [x] Offers/discounts with redemption
+- [x] CheckoutSession creation
+- [x] Prevent duplicate checkout for active subs
+- [x] BillingAccount maintenance
+- [x] ContentEntitlements
 - [ ] Subscription lifecycle events
 
 ## 5) Content authoring and publishing

@@ -9,15 +9,24 @@ import type {MemberAuthService} from '../modules/members/service.js';
 import {createMembersRouter} from '../modules/members/routes.js';
 import type {PartnerService} from '../modules/partners/service.js';
 import {createPartnersRouter} from '../modules/partners/routes.js';
+import type {SubscriptionService} from '../modules/subscriptions/service.js';
+import {createSubscriptionsRouter} from '../modules/subscriptions/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
     staffAuthService: StaffAuthService;
     memberAuthService: MemberAuthService;
     partnerService: PartnerService;
+    subscriptionService: SubscriptionService;
 };
 
-export const createApp = ({siteService, staffAuthService, memberAuthService, partnerService}: AppDependencies) => {
+export const createApp = ({
+    siteService,
+    staffAuthService,
+    memberAuthService,
+    partnerService,
+    subscriptionService
+}: AppDependencies) => {
     const app = new Hono();
 
     app.get('/health', (context) => {
@@ -32,6 +41,7 @@ export const createApp = ({siteService, staffAuthService, memberAuthService, par
     app.route('/staff', createIdentityRouter(staffAuthService));
     app.route('/members', createMembersRouter(memberAuthService));
     app.route('/partners', createPartnersRouter(partnerService, staffAuthService));
+    app.route('/subscriptions', createSubscriptionsRouter(subscriptionService, staffAuthService));
 
     app.onError(handleError);
 

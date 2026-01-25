@@ -5,6 +5,7 @@ import type {StaffAuthService} from '../src/modules/identity/service.js';
 import type {SiteUpdateInput} from '../src/modules/site/contracts.js';
 import type {MemberAuthService} from '../src/modules/members/service.js';
 import type {PartnerService} from '../src/modules/partners/service.js';
+import type {SubscriptionService} from '../src/modules/subscriptions/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -139,9 +140,46 @@ const partnerService: PartnerService = {
     })
 };
 
+const subscriptionService: SubscriptionService = {
+    createPlan: async () => ({
+        plan: {
+            id: 'plan',
+            name: 'Pro',
+            prices: [
+                {id: 'price-month', cadence: 'month', amount: 500, currency: 'USD'},
+                {id: 'price-year', cadence: 'year', amount: 5000, currency: 'USD'}
+            ]
+        }
+    }),
+    createOffer: async () => ({
+        offer: {
+            id: 'offer',
+            code: 'WELCOME',
+            amount: 100,
+            currency: 'USD',
+            active: true
+        }
+    }),
+    createCheckoutSession: async () => ({
+        session: {
+            id: 'checkout',
+            memberId: 'member',
+            priceId: 'price-month',
+            url: 'https://payments.example/checkout'
+        }
+    }),
+    confirmCheckoutSession: async () => ({subscriptionId: 'sub'})
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
-        const app = createApp({siteService, staffAuthService, memberAuthService, partnerService});
+        const app = createApp({
+            siteService,
+            staffAuthService,
+            memberAuthService,
+            partnerService,
+            subscriptionService
+        });
 
         const response = await app.request('/health');
         const body = await response.json();
@@ -151,7 +189,13 @@ describe('app routes', () => {
     });
 
     it('updates site details', async () => {
-        const app = createApp({siteService, staffAuthService, memberAuthService, partnerService});
+        const app = createApp({
+            siteService,
+            staffAuthService,
+            memberAuthService,
+            partnerService,
+            subscriptionService
+        });
 
         const response = await app.request('/site', {
             method: 'PUT',
@@ -173,7 +217,13 @@ describe('app routes', () => {
     });
 
     it('returns validation errors for invalid updates', async () => {
-        const app = createApp({siteService, staffAuthService, memberAuthService, partnerService});
+        const app = createApp({
+            siteService,
+            staffAuthService,
+            memberAuthService,
+            partnerService,
+            subscriptionService
+        });
 
         const response = await app.request('/site', {
             method: 'PUT',

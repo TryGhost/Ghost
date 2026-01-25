@@ -20,5 +20,16 @@ export {
 export {
     partnerOrgTable,
     accessGrantTable,
-    partnerTokenTable
+    partnerTokenTable,
+    partnerAuditTable
 } from '../../modules/partners/db.js';
+export {
+    planTable,
+    priceTable,
+    offerTable,
+    offerRedemptionTable,
+    checkoutSessionTable,
+    subscriptionTable,
+    billingAccountTable,
+    contentEntitlementTable
+} from '../../modules/subscriptions/db.js';
