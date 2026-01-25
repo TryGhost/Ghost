@@ -143,6 +143,16 @@ export const createPartnerService = (repository: PartnerRepository, staffReposit
             name: token.name
         });
 
+        await repository.createAuditEvent({
+            id: randomUUID(),
+            staffId: staff.id,
+            orgId: grant.orgId,
+            grantId: grant.id,
+            action: 'validated',
+            scopes: joinScopes(scopes),
+            createdAt: Date.now()
+        });
+
         return {
             staffId: staff.id,
             orgId: grant.orgId,

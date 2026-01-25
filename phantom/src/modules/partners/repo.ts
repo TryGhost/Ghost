@@ -4,12 +4,15 @@ import {
     accessGrantTable,
     partnerOrgTable,
     partnerTokenTable,
+    partnerAuditTable,
     type AccessGrantRecord,
     type NewAccessGrantRecord,
     type NewPartnerOrgRecord,
     type NewPartnerTokenRecord,
+    type NewPartnerAuditRecord,
     type PartnerOrgRecord,
-    type PartnerTokenRecord
+    type PartnerTokenRecord,
+    type PartnerAuditRecord
 } from './db.js';
 
 export type PartnerRepository = {
@@ -21,6 +24,7 @@ export type PartnerRepository = {
     createToken: (token: NewPartnerTokenRecord) => Promise<PartnerTokenRecord>;
     getTokenByValue: (token: string) => Promise<PartnerTokenRecord | null>;
     revokeToken: (id: string, revokedAt: number) => Promise<void>;
+    createAuditEvent: (event: NewPartnerAuditRecord) => Promise<PartnerAuditRecord>;
 };
 
 export const createPartnerRepository = (db: DbClient): PartnerRepository => {
@@ -80,6 +84,15 @@ export const createPartnerRepository = (db: DbClient): PartnerRepository => {
             .where(eq(partnerTokenTable.id, id));
     };
 
+    const createAuditEvent = async (event: NewPartnerAuditRecord) => {
+        await db.insert(partnerAuditTable).values(event);
+        const rows = await db.select().from(partnerAuditTable).where(eq(partnerAuditTable.id, event.id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Partner audit event missing after insert');
+        }
+        return rows[0];
+    };
+
     return {
         getOrgById,
         createOrg,
@@ -88,6 +101,7 @@ export const createPartnerRepository = (db: DbClient): PartnerRepository => {
         revokeGrant,
         createToken,
         getTokenByValue,
-        revokeToken
+        revokeToken,
+        createAuditEvent
     };
 };

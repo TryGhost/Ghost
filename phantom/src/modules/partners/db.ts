@@ -26,9 +26,21 @@ export const partnerTokenTable = sqliteTable('partner_tokens', {
     revokedAt: integer('revoked_at')
 });
 
+export const partnerAuditTable = sqliteTable('partner_audit_events', {
+    id: text('id').primaryKey(),
+    staffId: text('staff_id').notNull(),
+    orgId: text('org_id').notNull(),
+    grantId: text('grant_id').notNull(),
+    action: text('action').notNull(),
+    scopes: text('scopes').notNull(),
+    createdAt: integer('created_at').notNull()
+});
+
 export type PartnerOrgRecord = typeof partnerOrgTable.$inferSelect;
 export type NewPartnerOrgRecord = typeof partnerOrgTable.$inferInsert;
 export type AccessGrantRecord = typeof accessGrantTable.$inferSelect;
 export type NewAccessGrantRecord = typeof accessGrantTable.$inferInsert;
 export type PartnerTokenRecord = typeof partnerTokenTable.$inferSelect;
 export type NewPartnerTokenRecord = typeof partnerTokenTable.$inferInsert;
+export type PartnerAuditRecord = typeof partnerAuditTable.$inferSelect;
+export type NewPartnerAuditRecord = typeof partnerAuditTable.$inferInsert;

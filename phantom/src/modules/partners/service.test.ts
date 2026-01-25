@@ -31,6 +31,7 @@ const createPartnerRepository = (): PartnerRepository & {state: () => {tokens: s
         },
         getTokenByValue: async (token) => tokens.find((record) => record.token === token) ?? null,
         revokeToken: async () => undefined,
+        createAuditEvent: async (event) => event,
         state: () => ({tokens: tokens.map((record) => record.token)})
     };
 };

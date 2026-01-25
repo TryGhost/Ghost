@@ -22,7 +22,7 @@ References:
 - [x] Partner Portal token validation
 - [x] External staff mapping to local StaffAccount
 - [x] Access grant enforcement per request
-- [ ] Partner audit logging
+- [x] Partner audit logging
 
 ## 3) Member authentication and signup policy
 - [x] Magic-link login tokens
