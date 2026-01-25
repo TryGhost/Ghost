@@ -31,12 +31,12 @@ module.exports = function adminController(req, res) {
     updateCheck();
 
     const useAdminForward = labs.isSet('adminForward');
-    
+
     // Choose the appropriate index file based on feature flag
     // Default to Ember (index.html), use React (index-forward.html) when flag is enabled
     const indexFilename = useAdminForward ? 'index-forward.html' : 'index.html';
     const templatePath = path.resolve(config.get('paths').adminAssets, indexFilename);
-    
+
     const headers = {};
 
     try {
@@ -53,7 +53,7 @@ module.exports = function adminController(req, res) {
             headers['X-Frame-Options'] = 'sameorigin';
         }
 
-        res.sendFile(templatePath, {headers});
+        res.sendFile(templatePath, {headers, lastModified: false});
     } catch (err) {
         if (err.code === 'ENOENT') {
             throw new errors.IncorrectUsageError({

@@ -10,13 +10,15 @@ export interface TestEmailDropdownProps {
   subject: string
   lexical: string
   validateForm: () => boolean
+  onClose: () => void
 }
 
 const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     automatedEmailId,
     subject,
     lexical,
-    validateForm
+    validateForm,
+    onClose
 }) => {
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: sendTestEmail} = useSendTestWelcomeEmail();
@@ -39,6 +41,18 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
             setTestEmail(currentUser.email);
         }
     }, [currentUser?.email]);
+
+    // Close dropdown on Escape and stop propagation to prevent modal from *also* closing
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown, true);
+        return () => document.removeEventListener('keydown', handleKeyDown, true);
+    }, [onClose]);
 
     const handleSendTestEmail = async () => {
         setTestEmailError('');
@@ -81,7 +95,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     };
 
     return (
-        <div className='absolute right-0 top-full z-10 mt-2 w-[260px] rounded border border-grey-200 bg-white p-4 shadow-lg'>
+        <div className='absolute right-0 top-full z-10 mt-2 w-[260px] rounded border border-grey-250 bg-white p-4 shadow-lg dark:border-grey-925 dark:bg-grey-975' data-testid='test-email-dropdown'>
             <div className='mb-3'>
                 <label className='mb-2 block text-sm font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <TextField

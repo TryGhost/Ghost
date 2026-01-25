@@ -541,21 +541,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             return responseJson;
         },
 
-        async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {
-            const siteUrlObj = new URL(siteUrl);
+        async manageBilling({returnUrl, subscriptionId} = {}) {
             const identity = await api.member.identity();
-            const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
-            if (!successUrl) {
-                const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('stripe', 'billing-update-success');
-                successUrl = checkoutSuccessUrl.href;
+            const url = endpointFor({type: 'members', resource: 'create-stripe-billing-portal-session'});
+            if (!returnUrl) {
+                const returnUrlObj = new URL(siteUrl);
+                returnUrlObj.searchParams.set('stripe', 'billing-portal-closed');
+                returnUrl = returnUrlObj.href;
             }
 
-            if (!cancelUrl) {
-                const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
-                checkoutCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
-                cancelUrl = checkoutCancelUrl.href;
-            }
             return makeRequest({
                 url,
                 method: 'POST',
@@ -565,23 +559,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 body: JSON.stringify({
                     identity: identity,
                     subscription_id: subscriptionId,
-                    successUrl,
-                    cancelUrl
+                    returnUrl
                 })
             }).then(function (res) {
                 if (!res.ok) {
-                    throw new Error('Unable to create stripe checkout session');
+                    throw new Error('Unable to create Stripe billing portal session');
                 }
                 return res.json();
             }).then(function (result) {
-                const stripe = window.Stripe(result.publicKey);
-                return stripe.redirectToCheckout({
-                    sessionId: result.sessionId
-                });
-            }).then(function (result) {
-                if (result.error) {
-                    throw new Error(result.error.message);
-                }
+                return window.location.assign(result.url);
             }).catch(function (err) {
                 throw err;
             });
@@ -612,6 +598,51 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 },
                 body: JSON.stringify(body)
             });
+        },
+
+        async offers() {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'member/offers'});
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({identity})
+            }).then(function (res) {
+                if (!res.ok) {
+                    return {offers: []};
+                }
+                return res.json();
+            }).catch(function () {
+                return {offers: []};
+            });
+        },
+
+        async applyOffer({offerId, subscriptionId}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: `subscriptions/${subscriptionId}/apply-offer`});
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity,
+                    offer_id: offerId
+                })
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || 'Failed to apply offer');
+            }
+
+            return true;
         }
     };
 
@@ -623,6 +654,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
+        let offers = [];
 
         try {
             [{settings}, {tiers}, {newsletters}] = await Promise.all([
@@ -639,9 +671,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             // Ignore
         }
 
+        if (member && member.paid) {
+            try {
+                const offersData = await api.member.offers();
+
+                offers = offersData.offers || [];
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[Portal] Failed to load member offers:', e);
+            }
+        }
+
         site = transformApiSiteData({site});
 
-        return {site, member};
+        return {site, member, offers};
     };
 
     return api;

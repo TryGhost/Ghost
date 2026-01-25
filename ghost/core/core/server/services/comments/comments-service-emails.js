@@ -154,6 +154,8 @@ class CommentsServiceEmails {
 
         const memberName = member.get('name') || 'Anonymous';
 
+        const commentModerationEnabled = this.labs.isSet('commentModeration');
+
         const templateData = {
             siteTitle: this.settingsCache.get('title'),
             siteUrl: this.urlUtils.getSiteUrl(),
@@ -175,7 +177,9 @@ class CommentsServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
             toEmail: to,
-            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`)
+            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`),
+            commentModerationEnabled,
+            moderationUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/comments/?id=is:${comment.get('id')}`)
         };
 
         const {html, text} = await this.commentsServiceEmailRenderer.renderEmailTemplate('report', templateData);

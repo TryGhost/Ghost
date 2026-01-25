@@ -65,6 +65,28 @@ describe('LinkRedirectsService', function () {
         });
     });
 
+    describe('relativeRedirectPrefix', function () {
+        it('returns relative path without subdirectory for Express routing', function () {
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository: {},
+                config: {
+                    baseURL: new URL('https://localhost:2368/blog/')
+                }
+            });
+            assert.equal(instance.relativeRedirectPrefix(), '/r/');
+        });
+
+        it('returns same value as redirectPrefix when no subdirectory configured', function () {
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository: {},
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+            assert.equal(instance.relativeRedirectPrefix(), '/r/');
+        });
+    });
+
     describe('handleRequest', function () {
         it('redirects if found', async function () {
             const linkRedirectRepository = {
@@ -112,40 +134,6 @@ describe('LinkRedirectsService', function () {
             const res = {};
             const next = sinon.fake();
             await instance.handleRequest(req, res, next);
-            assert.equal(next.callCount, 1);
-        });
-
-        it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
-            const instance = new LinkRedirectsService({
-                config: {
-                    baseURL: new URL('https://localhost:2368/')
-                }
-            });
-            const req = {
-                originalUrl: 'no_r/prefix'
-            };
-            const res = {};
-            const next = sinon.fake();
-
-            await instance.handleRequest(req, res, next);
-
-            assert.equal(next.callCount, 1);
-        });
-
-        it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
-            const instance = new LinkRedirectsService({
-                config: {
-                    baseURL: new URL('https://localhost:2368/blog')
-                }
-            });
-            const req = {
-                originalUrl: 'blog/no_r/prefix'
-            };
-            const res = {};
-            const next = sinon.fake();
-
-            await instance.handleRequest(req, res, next);
-
             assert.equal(next.callCount, 1);
         });
     });

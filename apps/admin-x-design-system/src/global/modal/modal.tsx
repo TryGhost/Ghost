@@ -97,6 +97,12 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     useEffect(() => {
         const handleEscapeKey = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
+                // Don't close modal if user is in Koenig's link input (which handles ESC itself)
+                const activeEl = document.activeElement;
+                if (activeEl?.hasAttribute('data-kg-link-input')) {
+                    return;
+                }
+
                 // Fix for Safari - if an element in the modal is focused, closing it will jump to
                 // the bottom of the page because Safari tries to focus the "next" element in the DOM
                 if (document.activeElement && document.activeElement instanceof HTMLElement) {

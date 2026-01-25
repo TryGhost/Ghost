@@ -48,19 +48,20 @@ function getCookie(name) {
     return null;
 }
 
-function setCookie(name, value, days) {
+function setCookie(name, value, days, path) {
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
     const expires = `expires=${date.toUTCString()}`;
-    document.cookie = `${name}=${value};${expires};path=/ghost/`;
+    document.cookie = `${name}=${value};${expires};path=${path}`;
 }
 
-function deleteCookie(name) {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/ghost/`;
+function deleteCookie(name, path) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=${path}`;
 }
 
 @classic
 export default class FeatureService extends Service {
+    @service ghostPaths;
     @service lazyLoader;
     @service notifications;
     @service session;
@@ -82,6 +83,7 @@ export default class FeatureService extends Service {
     // labs flags
     @feature('adminForward') adminForward;
     @feature('audienceFeedback') audienceFeedback;
+    @feature('welcomeEmails') welcomeEmails;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
@@ -93,7 +95,6 @@ export default class FeatureService extends Service {
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('tagsX') tagsX;
-    @feature('utmTracking') utmTracking;
 
     _user = null;
 
@@ -133,13 +134,14 @@ export default class FeatureService extends Service {
         }
 
         const cookieName = 'ghost-admin-forward';
+        const cookiePath = this.ghostPaths.adminRoot;
         const hasAdminForwardCookie = !!getCookie(cookieName);
 
         // Update cookie based on feature flag
         if (hasAdminForwardCookie && !this.adminForward) {
-            deleteCookie(cookieName);
+            deleteCookie(cookieName, cookiePath);
         } else if (!hasAdminForwardCookie && this.adminForward) {
-            setCookie(cookieName, '1', 365);
+            setCookie(cookieName, '1', 365, cookiePath);
         }
 
         // Reload if flag state doesn't match current wrapper

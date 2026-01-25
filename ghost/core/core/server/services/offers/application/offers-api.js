@@ -25,14 +25,19 @@ class OffersAPI {
     /**
      * @param {object} data
      * @param {string} data.id
+     * @param {Object} [options]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
-    async getOffer(data) {
-        return this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
-
+    async getOffer(data, options = {}) {
+        if (options.transacting) {
             const offer = await this.repository.getById(data.id, options);
+
+            return offer ? OfferMapper.toDTO(offer) : null;
+        }
+
+        return this.repository.createTransaction(async (transaction) => {
+            const offer = await this.repository.getById(data.id, {transacting: transaction});
 
             if (!offer) {
                 return null;
@@ -126,6 +131,49 @@ class OffersAPI {
             const offers = await this.repository.getAll(opts);
 
             return offers.map(OfferMapper.toDTO);
+        });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.subscriptionId
+     * @param {string} options.tierId
+     * @param {'month'|'year'} options.cadence
+     * @param {'signup'|'retention'} [options.redemptionType]
+     * @returns {Promise<OfferMapper.OfferDTO[]>}
+     */
+    async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
+        if (!subscriptionId || !tierId || !cadence) {
+            throw new errors.IncorrectUsageError({
+                message: 'subscriptionId, tierId, and cadence are required'
+            });
+        }
+
+        return await this.repository.createTransaction(async (transaction) => {
+            const allOffers = await this.repository.getAll({
+                transacting: transaction,
+                filter: 'status:active'
+            });
+
+            // Filter by tier and cadence
+            let available = allOffers.filter(offer => offer.tier.id === tierId && offer.cadence.value === cadence);
+
+            // Filter by redemption type if specified
+            if (redemptionType) {
+                available = available.filter(offer => offer.redemptionType.value === redemptionType);
+            }
+
+            // Filter out trial offers (can't apply trials to existing subscriptions)
+            available = available.filter(offer => offer.type.value !== 'trial');
+
+            // Filter out offers already redeemed on this subscription
+            const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
+                subscriptionId,
+                transacting: transaction
+            });
+            available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
+
+            return available.map(OfferMapper.toDTO);
         });
     }
 

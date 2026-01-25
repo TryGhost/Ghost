@@ -124,21 +124,21 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             header={false}
             testId='welcome-email-modal'
         >
-            <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto'>
-                <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5'>
+            <div className='-mx-8 h-[calc(100vh-16vmin)] overflow-y-auto dark:!bg-grey-975'>
+                <div className='sticky top-0 z-10 flex flex-col gap-2 border-b border-grey-100 bg-white p-5 dark:border-grey-900 dark:bg-grey-975'>
                     <div className='mb-2 flex items-center justify-between'>
                         <h3 className='font-semibold'>{emailType === 'paid' ? 'Paid' : 'Free'} members welcome email</h3>
                         <div className='flex items-center gap-2'>
                             <div ref={dropdownRef} className='relative'>
                                 <Button
-                                    className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white'
+                                    className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-800 dark:hover:border-grey-700 dark:hover:!bg-grey-950'
                                     color="clear"
                                     icon='send'
                                     label="Test"
                                     onClick={() => setShowTestDropdown(!showTestDropdown)}
                                 />
                                 {showTestDropdown && (
-                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
+                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
                                 )}
                             </div>
                             <Button
@@ -153,13 +153,13 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <div className='w-20 font-semibold'>From:</div>
                         <div className='flex grow items-center gap-1'>
                             <span>{automatedEmail?.sender_name || siteTitle}</span>
-                            <span className='text-grey-700'>{`<${senderEmail}>`}</span>
+                            <span className='text-grey-700 dark:text-grey-400'>{`<${senderEmail}>`}</span>
                         </div>
                     </div>
                     {replyToEmail !== senderEmail && (
                         <div className='flex items-center py-0.5'>
                             <div className='w-20 font-semibold'>Reply-to:</div>
-                            <div className='grow text-grey-700'>
+                            <div className='grow text-grey-700 dark:text-grey-400'>
                                 {replyToEmail}
                             </div>
                         </div>
@@ -179,11 +179,10 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         </div>
                     </div>
                 </div>
-                <div className='bg-grey-50 p-6'>
-                    <div className={`mx-auto max-w-[600px] rounded border bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm [&_a]:text-black [&_a]:underline [&_p]:mb-4 [&_strong]:font-semibold ${errors.lexical ? 'border-red' : 'border-grey-200'}`}>
+                <div className='bg-grey-50 p-6 dark:bg-grey-975'>
+                    <div className={`mx-auto max-w-[600px] rounded border bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm dark:bg-grey-975 dark:text-white dark:shadow-none dark:selection:bg-[rgba(88,101,116,0.99)] [&_:is(h2,h3)]:dark:text-white [&_p]:mb-4 [&_strong]:font-semibold ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}>
                         <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
-                            nodes='DEFAULT_NODES'
                             placeholder='Write your welcome email content...'
                             singleParagraph={false}
                             value={formState.lexical}

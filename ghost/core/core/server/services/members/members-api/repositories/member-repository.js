@@ -21,7 +21,17 @@ const messages = {
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
-    invalidEmail: 'Invalid Email'
+    invalidEmail: 'Invalid Email',
+    offerNotFound: 'Could not find Offer {id}',
+    offerNotActive: 'Offer is not active',
+    offerIsTrialOffer: 'Trial offers cannot be applied to existing subscriptions',
+    offerIsSignupOffer: 'Signup offers cannot be applied to existing subscriptions',
+    offerNoCoupon: 'Offer does not have a valid coupon',
+    offerTierMismatch: 'Offer is not valid for this subscription tier',
+    offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
+    offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
+    subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
+    subscriptionHasOffer: 'Subscription already has an offer applied'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -348,8 +358,6 @@ module.exports = class MemberRepository {
             const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
             const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
             const isFreeSignup = !stripeCustomer;
-            // Use default template only when no DB row exists (not when inactive - respect explicit user choice)
-            const useDefaultFreeTemplate = !freeWelcomeEmail && hasTestInbox;
 
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
@@ -358,10 +366,10 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                // Send the free welcome email if:
-                // 1. The free welcome email is active OR no DB row exists and test inbox is configured (uses default template)
+                // Only send the free welcome email if:
+                // 1. The free welcome email is active
                 // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if ((isFreeWelcomeEmailActive || useDefaultFreeTemplate) && isFreeSignup) {
+                if (isFreeWelcomeEmailActive && isFreeSignup) {
                     const timestamp = eventData.created_at || newMember.get('created_at');
 
                     await this._Outbox.add({
@@ -369,6 +377,7 @@ module.exports = class MemberRepository {
                         event_type: MemberCreatedEvent.name,
                         payload: JSON.stringify({
                             memberId: newMember.id,
+                            uuid: newMember.get('uuid'),
                             email: newMember.get('email'),
                             name: newMember.get('name'),
                             source,
@@ -387,7 +396,7 @@ module.exports = class MemberRepository {
                 member = await this._Member.transaction(runMemberCreation);
             }
 
-            if ((isFreeWelcomeEmailActive || useDefaultFreeTemplate) && isFreeSignup) {
+            if (isFreeWelcomeEmailActive && isFreeSignup) {
                 this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
             }
         } else {
@@ -1441,22 +1450,20 @@ module.exports = class MemberRepository {
             const source = this._resolveContextSource(context);
             const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
-            let paidWelcomeEmail = null;
             if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
-                paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
+                const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
                 isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
             }
-            // Use default template only when no DB row exists (not when inactive - respect explicit user choice)
-            const useDefaultPaidTemplate = !paidWelcomeEmail && shouldSendPaidWelcomeEmail;
             // Send paid welcome email if:
-            // 1. The paid welcome email is active OR no DB row exists and test inbox is configured (uses default template)
+            // 1. The paid welcome email is active
             // 2. The member status changed to 'paid'
-            if (updatedMember.get('status') === 'paid' && (isPaidWelcomeEmailActive || useDefaultPaidTemplate)) {
+            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
                 await this._Outbox.add({
                     id: ObjectId().toHexString(),
                     event_type: MemberCreatedEvent.name,
                     payload: JSON.stringify({
                         memberId: memberModel.id,
+                        uuid: memberModel.get('uuid'),
                         email: memberModel.get('email'),
                         name: memberModel.get('name'),
                         source,
@@ -1625,6 +1632,167 @@ module.exports = class MemberRepository {
                 subscription: updatedSubscription
             }, options);
         }
+    }
+
+    /**
+     * @param {Object} data
+     * @param {string} [data.id] - Member ID
+     * @param {string} [data.email] - Member email
+     * @param {Object} data.subscription
+     * @param {string} data.subscription.subscription_id - Stripe subscription ID
+     * @param {string} data.offerId - Offer ID to apply
+     * @param {string} data.couponId - Stripe coupon ID for the offer
+     * @param {Object} [options]
+     */
+    async applyOfferToSubscription(data, options = {}) {
+        if (!this._stripeAPIService.configured) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.noStripeConnection, {action: 'apply offer to Subscription'})
+            });
+        }
+
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.applyOfferToSubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        // Find member
+        let findQuery = null;
+        if (data.id) {
+            findQuery = {id: data.id};
+        } else if (data.email) {
+            findQuery = {email: data.email};
+        }
+
+        if (!findQuery) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: 'unknown'})
+            });
+        }
+
+        const member = await this._Member.findOne(findQuery, options);
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: data.id || data.email})
+            });
+        }
+
+        // Fetch subscription with related data
+        const subscriptionModel = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: data.subscription.subscription_id
+            }
+        }).fetchOne({
+            ...options,
+            forUpdate: true,
+            withRelated: ['stripePrice', 'stripePrice.stripeProduct', 'stripePrice.stripeProduct.product']
+        });
+
+        if (!subscriptionModel) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})
+            });
+        }
+
+        // Validate subscription is active
+        const subscriptionStatus = subscriptionModel.get('status');
+        if (!this.isActiveSubscriptionStatus(subscriptionStatus)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionNotActive)
+            });
+        }
+
+        // Check subscription doesn't already have an offer
+        if (subscriptionModel.get('offer_id')) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionHasOffer)
+            });
+        }
+
+        // Get tier and cadence from subscription
+        const stripePrice = subscriptionModel.related('stripePrice');
+        const stripeProduct = stripePrice.related('stripeProduct');
+        const product = stripeProduct.related('product');
+
+        const tierId = product.id;
+        const cadence = stripePrice.get('interval');
+
+        // Fetch and validate offer
+        const offer = await this._offersAPI.getOffer({id: data.offerId}, options);
+
+        if (!offer) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.offerNotFound, {id: data.offerId})
+            });
+        }
+
+        if (offer.status !== 'active') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNotActive)
+            });
+        }
+
+        if (offer.type === 'trial') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsTrialOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'signup') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsSignupOffer)
+            });
+        }
+
+        if (offer.tier.id !== tierId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerTierMismatch)
+            });
+        }
+
+        if (offer.cadence !== cadence) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerCadenceMismatch)
+            });
+        }
+
+        // Check not already redeemed on this subscription
+        const existingRedemption = await this._OfferRedemption.findOne({
+            offer_id: data.offerId,
+            subscription_id: subscriptionModel.id
+        }, options);
+
+        if (existingRedemption) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerAlreadyRedeemed)
+            });
+        }
+
+        // Validate coupon was provided (getCouponForOffer returns null for trial offers or if offer has no stripe_coupon_id)
+        if (!data.couponId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNoCoupon)
+            });
+        }
+
+        const stripeSubscriptionId = subscriptionModel.get('subscription_id');
+
+        // Apply coupon to Stripe subscription
+        const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
+            stripeSubscriptionId,
+            data.couponId
+        );
+
+        // Sync local state with Stripe
+        await this.linkSubscription({
+            id: member.id,
+            subscription: updatedSubscription,
+            offerId: data.offerId
+        }, options);
     }
 
     async createSubscription(data, options) {

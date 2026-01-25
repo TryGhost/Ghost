@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
-const should = require('should');
 const sinon = require('sinon');
 const assert = require('assert/strict');
+const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
@@ -153,14 +153,10 @@ describe('sendMagicLink', function () {
         // Get data
         const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
 
-        should(data).match({
-            email,
-            attribution: {
-                id: null,
-                url: null,
-                type: null
-            }
-        });
+        assert.equal(data.email, email);
+        assert.equal(data.attribution.id, null);
+        assert.equal(data.attribution.url, null);
+        assert.equal(data.attribution.type, null);
     });
 
     it('Creates a valid magic link from custom signup with redirection', async function () {
@@ -184,7 +180,7 @@ describe('sendMagicLink', function () {
         const [url] = mail.text.match(/https?:\/\/[^\s]+/);
         const parsed = new URL(url);
         const redirect = parsed.searchParams.get('r');
-        should(redirect).equal(customSignupUrl);
+        assert.equal(redirect, customSignupUrl);
     });
 
     it('Creates a valid magic link from custom signup with redirection disabled', async function () {
@@ -208,7 +204,7 @@ describe('sendMagicLink', function () {
         const [url] = mail.text.match(/https?:\/\/[^\s]+/);
         const parsed = new URL(url);
         const redirect = parsed.searchParams.get('r');
-        should(redirect).equal(null);
+        assert.equal(redirect, null);
     });
 
     it('triggers email alert for free member signup', async function () {
@@ -244,9 +240,7 @@ describe('sendMagicLink', function () {
         });
 
         // Check member data is returned
-        should(data).match({
-            email
-        });
+        assert.equal(data.email, email);
     });
 
     it('Converts the urlHistory to the attribution and stores it in the token', async function () {
@@ -279,14 +273,10 @@ describe('sendMagicLink', function () {
         // Get data
         const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
 
-        should(data).match({
-            email,
-            attribution: {
-                id: null,
-                url: '/test-path',
-                type: 'url'
-            }
-        });
+        assert.equal(data.email, email);
+        assert.equal(data.attribution.id, null);
+        assert.equal(data.attribution.url, '/test-path');
+        assert.equal(data.attribution.type, 'url');
     });
 
     describe('signin email', function () {
@@ -330,13 +320,13 @@ describe('sendMagicLink', function () {
         it('matches snapshot', async function () {
             const mail = await sendSigninRequest();
             const scrubbedEmail = scrubEmailContent(mail);
-            should(scrubbedEmail).matchSnapshot();
+            assertMatchSnapshot(scrubbedEmail);
         });
 
         it('matches OTC snapshot', async function () {
             const mail = await sendSigninRequest({includeOTC: true});
             const scrubbedEmail = scrubEmailContent(mail);
-            should(scrubbedEmail).matchSnapshot();
+            assertMatchSnapshot(scrubbedEmail);
         });
     });
 
@@ -411,7 +401,8 @@ describe('sendMagicLink', function () {
                     })
                     .expectStatus(201)
                     .expect(({body}) => {
-                        body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
+                        assert.equal(typeof body.otc_ref, 'string');
+                        assert.match(body.otc_ref, /^[a-f0-9-]{36}$/);
                     });
             });
 
@@ -429,7 +420,8 @@ describe('sendMagicLink', function () {
                     })
                     .expectStatus(201)
                     .expect(({body}) => {
-                        body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
+                        assert.equal(typeof body.otc_ref, 'string');
+                        assert.match(body.otc_ref, /^[a-f0-9-]{36}$/);
                     });
             });
         });
@@ -512,7 +504,7 @@ describe('sendMagicLink', function () {
                 to: 'user@xn--tst-jma.com' // Punycode version
             });
 
-            should.exist(mail);
+            assert.ok(mail);
         });
     });
 

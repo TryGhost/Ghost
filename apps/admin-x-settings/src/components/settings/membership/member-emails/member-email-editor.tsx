@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {KoenigEditorBase, type NodeType} from '@tryghost/admin-x-design-system';
+import {KoenigEditorBase, type KoenigInstance, type NodeType} from '@tryghost/admin-x-design-system';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -13,7 +13,7 @@ export interface MemberEmailsEditorProps {
 const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     value,
     placeholder,
-    nodes = 'DEFAULT_NODES',
+    nodes = 'EMAIL_NODES',
     singleParagraph = false,
     className,
     onChange
@@ -29,18 +29,34 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         }
     }, [onChange, value]);
 
+    // Stop Cmd+K from bubbling to global search handler
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.stopPropagation();
+        }
+    }, []);
+
     return (
-        <KoenigEditorBase
-            className={className}
-            emojiPicker={false}
-            initialEditorState={value}
-            nodes={nodes}
-            placeholder={placeholder}
-            singleParagraph={singleParagraph}
-            onChange={handleChange}
-        >
-            {() => null}
-        </KoenigEditorBase>
+        <div onKeyDown={handleKeyDown}>
+            <KoenigEditorBase
+                className={className}
+                emojiPicker={false}
+                inheritFontStyles={false}
+                initialEditorState={value}
+                nodes={nodes}
+                placeholder={placeholder}
+                singleParagraph={singleParagraph}
+                onChange={handleChange}
+            >
+                {(koenig: KoenigInstance) => (
+                    <>
+                        <koenig.ReplacementStringsPlugin />
+                        <koenig.ListPlugin />
+                        <koenig.HorizontalRulePlugin />
+                    </>
+                )}
+            </KoenigEditorBase>
+        </div>
     );
 };
 

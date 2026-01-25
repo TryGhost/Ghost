@@ -5,13 +5,13 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
+const PostEmailHandler = require('./post-email-handler');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
     invalidVisibility: 'Invalid visibility value.',
     invalidTiers: 'Invalid tiers value.',
     invalidTags: 'Invalid tags value.',
-    invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
     postNotFound: 'Post not found.'
 };
@@ -24,6 +24,7 @@ class PostsService {
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+        this.postEmailHandler = new PostEmailHandler({models, emailService});
     }
 
     /**
@@ -60,42 +61,11 @@ class PostsService {
      * @returns
      */
     async editPost(frame, options) {
-        // Make sure the newsletter is matching an active newsletter
-        // Note that this option is simply ignored if the post isn't published or scheduled
-        if (frame.options.newsletter && frame.options.email_segment) {
-            if (frame.options.email_segment !== 'all') {
-                // check filter is valid
-                try {
-                    await this.models.Member.findPage({filter: frame.options.email_segment, limit: 1});
-                } catch (err) {
-                    return Promise.reject(new BadRequestError({
-                        message: tpl(messages.invalidEmailSegment),
-                        context: err.message
-                    }));
-                }
-            }
-        }
+        await this.postEmailHandler.validateBeforeSave(frame);
 
         const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
 
-        /**Handle newsletter email */
-        if (model.get('newsletter_id')) {
-            const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
-
-            if (sendEmail) {
-                let postEmail = model.relations.email;
-                let email;
-
-                if (!postEmail) {
-                    email = await this.emailService.createEmail(model);
-                } else if (postEmail && postEmail.get('status') === 'failed') {
-                    email = await this.emailService.retryEmail(postEmail);
-                }
-                if (email) {
-                    model.set('email', email);
-                }
-            }
-        }
+        await this.postEmailHandler.createOrRetryEmail(model);
 
         const dto = model.toJSON(frame.options);
 
@@ -105,6 +75,7 @@ class PostsService {
 
         return dto;
     }
+
     /**
      * @param {any} model
      * @returns {EventString}
@@ -446,18 +417,6 @@ class PostsService {
                 context: err.message
             }));
         }
-    }
-
-    /**
-     * Calculates if the email should be tried to be sent out
-     * @private
-     * @param {String} currentStatus current status from the post model
-     * @param {String} previousStatus previous status from the post model
-     * @returns {Boolean}
-     */
-    shouldSendEmail(currentStatus, previousStatus) {
-        return (['published', 'sent'].includes(currentStatus))
-            && (!['published', 'sent'].includes(previousStatus));
     }
 
     handleCacheInvalidation(model) {

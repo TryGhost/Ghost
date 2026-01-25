@@ -1,7 +1,7 @@
 import React from 'react';
 import sinon from 'sinon';
 import {fireEvent, render, screen} from '@testing-library/react';
-import {useOutOfViewportClasses} from './hooks';
+import {useOutOfViewportClasses} from '../../../src/utils/hooks';
 
 describe('useOutOfViewportClasses', () => {
     const classes = {

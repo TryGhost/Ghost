@@ -1,6 +1,6 @@
-import Pagination from './pagination';
+import Pagination from '../../../../src/components/content/pagination';
 import i18nLib from '@tryghost/i18n';
-import {AppContext} from '../../app-context';
+import {AppContext} from '../../../../src/app-context';
 import {render, screen} from '@testing-library/react';
 
 const i18n = i18nLib('en', 'comments');

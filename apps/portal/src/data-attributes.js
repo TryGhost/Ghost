@@ -28,7 +28,7 @@ export async function formSubmitHandler(
     let nameInput = event.target.querySelector('input[data-members-name]');
     let autoRedirect = form?.dataset?.membersAutoredirect || 'true';
     let email = emailInput?.value;
-    let name = (nameInput && nameInput.value) || undefined;
+    let name = (nameInput?.value || '').trim() || undefined;
     let emailType = undefined;
     let labels = [];
     let newsletters = [];
