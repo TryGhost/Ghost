@@ -57,3 +57,7 @@ export {
     mediaAssetTable,
     storageConfigTable
 } from '../../modules/media/db.js';
+export {
+    webhookTable,
+    outboxTable
+} from '../../modules/webhooks/db.js';

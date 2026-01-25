@@ -21,6 +21,8 @@ import type {LinkService} from '../modules/links/service.js';
 import {createLinksRouter} from '../modules/links/routes.js';
 import type {MediaService} from '../modules/media/service.js';
 import {createMediaRouter} from '../modules/media/routes.js';
+import type {WebhookService} from '../modules/webhooks/service.js';
+import {createWebhookRouter} from '../modules/webhooks/routes.js';
 
 export type AppDependencies = {
     siteService: SiteService;
@@ -33,6 +35,7 @@ export type AppDependencies = {
     analyticsService: AnalyticsService;
     linkService: LinkService;
     mediaService: MediaService;
+    webhookService: WebhookService;
 };
 
 export const createApp = ({
@@ -45,7 +48,8 @@ export const createApp = ({
     newsletterService,
     analyticsService,
     linkService,
-    mediaService
+    mediaService,
+    webhookService
 }: AppDependencies) => {
     const app = new Hono();
 
@@ -67,6 +71,7 @@ export const createApp = ({
     app.route('/analytics', createAnalyticsRouter(analyticsService));
     app.route('/links', createLinksRouter(linkService, staffAuthService));
     app.route('/media', createMediaRouter(mediaService, staffAuthService));
+    app.route('/webhooks', createWebhookRouter(webhookService, staffAuthService));
 
     app.onError(handleError);
 

@@ -11,6 +11,7 @@ import type {NewsletterService} from '../src/modules/newsletters/service.js';
 import type {AnalyticsService} from '../src/modules/analytics/service.js';
 import type {LinkService} from '../src/modules/links/service.js';
 import type {MediaService} from '../src/modules/media/service.js';
+import type {WebhookService} from '../src/modules/webhooks/service.js';
 
 const siteService: SiteService = {
     getSite: async () => ({
@@ -264,6 +265,18 @@ const mediaService: MediaService = {
     })
 };
 
+const webhookService: WebhookService = {
+    createWebhook: async () => ({
+        webhook: {
+            id: 'webhook',
+            integrationId: 'integration',
+            event: 'post.published',
+            targetUrl: 'https://example.com/webhook'
+        }
+    }),
+    dispatchEvent: async () => ({queued: 1})
+};
+
 describe('app routes', () => {
     it('returns health status', async () => {
         const app = createApp({
@@ -276,7 +289,8 @@ describe('app routes', () => {
             newsletterService,
             analyticsService,
             linkService,
-            mediaService
+            mediaService,
+            webhookService
         });
 
         const response = await app.request('/health');
@@ -297,7 +311,8 @@ describe('app routes', () => {
             newsletterService,
             analyticsService,
             linkService,
-            mediaService
+            mediaService,
+            webhookService
         });
 
         const response = await app.request('/site', {
@@ -330,7 +345,8 @@ describe('app routes', () => {
             newsletterService,
             analyticsService,
             linkService,
-            mediaService
+            mediaService,
+            webhookService
         });
 
         const response = await app.request('/site', {

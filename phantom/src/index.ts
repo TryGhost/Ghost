@@ -22,6 +22,8 @@ import {createLinkRepository} from './modules/links/repo.js';
 import {createLinkService} from './modules/links/service.js';
 import {createMediaRepository} from './modules/media/repo.js';
 import {createMediaService} from './modules/media/service.js';
+import {createWebhookRepository} from './modules/webhooks/repo.js';
+import {createWebhookService} from './modules/webhooks/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
@@ -47,6 +49,8 @@ const linkRepository = createLinkRepository(db);
 const linkService = createLinkService(linkRepository);
 const mediaRepository = createMediaRepository(db);
 const mediaService = createMediaService(mediaRepository);
+const webhookRepository = createWebhookRepository(db);
+const webhookService = createWebhookService(webhookRepository);
 
 const app = createApp({
     siteService,
@@ -58,7 +62,8 @@ const app = createApp({
     newsletterService,
     analyticsService,
     linkService,
-    mediaService
+    mediaService,
+    webhookService
 });
 
 serve({

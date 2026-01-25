@@ -75,7 +75,7 @@ References:
 ## 10) Integrations and webhooks
 - [ ] Integration tokens + webhooks
 - [ ] Webhook ownership enforcement
-- [ ] Outbox-backed webhook dispatch
+- [x] Outbox-backed webhook dispatch
 - [ ] Webhook retry/backoff
 
 ## 11) Marketplace and extensions
