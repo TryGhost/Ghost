@@ -27,6 +27,26 @@ function getGlobalAssetHash() {
 }
 
 /**
+ * Safely resolve a path within a root directory, preventing directory traversal
+ * @param {string} rootPath - The root directory path
+ * @param {string} relativePath - The relative path to resolve
+ * @returns {string|null} - The resolved path, or null if it would escape the root
+ */
+function safeResolvePath(rootPath, relativePath) {
+    // Normalize and resolve the full path
+    const root = path.resolve(rootPath);
+    const normalized = relativePath.replace(/^\/+/, ''); // Strip leading slashes
+    const fullPath = path.resolve(root, normalized);
+
+    // Ensure the resolved path is within the root directory
+    if (!fullPath.startsWith(root + path.sep) && fullPath !== root) {
+        return null;
+    }
+
+    return fullPath;
+}
+
+/**
  * Get SHA256-based hash for a theme asset file
  * @param {string} assetPath - The asset path relative to the theme (e.g., "css/screen.css")
  * @returns {string|null} - Hash string or null if file not found
@@ -38,7 +58,12 @@ function getThemeAssetHash(assetPath) {
     }
 
     // Theme assets are served from {themePath}/assets/{assetPath}
-    const fullPath = path.join(activeTheme.path, 'assets', assetPath);
+    const assetsRoot = path.join(activeTheme.path, 'assets');
+    const fullPath = safeResolvePath(assetsRoot, assetPath);
+    if (!fullPath) {
+        return null;
+    }
+
     return assetHash.getHashForFile(fullPath);
 }
 
@@ -57,20 +82,24 @@ function getPublicAssetHash(assetPath) {
     // Try static path first (Ghost's built-in files)
     const staticFilePath = config.get('paths').publicFilePath;
     if (staticFilePath) {
-        const staticPath = path.join(staticFilePath, filename);
-        const hash = assetHash.getHashForFile(staticPath);
-        if (hash) {
-            return hash;
+        const staticPath = safeResolvePath(staticFilePath, filename);
+        if (staticPath) {
+            const hash = assetHash.getHashForFile(staticPath);
+            if (hash) {
+                return hash;
+            }
         }
     }
 
     // Try built path (generated files like cards.min.css)
     const builtFilePath = config.getContentPath('public');
     if (builtFilePath) {
-        const builtPath = path.join(builtFilePath, filename);
-        const hash = assetHash.getHashForFile(builtPath);
-        if (hash) {
-            return hash;
+        const builtPath = safeResolvePath(builtFilePath, filename);
+        if (builtPath) {
+            const hash = assetHash.getHashForFile(builtPath);
+            if (hash) {
+                return hash;
+            }
         }
     }
 
@@ -93,7 +122,7 @@ function getAssetUrl(path, hasMinFile) {
     }
 
     // Determine asset type
-    const isPublicAsset = path.match(/^public/);
+    const isPublicAsset = path.match(/^public\//);
     const isThemeAsset = !isPublicAsset && !path.match(/^asset/);
 
     // CASE: Build the output URL
