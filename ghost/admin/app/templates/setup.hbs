@@ -50,7 +50,7 @@
                         @name="email"
                         @placeholder="jamie@example.com"
                         @autocorrect="off"
-                        @autocomplete="username email"
+                        @autocomplete="email"
                         @value={{readonly this.email}}
                         @input={{action (mut this.email) value="target.value"}}
                         @focus-out={{action "preValidate" "email"}}
