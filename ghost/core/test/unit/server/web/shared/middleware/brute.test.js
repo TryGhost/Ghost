@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const brute = require('../../../../../../core/server/web/shared/middleware/brute');
 
@@ -8,7 +8,7 @@ describe('brute middleware', function () {
     });
 
     it('exports a contentApiKey method', function () {
-        should.equal(typeof brute.contentApiKey, 'function');
+        assert.equal(typeof brute.contentApiKey, 'function');
     });
 
     describe('contentApiKey', function () {
@@ -23,7 +23,7 @@ describe('brute middleware', function () {
             } catch (err) {
                 // I don't care
             } finally {
-                should.equal(contentApiKeyStub.called, true);
+                sinon.assert.called(contentApiKeyStub);
             }
         });
     });
