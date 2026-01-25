@@ -214,6 +214,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -235,6 +237,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -258,6 +262,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 1,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -286,6 +292,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -311,6 +319,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -342,6 +352,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -364,6 +376,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: now,
             updatedAt: now
         };
@@ -391,6 +405,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -424,6 +440,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -448,6 +466,8 @@ describe('staff auth service', () => {
             status: 'active',
             passwordHash: hashPassword('password-123'),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };

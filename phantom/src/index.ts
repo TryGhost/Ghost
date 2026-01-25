@@ -8,6 +8,8 @@ import {createStaffRepository} from './modules/identity/repo.js';
 import {createStaffAuthService} from './modules/identity/service.js';
 import {createMemberRepository} from './modules/members/repo.js';
 import {createMemberAuthService} from './modules/members/service.js';
+import {createPartnerRepository} from './modules/partners/repo.js';
+import {createPartnerService} from './modules/partners/service.js';
 
 const config = loadConfig();
 const db = createDb(config.db);
@@ -19,11 +21,14 @@ const staffAuthService = createStaffAuthService(staffRepository, {
 });
 const memberRepository = createMemberRepository(db);
 const memberAuthService = createMemberAuthService(memberRepository, config.memberAuth.signupPolicy);
+const partnerRepository = createPartnerRepository(db);
+const partnerService = createPartnerService(partnerRepository, staffRepository);
 
 const app = createApp({
     siteService,
     staffAuthService,
-    memberAuthService
+    memberAuthService,
+    partnerService
 });
 
 serve({

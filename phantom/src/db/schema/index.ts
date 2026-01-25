@@ -17,3 +17,8 @@ export {
     memberSessionTable,
     memberAuthEventTable
 } from '../../modules/members/db.js';
+export {
+    partnerOrgTable,
+    accessGrantTable,
+    partnerTokenTable
+} from '../../modules/partners/db.js';

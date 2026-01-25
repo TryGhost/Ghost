@@ -7,6 +7,8 @@ export const staffTable = sqliteTable('staff_accounts', {
     status: text('status').notNull(),
     passwordHash: text('password_hash').notNull(),
     twoFactorEnabled: integer('two_factor_enabled').notNull(),
+    externalSubjectId: text('external_subject_id'),
+    externallyManaged: integer('externally_managed').notNull(),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
 });

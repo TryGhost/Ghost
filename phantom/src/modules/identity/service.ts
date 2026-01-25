@@ -294,6 +294,8 @@ export const createStaffAuthService = (
             status: 'active',
             passwordHash: hashPassword(input.password),
             twoFactorEnabled: 0,
+            externalSubjectId: null,
+            externallyManaged: 0,
             createdAt: now,
             updatedAt: now
         });

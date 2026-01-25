@@ -18,10 +18,10 @@ References:
 - [x] Audit trail for staff auth events
 
 ## 2) Partner access via Partner Portal
-- [ ] Access grants with scoped roles and TTL
-- [ ] Partner Portal token validation
-- [ ] External staff mapping to local StaffAccount
-- [ ] Access grant enforcement per request
+- [x] Access grants with scoped roles and TTL
+- [x] Partner Portal token validation
+- [x] External staff mapping to local StaffAccount
+- [x] Access grant enforcement per request
 - [ ] Partner audit logging
 
 ## 3) Member authentication and signup policy
