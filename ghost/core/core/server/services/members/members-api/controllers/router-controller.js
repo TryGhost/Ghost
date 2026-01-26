@@ -688,9 +688,6 @@ module.exports = class RouterController {
                 message: tpl(messages.invalidEmail)
             });
         }
-        if (normalizedEmail !== email) {
-            logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
-        }
 
         if (honeypot) {
             logging.warn('Honeypot field filled, this is likely a bot');
