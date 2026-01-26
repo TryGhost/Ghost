@@ -1,5 +1,24 @@
 import React, {useCallback} from 'react';
 import {KoenigEditorBase, type KoenigInstance, type NodeType} from '@tryghost/admin-x-design-system';
+import {cn} from '@tryghost/shade';
+
+const placeholderSelector = '[&_.koenig-lexical-editor-input-placeholder]';
+const contentSelector = '[&_:is(p,blockquote,aside,ul,ol)]';
+
+const baseEditorStyles = cn(
+    // Base typography
+    'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
+    // Dark mode
+    'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
+    // Placeholder styling
+    `${placeholderSelector}:font-inter ${placeholderSelector}:text-xl ${placeholderSelector}:tracking-tight`,
+    // Headings dark mode
+    '[&_:is(h2,h3)]:dark:text-white',
+    // Content typography
+    `${contentSelector}:font-inter ${contentSelector}:text-xl ${contentSelector}:tracking-tight`,
+    // Paragraph spacing & bold
+    '[&_p]:mb-4 [&_strong]:font-semibold'
+);
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -39,7 +58,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     return (
         <div onKeyDown={handleKeyDown}>
             <KoenigEditorBase
-                className={className}
+                className={cn(baseEditorStyles, className)}
                 emojiPicker={false}
                 inheritFontStyles={false}
                 initialEditorState={value}
