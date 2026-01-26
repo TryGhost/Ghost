@@ -132,7 +132,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <div className='flex items-center gap-2'>
                             <div ref={dropdownRef} className='relative'>
                                 <Button
-                                    className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-800 dark:hover:border-grey-700 dark:hover:!bg-grey-950'
+                                    className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
                                     color="clear"
                                     icon='send'
                                     label="Test"
@@ -181,7 +181,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     </div>
                 </div>
                 <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
-                    <div className={`mx-auto w-full max-w-[600px] grow rounded border bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm dark:bg-grey-975 dark:text-white dark:shadow-none dark:selection:bg-[rgba(88,101,116,0.99)] [&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight [&_:is(h2,h3)]:dark:text-white [&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight [&_p]:mb-4 [&_strong]:font-semibold ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}>
+                    <div className={`mx-auto w-full max-w-[600px] grow rounded border bg-white p-8 text-[1.6rem] leading-[1.6] tracking-[-0.01em] shadow-sm dark:bg-grey-950/25 dark:text-white dark:shadow-none dark:selection:bg-[rgba(88,101,116,0.99)] [&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight [&_:is(h2,h3)]:dark:text-white [&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight [&_p]:mb-4 [&_strong]:font-semibold ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}>
                         <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
                             className='welcome-email-editor'

@@ -30,7 +30,7 @@ const EmailPreview: React.FC<{
     const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
 
     return (
-        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-950'>
+        <div className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-975'>
             <div className='flex items-start gap-3'>
                 {icon ?
                     <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
@@ -49,7 +49,7 @@ const EmailPreview: React.FC<{
                 </div>
             </div>
             <Button
-                className='rounded-md border border-grey-200 font-semibold hover:shadow-xs'
+                className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
                 color='white'
                 data-testid={`${emailType}-welcome-email-edit-button`}
                 icon='pen'
