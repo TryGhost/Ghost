@@ -9,7 +9,7 @@ export default class MembersNewsletterPreference extends Component {
     @service notifications;
     @service ghostPaths;
     @service store;
-    
+
     @tracked filterValue;
     @tracked isReEnabling = false;
 
@@ -71,7 +71,7 @@ export default class MembersNewsletterPreference extends Component {
         this.isReEnabling = true;
 
         try {
-            const url = `${this.ghostPaths.url.api('members', this.args.member.id)}/suppression`;
+            const url = `${this.ghostPaths.url.api('members', this.args.member.id)}suppression`;
             await this.ajax.delete(url);
 
             // Refresh the member data to get updated suppression status
