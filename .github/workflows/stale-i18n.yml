@@ -8,7 +8,7 @@ jobs:
     if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           stale-pr-message: |
             Thanks for contributing to Ghost's i18n :)

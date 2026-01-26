@@ -48,7 +48,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -163,7 +163,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache_nx
         with:
           path: .nxcache
@@ -174,7 +174,7 @@ jobs:
             nx-Linux
 
       - name: Check dependency cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -187,7 +187,7 @@ jobs:
           echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -227,10 +227,10 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -241,7 +241,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -266,8 +266,8 @@ jobs:
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -290,8 +290,8 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -308,7 +308,7 @@ jobs:
       - name: Merge Admin test coverage
         run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -330,7 +330,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: true
     - name: Check secrets
@@ -343,7 +343,7 @@ jobs:
           echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
           exit 1
         fi
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       env:
         FORCE_COLOR: 0
       with:
@@ -387,7 +387,7 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: always()
       with:
         name: browser-tests-playwright-report
@@ -401,10 +401,10 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
     name: Performance tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -454,10 +454,10 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -479,7 +479,7 @@ jobs:
 
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: matrix.node == env.NODE_VERSION
         with:
           name: unit-coverage
@@ -512,8 +512,8 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -565,7 +565,7 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:integration
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
@@ -600,10 +600,10 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -654,8 +654,8 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -673,7 +673,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
@@ -694,8 +694,8 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -713,7 +713,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: activitypub-playwright-report
           path: apps/activitypub/playwright-report
@@ -734,8 +734,8 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -753,7 +753,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
@@ -774,8 +774,8 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -793,7 +793,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
@@ -825,7 +825,7 @@ jobs:
       TINYBIRD_HOST_STAGING: ${{ secrets.TINYBIRD_HOST_STAGING }}
       TINYBIRD_TOKEN_STAGING: ${{ secrets.TINYBIRD_TOKEN_STAGING }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -843,11 +843,11 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -872,7 +872,7 @@ jobs:
         working-directory: ghost/core
 
       - name: Switch back to Node v16.14.0 (for v4)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -885,7 +885,7 @@ jobs:
           ghost install v4 --local -d $DIR
 
       - name: Switch back to ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -897,7 +897,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -933,7 +933,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -1018,7 +1018,7 @@ jobs:
 
       - name: Upload image artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: docker-image
           path: docker-image.tar.gz
@@ -1036,7 +1036,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             .github/actions/load-docker-image
@@ -1109,7 +1109,7 @@ jobs:
     continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
         # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
@@ -1140,7 +1140,7 @@ jobs:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
         run: docker compose -f e2e/compose.yml pull
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1161,7 +1161,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: blob-report-${{ matrix.shell }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -1169,7 +1169,7 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.shell }}-${{ matrix.shardIndex }}
           path: e2e/test-results
@@ -1193,9 +1193,9 @@ jobs:
         shell: [ember, react]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1205,7 +1205,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -1223,7 +1223,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: e2e/all-test-results
           pattern: test-results-${{ matrix.shell }}-*
@@ -1236,7 +1236,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-${{ matrix.shell }}
           path: e2e/playwright-report
@@ -1244,7 +1244,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.shell }}
           path: e2e/all-test-results
@@ -1277,11 +1277,11 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: admin-coverage
 
@@ -1297,7 +1297,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: e2e-coverage
 
@@ -1434,10 +1434,10 @@ jobs:
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1523,7 +1523,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Staging
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1543,7 +1543,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.deploy_tinybird_staging.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy to Production
         uses: ./.github/actions/deploy-tinybird
         with:
@@ -1565,8 +1565,8 @@ jobs:
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_required_tests.result == 'success'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -1581,7 +1581,7 @@ jobs:
         run: yarn nx run admin:build
       - name: Upload build artifact
         id: upload-artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: admin-build
           path: apps/admin/dist
