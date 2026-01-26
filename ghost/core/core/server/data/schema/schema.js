@@ -435,6 +435,7 @@ module.exports = {
         email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
         last_seen_at: {type: 'dateTime', nullable: true},
         last_commented_at: {type: 'dateTime', nullable: true},
+        commenting: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
