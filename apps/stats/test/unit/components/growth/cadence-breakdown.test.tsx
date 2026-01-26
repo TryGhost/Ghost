@@ -5,7 +5,8 @@ import {render, screen} from '@testing-library/react';
 
 // Mock the API hooks
 vi.mock('@tryghost/admin-x-framework/api/stats', () => ({
-    useSubscriptionStats: vi.fn()
+    useSubscriptionStats: vi.fn(),
+    useMemberCountHistory: vi.fn()
 }));
 
 vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
@@ -22,9 +23,10 @@ vi.mock('@tryghost/shade', async () => {
 });
 
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
+import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 const mockedUseSubscriptionStats = useSubscriptionStats as ReturnType<typeof vi.fn>;
+const mockedUseMemberCountHistory = useMemberCountHistory as ReturnType<typeof vi.fn>;
 const mockedUseBrowseTiers = useBrowseTiers as ReturnType<typeof vi.fn>;
 
 describe('CadenceBreakdown Component', () => {
@@ -36,6 +38,18 @@ describe('CadenceBreakdown Component', () => {
             tiers: [
                 {id: 'tier-1', name: 'Premium', type: 'paid', active: true}
             ]
+        });
+
+        // Default mock for member count history - no complimentary members
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [],
+            meta: {
+                totals: {
+                    paid: 100,
+                    free: 50,
+                    comped: 0
+                }
+            }
         });
     });
 
@@ -178,5 +192,101 @@ describe('CadenceBreakdown Component', () => {
         expect(screen.getByText('Annual')).toBeInTheDocument();
         expect(screen.getByText('60.0%')).toBeInTheDocument();
         expect(screen.getByText('40.0%')).toBeInTheDocument();
+    });
+
+    it('includes complimentary members in billing period breakdown', () => {
+        const mockSubscriptionData = {
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 50},
+                    {tier: 'tier-1', cadence: 'year', count: 30}
+                ]
+            }
+        };
+
+        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
+
+        // Mock complimentary members
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [],
+            meta: {
+                totals: {
+                    paid: 80,
+                    free: 50,
+                    comped: 20
+                }
+            }
+        });
+
+        render(<CadenceBreakdown isLoading={false} />);
+
+        // Should show all three: Monthly (50), Annual (30), Complimentary (20) = 100 total
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Annual')).toBeInTheDocument();
+        expect(screen.getByText('Complimentary')).toBeInTheDocument();
+
+        // Check percentages: 50/100 = 50%, 30/100 = 30%, 20/100 = 20%
+        expect(screen.getByText('50.0%')).toBeInTheDocument();
+        expect(screen.getByText('30.0%')).toBeInTheDocument();
+        expect(screen.getByText('20.0%')).toBeInTheDocument();
+    });
+
+    it('does not show complimentary when count is zero', () => {
+        const mockSubscriptionData = {
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 75},
+                    {tier: 'tier-1', cadence: 'year', count: 25}
+                ]
+            }
+        };
+
+        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
+
+        // No complimentary members (default mock has comped: 0)
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [],
+            meta: {
+                totals: {
+                    paid: 100,
+                    free: 50,
+                    comped: 0
+                }
+            }
+        });
+
+        render(<CadenceBreakdown isLoading={false} />);
+
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Annual')).toBeInTheDocument();
+        expect(screen.queryByText('Complimentary')).not.toBeInTheDocument();
+    });
+
+    it('handles only complimentary members with no paid subscriptions', () => {
+        const mockSubscriptionData = {
+            meta: {
+                totals: []
+            }
+        };
+
+        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
+
+        // Only complimentary members
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: [],
+            meta: {
+                totals: {
+                    paid: 0,
+                    free: 50,
+                    comped: 25
+                }
+            }
+        });
+
+        const {container} = render(<CadenceBreakdown isLoading={false} />);
+
+        // Component should not render when subscription stats has no totals
+        // (even if there are complimentary members, the check is on subscription stats)
+        expect(container.firstChild).toBeNull();
     });
 });

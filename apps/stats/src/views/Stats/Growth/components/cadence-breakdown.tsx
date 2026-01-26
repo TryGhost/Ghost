@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, EmptyIndicator, LucideIcon, Recharts, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, formatNumber} from '@tryghost/shade';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
+import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 type CadenceBreakdownProps = {
     isLoading: boolean;
@@ -32,6 +32,7 @@ const CustomTooltip = ({active, payload}: {active?: boolean; payload?: any[]}) =
 
 const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
     const {data: subscriptionStatsResponse} = useSubscriptionStats();
+    const {data: memberCountResponse} = useMemberCountHistory();
     const {data: {tiers: tierObjects = []} = {}} = useBrowseTiers();
     const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
 
@@ -44,6 +45,9 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                 name: tier.name
             }));
     }, [tierObjects]);
+
+    // Get complimentary member count from member stats
+    const compedCount = memberCountResponse?.meta?.totals?.comped || 0;
 
     // Process subscription data for billing period breakdown (cadence)
     const billingPeriodData = useMemo(() => {
@@ -61,6 +65,11 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
             return acc;
         }, {} as Record<string, number>);
 
+        // Add complimentary members if any exist
+        if (compedCount > 0) {
+            cadenceTotals.complimentary = compedCount;
+        }
+
         // Convert to array format for pie chart
         const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
             // Map cadence values to display labels and colors
@@ -76,6 +85,10 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                 label = 'Annual';
                 fillGradient = 'url(#gradientTeal)';
                 solidColor = 'hsl(var(--chart-teal))';
+            } else if (cadence === 'complimentary') {
+                label = 'Complimentary';
+                fillGradient = 'url(#gradientBlue)';
+                solidColor = 'hsl(var(--chart-blue))';
             }
 
             return {
@@ -88,7 +101,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         });
 
         return chartData;
-    }, [subscriptionStatsResponse]);
+    }, [subscriptionStatsResponse, compedCount]);
 
     // Process subscription data for tier breakdown
     const tierData = useMemo(() => {
