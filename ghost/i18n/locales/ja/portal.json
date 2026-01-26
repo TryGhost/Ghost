@@ -49,6 +49,7 @@
     "Contact support": "サポートに連絡",
     "Continue": "続ける",
     "Continue subscription": "購読を続ける",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Stripeチェックアウトセッションを作成できませんでした。",
     "Could not sign in. Login link expired.": "ログインできませんでした。ログインリンクの有効期限が切れています。",
     "Could not update email! Invalid link.": "メールアドレスを更新できませんでした。無効なリンクです。",

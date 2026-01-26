@@ -49,6 +49,7 @@
     "Contact support": "تماس با پشتیبانی",
     "Continue": "ادامه دادن",
     "Continue subscription": "ادامه اشتراک",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "",
     "Could not sign in. Login link expired.": "امکان ورود وجود نداشت، پیوند ورود منقضی شده است.",
     "Could not update email! Invalid link.": "امکان به\u200cروزرسانی ایمیل وجود نداشت! پیوند اشتباه بود.",

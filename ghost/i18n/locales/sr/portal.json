@@ -49,6 +49,7 @@
     "Contact support": "Kontaktiraj podršku",
     "Continue": "Nastavi",
     "Continue subscription": "Nastavi pretplatu",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "",
     "Could not sign in. Login link expired.": "Prijavljivanje nije uspelo. Link za prijavljivanje je istekao.",
     "Could not update email! Invalid link.": "Izmena mejla nije uspela! Neispravan link.",
