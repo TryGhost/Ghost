@@ -440,8 +440,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                contentVisibility: this.feature.contentVisibility,
-                contentVisibilityAlpha: this.feature.contentVisibilityAlpha
+                contentVisibility: true // todo: remove flag from koenig
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu

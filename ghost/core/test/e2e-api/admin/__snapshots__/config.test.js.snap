@@ -14,8 +14,6 @@ Object {
       "audienceFeedback": true,
       "commentModeration": true,
       "commentPermalinks": true,
-      "contentVisibility": true,
-      "contentVisibilityAlpha": true,
       "customFonts": true,
       "disableMemberCommenting": true,
       "editorExcerpt": true,

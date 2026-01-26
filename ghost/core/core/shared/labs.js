@@ -26,7 +26,6 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility',
     'explore'
 ];
 
@@ -45,7 +44,6 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
-    'contentVisibilityAlpha',
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
