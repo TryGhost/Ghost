@@ -22,7 +22,9 @@
     "test:watch": "vitest",
     "test:ci": "yarn test --coverage",
     "test:unit": "yarn test:ci",
-    "lint": "eslint src test --ext .js --cache",
+    "lint:code": "eslint src test --ext .js,.ts --cache",
+    "lint:types": "tsc --noEmit",
+    "lint": "yarn lint:code && yarn lint:types",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "yarn build"
@@ -69,7 +71,27 @@
       "react": {
         "version": "detect"
       }
-    }
+    },
+    "overrides": [
+      {
+        "files": ["*.ts", "*.tsx"],
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+          "sourceType": "module",
+          "ecmaVersion": 2022,
+          "ecmaFeatures": {
+            "jsx": true
+          },
+          "project": "./tsconfig.json"
+        },
+        "extends": [
+          "plugin:@typescript-eslint/recommended"
+        ],
+        "plugins": [
+          "@typescript-eslint"
+        ]
+      }
+    ]
   },
   "browserslist": {
     "production": [
