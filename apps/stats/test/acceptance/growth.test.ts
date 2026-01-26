@@ -95,7 +95,7 @@ test.describe('Stats App - Growth', () => {
 
         // Check that the subscription breakdown card appears
         await expect(growthPage.body).toContainText('Subscription breakdown');
-        await expect(growthPage.body).toContainText('Paid members by billing period');
+        await expect(growthPage.body).toContainText('Active paid subscriptions');
 
         // Check for cadence labels (Monthly/Annual)
         await expect(growthPage.body).toContainText('Monthly');

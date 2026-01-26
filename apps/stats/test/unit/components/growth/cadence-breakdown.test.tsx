@@ -69,15 +69,15 @@ describe('CadenceBreakdown Component', () => {
 
         // Check that the component renders
         expect(screen.getByText('Subscription breakdown')).toBeInTheDocument();
-        expect(screen.getByText('Paid subscriptions by billing period')).toBeInTheDocument();
+        expect(screen.getByText('Active paid subscriptions')).toBeInTheDocument();
 
         // Check that both cadence types are shown
         expect(screen.getByText('Monthly')).toBeInTheDocument();
         expect(screen.getByText('Annual')).toBeInTheDocument();
 
         // Check that percentages are calculated correctly (75% and 25%)
-        expect(screen.getByText('75.0%')).toBeInTheDocument();
-        expect(screen.getByText('25.0%')).toBeInTheDocument();
+        expect(screen.getByText('75%')).toBeInTheDocument();
+        expect(screen.getByText('25%')).toBeInTheDocument();
     });
 
     it('shows empty state with no paid subscriptions', () => {
@@ -123,7 +123,7 @@ describe('CadenceBreakdown Component', () => {
         render(<CadenceBreakdown isLoading={false} />);
 
         expect(screen.getByText('Monthly')).toBeInTheDocument();
-        expect(screen.getByText('100.0%')).toBeInTheDocument();
+        expect(screen.getByText('100%')).toBeInTheDocument();
         expect(screen.queryByText('Annual')).not.toBeInTheDocument();
     });
 
@@ -141,7 +141,7 @@ describe('CadenceBreakdown Component', () => {
         render(<CadenceBreakdown isLoading={false} />);
 
         expect(screen.getByText('Annual')).toBeInTheDocument();
-        expect(screen.getByText('100.0%')).toBeInTheDocument();
+        expect(screen.getByText('100%')).toBeInTheDocument();
         expect(screen.queryByText('Monthly')).not.toBeInTheDocument();
     });
 
@@ -190,8 +190,8 @@ describe('CadenceBreakdown Component', () => {
         // Should aggregate: (60 + 15) / 125 = 60%, (40 + 10) / 125 = 40%
         expect(screen.getByText('Monthly')).toBeInTheDocument();
         expect(screen.getByText('Annual')).toBeInTheDocument();
-        expect(screen.getByText('60.0%')).toBeInTheDocument();
-        expect(screen.getByText('40.0%')).toBeInTheDocument();
+        expect(screen.getByText('60%')).toBeInTheDocument();
+        expect(screen.getByText('40%')).toBeInTheDocument();
     });
 
     it('includes complimentary members in billing period breakdown', () => {
@@ -226,9 +226,9 @@ describe('CadenceBreakdown Component', () => {
         expect(screen.getByText('Complimentary')).toBeInTheDocument();
 
         // Check percentages: 50/100 = 50%, 30/100 = 30%, 20/100 = 20%
-        expect(screen.getByText('50.0%')).toBeInTheDocument();
-        expect(screen.getByText('30.0%')).toBeInTheDocument();
-        expect(screen.getByText('20.0%')).toBeInTheDocument();
+        expect(screen.getByText('50%')).toBeInTheDocument();
+        expect(screen.getByText('30%')).toBeInTheDocument();
+        expect(screen.getByText('20%')).toBeInTheDocument();
     });
 
     it('does not show complimentary when count is zero', () => {
