@@ -58,12 +58,13 @@ const Growth: React.FC = () => {
     // Track current KPI tab to conditionally show paid member charts
     const [currentKpiTab, setCurrentKpiTab] = useState(initialTab);
 
-    // Sync currentKpiTab with URL changes
+    // Sync currentKpiTab with URL changes (one-way: URL -> state only)
     useEffect(() => {
         if (initialTab !== currentKpiTab) {
             setCurrentKpiTab(initialTab);
         }
-    }, [initialTab, currentKpiTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialTab]);
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
