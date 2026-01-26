@@ -372,6 +372,7 @@ const AddOfferModal = () => {
                 duration_in_months: Number(formState.durationInMonths),
                 currency: formState.currency,
                 status: formState.status,
+                redemption_type: 'signup' as const,
                 tier: {
                     id: formState.tierId
                 },

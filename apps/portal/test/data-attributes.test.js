@@ -3,7 +3,7 @@ import {site as FixturesSite, member as FixtureMember} from './utils/test-fixtur
 import {fireEvent, appRender, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import * as helpers from '../src/utils/helpers';
-import {formSubmitHandler, planClickHandler} from '../src/data-attributes';
+import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../src/data-attributes';
 import {vi} from 'vitest';
 
 // Mock data
@@ -374,6 +374,227 @@ describe('Member Data attributes:', () => {
                 },
                 method: 'POST'
             });
+        });
+    });
+
+    describe('data-members-manage-billing', () => {
+        test('opens Stripe billing portal on click', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            // Setup fetch mock for billing portal
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            // Create element with data attribute
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            // Wait for promises to resolve
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/session',
+                {credentials: 'same-origin'}
+            );
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: 'session-identity',
+                        returnUrl: undefined
+                    })
+                }
+            );
+            expect(window.location.assign).toHaveBeenCalledWith(billingPortalUrl);
+        });
+
+        test('passes return URL when data-members-return is specified', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing data-members-return="/account/">Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: 'session-identity',
+                        returnUrl: 'https://portal.localhost/account/'
+                    })
+                }
+            );
+        });
+
+        test('adds loading class while processing', async () => {
+            const siteUrl = 'https://portal.localhost';
+
+            // Create a promise we can control
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return new Promise((resolve) => {
+                        resolve({
+                            ok: true,
+                            text: async () => 'session-identity'
+                        });
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            expect(button.classList.contains('loading')).toBe(true);
+        });
+
+        test('shows error and re-enables click handler on API failure', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'session-identity'
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: false,
+                        json: async () => ({errors: [{message: 'Failed'}]})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>
+                    Manage Billing
+                    <span data-members-error></span>
+                </button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            expect(button.classList.contains('error')).toBe(true);
+            expect(button.classList.contains('loading')).toBe(false);
+
+            const errorEl = button.querySelector('[data-members-error]');
+            expect(errorEl.innerText).toBe('Could not create Stripe billing portal session');
+
+            consoleSpy.mockRestore();
+        });
+
+        test('handles session fetch failure', async () => {
+            const siteUrl = 'https://portal.localhost';
+            const billingPortalUrl = 'https://billing.stripe.com/session/test_session';
+
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('api/session')) {
+                    return Promise.resolve({
+                        ok: false
+                    });
+                }
+                if (url.includes('create-stripe-billing-portal-session')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: async () => ({url: billingPortalUrl})
+                    });
+                }
+                return Promise.resolve({});
+            });
+
+            document.body.innerHTML = `
+                <button data-members-manage-billing>Manage Billing</button>
+            `;
+
+            handleDataAttributes({siteUrl});
+
+            const button = document.querySelector('[data-members-manage-billing]');
+            button.click();
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
+            // Should still call billing portal endpoint with null identity
+            expect(window.fetch).toHaveBeenCalledWith(
+                'https://portal.localhost/members/api/create-stripe-billing-portal-session/',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        identity: null,
+                        returnUrl: undefined
+                    })
+                }
+            );
         });
     });
 

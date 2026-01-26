@@ -49,6 +49,7 @@
     "Contact support": "Звернутись до служби підтримки",
     "Continue": "Продовжити",
     "Continue subscription": "Продовжити підписку",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Не вдалося створити сеанс оформлення замовлення Stripe",
     "Could not sign in. Login link expired.": "Неможливо увійти. Термін дії посилання для входу закінчився.",
     "Could not update email! Invalid link.": "Неможливо оновити електронну адресу! Недійсне посилання.",

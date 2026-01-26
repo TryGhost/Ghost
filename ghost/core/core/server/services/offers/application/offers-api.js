@@ -9,6 +9,7 @@ const UniqueChecker = require('./unique-checker');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const debug = require('@tryghost/debug')('offers:api');
 
 const messages = {
     offerNotFoundAfterDuplicateError: 'Tried to create duplicate offer for the Stripe coupon {couponId}, but could not find offer in database'
@@ -143,6 +144,8 @@ class OffersAPI {
      * @returns {Promise<OfferMapper.OfferDTO[]>}
      */
     async listOffersAvailableToSubscription({subscriptionId, tierId, cadence, redemptionType}) {
+        debug(`listOffersAvailableToSubscription: subscriptionId=${subscriptionId}, tierId=${tierId}, cadence=${cadence}, redemptionType=${redemptionType}`);
+
         if (!subscriptionId || !tierId || !cadence) {
             throw new errors.IncorrectUsageError({
                 message: 'subscriptionId, tierId, and cadence are required'
@@ -155,24 +158,55 @@ class OffersAPI {
                 filter: 'status:active'
             });
 
+            debug(`listOffersAvailableToSubscription: found ${allOffers.length} active offers`);
+
+            if (allOffers.length === 0) {
+                debug(`listOffersAvailableToSubscription: no active offers exist`);
+                return [];
+            }
+
             // Filter by tier and cadence
             let available = allOffers.filter(offer => offer.tier.id === tierId && offer.cadence.value === cadence);
+            debug(`listOffersAvailableToSubscription: ${available.length} offers match tier and cadence`);
+
+            if (available.length === 0) {
+                const tierIds = [...new Set(allOffers.map(o => o.tier.id))];
+                const cadences = [...new Set(allOffers.map(o => o.cadence.value))];
+                debug(`listOffersAvailableToSubscription: no offers match - available tiers: [${tierIds.join(', ')}], available cadences: [${cadences.join(', ')}]`);
+
+                return [];
+            }
 
             // Filter by redemption type if specified
             if (redemptionType) {
+                const beforeFilter = available.length;
                 available = available.filter(offer => offer.redemptionType.value === redemptionType);
+
+                debug(`listOffersAvailableToSubscription: ${available.length} offers match redemption type (filtered ${beforeFilter - available.length})`);
             }
 
             // Filter out trial offers (can't apply trials to existing subscriptions)
+            const beforeTrialFilter = available.length;
             available = available.filter(offer => offer.type.value !== 'trial');
+
+            if (beforeTrialFilter > available.length) {
+                debug(`listOffersAvailableToSubscription: filtered out ${beforeTrialFilter - available.length} trial offers`);
+            }
 
             // Filter out offers already redeemed on this subscription
             const redeemedOfferIds = await this.repository.getRedeemedOfferIdsForSubscription({
                 subscriptionId,
                 transacting: transaction
             });
+
+            const beforeRedeemedFilter = available.length;
             available = available.filter(offer => !redeemedOfferIds.includes(offer.id));
 
+            if (redeemedOfferIds.length > 0) {
+                debug(`listOffersAvailableToSubscription: filtered ${beforeRedeemedFilter - available.length} already-redeemed offers`);
+            }
+
+            debug(`listOffersAvailableToSubscription: returning ${available.length} available offers`);
             return available.map(OfferMapper.toDTO);
         });
     }

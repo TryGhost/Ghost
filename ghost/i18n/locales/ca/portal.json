@@ -49,6 +49,7 @@
     "Contact support": "Contacta amb suport tècnic",
     "Continue": "Continua",
     "Continue subscription": "Continua subscripció",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "No s'ha pogut crear una sessió de pagament amb Stripe",
     "Could not sign in. Login link expired.": "No s'ha pogut iniciar sessió. L'enllaç d'inici de sessió ha expirat.",
     "Could not update email! Invalid link.": "No s'ha pogut actualitzar el correu electrònic! Enllaç no vàlid.",
