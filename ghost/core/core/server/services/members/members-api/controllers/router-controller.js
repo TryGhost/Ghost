@@ -681,9 +681,18 @@ module.exports = class RouterController {
             });
         }
 
-        // Normalize email to avoid invalid addresses and mitigate homograph attacks
-        const normalizedEmail = normalizeEmail(email);
-        if (!normalizedEmail) {
+        // Normalize email to prevent homograph attacks
+        let normalizedEmail;
+
+        try {
+            normalizedEmail = normalizeEmail(email);
+
+            if (normalizedEmail !== email) {
+                logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
+            }
+        } catch (err) {
+            logging.error(`Failed to normalize [${email}]: ${err.message}`);
+
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
