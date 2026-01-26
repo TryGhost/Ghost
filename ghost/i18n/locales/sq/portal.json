@@ -49,6 +49,7 @@
     "Contact support": "Kontakto suportin",
     "Continue": "Vazhdoni",
     "Continue subscription": "Vazhdoni abonimin",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "",
     "Could not sign in. Login link expired.": "",
     "Could not update email! Invalid link.": "",

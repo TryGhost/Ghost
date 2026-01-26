@@ -49,6 +49,7 @@
     "Contact support": "Kapcsolat",
     "Continue": "Folytatás",
     "Continue subscription": "Előfizetés folytatása",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "A Stripe fizetési tranzakció sikertelen.",
     "Could not sign in. Login link expired.": "A bejelentkezési link lejárt, a regisztráció sikertelen.",
     "Could not update email! Invalid link.": "Hibás link! Az e-mail-cím megváltoztatása sikertelen.",

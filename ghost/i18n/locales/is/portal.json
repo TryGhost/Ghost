@@ -49,6 +49,7 @@
     "Contact support": "Hafa samband við þjónustuver",
     "Continue": "Áfram",
     "Continue subscription": "Halda áfram í áskrift",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "",
     "Could not sign in. Login link expired.": "Innskráning mistókst. Hlekkurinn varð óvirkur.",
     "Could not update email! Invalid link.": "Breyting á netfangi mistókst! Ógildur hlekkur.",

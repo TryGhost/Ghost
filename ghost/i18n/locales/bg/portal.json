@@ -49,6 +49,7 @@
     "Contact support": "Връзка с поддръжката",
     "Continue": "Продължи",
     "Continue subscription": "Продължете абонамента",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Неуспешен опит за платежна сесия чрез Stripe",
     "Could not sign in. Login link expired.": "Неуспешно влизане. Линкът е с изтекла валидност.",
     "Could not update email! Invalid link.": "Не успяхме да обновим имейла! Невалиден линк.",

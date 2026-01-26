@@ -295,6 +295,61 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
         el.addEventListener('click', clickHandler);
     });
 
+    Array.prototype.forEach.call(document.querySelectorAll('[data-members-manage-billing]'), function (el) {
+        let errorEl = el.querySelector('[data-members-error]');
+        let membersReturn = el.dataset.membersReturn;
+        let returnUrl;
+
+        if (membersReturn) {
+            returnUrl = (new URL(membersReturn, window.location.href)).href;
+        }
+
+        function clickHandler(event) {
+            el.removeEventListener('click', clickHandler);
+            event.preventDefault();
+
+            if (errorEl) {
+                errorEl.innerText = '';
+            }
+            el.classList.add('loading');
+            fetch(`${siteUrl}/members/api/session`, {
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
+                return res.text();
+            }).then(function (identity) {
+                return fetch(`${siteUrl}/members/api/create-stripe-billing-portal-session/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        identity: identity,
+                        returnUrl
+                    })
+                }).then(function (res) {
+                    if (!res.ok) {
+                        throw new Error(t('Could not create Stripe billing portal session'));
+                    }
+                    return res.json();
+                });
+            }).then(function (result) {
+                return window.location.assign(result.url);
+            }).catch(function (err) {
+                console.error(err);
+                el.addEventListener('click', clickHandler);
+                el.classList.remove('loading');
+                if (errorEl) {
+                    errorEl.innerText = err.message;
+                }
+                el.classList.add('error');
+            });
+        }
+        el.addEventListener('click', clickHandler);
+    });
+
     Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]'), function (el) {
         function clickHandler(event) {
             el.removeEventListener('click', clickHandler);

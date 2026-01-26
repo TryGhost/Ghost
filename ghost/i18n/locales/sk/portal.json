@@ -49,6 +49,7 @@
     "Contact support": "Kontaktovať podporu",
     "Continue": "Pokračovať",
     "Continue subscription": "Pokračovať s odberom",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Nepodarilo sa vytvoriť reláciu platby cez Stripe",
     "Could not sign in. Login link expired.": "Prihlásenie sa nepodarilo. Odkaz na prihlásenie vypršal.",
     "Could not update email! Invalid link.": "Zmena e-mailu sa nepodarila. Neplatný odkaz.",

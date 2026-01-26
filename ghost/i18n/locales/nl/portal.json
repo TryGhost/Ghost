@@ -49,6 +49,7 @@
     "Contact support": "Contacteer support",
     "Continue": "Doorgaan",
     "Continue subscription": "Doorgaan met abonnement",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Kon geen Stripe-afrekensessie maken",
     "Could not sign in. Login link expired.": "Kon niet inloggen. Login-link is verlopen.",
     "Could not update email! Invalid link.": "Kon e-mail niet bijwerken! Ongeldige link.",

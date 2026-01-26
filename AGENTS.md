@@ -44,9 +44,9 @@ Two categories of apps:
 ```bash
 yarn                           # Install dependencies
 yarn setup                     # First-time setup (installs deps + submodules)
-yarn dev                       # Local dev (no Docker)
-yarn dev:debug                 # yarn dev with DEBUG=@tryghost*,ghost:* enabled
-yarn dev:forward               # Run Ghost backend with deps in Docker + frontend dev servers
+yarn dev                       # Start development (Docker backend + host frontend dev servers)
+yarn dev:legacy                # Local dev with legacy admin and without Docker (deprecated)
+yarn dev:legacy:debug          # yarn dev:legacy with DEBUG=@tryghost*,ghost:* enabled
 ```
 
 ### Building
@@ -100,9 +100,9 @@ yarn docker:test:unit          # Run unit tests in Docker
 yarn docker:reset              # Reset all Docker volumes (including database) and restart
 ```
 
-### Local development in Docker
+### How yarn dev works
 
-The `yarn dev:forward` command uses a **hybrid Docker + host development** setup:
+The `yarn dev` command uses a **hybrid Docker + host development** setup:
 
 **What runs in Docker:**
 - Ghost Core backend (with hot-reload via mounted source)
@@ -116,7 +116,7 @@ The `yarn dev:forward` command uses a **hybrid Docker + host development** setup
 **Setup:**
 ```bash
 # Start everything (Docker + frontend dev servers)
-yarn dev:forward
+yarn dev
 
 # With optional services (uses Docker Compose file composition)
 yarn dev:analytics             # Include Tinybird analytics

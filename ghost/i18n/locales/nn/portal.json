@@ -49,6 +49,7 @@
     "Contact support": "Få hjelp",
     "Continue": "Fortset",
     "Continue subscription": "Fortset abonnement",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "",
     "Could not sign in. Login link expired.": "Kunne ikkje logga inn. Innlogginslenka er utgått.",
     "Could not update email! Invalid link.": "Kunne ikkje oppdatera e-post! Ugyldig lenke.",

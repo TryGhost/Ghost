@@ -49,6 +49,7 @@
     "Contact support": "Jarri laguntza-taldearekin harremanetan",
     "Continue": "Jarraitu",
     "Continue subscription": "Jarraitu harpidetzarekin",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Ezin izan da stripe ordainketa saioa sortu",
     "Could not sign in. Login link expired.": "Ezin izan da saioa hasi; esteka iraungi da.",
     "Could not update email! Invalid link.": "Ezin izan da ePosta eguneratu! Estekak ez du balio.",

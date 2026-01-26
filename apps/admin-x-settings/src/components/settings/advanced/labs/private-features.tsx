@@ -40,10 +40,6 @@ const features: Feature[] = [{
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
 }, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'

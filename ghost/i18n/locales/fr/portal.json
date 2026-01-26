@@ -49,6 +49,7 @@
     "Contact support": "Écrire au support",
     "Continue": "Continuer",
     "Continue subscription": "Poursuivre l'abonnement",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Impossible de créer une session stripe checkout",
     "Could not sign in. Login link expired.": "Impossible de se connecter. Le lien de connexion a expiré.",
     "Could not update email! Invalid link.": "Impossible de mettre à jour l'e-mail ! Le lien est invalide.",
