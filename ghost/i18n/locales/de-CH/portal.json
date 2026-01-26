@@ -49,6 +49,7 @@
     "Contact support": "Support kontaktieren",
     "Continue": "Weiter",
     "Continue subscription": "Abonnement fortsetzen",
+    "Could not create Stripe billing portal session": "",
     "Could not create stripe checkout session": "Zahlungsabwicklung über Stripe konnte nicht ausgeführt werden",
     "Could not sign in. Login link expired.": "Anmeldung nicht möglich. Der Anmelde-Link ist abgelaufen.",
     "Could not update email! Invalid link.": "E-Mail-Aktualisierung fehlgeschlagen. Link nicht gültig.",
