@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
-const config = require('../../../../../../../core/shared/config');
 
 const mockOfferRedemption = {
     add: sinon.stub(),
