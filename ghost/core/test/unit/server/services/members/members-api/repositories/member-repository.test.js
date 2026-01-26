@@ -896,6 +896,7 @@ describe('MemberRepository', function () {
         let MemberSubscribeEvent;
         let newslettersService;
         let AutomatedEmail;
+        let labsService;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -957,6 +958,15 @@ describe('MemberRepository', function () {
                     })
                 })
             };
+
+            labsService = {
+                isSet: sinon.stub().callsFake((flag) => {
+                    if (flag === 'welcomeEmails') {
+                        return true;
+                    }
+                    return false;
+                })
+            };
         });
 
         afterEach(function () {
@@ -964,8 +974,6 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry for allowed source', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -973,6 +981,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -989,8 +998,8 @@ describe('MemberRepository', function () {
             assert.equal(payload.source, 'member');
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
+            labsService.isSet.withArgs('welcomeEmails').returns(false);
 
             const repo = new MemberRepository({
                 Member,
@@ -999,6 +1008,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1008,8 +1018,6 @@ describe('MemberRepository', function () {
         });
 
         it('does not create outbox entry for disallowed sources', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -1017,6 +1025,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1034,8 +1043,6 @@ describe('MemberRepository', function () {
         });
 
         it('includes timestamp in outbox payload', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -1043,6 +1050,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1054,8 +1062,6 @@ describe('MemberRepository', function () {
         });
 
         it('passes transaction to outbox entry creation', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -1063,6 +1069,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1073,8 +1080,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry when welcome email is inactive', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             AutomatedEmail.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
                     const data = {lexical: '{"root":{}}', status: 'inactive'};
@@ -1089,6 +1094,7 @@ describe('MemberRepository', function () {
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1097,8 +1103,6 @@ describe('MemberRepository', function () {
             sinon.assert.notCalled(Outbox.add);
         });
         it('does NOT create outbox entry when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             const StripeCustomer = {
                 upsert: sinon.stub().resolves()
             };
@@ -1111,6 +1115,7 @@ describe('MemberRepository', function () {
                 newslettersService,
                 AutomatedEmail,
                 StripeCustomer,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1151,6 +1156,7 @@ describe('MemberRepository', function () {
         let stripeAPIService;
         let productRepository;
         let AutomatedEmail;
+        let labsService;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1273,6 +1279,15 @@ describe('MemberRepository', function () {
                     })
                 })
             };
+
+            labsService = {
+                isSet: sinon.stub().callsFake((flag) => {
+                    if (flag === 'welcomeEmails') {
+                        return true;
+                    }
+                    return false;
+                })
+            };
         });
 
         afterEach(function () {
@@ -1280,8 +1295,6 @@ describe('MemberRepository', function () {
         });
 
         it('creates outbox entry when member status changes to paid', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1301,6 +1314,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1326,8 +1340,8 @@ describe('MemberRepository', function () {
             assert.ok(payload.timestamp);
         });
 
-        it('does NOT create outbox entry when config is not set', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns(undefined);
+        it('does NOT create outbox entry when welcomeEmails labs flag is off', async function () {
+            labsService.isSet.withArgs('welcomeEmails').returns(false);
 
             Member.edit.resolves({
                 attributes: {status: 'paid'},
@@ -1348,6 +1362,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1367,8 +1382,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry for disallowed sources', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1388,6 +1401,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1415,8 +1429,6 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create outbox entry when paid welcome email is inactive', async function () {
-            sinon.stub(config, 'get').withArgs('memberWelcomeEmailTestInbox').returns('test-inbox@example.com');
-
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -1443,6 +1455,7 @@ describe('MemberRepository', function () {
                 stripeAPIService,
                 productRepository,
                 AutomatedEmail,
+                labsService,
                 OfferRedemption: mockOfferRedemption
             });
 

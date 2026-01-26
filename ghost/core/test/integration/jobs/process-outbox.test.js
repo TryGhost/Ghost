@@ -7,7 +7,7 @@ const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
-const config = require('../../../core/shared/config');
+const mockManager = require('../../utils/e2e-framework-mock-manager');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const JOB_NAME = 'process-outbox-test';
@@ -23,12 +23,7 @@ describe('Process Outbox Job', function () {
 
     beforeEach(async function () {
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        sinon.stub(config, 'get').callsFake(function (key) {
-            if (key === 'memberWelcomeEmailTestInbox') {
-                return 'test-inbox@example.com';
-            }
-            return config.get.wrappedMethod.call(config, key);
-        });
+        mockManager.mockLabsEnabled('welcomeEmails');
 
         const lexical = JSON.stringify({
             root: {
@@ -57,6 +52,7 @@ describe('Process Outbox Job', function () {
 
     afterEach(async function () {
         sinon.restore();
+        mockManager.restore();
         await db.knex('outbox').del();
         await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
@@ -236,5 +232,38 @@ describe('Process Outbox Job', function () {
         const entry = entriesAfterJob.models[0];
         assert.equal(entry.get('status'), OUTBOX_STATUSES.FAILED);
         assert.equal(entry.get('retry_count'), 2);
+    });
+
+    it('skips processing when welcomeEmails labs flag is off', async function () {
+        // Restore previous mocks and re-enable with labs flag off
+        sinon.restore();
+        mockManager.restore();
+
+        // Re-stub the mailer and disable the labs flag
+        const sendStub = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+        mockManager.mockLabsDisabled('welcomeEmails');
+
+        await models.Outbox.add({
+            event_type: 'MemberCreatedEvent',
+            payload: JSON.stringify({
+                memberId: 'member123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                source: 'member',
+                status: 'free'
+            }),
+            status: OUTBOX_STATUSES.PENDING
+        });
+
+        const entriesBeforeJob = await models.Outbox.findAll();
+        assert.equal(entriesBeforeJob.length, 1);
+
+        await scheduleInlineJob();
+
+        // Entry should still be there (not processed)
+        const entriesAfterJob = await models.Outbox.findAll();
+        assert.equal(entriesAfterJob.length, 1);
+        assert.equal(entriesAfterJob.models[0].get('status'), OUTBOX_STATUSES.PENDING);
+        assert.equal(sendStub.callCount, 0);
     });
 });
