@@ -57,6 +57,7 @@ COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/emb
 COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
+COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
 
 COPY .github/scripts/install-deps.sh .github/scripts/install-deps.sh
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
@@ -69,6 +70,14 @@ FROM development-base AS shade-builder
 WORKDIR /home/ghost
 COPY apps/shade apps/shade
 RUN cd apps/shade && yarn build
+
+# --------------------
+# parse-email-address Builder
+# --------------------
+FROM development-base AS parse-email-address-builder
+WORKDIR /home/ghost
+COPY ghost/parse-email-address ghost/parse-email-address
+RUN cd ghost/parse-email-address && yarn build
 
 # --------------------
 # Admin-x-design-system Builder
@@ -213,5 +222,6 @@ COPY --from=portal-builder /home/ghost/apps/portal/umd apps/portal/umd
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=activitypub-builder /home/ghost/apps/activitypub/dist apps/activitypub/dist
 COPY --from=admin-react-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
+COPY --from=parse-email-address-builder /home/ghost/ghost/parse-email-address/build ghost/parse-email-address/build
 
 CMD ["yarn", "dev"]
