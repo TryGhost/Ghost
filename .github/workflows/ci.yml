@@ -1097,7 +1097,7 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   job_e2e_tests:
-    name: ${{matrix.shell == 'react' && '[Optional] ' || ''}}E2E Tests (${{ matrix.shell == 'react' && 'React' || 'Ember' }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_docker_build, job_setup]
     strategy:
@@ -1105,8 +1105,6 @@ jobs:
       matrix:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
-        shell: [ember, react]
-    continue-on-error: ${{ matrix.shell == 'react' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1155,7 +1153,6 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          USE_REACT_SHELL: ${{ matrix.shell == 'react' && 'true' || '' }}
           TEST_WORKERS_COUNT: 1
         run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
@@ -1163,7 +1160,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -1171,7 +1168,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shell }}-${{ matrix.shardIndex }}
+          name: test-results-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
@@ -1183,14 +1180,12 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_merge_e2e_reports:
-    name: Merge ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Reports
+    name: Merge Reports
     if: always()
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        shell: [ember, react]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1209,7 +1204,7 @@ jobs:
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
-          pattern: blob-report-${{ matrix.shell }}-*
+          pattern: blob-report-*
           merge-multiple: true
 
       - name: Check for blob reports
@@ -1226,7 +1221,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: e2e/all-test-results
-          pattern: test-results-${{ matrix.shell }}-*
+          pattern: test-results-*
           merge-multiple: true
 
       - name: Merge into HTML Report
@@ -1238,7 +1233,7 @@ jobs:
         if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shell }}
+          name: playwright-report
           path: e2e/playwright-report
           retention-days: 14
 
@@ -1246,26 +1241,26 @@ jobs:
         if: steps.check.outputs.has_reports == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shell }}
+          name: test-results
           path: e2e/all-test-results
           retention-days: 7
 
       - name: View Test Report command
         if: steps.check.outputs.has_reports == 'true'
         run: |
-          echo -e "::notice::To view the ${{ matrix.shell == 'react' && 'React' || 'Ember' }} Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
+          echo -e "::notice::To view the Playwright report locally, run:\n\nREPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\""
 
       - name: Comment on PR with test report command
         if: github.event_name == 'pull_request' && steps.check.outputs.has_reports == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "## ${{ matrix.shell == 'react' && 'React' || 'Ember' }} E2E Tests Failed
+          gh pr comment ${{ github.event.pull_request.number }} --body "## E2E Tests Failed
 
           To view the Playwright test report locally, run:
 
           \`\`\`bash
-          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report-${{ matrix.shell }} -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
+          REPORT_DIR=\$(mktemp -d) && gh run download ${{ github.run_id }} -n playwright-report -D \"\$REPORT_DIR\" && npx playwright show-report \"\$REPORT_DIR\"
           \`\`\`"
 
   job_coverage:

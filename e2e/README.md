@@ -32,18 +32,6 @@ yarn test --grep "homepage"
 yarn test --debug
 ```
 
-### Testing with React Admin Shell
-
-To run e2e tests against the new React admin shell instead of the Ember admin:
-
-From the repository root:
-
-```bash
-USE_REACT_SHELL=true yarn test
-```
-
-This builds the React admin (`apps/admin`) and configures Ghost to serve it at `/ghost/` instead of the Ember admin.
-
 ## Tests Development
 
 The test suite is organized into separate directories for different areas/functions:
