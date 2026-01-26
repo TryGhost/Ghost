@@ -44,7 +44,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
-        pageUrl
+        pageUrl,
+        supportEmail: null,
+        isMember: false,
+        isAdmin: false,
+        isPaidOnly: false,
+        hasRequiredTier: true,
+        isCommentingDisabled: false
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -149,7 +155,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
             setState({
                 adminApi,
-                admin
+                admin,
+                isAdmin: !!admin
             });
         } catch (e) {
             /* eslint-disable no-console */
@@ -278,7 +285,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     /** Initialize comments setup once in viewport, fetch data and setup state */
     const initSetup = async () => {
         try {
-            const {member, labs} = await api.init();
+            const {member, labs, supportEmail} = await api.init();
             const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
 
             let comments = initialComments;
@@ -296,6 +303,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 }
             }
 
+            // Compute tier access values
+            const isMember = !!member;
+            const isPaidOnly = options.commentsEnabled === 'paid';
+            const isPaidMember = !!member?.paid;
+            const hasRequiredTier = isPaidMember || !isPaidOnly;
+
             setState({
                 member,
                 initStatus: 'success',
@@ -306,7 +319,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
-                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
+                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                supportEmail,
+                isMember,
+                isPaidOnly,
+                hasRequiredTier,
+                isCommentingDisabled: member?.can_comment === false
             });
         } catch (e) {
             console.error(`[Comments] Failed to initialize:`, e);

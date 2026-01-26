@@ -1,5 +1,5 @@
 import CommentContextMenu from '../context-menus/comment-context-menu';
-import {Comment, useAppContext} from '../../../app-context';
+import {Comment} from '../../../app-context';
 import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
 import {useState} from 'react';
 
@@ -10,8 +10,6 @@ type Props = {
 
 const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-    const {member, admin} = useAppContext();
-    const isAdmin = !!admin;
 
     const toggleContextMenu = () => {
         setIsContextMenuOpen(current => !current);
@@ -20,12 +18,6 @@ const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
     const closeContextMenu = () => {
         setIsContextMenuOpen(false);
     };
-
-    const show = (!!member && comment.status === 'published') || isAdmin;
-
-    if (!show) {
-        return null;
-    }
 
     return (
         <div data-testid="more-button">
