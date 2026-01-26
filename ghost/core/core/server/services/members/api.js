@@ -6,6 +6,7 @@ const logging = require('@tryghost/logging');
 const mail = require('../mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');
+const signinRestrictedEmail = require('./emails/signin-restricted');
 const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
@@ -88,6 +89,8 @@ function createApiInstance(config) {
                     return `🙌 ${t(`Thank you for signing up to {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'updateEmail':
                     return `📫 ${t(`Confirm your email update for {siteTitle}!`, {siteTitle, interpolation: {escapeValue: false}})}`;
+                case 'signin-restricted':
+                    return `${t('Sign in attempt for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}`;
                 case 'signin':
                 default:
                     if (otc) {
@@ -166,6 +169,19 @@ function createApiInstance(config) {
                         ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('This email address will not be used.')}
                         `;
+                case 'signin-restricted':
+                    return trimLeadingWhitespace`
+                        ${t(`Hey there,`)}
+
+                        ${t('A sign in was attempted for {siteTitle} using this email address, but no account exists with this email.', {siteTitle, interpolation: {escapeValue: false}})}
+
+                        ${t('This site is invite-only. If you would like to create an account, please contact the site owner.', {interpolation: {escapeValue: false}})}
+
+                        ---
+
+                        ${t('Sent to {email}', {email})}
+                        ${t('If you did not make this request, you can safely ignore this email.')}
+                        `;
                 case 'signin':
                 default:
                     /* eslint-disable indent */
@@ -206,6 +222,8 @@ function createApiInstance(config) {
                     return signupPaidEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'updateEmail':
                     return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                case 'signin-restricted':
+                    return signinRestrictedEmail({t, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
                     return signinEmail({t, url, otc, email, siteTitle, accentColor, siteDomain, siteUrl});

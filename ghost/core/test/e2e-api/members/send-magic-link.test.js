@@ -43,42 +43,64 @@ describe('sendMagicLink', function () {
             .expectStatus(400);
     });
 
-    it('Throws an error when logging in to a email that does not exist', async function () {
+    it('Sends signup email when logging in to email that does not exist (prevents enumeration)', async function () {
         const email = 'this-member-does-not-exist@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
             })
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId,
-                    // Add this here because it is easy to be overlooked (we need a human readable error!)
-                    // 'Please sign up first' should be included only when invite only is disabled.
-                    message: 'No member exists with this e-mail address. Please sign up first.'
-                }]
-            });
+            .expectEmptyBody()
+            .expectStatus(201);
+
+        // Check that a signup email is sent instead of throwing an error
+        const mail = mockManager.assert.sentEmail({
+            to: email,
+            subject: /Complete your sign up to Ghost/
+        });
+
+        // Verify the email contains the signup link
+        assert.ok(mail.text.includes('complete the signup process'));
+
+        // Verify the magic link works for signup
+        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+        const parsed = new URL(url);
+        const token = parsed.searchParams.get('token');
+
+        // Get data from token
+        const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
+        assert.equal(data.email, email);
+        assert.equal(data.type, 'signup');
+
+        // Verify we can create a member from this token
+        const member = await membersService.api.getMemberDataFromMagicLinkToken(token);
+        assert.equal(member.email, email);
     });
 
-    it('Throws an error when logging in to a email that does not exist (invite only)', async function () {
+    it('Sends informational email when logging in to email that does not exist on invite-only site (prevents enumeration)', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
-        const email = 'this-member-does-not-exist@test.com';
+        const email = 'this-member-does-not-exist-invite@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
             })
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId,
-                    // Add this here because it is easy to be overlooked (we need a human readable error!)
-                    // 'Please sign up first' should NOT be included
-                    message: 'No member exists with this e-mail address.'
-                }]
-            });
+            .expectEmptyBody()
+            .expectStatus(201);
+
+        // An informational email should be sent explaining no account exists
+        const mail = mockManager.assert.sentEmail({
+            to: email,
+            subject: /Sign in attempt for Ghost/
+        });
+
+        // Verify the email explains the situation
+        assert.ok(mail.text.includes('no account exists with this email'));
+        assert.ok(mail.text.includes('invite-only'));
+
+        // Verify there's no magic link in the email (it's just informational)
+        assert.ok(!mail.text.includes('?token='));
     });
 
     it('Throws an error when trying to sign up on an invite-only site', async function () {
@@ -491,20 +513,27 @@ describe('sendMagicLink', function () {
                 })
                 .expectStatus(201);
 
+            mockManager.mockMail(); // Reset mail mock to clear previous emails
+
             const unicodeEmail = 'user@exаmple.com'; // Using Cyrillic 'а'
 
+            // Since member doesn't exist, this should now succeed but send signin-not-found email
+            // The punycode-normalized email is different from the ASCII email, so no member is found
             await membersAgent.post('/api/send-magic-link')
                 .body({
                     email: unicodeEmail,
                     emailType: 'signin'
                 })
-                .expectStatus(400)
-                .matchBodySnapshot({
-                    errors: [{
-                        id: anyErrorId,
-                        message: 'No member exists with this e-mail address. Please sign up first.'
-                    }]
-                });
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Verify a signup email was sent (not a signin email, since member doesn't exist)
+            const mail = mockManager.assert.sentEmail({
+                to: 'user@xn--exmple-4nf.com', // Punycode version of the Cyrillic domain
+                subject: /Complete your sign up/
+            });
+
+            assert.ok(mail);
         });
 
         it('should normalize unicode domains for signup', async function () {
@@ -908,12 +937,21 @@ describe('sendMagicLink', function () {
             }
         });
 
-        it('Should handle OTC parameter with non-existent member email', async function () {
-            const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
-                .expectStatus(400);
+        it('Should handle OTC parameter with non-existent member email (sends signup email without OTC)', async function () {
+            // For non-existent members, we send a signup email
+            // These emails don't include OTC since the user doesn't have an account yet
+            const response = await sendMagicLinkRequest('nonexistent-otc@test.com', 'signin', true)
+                .expectStatus(201);
 
-            // Should still process the request normally for non-existent members
+            // Should not return otc_ref since the email sent is signup (not signin)
             assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
+
+            // Verify signup email was sent
+            const mail = mockManager.assert.sentEmail({
+                to: 'nonexistent-otc@test.com',
+                subject: /Complete your sign up/
+            });
+            assert.ok(mail);
         });
 
         async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {

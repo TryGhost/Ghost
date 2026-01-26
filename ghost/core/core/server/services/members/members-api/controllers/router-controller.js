@@ -869,8 +869,28 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            throw new errors.BadRequestError({
-                message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
+            // Member doesn't exist - to prevent enumeration, we don't reveal this
+            // If self-signup is allowed, send a signup email so they can create an account
+            // If self-signup is disabled, send an informational email explaining no account exists
+            if (this._allowSelfSignup()) {
+                const tokenData = {
+                    attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
+                };
+                // Send a signup email - this allows them to create an account
+                return await this._sendEmailWithMagicLink({
+                    email: normalizedEmail,
+                    tokenData,
+                    requestedType: 'signup',
+                    referrer
+                });
+            }
+            // Self-signup disabled: send informational email (no magic link)
+            return await this._sendEmailWithMagicLink({
+                email: normalizedEmail,
+                tokenData: {},
+                requestedType: 'signin-restricted',
+                referrer,
+                options: {forceEmailType: true}
             });
         }
 
