@@ -217,6 +217,7 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
+      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -401,7 +402,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
+    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
