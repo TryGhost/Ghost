@@ -31,8 +31,8 @@ describe('getAssetUrl', function () {
 
     it('should not add asset to url if ghost.css for default templates', function () {
         const testUrl = getAssetUrl('public/ghost.css');
-        // Public assets now use file-based hash when file exists, otherwise global hash
-        assert.match(testUrl, /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+        // Without caching:assets:contentBasedHash, uses global hash
+        assert.equal(testUrl, '/public/ghost.css?v=' + config.get('assetHash'));
     });
 
     it('should not add asset to url has public in it', function () {
@@ -122,8 +122,8 @@ describe('getAssetUrl', function () {
 
         it('should not add asset to url if ghost.css for default templates', function () {
             const testUrl = getAssetUrl('public/ghost.css');
-            // Public assets now use file-based hash when file exists
-            assert.match(testUrl, /^\/blog\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+            // Without caching:assets:contentBasedHash, uses global hash
+            assert.equal(testUrl, '/blog/public/ghost.css?v=' + config.get('assetHash'));
         });
 
         it('should not add asset to url has public in it', function () {
@@ -183,6 +183,11 @@ describe('getAssetUrl', function () {
     describe('file-based hash', function () {
         const fixturesPath = path.join(__dirname, '../../../utils/fixtures/themes/casper');
 
+        beforeEach(function () {
+            // Enable content-based asset hashing
+            configUtils.set('caching:assets:contentBasedHash', true);
+        });
+
         afterEach(function () {
             assetHash.clearCache();
             sinon.restore();
@@ -231,7 +236,7 @@ describe('getAssetUrl', function () {
         });
 
         it('should use file-based hash for public assets when file exists', function () {
-            // Public assets use file-based hash when the file exists
+            // Public assets use file-based hash when the file exists and config is enabled
             const testUrl = getAssetUrl('public/ghost.css');
             // ghost.css exists in the static public path, so it should have a file-based hash
             assert.match(testUrl, /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
@@ -271,7 +276,7 @@ describe('getAssetUrl', function () {
             const testUrl = getAssetUrl('../../../package.json');
 
             // Should use global hash because path traversal is blocked
-            testUrl.should.equal('/assets/../../../package.json?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/assets/../../../package.json?v=' + config.get('assetHash'));
         });
 
         it('should prevent path traversal in public assets', function () {
@@ -279,7 +284,7 @@ describe('getAssetUrl', function () {
             const testUrl = getAssetUrl('public/../../../package.json');
 
             // Should use global hash because path traversal is blocked
-            testUrl.should.equal('/public/../../../package.json?v=' + config.get('assetHash'));
+            assert.equal(testUrl, '/public/../../../package.json?v=' + config.get('assetHash'));
         });
     });
 });
