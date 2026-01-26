@@ -37,7 +37,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
-    const activeOffers = allOffers
+    const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
+
+    const activeOffers = signupOffers
         .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier.id)}))
         .filter((offer): offer is Offer & {tier: Tier} => offer.status === 'active' && !!offer.tier);
 
@@ -69,14 +71,14 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     let offerButtonText = 'Manage offers';
     let offerButtonLink = openOfferListModal;
     let descriptionButtonText = 'Learn more';
-    if (allOffers.length > 0) {
+    if (signupOffers.length > 0) {
         offerButtonText = 'Manage offers';
         offerButtonLink = openOfferListModal;
-    } else if (paidActiveTiers.length === 0 && allOffers.length === 0) {
+    } else if (paidActiveTiers.length === 0 && signupOffers.length === 0) {
         offerButtonText = '';
         offerButtonLink = openTiers;
         descriptionButtonText = '';
-    } else if (paidActiveTiers.length > 0 && allOffers.length === 0) {
+    } else if (paidActiveTiers.length > 0 && signupOffers.length === 0) {
         offerButtonText = 'Add offer';
         offerButtonLink = openAddModal;
     }
@@ -84,7 +86,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} size='sm' onClick={offerButtonLink}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
+            description={<>Create discounts & coupons to boost new subscriptions. {signupOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
@@ -107,13 +109,13 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             type={offer.type}
                         />))}
                     </div>
-                    {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
-                        <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
+                    {signupOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
+                        <span className='text-xs text-grey-700 dark:text-grey-600'>{signupOffers.length} offers in total</span>
                     </div>}
                 </div> :
                 null
             }
-            {paidActiveTiers.length === 0 && allOffers.length === 0 ?
+            {paidActiveTiers.length === 0 && signupOffers.length === 0 ?
                 (<div>
                     <span>You must have an active tier to create an offer.</span>
                     {` `}
