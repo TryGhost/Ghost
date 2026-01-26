@@ -707,14 +707,22 @@ module.exports = class StripeAPI {
      * @param {ICustomer} customer
      * @param {object} options
      * @param {string} options.returnUrl
+     * @param {string} [options.configurationId]
      * @returns {Promise<IBillingSession>}
      */
     async createBillingPortalSession(customer, options) {
         await this._rateLimitBucket.throttle();
-        const session = await this._stripe.billingPortal.sessions.create({
+
+        const stripeOptions = {
             customer: customer.id,
             return_url: options.returnUrl || this._config.billingPortalReturnUrl
-        });
+        };
+
+        if (options.configurationId) {
+            stripeOptions.configuration = options.configurationId;
+        }
+
+        const session = await this._stripe.billingPortal.sessions.create(stripeOptions);
 
         return session;
     }
@@ -968,5 +976,38 @@ module.exports = class StripeAPI {
         return this._stripe.subscriptions.update(id, {
             trial_end: 'now'
         });
+    }
+
+    /**
+     * Create a new Stripe Billing Portal Configuration.
+     *
+     * @param {object} options
+     * @param {object} options.business_profile
+     * @param {string} [options.business_profile.headline]
+     * @param {object} options.features
+     * @param {string} options.default_return_url
+     *
+     * @returns {Promise<import('stripe').Stripe.BillingPortal.Configuration>}
+     */
+    async createBillingPortalConfiguration(options) {
+        await this._rateLimitBucket.throttle();
+        return await this._stripe.billingPortal.configurations.create(options);
+    }
+
+    /**
+     * Update an existing Stripe Billing Portal Configuration.
+     *
+     * @param {string} id
+     * @param {object} options
+     * @param {object} options.business_profile
+     * @param {string} [options.business_profile.headline]
+     * @param {object} options.features
+     * @param {string} options.default_return_url
+     *
+     * @returns {Promise<import('stripe').Stripe.BillingPortal.Configuration>}
+     */
+    async updateBillingPortalConfiguration(id, options) {
+        await this._rateLimitBucket.throttle();
+        return await this._stripe.billingPortal.configurations.update(id, options);
     }
 };
