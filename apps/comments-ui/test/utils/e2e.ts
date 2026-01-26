@@ -94,7 +94,7 @@ export async function mockAdminAuthFrame204({admin, page}) {
     });
 }
 
-export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '12345678', api = MOCKED_SITE_URL, ...options}: {
+export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '12345678', api = MOCKED_SITE_URL, settings = {}, ...options}: {
     mockedApi: MockedApi,
     page: Page,
     path?: string;
@@ -111,7 +111,8 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
     publication?: string,
     postId?: string,
     bodyStyle?: string,
-    labs?: LabsType
+    labs?: LabsType,
+    settings?: object
 }) {
     const sitePath = MOCKED_SITE_URL;
 
@@ -119,7 +120,8 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
         settings: {
             labs: {
                 ...labs
-            }
+            },
+            ...settings
         }
     });
 

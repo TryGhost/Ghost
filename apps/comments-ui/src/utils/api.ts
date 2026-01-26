@@ -299,7 +299,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; labs: any}>
+        init: (() => {}) as () => Promise<{ member: any; labs: any; supportEmail: string | null}>
     };
 
     api.init = async () => {
@@ -308,17 +308,19 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         ]);
 
         let labs = {};
+        let supportEmail: string | null = null;
 
         try {
             const settings = await api.site.settings();
             if (settings.settings.labs) {
                 Object.assign(labs, settings.settings.labs);
             }
+            supportEmail = settings.settings.support_email_address || null;
         } catch {
             labs = {};
         }
 
-        return {member, labs};
+        return {member, labs, supportEmail};
     };
 
     return api;
