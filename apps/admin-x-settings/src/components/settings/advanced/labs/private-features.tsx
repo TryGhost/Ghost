@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Disable Member Commenting',
     description: 'Allow staff to disable commenting for individual members',
     flag: 'disableMemberCommenting'
+}, {
+    title: 'Sniper Links',
+    description: 'Enable mail app links on signup/signin',
+    flag: 'sniperlinks'
 }];
 
 const AlphaFeatures: React.FC = () => {
