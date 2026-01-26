@@ -25,29 +25,25 @@ describe('normalizeEmail', function () {
         assert.equal(normalizeEmail('user@xn--br-via.baz'), 'user@xn--br-via.baz');
     });
 
-    it('should preserve the case of the email address', function () {
-        assert.equal(normalizeEmail('User@Example.COM'), 'User@Example.COM');
-        assert.equal(normalizeEmail('Admin@TEST.org'), 'Admin@TEST.org');
+    it('should preserve the case of the local part, but not the domain', function () {
+        assert.equal(normalizeEmail('User@Example.COM'), 'User@example.com');
     });
 
-    it('should handle edge cases gracefully', function () {
-        assert.equal(normalizeEmail(null), null);
-        assert.equal(normalizeEmail(undefined), null);
+    it('should handle invalid email addresses', function () {
         assert.equal(normalizeEmail(''), null);
-        assert.equal(normalizeEmail('invalid-email'), 'invalid-email');
-        assert.equal(normalizeEmail('@example.com'), '@example.com');
-        assert.equal(normalizeEmail('user@'), 'user@');
+        assert.equal(normalizeEmail('invalid-email'), null);
+        assert.equal(normalizeEmail('@example.com'), null);
+        assert.equal(normalizeEmail('user@'), null);
+        assert.equal(normalizeEmail('user@name@example.com'), null);
+        assert.equal(normalizeEmail('user@name@tëst.com'), null);
     });
 
     it('should handle non-string inputs', function () {
+        assert.equal(normalizeEmail(/** @type {any} */ (null)), null);
+        assert.equal(normalizeEmail(/** @type {any} */ (undefined)), null);
         assert.equal(normalizeEmail(/** @type {any} */ (123)), null);
         assert.equal(normalizeEmail(/** @type {any} */ ({})), null);
         assert.equal(normalizeEmail(/** @type {any} */ ([])), null);
         assert.equal(normalizeEmail(/** @type {any} */ (true)), null);
-    });
-
-    it('should handle multiple @ symbols by using the last one', function () {
-        assert.equal(normalizeEmail('user@name@example.com'), 'user@name@example.com');
-        assert.equal(normalizeEmail('user@name@tëst.com'), 'user@name@xn--tst-jma.com');
     });
 });
