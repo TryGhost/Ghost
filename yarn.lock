@@ -6357,6 +6357,13 @@
   dependencies:
     "@sinonjs/commons" "^3.0.1"
 
+"@sinonjs/fake-timers@^15.1.0":
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-15.1.0.tgz#f42e713425d4eb1a7bc88ef5d7f76c4546586c25"
+  integrity sha512-cqfapCxwTGsrR80FEgOoPsTonoefMBY7dnUEbQ+GRcved0jvkJLzvX6F4WtN+HBqbPX/SiFsIRUp+IrCW/2I2w==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
+
 "@sinonjs/fake-timers@^6.0.0", "@sinonjs/fake-timers@^6.0.1":
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-6.0.1.tgz#293674fccb3262ac782c7aadfdeca86b10c75c40"
@@ -6380,6 +6387,14 @@
   dependencies:
     "@sinonjs/commons" "^3.0.1"
     lodash.get "^4.4.2"
+    type-detect "^4.1.0"
+
+"@sinonjs/samsam@^8.0.3":
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-8.0.3.tgz#eb6ffaef421e1e27783cc9b52567de20cb28072d"
+  integrity sha512-hw6HbX+GyVZzmaYNh82Ecj1vdGZrqVIn/keDTg63IgAwiQPO+xCz99uG6Woqgb4tM0mUiFENKZ4cqd7IX94AXQ==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
     type-detect "^4.1.0"
 
 "@sinonjs/text-encoding@^0.7.1", "@sinonjs/text-encoding@^0.7.3":
@@ -16317,6 +16332,11 @@ diff@^7.0.0:
   resolved "https://registry.yarnpkg.com/diff/-/diff-7.0.0.tgz#3fb34d387cd76d803f6eebea67b921dab0182a9a"
   integrity sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==
 
+diff@^8.0.2:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-8.0.3.tgz#c7da3d9e0e8c283bb548681f8d7174653720c2d5"
+  integrity sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==
+
 diffie-hellman@^5.0.0:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/diffie-hellman/-/diffie-hellman-5.0.3.tgz#40e8ee98f55a2149607146921c63e1ae5f3d2875"
@@ -25701,6 +25721,33 @@ mocha@11.7.3:
     yargs-parser "^21.1.1"
     yargs-unparser "^2.0.0"
 
+mocha@11.7.5:
+  version "11.7.5"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-11.7.5.tgz#58f5bbfa5e0211ce7e5ee6128107cefc2515a627"
+  integrity sha512-mTT6RgopEYABzXWFx+GcJ+ZQ32kp4fMf0xvpZIIfSq9Z8lC/++MtcCnQ9t5FP2veYEP95FIYSvW+U9fV4xrlig==
+  dependencies:
+    browser-stdout "^1.3.1"
+    chokidar "^4.0.1"
+    debug "^4.3.5"
+    diff "^7.0.0"
+    escape-string-regexp "^4.0.0"
+    find-up "^5.0.0"
+    glob "^10.4.5"
+    he "^1.2.0"
+    is-path-inside "^3.0.3"
+    js-yaml "^4.1.0"
+    log-symbols "^4.1.0"
+    minimatch "^9.0.5"
+    ms "^2.1.3"
+    picocolors "^1.1.1"
+    serialize-javascript "^6.0.2"
+    strip-json-comments "^3.1.1"
+    supports-color "^8.1.1"
+    workerpool "^9.2.0"
+    yargs "^17.7.2"
+    yargs-parser "^21.1.1"
+    yargs-unparser "^2.0.0"
+
 mocha@^2.5.3:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-2.5.3.tgz#161be5bdeb496771eb9b35745050b622b5aefc58"
@@ -27042,6 +27089,11 @@ parse-asn1@^5.0.0, parse-asn1@^5.1.5:
     evp_bytestokey "^1.0.0"
     pbkdf2 "^3.0.3"
     safe-buffer "^5.1.1"
+
+parse-email-address@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/parse-email-address/-/parse-email-address-0.0.2.tgz#1fc9f86cad5e703aeb04554904f5f5a6e4ac0884"
+  integrity sha512-Ul8NS2MQ6PG7xdaa2SCNbkUjKcm0TTySXWquqDT8u+vldPVHZNhhrwfhG0KqN8caA96ul34Ptu6JtX7JYtK8CA==
 
 parse-entities@^1.0.2, parse-entities@^1.1.0:
   version "1.2.2"
@@ -30910,6 +30962,17 @@ sinon@18.0.1:
     nise "^6.0.0"
     supports-color "^7"
 
+sinon@21.0.1:
+  version "21.0.1"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-21.0.1.tgz#36b9126065a44906f7ba4a47b723b99315a8c356"
+  integrity sha512-Z0NVCW45W8Mg5oC/27/+fCqIHFnW8kpkFOq0j9XJIev4Ld0mKmERaZv5DMLAb9fGCevjKwaEeIQz5+MBXfZcDw==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
+    "@sinonjs/fake-timers" "^15.1.0"
+    "@sinonjs/samsam" "^8.0.3"
+    diff "^8.0.2"
+    supports-color "^7.2.0"
+
 sinon@^9.0.0:
   version "9.2.4"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-9.2.4.tgz#e55af4d3b174a4443a8762fa8421c2976683752b"
@@ -31999,7 +32062,7 @@ supports-color@^5.3.0:
   dependencies:
     has-flag "^3.0.0"
 
-supports-color@^7, supports-color@^7.0.0, supports-color@^7.1.0:
+supports-color@^7, supports-color@^7.0.0, supports-color@^7.1.0, supports-color@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-7.2.0.tgz#1b7dcdcb32b8138801b3e478ba6a51caa89648da"
   integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
