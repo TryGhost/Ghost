@@ -145,12 +145,15 @@ function getAssetUrl(path, hasMinFile) {
     // Get the appropriate hash for this asset (ignore URL anchor)
     const hashPath = path.includes('#') ? path.slice(0, path.indexOf('#')) : path;
     let hash;
-    if (isThemeAsset) {
-        // For theme assets, use file-based SHA256 hash
-        hash = getThemeAssetHash(hashPath);
-    } else if (isPublicAsset) {
-        // For public assets, use file-based SHA256 hash
-        hash = getPublicAssetHash(hashPath);
+    // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
+    if (config.get('caching:assets:contentBasedHash')) {
+        if (isThemeAsset) {
+            // For theme assets, use file-based SHA256 hash
+            hash = getThemeAssetHash(hashPath);
+        } else if (isPublicAsset) {
+            // For public assets, use file-based SHA256 hash
+            hash = getPublicAssetHash(hashPath);
+        }
     }
 
     // Fallback to global hash if file hash unavailable

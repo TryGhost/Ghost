@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
+const config = configUtils.config;
 const asset = require('../../../../core/frontend/helpers/asset');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -36,8 +37,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            // ghost.css exists in static public path, so it gets a file-based hash
-            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+            assert.equal(String(rendered), '/public/ghost.css?v=abc');
         });
 
         it('handles custom favicon correctly', function () {
@@ -106,8 +106,39 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            // ghost.css exists in static public path, so it gets a file-based hash
-            assert.match(String(rendered), /^http:\/\/127\.0\.0\.1\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+            assert.equal(String(rendered), 'http://127.0.0.1/public/ghost.css?v=abc');
+        });
+    });
+
+    describe('with contentBasedHash enabled', function () {
+        before(function () {
+            configUtils.set({assetHash: 'abc'});
+            configUtils.set({'caching:assets:contentBasedHash': true});
+        });
+
+        after(async function () {
+            await configUtils.restore();
+        });
+
+        it('uses file-based hash for ghost.css when it exists', function () {
+            rendered = asset('public/ghost.css');
+            assertExists(rendered);
+            // ghost.css exists in static public path, so it gets a 16-char hex hash
+            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+        });
+
+        it('falls back to global hash for non-existent public assets', function () {
+            rendered = asset('public/nonexistent.js');
+            assertExists(rendered);
+            // Non-existent files fall back to global hash (using config value)
+            assert.equal(String(rendered), '/public/nonexistent.js?v=' + config.get('assetHash'));
+        });
+
+        it('falls back to global hash for theme assets without active theme', function () {
+            rendered = asset('js/asset.js');
+            assertExists(rendered);
+            // No active theme, so falls back to global hash (using config value)
+            assert.equal(String(rendered), '/assets/js/asset.js?v=' + config.get('assetHash'));
         });
     });
 });
