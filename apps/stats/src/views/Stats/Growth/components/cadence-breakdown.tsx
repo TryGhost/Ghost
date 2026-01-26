@@ -123,8 +123,8 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         const tierColors = [
             {gradient: 'url(#gradientPurple)', solid: 'hsl(var(--chart-purple))'},
             {gradient: 'url(#gradientTeal)', solid: 'hsl(var(--chart-teal))'},
-            {gradient: 'url(#gradientRose)', solid: 'hsl(var(--chart-rose))'},
             {gradient: 'url(#gradientBlue)', solid: 'hsl(var(--chart-blue))'},
+            {gradient: 'url(#gradientRose)', solid: 'hsl(var(--chart-rose))'},
             {gradient: 'url(#gradientOrange)', solid: 'hsl(var(--chart-orange))'}
         ];
 
@@ -185,9 +185,6 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
         });
     }, [chartData, totalSubscriptions]);
 
-    // Get dynamic labels based on breakdown type
-    const cardDescription = breakdownType === 'billing-period' ? 'Paid subscriptions by billing period' : 'Paid subscriptions by tier';
-
     // Don't render if loading or no data at all
     if (isLoading || !subscriptionStatsResponse?.meta?.totals || subscriptionStatsResponse.meta.totals.length === 0) {
         return null;
@@ -202,7 +199,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                 <div className="flex items-start justify-between">
                     <div className='flex flex-col gap-y-1.5'>
                         <CardTitle>Subscription breakdown</CardTitle>
-                        <CardDescription>{cardDescription}</CardDescription>
+                        <CardDescription>Active paid subscriptions</CardDescription>
                     </div>
                     <div>
                         <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>
@@ -293,7 +290,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                             </Recharts.PieChart>
                         </ChartContainer>
                         {percentages.length > 0 && (
-                            <div className='mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground'>
+                            <div className='mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm text-muted-foreground'>
                                 {percentages.map(item => (
                                     <div key={item.label} className='flex items-center gap-2'>
                                         <span
@@ -302,7 +299,7 @@ const CadenceBreakdown: React.FC<CadenceBreakdownProps> = ({isLoading}) => {
                                         />
                                         <span className='max-w-[120px] truncate whitespace-nowrap' title={item.label}>{item.label}</span>
                                         <span className='font-medium text-foreground'>
-                                            {item.percentage}%
+                                            {Math.round(Number(item.percentage) || 0)}%
                                         </span>
                                     </div>
                                 ))}
