@@ -681,7 +681,7 @@ module.exports = class RouterController {
             });
         }
 
-        // Normalize email to prevent homograph attacks
+        // Normalize email to avoid invalid addresses and mitigate homograph attacks
         const normalizedEmail = normalizeEmail(email);
         if (!normalizedEmail) {
             throw new errors.BadRequestError({
