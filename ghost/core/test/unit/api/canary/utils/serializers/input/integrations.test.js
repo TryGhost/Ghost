@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
@@ -12,7 +12,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.browse(apiConfig, frame);
-            frame.options.filter.should.eql('type:[custom,builtin,core]');
+            assert.equal(frame.options.filter, 'type:[custom,builtin,core]');
         });
 
         it('combines filters', function () {
@@ -25,7 +25,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin,core]');
+            assert.equal(frame.options.filter, '(type:internal)+type:[custom,builtin,core]');
         });
     });
 
@@ -39,7 +39,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.read(apiConfig, frame);
-            frame.options.filter.should.eql('type:[custom,builtin,core]');
+            assert.equal(frame.options.filter, 'type:[custom,builtin,core]');
         });
 
         it('combines filters', function () {
@@ -52,7 +52,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin,core]');
+            assert.equal(frame.options.filter, '(type:internal)+type:[custom,builtin,core]');
         });
     });
 });

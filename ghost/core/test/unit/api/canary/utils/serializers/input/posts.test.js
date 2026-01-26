@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
@@ -27,7 +27,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            assert.equal(frame.options.filter, 'type:post');
         });
 
         it('should not work for non public context', function () {
@@ -42,7 +42,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
+            assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
         it('combine status+tag filters', function () {
@@ -62,7 +62,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(status:published+tag:eins)+type:post');
+            assert.equal(frame.options.filter, '(status:published+tag:eins)+type:post');
         });
 
         it('only tag filters', function () {
@@ -82,7 +82,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(tag:eins)+type:post');
+            assert.equal(frame.options.filter, '(tag:eins)+type:post');
         });
 
         it('remove mobiledoc and lexical options from formats', function () {
@@ -96,10 +96,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.formats.should.not.containEql('mobiledoc');
-            frame.options.formats.should.not.containEql('lexical');
-            frame.options.formats.should.containEql('html');
-            frame.options.formats.should.containEql('plaintext');
+            assert(!frame.options.formats.includes('mobiledoc'));
+            assert(!frame.options.formats.includes('lexical'));
+            assert(frame.options.formats.includes('html'));
+            assert(frame.options.formats.includes('plaintext'));
         });
 
         it('adds default order when no order is specified', function () {
@@ -112,7 +112,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.order.should.eql('published_at desc, id desc');
+            assert.equal(frame.options.order, 'published_at desc, id desc');
         });
 
         it('keeps order when it is specified', function () {
@@ -126,7 +126,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.order.should.eql('updated_at desc');
+            assert.equal(frame.options.order, 'updated_at desc');
         });
 
         describe('Content API', function () {
@@ -142,7 +142,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.browse(apiConfig, frame);
                 const columns = Object.keys(postsSchema);
                 const parsedSelectRaw = frame.options.selectRaw.split(',').map(column => column.trim());
-                parsedSelectRaw.should.eql(columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
+                assert.deepEqual(parsedSelectRaw, columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
             });
 
             it('strips mobiledoc and lexical columns from a specified columns option', function () {
@@ -156,7 +156,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 };
 
                 serializers.input.posts.browse(apiConfig, frame);
-                frame.options.columns.should.eql(['id', 'visibility']);
+                assert.deepEqual(frame.options.columns, ['id', 'visibility']);
             });
 
             it('forces visibility column if columns are specified', function () {
@@ -170,7 +170,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 };
 
                 serializers.input.posts.browse(apiConfig, frame);
-                frame.options.columns.should.eql(['id', 'visibility']);
+                assert.deepEqual(frame.options.columns, ['id', 'visibility']);
             });
 
             it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
@@ -184,7 +184,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 };
 
                 serializers.input.posts.browse(apiConfig, frame);
-                frame.options.selectRaw.should.eql('id');
+                assert.equal(frame.options.selectRaw, 'id');
             });
         });
     });
@@ -199,7 +199,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            assert.equal(frame.options.filter, 'type:post');
         });
 
         it('with apiType of "content" it forces type:post filter', function () {
@@ -213,7 +213,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:page)+type:post');
+            assert.equal(frame.options.filter, '(type:page)+type:post');
         });
 
         it('with apiType of "admin" it forces type & status false filter', function () {
@@ -232,7 +232,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:post)+status:[draft,published,scheduled,sent]');
+            assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
         it('with apiType of "admin" it forces type:post filter & respects custom status filter', function () {
@@ -252,7 +252,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(status:draft)+type:post');
+            assert.equal(frame.options.filter, '(status:draft)+type:post');
         });
 
         it('remove mobiledoc and lexical options from formats', function () {
@@ -267,10 +267,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.formats.should.not.containEql('mobiledoc');
-            frame.options.formats.should.not.containEql('lexical');
-            frame.options.formats.should.containEql('html');
-            frame.options.formats.should.containEql('plaintext');
+            assert(!frame.options.formats.includes('mobiledoc'));
+            assert(!frame.options.formats.includes('lexical'));
+            assert(frame.options.formats.includes('html'));
+            assert(frame.options.formats.includes('plaintext'));
         });
     });
 
@@ -296,8 +296,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.equal(lexical);
-                should.equal(null, postData.mobiledoc);
+                assert.equal(postData.lexical, lexical);
+                assert.equal(postData.mobiledoc, null);
             });
 
             it('no transformation when html data is empty', function () {
@@ -322,8 +322,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.equal(lexical);
-                should.equal(null, postData.mobiledoc);
+                assert.equal(postData.lexical, lexical);
+                assert.equal(postData.mobiledoc, null);
             });
 
             it('transforms html when html is present in data and source options', function () {
@@ -350,12 +350,12 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.not.equal(lexical);
-                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                assert.notEqual(postData.lexical, lexical);
+                assert.equal(postData.lexical, '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
                 // we convert to both mobiledoc and lexical to avoid changing formats
                 // for existing content when updating with `?source=html,
                 // the unused data is cleared in the Post model when saving
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
+                assert.equal(postData.mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
             });
 
             it('preserves html cards in transformed html', function () {
@@ -380,7 +380,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                assert.equal(postData.lexical, '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
             });
 
             it('throws error when HTML conversion fails', function () {
@@ -403,12 +403,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
                 sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
 
-                try {
+                assert.throws(() => {
                     serializers.input.posts.edit({}, frame);
-                    should.fail('Error expected');
-                } catch (err) {
-                    err.message.should.eql('Failed to convert HTML to Mobiledoc');
-                }
+                }, /Failed to convert HTML to Mobiledoc/);
             });
         });
 
@@ -428,7 +425,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.edit(apiConfig, frame);
-            frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+            assert.deepEqual(frame.data.posts[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
         });
 
         describe('Ensure relations format', function () {
@@ -450,8 +447,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
                 serializers.input.posts.edit(apiConfig, frame);
 
-                frame.data.posts[0].authors.should.eql([{id: 'id'}]);
-                frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+                assert.deepEqual(frame.data.posts[0].authors, [{id: 'id'}]);
+                assert.deepEqual(frame.data.posts[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
             });
 
             it('authors is array of strings', function () {
@@ -472,8 +469,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
                 serializers.input.posts.edit(apiConfig, frame);
 
-                frame.data.posts[0].authors.should.eql([{email: 'email1'}, {email: 'email2'}]);
-                frame.data.posts[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
+                assert.deepEqual(frame.data.posts[0].authors, [{email: 'email1'}, {email: 'email2'}]);
+                assert.deepEqual(frame.data.posts[0].tags, [{name: 'name1'}, {name: 'name2'}]);
             });
         });
     });
@@ -486,7 +483,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.copy({}, frame);
 
-            frame.options.formats.should.eql('mobiledoc,lexical');
+            assert.equal(frame.options.formats, 'mobiledoc,lexical');
         });
 
         it('adds default relations if no relations are specified', function () {
@@ -496,7 +493,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.copy({}, frame);
 
-            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks']);
+            assert.deepEqual(frame.options.withRelated, ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks']);
         });
     });
 });
