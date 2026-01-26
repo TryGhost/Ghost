@@ -188,6 +188,7 @@
             "projects": [
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
+              "@tryghost/parse-email-address",
               "@tryghost/posts",
               "@tryghost/stats"
             ],
@@ -206,6 +207,7 @@
             "projects": [
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
+              "@tryghost/parse-email-address",
               "@tryghost/posts",
               "@tryghost/stats"
             ],
