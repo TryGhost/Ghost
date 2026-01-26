@@ -37,42 +37,75 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
     const dataMap = new Map(data.map(item => [item.date, item]));
 
     const filledData: {date: string; signups: number; cancellations: number}[] = [];
-    const currentDate = moment(startDate);
-    const endMoment = moment(endDate);
+    const seenKeys = new Set<string>();
 
-    while (currentDate.isSameOrBefore(endMoment)) {
-        let dateKey: string;
-        let increment: moment.unitOfTime.DurationConstructor;
+    // For monthly/weekly strategies, iterate by period boundaries, not raw dates
+    // This ensures we include all periods that overlap with the date range
+    if (strategy === 'monthly') {
+        // Start from the first day of the start month
+        const currentPeriod = moment(startDate).startOf('month');
+        // End at the first day of the end month (inclusive)
+        const endPeriod = moment(endDate).startOf('month');
 
-        switch (strategy) {
-        case 'weekly':
-            // Use clone() to avoid mutating currentDate when computing the period key
-            dateKey = currentDate.clone().startOf('week').format('YYYY-MM-DD');
-            increment = 'week';
-            break;
-        case 'monthly':
-            // Use clone() to avoid mutating currentDate when computing the period key
-            dateKey = currentDate.clone().startOf('month').format('YYYY-MM-DD');
-            increment = 'month';
-            break;
-        default:
-            dateKey = currentDate.format('YYYY-MM-DD');
-            increment = 'day';
+        while (currentPeriod.isSameOrBefore(endPeriod)) {
+            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            if (!seenKeys.has(dateKey)) {
+                seenKeys.add(dateKey);
+                const existingData = dataMap.get(dateKey);
+                if (existingData) {
+                    filledData.push(existingData);
+                } else {
+                    filledData.push({
+                        date: dateKey,
+                        signups: 0,
+                        cancellations: 0
+                    });
+                }
+            }
+            currentPeriod.add(1, 'month');
         }
+    } else if (strategy === 'weekly') {
+        // Start from the first day of the start week
+        const currentPeriod = moment(startDate).startOf('week');
+        // End at the first day of the end week (inclusive)
+        const endPeriod = moment(endDate).startOf('week');
 
-        const existingData = dataMap.get(dateKey);
-        if (existingData) {
-            filledData.push(existingData);
-        } else {
-            filledData.push({
-                date: dateKey,
-                signups: 0,
-                cancellations: 0
-            });
+        while (currentPeriod.isSameOrBefore(endPeriod)) {
+            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            if (!seenKeys.has(dateKey)) {
+                seenKeys.add(dateKey);
+                const existingData = dataMap.get(dateKey);
+                if (existingData) {
+                    filledData.push(existingData);
+                } else {
+                    filledData.push({
+                        date: dateKey,
+                        signups: 0,
+                        cancellations: 0
+                    });
+                }
+            }
+            currentPeriod.add(1, 'week');
         }
+    } else {
+        // Daily: iterate day by day
+        const currentDate = moment(startDate);
+        const endMoment = moment(endDate);
 
-        // Only mutate currentDate here for loop progression
-        currentDate.add(1, increment);
+        while (currentDate.isSameOrBefore(endMoment)) {
+            const dateKey = currentDate.format('YYYY-MM-DD');
+            const existingData = dataMap.get(dateKey);
+            if (existingData) {
+                filledData.push(existingData);
+            } else {
+                filledData.push({
+                    date: dateKey,
+                    signups: 0,
+                    cancellations: 0
+                });
+            }
+            currentDate.add(1, 'day');
+        }
     }
 
     return filledData;
@@ -249,6 +282,13 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         }
     } satisfies ChartConfig;
 
+    // Calculate totals for the footer legend
+    const totals = useMemo(() => {
+        const totalNew = paidChangeChartData.reduce((sum, item) => sum + item.new, 0);
+        const totalCancelled = paidChangeChartData.reduce((sum, item) => sum + Math.abs(item.cancelled), 0);
+        return {new: totalNew, cancelled: totalCancelled};
+    }, [paidChangeChartData]);
+
     if (isLoading || paidChangeChartData.length === 0) {
         return null;
     }
@@ -413,21 +453,27 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                         </Recharts.BarChart>
                     </ChartContainer>
                     <div className='mt-3 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
-                        <div className='flex items-center gap-1'>
+                        <div className='flex items-center gap-2'>
                             <span className='size-2 rounded-full opacity-50'
                                 style={{
                                     backgroundColor: paidChangeChartConfig.new.color
                                 }}
                             ></span>
-                    New
+                            <span>New</span>
+                            <span className='font-medium text-foreground'>
+                                {formatNumber(totals.new)}
+                            </span>
                         </div>
-                        <div className='flex items-center gap-1'>
+                        <div className='flex items-center gap-2'>
                             <span className='size-2 rounded-full opacity-50'
                                 style={{
                                     backgroundColor: paidChangeChartConfig.cancelled.color
                                 }}
                             ></span>
-                    Cancelled
+                            <span>Cancelled</span>
+                            <span className='font-medium text-foreground'>
+                                {formatNumber(totals.cancelled)}
+                            </span>
                         </div>
                     </div>
                 </div>

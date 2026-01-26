@@ -73,9 +73,37 @@ describe('PaidMembersChangeChart Component', () => {
         expect(screen.getByText('Paid members change')).toBeInTheDocument();
         expect(screen.getByText(/New and cancelled paid subscriptions/)).toBeInTheDocument();
 
-        // Check that legend items are present
+        // Check that legend items are present with totals
         expect(screen.getByText('New')).toBeInTheDocument();
         expect(screen.getByText('Cancelled')).toBeInTheDocument();
+    });
+
+    it('displays totals in the footer legend', () => {
+        const mockMemberData = getMockMemberData();
+        const mockSubscriptionData = getMockSubscriptionData();
+
+        render(
+            <PaidMembersChangeChart
+                isLoading={false}
+                memberData={mockMemberData}
+                range={30}
+                subscriptionData={mockSubscriptionData}
+            />
+        );
+
+        // Check that the footer structure exists with total values
+        // The footer contains "New {total}" and "Cancelled {total}" sections
+        const footer = screen.getByTestId('paid-members-change-card').querySelector('.mt-3.flex.items-center.justify-center');
+        expect(footer).toBeInTheDocument();
+
+        // Verify the footer contains both labels
+        expect(screen.getByText('New')).toBeInTheDocument();
+        expect(screen.getByText('Cancelled')).toBeInTheDocument();
+
+        // The totals should be displayed next to the labels in font-medium text-foreground spans
+        // Due to mocking, the exact values depend on the date range matching, but the structure should exist
+        const totalElements = footer?.querySelectorAll('.font-medium.text-foreground');
+        expect(totalElements?.length).toBe(2); // One for "New" total, one for "Cancelled" total
     });
 
     it('renders with member data when subscription data is not available', () => {
