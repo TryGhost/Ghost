@@ -2,12 +2,13 @@ import * as assert from 'assert/strict';
 import {
     cn,
     debounce,
-    kebabToPascalCase, 
-    formatQueryDate, 
-    formatDisplayDate, 
+    kebabToPascalCase,
+    formatQueryDate,
+    formatDisplayDate,
     formatNumber,
     formatDuration,
-    formatPercentage
+    formatPercentage,
+    getMemberInitials
 } from '@/lib/utils';
 import moment from 'moment-timezone';
 import {vi} from 'vitest';
@@ -258,6 +259,28 @@ describe('utils', function () {
 
             formatted = formatPercentage(100);
             assert.equal(formatted, '10,000%');
+        });
+    });
+
+    describe('getMemberInitials function', function () {
+        it('returns initials from first and last name', function () {
+            const initials = getMemberInitials({name: 'John Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns initials from first and last word for names with middle name', function () {
+            const initials = getMemberInitials({name: 'John Michael Doe'});
+            assert.equal(initials, 'JD');
+        });
+
+        it('returns first two characters for single word names', function () {
+            const initials = getMemberInitials({name: 'John'});
+            assert.equal(initials, 'JO');
+        });
+
+        it('handles empty name by using fallback', function () {
+            const initials = getMemberInitials({name: ''});
+            assert.equal(initials, 'UM'); // "Unknown Member" -> "UM"
         });
     });
 }); 
