@@ -50,7 +50,6 @@ const PRIVATE_FEATURES = [
     'tagsX',
     'emailUniqueid',
     'welcomeEmails',
-    'adminForward',
     'themeTranslation',
     'commentModeration',
     'commentPermalinks',
