@@ -75,49 +75,54 @@ const LookAndFeel: React.FC<{
             label='Show portal button'
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
-        <Select
-            options={portalButtonOptions}
-            selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
-            title='Button style'
-            onSelect={option => updateSetting('portal_button_style', option?.value || null)}
-        />
-        {portalButtonStyle?.toString()?.includes('icon') &&
-            <div className='flex flex-col gap-2'>
-                <Heading level={6} grey>Icon</Heading>
-                <div className='flex justify-between'>
+        
+        {portalButton && (
+            <>
+                <Select
+                    options={portalButtonOptions}
+                    selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
+                    title='Button style'
+                    onSelect={option => updateSetting('portal_button_style', option?.value || null)}
+                />
+                {portalButtonStyle?.toString()?.includes('icon') &&
+                    <div className='flex flex-col gap-2'>
+                        <Heading level={6} grey>Icon</Heading>
+                        <div className='flex justify-between'>
 
-                    {defaultButtonIcons.map(iconConfig => (
-                        <button key={iconConfig.value} className={clsx('border p-3', currentIcon === iconConfig.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', iconConfig.value)}>
-                            <Icon className={`size-5 ${currentIcon === iconConfig.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} name={iconConfig.icon} />
-                        </button>
-                    ))}
-                    <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
-                        <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                            height='46px'
-                            id='test'
-                            imageClassName='cursor-pointer'
-                            imageURL={uploadedIcon}
-                            width='46px'
-                            deleteButtonUnstyled
-                            onDelete={handleImageDelete}
-                            onImageClick={() => uploadedIcon && updateSetting('portal_button_icon', uploadedIcon)}
-                            onUpload={handleImageUpload}
-                        >
-                            <Icon className='dark:text-white' name='upload' size='md' />
-                        </ImageUpload>
+                            {defaultButtonIcons.map(iconConfig => (
+                                <button key={iconConfig.value} className={clsx('border p-3', currentIcon === iconConfig.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', iconConfig.value)}>
+                                    <Icon className={`size-5 ${currentIcon === iconConfig.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} name={iconConfig.icon} />
+                                </button>
+                            ))}
+                            <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
+                                <ImageUpload
+                                    deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                                    deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                                    height='46px'
+                                    id='test'
+                                    imageClassName='cursor-pointer'
+                                    imageURL={uploadedIcon}
+                                    width='46px'
+                                    deleteButtonUnstyled
+                                    onDelete={handleImageDelete}
+                                    onImageClick={() => uploadedIcon && updateSetting('portal_button_icon', uploadedIcon)}
+                                    onUpload={handleImageUpload}
+                                >
+                                    <Icon className='dark:text-white' name='upload' size='md' />
+                                </ImageUpload>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        }
-        {portalButtonStyle?.toString()?.includes('text') &&
-            <TextField
-                title='Signup button text'
-                value={portalButtonSignupText as string}
-                onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
-            />
-        }
+                }
+                {portalButtonStyle?.toString()?.includes('text') &&
+                    <TextField
+                        title='Signup button text'
+                        value={portalButtonSignupText as string}
+                        onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
+                    />
+                }
+            </>
+        )}
     </Form></div>;
 };
 
