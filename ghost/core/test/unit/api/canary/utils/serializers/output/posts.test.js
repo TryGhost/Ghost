@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
@@ -48,7 +47,7 @@ describe('Unit: endpoints/utils/serializers/output/posts', function () {
 
         await serializers.output.posts.all(ctrlResponse, apiConfig, frame);
 
-        mappers.posts.callCount.should.equal(2);
-        mappers.posts.getCall(0).args.should.eql([ctrlResponse.data[0], frame, {tiers: []}]);
+        sinon.assert.callCount(mappers.posts, 2);
+        sinon.assert.calledWithExactly(mappers.posts.firstCall, ctrlResponse.data[0], frame, {tiers: []});
     });
 });
