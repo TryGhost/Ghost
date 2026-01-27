@@ -1108,7 +1108,9 @@ module.exports = class MemberRepository {
                 canceled: stripeSubscriptionData.cancel_at_period_end,
                 discount: stripeSubscriptionData.discount
             }),
-            offer_id: offerId
+            offer_id: offerId,
+            discount_start: stripeSubscriptionData.discount?.start ? new Date(stripeSubscriptionData.discount.start * 1000) : null,
+            discount_end: stripeSubscriptionData.discount?.end ? new Date(stripeSubscriptionData.discount.end * 1000) : null
         };
 
         const getStatus = (modelToCheck) => {
