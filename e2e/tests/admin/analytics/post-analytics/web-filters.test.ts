@@ -124,13 +124,26 @@ test.describe('Ghost Admin - Post Analytics Web Filters', () => {
             await expect(postAnalyticsPage.getActiveFilter('Source')).toBeHidden();
         });
 
-        // TODO: This is flaky on CI, so we're skipping it for now.
-        test.skip('click on location row adds location filter', async ({page, browser, baseURL}) => {
-            // Generate traffic to the post
-            await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+        test('click on location row adds location filter', async ({page, browser, baseURL}) => {
+            // Generate traffic to the post using a browser context configured for analytics tracking
+            // - timezoneId ensures consistent location data from timezone mapping
+            // - addInitScript sets __GHOST_SYNTHETIC_MONITORING__ to bypass webdriver detection
+            //   in the Ghost stats script (which normally skips tracking when navigator.webdriver is true)
+            const context = await browser.newContext({
+                baseURL,
+                timezoneId: 'America/New_York'
+            });
+            await context.addInitScript(() => {
+                (window as Window & { __GHOST_SYNTHETIC_MONITORING__?: boolean }).__GHOST_SYNTHETIC_MONITORING__ = true;
+            });
+            const publicPage = await context.newPage();
+            try {
                 const postPage = new PublicPage(publicPage);
                 await postPage.goto(`/${postSlug}/`);
-            });
+            } finally {
+                await publicPage.close();
+                await context.close();
+            }
 
             const postAnalyticsPage = new PostAnalyticsWebTrafficPage(page);
             await postAnalyticsPage.gotoForPost(postId);
