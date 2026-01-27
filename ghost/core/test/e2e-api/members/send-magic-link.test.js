@@ -463,6 +463,26 @@ describe('sendMagicLink', function () {
                         assert.match(body.otc_ref, /^[a-f0-9-]{36}$/);
                     });
             });
+
+            it('silently rejects signin for non-existent member with blocked domain (prevents enumeration)', async function () {
+                settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
+                const email = 'nonexistent@blocked-domain-setting.com';
+
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email,
+                        emailType: 'signin'
+                    })
+                    .expectEmptyBody()
+                    .expectStatus(201);
+
+                // Verify no email was sent (prevents enumeration)
+                // sentEmail will throw if no email was sent
+                assert.throws(() => {
+                    mockManager.assert.sentEmail({to: email});
+                }, /Expected at least 1 emails sent/);
+            });
         });
 
         it('blocks changing email to a blocked domain', async function () {
