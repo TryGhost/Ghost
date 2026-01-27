@@ -123,8 +123,8 @@ describe('{{asset}} helper', function () {
         it('uses file-based hash for ghost.css when it exists', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            // ghost.css exists in static public path, so it gets a 16-char hex hash
-            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+            // ghost.css exists in static public path, so it gets a 16-char base64url hash
+            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
 
         it('falls back to global hash for non-existent public assets', function () {
