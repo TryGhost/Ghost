@@ -240,8 +240,11 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
+
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
-            returnUrl: req.body.returnUrl
+            returnUrl: req.body.returnUrl,
+            ...(configurationId && {configurationId})
         });
         const sessionInfo = {
             url: session.url

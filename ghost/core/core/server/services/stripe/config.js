@@ -65,6 +65,7 @@ module.exports = {
         const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
 
         const urls = getStripeUrlConfig();
+        const siteUrl = urlUtils.getSiteUrl();
 
         return {
             ...keys,
@@ -74,7 +75,8 @@ module.exports = {
                 return labs.isSet('stripeAutomaticTax');
             },
             webhookSecret: webhookSecret,
-            webhookHandlerUrl: webhookHandlerUrl.href
+            webhookHandlerUrl: webhookHandlerUrl.href,
+            siteUrl
         };
     }
 };
