@@ -7,14 +7,17 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 import TestEmailDropdown from './test-email-dropdown';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useAddAutomatedEmail, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../../../components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 interface WelcomeEmailModalProps {
     emailType: 'free' | 'paid';
-    automatedEmail: AutomatedEmail;
+    automatedEmail: AutomatedEmail | null;
+    defaultSubject?: string;
+    defaultContent?: string;
+    onClose?: () => void;
 }
 
 const isEmptyLexical = (lexical: string | null | undefined): boolean => {
@@ -42,23 +45,45 @@ const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     }
 };
 
-const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
+const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail, defaultSubject, defaultContent, onClose}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const handleError = useHandleError();
     const {settings} = useGlobalData();
     const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
 
+    // Track the created email so we can enable the Test button after creation
+    const [createdEmail, setCreatedEmail] = useState<AutomatedEmail | null>(null);
+
+    // Use created email if we just created one, otherwise use the prop
+    const currentEmail = createdEmail || automatedEmail;
+
     const {formState, saveState, updateForm, handleSave, okProps, errors, validate} = useForm({
         initialState: {
-            subject: automatedEmail?.subject || 'Welcome',
-            lexical: automatedEmail?.lexical || ''
+            subject: automatedEmail?.subject || defaultSubject || 'Welcome',
+            lexical: automatedEmail?.lexical || defaultContent || ''
         },
         savingDelay: 500,
         onSave: async (state) => {
-            await editAutomatedEmail({...automatedEmail, ...state});
+            if (!currentEmail) {
+                // Create new entry with status active
+                const response = await addAutomatedEmail({
+                    name: emailType === 'free' ? 'Welcome Email (Free)' : 'Welcome Email (Paid)',
+                    slug: `member-welcome-email-${emailType}`,
+                    subject: state.subject,
+                    status: 'active',
+                    lexical: state.lexical
+                });
+                // Store the created email so we can use its ID for the Test button
+                if (response?.automated_emails?.[0]) {
+                    setCreatedEmail(response.automated_emails[0]);
+                }
+            } else {
+                await editAutomatedEmail({...currentEmail, ...state});
+            }
         },
         onSaveError: handleError,
         onValidate: (state) => {
@@ -118,6 +143,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         <Modal
             afterClose={() => {
                 updateRoute('memberemails');
+                onClose?.();
             }}
             dirty={saveState === 'unsaved'}
             footer={false}
@@ -134,12 +160,13 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 <Button
                                     className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
                                     color="clear"
+                                    disabled={!currentEmail}
                                     icon='send'
                                     label="Test"
                                     onClick={() => setShowTestDropdown(!showTestDropdown)}
                                 />
-                                {showTestDropdown && (
-                                    <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                {showTestDropdown && currentEmail && (
+                                    <TestEmailDropdown automatedEmailId={currentEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
                                 )}
                             </div>
                             <Button

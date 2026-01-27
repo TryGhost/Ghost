@@ -1,11 +1,11 @@
 import FakeLogo from '../../../assets/images/explore-default-logo.png';
 import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -67,9 +67,11 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
-    const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const handleError = useHandleError();
+
+    // Counter to force toggle re-render when create modal closes without saving
+    const [toggleResetKey, setToggleResetKey] = useState(0);
 
     const automatedEmails = automatedEmailsData?.automated_emails || [];
 
@@ -83,22 +85,24 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         const slug = `member-welcome-email-${emailType}`;
         const existing = automatedEmails.find(email => email.slug === slug);
 
-        const defaultSubject = emailType === 'free'
-            ? `Welcome to ${siteTitle || 'our site'}`
-            : 'Welcome to your paid subscription';
-
         try {
             if (!existing) {
-                // First toggle ON - create with defaults
+                // First toggle ON - open modal to let user review/edit before creating
+                const defaultSubject = emailType === 'free'
+                    ? `Welcome to ${siteTitle || 'our site'}`
+                    : 'Welcome to your paid subscription';
                 const defaultContent = emailType === 'free'
                     ? DEFAULT_FREE_LEXICAL_CONTENT
                     : DEFAULT_PAID_LEXICAL_CONTENT;
-                await addAutomatedEmail({
-                    name: emailType === 'free' ? 'Welcome Email (Free)' : 'Welcome Email (Paid)',
-                    slug: slug,
-                    subject: defaultSubject,
-                    status: 'active',
-                    lexical: defaultContent
+                NiceModal.show(WelcomeEmailModal, {
+                    emailType,
+                    automatedEmail: null,
+                    defaultSubject,
+                    defaultContent,
+                    onClose: () => {
+                        // Modal closed - force toggle to re-render with correct state
+                        setToggleResetKey(k => k + 1);
+                    }
                 });
             } else if (existing.status === 'active') {
                 // Toggle OFF
@@ -123,7 +127,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent className="!gap-y-0" columns={1}>
                 <Separator />
                 <Toggle
-                    key={`free-${isLoading ? 'loading' : freeWelcomeEmail?.status ?? 'none'}`}
+                    key={`free-${isLoading ? 'loading' : freeWelcomeEmail?.status ?? 'none'}-${toggleResetKey}`}
                     checked={Boolean(freeWelcomeEmailEnabled)}
                     containerClasses='items-center'
                     direction='rtl'
@@ -144,7 +148,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <>
                         <Separator />
                         <Toggle
-                            key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
+                            key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}-${toggleResetKey}`}
                             checked={Boolean(paidWelcomeEmailEnabled)}
                             containerClasses='items-center'
                             direction='rtl'
