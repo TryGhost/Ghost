@@ -1,3 +1,4 @@
+import CardContext from '../context/CardContext';
 import React from 'react';
 import {
     $createNodeSelection,
@@ -8,7 +9,6 @@ import {
     KEY_ENTER_COMMAND
 } from 'lexical';
 import {mergeRegister} from '@lexical/utils';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 function KoenigNestedEditorPlugin({
@@ -19,15 +19,15 @@ function KoenigNestedEditorPlugin({
     defaultKoenigEnterBehaviour = false
 }) {
     const [editor] = useLexicalComposerContext();
-    const {selectedCardKey, isEditingCard} = useKoenigSelectedCardContext();
+    const {isEditing: isParentCardEditing, nodeKey: parentCardNodeKey} = React.useContext(CardContext);
 
     // using state here because this component can get re-rendered after the
     // editor's editable state changes so we need to re-focus on re-render
     const [shouldFocus, setShouldFocus] = React.useState(autoFocus);
 
     React.useEffect(() => {
-        // prevent nested editor getting focus when undoing card deletion
-        if (!isEditingCard) {
+        // prevent nested editor getting focus when its card isn't being edited
+        if (!isParentCardEditing) {
             return;
         }
 
@@ -36,7 +36,7 @@ function KoenigNestedEditorPlugin({
                 editor.getRootElement().focus({preventScroll: true});
             });
         }
-    }, [shouldFocus, editor, isEditingCard]);
+    }, [shouldFocus, editor, isParentCardEditing]);
 
     React.useEffect(() => {
         return mergeRegister(
@@ -107,7 +107,7 @@ function KoenigNestedEditorPlugin({
                             editor._parentEditor.update(() => {
                                 if (!$getSelection()) {
                                     const selection = $createNodeSelection();
-                                    selection.add(selectedCardKey);
+                                    selection.add(parentCardNodeKey);
                                     $setSelection(selection);
                                 }
                             }, {tag: 'history-merge'}); // don't include an undo history entry for this change of selection
@@ -121,7 +121,7 @@ function KoenigNestedEditorPlugin({
                 COMMAND_PRIORITY_LOW
             )
         );
-    }, [editor, autoFocus, focusNext, selectedCardKey, hasSettingsPanel]);
+    }, [editor, autoFocus, focusNext, parentCardNodeKey, hasSettingsPanel, defaultKoenigEnterBehaviour]);
 
     return null;
 }

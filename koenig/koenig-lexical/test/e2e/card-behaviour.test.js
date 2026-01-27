@@ -1,4 +1,4 @@
-import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
+import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, getScrollPosition, html, initialize, insertCard, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Card behaviour', async () => {
@@ -1896,6 +1896,106 @@ test.describe('Card behaviour', async () => {
                     <p><br /></p>
                 `, {ignoreCardContents: false});
             });
+        });
+
+        test('entering edit mode on a card does not scroll when other cards have nested editors', async function () {
+            // Build content with a CTA card at the top, many paragraphs to
+            // create scroll distance, and another CTA card at the bottom.
+            // Cards are pre-loaded so they haven't been through an edit cycle
+            // (their nested editor autoFocus initial state stays true).
+            // Before the fix, the global isEditingCard flag caused ALL nested
+            // editors with shouldFocus=true to fire their focus effect when any
+            // card entered edit mode, causing a scroll jump as the nested editor
+            // further down the page transiently grabbed focus.
+            const ctaCard = {
+                type: 'call-to-action',
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Click me',
+                buttonTextColor: '#000000',
+                buttonUrl: '',
+                hasImage: false,
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                layout: 'minimal',
+                showButton: true,
+                showDividers: true,
+                textValue: '<p><span style="white-space: pre-wrap;">CTA content</span></p>'
+            };
+
+            const children = [{...ctaCard}];
+
+            for (let i = 0; i < 30; i++) {
+                children.push({
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: `Line ${i + 1} of filler content to create scroll distance`,
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                });
+            }
+
+            children.push({...ctaCard});
+
+            const contentParam = encodeURIComponent(JSON.stringify({
+                root: {
+                    children,
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            await initialize({page, uri: `/#/?content=${contentParam}`});
+
+            // Select the first card (already in viewport at the top)
+            const firstCard = page.locator('[data-kg-card="call-to-action"]').first();
+            await firstCard.click();
+            await expect(firstCard).toHaveAttribute('data-kg-card-selected', 'true');
+
+            // Scroll position should be at the top
+            const scrollBefore = await getScrollPosition(page);
+            expect(scrollBefore).toBe(0);
+
+            // Start monitoring for any scroll movement
+            await page.evaluate(() => {
+                const container = document.querySelector('.h-full.overflow-auto');
+                window._scrollStartPosition = container.scrollTop;
+                window._maxScrollDeviation = 0;
+                window._scrollHandler = () => {
+                    const deviation = Math.abs(container.scrollTop - window._scrollStartPosition);
+                    if (deviation > window._maxScrollDeviation) {
+                        window._maxScrollDeviation = deviation;
+                    }
+                };
+                container.addEventListener('scroll', window._scrollHandler);
+            });
+
+            // Enter edit mode on the first card — the second card's nested
+            // editor is far below the viewport so any transient focus grab
+            // would cause a large downward scroll jump
+            await firstCard.click();
+            await expect(firstCard).toHaveAttribute('data-kg-card-editing', 'true');
+
+            // Check no scroll movement occurred (even transiently)
+            const maxDeviation = await page.evaluate(() => {
+                const container = document.querySelector('.h-full.overflow-auto');
+                container.removeEventListener('scroll', window._scrollHandler);
+                return window._maxScrollDeviation;
+            });
+
+            expect(maxDeviation).toBe(0);
         });
     });
 });
