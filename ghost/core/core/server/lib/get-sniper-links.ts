@@ -31,7 +31,6 @@ import type {MxRecord} from 'node:dns';
 import * as dns from 'node:dns/promises';
 import {parseEmailAddress} from '@tryghost/parse-email-address';
 import logging from '@tryghost/logging';
-import {constant} from 'lodash';
 
 type GetLinkFn = (options: Readonly<{recipient: string; sender: string}>) => string;
 
@@ -69,22 +68,22 @@ const PROVIDERS: ReadonlyArray<Provider> = [
                 sender
             )})+in%3Aanywhere+newer_than%3A1h`
         ),
-        getAndroidLink: constant(getAndroidIntentUrl('com.google.android.gm', 'https://mail.google.com/'))
+        getAndroidLink: () => getAndroidIntentUrl('com.google.android.gm', 'https://mail.google.com/')
     },
     {
         domains: ['yahoo.com', 'myyahoo.com', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.it', 'ymail.com', 'rocketmail.com'],
         getDesktopLink: ({sender}) => `https://mail.yahoo.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
-        getAndroidLink: constant(getAndroidIntentUrl('com.yahoo.mobile.client.android.mail', 'https://mail.yahoo.com/'))
+        getAndroidLink: () => getAndroidIntentUrl('com.yahoo.mobile.client.android.mail', 'https://mail.yahoo.com/')
     },
     {
         domains: ['outlook.com', 'live.com', 'live.de', 'hotmail.com', 'hotmail.co.uk', 'hotmail.de', 'msn.com', 'passport.com', 'passport.net'],
         getDesktopLink: ({recipient}) => buildUrl('https://outlook.live.com/mail/', 'login_hint', recipient),
-        getAndroidLink: constant(getAndroidIntentUrl('com.microsoft.office.outlook', 'https://outlook.live.com/'))
+        getAndroidLink: () => getAndroidIntentUrl('com.microsoft.office.outlook', 'https://outlook.live.com/')
     },
     {
         domains: ['proton.me', 'pm.me', 'protonmail.com', 'protonmail.ch'],
         getDesktopLink: ({sender}) => `https://mail.proton.me/u/0/all-mail#from=${encodeURIComponent(sender)}`,
-        getAndroidLink: constant(getAndroidIntentUrl('ch.protonmail.android', 'https://mail.proton.me/'))
+        getAndroidLink: () => getAndroidIntentUrl('ch.protonmail.android', 'https://mail.proton.me/')
     },
     {
         domains: ['icloud.com', 'me.com', 'mac.com'],
@@ -93,18 +92,18 @@ const PROVIDERS: ReadonlyArray<Provider> = [
     },
     {
         domains: ['hey.com'],
-        getDesktopLink: constant('https://app.hey.com/topics/everything'),
-        getAndroidLink: constant(getAndroidIntentUrl('com.basecamp.hey', 'https://app.hey.com/'))
+        getDesktopLink: () => 'https://app.hey.com/topics/everything',
+        getAndroidLink: () => getAndroidIntentUrl('com.basecamp.hey', 'https://app.hey.com/')
     },
     {
         domains: ['aol.com'],
         getDesktopLink: ({sender}) => `https://mail.aol.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
-        getAndroidLink: constant(getAndroidIntentUrl('com.aol.mobile.aolapp', 'https://mail.aol.com/'))
+        getAndroidLink: () => getAndroidIntentUrl('com.aol.mobile.aolapp', 'https://mail.aol.com/')
     },
     {
         domains: ['mail.ru'],
         getDesktopLink: ({sender}) => buildUrl('https://e.mail.ru/search/', 'q_from', sender),
-        getAndroidLink: constant(getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/'))
+        getAndroidLink: () => getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/')
     }
 ];
 
