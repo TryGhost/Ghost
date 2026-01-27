@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
@@ -31,8 +30,7 @@ describe('Unit: endpoints/utils/serializers/output/tags', function () {
 
         serializers.output.default.all(ctrlResponse, apiConfig, frame);
 
-        mappers.tags.callCount.should.equal(1);
-        mappers.tags.getCall(0).args.should.eql([ctrlResponse, frame]);
+        sinon.assert.calledOnceWithExactly(mappers.tags, ctrlResponse, frame);
     });
 
     it('calls the mapper with multiple tags', function () {
@@ -53,7 +51,7 @@ describe('Unit: endpoints/utils/serializers/output/tags', function () {
 
         serializers.output.default.all(ctrlResponse, apiConfig, frame);
 
-        mappers.tags.callCount.should.equal(2);
-        mappers.tags.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
+        sinon.assert.callCount(mappers.tags, 2);
+        sinon.assert.calledWithExactly(mappers.tags.getCall(0), ctrlResponse.data[0], frame);
     });
 });

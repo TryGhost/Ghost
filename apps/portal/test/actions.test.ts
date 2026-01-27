@@ -1,5 +1,5 @@
 import ActionHandler from '../src/actions';
-import {vi} from 'vitest';
+import {vi, type MockInstance} from 'vitest';
 
 describe('updateProfile action', () => {
     test('trims whitespace from name before saving', async () => {
@@ -89,14 +89,15 @@ describe('startSigninOTCFromCustomForm action', () => {
 });
 
 describe('verifyOTC action', () => {
-    let originalLocation;
-    let mockLocationAssign;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let originalLocation: any;
+    let mockLocationAssign: MockInstance;
 
     beforeEach(() => {
         mockLocationAssign = vi.fn();
         originalLocation = window.location;
-        delete window.location;
-        window.location = {...originalLocation, assign: mockLocationAssign};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        window.location = {assign: mockLocationAssign} as any;
     });
 
     afterEach(() => {
@@ -116,6 +117,7 @@ describe('verifyOTC action', () => {
         await ActionHandler({
             action: 'verifyOTC',
             data: {otc: '123456', otcRef: 'ref-123'},
+            state: {},
             api: mockApi
         });
 
@@ -145,6 +147,7 @@ describe('verifyOTC action', () => {
         const result = await ActionHandler({
             action: 'verifyOTC',
             data: {otc: '000000', otcRef: 'ref-123'},
+            state: {},
             api: mockApi
         });
 
@@ -164,6 +167,7 @@ describe('verifyOTC action', () => {
         const result = await ActionHandler({
             action: 'verifyOTC',
             data: {otc: '123456', otcRef: 'ref-123'},
+            state: {},
             api: mockApi
         });
 
@@ -189,6 +193,7 @@ describe('verifyOTC action', () => {
                 otcRef: 'ref-123',
                 redirect: 'https://custom-redirect.com'
             },
+            state: {},
             api: mockApi
         });
 
@@ -212,6 +217,7 @@ describe('verifyOTC action', () => {
             const result = await ActionHandler({
                 action: 'verifyOTC',
                 data: {otc: '123456', otcRef: 'ref-123'},
+                state: {},
                 api: mockApi
             });
 

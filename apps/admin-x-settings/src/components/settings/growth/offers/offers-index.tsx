@@ -104,12 +104,11 @@ export const OffersIndexModal = () => {
     const {updateRoute} = useRouting();
     const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const signupOffers = allOffers.filter(offer => offer.redemption_type === 'signup');
-    const activeOffers = signupOffers.filter((offer) => {
+    const activeOffers = allOffers.filter((offer) => {
         const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
         return (offer.status === 'active' && offerTier && offerTier.active === true);
     });
-    const archivedOffers = signupOffers.filter((offer) => {
+    const archivedOffers = allOffers.filter((offer) => {
         const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
         return (offer.status === 'archived' || (offerTier && offerTier.active === false));
     });
@@ -133,7 +132,7 @@ export const OffersIndexModal = () => {
         updateRoute(`offers/edit/${id}`);
     };
 
-    const sortedOffers = signupOffers
+    const sortedOffers = allOffers
         .sort((offer1, offer2) => {
             const multiplier = sortDirection === 'desc' ? -1 : 1;
             switch (sortOption) {
