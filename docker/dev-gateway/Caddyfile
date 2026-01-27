@@ -77,6 +77,15 @@
         }
     }
 
+    # Strip subdir prefix from asset requests loaded relative to the Ghost URL
+    # e.g., /blog/ghost/assets/* → /ghost/assets/* so the handler below matches
+    # This is a no-op when SUBDIR is empty (no subdirectory configured)
+    @subdir_ghost_assets {
+        path {$SUBDIR}/ghost/assets/*
+        not path /ghost/assets/*
+    }
+    uri @subdir_ghost_assets strip_prefix {$SUBDIR}
+
     # Public app dev server assets - must come BEFORE general /ghost/* handler
     # Ghost is configured to load these from /ghost/assets/* via compose.dev.yaml
     handle /ghost/assets/* {
@@ -151,7 +160,8 @@
         # Everything else under /ghost/assets/* goes to admin dev server
         handle {
             # Re-add the prefix we stripped for admin dev server
-            rewrite * /ghost/assets{path}
+            # Include SUBDIR so Vite's middleware matches its configured base path
+            rewrite * {$SUBDIR}/ghost/assets{path}
             reverse_proxy {env.ADMIN_DEV_SERVER} {
                 header_up Host {http.reverse_proxy.upstream.hostport}
                 header_up X-Forwarded-Host {host}
