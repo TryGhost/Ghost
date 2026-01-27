@@ -205,7 +205,7 @@ describe('getAssetUrl', function () {
             const content = fs.readFileSync(fullPath);
             const expectedHash = crypto.createHash('sha256')
                 .update(content)
-                .digest('hex')
+                .digest('base64url')
                 .substring(0, 16);
 
             const testUrl = getAssetUrl(testFile);
@@ -239,7 +239,7 @@ describe('getAssetUrl', function () {
             // Public assets use file-based hash when the file exists and config is enabled
             const testUrl = getAssetUrl('public/ghost.css');
             // ghost.css exists in the static public path, so it should have a file-based hash
-            testUrl.should.match(/^\/public\/ghost\.css\?v=[a-f0-9]{16}$/);
+            testUrl.should.match(/^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
 
         it('should fallback to global hash for non-existent public assets', function () {
@@ -259,8 +259,8 @@ describe('getAssetUrl', function () {
             const jsUrl = getAssetUrl('built/casper.js');
 
             // Extract hashes
-            const cssHash = cssUrl.match(/\?v=([a-f0-9]+)/)[1];
-            const jsHash = jsUrl.match(/\?v=([a-f0-9]+)/)[1];
+            const cssHash = cssUrl.match(/\?v=([A-Za-z0-9_-]+)/)[1];
+            const jsHash = jsUrl.match(/\?v=([A-Za-z0-9_-]+)/)[1];
 
             // Hashes should be different for different files
             cssHash.should.not.equal(jsHash);

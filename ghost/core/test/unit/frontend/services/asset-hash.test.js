@@ -19,11 +19,11 @@ describe('Asset Hash Service', function () {
             const testFilePath = path.join(fixturesPath, 'package.json');
             const hash = assetHash.getHashForFile(testFilePath);
 
-            // Hash should be a 16-character hex string (first 16 chars of SHA256)
+            // Hash should be a 16-character base64url string (first 16 chars of SHA256)
             should.exist(hash);
             hash.should.be.a.String();
             hash.length.should.equal(16);
-            hash.should.match(/^[a-f0-9]{16}$/);
+            hash.should.match(/^[A-Za-z0-9_-]{16}$/);
         });
 
         it('should return the same hash for the same file content', function () {
@@ -113,7 +113,7 @@ describe('Asset Hash Service', function () {
             const knownContent = 'test content for hashing';
             const expectedHash = crypto.createHash('sha256')
                 .update(knownContent)
-                .digest('hex')
+                .digest('base64url')
                 .substring(0, 16);
 
             // Stub fs to return known content

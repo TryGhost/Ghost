@@ -8,7 +8,8 @@ const fs = require('fs');
  * Hashes are cached in memory and invalidated when file mtime changes.
  */
 
-// Hash length: 16 hex characters (64 bits) for low collision probability
+// Hash length: 16 base64url characters (96 bits) for low collision probability
+// base64url encoding provides more entropy per character than hex (64 vs 16 chars)
 // This is longer than the legacy 10-char global hash, making it easy to distinguish
 const HASH_LENGTH = 16;
 
@@ -35,7 +36,7 @@ function getHashForFile(filePath) {
         const content = fs.readFileSync(filePath);
         const hash = crypto.createHash('sha256')
             .update(content)
-            .digest('hex')
+            .digest('base64url')
             .substring(0, HASH_LENGTH);
 
         // Cache the result
