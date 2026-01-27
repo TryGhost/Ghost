@@ -108,22 +108,22 @@ function getPublicAssetHash(assetPath) {
 
 /**
  * Prepare URL for an asset
- * @param {string|SafeString} path - the asset's path
+ * @param {string|SafeString} assetPath - the asset's path
  * @param {boolean} hasMinFile - flag for the existence of a minified version for the asset
  * @returns {string}
  */
-function getAssetUrl(path, hasMinFile) {
-    path = path instanceof SafeString ? path.string : path;
+function getAssetUrl(assetPath, hasMinFile) {
+    assetPath = assetPath instanceof SafeString ? assetPath.string : assetPath;
 
     // CASE: favicon - this is special path with its own functionality
-    if (path.match(/\/?favicon\.(ico|png)$/)) {
+    if (assetPath.match(/\/?favicon\.(ico|png)$/)) {
         // @TODO, resolve this - we should only be resolving subdirectory and extension.
         return getFaviconUrl();
     }
 
     // Determine asset type
-    const isPublicAsset = path.match(/^public\//);
-    const isThemeAsset = !isPublicAsset && !path.match(/^asset/);
+    const isPublicAsset = assetPath.match(/^public\//);
+    const isThemeAsset = !isPublicAsset && !assetPath.match(/^asset/);
 
     // CASE: Build the output URL
     // Add subdirectory...
@@ -136,14 +136,14 @@ function getAssetUrl(path, hasMinFile) {
 
     // replace ".foo" with ".min.foo" if configured
     if (hasMinFile && config.get('useMinFiles') !== false) {
-        path = path.replace(/\.([^.]*)$/, '.min.$1');
+        assetPath = assetPath.replace(/\.([^.]*)$/, '.min.$1');
     }
 
     // Add the path for the requested asset
-    output = urlUtils.urlJoin(output, path);
+    output = urlUtils.urlJoin(output, assetPath);
 
     // Get the appropriate hash for this asset (ignore URL anchor)
-    const hashPath = path.includes('#') ? path.slice(0, path.indexOf('#')) : path;
+    const hashPath = assetPath.includes('#') ? assetPath.slice(0, assetPath.indexOf('#')) : assetPath;
     let hash;
     // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
     if (config.get('caching:assets:contentBasedHash')) {
@@ -163,7 +163,7 @@ function getAssetUrl(path, hasMinFile) {
 
     // if url has # make sure the hash is at the right place
     let anchor;
-    if (path.match('#')) {
+    if (assetPath.match('#')) {
         const index = output.indexOf('#');
         anchor = output.substring(index);
         output = output.slice(0, index);
