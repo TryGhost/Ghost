@@ -199,7 +199,7 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData, labs} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
@@ -216,7 +216,8 @@ export default class App extends React.Component {
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success',
-                locale: i18nLanguage
+                locale: i18nLanguage,
+                labs: labs || {}
             };
 
             this.handleSignupQuery({site, pageQuery, member});
@@ -257,7 +258,7 @@ export default class App extends React.Component {
 
     /** Fetch state data from all available sources */
     async fetchData() {
-        const {site: apiSiteData, member, offers} = await this.fetchApiData();
+        const {site: apiSiteData, member, offers, labs} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
         const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
@@ -267,6 +268,7 @@ export default class App extends React.Component {
             member,
             offers,
             page,
+            labs,
             site: {
                 ...apiSiteData,
                 ...linkSiteData,
@@ -594,7 +596,7 @@ export default class App extends React.Component {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
-            const {site, member, offers} = await this.GhostApi.init();
+            const {site, member, offers, labs} = await this.GhostApi.init();
 
             const colorOverride = this.getColorOverride();
             if (colorOverride) {
@@ -603,7 +605,7 @@ export default class App extends React.Component {
 
             this.setupFirstPromoter({site, member});
             this.setupSentry({site});
-            return {site, member, offers};
+            return {site, member, offers, labs};
         } catch (e) {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
                 return {};

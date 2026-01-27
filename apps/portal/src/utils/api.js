@@ -655,6 +655,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let tiers = [];
         let settings = {};
         let offers = [];
+        let labs = {};
 
         try {
             [{settings}, {tiers}, {newsletters}] = await Promise.all([
@@ -662,6 +663,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 api.site.tiers(),
                 api.site.newsletters()
             ]);
+            if (settings.labs) {
+                labs = settings.labs;
+            }
             site = {
                 ...settings,
                 newsletters,
@@ -684,7 +688,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
         site = transformApiSiteData({site});
 
-        return {site, member, offers};
+        return {site, member, offers, labs};
     };
 
     return api;
