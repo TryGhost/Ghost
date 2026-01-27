@@ -175,35 +175,6 @@ test.describe('Html card', async () => {
         `);
     });
 
-    test('has no visibility icon in toolbar', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('/html');
-        await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
-        await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-        await page.keyboard.type('Testing');
-        await page.keyboard.press('Meta+Enter');
-
-        await expect(page.locator('[data-kg-card-toolbar="html"]')).toBeVisible();
-        await expect(page.locator('[data-kg-card-toolbar="html"] [data-testid="show-visibility"]')).not.toBeVisible();
-    });
-});
-
-test.describe('HTML card (contentVisibility flag)', async function () {
-    let page;
-
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
-    });
-
-    test.beforeEach(async () => {
-        await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
-    });
-
     test('has working visibility icon in toolbar', async function () {
         await focusEditor(page);
         await page.keyboard.type('/html');
@@ -213,6 +184,7 @@ test.describe('HTML card (contentVisibility flag)', async function () {
         await page.keyboard.type('Testing');
         await page.keyboard.press('Meta+Enter');
 
+        await expect(page.locator('[data-kg-card-toolbar="html"]')).toBeVisible();
         await expect(page.locator('[data-kg-card-toolbar="html"] [data-testid="show-visibility"]')).toBeVisible();
 
         await page.click('[data-testid="show-visibility"]');

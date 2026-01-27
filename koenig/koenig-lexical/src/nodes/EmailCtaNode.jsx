@@ -26,7 +26,7 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         postType: 'post',
         shortcut: '/email-cta',
         isHidden: ({config}) => {
-            return config?.feature?.contentVisibility && (config?.deprecated?.emailCta ?? true);
+            return config?.deprecated?.emailCta ?? true;
         }
     };
 

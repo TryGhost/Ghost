@@ -22,6 +22,7 @@ test.describe('Transistor Card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="transistor">
                 </div>
             </div>

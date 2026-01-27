@@ -17,7 +17,7 @@ export function renderHtmlNode(node, options = {}) {
     const textarea = document.createElement('textarea');
     textarea.value = wrappedHtml;
 
-    if (options.feature?.contentVisibility || node.visibility) {
+    if (node.visibility) {
         const renderOutput = {element: textarea, type: 'value'};
         return renderWithVisibility(renderOutput, node.visibility, options);
     }

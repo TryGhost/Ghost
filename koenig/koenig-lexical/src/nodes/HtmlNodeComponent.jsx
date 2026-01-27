@@ -21,8 +21,6 @@ export function HtmlNodeComponent({nodeKey, html}) {
 
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
-    const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
-
     const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const settingsTabs = [
@@ -91,18 +89,14 @@ export function HtmlNodeComponent({nodeKey, html}) {
                         label="Edit"
                         onClick={handleToolbarEdit}
                     />
-                    {isContentVisibilityEnabled && (
-                        <>
-                            <ToolbarMenuSeparator />
-                            <ToolbarMenuItem
-                                dataTestId="show-visibility"
-                                icon="visibility"
-                                isActive={showVisibilitySettings}
-                                label="Visibility"
-                                onClick={handleVisibilityToggle}
-                            />
-                        </>
-                    )}
+                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem
+                        dataTestId="show-visibility"
+                        icon="visibility"
+                        isActive={showVisibilitySettings}
+                        label="Visibility"
+                        onClick={handleVisibilityToggle}
+                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -115,7 +109,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isContentVisibilityEnabled && showVisibilitySettings && cardContext.isSelected && (
+            {showVisibilitySettings && cardContext.isSelected && (
                 <SettingsPanel
                     darkMode={darkMode}
                     defaultTab="visibility"

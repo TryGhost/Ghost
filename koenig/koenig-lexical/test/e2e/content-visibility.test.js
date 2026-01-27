@@ -19,9 +19,9 @@ test.describe('Content Visibility', async () => {
         await page.close();
     });
 
-    test.describe('HTML card (contentVisibility flag)', async function () {
+    test.describe('HTML card', async function () {
         test.beforeEach(async () => {
-            await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+            await initialize({page, uri: '/#/?content=false'});
         });
 
         test('toolbar shows edit icon', async function () {
@@ -105,7 +105,7 @@ test.describe('Content Visibility', async () => {
         });
 
         test('paid member visibility settings hidden when stripe is not enabled', async function () {
-            await initialize({page, uri: '/#/?content=false&labs=contentVisibility&stripe=false'});
+            await initialize({page, uri: '/#/?content=false&stripe=false'});
             const card = await insertHtmlCard();
 
             await card.getByTestId('show-visibility').click();
@@ -153,7 +153,7 @@ test.describe('Content Visibility', async () => {
 
     test.describe('Edge cases', async function () {
         test.beforeEach(async () => {
-            await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+            await initialize({page, uri: '/#/?content=false'});
         });
         // We need to ensure that when we used the visibility indicator to toggle the visibility settings and then
         // switch to a different card type, the visibility settings state is reset so that you don't have visibility settings

@@ -16,7 +16,7 @@ test.describe('Call To Action Card', async () => {
     });
 
     test.beforeEach(async () => {
-        await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+        await initialize({page, uri: '/#/?content=false'});
 
         serializedTestCard = {
             type: 'call-to-action',
@@ -621,7 +621,7 @@ test.describe('Call To Action Card', async () => {
             }
         }));
 
-        await initialize({page, uri: `/#/?content=${contentParam}&labs=contentVisibility`});
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         // assert visibility icon is visible
         await expect(page.getByTestId('visibility-indicator')).toBeVisible();

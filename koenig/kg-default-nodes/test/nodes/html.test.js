@@ -197,13 +197,7 @@ describe('HtmlNode', function () {
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>\n<!--kg-card-end: html-->\n');
         }));
 
-        describe('feature.contentVisibility', function () {
-            beforeEach(function () {
-                exportOptions.feature = {
-                    contentVisibility: true
-                };
-            });
-
+        describe('visibility rendering', function () {
             describe('with old visibility settings', function () {
                 function testWebRender(visibility) {
                     const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});

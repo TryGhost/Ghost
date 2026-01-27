@@ -2,9 +2,9 @@ import {assertHTML, createSnippet, focusEditor, html, initialize, isMac} from '.
 import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
-    await page.keyboard.type('/cta');
-    await page.waitForSelector('[data-kg-card-menu-item="Email call to action"][data-kg-cardmenu-selected="true"]');
-    await page.keyboard.press('Enter');
+    await page.keyboard.type('/email-cta');
+    await page.waitForSelector('[data-kg-card-menu-item="Email call to action"]');
+    await page.click('[data-kg-card-menu-item="Email call to action"]');
     await page.waitForSelector('[data-kg-card="email-cta"]');
 }
 
@@ -24,9 +24,9 @@ test.describe('Email card', async () => {
         await page.close();
     });
 
-    test('is hidden in the card menu when contentVisibility feature is enabled', async function () {
+    test('is hidden in the card menu when deprecated', async function () {
         // turn on card deprecations so we can test user-visible behaviour
-        await initialize({page, uri: '/#/?content=false&hideDeprecatedCards=true&labs=contentVisibility'});
+        await initialize({page, uri: '/#/?content=false&hideDeprecatedCards=true'});
         await focusEditor(page);
         await page.keyboard.press('/');
         await page.keyboard.type('cta');
@@ -34,23 +34,14 @@ test.describe('Email card', async () => {
         await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).not.toBeVisible();
     });
 
-    test('is visible with contentVisibility enabled for general tests', async function () {
+    test('is visible for testing when deprecated flag is off', async function () {
         // default test behaviour is to show deprecated cards
-        await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+        await initialize({page, uri: '/#/?content=false&hideDeprecatedCards=false'});
         await focusEditor(page);
         await page.keyboard.press('/');
         await page.keyboard.type('cta');
         await expect(page.locator('[data-kg-card-menu-item="Call to action"]')).toBeVisible();
         await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).toBeVisible();
-    });
-
-    test('is visible in the card menu with contentVisibility feature disabled', async function () {
-        await initialize({page, uri: '/#/?content=false&hideDeprecatedCards=true'});
-        await focusEditor(page);
-        await page.keyboard.press('/');
-        await page.keyboard.type('cta');
-        await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).toBeVisible();
-        await expect(page.locator('[data-kg-card-menu-item="Call to action"]')).not.toBeVisible();
     });
 
     test.describe('import JSON', async () => {

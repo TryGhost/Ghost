@@ -24,9 +24,7 @@ export class CallToActionNode extends BaseCallToActionNode {
         matches: ['cta', 'call-to-action', 'email', 'email-cta', 'ad', 'sponsored', 'hidden'],
         priority: 7,
         shortcut: '/cta',
-        isHidden: ({config}) => {
-            return !(config?.feature?.contentVisibility === true);
-        }
+        isHidden: () => false
     };
 
     static getType() {

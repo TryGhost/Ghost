@@ -48,10 +48,9 @@ describe('useVisibilityToggle', () => {
         vi.restoreAllMocks();
     });
 
-    function callHook(visibility = DEFAULT_VISIBILITY, {stripeEnabled = true, feature = {contentVisibility: true}} = {}) {
+    function callHook(visibility = DEFAULT_VISIBILITY, {stripeEnabled = true} = {}) {
         node.visibility = visibility;
         cardConfig.stripeEnabled = stripeEnabled;
-        cardConfig.feature = feature;
 
         return renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
     }
