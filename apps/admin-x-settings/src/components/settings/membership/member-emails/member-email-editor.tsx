@@ -19,20 +19,17 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     className,
     onChange
 }) => {
-    const placeholderSelector = '[&_.koenig-lexical-editor-input-placeholder]';
-    const contentSelector = '[&_:is(p,blockquote,aside,ul,ol)]';
-
     const baseEditorStyles = cn(
         // Base typography
         'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
         // Dark mode
         'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
         // Placeholder styling
-        `${placeholderSelector}:font-inter ${placeholderSelector}:text-xl ${placeholderSelector}:tracking-tight`,
+        `[&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight`,
         // Headings dark mode
         '[&_:is(h2,h3)]:dark:text-white',
         // Content typography
-        `${contentSelector}:font-inter ${contentSelector}:text-xl ${contentSelector}:tracking-tight`,
+        `[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight`,
         // Paragraph spacing & bold
         '[&_p]:mb-4 [&_strong]:font-semibold'
     );
