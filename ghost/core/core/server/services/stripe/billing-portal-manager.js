@@ -1,5 +1,17 @@
 const CONFIGURATION_ID_SETTING = 'stripe_billing_portal_configuration_id';
 
+const DEFAULT_FEATURES = {
+    invoice_history: {
+        enabled: true
+    },
+    payment_method_update: {
+        enabled: true
+    },
+    subscription_cancel: {
+        enabled: true
+    }
+};
+
 class BillingPortalManager {
     /** @type {object} */
     SettingsModel;
@@ -89,31 +101,19 @@ class BillingPortalManager {
      * @returns {object}
      */
     getConfigurationOptions(updateOnly = false) {
-        const defaultOptions = {
-            business_profile: {
-                headline: `Manage your ${this.settingsCache.get('title')} subscription`
-            },
-            features: {
-                invoice_history: {
-                    enabled: true
-                },
-                payment_method_update: {
-                    enabled: true
-                },
-                subscription_cancel: {
-                    enabled: true
-                }
-            },
-            default_return_url: this.siteUrl
-        };
-
         if (updateOnly) {
             return {
-                features: defaultOptions.features,
+                features: DEFAULT_FEATURES,
                 default_return_url: this.siteUrl
             };
         } else {
-            return defaultOptions;
+            return {
+                business_profile: {
+                    headline: `Manage your ${this.settingsCache.get('title')} subscription`
+                },
+                features: DEFAULT_FEATURES,
+                default_return_url: this.siteUrl
+            };
         }
     }
 }
