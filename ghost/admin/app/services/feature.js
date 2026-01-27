@@ -72,6 +72,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('transistor') transistor;
     @feature('tagsX') tagsX;
 
     _user = null;
