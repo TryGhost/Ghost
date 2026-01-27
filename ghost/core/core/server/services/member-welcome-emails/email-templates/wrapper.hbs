@@ -87,19 +87,229 @@
         line-height: inherit;
       }
     }
+
+    /* POST CONTENT STYLES */
     hr {
-      border-width: 0;
-      height: 0;
-      margin-top: 34px;
-      margin-bottom: 34px;
-      border-bottom-width: 1px;
-      border-bottom-color: #EEF5F8;
+        position: relative;
+        display: block;
+        width: 100%;
+        margin: 3em 0;
+        padding: 0;
+        height: 1px;
+        background-color: transparent;
+        border: 0;
+        border-top: 1px solid #EEF5F8;
     }
+
+    .kg-hr-card table {
+        width: 100%;
+    }
+
+    .kg-hr-card td {
+        margin: 0;
+        padding-top: 1.5em; /* account for elements above having bottom padding, we want 3em total */
+        padding-bottom: 3em;
+        font-size: 17px;
+    }
+    .kg-hr td {
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid #EEF5F8;
+        font-size: 0;
+        line-height: 0;
+    }
+
+    h1:has(+ .kg-hr-card),
+    h2:has(+ .kg-hr-card),
+    h3:has(+ .kg-hr-card),
+    h4:has(+ .kg-hr-card),
+    h5:has(+ .kg-hr-card),
+    h6:has(+ .kg-hr-card) {
+        margin-bottom: 0;
+    }
+
+    h1 + .kg-hr-card td,
+    h2 + .kg-hr-card td,
+    h3 + .kg-hr-card td,
+    h4 + .kg-hr-card td,
+    h5 + .kg-hr-card td,
+    h6 + .kg-hr-card td {
+        padding-top: 3em;
+    }
+
+    .kg-hr-card + h1,
+    .kg-hr-card + h2,
+    .kg-hr-card + h3,
+    .kg-hr-card + h4,
+    .kg-hr-card + h5,
+    .kg-hr-card + h6 {
+        margin-top: 0;
+    }
+
     a {
       color: {{accentColor}};
     }
+
     h1, h2, h3, h4, h5, h6 {
       color: #15212A;
+    }
+
+    p,
+    ul,
+    ol,
+    dl,
+    blockquote {
+        margin: 0 0 1.5em 0;
+        line-height: 1.6em;
+    }
+
+    ol,
+    ul {
+        padding-left: 1.3em;
+        padding-right: 1.5em;
+    }
+
+    ol ol,
+    ul ul,
+    ul ol,
+    ol ul {
+        margin: 0.5em 0 1em;
+    }
+
+    ul {
+        list-style: disc;
+    }
+
+    ul ul {
+        list-style: circle;
+    }
+
+    ul ul ul {
+        list-style: square;
+    }
+
+    ol {
+        list-style: decimal;
+    }
+
+    ol ol {
+        list-style: lower-alpha;
+    }
+
+    ol ol ol {
+        list-style: lower-roman;
+    }
+
+    ul,
+    ol {
+        max-width: 100%;
+    }
+
+    li {
+        margin: 0.5em 0;
+        padding-left: 0.3em;
+        line-height: 1.6em;
+        color: #15212A;
+    }
+
+    dt {
+        float: left;
+        margin: 0 20px 0 0;
+        width: 120px;
+        color: #15212A;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    dd {
+        margin: 0 0 5px 0;
+        text-align: left;
+    }
+
+    blockquote {
+        margin: 0;
+        padding: 0;
+        border-left: {{accentColor}} 2px solid;
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.6em;
+        letter-spacing: -0.2px;
+    }
+
+    blockquote.kg-blockquote-alt {
+        border-left: 0 none;
+        text-align: center;
+        font-size: 1.2em;
+        font-style: italic;
+        color: #15212a;
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    blockquote p {
+        margin: 2em 25px;
+        padding: 0 !important;
+        font-size: 1em;
+    }
+
+    blockquote.kg-blockquote-alt p {
+        margin-right: 50px;
+        margin-left: 50px;
+    }
+
+    blockquote small {
+        display: inline-block;
+        margin: 0.8em 0 0.8em 1.5em;
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    blockquote cite {
+        font-weight: bold;
+    }
+    blockquote cite a {
+        font-weight: normal;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.11em;
+        font-weight: 600;
+        text-rendering: optimizeLegibility;
+        color: #15212A;
+    }
+
+    h1 {
+        font-size: 36px;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+
+    h3 {
+        font-size: 26px;
+    }
+
+    h4 {
+        font-size: 21px;
+        line-height: 1.2em;
+    }
+
+    h5 {
+        font-size: 19px;
+        line-height: 1.3em;
+    }
+
+    h6 {
+        font-size: 19px;
+        line-height: 1.3em;
     }
     </style>
   </head>
