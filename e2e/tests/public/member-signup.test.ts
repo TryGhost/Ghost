@@ -8,13 +8,7 @@ import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
 
-    test.use({
-        config: {
-            memberWelcomeEmailSendInstantly: 'true',
-            memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
-        },
-        labs: {welcomeEmails: true}
-    });
+    test.use({labs: {welcomeEmails: true}});
 
     test.beforeEach(async () => {
         emailClient = new MailPit();
@@ -51,11 +45,10 @@ test.describe('Ghost Public - Member Signup', () => {
         expect(emailTextBody).toContain('complete the signup process');
     });
 
-    test('received welcome email', async ({page, config}) => {
+    test('received welcome email', async ({page}) => {
         const automatedEmailFactory = createAutomatedEmailFactory(page.request);
         await automatedEmailFactory.create();
 
-        const emailInbox = config!.memberWelcomeEmailTestInbox!;
         const homePage = new HomePage(page);
         await homePage.goto();
         const {emailAddress} = await signupViaPortal(page);
@@ -68,7 +61,7 @@ test.describe('Ghost Public - Member Signup', () => {
         await publicPage.goto(magicLink);
         await homePage.waitUntilLoaded();
 
-        latestMessage = await retrieveLatestEmailMessage(emailInbox);
+        latestMessage = await retrieveLatestEmailMessage(emailAddress);
 
         expect(latestMessage.From.Name).toContain('Test Blog');
         expect(latestMessage.From.Address).toContain('test@example.com');
