@@ -34,9 +34,11 @@ const EmailPreview: React.FC<{
     const senderName = automatedEmail.sender_name || siteTitle || 'Your Site';
 
     return (
-        <div
-            className='mb-5 flex items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 dark:border-grey-925 dark:bg-grey-975'
-            data-testid={`${emailType}-welcome-email-preview`}
+        <button
+            className='flex w-full items-center justify-between gap-3 rounded-lg border border-grey-200 bg-white p-5 text-left transition-all hover:bg-grey-50 dark:border-grey-925 dark:bg-grey-975'
+            data-testid={`${emailType}-welcome-email-edit-button`}
+            type='button'
+            onClick={onEdit}
         >
             <div className={`flex items-start gap-3 ${!enabled ? 'opacity-60' : ''}`}>
                 {icon ?
@@ -55,15 +57,8 @@ const EmailPreview: React.FC<{
                     <div className='text-sm'>{automatedEmail.subject}</div>
                 </div>
             </div>
-            <Button
-                className='border border-grey-200 font-semibold hover:border-grey-300 dark:border-grey-900 dark:hover:border-grey-800 dark:hover:bg-grey-950'
-                color='white'
-                data-testid={`${emailType}-welcome-email-edit-button`}
-                icon='pen'
-                label='Edit'
-                onClick={onEdit}
-            />
-        </div>
+            <div className='green font-semibold'>Edit</div>
+        </button>
     );
 };
 
@@ -182,8 +177,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     onEdit={() => handleEditClick('free')}
                 />
                 {checkStripeEnabled(settings, config) && (
-                    <>
-                        <Separator />
+                    <div className='mt-4'>
                         <Toggle
                             key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
                             checked={Boolean(paidWelcomeEmailEnabled)}
@@ -202,7 +196,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             enabled={paidWelcomeEmailEnabled}
                             onEdit={() => handleEditClick('paid')}
                         />
-                    </>
+                    </div>
                 )}
             </SettingGroupContent>
         </TopLevelGroup>

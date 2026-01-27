@@ -260,7 +260,7 @@ test.describe('Member emails settings', async () => {
             await expect(section).toBeVisible({timeout: 10000});
 
             // Email preview card should be visible even though no DB row exists
-            const emailPreview = section.getByTestId('free-welcome-email-preview');
+            const emailPreview = section.getByTestId('free-welcome-email-edit-button');
             await expect(emailPreview).toBeVisible();
 
             // Should show default subject based on site title from settings
