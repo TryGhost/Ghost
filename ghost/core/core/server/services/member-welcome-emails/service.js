@@ -80,6 +80,12 @@ class MemberWelcomeEmailService {
         const testInbox = config.get('memberWelcomeEmailTestInbox');
         const toEmail = testInbox || member.email;
 
+        if (!toEmail) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.MISSING_RECIPIENT_EMAIL
+            });
+        }
+
         await this.#mailer.send({
             to: toEmail,
             subject,

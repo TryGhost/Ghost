@@ -10,6 +10,7 @@ const MESSAGES = {
     INVALID_LEXICAL_STRUCTURE: 'Member welcome email has invalid content structure',
     MISSING_EMAIL_CONTENT: 'Email content is required to send a test email',
     MISSING_EMAIL_SUBJECT: 'Email subject is required to send a test email',
+    MISSING_RECIPIENT_EMAIL: 'Cannot send welcome email: no recipient email address available',
     memberWelcomeEmailInactive: memberStatus => `Member welcome email for "${memberStatus}" members is inactive`
 };
 
