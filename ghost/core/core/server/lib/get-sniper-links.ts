@@ -31,6 +31,7 @@ import type {MxRecord} from 'node:dns';
 import * as dns from 'node:dns/promises';
 import {parseEmailAddress} from '@tryghost/parse-email-address';
 import logging from '@tryghost/logging';
+import {constant} from 'lodash';
 
 type GetLinkFn = (options: Readonly<{recipient: string; sender: string}>) => string;
 
@@ -38,6 +39,24 @@ type Provider = {
     domains: ReadonlyArray<string>;
     getDesktopLink: GetLinkFn;
     getAndroidLink: GetLinkFn;
+};
+
+/**
+ * Creates an [Android Chrome intent URL][0] which opens the a package by its ID
+ * or hits an HTTP fallback.
+ * [0]: https://developer.chrome.com/docs/android/intents
+ */
+const getAndroidIntentUrl = (packageName: string, fallbackUrl: string): string => (
+    `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;launchFlags=0x10000000;package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`
+);
+
+/**
+ * Helper for building a URL with a single query parameter.
+ */
+const buildUrl = (baseHref: string, key: string, value: string): string => {
+    const result = new URL(baseHref);
+    result.searchParams.set(key, value);
+    return result.toString();
 };
 
 const PROVIDERS: ReadonlyArray<Provider> = [
@@ -50,9 +69,42 @@ const PROVIDERS: ReadonlyArray<Provider> = [
                 sender
             )})+in%3Aanywhere+newer_than%3A1h`
         ),
-        getAndroidLink: () => (
-            `intent://open/#Intent;scheme=googlegmail;package=com.google.android.gm;S.browser_fallback_url=https%3A%2F%2Fmail.google.com%2Fmail%2F;end`
-        )
+        getAndroidLink: constant(getAndroidIntentUrl('com.google.android.gm', 'https://mail.google.com/'))
+    },
+    {
+        domains: ['yahoo.com', 'myyahoo.com', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.it', 'ymail.com', 'rocketmail.com'],
+        getDesktopLink: ({sender}) => `https://mail.yahoo.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
+        getAndroidLink: constant(getAndroidIntentUrl('com.yahoo.mobile.client.android.mail', 'https://mail.yahoo.com/'))
+    },
+    {
+        domains: ['outlook.com', 'live.com', 'live.de', 'hotmail.com', 'hotmail.co.uk', 'hotmail.de', 'msn.com', 'passport.com', 'passport.net'],
+        getDesktopLink: ({recipient}) => buildUrl('https://outlook.live.com/mail/', 'login_hint', recipient),
+        getAndroidLink: constant(getAndroidIntentUrl('com.microsoft.office.outlook', 'https://outlook.live.com/'))
+    },
+    {
+        domains: ['proton.me', 'pm.me', 'protonmail.com', 'protonmail.ch'],
+        getDesktopLink: ({sender}) => `https://mail.proton.me/u/0/all-mail#from=${encodeURIComponent(sender)}`,
+        getAndroidLink: constant(getAndroidIntentUrl('ch.protonmail.android', 'https://mail.proton.me/'))
+    },
+    {
+        domains: ['icloud.com', 'me.com', 'mac.com'],
+        getDesktopLink: () => 'https://www.icloud.com/mail',
+        getAndroidLink: () => 'https://www.icloud.com/mail'
+    },
+    {
+        domains: ['hey.com'],
+        getDesktopLink: constant('https://app.hey.com/topics/everything'),
+        getAndroidLink: constant(getAndroidIntentUrl('com.basecamp.hey', 'https://app.hey.com/'))
+    },
+    {
+        domains: ['aol.com'],
+        getDesktopLink: ({sender}) => `https://mail.aol.com/d/search/keyword=from:${encodeURIComponent(sender)}`,
+        getAndroidLink: constant(getAndroidIntentUrl('com.aol.mobile.aolapp', 'https://mail.aol.com/'))
+    },
+    {
+        domains: ['mail.ru'],
+        getDesktopLink: ({sender}) => buildUrl('https://e.mail.ru/search/', 'q_from', sender),
+        getAndroidLink: constant(getAndroidIntentUrl('ru.mail.mailapp', 'https://e.mail.ru/'))
     }
 ];
 
