@@ -218,7 +218,7 @@ describe('BillingPortalManager', function () {
             });
         });
 
-        it('returns only business_profile when updateOnly is true', function () {
+        it('returns everything except the profile when updateOnly is true', function () {
             mockSettingsCache.get.withArgs('title').returns('My Ghost Site');
 
             const manager = new BillingPortalManager({
@@ -231,8 +231,17 @@ describe('BillingPortalManager', function () {
             const options = manager.getConfigurationOptions(true);
 
             assert.deepEqual(options, {
-                business_profile: {
-                    headline: 'Manage your My Ghost Site subscription'
+                default_return_url: 'https://example.com',
+                features: {
+                    invoice_history: {
+                        enabled: true
+                    },
+                    payment_method_update: {
+                        enabled: true
+                    },
+                    subscription_cancel: {
+                        enabled: true
+                    }
                 }
             });
         });

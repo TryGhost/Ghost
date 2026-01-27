@@ -109,7 +109,8 @@ class BillingPortalManager {
 
         if (updateOnly) {
             return {
-                business_profile: defaultOptions.business_profile
+                features: defaultOptions.features,
+                default_return_url: this.siteUrl
             };
         } else {
             return defaultOptions;
