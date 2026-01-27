@@ -33,6 +33,7 @@ import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
 import TKCountPlugin from './plugins/TKCountPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
+import TransistorPlugin from './plugins/TransistorPlugin';
 import VideoPlugin from './plugins/VideoPlugin';
 import WordCountPlugin from './plugins/WordCountPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
@@ -94,6 +95,7 @@ export {
     SlashCardMenuPlugin,
     TKCountPlugin,
     TogglePlugin,
+    TransistorPlugin,
     VideoPlugin,
     WordCountPlugin,
     ListPlugin,

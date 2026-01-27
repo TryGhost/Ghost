@@ -35,6 +35,7 @@ import {PaywallNode} from './PaywallNode';
 import {ProductNode} from './ProductNode';
 import {SignupNode} from './SignupNode';
 import {ToggleNode} from './ToggleNode';
+import {TransistorNode} from './TransistorNode';
 import {VideoNode} from './VideoNode';
 
 const DEFAULT_NODES = [
@@ -71,6 +72,7 @@ const DEFAULT_NODES = [
     EmbedNode,
     GalleryNode,
     SignupNode,
+    TransistorNode,
     TKNode,
     AtLinkNode,
     AtLinkSearchNode,

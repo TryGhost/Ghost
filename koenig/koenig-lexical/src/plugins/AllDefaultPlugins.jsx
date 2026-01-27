@@ -25,6 +25,7 @@ import {PaywallPlugin} from '../plugins/PaywallPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
 import {SignupPlugin} from '../plugins/SignupPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
+import {TransistorPlugin} from '../plugins/TransistorPlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
 export const AllDefaultPlugins = () => {
@@ -62,6 +63,7 @@ export const AllDefaultPlugins = () => {
             <EmailPlugin />
             <EmbedPlugin />
             <SignupPlugin />
+            <TransistorPlugin />
             <CallToActionPlugin />
         </>
     );

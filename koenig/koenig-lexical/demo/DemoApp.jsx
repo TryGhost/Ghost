@@ -61,7 +61,8 @@ const defaultCardConfig = {
     stripeEnabled: true,
     feature: {
         contentVisibility: false,
-        contentVisibilityAlpha: false
+        contentVisibilityAlpha: false,
+        transistor: false
     },
     // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`
     searchLinks: async (term) => {
@@ -329,7 +330,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         feature: {
             ...defaultCardConfig.feature,
             contentVisibility: searchParams.get('labs')?.includes('contentVisibility') || defaultCardConfig.feature.contentVisibility,
-            contentVisibilityAlpha: searchParams.get('labs')?.includes('contentVisibilityAlpha') || defaultCardConfig.feature.contentVisibilityAlpha
+            contentVisibilityAlpha: searchParams.get('labs')?.includes('contentVisibilityAlpha') || defaultCardConfig.feature.contentVisibilityAlpha,
+            transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor
         },
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
