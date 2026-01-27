@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -35,7 +35,7 @@ const EmailPreview: React.FC<{
 
     return (
         <button
-            className='flex w-full items-center justify-between gap-3 rounded-lg border border-grey-200 bg-white p-5 text-left transition-all hover:bg-grey-50 dark:border-grey-925 dark:bg-grey-975'
+            className='flex w-full items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 dark:border-grey-925 dark:bg-grey-975'
             data-testid={`${emailType}-welcome-email-edit-button`}
             type='button'
             onClick={onEdit}
