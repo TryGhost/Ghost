@@ -49,7 +49,7 @@ const EmailPreview: React.FC<{
                 </div>
             </div>
             <Button
-                className='border border-grey-200 font-semibold hover:border-grey-300 hover:!bg-white dark:border-grey-900 dark:hover:border-grey-800 dark:hover:!bg-grey-950'
+                className='border border-grey-200 font-semibold hover:border-grey-300 dark:border-grey-900 dark:hover:border-grey-800 dark:hover:bg-grey-950'
                 color='white'
                 data-testid={`${emailType}-welcome-email-edit-button`}
                 icon='pen'
