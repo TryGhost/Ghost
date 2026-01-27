@@ -112,6 +112,40 @@ export function getOfferData({
     };
 }
 
+export function getNextPaymentData({
+    originalAmount = 500,
+    amount = 500,
+    interval = 'month',
+    currency = 'USD',
+    discount = null
+} = {}) {
+    return {
+        original_amount: originalAmount,
+        amount,
+        interval,
+        currency,
+        discount
+    };
+}
+
+export function getDiscountData({
+    offerId = `offer_${objectId()}`,
+    start = '2025-01-01T00:00:00.000Z',
+    end = null,
+    duration = 'forever',
+    type = 'percent',
+    amount = 20
+} = {}) {
+    return {
+        offer_id: offerId,
+        start,
+        end,
+        duration,
+        type,
+        amount
+    };
+}
+
 export function getMemberData({
     name = 'Jamie Larson',
     email = 'jamie@example.com',
@@ -347,7 +381,10 @@ export function getSubscriptionData({
     priceId: price_id = `price_${objectId()}`,
     startDate: start_date = '2021-10-05T03:18:30.000Z',
     currentPeriodEnd: current_period_end = '2022-10-05T03:18:30.000Z',
-    cancelAtPeriodEnd: cancel_at_period_end = false
+    cancelAtPeriodEnd: cancel_at_period_end = false,
+    trialEndAt: trial_end_at = null,
+    nextPayment: next_payment = null,
+    tier = null
 } = {}) {
     return {
         id,
@@ -370,6 +407,9 @@ export function getSubscriptionData({
         cancel_at_period_end,
         cancellation_reason: null,
         current_period_end,
+        trial_end_at,
+        next_payment,
+        tier,
         price: {
             id: `stripe_price_${objectId()}`,
             price_id,
