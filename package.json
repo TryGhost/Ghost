@@ -37,6 +37,6 @@
     "@tryghost/validator": "^0.2.17",
     "json-stable-stringify": "1.3.0",
     "jsonpath": "1.1.1",
-    "lodash": "4.17.21"
+    "lodash": "4.17.23"
   }
 }
