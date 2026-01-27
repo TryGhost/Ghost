@@ -25,7 +25,9 @@ const excludedNodes = [
     'tk',
     'at-link',
     'at-link-search',
-    'zwnj'
+    'zwnj',
+    // in-development nodes
+    'transistor'
 ];
 
 /**
