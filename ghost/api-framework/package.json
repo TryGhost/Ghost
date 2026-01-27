@@ -27,7 +27,7 @@
     "c8": "8.0.1",
     "mocha": "10.8.2",
     "should": "13.2.3",
-    "sinon": "15.2.0"
+    "sinon": "21.0.1"
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.35",
