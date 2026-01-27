@@ -8,10 +8,13 @@ import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 test.describe('Ghost Public - Member Signup', () => {
     let emailClient: EmailClient;
 
-    test.use({config: {
-        memberWelcomeEmailSendInstantly: 'true',
-        memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
-    }});
+    test.use({
+        config: {
+            memberWelcomeEmailSendInstantly: 'true',
+            memberWelcomeEmailTestInbox: `test+welcome-email@ghost.org`
+        },
+        labs: {welcomeEmails: true}
+    });
 
     test.beforeEach(async () => {
         emailClient = new MailPit();
