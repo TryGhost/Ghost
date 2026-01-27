@@ -15,6 +15,7 @@ describe('RouterController', function () {
     let getPaymentLinkSpy;
     let getDonationLinkSpy;
     let settingsCache;
+    let settingsHelpers;
 
     beforeEach(async function () {
         getPaymentLinkSpy = sinon.spy();
@@ -71,6 +72,9 @@ describe('RouterController', function () {
         settingsCache = {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
         };
+        settingsHelpers = {
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+        };
     });
 
     afterEach(function () {
@@ -85,7 +89,8 @@ describe('RouterController', function () {
                 offersAPI,
                 stripeAPIService,
                 labsService,
-                settingsCache
+                settingsCache,
+                settingsHelpers
             });
 
             await routerController.createCheckoutSession({
@@ -120,6 +125,7 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
+                settingsHelpers,
                 newslettersService: newslettersServiceStub
             });
             const newsletters = [
@@ -161,7 +167,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -180,7 +187,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -199,7 +207,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -218,7 +227,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -241,7 +251,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -267,7 +278,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -293,7 +305,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -315,6 +328,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -362,6 +376,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -408,6 +423,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -454,6 +470,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -500,6 +517,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -572,7 +590,8 @@ describe('RouterController', function () {
                 },
                 memberAttributionService: {
                     getAttribution: sinon.stub().resolves({})
-                }
+                },
+                settingsHelpers
             });
 
             const req = {
@@ -673,6 +692,7 @@ describe('RouterController', function () {
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
+                    settingsHelpers,
                     ...deps
                 });
             };
@@ -734,7 +754,7 @@ describe('RouterController', function () {
                 await controller.sendMagicLink(req, res);
 
                 res.writeHead.calledOnceWith(201).should.be.true();
-                res.end.calledOnceWith('Created.').should.be.true();
+                res.end.calledOnceWith('{}').should.be.true();
 
                 sendEmailWithMagicLinkStub.calledOnce.should.be.true();
                 sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
@@ -821,6 +841,7 @@ describe('RouterController', function () {
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
+                    settingsHelpers,
                     ...deps
                 });
             };
@@ -893,6 +914,7 @@ describe('RouterController', function () {
                     stripeAPIService: {},
                     tokenService: {},
                     sendEmailWithMagicLink: sinon.stub(),
+                    settingsHelpers,
                     newslettersService: {},
                     sentry: {},
                     urlUtils: {}
@@ -916,7 +938,7 @@ describe('RouterController', function () {
                 await routerController.sendMagicLink(req, res);
 
                 res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('Created.').should.be.true();
+                res.end.calledWith('{}').should.be.true();
             });
 
             it('should not return otc_ref when otcRef is undefined', async function () {
@@ -925,7 +947,7 @@ describe('RouterController', function () {
                 await routerController.sendMagicLink(req, res);
 
                 res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('Created.').should.be.true();
+                res.end.calledWith('{}').should.be.true();
             });
         });
     });
