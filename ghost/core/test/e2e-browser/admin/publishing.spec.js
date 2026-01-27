@@ -9,7 +9,7 @@ const {createTier, createMember, createPostDraft, impersonateMember} = require('
  * Used for scheduling tests to ensure the date is always "today" regardless of time.
  */
 const getTodayDateString = () => {
-    return DateTime.now().toFormat('yyyy-MM-dd');
+    return DateTime.utc().toFormat('yyyy-MM-dd');
 };
 
 /**
