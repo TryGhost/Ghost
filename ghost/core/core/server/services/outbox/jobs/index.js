@@ -8,10 +8,7 @@ let hasScheduled = {
 
 module.exports = {
     scheduleOutboxJob() {
-        const testInboxDisabled = !config.get('memberWelcomeEmailTestInbox');
-        const alreadyScheduledProcessing = hasScheduled.processOutbox;
-
-        if (testInboxDisabled || alreadyScheduledProcessing) {
+        if (hasScheduled.processOutbox) {
             return false;
         }
 

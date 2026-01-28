@@ -9,13 +9,7 @@ import {signupViaPortal} from '@/helpers/playwright/flows/signup';
 test.describe('Ghost Admin - Member Activity Events', () => {
     let emailClient: EmailClient;
 
-    test.use({
-        config: {
-            memberWelcomeEmailSendInstantly: 'true',
-            memberWelcomeEmailTestInbox: 'test+welcome-email@ghost.org'
-        },
-        labs: {welcomeEmails: true}
-    });
+    test.use({labs: {welcomeEmails: true}});
 
     test.beforeEach(async () => {
         emailClient = new MailPit();
