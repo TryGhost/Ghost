@@ -134,7 +134,7 @@ function TransistorPlaceholder({accentColor, backgroundColor}) {
                     Transistor Private Podcast
                 </div>
                 <div className="text-sm text-grey-700 dark:text-grey-400">
-                    Personalized player for each member
+                    Your personalized podcast subscription link
                 </div>
             </div>
         </div>
