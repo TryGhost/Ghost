@@ -24,6 +24,7 @@ services:
     working_dir: /home/ghost
     command: ["yarn", "knex-migrator", "init"]
     environment:
+      NODE_OPTIONS: "--import=tsx"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
