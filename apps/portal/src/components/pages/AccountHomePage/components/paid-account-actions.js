@@ -9,9 +9,9 @@ import {t} from '../../../../utils/i18n';
 const PaidAccountActions = () => {
     const {member, site, doAction} = useContext(AppContext);
 
-    const onManageBilling = () => {
+    const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
-        doAction('manageBilling', {subscriptionId: subscription.id});
+        doAction('editBilling', {subscriptionId: subscription.id});
     };
 
     const openUpdatePlan = () => {
@@ -112,9 +112,9 @@ const PaidAccountActions = () => {
 
     const BillingSection = ({defaultCardLast4, isComplimentary}) => {
         const {action} = useContext(AppContext);
-        const label = action === 'manageBilling:running' ? (
+        const label = action === 'editBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
-        ) : t('Manage');
+        ) : t('Update');
         if (isComplimentary) {
             return null;
         }
@@ -122,13 +122,13 @@ const PaidAccountActions = () => {
         return (
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>{t('Billing info & receipts')}</h3>
+                    <h3>{t('Billing info')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
                 <button
                     className='gh-portal-btn gh-portal-btn-list'
-                    onClick={e => onManageBilling(e)}
-                    data-test-button='manage-billing'
+                    onClick={e => onEditBilling(e)}
+                    data-test-button='update-billing'
                 >
                     {label}
                 </button>
