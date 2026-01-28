@@ -84,7 +84,6 @@ class CacheManager {
         this.getAll = this.getAll.bind(this);
         this.getPublic = this.getPublic.bind(this);
         this.reset = this.reset.bind(this);
-        this._doGet = this._doGet.bind(this);
         this._updateSettingFromModel = this._updateSettingFromModel.bind(this);
         this._updateCalculatedField = this._updateCalculatedField.bind(this);
     }
@@ -103,7 +102,28 @@ class CacheManager {
         };
     }
 
-    _doGet(key, options) {
+    /**
+     * IMPORTANT:
+     * We store settings with a type and a key in the database.
+     *
+     * {
+     *   type: core
+     *   key: db_hash
+     *   value: ...
+     * }
+     *
+     * But the settings cache does not allow requesting a value by type, only by key.
+     * e.g. settingsCache.get('db_hash')
+     *
+     * Get a key from the this.settingsCache
+     * Will resolve to the value, including parsing JSON, unless {resolve: false} is passed in as an option
+     * In which case the full JSON version of the model will be resolved
+     *
+     * @param {string} key
+     * @param {object} options
+     * @return {*}
+     */
+    get(key, options) {
         // NOTE: "!this.settingsCache" is for when setting's cache is used
         //       before it had a chance to initialize. Should be fixed when
         //       it is decoupled from the model layer
@@ -161,32 +181,6 @@ class CacheManager {
     }
 
     /**
-     *
-     * IMPORTANT:
-     * We store settings with a type and a key in the database.
-     *
-     * {
-     *   type: core
-     *   key: db_hash
-     *   value: ...
-     * }
-     *
-     * But the settings cache does not allow requesting a value by type, only by key.
-     * e.g. settingsCache.get('db_hash')
-     *
-     * Get a key from the this.settingsCache
-     * Will resolve to the value, including parsing JSON, unless {resolve: false} is passed in as an option
-     * In which case the full JSON version of the model will be resolved
-     *
-     * @param {string} key
-     * @param {object} options
-     * @return {*}
-     */
-    get(key, options) {
-        return this._doGet(key, options);
-    }
-
-    /**
      * Set a key on the cache
      * The only way to get an object into the cache
      * Uses clone to prevent modifications from being reflected
@@ -231,7 +225,7 @@ class CacheManager {
 
         // This block correctly populates the values from the cache
         for (const newKey in this.publicSettings) {
-            settings[newKey] = this._doGet(this.publicSettings[newKey]) ?? null;
+            settings[newKey] = this.get(this.publicSettings[newKey]) ?? null;
         }
 
         return settings;
