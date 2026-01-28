@@ -1,7 +1,7 @@
-import {EnvironmentManager} from '@/helpers/environment';
+import {getProvider} from '@/helpers/environment';
 import {test as teardown} from '@playwright/test';
 
 teardown('global environment cleanup', async () => {
-    const environmentManager = new EnvironmentManager();
-    await environmentManager.globalTeardown();
+    const provider = getProvider();
+    await provider.globalTeardown();
 });
