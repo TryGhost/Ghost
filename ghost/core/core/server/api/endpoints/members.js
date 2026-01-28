@@ -532,10 +532,10 @@ const controller = {
         },
         async query(frame) {
             const emailSuppressionList = require('../../services/email-suppression-list');
-            
+
             // Get the member first to retrieve their email
             const member = await membersService.api.memberBREADService.read({id: frame.options.id}, {});
-            
+
             if (!member) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.memberNotFound)
@@ -543,11 +543,17 @@ const controller = {
             }
 
             // Remove the email from the suppression list
-            await emailSuppressionList.removeEmail(member.email);
-            
+            const didRemoveSuppression = await emailSuppressionList.removeEmail(member.email);
+
+            if (!didRemoveSuppression) {
+                throw new errors.InternalServerError({
+                    message: 'Failed to remove email suppression.'
+                });
+            }
+
             // Update the member to re-enable email
             await membersService.api.memberBREADService.edit({email_disabled: false}, {id: frame.options.id});
-            
+
             return null;
         }
     }
