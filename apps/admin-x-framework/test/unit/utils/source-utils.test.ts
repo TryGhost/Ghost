@@ -238,9 +238,9 @@ describe('source-utils', () => {
             });
         });
 
-        it('treats non-domain strings as domains', () => {
+        it('does not treat invalid domain strings as domains', () => {
             expect(getFaviconDomain('not-a-domain')).toEqual({
-                domain: 'not-a-domain',
+                domain: null,
                 isDirectTraffic: false
             });
             expect(getFaviconDomain('invalid url string')).toEqual({
@@ -268,6 +268,26 @@ describe('source-utils', () => {
             expect(getFaviconDomain('Direct', 'https://example.com')).toEqual({
                 domain: null,
                 isDirectTraffic: true
+            });
+        });
+
+        it('handles problematic sources correctly', () => {
+            // These are the sources specifically mentioned in the GitHub issue
+            expect(getFaviconDomain('github')).toEqual({
+                domain: 'github.com',
+                isDirectTraffic: false
+            });
+            expect(getFaviconDomain('GitHub')).toEqual({
+                domain: 'github.com',
+                isDirectTraffic: false
+            });
+            expect(getFaviconDomain('yandex')).toEqual({
+                domain: 'yandex.com',
+                isDirectTraffic: false
+            });
+            expect(getFaviconDomain('Yandex')).toEqual({
+                domain: 'yandex.com',
+                isDirectTraffic: false
             });
         });
     });
