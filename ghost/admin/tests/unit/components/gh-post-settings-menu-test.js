@@ -1,4 +1,3 @@
-// /* eslint-disable camelcase */
 // import EmberObject from '@ember/object';
 // import RSVP from 'rsvp';
 // import boundOneWay from 'ghost-admin/utils/bound-one-way';
