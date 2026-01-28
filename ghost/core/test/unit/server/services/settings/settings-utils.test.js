@@ -1,12 +1,12 @@
 const sinon = require('sinon');
-const should = require('should');
+const assert = require('node:assert/strict');
 
 describe('Unit: services/settings/settings-utils', function () {
     describe('getOrGenerateSiteUuid', function () {
         const config = require('../../../../../core/shared/config');
         const logging = require('@tryghost/logging');
         const {getOrGenerateSiteUuid} = require('../../../../../core/server/services/settings/settings-utils');
-        
+
         let configGetStub;
         let loggingInfoStub;
         let loggingErrorStub;
@@ -29,9 +29,9 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
-            configGetStub.calledOnce.should.be.true();
-            loggingInfoStub.calledOnce.should.be.true();
+            assert.equal(result, testUuid.toLowerCase());
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is not a valid UUID', function () {
@@ -40,9 +40,9 @@ describe('Unit: services/settings/settings-utils', function () {
             const result = getOrGenerateSiteUuid();
 
             // Should be a valid UUID v4
-            result.should.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            configGetStub.calledOnce.should.be.true();
-            loggingInfoStub.calledOnce.should.be.true();
+            assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is null', function () {
@@ -51,9 +51,9 @@ describe('Unit: services/settings/settings-utils', function () {
             const result = getOrGenerateSiteUuid();
 
             // Should be a valid UUID v4
-            result.should.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            configGetStub.calledOnce.should.be.true();
-            loggingInfoStub.calledOnce.should.be.true();
+            assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is undefined', function () {
@@ -62,9 +62,9 @@ describe('Unit: services/settings/settings-utils', function () {
             const result = getOrGenerateSiteUuid();
 
             // Should be a valid UUID v4
-            result.should.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            configGetStub.calledOnce.should.be.true();
-            loggingInfoStub.calledOnce.should.be.true();
+            assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config throws an error', function () {
@@ -74,9 +74,9 @@ describe('Unit: services/settings/settings-utils', function () {
             const result = getOrGenerateSiteUuid();
 
             // Should be a valid UUID v4
-            result.should.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            configGetStub.calledOnce.should.be.true();
-            loggingErrorStub.calledOnce.should.be.true();
+            assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('converts uppercase UUID to lowercase', function () {
@@ -85,8 +85,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
-            result.should.equal('550e8400-e29b-41d4-a716-446655440000');
+            assert.equal(result, testUuid.toLowerCase());
+            assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
         it('handles mixed case UUID correctly', function () {
@@ -95,8 +95,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             const result = getOrGenerateSiteUuid();
 
-            result.should.equal(testUuid.toLowerCase());
-            result.should.equal('550e8400-e29b-41d4-a716-446655440000');
+            assert.equal(result, testUuid.toLowerCase());
+            assert.equal(result, '550e8400-e29b-41d4-a716-446655440000');
         });
 
         it('caches the UUID and returns same value on subsequent calls', function () {
@@ -106,10 +106,10 @@ describe('Unit: services/settings/settings-utils', function () {
             const result1 = getOrGenerateSiteUuid();
             const result2 = getOrGenerateSiteUuid();
 
-            result1.should.equal(result2);
-            result1.should.equal(testUuid.toLowerCase());
+            assert.equal(result1, result2);
+            assert.equal(result1, testUuid.toLowerCase());
             // Config should only be called once due to caching
-            configGetStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(configGetStub);
         });
     });
 });

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
 
@@ -16,7 +16,7 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext();
 
-            should(attribution).be.null();
+            assert.equal(attribution, null);
         });
 
         it('returns null if tracking is disabled is provided', async function () {
@@ -25,7 +25,7 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext();
 
-            should(attribution).be.null();
+            assert.equal(attribution, null);
         });
 
         it('returns attribution for importer context', async function () {
@@ -34,7 +34,15 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({importer: true});
 
-            should(attribution).containEql({referrerSource: 'Imported', referrerMedium: 'Member Importer'});
+            assert.deepEqual(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrerUrl: null,
+                referrerSource: 'Imported',
+                referrerMedium: 'Member Importer'
+            });
         });
 
         it('returns attribution for admin context', async function () {
@@ -43,7 +51,15 @@ describe('MemberAttributionService', function () {
             });
             const attribution = await service.getAttributionFromContext({user: 'abc'});
 
-            should(attribution).containEql({referrerSource: 'Created manually', referrerMedium: 'Ghost Admin'});
+            assert.deepEqual(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrerUrl: null,
+                referrerSource: 'Created manually',
+                referrerMedium: 'Ghost Admin'
+            });
         });
 
         it('returns attribution for api without integration context', async function () {
@@ -54,7 +70,15 @@ describe('MemberAttributionService', function () {
                 api_key: 'abc'
             });
 
-            should(attribution).containEql({referrerSource: 'Created via API', referrerMedium: 'Admin API'});
+            assert.deepEqual(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrerUrl: null,
+                referrerSource: 'Created via API',
+                referrerMedium: 'Admin API'
+            });
         });
 
         it('returns attribution for api with integration context', async function () {
@@ -75,7 +99,15 @@ describe('MemberAttributionService', function () {
                 integration: {id: 'integration_1'}
             });
 
-            should(attribution).containEql({referrerSource: 'Integration: Test Integration', referrerMedium: 'Admin API'});
+            assert.deepEqual(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrerUrl: null,
+                referrerSource: 'Integration: Test Integration',
+                referrerMedium: 'Admin API'
+            });
         });
     });
 
@@ -103,7 +135,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 url: null,
                 title: 'added',
@@ -143,7 +175,7 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: null,
                 type: 'url',
                 url: '/my/url/',
@@ -194,7 +226,7 @@ describe('MemberAttributionService', function () {
                     return {};
                 }
             };
-            should(service.getEventAttribution(model)).eql({
+            assert.deepEqual(service.getEventAttribution(model), {
                 id: 'test_user_id',
                 type: 'user',
                 url: '/my/url/',
@@ -211,28 +243,28 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length');
+                        assert('length' in history);
                         return {success: true};
                     }
                 },
                 getTrackingEnabled: () => true
             });
             const attribution = await service.getAttribution([{path: '/test'}]);
-            should(attribution).deepEqual({success: true});
+            assert.deepEqual(attribution, {success: true});
         });
 
         it('returns empty history attribution when tracking disabled', async function () {
             const service = new MemberAttributionService({
                 attributionBuilder: {
                     getAttribution: async function (history) {
-                        should(history).have.property('length', 0);
+                        assert.equal(history.length, 0);
                         return {success: true};
                     }
                 },
                 getTrackingEnabled: () => false
             });
             const attribution = await service.getAttribution([{path: '/test'}]);
-            should(attribution).deepEqual({success: true});
+            assert.deepEqual(attribution, {success: true});
         });
     });
 
@@ -244,8 +276,8 @@ describe('MemberAttributionService', function () {
 
             const result = service.addPostAttributionTracking(url, post);
 
-            should(result.searchParams.get('attribution_id')).equal('post_123');
-            should(result.searchParams.get('attribution_type')).equal('post');
+            assert.equal(result.searchParams.get('attribution_id'), 'post_123');
+            assert.equal(result.searchParams.get('attribution_type'), 'post');
         });
 
         it('does not overwrite existing attribution params', function () {
@@ -255,8 +287,8 @@ describe('MemberAttributionService', function () {
 
             const result = service.addPostAttributionTracking(url, post);
 
-            should(result.searchParams.get('attribution_id')).equal('existing');
-            should(result.searchParams.get('attribution_type')).equal('existing');
+            assert.equal(result.searchParams.get('attribution_id'), 'existing');
+            assert.equal(result.searchParams.get('attribution_type'), 'existing');
         });
     });
 
@@ -271,7 +303,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getMemberCreatedAttribution('member_123');
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('returns attribution from event', async function () {
@@ -306,7 +338,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getMemberCreatedAttribution('member_123');
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 url: '/test',
                 type: 'post',
@@ -329,7 +361,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getSubscriptionCreatedAttribution('subscription_123');
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('returns attribution from event', async function () {
@@ -364,7 +396,7 @@ describe('MemberAttributionService', function () {
             });
 
             const result = await service.getSubscriptionCreatedAttribution('subscription_123');
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 url: '/test',
                 type: 'post',
@@ -380,7 +412,7 @@ describe('MemberAttributionService', function () {
         it('returns null when no attribution provided', async function () {
             const service = new MemberAttributionService({});
             const result = await service.fetchResource(null);
-            should(result).be.null();
+            assert.equal(result, null);
         });
 
         it('fetches resource using attribution builder', async function () {
@@ -404,7 +436,7 @@ describe('MemberAttributionService', function () {
             };
 
             const result = await service.fetchResource(attribution);
-            should(result).deepEqual({
+            assert.deepEqual(result, {
                 id: 'attr_123',
                 type: 'post',
                 url: '/test',

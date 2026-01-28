@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const {authenticateContentApiKey} = require('../../../../../../core/server/services/auth/api-key/content');
 const models = require('../../../../../../core/server/models');
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('Content API Key Auth', function () {
@@ -36,8 +36,8 @@ describe('Content API Key Auth', function () {
         const res = {};
 
         authenticateContentApiKey(req, res, (arg) => {
-            should.not.exist(arg);
-            req.api_key.should.eql(this.fakeApiKey);
+            assert(!arg);
+            assert.deepEqual(req.api_key, this.fakeApiKey);
             done();
         });
     });
@@ -51,10 +51,10 @@ describe('Content API Key Auth', function () {
         const res = {};
 
         authenticateContentApiKey(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('UNKNOWN_CONTENT_API_KEY');
-            should.not.exist(req.api_key);
+            assert(err);
+            assert(err instanceof errors.UnauthorizedError);
+            assert.equal(err.code, 'UNKNOWN_CONTENT_API_KEY');
+            assert(!req.api_key);
             done();
         });
     });
@@ -70,10 +70,10 @@ describe('Content API Key Auth', function () {
         this.fakeApiKey.type = 'admin';
 
         authenticateContentApiKey(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.UnauthorizedError, true);
-            err.code.should.eql('INVALID_API_KEY_TYPE');
-            should.not.exist(req.api_key);
+            assert(err);
+            assert(err instanceof errors.UnauthorizedError);
+            assert.equal(err.code, 'INVALID_API_KEY_TYPE');
+            assert(!req.api_key);
             done();
         });
     });
@@ -87,10 +87,10 @@ describe('Content API Key Auth', function () {
         const res = {};
 
         authenticateContentApiKey(req, res, function next(err) {
-            should.exist(err);
-            should.equal(err instanceof errors.BadRequestError, true);
-            err.code.should.eql('INVALID_REQUEST');
-            should.not.exist(req.api_key);
+            assert(err);
+            assert(err instanceof errors.BadRequestError);
+            assert.equal(err.code, 'INVALID_REQUEST');
+            assert(!req.api_key);
             done();
         });
     });

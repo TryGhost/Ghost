@@ -1,4 +1,3 @@
-require('should');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
@@ -140,7 +139,7 @@ describe('MemberRepository', function () {
 
                 assert.fail('setComplimentarySubscription should have thrown');
             } catch (err) {
-                productRepository.getDefaultProduct.calledWith({withRelated: ['stripePrices'], transacting: true}).should.be.true();
+                sinon.assert.calledWith(productRepository.getDefaultProduct, {withRelated: ['stripePrices'], transacting: true});
                 assert.equal(err.message, 'Could not find Product "default"');
             }
         });
@@ -227,7 +226,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            MemberSubscribeEvent.add.calledTwice.should.be.true();
+            sinon.assert.calledTwice(MemberSubscribeEvent.add);
         });
     });
 
@@ -365,8 +364,8 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            offerRedemptionNotifySpy.called.should.be.false();
+            sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
+            sinon.assert.notCalled(offerRedemptionNotifySpy);
         });
 
         it('dispatches the offer redemption event for a new member starting a subscription', async function (){
@@ -400,21 +399,21 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.true();
-            subscriptionCreatedNotifySpy.calledWith(sinon.match((event) => {
+            sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
+            sinon.assert.calledWith(subscriptionCreatedNotifySpy, sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            }));
 
-            offerRedemptionNotifySpy.called.should.be.true();
-            offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+            sinon.assert.called(offerRedemptionNotifySpy);
+            sinon.assert.calledWith(offerRedemptionNotifySpy, sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            }));
         });
 
         it('dispatches the offer redemption event for an existing member upgrading to a paid subscription', async function (){
@@ -449,15 +448,15 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            subscriptionCreatedNotifySpy.calledOnce.should.be.false();
+            sinon.assert.notCalled(subscriptionCreatedNotifySpy);
 
-            offerRedemptionNotifySpy.called.should.be.true();
-            offerRedemptionNotifySpy.calledWith(sinon.match((event) => {
+            sinon.assert.called(offerRedemptionNotifySpy);
+            sinon.assert.calledWith(offerRedemptionNotifySpy, sinon.match((event) => {
                 if (event.data.offerId === 'offer_123') {
                     return true;
                 }
                 return false;
-            })).should.be.true();
+            }));
         });
 
         it('creates an offer from a Stripe coupon', async function () {
@@ -521,13 +520,10 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            sinon.assert.calledOnce(offersAPI.ensureOfferForStripeCoupon);
             // Verify the coupon, cadence, tier, and options are passed correctly
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[0].should.deepEqual(stripeCoupon);
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[1].should.equal('month');
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[2].should.deepEqual({id: 'tier_1', name: 'Tier One'});
-            offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting.should.equal(transacting);
-            StripeCustomerSubscription.add.firstCall.args[0].offer_id.should.equal('offer_new');
+            sinon.assert.calledWith(offersAPI.ensureOfferForStripeCoupon, stripeCoupon, 'month', {id: 'tier_1', name: 'Tier One'}, sinon.match.has('transacting', transacting));
+            sinon.assert.match(StripeCustomerSubscription.add.firstCall.args[0].offer_id, 'offer_new');
         });
 
         it('sets offer_id to null if Stripe coupon is known to be incompatible with Ghost offers', async function () {
@@ -599,10 +595,10 @@ describe('MemberRepository', function () {
             });
 
             // Verify ensureOfferForStripeCoupon was called
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            sinon.assert.calledOnce(offersAPI.ensureOfferForStripeCoupon);
 
             // Verify subscription was still created, but without an offer_id
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, null);
         });
 
@@ -679,10 +675,10 @@ describe('MemberRepository', function () {
             );
 
             // Verify ensureOfferForStripeCoupon was called
-            offersAPI.ensureOfferForStripeCoupon.calledOnce.should.be.true();
+            sinon.assert.calledOnce(offersAPI.ensureOfferForStripeCoupon);
 
             // Verify subscription was NOT created because the error was rethrown
-            StripeCustomerSubscription.add.called.should.be.false();
+            sinon.assert.notCalled(StripeCustomerSubscription.add);
         });
 
         it('persists discount_start and discount_end for a new subscription', async function () {
@@ -732,7 +728,7 @@ describe('MemberRepository', function () {
             });
 
             // Verify discount_start and discount_end are set correctly
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
 
             assert.ok(addedSubscriptionData.discount_start instanceof Date);
@@ -790,8 +786,8 @@ describe('MemberRepository', function () {
             });
 
             // Verify edit was called (not add) since subscription exists
-            StripeCustomerSubscription.add.called.should.be.false();
-            StripeCustomerSubscription.edit.calledOnce.should.be.true();
+            sinon.assert.notCalled(StripeCustomerSubscription.add);
+            sinon.assert.calledOnce(StripeCustomerSubscription.edit);
 
             const editedSubscriptionData = StripeCustomerSubscription.edit.firstCall.args[0];
 
@@ -829,7 +825,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
 
             assert.equal(addedSubscriptionData.discount_start, null);
@@ -879,7 +875,7 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            sinon.assert.calledOnce(StripeCustomerSubscription.add);
             const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
 
             assert.ok(addedSubscriptionData.discount_start instanceof Date);

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs-extra');
@@ -55,7 +55,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             });
 
             await customRedirectsAPI.init();
-            logging.error.called.should.be.false();
+            sinon.assert.notCalled(logging.error);
         });
     });
 
@@ -66,7 +66,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             const file = await customRedirectsAPI.get();
 
-            should.deepEqual(file, []);
+            assert.deepEqual(file, []);
         });
 
         it('returns a redirects YAML file if it exists', async function () {
@@ -78,7 +78,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             const file = await customRedirectsAPI.get();
 
-            should.deepEqual(file, 'yaml content');
+            assert.equal(file, 'yaml content');
         });
 
         it('returns a redirects JSON file if YAML does not exists', async function () {
@@ -95,7 +95,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             const file = await customRedirectsAPI.get();
 
-            should.deepEqual(file, redirectJSONFixture);
+            assert.deepEqual(file, redirectJSONFixture);
         });
     });
 
@@ -115,15 +115,15 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             if (!expectedErrorMessage) {
                 // This should never happen because the JSON is invalid
-                should.fail('expectedErrorMessage is not set');
+                assert.fail('expectedErrorMessage is not set');
             }
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.json');
-                should.fail('setFromFilePath did not throw');
+                assert.fail('setFromFilePath did not throw');
             } catch (err) {
-                should.exist(err);
-                err.message.should.eql(`Could not parse JSON: ${expectedErrorMessage}.`);
+                assert(err);
+                assert.equal(err.message, `Could not parse JSON: ${expectedErrorMessage}.`);
             }
         });
 
@@ -133,10 +133,10 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
-                should.fail('setFromFilePath did not throw');
+                assert.fail('setFromFilePath did not throw');
             } catch (err) {
-                should.exist(err);
-                err.message.should.eql('YAML input is invalid. Check the contents of your YAML file.');
+                assert(err);
+                assert.equal(err.message, 'YAML input is invalid. Check the contents of your YAML file.');
             }
         });
 
@@ -146,10 +146,10 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
-                should.fail('setFromFilePath did not throw');
+                assert.fail('setFromFilePath did not throw');
             } catch (err) {
-                should.exist(err);
-                err.message.should.eql('YAML input is invalid. Check the contents of your YAML file.');
+                assert(err);
+                assert.equal(err.message, 'YAML input is invalid. Check the contents of your YAML file.');
             }
         });
 
@@ -164,11 +164,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
-                should.fail('setFromFilePath did not throw');
+                assert.fail('setFromFilePath did not throw');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('BadRequestError');
-                err.message.should.match(/Could not parse YAML: can not read an implicit mapping pair/);
+                assert(err);
+                assert.equal(err.errorType, 'BadRequestError');
+                assert.match(err.message, /Could not parse YAML: can not read an implicit mapping pair/);
             }
         });
 
@@ -202,20 +202,20 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             await customRedirectsAPI.setFromFilePath(incomingFilePath, '.json');
 
             // backed up file with the same name already exists so remove it
-            fsUnlinkStub.called.should.be.true();
-            fsUnlinkStub.calledWith(backupFilePath).should.be.true();
+            sinon.assert.called(fsUnlinkStub);
+            sinon.assert.calledWith(fsUnlinkStub, backupFilePath);
 
             // backed up current routes file
-            fsMoveStub.called.should.be.true();
-            fsMoveStub.calledWith(existingRedirectsFilePath, backupFilePath).should.be.true();
+            sinon.assert.called(fsMoveStub);
+            sinon.assert.calledWith(fsMoveStub, existingRedirectsFilePath, backupFilePath);
 
             // written new routes file
-            fsWriteFileStub.calledWith(existingRedirectsFilePath, redirectsJSONConfig, 'utf-8').should.be.true();
+            sinon.assert.calledWith(fsWriteFileStub, existingRedirectsFilePath, redirectsJSONConfig, 'utf-8');
 
             // redirects have been re-registered
-            redirectManager.removeAllRedirects.calledOnce.should.be.true();
+            sinon.assert.calledOnce(redirectManager.removeAllRedirects);
             // one redirect in total
-            redirectManager.addRedirect.calledOnce.should.be.true();
+            sinon.assert.calledOnce(redirectManager.addRedirect);
         });
 
         it('creates a backup file from existing redirects.yaml file', async function () {
@@ -252,18 +252,18 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
 
             // no existing backup file name match, did not remove any files
-            fsUnlinkStub.called.should.not.be.true();
+            sinon.assert.notCalled(fsUnlinkStub);
 
             // backed up current routes file
-            fsMoveStub.called.should.be.true();
+            sinon.assert.called(fsMoveStub);
 
             // overwritten with incoming routes.yaml file
-            fsCopyStub.calledWith(incomingFilePath, `${basePath}redirects.yaml`).should.be.true();
+            sinon.assert.calledWith(fsCopyStub, incomingFilePath, `${basePath}redirects.yaml`);
 
             // redirects have been re-registered
-            redirectManager.removeAllRedirects.calledOnce.should.be.true();
+            sinon.assert.calledOnce(redirectManager.removeAllRedirects);
             // two redirects in total
-            redirectManager.addRedirect.calledTwice.should.be.true();
+            sinon.assert.calledTwice(redirectManager.addRedirect);
         });
 
         it('does not create a backup file from a bad redirect yaml file', async function () {
@@ -299,14 +299,14 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             try {
                 await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
-                should.fail('setFromFilePath did not throw');
+                assert.fail('setFromFilePath did not throw');
             } catch (err) {
-                should.exist(err);
-                err.errorType.should.eql('BadRequestError');
+                assert(err);
+                assert.equal(err.errorType, 'BadRequestError');
             }
 
-            fsUnlinkStub.called.should.not.be.true();
-            fsMoveStub.called.should.not.be.true();
+            sinon.assert.notCalled(fsUnlinkStub);
+            sinon.assert.notCalled(fsMoveStub);
         });
     });
 });

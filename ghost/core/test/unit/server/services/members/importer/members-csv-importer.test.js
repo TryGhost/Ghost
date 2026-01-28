@@ -1,5 +1,3 @@
-const should = require('should');
-
 const Tier = require('../../../../../../core/server/services/tiers/tier');
 const ObjectID = require('bson-objectid').default;
 const assert = require('assert/strict');
@@ -118,22 +116,22 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(2);
+            assert(result.meta);
+            assert(result.meta.stats);
+            assert(result.meta.stats.imported);
+            assert.equal(result.meta.stats.imported, 2);
 
-            should.exist(result.meta.stats.invalid);
-            should.equal(result.meta.import_label, null);
+            assert(result.meta.stats.invalid);
+            assert.equal(result.meta.import_label, null);
 
-            should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(2);
+            assert(result.meta.originalImportSize);
+            assert.equal(result.meta.originalImportSize, 2);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            sinon.assert.calledOnce(fsWriteSpy);
 
             // Called at least once
-            memberCreateStub.notCalled.should.be.false();
-            memberCreateStub.firstCall.lastArg.context.import.should.be.true();
+            sinon.assert.called(memberCreateStub);
+            assert.equal(memberCreateStub.firstCall.lastArg.context.import, true);
         });
 
         it('should import a CSV in the default Members export format', async function () {
@@ -167,57 +165,57 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(2);
+            assert(result.meta);
+            assert(result.meta.stats);
+            assert(result.meta.stats.imported);
+            assert.equal(result.meta.stats.imported, 2);
 
-            should.exist(result.meta.stats.invalid);
-            should.deepEqual(result.meta.import_label, internalLabel);
+            assert(result.meta.stats.invalid);
+            assert.deepEqual(result.meta.import_label, internalLabel);
 
-            should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(2);
+            assert(result.meta.originalImportSize);
+            assert.equal(result.meta.originalImportSize, 2);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            sinon.assert.calledOnce(fsWriteSpy);
 
             // member records get inserted
-            membersRepositoryStub.create.calledTwice.should.be.true();
+            sinon.assert.calledTwice(membersRepositoryStub.create);
 
-            should.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
+            assert.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
 
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[0][0].id, undefined, 'id field should not be taken from the user input');
-            should.equal(membersRepositoryStub.create.args[0][0].email, 'member_complimentary_test@example.com');
-            should.equal(membersRepositoryStub.create.args[0][0].name, 'bobby tables');
-            should.equal(membersRepositoryStub.create.args[0][0].note, 'a note');
-            should.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
-            should.equal(membersRepositoryStub.create.args[0][0].created_at, '2022-10-18T06:34:08.000Z');
-            should.equal(membersRepositoryStub.create.args[0][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
-            should.deepEqual(membersRepositoryStub.create.args[0][0].labels, [{
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[0][0].id, undefined, 'id field should not be taken from the user input');
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'member_complimentary_test@example.com');
+            assert.equal(membersRepositoryStub.create.args[0][0].name, 'bobby tables');
+            assert.equal(membersRepositoryStub.create.args[0][0].note, 'a note');
+            assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            assert.equal(membersRepositoryStub.create.args[0][0].created_at, '2022-10-18T06:34:08.000Z');
+            assert.equal(membersRepositoryStub.create.args[0][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
+            assert.deepEqual(membersRepositoryStub.create.args[0][0].labels, [{
                 name: 'user import label'
             }]);
 
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[1][0].id, undefined, 'id field should not be taken from the user input');
-            should.equal(membersRepositoryStub.create.args[1][0].email, 'member_stripe_test@example.com');
-            should.equal(membersRepositoryStub.create.args[1][0].name, 'stirpey beaver');
-            should.equal(membersRepositoryStub.create.args[1][0].note, 'testing notes');
-            should.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
-            should.equal(membersRepositoryStub.create.args[1][0].created_at, '2022-10-18T07:31:57.000Z');
-            should.equal(membersRepositoryStub.create.args[1][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
-            should.deepEqual(membersRepositoryStub.create.args[1][0].labels, [], 'no labels should be assigned');
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[1][0].id, undefined, 'id field should not be taken from the user input');
+            assert.equal(membersRepositoryStub.create.args[1][0].email, 'member_stripe_test@example.com');
+            assert.equal(membersRepositoryStub.create.args[1][0].name, 'stirpey beaver');
+            assert.equal(membersRepositoryStub.create.args[1][0].note, 'testing notes');
+            assert.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
+            assert.equal(membersRepositoryStub.create.args[1][0].created_at, '2022-10-18T07:31:57.000Z');
+            assert.equal(membersRepositoryStub.create.args[1][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
+            assert.deepEqual(membersRepositoryStub.create.args[1][0].labels, [], 'no labels should be assigned');
 
             // stripe customer import
-            membersRepositoryStub.linkStripeCustomer.calledOnce.should.be.true();
-            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
-            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
+            sinon.assert.calledOnce(membersRepositoryStub.linkStripeCustomer);
+            assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
+            assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
 
             // complimentary_plan import
-            membersRepositoryStub.update.calledOnce.should.be.true();
-            should.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
+            sinon.assert.calledOnce(membersRepositoryStub.update);
+            assert.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
                 id: defaultTierId.toString()
             }]);
-            should.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
+            assert.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
         });
 
         it('should subscribe or unsubscribe members as per the `subscribe_to_emails` column', async function () {
@@ -312,128 +310,128 @@ describe('MembersCSVImporter', function () {
                 }
             });
 
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(5);
+            assert(result.meta);
+            assert(result.meta.stats);
+            assert(result.meta.stats.imported);
+            assert.equal(result.meta.stats.imported, 5);
 
-            should.exist(result.meta.stats.invalid);
-            should.deepEqual(result.meta.import_label, internalLabel);
+            assert(result.meta.stats.invalid);
+            assert.deepEqual(result.meta.import_label, internalLabel);
 
-            should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(15);
+            assert(result.meta.originalImportSize);
+            assert.equal(result.meta.originalImportSize, 15);
 
-            fsWriteSpy.calledOnce.should.be.true();
+            sinon.assert.calledOnce(fsWriteSpy);
 
             // member records get inserted
-            should.equal(membersRepositoryStub.create.callCount, 5);
+            assert.equal(membersRepositoryStub.create.callCount, 5);
 
-            should.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
+            assert.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
 
             // CASE 1: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is true
             // Member's newsletter subscriptions should not change
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
-            should.equal(membersRepositoryStub.update.args[0][0].email, 'member_subscribed_true@example.com');
-            should.equal(membersRepositoryStub.update.args[0][0].subscribed, true);
-            should.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, defaultNewsletters);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.equal(membersRepositoryStub.update.args[0][0].email, 'member_subscribed_true@example.com');
+            assert.equal(membersRepositoryStub.update.args[0][0].subscribed, true);
+            assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, defaultNewsletters);
 
             // CASE 2: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is false
             // Member's newsletter subscriptions should be removed
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[1][0].email, 'member_subscribed_false@example.com');
-            should.equal(membersRepositoryStub.update.args[1][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[1][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[1][0].email, 'member_subscribed_false@example.com');
+            assert.equal(membersRepositoryStub.update.args[1][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[1][0].newsletters, undefined);
 
             // CASE 3: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is NULL
             // Member's newsletter subscriptions should not change
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
-            should.equal(membersRepositoryStub.update.args[2][0].email, 'member_subscribed_null@example.com');
-            should.equal(membersRepositoryStub.update.args[2][0].subscribed, true);
-            should.deepEqual(membersRepositoryStub.update.args[2][0].newsletters, defaultNewsletters);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.equal(membersRepositoryStub.update.args[2][0].email, 'member_subscribed_null@example.com');
+            assert.equal(membersRepositoryStub.update.args[2][0].subscribed, true);
+            assert.deepEqual(membersRepositoryStub.update.args[2][0].newsletters, defaultNewsletters);
 
             // CASE 4: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is empty
             // Member's newsletter subscriptions should not change
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
-            should.equal(membersRepositoryStub.update.args[3][0].email, 'member_subscribed_empty@example.com');
-            should.equal(membersRepositoryStub.update.args[3][0].subscribed, true);
-            should.deepEqual(membersRepositoryStub.update.args[3][0].newsletters, defaultNewsletters);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.equal(membersRepositoryStub.update.args[3][0].email, 'member_subscribed_empty@example.com');
+            assert.equal(membersRepositoryStub.update.args[3][0].subscribed, true);
+            assert.deepEqual(membersRepositoryStub.update.args[3][0].newsletters, defaultNewsletters);
 
             // CASE 5: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is invalid
             // Member's newsletter subscriptions should not change
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
-            should.equal(membersRepositoryStub.update.args[4][0].email, 'member_subscribed_invalid@example.com');
-            should.equal(membersRepositoryStub.update.args[4][0].subscribed, true);
-            should.deepEqual(membersRepositoryStub.update.args[4][0].newsletters, defaultNewsletters);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.equal(membersRepositoryStub.update.args[4][0].email, 'member_subscribed_invalid@example.com');
+            assert.equal(membersRepositoryStub.update.args[4][0].subscribed, true);
+            assert.deepEqual(membersRepositoryStub.update.args[4][0].newsletters, defaultNewsletters);
 
             // CASE 6: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is true
             // Member should remain unsubscribed and not added to any newsletters
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[5][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[5][0].email, 'member_not_subscribed_true@example.com');
-            should.equal(membersRepositoryStub.update.args[5][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[5][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[5][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[5][0].email, 'member_not_subscribed_true@example.com');
+            assert.equal(membersRepositoryStub.update.args[5][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[5][0].newsletters, undefined);
 
             // CASE 7: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is false
             // Member should remain unsubscribed and not added to any newsletters
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[6][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[6][0].email, 'member_not_subscribed_false@example.com');
-            should.equal(membersRepositoryStub.update.args[6][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[6][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[6][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[6][0].email, 'member_not_subscribed_false@example.com');
+            assert.equal(membersRepositoryStub.update.args[6][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[6][0].newsletters, undefined);
 
             // CASE 8: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is NULL
             // Member should remain unsubscribed and not added to any newsletters
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[7][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[7][0].email, 'member_not_subscribed_null@example.com');
-            should.equal(membersRepositoryStub.update.args[7][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[7][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[7][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[7][0].email, 'member_not_subscribed_null@example.com');
+            assert.equal(membersRepositoryStub.update.args[7][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[7][0].newsletters, undefined);
 
             // CASE 9: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is empty
             // Member should remain unsubscribed and not added to any newsletters
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[8][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[8][0].email, 'member_not_subscribed_empty@example.com');
-            should.equal(membersRepositoryStub.update.args[8][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[8][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[8][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[8][0].email, 'member_not_subscribed_empty@example.com');
+            assert.equal(membersRepositoryStub.update.args[8][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[8][0].newsletters, undefined);
 
             // CASE 10: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is invalid
             // Member should remain unsubscribed and not added to any newsletters
-            should.deepEqual(Object.keys(membersRepositoryStub.update.args[9][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.update.args[9][0].email, 'member_not_subscribed_invalid@example.com');
-            should.equal(membersRepositoryStub.update.args[9][0].subscribed, false);
-            should.equal(membersRepositoryStub.update.args[9][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[9][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.update.args[9][0].email, 'member_not_subscribed_invalid@example.com');
+            assert.equal(membersRepositoryStub.update.args[9][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[9][0].newsletters, undefined);
 
             // CASE 11: New member, `subscribed_to_emails` column is true
             // Member should be created and subscribed
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[0][0].email, 'new_member_true@example.com');
-            should.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
-            should.equal(membersRepositoryStub.create.args[0][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'new_member_true@example.com');
+            assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            assert.equal(membersRepositoryStub.create.args[0][0].newsletters, undefined);
 
             // CASE 12: New member, `subscribed_to_emails` column is false
             // Member should be created but not subscribed
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[1][0].email, 'new_member_false@example.com');
-            should.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
-            should.equal(membersRepositoryStub.create.args[1][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[1][0].email, 'new_member_false@example.com');
+            assert.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
+            assert.equal(membersRepositoryStub.create.args[1][0].newsletters, undefined);
 
             // CASE 13: New member, `subscribed_to_emails` column is NULL
             // Member should be created but not subscribed
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[2][0].email, 'new_member_null@example.com');
-            should.equal(membersRepositoryStub.create.args[2][0].subscribed, true);
-            should.equal(membersRepositoryStub.create.args[2][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[2][0].email, 'new_member_null@example.com');
+            assert.equal(membersRepositoryStub.create.args[2][0].subscribed, true);
+            assert.equal(membersRepositoryStub.create.args[2][0].newsletters, undefined);
 
             // CASE 14: New member, `subscribed_to_emails` column is empty
             // Member should be created but not subscribed
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[3][0].email, 'new_member_empty@example.com');
-            should.equal(membersRepositoryStub.create.args[3][0].subscribed, true);
-            should.equal(membersRepositoryStub.create.args[3][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[3][0].email, 'new_member_empty@example.com');
+            assert.equal(membersRepositoryStub.create.args[3][0].subscribed, true);
+            assert.equal(membersRepositoryStub.create.args[3][0].newsletters, undefined);
 
             // CASE 15: New member, `subscribed_to_emails` column is invalid
             // Member should be created but not subscribed
-            should.deepEqual(Object.keys(membersRepositoryStub.create.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersRepositoryStub.create.args[4][0].email, 'new_member_invalid@example.com');
-            should.equal(membersRepositoryStub.create.args[4][0].subscribed, true);
-            should.equal(membersRepositoryStub.create.args[4][0].newsletters, undefined);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.equal(membersRepositoryStub.create.args[4][0].email, 'new_member_invalid@example.com');
+            assert.equal(membersRepositoryStub.create.args[4][0].subscribed, true);
+            assert.equal(membersRepositoryStub.create.args[4][0].newsletters, undefined);
         });
     });
 
@@ -449,7 +447,7 @@ describe('MembersCSVImporter', function () {
                 importLabel: {name: 'Test import'}
             });
 
-            sendEmailStub.calledWith({
+            sinon.assert.calledWith(sendEmailStub, {
                 to: 'test@example.com',
                 subject: 'Your member import was unsuccessful',
                 html: 'Import was unsuccessful',
@@ -462,7 +460,7 @@ describe('MembersCSVImporter', function () {
                         contentDisposition: 'attachment'
                     }
                 ]
-            }).should.be.true();
+            });
         });
     });
 
@@ -472,13 +470,13 @@ describe('MembersCSVImporter', function () {
 
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
 
-            should.exist(result.filePath);
-            result.filePath.should.match(/\/members\/importer\/fixtures\/Members Import/);
+            assert(result.filePath);
+            assert.match(result.filePath, /\/members\/importer\/fixtures\/Members Import/);
 
-            result.batches.should.equal(2);
-            should.exist(result.metadata);
-            should.equal(result.metadata.hasStripeData, false);
-            fsWriteSpy.calledOnce.should.be.true();
+            assert.equal(result.batches, 2);
+            assert(result.metadata);
+            assert.equal(result.metadata.hasStripeData, false);
+            sinon.assert.calledOnce(fsWriteSpy);
         });
 
         it('Does not include columns not in the original CSV or mapped', async function () {
@@ -488,7 +486,7 @@ describe('MembersCSVImporter', function () {
 
             const fileContents = fsWriteSpy.firstCall.args[1];
 
-            fileContents.should.match(/^email,labels\r\n/);
+            assert.match(fileContents, /^email,labels\r\n/);
         });
 
         it('It supports "subscribed_to_emails" column header ouf of the box', async function (){
@@ -498,7 +496,7 @@ describe('MembersCSVImporter', function () {
 
             const fileContents = fsWriteSpy.firstCall.args[1];
 
-            fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
+            assert.match(fileContents, /^email,subscribed_to_emails,labels\r\n/);
         });
 
         it('checks for stripe data in the imported file', async function () {
@@ -506,8 +504,8 @@ describe('MembersCSVImporter', function () {
 
             const result = await membersImporter.prepare(`${csvPath}/member-csv-export.csv`);
 
-            should.exist(result.metadata);
-            should.equal(result.metadata.hasStripeData, true);
+            assert(result.metadata);
+            assert.equal(result.metadata.hasStripeData, true);
         });
     });
 
@@ -570,7 +568,7 @@ describe('MembersCSVImporter', function () {
 
             const result = await importer.perform(`${csvPath}/auto-stripe-customer-id.csv`);
 
-            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_mock_123456');
+            assert.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_mock_123456');
 
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
@@ -728,7 +726,7 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
             assert.equal(result.errors.length, 0);
-            assert.ok(membersRepositoryStub.update.calledOnce);
+            sinon.assert.calledOnce(membersRepositoryStub.update);
             assert.deepEqual(
                 membersRepositoryStub.update.getCall(0).args[0],
                 {products: [{id: tier.id.toString()}]}
@@ -778,7 +776,7 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
             assert.equal(result.errors.length, 0);
-            assert.ok(stripeUtilsStub.forceStripeSubscriptionToProduct.calledOnce);
+            sinon.assert.calledOnce(stripeUtilsStub.forceStripeSubscriptionToProduct);
             assert.deepEqual(
                 stripeUtilsStub.forceStripeSubscriptionToProduct.getCall(0).args[0],
                 {
@@ -815,8 +813,8 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
             assert.equal(result.errors.length, 0);
-            assert.ok(stripeUtilsStub.archivePrice.calledOnce);
-            assert.ok(stripeUtilsStub.archivePrice.calledWith(newStripePriceId));
+            sinon.assert.calledOnce(stripeUtilsStub.archivePrice);
+            sinon.assert.calledWith(stripeUtilsStub.archivePrice, newStripePriceId);
         });
     });
 });

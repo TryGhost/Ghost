@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const UrlHistory = require('../../../../../core/server/services/member-attribution/url-history');
 const AttributionBuilder = require('../../../../../core/server/services/member-attribution/attribution-builder');
@@ -100,12 +100,21 @@ describe('AttributionBuilder', function () {
 
     it('Returns empty if empty history', async function () {
         const history = UrlHistory.create([]);
-        should(await attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null, referrerSource: null, referrerMedium: null, referrerUrl: null});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.id, null);
+        assert.equal(result.type, null);
+        assert.equal(result.url, null);
+        assert.equal(result.referrerSource, null);
+        assert.equal(result.referrerMedium, null);
+        assert.equal(result.referrerUrl, null);
     });
 
     it('Returns last url', async function () {
         const history = UrlHistory.create([{path: '/dir/not-last', time: now + 123}, {path: '/dir/test/', time: now + 123}]);
-        should(await attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test/'});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, 'url');
+        assert.equal(result.id, null);
+        assert.equal(result.url, '/test/');
     });
 
     it('Returns last post', async function () {
@@ -114,7 +123,10 @@ describe('AttributionBuilder', function () {
             {path: '/dir/test', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, 'post');
+        assert.equal(result.id, 123);
+        assert.equal(result.url, '/my-post');
     });
 
     it('Returns last post even when it found pages', async function () {
@@ -123,7 +135,10 @@ describe('AttributionBuilder', function () {
             {path: '/dir/my-page', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, 'post');
+        assert.equal(result.id, 123);
+        assert.equal(result.url, '/my-post');
     });
 
     it('Returns last page if no posts', async function () {
@@ -132,7 +147,10 @@ describe('AttributionBuilder', function () {
             {path: '/dir/my-page', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, 'page');
+        assert.equal(result.id, 845);
+        assert.equal(result.url, '/my-page');
     });
 
     it('Returns last post via id', async function () {
@@ -141,7 +159,10 @@ describe('AttributionBuilder', function () {
             {id: '123', type: 'post', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: '123', url: '/post/123'});
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, 'post');
+        assert.equal(result.id, '123');
+        assert.equal(result.url, '/post/123');
     });
 
     it('Returns referrer attribution', async function () {
@@ -150,11 +171,10 @@ describe('AttributionBuilder', function () {
             {id: '123', type: 'post', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({
-            referrerSource: 'Ghost Explore',
-            referrerMedium: 'Ghost Network',
-            referrerUrl: 'https://ghost.org/explore'
-        });
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.referrerSource, 'Ghost Explore');
+        assert.equal(result.referrerMedium, 'Ghost Network');
+        assert.equal(result.referrerUrl, 'https://ghost.org/explore');
     });
 
     it('Returns all null if only invalid ids', async function () {
@@ -162,14 +182,13 @@ describe('AttributionBuilder', function () {
             {id: 'invalid', type: 'post', time: now + 124},
             {id: 'invalid', type: 'post', time: now + 124}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({
-            type: null,
-            id: null,
-            url: null,
-            referrerSource: 'Ghost Explore',
-            referrerMedium: 'Ghost Network',
-            referrerUrl: 'https://ghost.org/explore'
-        });
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, null);
+        assert.equal(result.id, null);
+        assert.equal(result.url, null);
+        assert.equal(result.referrerSource, 'Ghost Explore');
+        assert.equal(result.referrerMedium, 'Ghost Network');
+        assert.equal(result.referrerUrl, 'https://ghost.org/explore');
     });
 
     it('Returns null referrer attribution', async function () {
@@ -186,73 +205,65 @@ describe('AttributionBuilder', function () {
             {id: '123', type: 'post', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(await attributionBuilder.getAttribution(history)).match({
-            referrerSource: null,
-            referrerMedium: null,
-            referrerUrl: null
-        });
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.referrerSource, null);
+        assert.equal(result.referrerMedium, null);
+        assert.equal(result.referrerUrl, null);
     });
 
     it('Returns all null for invalid histories', async function () {
         const history = UrlHistory.create('invalid');
-        should(await attributionBuilder.getAttribution(history)).match({
-            type: null,
-            id: null,
-            url: null
-        });
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, null);
+        assert.equal(result.id, null);
+        assert.equal(result.url, null);
     });
 
     it('Returns all null for empty histories', async function () {
         const history = UrlHistory.create([]);
-        should(await attributionBuilder.getAttribution(history)).match({
-            type: null,
-            id: null,
-            url: null
-        });
+        const result = await attributionBuilder.getAttribution(history);
+        assert.equal(result.type, null);
+        assert.equal(result.id, null);
+        assert.equal(result.url, null);
     });
 
     it('Returns post resource', async function () {
-        should(await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).fetchResource()).match({
-            type: 'post',
-            id: '123',
-            url: 'https://absolute/dir/path',
-            title: 'title'
-        });
+        const result = await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).fetchResource();
+        assert.equal(result.type, 'post');
+        assert.equal(result.id, '123');
+        assert.equal(result.url, 'https://absolute/dir/path');
+        assert.equal(result.title, 'title');
     });
 
     it('Returns author resource', async function () {
-        should(await attributionBuilder.build({type: 'author', id: '123', url: '/author'}).fetchResource()).match({
-            type: 'author',
-            id: '123',
-            url: 'https://absolute/dir/path',
-            title: 'name'
-        });
+        const result = await attributionBuilder.build({type: 'author', id: '123', url: '/author'}).fetchResource();
+        assert.equal(result.type, 'author');
+        assert.equal(result.id, '123');
+        assert.equal(result.url, 'https://absolute/dir/path');
+        assert.equal(result.title, 'name');
     });
 
     it('Returns default url title for resource if no title or name', async function () {
-        should(await attributionBuilder.build({type: 'post', id: 'no-props', url: '/post'}).fetchResource()).match({
-            type: 'post',
-            id: 'no-props',
-            url: 'https://absolute/dir/path',
-            title: '/post'
-        });
+        const result = await attributionBuilder.build({type: 'post', id: 'no-props', url: '/post'}).fetchResource();
+        assert.equal(result.type, 'post');
+        assert.equal(result.id, 'no-props');
+        assert.equal(result.url, 'https://absolute/dir/path');
+        assert.equal(result.title, '/post');
     });
 
     it('Returns url resource', async function () {
-        should(await attributionBuilder.build({type: 'url', id: null, url: '/url'}).fetchResource()).match({
-            type: 'url',
-            id: null,
-            url: 'https://absolute/dir/url',
-            title: '/url'
-        });
+        const result = await attributionBuilder.build({type: 'url', id: null, url: '/url'}).fetchResource();
+        assert.equal(result.type, 'url');
+        assert.equal(result.id, null);
+        assert.equal(result.url, 'https://absolute/dir/url');
+        assert.equal(result.title, '/url');
     });
 
     it('Returns url resource if not found', async function () {
-        should(await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).fetchResource()).match({
-            type: 'url',
-            id: null,
-            url: 'https://absolute/dir/post',
-            title: '/post'
-        });
+        const result = await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).fetchResource();
+        assert.equal(result.type, 'url');
+        assert.equal(result.id, null);
+        assert.equal(result.url, 'https://absolute/dir/post');
+        assert.equal(result.title, '/post');
     });
 });

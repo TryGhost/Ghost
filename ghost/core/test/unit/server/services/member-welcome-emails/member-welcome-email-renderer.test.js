@@ -1,5 +1,5 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const rewire = require('rewire');
 const errors = require('@tryghost/errors');
 
@@ -53,9 +53,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Hello John Doe');
-            result.html.should.containEql('or John!');
-            result.html.should.containEql('Contact: john@example.com');
+            assert(result.html.includes('Hello John Doe'));
+            assert(result.html.includes('or John!'));
+            assert(result.html.includes('Contact: john@example.com'));
         });
 
         it('substitutes site template variables', async function () {
@@ -69,8 +69,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Welcome to Test Site');
-            result.html.should.containEql('at https://example.com');
+            assert(result.html.includes('Welcome to Test Site'));
+            assert(result.html.includes('at https://example.com'));
         });
 
         it('inlines accentColor into link styles', async function () {
@@ -84,7 +84,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('color: #ff0000');
+            assert(result.html.includes('color: #ff0000'));
         });
 
         it('substitutes template variables in subject', async function () {
@@ -97,7 +97,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.subject.should.equal('Welcome to Test Site, John!');
+            assert.equal(result.subject, 'Welcome to Test Site, John!');
         });
 
         it('renders empty when member name is missing and no fallback specified', async function () {
@@ -111,8 +111,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.text.should.containEql('Hello !');
-            result.html.should.not.containEql('{name}');
+            assert(result.text.includes('Hello !'));
+            assert(!result.html.includes('{name}'));
         });
 
         it('uses custom fallback when member name is missing', async function () {
@@ -126,7 +126,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Hello there');
+            assert(result.html.includes('Hello there'));
         });
 
         it('uses custom fallback for first_name when missing', async function () {
@@ -140,7 +140,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Hey friend');
+            assert(result.html.includes('Hey friend'));
         });
 
         it('ignores fallback when member name is present', async function () {
@@ -154,7 +154,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Hello Jane Smith');
+            assert(result.html.includes('Hello Jane Smith'));
         });
 
         it('renders empty when member email is missing', async function () {
@@ -168,8 +168,8 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.text.should.containEql('Email: !');
-            result.html.should.not.containEql('{email}');
+            assert(result.text.includes('Email: !'));
+            assert(!result.html.includes('{email}'));
         });
 
         it('extracts first name correctly from full name', async function () {
@@ -183,7 +183,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('Hi John');
+            assert(result.html.includes('Hi John'));
         });
 
         it('handles whitespace in name when extracting first_name', async function () {
@@ -196,7 +196,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 member: {name: '  Jane  Doe  ', email: 'jane@example.com'},
                 siteSettings: defaultSiteSettings
             });
-            paddedResult.html.should.containEql('Hi Jane');
+            assert(paddedResult.html.includes('Hi Jane'));
 
             const emptyResult = await renderer.render({
                 lexical: '{}',
@@ -204,7 +204,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 member: {name: '   ', email: 'empty@example.com'},
                 siteSettings: defaultSiteSettings
             });
-            emptyResult.html.should.containEql('Hi friend');
+            assert(emptyResult.html.includes('Hi friend'));
         });
 
         it('wraps content in wrapper.hbs template', async function () {
@@ -218,9 +218,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('<!doctype html>');
-            result.html.should.containEql('<title>Test Subject</title>');
-            result.html.should.containEql('>Content</p>');
+            assert(result.html.includes('<!doctype html>'));
+            assert(result.html.includes('<title>Test Subject</title>'));
+            assert(result.html.includes('>Content</p>'));
         });
 
         it('generates plain text from HTML', async function () {
@@ -234,26 +234,32 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.text.should.be.a.String();
-            result.text.should.containEql('Hello World');
+            assert(typeof result.text === 'string');
+            assert(result.text.includes('Hello World'));
         });
 
         it('throws IncorrectUsageError for invalid Lexical', async function () {
             lexicalRenderStub.rejects(new Error('Invalid JSON'));
             const renderer = new MemberWelcomeEmailRenderer();
 
-            await renderer.render({
-                lexical: 'invalid',
-                subject: 'Welcome!',
-                member: {name: 'John', email: 'john@example.com'},
-                siteSettings: defaultSiteSettings
-            }).should.be.rejectedWith(errors.IncorrectUsageError);
+            await assert.rejects(
+                renderer.render({
+                    lexical: 'invalid',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings
+                }),
+                {
+                    name: 'IncorrectUsageError'
+                }
+            );
         });
 
         it('includes error context in IncorrectUsageError', async function () {
             lexicalRenderStub.rejects(new Error('Parse error'));
             const renderer = new MemberWelcomeEmailRenderer();
 
+            let error;
             try {
                 await renderer.render({
                     lexical: 'invalid',
@@ -261,11 +267,13 @@ describe('MemberWelcomeEmailRenderer', function () {
                     member: {name: 'John', email: 'john@example.com'},
                     siteSettings: defaultSiteSettings
                 });
-                should.fail('Should have thrown');
+                assert(false, 'Should have thrown');
             } catch (err) {
-                err.should.be.instanceof(errors.IncorrectUsageError);
-                err.context.should.equal('Parse error');
+                error = err;
             }
+
+            assert(error instanceof errors.IncorrectUsageError);
+            assert.equal(error.context, 'Parse error');
         });
 
         it('escapes HTML in member values for body but not subject', async function () {
@@ -279,9 +287,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.containEql('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
-            result.html.should.not.containEql('<script>alert("xss")</script>');
-            result.subject.should.equal('Welcome <script>alert("xss")</script>!');
+            assert(result.html.includes('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'));
+            assert(!result.html.includes('<script>alert("xss")</script>'));
+            assert.equal(result.subject, 'Welcome <script>alert("xss")</script>!');
         });
 
         it('removes unknown tokens from output', async function () {
@@ -295,9 +303,9 @@ describe('MemberWelcomeEmailRenderer', function () {
                 siteSettings: defaultSiteSettings
             });
 
-            result.html.should.not.containEql('%%{');
-            result.html.should.not.containEql('}%%');
-            result.subject.should.equal('Welcome !');
+            assert(!result.html.includes('%%{'));
+            assert(!result.html.includes('}%%'));
+            assert.equal(result.subject, 'Welcome !');
         });
     });
 });

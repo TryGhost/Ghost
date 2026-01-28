@@ -1,4 +1,3 @@
-const should = require('should');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const LastSeenAtUpdater = require('../../../../../core/server/services/members-events/last-seen-at-updater');
@@ -26,7 +25,7 @@ describe('LastSeenAtUpdater', function () {
         it('throws if getMembersApi is not passed to LastSeenAtUpdater', async function () {
             const settingsCache = sinon.stub().returns('Asia/Bangkok');
 
-            should.throws(() => {
+            assert.throws(() => {
                 new LastSeenAtUpdater({
                     services: {
                         settingsCache: {
@@ -34,7 +33,7 @@ describe('LastSeenAtUpdater', function () {
                         }
                     }
                 });
-            }, 'Missing option getMembersApi');
+            }, /Missing option getMembersApi/);
         });
     });
 
@@ -62,7 +61,7 @@ describe('LastSeenAtUpdater', function () {
             updater.subscribe(DomainEvents);
             sinon.stub(updater, 'updateLastSeenAt');
             DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
-            assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
+            sinon.assert.calledOnceWithExactly(updater.updateLastSeenAt, '1', previousLastSeen, now.toDate());
         });
 
         it('Catches errors in updateLastSeenAt on MemberPageViewEvents', async function () {
@@ -114,7 +113,7 @@ describe('LastSeenAtUpdater', function () {
             updater.subscribe(DomainEvents);
             sinon.stub(updater, 'updateLastSeenAt');
             DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
-            assert(updater.updateLastSeenAt.calledOnceWithExactly('1', previousLastSeen, now.toDate()));
+            sinon.assert.calledOnceWithExactly(updater.updateLastSeenAt, '1', previousLastSeen, now.toDate());
         });
 
         it('Catches errors in updateLastSeenAt on MemberLinkClickEvents', async function () {
@@ -175,8 +174,8 @@ describe('LastSeenAtUpdater', function () {
             sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
             DomainEvents.dispatch(EmailOpenedEvent.create({memberId: '1', emailRecipientId: '1', emailId: '1', timestamp: now.toDate()}));
             await DomainEvents.allSettled();
-            assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
-            assert(db.update.calledOnce);
+            sinon.assert.calledOnceWithExactly(updater.updateLastSeenAtWithoutKnownLastSeen, '1', now.toDate());
+            sinon.assert.calledOnce(db.update);
         });
 
         it('Catches errors in updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
@@ -235,7 +234,7 @@ describe('LastSeenAtUpdater', function () {
             updater.subscribe(DomainEvents);
             sinon.stub(updater, 'updateLastCommentedAt');
             DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
-            assert(updater.updateLastCommentedAt.calledOnceWithExactly('1', now.toDate()));
+            sinon.assert.calledOnceWithExactly(updater.updateLastCommentedAt, '1', now.toDate());
         });
 
         it('Catches errors in updateLastCommentedAt on MemberCommentEvents', async function () {
@@ -283,7 +282,7 @@ describe('LastSeenAtUpdater', function () {
             updater.subscribe(DomainEvents);
             DomainEvents.dispatch(MemberSubscribeEvent.create({memberId: '1', source: 'api'}, new Date()));
             await DomainEvents.allSettled();
-            assert(spy.notCalled, 'The LastSeenAtUpdater should never fire on MemberSubscribeEvent events.');
+            sinon.assert.notCalled(spy);
         });
 
         describe('Disable via config', function () {
@@ -292,7 +291,7 @@ describe('LastSeenAtUpdater', function () {
                 const previousLastSeen = moment.utc('2022-02-27T22:59:00Z').toDate();
                 const stub = sinon.stub().resolves();
                 const settingsCache = sinon.stub();
-                settingsCache.returns('Europe/Brussels'); // Default return for other settings
+                settingsCache.returns('Europe/Brussels');
                 const configStub = sinon.stub();
                 configStub.withArgs('backgroundJobs:clickTrackingLastSeenAtUpdater').returns(false);
 
@@ -325,7 +324,7 @@ describe('LastSeenAtUpdater', function () {
                 updater.subscribe(DomainEvents);
                 sinon.stub(updater, 'updateLastSeenAt');
                 DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
-                assert(updater.updateLastSeenAt.notCalled, 'The LastSeenAtUpdater should not attempt a member update when disabled');
+                sinon.assert.notCalled(updater.updateLastSeenAt);
             });
 
             it('MemberLinkClickEvent should be fired when enabled/empty', async function () {
@@ -333,7 +332,7 @@ describe('LastSeenAtUpdater', function () {
                 const previousLastSeen = moment.utc('2022-02-27T22:59:00Z').toDate();
                 const stub = sinon.stub().resolves();
                 const settingsCache = sinon.stub();
-                settingsCache.returns('Europe/Brussels'); // Default return for other settings
+                settingsCache.returns('Europe/Brussels');
 
                 const updater = new LastSeenAtUpdater({
                     services: {
@@ -361,7 +360,7 @@ describe('LastSeenAtUpdater', function () {
                 updater.subscribe(DomainEvents);
                 sinon.stub(updater, 'updateLastSeenAt');
                 DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
-                assert(updater.updateLastSeenAt.calledOnce, 'The LastSeenAtUpdater should attempt a member update when not disabled');
+                sinon.assert.calledOnce(updater.updateLastSeenAt);
             });
         });
     });
@@ -397,7 +396,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastSeenAt('1', previousLastSeen, now.toDate());
-            assert(saveStub.notCalled, 'The LastSeenAtUpdater should attempt a member update when the new timestamp is within the same day in the publication timezone.');
+            sinon.assert.notCalled(saveStub);
         });
 
         it('works correctly on another timezone (updating last_seen_at)', async function () {
@@ -431,10 +430,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastSeenAt('1', previousLastSeen, now.toDate());
-            assert(saveStub.calledOnceWithExactly(
-                sinon.match({last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')}),
-                sinon.match({transacting: sinon.match.any, patch: true, method: 'update'})
-            ), 'The LastSeenAtUpdater should attempt a member update with the current date.');
+            sinon.assert.calledOnceWithExactly(saveStub, sinon.match({last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')}), sinon.match({transacting: sinon.match.any, patch: true, method: 'update'}));
         });
 
         it('Doesn\'t update when last_seen_at is too recent', async function () {
@@ -467,7 +463,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastSeenAt('1', previousLastSeen, now.toDate());
-            assert(saveStub.notCalled, 'The LastSeenAtUpdater should\'t update a member when the previous last_seen_at is close to the event timestamp.');
+            sinon.assert.notCalled(saveStub);
         });
 
         it('avoids a race condition when updating last_seen_at', async function () {
@@ -509,16 +505,9 @@ describe('LastSeenAtUpdater', function () {
                 updater.updateLastSeenAt('1', null, now.toDate()),
                 updater.updateLastSeenAt('1', null, now.toDate())
             ]);
-            assert(saveStub.calledOnce, `The LastSeenAtUpdater should attempt a member update only once, but was called ${saveStub.callCount} times`);
-            assert(saveStub.calledOnceWithExactly(
-                sinon.match({last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')}),
-                sinon.match({transacting: undefined, patch: true, method: 'update'})
-            ), 'The LastSeenAtUpdater should attempt a member update with the current date.');
-
-            assert(events.emit.calledOnceWithExactly(
-                'member.edited',
-                sinon.match.any
-            ), 'The LastSeenAtUpdater should emit a member.edited event if it updated last_seen_at');
+            sinon.assert.calledOnce(saveStub);
+            sinon.assert.calledOnceWithExactly(saveStub, sinon.match({last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')}), sinon.match({transacting: undefined, patch: true, method: 'update'}));
+            sinon.assert.calledOnceWithExactly(events.emit, 'member.edited', sinon.match.any);
         });
     });
 
@@ -559,7 +548,7 @@ describe('LastSeenAtUpdater', function () {
             sinon.stub(events, 'emit');
             sinon.stub(updater, 'updateLastSeenAt');
             await updater.cachedUpdateLastSeenAt('1', now.toDate(), now.toDate());
-            assert(updater.updateLastSeenAt.calledOnceWithExactly('1', now.toDate(), now.toDate()));
+            sinon.assert.calledOnceWithExactly(updater.updateLastSeenAt, '1', now.toDate(), now.toDate());
             clock.restore();
         });
 
@@ -605,7 +594,7 @@ describe('LastSeenAtUpdater', function () {
                 updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()),
                 updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate())
             ]);
-            assert(updater.updateLastSeenAt.calledOnce, 'The LastSeenAtUpdater should only update a member once per day.');
+            sinon.assert.calledOnce(updater.updateLastSeenAt);
             clock.restore();
         });
 
@@ -616,7 +605,6 @@ describe('LastSeenAtUpdater', function () {
             const saveStub = sinon.stub().resolves();
             const refreshStub = sinon.stub().resolves({save: saveStub});
             const settingsCache = sinon.stub().returns('Europe/Brussels');
-            // Throw an error on the first transaction, succeed on the second
             const transactionStub = sinon.stub().onCall(0).throws('Error').onCall(1).callsFake((callback) => {
                 return callback();
             });
@@ -646,9 +634,9 @@ describe('LastSeenAtUpdater', function () {
             });
             sinon.stub(events, 'emit');
             sinon.spy(updater, 'updateLastSeenAt');
-            assert.rejects(updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()));
+            await assert.rejects(updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()));
             await updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate());
-            assert(updater.updateLastSeenAt.calledTwice, 'The LastSeenAtUpdater should attempt to update a member again if the first update fails.');
+            sinon.assert.calledTwice(updater.updateLastSeenAt);
             clock.restore();
         });
     });
@@ -683,7 +671,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastCommentedAt('1', now.toDate());
-            assert(stub.notCalled, 'The LastSeenAtUpdater should attempt a member update when the new timestamp is within the same day in the publication timezone.');
+            sinon.assert.notCalled(stub);
         });
 
         it('Doesn\'t update when last_commented_at is too recent', async function () {
@@ -715,7 +703,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastCommentedAt('1', now.toDate());
-            assert(stub.notCalled, 'The LastSeenAtUpdater should\'t update a member');
+            sinon.assert.notCalled(stub);
         });
 
         it('Does not update when last_commented_at is same date in timezone', async function () {
@@ -747,7 +735,7 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastCommentedAt('1', now.toDate());
-            assert(stub.notCalled, 'The LastSeenAtUpdater should\'t update a member.');
+            sinon.assert.notCalled(stub);
         });
 
         it('Does update when last_commented_at is different date', async function () {
@@ -779,14 +767,13 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastCommentedAt('1', now.toDate());
-            assert(stub.calledOnce, 'The LastSeenAtUpdater should attempt a member update');
-
-            assert(stub.calledOnceWithExactly({
+            sinon.assert.calledOnce(stub);
+            sinon.assert.calledOnceWithExactly(stub, {
                 last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss'),
                 last_commented_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')
             }, {
                 id: '1'
-            }), 'The LastSeenAtUpdater should attempt a member update with the current date.');
+            });
         });
 
         it('Does update when last_commented_at is null', async function () {
@@ -818,14 +805,13 @@ describe('LastSeenAtUpdater', function () {
                 events
             });
             await updater.updateLastCommentedAt('1', now.toDate());
-            assert(stub.calledOnce, 'The LastSeenAtUpdater should attempt a member update');
-
-            assert(stub.calledOnceWithExactly({
+            sinon.assert.calledOnce(stub);
+            sinon.assert.calledOnceWithExactly(stub, {
                 last_seen_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss'),
                 last_commented_at: now.tz('utc').format('YYYY-MM-DD HH:mm:ss')
             }, {
                 id: '1'
-            }), 'The LastSeenAtUpdater should attempt a member update with the current date.');
+            });
         });
     });
 });

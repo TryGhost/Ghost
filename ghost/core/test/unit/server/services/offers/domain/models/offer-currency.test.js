@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const OfferCurrency = require('../../../../../../../core/server/services/offers/domain/models/offer-currency');
 
@@ -8,69 +8,38 @@ describe('OfferCurrency', function () {
             OfferCurrency.create('USD');
             OfferCurrency.create('gbp');
 
-            try {
+            assert.throws(() => {
                 OfferCurrency.create();
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
-            }
+            }, OfferCurrency.InvalidOfferCurrency);
 
-            try {
+            assert.throws(() => {
                 OfferCurrency.create('US Dollars');
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
-            }
+            }, OfferCurrency.InvalidOfferCurrency);
 
-            try {
+            assert.throws(() => {
                 OfferCurrency.create('$');
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
-            }
+            }, OfferCurrency.InvalidOfferCurrency);
 
-            try {
+            assert.throws(() => {
                 OfferCurrency.create('USDC');
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
-            }
+            }, OfferCurrency.InvalidOfferCurrency);
 
-            try {
+            assert.throws(() => {
                 OfferCurrency.create(2);
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferCurrency.InvalidOfferCurrency,
-                    'expected an InvalidOfferCurrency error'
-                );
-            }
+            }, OfferCurrency.InvalidOfferCurrency);
         });
     });
 
     it('Store the currency as a string on the value property', function () {
         const currency = OfferCurrency.create('usd');
 
-        should.equal(typeof currency.value, 'string');
+        assert.equal(typeof currency.value, 'string');
     });
 
     it('Considers currencies equal if they have the same ISO code', function () {
         const currencyA = OfferCurrency.create('usd');
         const currencyB = OfferCurrency.create('USD');
 
-        should.ok(currencyA.equals(currencyB));
+        assert.ok(currencyA.equals(currencyB));
     });
 });
-

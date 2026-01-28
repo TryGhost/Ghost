@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
@@ -34,9 +35,9 @@ describe('IndexNow', function () {
     describe('listen()', function () {
         it('should initialise events correctly', function () {
             indexnow.listen();
-            eventStub.calledTwice.should.be.true();
-            eventStub.calledWith('post.published').should.be.true();
-            eventStub.calledWith('post.published.edited').should.be.true();
+            sinon.assert.calledTwice(eventStub);
+            sinon.assert.calledWith(eventStub, 'post.published');
+            sinon.assert.calledWith(eventStub, 'post.published.edited');
         });
     });
 
@@ -72,8 +73,8 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            pingStub.calledOnce.should.be.true();
-            pingStub.calledWith(testPost).should.be.true();
+            sinon.assert.calledOnce(pingStub);
+            sinon.assert.calledWith(pingStub, testPost);
 
             resetIndexNow();
         });
@@ -99,7 +100,7 @@ describe('IndexNow', function () {
 
             listener(testModel, {importing: true});
 
-            pingStub.calledOnce.should.be.false();
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -145,7 +146,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            pingStub.calledOnce.should.be.false();
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -177,7 +178,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            pingStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -209,7 +210,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            pingStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -241,7 +242,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            pingStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -259,7 +260,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            loggingStub.calledOnce.should.be.true();
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('with default post should not execute ping', async function () {
@@ -272,7 +273,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.false();
+            assert.equal(pingRequest.isDone(), false);
         });
 
         it('with a page should not execute ping', async function () {
@@ -283,7 +284,7 @@ describe('IndexNow', function () {
 
             await ping(testPage);
 
-            pingRequest.isDone().should.be.false();
+            assert.equal(pingRequest.isDone(), false);
         });
 
         it('when labs.indexnow is false should not execute ping', async function () {
@@ -296,7 +297,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.false();
+            assert.equal(pingRequest.isDone(), false);
         });
 
         it('when site is private should not execute ping', async function () {
@@ -309,7 +310,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.false();
+            assert.equal(pingRequest.isDone(), false);
         });
 
         it('when no API key is set should not execute ping and log warning', async function () {
@@ -324,10 +325,10 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             // Should NOT have made the ping request
-            pingRequest.isDone().should.be.false();
+            assert.equal(pingRequest.isDone(), false);
             // Should have logged a warning
-            loggingStub.calledOnce.should.be.true();
-            loggingStub.args[0][0].should.containEql('API key not available');
+            sinon.assert.calledOnce(loggingStub);
+            assert.match(loggingStub.args[0][0], /API key not available/);
         });
 
         it('should handle 202 response as success', async function () {
@@ -339,8 +340,8 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.true();
-            loggingStub.calledOnce.should.be.true();
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -352,8 +353,8 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.true();
-            loggingStub.calledOnce.should.be.true();
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs validation errors from 422 requests', async function () {
@@ -365,9 +366,9 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.true();
-            loggingStub.calledOnce.should.be.true();
-            loggingStub.args[0][0].message.should.containEql('key validation failed');
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
+            assert.match(loggingStub.args[0][0].message, /key validation failed/);
         });
 
         it('should behave correctly when getting a 429', async function () {
@@ -379,8 +380,8 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            pingRequest.isDone().should.be.true();
-            loggingStub.calledOnce.should.be.true();
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 
@@ -390,14 +391,14 @@ describe('IndexNow', function () {
             settingsCacheStub.withArgs('indexnow_api_key').returns(expectedKey);
 
             const key = indexnow.getApiKey();
-            key.should.equal(expectedKey);
+            assert.equal(key, expectedKey);
         });
 
         it('should return null when no key is set', function () {
             settingsCacheStub.withArgs('indexnow_api_key').returns(null);
 
             const key = indexnow.getApiKey();
-            (key === null).should.be.true();
+            assert.equal(key, null);
         });
     });
 });

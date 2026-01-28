@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
@@ -55,8 +54,7 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.true();
-            next.firstCall.args.should.be.an.Array().with.lengthOf(0);
+            sinon.assert.calledOnceWithExactly(next);
         });
 
         it('redirects correctly on success', async function () {
@@ -77,9 +75,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=true');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, '/blah/?action=signup&success=true');
         });
 
         it('redirects correctly on failure', async function () {
@@ -93,9 +90,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, '/blah/?action=signup&success=false');
         });
 
         it('redirects free member to custom redirect on signup', async function () {
@@ -116,9 +112,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, 'https://custom.com/redirect/');
         });
 
         it('redirects paid member to custom redirect on signup', async function () {
@@ -139,9 +134,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, 'https://custom.com/paid/');
         });
 
         it('redirects member to referrer param path on signin if it is on the site', async function () {
@@ -155,9 +149,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signin&success=true#comment-123');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
         });
 
         it('redirects member to referrer param path on signup if it is on the site', async function () {
@@ -171,9 +164,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signup&success=true#comment-123');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
         it('does not redirect to referrer param if it is external', async function () {
@@ -187,9 +179,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
             // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnceWithExactly(res.redirect, '/blah/?action=signin&success=true');
         });
     });
 
@@ -219,10 +210,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            sinon.assert.calledOnceWithExactly(res.writeHead, 404);
+            sinon.assert.calledOnceWithExactly(res.end, 'Email address not found.');
         });
 
         // auth happens prior to this middleware
@@ -240,10 +229,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            sinon.assert.calledOnceWithExactly(res.writeHead, 404);
+            sinon.assert.calledOnceWithExactly(res.end, 'Email address not found.');
         });
 
         it('attempts to update newsletters', async function () {
@@ -269,7 +256,7 @@ describe('Members Service Middleware', function () {
             });
             await membersMiddleware.updateMemberNewsletters(req, res);
             // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
-            res.json.calledOnce.should.be.true();
+            sinon.assert.calledOnce(res.json);
         });
 
         it('returns 400 on error', async function () {
@@ -293,10 +280,8 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(400);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Failed to update newsletters');
+            sinon.assert.calledOnceWithExactly(res.writeHead, 400);
+            sinon.assert.calledOnceWithExactly(res.end, 'Failed to update newsletters');
         });
     });
 });
