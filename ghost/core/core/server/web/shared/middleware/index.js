@@ -21,5 +21,9 @@ module.exports = {
 
     get urlRedirects() {
         return require('./url-redirects');
+    },
+
+    get normalizeUrls() {
+        return require('./normalize-urls');
     }
 };

@@ -17,7 +17,28 @@ function getPaginatedUrl(page, data, absolute) {
     const baseUrlMatch = data.relativeUrl.match(baseUrlPattern);
 
     // If there is no match for pagePath, use the original url, without the trailing slash
-    const baseUrl = baseUrlMatch ? baseUrlMatch[1] : data.relativeUrl.slice(0, -1);
+    let baseUrl = baseUrlMatch ? baseUrlMatch[1] : data.relativeUrl.slice(0, -1);
+    
+    // Properly encode the baseUrl to handle accented characters and spaces
+    // This ensures that pagination links are properly formed for tags with special characters
+    if (baseUrl) {
+        // Split the URL into segments
+        const segments = baseUrl.split('/');
+        
+        // Encode each segment to handle accented characters and spaces
+        const encodedSegments = segments.map((segment) => {
+            // Don't encode empty segments
+            if (!segment) {
+                return segment;
+            }
+            // Use encodeURIComponent to properly encode special characters
+            // This will convert 'sécurité incendie' to 's%C3%A9curit%C3%A9%20incendie'
+            return encodeURIComponent(segment);
+        });
+        
+        // Rejoin the segments
+        baseUrl = encodedSegments.join('/');
+    }
 
     let newRelativeUrl;
 

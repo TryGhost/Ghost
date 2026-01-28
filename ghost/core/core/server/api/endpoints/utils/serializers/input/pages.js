@@ -11,6 +11,7 @@ const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 const sentry = require('../../../../../../shared/sentry');
+const {preserveGatedBlockVisibility} = require('./utils/gated-block-visibility');
 
 const messages = {
     failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
@@ -190,7 +191,9 @@ module.exports = {
                 }
 
                 try {
-                    frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
+                    const lexicalDoc = lexical.htmlToLexicalConverter(html);
+                    const lexicalWithVisibility = preserveGatedBlockVisibility(html, lexicalDoc);
+                    frame.data.pages[0].lexical = JSON.stringify(lexicalWithVisibility);
                 } catch (err) {
                     sentry.captureException(err);
                     throw new ValidationError({
