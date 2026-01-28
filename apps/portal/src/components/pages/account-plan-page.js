@@ -39,17 +39,6 @@ export const AccountPlanPageStyles = `
         padding: 6px 12px;
     }
 
-    .gh-portal-retention-offer {
-        text-align: center;
-    }
-
-    .gh-portal-retention-offer-message {
-        font-size: 1.5rem;
-        color: var(--grey4);
-        margin: 0 0 24px;
-        line-height: 1.5;
-    }
-
     .gh-portal-retention-offer-card {
         background: var(--grey14);
         border-radius: 8px;
@@ -68,6 +57,12 @@ export const AccountPlanPageStyles = `
         font-size: 1.5rem;
         color: var(--grey5);
         margin-top: 4px;
+    }
+
+    .gh-portal-retention-offer-price {
+        display: flex;
+        gap: 6px;
+        margin-top: 20px;
     }
 `;
 
@@ -302,30 +297,59 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
 
+    // Static data for design purposes - engineers will wire up with real data
+    const productName = 'Gold';
+    const interval = 'Monthly';
+    const originalPrice = '15';
+    const discountedPrice = '7.5';
+    const currencySymbol = '$';
+    const offerMessage = `${discountText} ${durationText}. Renews at $15/month.`;
+
     // TODO: Add i18n once copy is finalized
     /* eslint-disable i18next/no-literal-string */
     return (
-        <div className="gh-portal-logged-out-form-container gh-portal-retention-offer">
-            <p className="gh-portal-retention-offer-message">
+        <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer">
+            <p className="gh-portal-text-center">
                 {'We\'d hate to see you go! How about a special offer to stay?'}
             </p>
-            <div className="gh-portal-retention-offer-card">
-                <div className="gh-portal-retention-offer-discount">{discountText}</div>
-                <div className="gh-portal-retention-offer-duration">{durationText}</div>
+
+            <div className="gh-portal-offer-bar">
+                <div className="gh-portal-offer-title">
+                    <h4>{productName} - {interval}</h4>
+                    <h5 className="gh-portal-discount-label">{discountText}</h5>
+                </div>
+
+                <div className="gh-portal-offer-details">
+                    <div className="gh-portal-retention-offer-price">
+                        <div className="gh-portal-product-price">
+                            <span className="currency-sign">{currencySymbol}</span>
+                            <span className="amount">{discountedPrice}</span>
+                        </div>
+                        <div className="gh-portal-offer-oldprice">
+                            {currencySymbol}{originalPrice}
+                        </div>
+                    </div>
+                    <p className="footnote">
+                        {offerMessage}
+                    </p>
+                </div>
+
+                <ActionButton
+                    dataTestId={'accept-retention-offer'}
+                    onClick={onAcceptOffer}
+                    isRunning={isAcceptingOffer}
+                    disabled={isAcceptingOffer}
+                    isPrimary={true}
+                    brandColor={brandColor}
+                    label="Accept offer"
+                    style={{
+                        width: '100%',
+                        height: '40px',
+                        marginTop: '28px'
+                    }}
+                />
             </div>
-            <ActionButton
-                dataTestId={'accept-retention-offer'}
-                onClick={onAcceptOffer}
-                isRunning={isAcceptingOffer}
-                disabled={isAcceptingOffer}
-                isPrimary={true}
-                brandColor={brandColor}
-                label="Accept offer"
-                style={{
-                    width: '100%',
-                    height: '40px'
-                }}
-            />
+
             <ActionButton
                 dataTestId={'decline-retention-offer'}
                 onClick={onDeclineOffer}
@@ -333,10 +357,10 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
                 isDestructive={true}
                 classes={'gh-portal-btn-text'}
                 brandColor={brandColor}
-                label="Continue to cancellation"
+                label="No thanks, I want to cancel"
                 style={{
                     width: '100%',
-                    marginTop: '24px',
+                    marginTop: '32px',
                     marginBottom: '24px'
                 }}
             />
