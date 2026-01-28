@@ -3,7 +3,7 @@ import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
 import NewSubscribersCadence from './components/new-subscribers-cadence';
-import PaidMembersChangeChart from './components/paid-members-change-chart';
+import PaidMembersChangeChart from './components/paid-subscription-change-chart';
 import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';

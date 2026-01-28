@@ -2,7 +2,7 @@ import moment from 'moment';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-import PaidMembersChangeChart from '@src/views/Stats/Growth/components/paid-members-change-chart';
+import PaidMembersChangeChart from '@src/views/Stats/Growth/components/paid-subscription-change-chart';
 
 // Mock dependencies from @tryghost/shade
 vi.mock('@tryghost/shade', async () => {
@@ -70,7 +70,7 @@ describe('PaidMembersChangeChart Component', () => {
         expect(screen.getByTestId('paid-members-change-card')).toBeInTheDocument();
 
         // Check that title and description are present
-        expect(screen.getByText('Paid members change')).toBeInTheDocument();
+        expect(screen.getByText('Paid subscriptions')).toBeInTheDocument();
         expect(screen.getByText(/New and cancelled paid subscriptions/)).toBeInTheDocument();
 
         // Check that legend items are present with totals
@@ -120,7 +120,7 @@ describe('PaidMembersChangeChart Component', () => {
 
         // Should still render the card
         expect(screen.getByTestId('paid-members-change-card')).toBeInTheDocument();
-        expect(screen.getByText('Paid members change')).toBeInTheDocument();
+        expect(screen.getByText('Paid subscriptions')).toBeInTheDocument();
     });
 
     it('returns null when loading', () => {
