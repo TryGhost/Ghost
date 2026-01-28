@@ -163,15 +163,26 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const label = t('Close');
-        return (
-            <ActionButton
-                style={{width: '100%'}}
-                onClick={e => this.handleClose(e)}
-                brandColor={this.context.brandColor}
-                label={label}
-            />
-        );
+        const {site, sniperLinks} = this.context;
+        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        if (isSniperLinksEnabled && sniperLinks) {
+            return (
+                <SniperLinkButton
+                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                    label={t('Open email')}
+                    brandColor={this.context.brandColor}
+                />
+            );
+        } else {
+            return (
+                <ActionButton
+                    style={{width: '100%'}}
+                    onClick={e => this.handleClose(e)}
+                    brandColor={this.context.brandColor}
+                    label={t('Close')}
+                />
+            );
+        }
     }
 
     handleSubmit(e) {
@@ -287,41 +298,15 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
-    /**
-     * @param {object} sniperLinks
-     * @param {string} sniperLinks.android
-     * @param {string} sniperLinks.desktop
-     * @returns {ReactNode}
-     */
-    renderSniperLinkButton(sniperLinks) {
-        return (
-            <SniperLinkButton
-                href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                label={t('Open email')}
-                brandColor={this.context.brandColor}
-            />
-        );
-    }
-
     render() {
-        const {site, otcRef, sniperLinks} = this.context;
-
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-
-        /** @type {ReactNode} */ let footer;
-        if (otcRef) {
-            footer = this.renderOTCForm();
-        } else if (isSniperLinksEnabled && sniperLinks) {
-            footer = this.renderSniperLinkButton(sniperLinks);
-        } else {
-            footer = this.renderCloseButton();
-        }
+        const {otcRef} = this.context;
+        const showOTCForm = !!otcRef;
 
         return (
             <div className='gh-portal-content'>
                 <CloseButton />
                 {this.renderFormHeader()}
-                {footer}
+                {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
             </div>
         );
     }
