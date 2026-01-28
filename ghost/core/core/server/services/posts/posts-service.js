@@ -6,6 +6,7 @@ const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
+const {byIds, byColumnValues} = require('../../models/base/plugins/bulk-filters');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -120,11 +121,10 @@ class PostsService {
         if (data.action === 'unschedule') {
             const updateResult = await this.#updatePosts({status: 'draft', published_at: null}, {filter: this.#mergeFilters('status:scheduled', options.filter), context: options.context, actionName: 'unscheduled'});
             // makes sure `email_only` value is reverted for the unscheduled posts
-            await this.models.Post.bulkEdit(updateResult.editIds, 'posts_meta', {
+            await this.models.Post.bulkUpdate('posts_meta', {
                 data: {email_only: false},
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+                where: byColumnValues('post_id', updateResult.editIds),
+                transacting: options.transacting
             });
             DomainEvents.dispatch(PostsBulkUnscheduledEvent.create(updateResult.editIds));
 
@@ -288,33 +288,42 @@ class PostsService {
         ];
 
         for (const table of postTablesToDelete) {
-            await this.models.Post.bulkDestroy(deleteIds, table, {
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+            await this.models.Post.bulkDelete(table, {
+                where: byColumnValues('post_id', deleteIds),
+                transacting: options.transacting
             });
         }
 
         for (const table of emailTablesToDelete) {
-            await this.models.Post.bulkDestroy(deleteEmailIds, table, {
-                column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
+            await this.models.Post.bulkDelete(table, {
+                where: byColumnValues('email_id', deleteEmailIds),
+                transacting: options.transacting
             });
         }
 
         for (const table of emailTablesToSetNull) {
-            await this.models.Post.bulkEdit(deleteEmailIds, table, {
+            await this.models.Post.bulkUpdate(table, {
                 data: {email_id: null},
-                column: 'email_id',
-                transacting: options.transacting,
-                throwErrors: true
+                where: byColumnValues('email_id', deleteEmailIds),
+                transacting: options.transacting
             });
         }
 
         // Posts and emails
-        await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
+        await this.models.Post.bulkDelete('emails', {
+            where: byIds(deleteEmailIds),
+            transacting: options.transacting
+        });
+        // actionIds triggers addActions('deleted', ...) before deletion (needs to happen before,
+        // otherwise we cannot fetch the names of the deleted items)
+        const affectedRows = await this.models.Post.bulkDelete('posts', {
+            where: byIds(deleteIds),
+            transacting: options.transacting
+        }, {
+            context: options.context,
+            actionIds: deleteIds
+        });
+        const result = {successful: affectedRows, unsuccessful: 0, errors: [], unsuccessfulData: []};
 
         result.deleteIds = deleteIds;
 
@@ -357,19 +366,24 @@ class PostsService {
             delete data.tiers;
         }
 
-        const result = await this.models.Post.bulkEdit(editIds, 'posts', {
-            ...options,
+        // actionIds triggers addActions('edited', ...) if any rows were affected
+        const affectedRows = await this.models.Post.bulkUpdate('posts', {
             data,
-            throwErrors: true
+            where: byIds(editIds),
+            transacting: options.transacting
+        }, {
+            context: options.context,
+            actionName: options.actionName,
+            actionIds: editIds
         });
+        const result = {successful: affectedRows, unsuccessful: 0, errors: [], unsuccessfulData: []};
 
         // Update tiers
         if (tiers) {
             // First delete all
-            await this.models.Post.bulkDestroy(editIds, 'posts_products', {
-                column: 'post_id',
-                transacting: options.transacting,
-                throwErrors: true
+            await this.models.Post.bulkDelete('posts_products', {
+                where: byColumnValues('post_id', editIds),
+                transacting: options.transacting
             });
 
             // Then add again
