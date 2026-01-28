@@ -85,7 +85,7 @@ const EmailSettingRow: React.FC<{
                 <div className='text-sm text-grey-700 dark:text-grey-600'>{description}</div>
             </div>
             <button
-                className='font-semibold text-green'
+                className='hidden font-semibold text-green'
                 data-testid={testId}
                 type='button'
                 onClick={onEdit}
