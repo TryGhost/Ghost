@@ -41,7 +41,7 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, commentsService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -57,6 +57,8 @@ module.exports = class MemberBREADService {
         this.emailSuppressionList = emailSuppressionList;
         /** @private */
         this.settingsHelpers = settingsHelpers;
+        /** @private */
+        this.commentsService = commentsService;
     }
 
     /**
@@ -381,10 +383,11 @@ module.exports = class MemberBREADService {
      * @param {string} memberId
      * @param {string} reason
      * @param {Date|null} until
+     * @param {boolean} hideComments
      * @param {Object} context
      * @returns {Promise<Object>}
      */
-    async disableCommenting(memberId, reason, until, context) {
+    async disableCommenting(memberId, reason, until, hideComments, context) {
         const member = await this.read({id: memberId});
 
         if (!member) {
@@ -401,6 +404,10 @@ module.exports = class MemberBREADService {
             'commenting_disabled',
             context
         );
+
+        if (hideComments) {
+            await this.commentsService.api.bulkUpdateStatus(`member_id:'${memberId}'+status:published`, 'hidden');
+        }
 
         return this.read({id: memberId});
     }

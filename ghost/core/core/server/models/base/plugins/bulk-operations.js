@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const nql = require('@tryghost/nql');
 
 const CHUNK_SIZE = 100;
 
@@ -102,6 +103,19 @@ const edit = createBulkOperation(editSingle, editMultiple);
 const del = createBulkOperation(delSingle, delMultiple);
 
 /**
+ * Creates a where strategy that applies an NQL filter to the query builder.
+ * Yields a single query modifier — no chunking.
+ *
+ * @param {string} filter - NQL filter string (e.g. "member_id:'abc'+status:published")
+ * @yields {(qb: import('knex').QueryBuilder) => void}
+ */
+function* byNQL(filter) {
+    yield (qb) => {
+        nql(filter).querySQL(qb);
+    };
+}
+
+/**
  * @param {import('bookshelf')} Bookshelf
  */
 module.exports = function (Bookshelf) {
@@ -150,6 +164,35 @@ module.exports = function (Bookshelf) {
             }
 
             return await del(Bookshelf.knex, tableName, ids, options);
+        },
+
+        /**
+         * Update rows matching a where strategy (e.g. byNQL).
+         * The `where` parameter is an iterable of query modifier functions,
+         * each yielded value applies a WHERE clause to a fresh query.
+         *
+         * @param {string} tableName
+         * @param {object} options
+         * @param {object} options.data - Column values to set
+         * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} options.where - Where strategy
+         * @param {object} [options.transacting] - Knex transaction
+         */
+        bulkUpdate: async function bulkUpdate(tableName, {data, where, transacting}) {
+            tableName = tableName || this.prototype.tableName;
+
+            let affectedRows = 0;
+            for (const applyWhere of where) {
+                let qb = Bookshelf.knex(tableName);
+                if (transacting) {
+                    qb = qb.transacting(transacting);
+                }
+                applyWhere(qb);
+                affectedRows += await qb.update(data);
+            }
+
+            return affectedRows;
         }
     });
 };
+
+module.exports.byNQL = byNQL;
