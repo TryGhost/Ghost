@@ -39,26 +39,6 @@ export const AccountPlanPageStyles = `
         padding: 6px 12px;
     }
 
-    .gh-portal-retention-offer-card {
-        background: var(--grey14);
-        border-radius: 8px;
-        padding: 32px 24px;
-        margin-bottom: 24px;
-    }
-
-    .gh-portal-retention-offer-discount {
-        font-size: 2.4rem;
-        font-weight: 700;
-        color: var(--grey1);
-        line-height: 1.1;
-    }
-
-    .gh-portal-retention-offer-duration {
-        font-size: 1.5rem;
-        color: var(--grey5);
-        margin-top: 4px;
-    }
-
     .gh-portal-retention-offer-price {
         display: flex;
         gap: 6px;
