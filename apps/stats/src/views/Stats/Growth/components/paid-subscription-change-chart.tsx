@@ -199,16 +199,20 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             const signupsData = sanitizeChartData(subscriptionData, range, 'signups', 'sum', aggregationStrategy);
             const cancellationsData = sanitizeChartData(subscriptionData, range, 'cancellations', 'sum', aggregationStrategy);
 
+            // Create Map for O(1) lookups
+            const cancellationsMap = new Map(cancellationsData.map(c => [c.date, c]));
+
             // Combine the aggregated data
             const combinedData = signupsData.map(item => ({
                 date: item.date,
                 signups: item.signups || 0,
-                cancellations: cancellationsData.find(c => c.date === item.date)?.cancellations || 0
+                cancellations: cancellationsMap.get(item.date)?.cancellations || 0
             }));
 
             // Add any cancellation-only dates that might be missing from signups
+            const combinedDatesSet = new Set(combinedData.map(item => item.date));
             cancellationsData.forEach((cancelItem) => {
-                if (!combinedData.find(item => item.date === cancelItem.date)) {
+                if (!combinedDatesSet.has(cancelItem.date)) {
                     combinedData.push({
                         date: cancelItem.date,
                         signups: 0,
@@ -263,16 +267,20 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
             const subscribedData = sanitizeChartData(memberData, range, 'paid_subscribed', 'sum', aggregationStrategy);
             const canceledData = sanitizeChartData(memberData, range, 'paid_canceled', 'sum', aggregationStrategy);
 
+            // Create Map for O(1) lookups
+            const canceledMap = new Map(canceledData.map(c => [c.date, c]));
+
             // Combine the aggregated data
             const combinedData = subscribedData.map(item => ({
                 date: item.date,
                 paid_subscribed: item.paid_subscribed || 0,
-                paid_canceled: canceledData.find(c => c.date === item.date)?.paid_canceled || 0
+                paid_canceled: canceledMap.get(item.date)?.paid_canceled || 0
             }));
 
             // Add any canceled-only dates that might be missing from subscribed
+            const combinedDatesSet = new Set(combinedData.map(item => item.date));
             canceledData.forEach((cancelItem) => {
-                if (!combinedData.find(item => item.date === cancelItem.date)) {
+                if (!combinedDatesSet.has(cancelItem.date)) {
                     combinedData.push({
                         date: cancelItem.date,
                         paid_subscribed: 0,
