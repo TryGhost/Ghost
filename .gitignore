@@ -193,9 +193,6 @@ yalc.lock
 # useful for keeping local plans etc
 /ai
 
-# direnv environment loader files
-.envrc
-
 # e2e test suite
 /e2e/test-results
 /e2e/playwright-report
@@ -205,3 +202,11 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Nix development environment
+.direnv/
+.envrc.local
+result
+result-*
+.claude/
+.dev-data/
