@@ -255,9 +255,9 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         <Card>
             <CardHeader>
                 <div className="flex items-start justify-between">
-                    <div className='flex flex-col gap-y-1.5'>
-                        <CardTitle>New subscribers</CardTitle>
-                        <CardDescription>New paid subscriptions {getPeriodText(range)}</CardDescription>
+                    <div className='flex flex-col gap-1.5'>
+                        <CardTitle>New paid subscriptions</CardTitle>
+                        <CardDescription>Breakdown of new paid subscriptions {getPeriodText(range)}</CardDescription>
                     </div>
                     <div>
                         <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>
@@ -355,7 +355,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                                             className='size-2 rounded-full opacity-50'
                                             style={{backgroundColor: item.color}}
                                         />
-                                        <span className='max-w-[120px] truncate whitespace-nowrap' title={item.label}>{item.label}</span>
+                                        <span className='max-w-[150px] truncate whitespace-nowrap' title={item.label}>{item.label}</span>
                                         <span className='font-medium text-foreground'>
                                             {Math.round(Number(item.percentage) || 0)}%
                                         </span>
