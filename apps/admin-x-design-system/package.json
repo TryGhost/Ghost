@@ -38,7 +38,7 @@
         "@storybook/react": "8.6.14",
         "@storybook/react-vite": "8.6.14",
         "@storybook/testing-library": "0.2.2",
-        "@tailwindcss/forms": "0.5.10",
+        "@tailwindcss/forms": "0.5.11",
         "@tailwindcss/line-clamp": "0.4.4",
         "@testing-library/react": "14.3.1",
         "@testing-library/react-hooks": "8.0.1",
