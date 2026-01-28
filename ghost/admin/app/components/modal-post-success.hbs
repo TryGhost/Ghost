@@ -162,6 +162,15 @@
                     <span>{{svg-jar "social-linkedin"}}</span>
                 </a>
             </div>
+                <button
+                    class="gh-btn gh-btn-icon edit-post"
+                    type="button"
+                    title="Go to Editor"
+                    {{on "click" this.goToEditor}}
+                    {{on "mousedown" (optional this.noop)}}
+                >
+                    <span>{{svg-jar "pen" title="Go to Editor"}}</span>
+                </button>
                 <GhTaskButton
                     @showIcon={{true}}
                     @idleIcon="link"
