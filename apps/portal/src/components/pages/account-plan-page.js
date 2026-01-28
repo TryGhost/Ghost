@@ -303,7 +303,6 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
     const durationText = formatOfferDuration(offer);
 
     // TODO: Add i18n once copy is finalized
-    /* eslint-disable i18next/no-literal-string */
     return (
         <div className="gh-portal-logged-out-form-container gh-portal-retention-offer">
             <p className="gh-portal-retention-offer-message">
