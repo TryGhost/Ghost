@@ -15,8 +15,17 @@ const setup = async ({site, member = null, labs = {}}) => {
         });
     });
 
-    ghostApi.member.sendMagicLink = vi.fn(() => {
-        return Promise.resolve('success');
+    ghostApi.member.sendMagicLink = vi.fn(async ({email}) => {
+        if (email.endsWith('@test-sniper-link.example')) {
+            return {
+                sniperLinks: {
+                    android: 'https://test.example/',
+                    desktop: 'https://test.example/'
+                }
+            };
+        } else {
+            return {};
+        }
     });
 
     ghostApi.member.getIntegrityToken = vi.fn(() => {
@@ -222,6 +231,32 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
 
             expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
+        });
+
+        test('with sniper link', async () => {
+            const {
+                ghostApi,
+                emailInput,
+                popupIframeDocument,
+                submitButton
+            } = await setup({
+                site: {
+                    ...FixtureSite.singleTier.basic,
+                    labs: {sniperlinks: true}
+                }
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'test@test-sniper-link.example'}});
+
+            expect(emailInput).toHaveValue('test@test-sniper-link.example');
+            fireEvent.click(submitButton);
+
+            const sniperLinkButton = await within(popupIframeDocument).findByText(/open email/i);
+            expect(sniperLinkButton).toBeInTheDocument();
+            expect(sniperLinkButton).toHaveAttribute('href', 'https://test.example/');
+            expect(sniperLinkButton).toHaveAttribute('target', '_blank');
+
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'test@test-sniper-link.example');
         });
     });
 });
