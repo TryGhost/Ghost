@@ -170,7 +170,7 @@ describe('sendMagicLink', function () {
             .expectStatus(201);
 
         assert(res.body.sniperLinks.desktop.startsWith('https://mail.google.com/'));
-        assert(res.body.sniperLinks.android.startsWith('intent://'));
+        assert(res.body.sniperLinks.android.startsWith('intent:'));
     });
 
     it('Creates a valid magic link from custom signup with redirection', async function () {

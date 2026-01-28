@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 // @TODO: Reduce file length and remove the line above
 
 const DomainEvents = require('@tryghost/domain-events');
