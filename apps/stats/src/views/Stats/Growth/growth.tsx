@@ -1,8 +1,8 @@
-import CadenceBreakdown from './components/cadence-breakdown';
 import DateRangeSelect from '../components/date-range-select';
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
+import NewSubscribersCadence from './components/new-subscribers-cadence';
 import PaidMembersChangeChart from './components/paid-members-change-chart';
 import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
@@ -167,7 +167,7 @@ const Growth: React.FC = () => {
                             range={range}
                             subscriptionData={subscriptionData}
                         />
-                        <CadenceBreakdown isLoading={isPageLoading} />
+                        <NewSubscribersCadence isLoading={isPageLoading} range={range} />
                     </div>
                 )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>

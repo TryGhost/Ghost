@@ -56,7 +56,7 @@ test.describe('Stats App - Growth', () => {
         await expect(growthPage.body).toContainText('Cancelled');
     });
 
-    test('displays subscription breakdown pie chart when paid members exist', async ({page}) => {
+    test('displays new subscribers breakdown pie chart when paid members exist', async ({page}) => {
         const mockSubscriptionStats = {
             stats: [
                 {date: '2024-01-01', signups: 10, cancellations: 2, tier: 'tier-1', cadence: 'month', count: 100},
@@ -93,9 +93,9 @@ test.describe('Stats App - Growth', () => {
         const growthPage = new GrowthTab(page);
         await growthPage.visit();
 
-        // Check that the subscription breakdown card appears
-        await expect(growthPage.body).toContainText('Subscription breakdown');
-        await expect(growthPage.body).toContainText('Active paid subscriptions');
+        // Check that the new subscribers breakdown card appears
+        await expect(growthPage.body).toContainText('New subscribers');
+        await expect(growthPage.body).toContainText('New paid subscriptions');
 
         // Check for cadence labels (Monthly/Annual)
         await expect(growthPage.body).toContainText('Monthly');
