@@ -12,9 +12,19 @@ type NewSubscribersCadenceProps = {
 
 type BreakdownType = 'billing-period' | 'tiers';
 
+type CadenceChartDataItem = {
+    id: string;
+    name: string;
+    count: number;
+    fill: string;
+    color: string;
+};
+
 // Custom tooltip component
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({active, payload}: {active?: boolean; payload?: any[]}) => {
+const CustomTooltip = ({active, payload}: {
+    active?: boolean;
+    payload?: Array<{value: number; name: string; payload: CadenceChartDataItem}>;
+}) => {
     if (active && payload && payload.length) {
         const data = payload[0];
         return (
