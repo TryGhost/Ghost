@@ -21,11 +21,13 @@ test.describe('Stats App - Growth', () => {
         // Mock data with paid members enabled
         const mockSubscriptionStats = {
             stats: [
-                {date: '2024-01-01', signups: 10, cancellations: 2, tier: 'tier-1', cadence: 'month', count: 100},
-                {date: '2024-01-02', signups: 8, cancellations: 3, tier: 'tier-1', cadence: 'month', count: 105},
-                {date: '2024-01-03', signups: 12, cancellations: 1, tier: 'tier-1', cadence: 'year', count: 50}
+                {date: '2024-01-01', signups: 10, cancellations: 2, tier: 'tier-1', cadence: 'month', count: 100, positive_delta: 10, negative_delta: 2},
+                {date: '2024-01-02', signups: 8, cancellations: 3, tier: 'tier-1', cadence: 'month', count: 105, positive_delta: 8, negative_delta: 3},
+                {date: '2024-01-03', signups: 12, cancellations: 1, tier: 'tier-1', cadence: 'year', count: 50, positive_delta: 12, negative_delta: 1}
             ],
             meta: {
+                tiers: ['tier-1'],
+                cadences: ['month', 'year'],
                 totals: [
                     {tier: 'tier-1', cadence: 'month', count: 105},
                     {tier: 'tier-1', cadence: 'year', count: 50}
@@ -70,10 +72,12 @@ test.describe('Stats App - Growth', () => {
     test('displays new subscribers breakdown pie chart when paid members exist', async ({page}) => {
         const mockSubscriptionStats = {
             stats: [
-                {date: '2024-01-01', signups: 10, cancellations: 2, tier: 'tier-1', cadence: 'month', count: 100},
-                {date: '2024-01-02', signups: 8, cancellations: 3, tier: 'tier-1', cadence: 'year', count: 50}
+                {date: '2024-01-01', signups: 10, cancellations: 2, tier: 'tier-1', cadence: 'month', count: 100, positive_delta: 10, negative_delta: 2},
+                {date: '2024-01-02', signups: 8, cancellations: 3, tier: 'tier-1', cadence: 'year', count: 50, positive_delta: 8, negative_delta: 3}
             ],
             meta: {
+                tiers: ['tier-1'],
+                cadences: ['month', 'year'],
                 totals: [
                     {tier: 'tier-1', cadence: 'month', count: 100},
                     {tier: 'tier-1', cadence: 'year', count: 50}
