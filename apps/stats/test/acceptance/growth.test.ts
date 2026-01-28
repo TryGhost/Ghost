@@ -1,9 +1,20 @@
 import GrowthTab from './pages/growth-tab.ts';
 import {
     createMockRequests,
-    mockApi
+    mockApi,
+    toggleLabsFlag
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+
+test.beforeEach(() => {
+    // Enable the paidBreakdownCharts feature flag for these tests
+    toggleLabsFlag('paidBreakdownCharts', true);
+});
+
+test.afterEach(() => {
+    // Reset the flag after each test
+    toggleLabsFlag('paidBreakdownCharts', false);
+});
 
 test.describe('Stats App - Growth', () => {
     test('displays change chart as separate section when paid members are enabled', async ({page}) => {

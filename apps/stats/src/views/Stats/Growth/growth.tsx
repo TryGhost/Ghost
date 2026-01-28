@@ -16,6 +16,7 @@ import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useGrowthStats} from '@hooks/use-growth-stats';
+import {useLabsFlag} from '@hooks/use-labs-flag';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@hooks/use-top-posts-stats-with-range';
 import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
@@ -51,6 +52,7 @@ const Growth: React.FC = () => {
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
+    const paidBreakdownChartsEnabled = useLabsFlag('paidBreakdownCharts');
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
@@ -159,7 +161,7 @@ const Growth: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && (
+                {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && paidBreakdownChartsEnabled && (
                     <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(400px,1fr)]'>
                         <PaidMembersChangeChart
                             isLoading={isPageLoading}
