@@ -4,7 +4,7 @@ import AppContext from '../../app-context';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/close-button';
 import InputForm from '../common/input-form';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, formatCurrency, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -445,7 +445,7 @@ export default class OfferPage extends React.Component {
         if (offer.type === 'fixed') {
             return (
                 <h5 className="gh-portal-discount-label">{t('{amount} off', {
-                    amount: `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`
+                    amount: formatCurrency(offer.currency, offer.amount / 100)
                 })}</h5>
             );
         }
@@ -511,7 +511,7 @@ export default class OfferPage extends React.Component {
 
     getOffAmount({offer}) {
         if (offer.type === 'fixed') {
-            return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+            return formatCurrency(offer.currency, offer.amount / 100);
         } else if (offer.type === 'percent') {
             return `${offer.amount}%`;
         } else if (offer.type === 'trial') {
@@ -583,12 +583,17 @@ export default class OfferPage extends React.Component {
     }
 
     renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price}) {
+        const formattedPrice = formatCurrency(price.currency, this.renderRoundedPrice(updatedPrice));
+        // Split currency symbol and amount for styling
+        const currencySymbol = getCurrencySymbol(price.currency);
+        const amount = formattedPrice.replace(currencySymbol, '').trim();
+        
         if (offer.type === 'trial') {
             return (
                 <div className="gh-portal-product-card-pricecontainer offer-type-trial">
                     <div className="gh-portal-product-price">
-                        <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                        <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                        <span className={'currency-sign ' + currencyClass}>{currencySymbol}</span>
+                        <span className="amount">{amount}</span>
                     </div>
                 </div>
             );
@@ -596,8 +601,8 @@ export default class OfferPage extends React.Component {
         return (
             <div className="gh-portal-product-card-pricecontainer">
                 <div className="gh-portal-product-price">
-                    <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                    <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                    <span className={'currency-sign ' + currencyClass}>{currencySymbol}</span>
+                    <span className="amount">{amount}</span>
                 </div>
             </div>
         );
@@ -608,7 +613,7 @@ export default class OfferPage extends React.Component {
             return null;
         }
         return (
-            <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
+            <div className="gh-portal-offer-oldprice">{formatCurrency(price.currency, price.amount / 100)}</div>
         );
     }
 
