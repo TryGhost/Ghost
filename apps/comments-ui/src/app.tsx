@@ -309,7 +309,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
             });
         } catch (e) {
-            /* eslint-disable no-console */
             console.error(`[Comments] Failed to initialize:`, e);
             /* eslint-enable no-console */
             setState({

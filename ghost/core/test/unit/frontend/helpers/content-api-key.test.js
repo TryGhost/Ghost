@@ -1,4 +1,3 @@
-/* eslint-disable no-regex-spaces */
 const proxy = require('../../../../core/frontend/services/proxy');
 const {getFrontendKey} = proxy;
 const should = require('should');

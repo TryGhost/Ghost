@@ -1,4 +1,3 @@
-/* eslint-disable no-regex-spaces */
 const should = require('should');
 
 const sinon = require('sinon');

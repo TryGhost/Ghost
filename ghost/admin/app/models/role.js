@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import Model, {attr} from '@ember-data/model';
 import {computed} from '@ember/object';
 

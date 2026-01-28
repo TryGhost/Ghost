@@ -8,7 +8,6 @@ const htmlToPlaintext = (html) => {
     return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export class MockedApi {
     comments: any[];

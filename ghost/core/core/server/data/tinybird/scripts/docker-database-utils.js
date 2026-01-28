@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 /* eslint-disable no-console */
 /**
  * Docker Database Utilities for Ghost Analytics Scripts

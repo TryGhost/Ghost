@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable ghost/filenames/match-exported-class */
 /* eslint-disable no-console */
 /* eslint-disable ghost/ghost-custom/no-native-error */
 /**

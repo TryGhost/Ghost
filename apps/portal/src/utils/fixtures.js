@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
 
 export const testSite = getTestSite();

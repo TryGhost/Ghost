@@ -3,7 +3,6 @@ import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 describe('COMMENT_HASH_PREFIX', function () {
     it('exports the correct prefix', function () {

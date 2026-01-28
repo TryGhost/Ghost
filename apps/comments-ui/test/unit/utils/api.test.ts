@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import setupGhostApi from '../../../src/utils/api';
 import {vi} from 'vitest';
 

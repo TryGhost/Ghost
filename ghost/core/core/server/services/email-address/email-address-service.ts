@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import logging from '@tryghost/logging';
 import EmailAddressParser, {EmailAddress} from './email-address-parser.js';
 

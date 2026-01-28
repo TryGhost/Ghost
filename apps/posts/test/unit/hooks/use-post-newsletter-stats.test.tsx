@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {beforeEach, describe, expect, it} from 'vitest';
 import {createTestWrapper, mockData, mockServer} from '../../utils/msw-helpers';
 import {renderHook, waitFor} from '@testing-library/react';

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import ApplicationSerializer from './application';
 import {pluralize} from 'ember-inflector';
 
