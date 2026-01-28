@@ -256,8 +256,8 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             <CardHeader>
                 <div className="flex items-start justify-between gap-1.5">
                     <div className='flex flex-col gap-1.5'>
-                        <CardTitle>New paid subscriptions</CardTitle>
-                        <CardDescription>Breakdown of new paid subscriptions {getPeriodText(range)}</CardDescription>
+                        <CardTitle>Paid subscription breakdown</CardTitle>
+                        <CardDescription>New paid subscriptions {getPeriodText(range)}</CardDescription>
                     </div>
                     <div>
                         <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>

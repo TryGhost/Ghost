@@ -88,7 +88,7 @@ describe('NewSubscribersCadence Component', () => {
         render(<NewSubscribersCadence isLoading={false} range={30} />);
 
         // Check that the component renders with title
-        expect(screen.getByText('New paid subscriptions')).toBeInTheDocument();
+        expect(screen.getByText('Paid subscription breakdown')).toBeInTheDocument();
 
         // Check that both cadence types are shown
         expect(screen.getByText('Monthly')).toBeInTheDocument();

@@ -162,7 +162,7 @@ const Growth: React.FC = () => {
                     </CardContent>
                 </Card>
                 {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && paidBreakdownChartsEnabled && (
-                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(400px,1fr)]'>
+                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]'>
                         <PaidMembersChangeChart
                             isLoading={isPageLoading}
                             memberData={chartData}
