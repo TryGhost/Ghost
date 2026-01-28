@@ -1,10 +1,11 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
 import {DiffDirection} from '@hooks/use-growth-stats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
+import {useLabsFlag} from '@src/hooks/use-labs-flag';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {
@@ -39,6 +40,61 @@ type Totals = {
     };
 };
 
+// Extended data type for paid members chart with additional tooltip fields
+type PaidMembersChartDataItem = GhAreaChartDataItem & {
+    comped: number;
+    paid_subscribed?: number;
+};
+
+// Custom tooltip for paid members chart
+const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown}: {
+    active?: boolean;
+    payload?: Array<{value: number; payload: PaidMembersChartDataItem}>;
+    range?: number;
+    color?: string;
+    showBreakdown?: boolean;
+}) => {
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    const data = payload[0].payload;
+    const {date, formattedValue, label, comped} = data;
+    const paidSubscriptions = data.value - (comped || 0);
+
+    return (
+        <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
+            {date && <div className="mb-1 text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
+            <div className='flex flex-col gap-1'>
+                <div className='flex items-center gap-2'>
+                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-purple))'}}></span>
+                    <div className='flex grow items-center justify-between gap-5'>
+                        {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                        <div className="font-mono font-medium">{formattedValue}</div>
+                    </div>
+                </div>
+                {showBreakdown && (
+                    <>
+                        <Separator />
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Paid subscriptions</div>
+                                <div className="font-mono text-sm">{formatNumber(paidSubscriptions)}</div>
+                            </div>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Complimentary</div>
+                                <div className="font-mono text-sm">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
     totals: Totals;
@@ -52,6 +108,7 @@ const GrowthKPIs: React.FC<{
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const showPaidBreakdown = useLabsFlag('paidBreakdownCharts');
 
     // Update current tab if initialTab changes
     useEffect(() => {
@@ -119,7 +176,9 @@ const GrowthKPIs: React.FC<{
                     ...item,
                     value: item.paid,
                     formattedValue: formatNumber(item.paid),
-                    label: 'Paid members'
+                    label: 'Paid members',
+                    comped: item.comped,
+                    paid_subscribed: item.paid_subscribed
                 };
             });
             break;
@@ -292,6 +351,7 @@ const GrowthKPIs: React.FC<{
                         formatNumber}
                     id={currentTab}
                     range={range}
+                    tooltipContent={currentTab === 'paid-members' ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={range} showBreakdown={showPaidBreakdown} /> : undefined}
                 />
             </div>
         </Tabs>
