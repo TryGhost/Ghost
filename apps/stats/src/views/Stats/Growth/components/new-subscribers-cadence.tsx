@@ -237,7 +237,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             return {
                 label: item.name,
                 count: item.count,
-                percentage: ((item.count / totalSignups) * 100).toFixed(1),
+                percentage: ((item.count / totalSignups) * 100),
                 color: item.color
             };
         });
@@ -254,7 +254,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-1.5">
                     <div className='flex flex-col gap-1.5'>
                         <CardTitle>New paid subscriptions</CardTitle>
                         <CardDescription>Breakdown of new paid subscriptions {getPeriodText(range)}</CardDescription>

@@ -304,7 +304,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     return (
         <Card data-testid='paid-members-change-card'>
             <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-1.5">
                     <div className='flex flex-col gap-1.5'>
                         <CardTitle>Paid subscriptions</CardTitle>
                         <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
