@@ -5,8 +5,6 @@ const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const papaparse = require('papaparse');
-const {serializeCommenting} = require('./utils/member-commenting');
-
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
     read: createSerializer('read', singleMember),
@@ -182,7 +180,7 @@ function serializeMember(member, options) {
         attribution: serializeAttribution(json.attribution),
         unsubscribe_url: json.unsubscribe_url,
         can_comment: json.can_comment,
-        commenting: serializeCommenting(json.commenting)
+        commenting: json.commenting
     };
 
     if (json.products) {

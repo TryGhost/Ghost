@@ -4,6 +4,7 @@ const models = require('../../../core/server/models');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const settingsCache = require('../../../core/shared/settings-cache');
+const {MemberCommenting} = require('../../../core/server/services/members/commenting');
 
 describe('Member Commenting API', function () {
     let agent;
@@ -225,13 +226,9 @@ describe('Member Commenting API', function () {
         it('Members with expired disable have can_comment: true', async function () {
             const pastDate = new Date(Date.now() - 1000).toISOString(); // 1 second ago
 
-            // Directly set an expired disable in the database (must use stringified JSON)
+            // Directly set an expired disable in the database
             await models.Member.edit({
-                commenting: JSON.stringify({
-                    disabled: true,
-                    disabledReason: 'Expired disable',
-                    disabledUntil: pastDate
-                })
+                commenting: MemberCommenting.disabled('Expired disable', new Date(pastDate))
             }, {id: member.id});
 
             const {body} = await agent
@@ -362,13 +359,9 @@ describe('Member Commenting Service Behavior', function () {
     it('Member with expired disable has can_comment: true', async function () {
         const pastDate = new Date(Date.now() - 60000).toISOString(); // 1 minute ago
 
-        // Set an expired disable directly (must use stringified JSON)
+        // Set an expired disable directly
         await models.Member.edit({
-            commenting: JSON.stringify({
-                disabled: true,
-                disabledReason: 'Expired disable',
-                disabledUntil: pastDate
-            })
+            commenting: MemberCommenting.disabled('Expired disable', new Date(pastDate))
         }, {id: member.id});
 
         // Verify via API (can_comment is computed by service)
@@ -668,11 +661,7 @@ describe('Member with Commenting Disabled - Comment Restriction', function () {
 
         // Set an expired disable directly in the database
         await models.Member.edit({
-            commenting: JSON.stringify({
-                disabled: true,
-                disabledReason: 'Expired disable',
-                disabledUntil: pastDate
-            })
+            commenting: MemberCommenting.disabled('Expired disable', new Date(pastDate))
         }, {id: member.id});
 
         // Member should be able to comment since disable is expired
