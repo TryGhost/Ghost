@@ -5,7 +5,7 @@ import setupGhostApi from '../src/utils/api.js';
 
 const OTC_LABEL_REGEX = /Code/i;
 
-const setup = async ({site, member = null, labs = {}}) => {
+const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
 
     ghostApi.init = vi.fn(() => {
@@ -28,7 +28,7 @@ const setup = async ({site, member = null, labs = {}}) => {
     });
 
     const utils = appRender(
-        <App api={ghostApi} labs={labs} />
+        <App api={ghostApi} />
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
@@ -414,7 +414,7 @@ describe('OTC Integration Flow', () => {
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{}} />
+            <App api={ghostApi} />
         );
 
         await utils.findByTitle(/portal-trigger/i);
