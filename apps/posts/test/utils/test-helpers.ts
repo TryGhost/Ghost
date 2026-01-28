@@ -146,7 +146,6 @@ export const setupPostsAppMocks = async () => {
     const mockUseMrrHistory = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useMrrHistory;
     const mockUseTopLinks = vi.mocked(await import('@tryghost/admin-x-framework/api/links')).useTopLinks;
     const mockUseGlobalData = vi.mocked(await import('@src/providers/post-analytics-context')).useGlobalData;
-    const mockGetSettingValue = vi.mocked(await import('@tryghost/admin-x-framework/api/settings')).getSettingValue;
 
     // Set up ALL mocks with sensible defaults using centralized fixtures
     mockApiHook<PostsResponseType>(mockGetPost, defaultMockData.postsResponse);
@@ -158,7 +157,6 @@ export const setupPostsAppMocks = async () => {
     mockApiHook<MrrHistoryResponseType>(mockUseMrrHistory, responseFixtures.mrrHistory);
     mockApiHook<LinkResponseType>(mockUseTopLinks, responseFixtures.links);
     mockUseGlobalData.mockReturnValue(defaultMockData.globalData);
-    mockGetSettingValue.mockReturnValue('{}');
 
     return {
         mockGetPost,
@@ -169,8 +167,7 @@ export const setupPostsAppMocks = async () => {
         mockUsePostGrowthStats,
         mockUseMrrHistory,
         mockUseTopLinks,
-        mockUseGlobalData,
-        mockGetSettingValue
+        mockUseGlobalData
     };
 };
 
