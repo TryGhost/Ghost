@@ -76,6 +76,10 @@
     .members-list {
         border-bottom: none
     }
+
+    .view-container.members-list-container  {
+        overflow-x: hidden;
+    }
 }
 
 .members-list .gh-list-row.header {
@@ -368,6 +372,14 @@ p.gh-members-list-email {
     min-width: 120px;
 }
 
+@media (max-width: 480px) {
+    .gh-members-list-row .gh-list-data:first-child {
+        width: 160px;
+        min-width: 160px;
+        max-width: 160px;
+    }
+}
+
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {
         font-size: 2.8rem;
@@ -385,11 +397,6 @@ p.gh-members-list-email {
     .gh-list-with-helpsection {
         margin-left: 0;
         margin-right: 0;
-    }
-
-    .gh-members-list-row .gh-list-data:first-child {
-        min-width: 280px;
-        overflow-x: hidden;
     }
 
     .gh-members-list-email,
