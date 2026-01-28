@@ -685,6 +685,208 @@ describe('MemberRepository', function () {
             // Verify subscription was NOT created because the error was rethrown
             StripeCustomerSubscription.add.called.should.be.false();
         });
+
+        it('persists discount_start and discount_end for a new subscription', async function () {
+            const discountStart = 1768940436;
+            const discountEnd = 1784578836;
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
+                    coupon: {
+                        id: 'H4H47PbG',
+                        percent_off: 20,
+                        duration: 'repeating',
+                        duration_in_months: 6
+                    },
+                    start: discountStart,
+                    end: discountEnd
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // No existing subscription
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            // Verify discount_start and discount_end are set correctly
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.ok(addedSubscriptionData.discount_end instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
+        });
+
+        it('persists discount_start and discount_end for an existing subscription', async function () {
+            const discountStart = 1768940436;
+            const discountEnd = 1784578836;
+
+            const subscriptionWithDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
+                    coupon: {
+                        id: 'H4H47PbG',
+                        percent_off: 20,
+                        duration: 'repeating',
+                        duration_in_months: 6
+                    },
+                    start: discountStart,
+                    end: discountEnd
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            // Existing subscription
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+                get: sinon.stub().withArgs('offer_id').returns(null)
+            });
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            // Verify edit was called (not add) since subscription exists
+            StripeCustomerSubscription.add.called.should.be.false();
+            StripeCustomerSubscription.edit.calledOnce.should.be.true();
+
+            const editedSubscriptionData = StripeCustomerSubscription.edit.firstCall.args[0];
+
+            assert.ok(editedSubscriptionData.discount_start instanceof Date);
+            assert.ok(editedSubscriptionData.discount_end instanceof Date);
+            assert.equal(editedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(editedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
+        });
+
+        it('nullifies discount_start and discount_end when discount is removed from Stripe subscription', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            const subscriptionWithNoDiscount = {
+                ...subscriptionData,
+                discount: null
+            };
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithNoDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.equal(addedSubscriptionData.discount_start, null);
+            assert.equal(addedSubscriptionData.discount_end, null);
+        });
+
+        it('handles discounts with no end date (e.g. forever discounts)', async function () {
+            const discountStart = 1768940436;
+
+            const subscriptionWithForeverDiscount = {
+                ...subscriptionData,
+                discount: {
+                    id: 'di_forever',
+                    coupon: {
+                        id: 'forever_coupon',
+                        percent_off: 20,
+                        duration: 'forever'
+                    },
+                    start: discountStart,
+                    end: null
+                }
+            };
+
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves(subscriptionWithForeverDiscount)
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                offersAPI,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionWithForeverDiscount
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
+
+            assert.ok(addedSubscriptionData.discount_start instanceof Date);
+            assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
+            assert.equal(addedSubscriptionData.discount_end, null);
+        });
     });
 
     describe('create - outbox integration', function () {
