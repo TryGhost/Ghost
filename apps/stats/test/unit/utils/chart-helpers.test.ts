@@ -29,7 +29,7 @@ describe('chart-helpers', () => {
             const ranges = [
                 {value: 7, name: 'Last 7 days', expected: 'in the last 7 days'},
                 {value: 31, name: 'Last 30 days', expected: 'in the last 30 days'},
-                {value: 91, name: 'Last 90 days', expected: 'in the Last 90 days'},
+                {value: 91, name: 'Last 90 days', expected: 'in the last 90 days'},
                 {value: 372, name: 'Last 12 months', expected: 'in the last 12 months'},
                 {value: 1000, name: 'All time', expected: '(all time)'}
             ];
