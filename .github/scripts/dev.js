@@ -109,11 +109,12 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
+const adminXDeps = '@tryghost/admin-x-design-system,@tryghost/admin-x-framework,@tryghost/shade,@tryghost/stats';
 const adminXApps = '@tryghost/admin-x-settings,@tryghost/activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade,apps/stats -- nx run \\$NX_PROJECT_NAME:build; done',
+    command: `nx run-many --projects=${adminXDeps} --parallel=4 --targets=dev`,
     prefixColor: '#C72AF7',
     env: {}
 }, {
@@ -279,12 +280,6 @@ async function handleStripe() {
         process.exit(0);
     }
     debug('at least one command provided');
-
-    debug('resetting nx');
-    await exec("yarn nx reset --onlyDaemon");
-    debug('nx reset');
-    await exec("yarn nx daemon --start");
-    debug('nx daemon started');
 
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 
