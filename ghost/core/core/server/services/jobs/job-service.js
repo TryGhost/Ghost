@@ -45,5 +45,10 @@ const initTestMode = () => {
 
 const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, events});
 
+// Configure worker threads to support TypeScript via tsx
+const bree = jobManager.bree;
+bree.config.worker = bree.config.worker || {};
+bree.config.worker.execArgv = ['--import', 'tsx'];
+
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

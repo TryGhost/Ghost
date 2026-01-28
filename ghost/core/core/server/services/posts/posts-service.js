@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
-const PostEmailHandler = require('./post-email-handler');
+const {PostEmailHandler} = require('./post-email-handler');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
