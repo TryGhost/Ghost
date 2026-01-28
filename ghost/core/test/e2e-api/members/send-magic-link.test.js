@@ -99,8 +99,7 @@ describe('sendMagicLink', function () {
         assert.ok(mail.text.includes('no account exists with this email'));
         assert.ok(mail.text.includes('invite-only'));
 
-        // Verify there's no magic link in the email (it's just informational)
-        assert.ok(!mail.text.includes('?token='));
+        assert.ok(!mail.text.includes('?token='), 'No magic link should be present in the email');
     });
 
     it('Throws an error when trying to sign up on an invite-only site', async function () {
