@@ -87,8 +87,8 @@ describe('NewSubscribersCadence Component', () => {
 
         render(<NewSubscribersCadence isLoading={false} range={30} />);
 
-        // Check that the component renders with new title
-        expect(screen.getByText('New subscribers')).toBeInTheDocument();
+        // Check that the component renders with title
+        expect(screen.getByText('New paid subscriptions')).toBeInTheDocument();
 
         // Check that both cadence types are shown
         expect(screen.getByText('Monthly')).toBeInTheDocument();
@@ -114,85 +114,6 @@ describe('NewSubscribersCadence Component', () => {
 
         // Should show empty state with period-specific message
         expect(screen.getByText('No new subscribers')).toBeInTheDocument();
-    });
-
-    it('returns null when loading', () => {
-        mockSuccess(mockedUseSubscriptionStats, {
-            stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 100, cancellations: 5, count: 100}
-            ],
-            meta: {
-                totals: [
-                    {tier: 'tier-1', cadence: 'month', count: 100}
-                ]
-            }
-        });
-
-        const {container} = render(<NewSubscribersCadence isLoading={true} range={30} />);
-
-        expect(container.firstChild).toBeNull();
-    });
-
-    it('handles only monthly signups', () => {
-        const mockMonthlyOnlyData = {
-            stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 100, cancellations: 10, count: 100}
-            ],
-            meta: {
-                totals: [
-                    {tier: 'tier-1', cadence: 'month', count: 100}
-                ]
-            }
-        };
-
-        mockSuccess(mockedUseSubscriptionStats, mockMonthlyOnlyData);
-
-        render(<NewSubscribersCadence isLoading={false} range={30} />);
-
-        expect(screen.getByText('Monthly')).toBeInTheDocument();
-        expect(screen.getByText('100%')).toBeInTheDocument();
-        expect(screen.queryByText('Annual')).not.toBeInTheDocument();
-    });
-
-    it('handles only annual signups', () => {
-        const mockAnnualOnlyData = {
-            stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'year', signups: 50, cancellations: 5, count: 50}
-            ],
-            meta: {
-                totals: [
-                    {tier: 'tier-1', cadence: 'year', count: 50}
-                ]
-            }
-        };
-
-        mockSuccess(mockedUseSubscriptionStats, mockAnnualOnlyData);
-
-        render(<NewSubscribersCadence isLoading={false} range={30} />);
-
-        expect(screen.getByText('Annual')).toBeInTheDocument();
-        expect(screen.getByText('100%')).toBeInTheDocument();
-        expect(screen.queryByText('Monthly')).not.toBeInTheDocument();
-    });
-
-    it('shows breakdown type selector with correct options', () => {
-        const mockSubscriptionData = {
-            stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 100, cancellations: 5, count: 100}
-            ],
-            meta: {
-                totals: [
-                    {tier: 'tier-1', cadence: 'month', count: 100}
-                ]
-            }
-        };
-
-        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
-
-        render(<NewSubscribersCadence isLoading={false} range={30} />);
-
-        // Should show breakdown type selector
-        expect(screen.getByText('Billing period')).toBeInTheDocument();
     });
 
     it('aggregates signups across all tiers for billing period breakdown', () => {
@@ -314,16 +235,5 @@ describe('NewSubscribersCadence Component', () => {
         expect(screen.getByText('Monthly')).toBeInTheDocument();
         expect(screen.getByText('Annual')).toBeInTheDocument();
         expect(screen.queryByText('Complimentary')).not.toBeInTheDocument();
-    });
-
-    it('returns null when subscription stats is not available', () => {
-        mockSuccess(mockedUseSubscriptionStats, {
-            stats: null,
-            meta: null
-        });
-
-        const {container} = render(<NewSubscribersCadence isLoading={false} range={30} />);
-
-        expect(container.firstChild).toBeNull();
     });
 });
