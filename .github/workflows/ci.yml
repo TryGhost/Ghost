@@ -1107,7 +1107,7 @@ jobs:
             done
 
           } >> $GITHUB_STEP_SUMMARY
-
+  # TODO: update playwright image
   job_e2e_tests:
     name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
