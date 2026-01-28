@@ -47,7 +47,7 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.setupCustomTriggerButton(props);
+        this.setupCustomTriggerButton();
 
         this.state = {
             site: null,
