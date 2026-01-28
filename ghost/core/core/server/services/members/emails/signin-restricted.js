@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
 <!doctype html>
 <html>
@@ -8,6 +9,9 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
     <meta name="supported-color-schemes" content="light">
     <title>${t('Sign in attempt for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>
     <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
     @media only screen and (max-width: 620px) {
       table[class=body] h1 {
         font-size: 28px !important;
@@ -42,6 +46,9 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
         font-size: 11px !important;
       }
     }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
     @media all {
       .ExternalClass {
         width: 100%;
@@ -91,9 +98,11 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
         <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; margin: 0 auto; max-width: 540px; padding: 10px; width: 540px;">
           <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
-            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${t('No member exists with this e-mail address.')}</span>
+            <!-- START CENTERED CONTAINER -->
+            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${t('No member exists with this email address.')}</span>
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
+              <!-- START MAIN CONTENT AREA -->
               <tr>
                 <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
                   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
@@ -108,6 +117,7 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
                 </td>
               </tr>
 
+              <!-- START FOOTER -->
               <tr>
                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 80px;">
                   <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">${t('If you did not make this request, you can safely ignore this email.')}</p>
@@ -118,9 +128,12 @@ module.exports = ({t, siteTitle, email, siteDomain, siteUrl}) => `
                   <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">${t('This message was sent from {siteDomain} to {email}.', {siteDomain: ('<a class="small" href="' + siteUrl + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + siteDomain + '</a>'), email: ('<a class="small" href="mailto:' + email + '" style="text-decoration: underline; color: #738A94; font-size: 11px;">' + email + '</a>'), interpolation: {escapeValue: false}})}</p>
                 </td>
               </tr>
+              <!-- END FOOTER -->
 
+            <!-- END MAIN CONTENT AREA -->
             </table>
 
+          <!-- END CENTERED CONTAINER -->
           </div>
         </td>
         <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
