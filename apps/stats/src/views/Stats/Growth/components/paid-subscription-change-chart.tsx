@@ -258,11 +258,43 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 }];
             }
 
-            const sanitizedData = sanitizeChartData(memberData, range, 'paid_subscribed', 'exact');
+            // Apply proper aggregation to member data using 'sum' aggregation type
+            // This will properly sum subscribed and canceled within each time period
+            const subscribedData = sanitizeChartData(memberData, range, 'paid_subscribed', 'sum', aggregationStrategy);
+            const canceledData = sanitizeChartData(memberData, range, 'paid_canceled', 'sum', aggregationStrategy);
 
-            return sanitizedData.map((item) => {
+            // Combine the aggregated data
+            const combinedData = subscribedData.map(item => ({
+                date: item.date,
+                paid_subscribed: item.paid_subscribed || 0,
+                paid_canceled: canceledData.find(c => c.date === item.date)?.paid_canceled || 0
+            }));
+
+            // Add any canceled-only dates that might be missing from subscribed
+            canceledData.forEach((cancelItem) => {
+                if (!combinedData.find(item => item.date === cancelItem.date)) {
+                    combinedData.push({
+                        date: cancelItem.date,
+                        paid_subscribed: 0,
+                        paid_canceled: cancelItem.paid_canceled || 0
+                    });
+                }
+            });
+
+            // Sort by date
+            combinedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            return combinedData.map((item) => {
+                // Use effective range for formatting based on selected resolution
+                let effectiveRange = range;
+                if (selectedResolution === 'weekly' && range < 91) {
+                    effectiveRange = 91; // Force "Week of" formatting
+                } else if (selectedResolution === 'monthly' && range < 365) {
+                    effectiveRange = 365; // Force "MMM YYYY" formatting
+                }
+
                 return {
-                    date: formatDisplayDateWithRange(item.date, range),
+                    date: formatDisplayDateWithRange(item.date, effectiveRange),
                     rawDate: item.date, // Keep raw date for dynamic tooltip formatting
                     new: item.paid_subscribed || 0,
                     cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
