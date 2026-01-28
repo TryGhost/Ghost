@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const MemberBreadService = require('../../../../../../../core/server/services/members/members-api/services/member-bread-service');
+const NextPaymentCalculator = require('../../../../../../../core/server/services/members/members-api/services/next-payment-calculator');
 const moment = require('moment');
 
 describe('MemberBreadService', function () {
@@ -23,16 +24,19 @@ describe('MemberBreadService', function () {
             memberModelJSON,
             memberRepositoryStub,
             memberAttributionServiceStub,
-            emailSuppressionListStub;
+            emailSuppressionListStub,
+            nextPaymentCalculator;
 
-        const getService = () => {
+        const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
                     createUnsubscribeUrl: sinon.stub().callsFake(uuid => `https://example.com/unsubscribe/?uuid=${uuid}&key=456`)
                 },
                 memberRepository: memberRepositoryStub,
                 memberAttributionService: memberAttributionServiceStub,
-                emailSuppressionList: emailSuppressionListStub
+                emailSuppressionList: emailSuppressionListStub,
+                nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
+                offersAPI: options.offersAPI
             });
         };
 
@@ -62,6 +66,7 @@ describe('MemberBreadService', function () {
             emailSuppressionListStub = {
                 getSuppressionData: sinon.stub().resolves({})
             };
+            nextPaymentCalculator = new NextPaymentCalculator();
 
             memberRepositoryStub.get
                 .withArgs(
@@ -297,6 +302,136 @@ describe('MemberBreadService', function () {
             const member = await memberBreadService.read({id: MEMBER_ID});
 
             assert.equal(member.unsubscribe_url, `https://example.com/unsubscribe/?uuid=${MEMBER_UUID}&key=456`);
+        });
+
+        it('returns member with next_payment amount for subscriptions without discount', async function () {
+            const subscriptionsJSON = [
+                {
+                    id: 'sub_123',
+                    subscription_id: 'sub_123',
+                    status: 'active',
+                    plan: {
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    price: {
+                        product: {
+                            product_id: 'prod_123'
+                        }
+                    }
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+                const model = {
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(undefined);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                subscriptions: subscriptionsJSON
+            });
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+            assert.ok(member.subscriptions[0].next_payment !== undefined, 'next_payment should be defined');
+            assert.equal(member.subscriptions[0].next_payment.original_amount, 500);
+            assert.equal(member.subscriptions[0].next_payment.amount, 500);
+            assert.equal(member.subscriptions[0].next_payment.interval, 'month');
+            assert.equal(member.subscriptions[0].next_payment.currency, 'USD');
+            assert.equal(member.subscriptions[0].next_payment.discount, null);
+        });
+
+        it('returns member with next_payment amount for subscriptions with discount', async function () {
+            const offerId = 'offer_abc123';
+            const discountStart = new Date('2020-01-01T00:00:00.000Z');
+            const discountEnd = new Date('2099-12-31T00:00:00.000Z');
+
+            const subscriptionsJSON = [
+                {
+                    id: 'sub_123',
+                    subscription_id: 'sub_123',
+                    status: 'active',
+                    plan: {
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    price: {
+                        product: {
+                            product_id: 'prod_123'
+                        }
+                    },
+                    discount_start: discountStart,
+                    discount_end: discountEnd,
+                    current_period_end: new Date('2099-06-15T00:00:00.000Z')
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription) => {
+                const model = {
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(offerId);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                subscriptions: subscriptionsJSON
+            });
+
+            const offerDTO = {
+                id: offerId,
+                name: 'Test Offer',
+                type: 'percent',
+                amount: 20,
+                duration: 'repeating',
+                duration_in_months: 12
+            };
+
+            const offersAPIStub = {
+                getOffer: sinon.stub().withArgs({id: offerId}).resolves(offerDTO)
+            };
+
+            const memberBreadService = getService({
+                offersAPI: offersAPIStub
+            });
+
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+            const nextPayment = member.subscriptions[0].next_payment;
+
+            assert.ok(nextPayment !== undefined, 'next_payment should be defined');
+            assert.equal(nextPayment.original_amount, 500);
+            assert.equal(nextPayment.amount, 400); // 500 - 20% = 400
+            assert.equal(nextPayment.interval, 'month');
+            assert.equal(nextPayment.currency, 'USD');
+
+            assert.ok(nextPayment.discount !== null, 'discount should not be null');
+            assert.equal(nextPayment.discount.offer_id, offerId);
+            assert.equal(nextPayment.discount.type, 'percent');
+            assert.equal(nextPayment.discount.amount, 20);
+            assert.equal(nextPayment.discount.duration, 'repeating');
         });
     });
 });
