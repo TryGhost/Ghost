@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 
@@ -270,20 +270,23 @@ function formatOfferDuration(offer) {
     return '';
 }
 
-const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
+const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
     const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
 
+    const originalPrice = formatNumber(price.amount / 100);
+    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
+    const currencySymbol = getCurrencySymbol(offer.currency || price.currency);
+
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
+    const intervalLabel = offer.cadence === 'month' ? 'month' : 'year';
 
-    // Static data for design purposes - engineers will wire up with real data
-    const productName = 'Gold';
-    const interval = 'Monthly';
-    const originalPrice = '15';
-    const discountedPrice = '7.5';
-    const currencySymbol = '$';
-    const offerMessage = `${discountText} ${durationText}. Renews at $15/month.`;
+    let offerMessage = `${discountText} ${durationText}.`;
+
+    if (offer.duration !== 'forever') {
+        offerMessage += ` Renews at ${currencySymbol}${originalPrice}/${intervalLabel}.`;
+    }
 
     // TODO: Add i18n once copy is finalized
     /* eslint-disable i18next/no-literal-string */
@@ -295,7 +298,7 @@ const RetentionOfferSection = ({offer, onAcceptOffer, onDeclineOffer}) => {
 
             <div className="gh-portal-offer-bar">
                 <div className="gh-portal-offer-title">
-                    <h4>{productName} - {interval}</h4>
+                    <h4>{product.name} - {offer.cadence === 'month' ? 'Monthly' : 'Yearly'}</h4>
                     <h5 className="gh-portal-discount-label">{discountText}</h5>
                 </div>
 
@@ -387,7 +390,7 @@ const PlansContainer = ({
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
-    const {member} = useContext(AppContext);
+    const {member, site} = useContext(AppContext);
     // Plan upgrade flow for free member or complimentary member
     if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
@@ -409,13 +412,21 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        return (
-            <RetentionOfferSection
-                offer={pendingOffer}
-                onAcceptOffer={onAcceptRetentionOffer}
-                onDeclineOffer={onDeclineRetentionOffer}
-            />
-        );
+        const offerProduct = getProductFromId({site, productId: pendingOffer.tier.id});
+        const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+
+        // Skip retention offer if product or price data is invalid
+        if (offerProduct && offerPrice) {
+            return (
+                <RetentionOfferSection
+                    offer={pendingOffer}
+                    product={offerProduct}
+                    price={offerPrice}
+                    onAcceptOffer={onAcceptRetentionOffer}
+                    onDeclineOffer={onDeclineRetentionOffer}
+                />
+            );
+        }
     }
 
     // Plan confirmation flow for cancel/update flows
