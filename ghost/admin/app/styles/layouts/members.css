@@ -146,6 +146,12 @@ p.gh-members-list-email {
     margin: -2px 0 -1px;
 }
 
+.gh-members-list-status-tiers {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .gh-members-list-open-rate,
 .gh-members-list-geolocation {
     width: 150px;
