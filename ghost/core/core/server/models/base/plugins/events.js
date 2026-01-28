@@ -133,7 +133,7 @@ module.exports = function (Bookshelf) {
         },
 
         onCreated(model, options) {
-            this.addAction(model, 'added', options);
+            return this.addAction(model, 'added', options);
         },
 
         /**
@@ -180,7 +180,7 @@ module.exports = function (Bookshelf) {
         },
 
         onUpdated(model, options) {
-            this.addAction(model, 'edited', options);
+            return this.addAction(model, 'edited', options);
         },
 
         /**
@@ -242,7 +242,7 @@ module.exports = function (Bookshelf) {
             // @NOTE: Bookshelf returns ".changed = {empty...}" on destroying (https://github.com/bookshelf/bookshelf/issues/1943)
             Object.assign(model._changed, _.cloneDeep(model.changed));
 
-            this.addAction(model, 'deleted', options);
+            return this.addAction(model, 'deleted', options);
         }
     }, {
         generateId: function generateId() {
