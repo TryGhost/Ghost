@@ -258,7 +258,10 @@ describe('Signup', () => {
                 popupIframeDocument,
                 chooseBtns
             } = await setup({
-                site: FixtureSite.singleTier.basic
+                site: {
+                    ...FixtureSite.singleTier.basic,
+                    labs: {sniperlinks: true}
+                }
             });
 
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
