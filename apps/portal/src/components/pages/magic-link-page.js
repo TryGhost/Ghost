@@ -1,10 +1,11 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
+import SniperLinkButton from '../common/sniper-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
-import {isAndroid} from '../../utils/is-android';
+import {isAndroidChrome} from '../../utils/is-android-chrome';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -293,27 +294,24 @@ export default class MagicLinkPage extends React.Component {
      * @returns {ReactNode}
      */
     renderSniperLinkButton(sniperLinks) {
-        const label = t('Open email');
-        const href = isAndroid(navigator) ? sniperLinks.android : sniperLinks.desktop;
         return (
-            <ActionButton
-                style={{width: '100%'}}
-                href={href}
-                target='_blank'
-                rel='noreferrer noopener'
+            <SniperLinkButton
+                href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                label={t('Open email')}
                 brandColor={this.context.brandColor}
-                label={label}
             />
         );
     }
 
     render() {
-        const {otcRef, sniperLinks} = this.context;
+        const {site, otcRef, sniperLinks} = this.context;
+
+        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
 
         /** @type {ReactNode} */ let footer;
         if (otcRef) {
             footer = this.renderOTCForm();
-        } else if (sniperLinks) {
+        } else if (isSniperLinksEnabled && sniperLinks) {
             footer = this.renderSniperLinkButton(sniperLinks);
         } else {
             footer = this.renderCloseButton();
