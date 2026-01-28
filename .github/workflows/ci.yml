@@ -369,6 +369,8 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn knex-migrator init
+      env:
+        NODE_OPTIONS: "--import=tsx"
 
     - name: Setup Playwright
       uses: ./.github/actions/setup-playwright

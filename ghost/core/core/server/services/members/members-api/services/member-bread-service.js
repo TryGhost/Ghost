@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
-const {MemberCommentingCodec} = require('../../commenting');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -271,10 +270,6 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
-        const commenting = MemberCommentingCodec.parse(member.commenting);
-        member.can_comment = commenting.canComment;
-        member.commenting = commenting;
-
         return member;
     }
 
@@ -402,15 +397,16 @@ module.exports = class MemberBREADService {
      * @returns {Promise<Object>}
      */
     async disableCommenting(memberId, reason, until, context) {
-        const member = await this.read({id: memberId});
+        const model = await this.memberRepository.get({id: memberId});
 
-        if (!member) {
+        if (!model) {
             throw new errors.NotFoundError({
                 message: tpl(messages.memberNotFound)
             });
         }
 
-        const updated = member.commenting.disable(reason, until);
+        const commenting = model.get('commenting');
+        const updated = commenting.disable(reason, until);
 
         await this.memberRepository.saveCommenting(
             memberId,
@@ -428,15 +424,16 @@ module.exports = class MemberBREADService {
      * @returns {Promise<Object>}
      */
     async enableCommenting(memberId, context) {
-        const member = await this.read({id: memberId});
+        const model = await this.memberRepository.get({id: memberId});
 
-        if (!member) {
+        if (!model) {
             throw new errors.NotFoundError({
                 message: tpl(messages.memberNotFound)
             });
         }
 
-        const updated = member.commenting.enable();
+        const commenting = model.get('commenting');
+        const updated = commenting.enable();
 
         await this.memberRepository.saveCommenting(
             memberId,
@@ -511,10 +508,6 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
-
-            const commenting = MemberCommentingCodec.parse(member.commenting);
-            member.can_comment = commenting.canComment;
-            member.commenting = commenting;
 
             return member;
         });

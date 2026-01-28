@@ -387,6 +387,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
                         name: 'name1',
                         expertise: 'expertise1',
                         avatar_image: 'avatar_image1',
+                        can_comment: true,
+                        commenting: {disabled: false, disabled_reason: null, disabled_until: null},
                         foo: 'bar'
                     },
                     post: {
@@ -624,11 +626,19 @@ describe('Unit: utils/serializers/output/mappers', function () {
             const model = {
                 id: 'comment3',
                 html: '<p>comment 3</p>',
-                member: {id: 'member1'},
+                member: {
+                    id: 'member1',
+                    can_comment: true,
+                    commenting: {disabled: false, disabled_reason: null, disabled_until: null}
+                },
                 parent: {
                     id: 'comment1',
                     html: '<p>comment 1</p>',
-                    member: {id: 'member1'}
+                    member: {
+                        id: 'member1',
+                        can_comment: true,
+                        commenting: {disabled: false, disabled_reason: null, disabled_until: null}
+                    }
                 },
                 in_reply_to_id: 'comment2',
                 inReplyTo: {
