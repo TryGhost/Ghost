@@ -102,5 +102,4 @@ describe('PaidMembersChangeChart Component', () => {
         expect(dropdown).toBeInTheDocument();
         expect(dropdown).toHaveTextContent('Weekly');
     });
-
 });
