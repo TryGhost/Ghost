@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
 const membersContentGating = require('../../../../../../../../core/server/services/members/content-gating');
-const labs = require('../../../../../../../../core/shared/labs');
 
 describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function () {
     afterEach(function () {
@@ -92,17 +91,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.equal(attrs.html, '<p>Can read this</p>');
         });
 
-        describe('contentVisibility', function () {
-            let contentVisibilityStub;
-
-            beforeEach(function () {
-                contentVisibilityStub = sinon.stub(labs, 'isSet').withArgs('contentVisibility').returns(true);
-            });
-
-            afterEach(function () {
-                sinon.restore();
-            });
-
+        describe('gated blocks', function () {
             it('does not call stripGatedBlocks when a post has no gated blocks', function () {
                 const attrs = {
                     visibility: 'public',
@@ -142,22 +131,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 assert.match(attrs.html, /<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
                 assert.match(attrs.plaintext, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
                 assert.match(attrs.excerpt, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
-            });
-
-            it('does not process gated blocks with contentVisibility flag disabled', function () {
-                contentVisibilityStub.returns(false);
-
-                const regexSpy = sinon.spy(RegExp.prototype, 'test');
-                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
-
-                const attrs = {
-                    visibility: 'public',
-                    html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
-                };
-                gating.forPost(attrs, frame);
-
-                sinon.assert.notCalled(regexSpy);
-                sinon.assert.notCalled(stripGatedBlocksStub);
             });
 
             it('does not call htmlToPlaintext.excerpt more than once', function () {
