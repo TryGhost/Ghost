@@ -70,7 +70,7 @@ const TiersList: React.FC<TiersListProps> = ({
     return (
         <div className='mt-4 grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
             {tiers.map((tier) => {
-                return <TierCard tier={tier} />;
+                return <TierCard key={tier.id} tier={tier} />;
             })}
             {tab === 'active-tiers' && (
                 <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {

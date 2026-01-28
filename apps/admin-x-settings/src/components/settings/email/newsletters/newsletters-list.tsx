@@ -17,8 +17,11 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     isDragging,
     style,
     children,
+    separator,
     ...props
 }) => {
+    void separator; // we don't use the separator prop and it will error if it gets passed to the DragIndicator component
+
     const {updateRoute} = useRouting();
 
     const showDetails = () => {

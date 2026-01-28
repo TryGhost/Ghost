@@ -39,13 +39,14 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
 
     return (
         <div className={groupColorClasses}>
-            {buttons.map(({key, ...props}) => {
+            {buttons.map(({key, ...props}, index) => {
+                const buttonKey = key ?? `button-${index}`;
                 const buttonProps = {...props};
 
                 if (!link && !clearBg) {
                     buttonProps.className = clsx(props.className, 'w-8 rounded-lg border !px-0');
 
-                    if (key === activeKey) {
+                    if (buttonKey === activeKey) {
                         buttonProps.color = 'white';
                         buttonProps.className = clsx(buttonProps.className, 'border-grey-300 shadow-xs dark:border-grey-800');
                     } else {
@@ -55,10 +56,10 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
 
                 return (
                     (props.tooltip ?
-                        <Tooltip key={key} content={props.tooltip}>
-                            <Button key={`btn-${key}`} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
+                        <Tooltip key={buttonKey} content={props.tooltip}>
+                            <Button link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
                         </Tooltip> :
-                        <Button key={key} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
+                        <Button key={buttonKey} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
                     )
                 );
             })}
