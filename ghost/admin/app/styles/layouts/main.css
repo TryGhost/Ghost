@@ -370,7 +370,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .gh-user-name {
     display: inline-block;
-    width: 188px;
+    width: 100%;
     margin: 1px 0 0;
     padding: 0;
     word-break: break-all;
@@ -382,7 +382,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .gh-user-email {
     display: inline-block;
-    width: 188px;
+    width: 100%;
     margin: 0;
     padding: 0;
     word-break: break-all;
