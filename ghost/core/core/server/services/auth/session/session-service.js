@@ -275,11 +275,19 @@ module.exports = function createSessionService({
         });
 
         try {
-            await mailer.send({
+            let sendPromise = mailer.send({
                 to: recipient,
                 subject: `${token} is your Ghost sign in verification code`,
                 html: email
             });
+            // In Direct mode, it can take 15+ minutes for the mailer to actually fail to send.
+            // Compromise by giving up after 15 seconds.
+            if (mailer.state?.usingDirect) {
+                sendPromise = Promise.race([sendPromise, new Promise((_resolve, reject) => {
+                    setTimeout(reject, 15000);
+                })]);
+            }
+            await sendPromise;
         } catch (error) {
             throw new errors.EmailError({
                 ...error,
