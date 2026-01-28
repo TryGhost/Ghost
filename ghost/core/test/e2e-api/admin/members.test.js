@@ -2449,6 +2449,39 @@ describe('Members API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Returns 500 when suppression removal fails', async function () {
+            const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+            const removeEmailStub = sinon.stub(emailSuppressionList, 'removeEmail').resolves(false);
+
+            const suppressedMember = await models.Member.add({
+                email: 'suppression-fail-test@email.com',
+                name: 'Suppression Fail Test',
+                email_disabled: true
+            });
+
+            try {
+                await agent
+                    .delete(`/members/${suppressedMember.id}/suppression`)
+                    .expectStatus(500)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                // Verify email_disabled was NOT changed since the operation failed
+                await suppressedMember.refresh();
+                should(suppressedMember.get('email_disabled')).be.true();
+            } finally {
+                removeEmailStub.restore();
+                await models.Member.destroy({id: suppressedMember.id});
+            }
+        });
     });
 
     // Log out
