@@ -25,7 +25,6 @@ export default function mockInvites(server) {
             oldInvite.destroy();
         }
 
-        /* eslint-disable camelcase */
         attrs.token = `${invites.all().models.length}-token`;
         attrs.expires = moment.utc().add(1, 'day').valueOf();
         attrs.createdAt = moment.utc().format();

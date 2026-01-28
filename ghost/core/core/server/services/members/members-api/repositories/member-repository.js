@@ -8,9 +8,9 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const config = require('../../../../../shared/config');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const {MemberCommentingCodec} = require('../../commenting');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -353,8 +353,8 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const hasTestInbox = Boolean(config.get('memberWelcomeEmailTestInbox'));
-        if (hasTestInbox && WELCOME_EMAIL_SOURCES.includes(source)) {
+        const welcomeEmailsEnabled = this._labsService.isSet('welcomeEmails');
+        if (welcomeEmailsEnabled && WELCOME_EMAIL_SOURCES.includes(source)) {
             const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
             const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
             const isFreeSignup = !stripeCustomer;
@@ -1450,7 +1450,7 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
+            const shouldSendPaidWelcomeEmail = this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
             if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
                 const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
@@ -2012,5 +2012,22 @@ module.exports = class MemberRepository {
             }
         }
         return true;
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting: MemberCommentingCodec.format(commenting)},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
     }
 };

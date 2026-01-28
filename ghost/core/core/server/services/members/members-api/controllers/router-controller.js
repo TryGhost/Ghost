@@ -1,3 +1,4 @@
+const dns = require('node:dns/promises');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
@@ -52,6 +53,8 @@ function extractRefererOrRedirect(req) {
 }
 
 module.exports = class RouterController {
+    #sniperLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
+
     /**
      * RouterController
      *
@@ -702,7 +705,7 @@ module.exports = class RouterController {
             // Honeypot field is filled, this is a bot.
             // Pretend that the email was sent successfully.
             res.writeHead(201);
-            return res.end('Created.');
+            return res.end('{}');
         }
 
         if (!emailType) {
@@ -730,7 +733,8 @@ module.exports = class RouterController {
 
             const sniperLinks = await getSniperLinks({
                 recipient: normalizedEmail,
-                sender: this._settingsHelpers.getMembersSupportAddress()
+                sender: this._settingsHelpers.getMembersSupportAddress(),
+                dnsResolver: this.#sniperLinksDnsResolver
             });
             if (sniperLinks) {
                 resBody.sniperLinks = sniperLinks;

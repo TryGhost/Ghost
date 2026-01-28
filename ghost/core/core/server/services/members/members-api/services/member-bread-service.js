@@ -2,10 +2,12 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const {MemberCommentingCodec} = require('../../commenting');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
-    memberAlreadyExists: 'Member already exists.'
+    memberAlreadyExists: 'Member already exists.',
+    memberNotFound: 'Member not found.'
 };
 
 /**
@@ -38,8 +40,9 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
+     * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -55,6 +58,8 @@ module.exports = class MemberBREADService {
         this.emailSuppressionList = emailSuppressionList;
         /** @private */
         this.settingsHelpers = settingsHelpers;
+        /** @private */
+        this.nextPaymentCalculator = nextPaymentCalculator;
     }
 
     /**
@@ -178,6 +183,19 @@ module.exports = class MemberBREADService {
 
     /**
      * @private
+     * Attaches next_payment information to each subscription
+     * Must be called after attachOffersToSubscriptions so that subscription.offer is available
+     * @param {Object} member JSON serialized member
+     */
+    attachNextPaymentToSubscriptions(member) {
+        member.subscriptions = member.subscriptions.map((subscription) => {
+            subscription.next_payment = this.nextPaymentCalculator.calculate(subscription);
+            return subscription;
+        });
+    }
+
+    /**
+     * @private
      * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
      */
     async attachAttributionsToMember(member, subscriptionIdMap) {
@@ -241,6 +259,7 @@ module.exports = class MemberBREADService {
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
         this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+        this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
@@ -251,6 +270,10 @@ module.exports = class MemberBREADService {
 
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
+
+        const commenting = MemberCommentingCodec.parse(member.commenting);
+        member.can_comment = commenting.canComment;
+        member.commenting = commenting;
 
         return member;
     }
@@ -371,6 +394,60 @@ module.exports = class MemberBREADService {
         return this.read({id: model.id}, options);
     }
 
+    /**
+     * @param {string} memberId
+     * @param {string} reason
+     * @param {Date|null} until
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async disableCommenting(memberId, reason, until, context) {
+        const member = await this.read({id: memberId});
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const updated = member.commenting.disable(reason, until);
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_disabled',
+            context
+        );
+
+        return this.read({id: memberId});
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async enableCommenting(memberId, context) {
+        const member = await this.read({id: memberId});
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const updated = member.commenting.enable();
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_enabled',
+            context
+        );
+
+        return this.read({id: memberId});
+    }
+
     async logout(options) {
         await this.memberRepository.cycleTransientId(options);
     }
@@ -425,6 +502,7 @@ module.exports = class MemberBREADService {
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             this.attachOffersToSubscriptions(member, offerMap);
+            this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
             }
@@ -433,6 +511,11 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
+
+            const commenting = MemberCommentingCodec.parse(member.commenting);
+            member.can_comment = commenting.canComment;
+            member.commenting = commenting;
+
             return member;
         });
 

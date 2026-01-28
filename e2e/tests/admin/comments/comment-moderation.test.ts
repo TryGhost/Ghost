@@ -48,7 +48,7 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await commentsPage.openMoreMenu(commentRow);
 
             const popupPromise = page.waitForEvent('popup');
-            await commentsPage.getViewPostMenuItem().click();
+            await commentsPage.viewPostMenuItem.click();
             const postPage = await popupPromise;
 
             await expect(postPage).toHaveURL(new RegExp(`/${post.slug}/`));
@@ -82,7 +82,7 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await commentsPage.openMoreMenu(commentRow);
 
             const popupPromise = page.waitForEvent('popup');
-            await commentsPage.getViewOnPostMenuItem().click();
+            await commentsPage.viewOnPostMenuItem.click();
             const postPage = await popupPromise;
 
             await expect(postPage).toHaveURL(

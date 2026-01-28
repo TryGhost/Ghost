@@ -43,10 +43,132 @@ describe('getSniperLinks', function () {
             assert(result?.desktop.startsWith('https://mail.google.com/'));
             assert(result?.desktop.includes(encodeURIComponent(recipient)));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
-            assert(result?.android.startsWith('intent://'));
+            assert(result?.android.startsWith('intent:'));
             assert(result?.android.includes('com.google.android.gm'));
             assert(result?.android.includes('browser_fallback_url'));
         }));
+    });
+
+    it('handles Yahoo emails', async function () {
+        const emails = [
+            'example@yahoo.com',
+            'example@myyahoo.com',
+            'example@yahoo.co.uk',
+            'example@yahoo.fr',
+            'example@yahoo.it',
+            'example@ymail.com',
+            'example@rocketmail.com'
+        ];
+        await Promise.all(emails.map(async (recipient) => {
+            const result = await getSniperLinks({
+                recipient,
+                sender: 'sender@example.com',
+                dnsResolver: resolverThatShouldNeverBeUsed
+            });
+            assert(result?.desktop.startsWith('https://mail.yahoo.com/d/search/keyword=from:'));
+            assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
+            assert(result?.android.startsWith('intent:'));
+            assert(result?.android.includes('com.yahoo.mobile.client.android.mail'));
+            assert(result?.android.includes('browser_fallback_url'));
+        }));
+    });
+
+    it('handles Microsoft emails', async function () {
+        const emails = [
+            'example@outlook.com',
+            'example@live.com',
+            'example@live.de',
+            'example@hotmail.com',
+            'example@hotmail.co.uk',
+            'example@hotmail.de',
+            'example@msn.com'
+        ];
+        await Promise.all(emails.map(async (recipient) => {
+            const result = await getSniperLinks({
+                recipient,
+                sender: 'sender@example.com',
+                dnsResolver: resolverThatShouldNeverBeUsed
+            });
+            assert.equal(result?.desktop, `https://outlook.live.com/mail/?login_hint=${encodeURIComponent(recipient)}`);
+            assert(result?.android.startsWith('intent:'));
+            assert(result?.android.includes('com.microsoft.office.outlook'));
+            assert(result?.android.includes('browser_fallback_url'));
+        }));
+    });
+
+    it('handles Proton emails', async function () {
+        const emails = [
+            'example@proton.me',
+            'example@pm.me',
+            'example@protonmail.com'
+        ];
+        await Promise.all(emails.map(async (recipient) => {
+            const result = await getSniperLinks({
+                recipient,
+                sender: 'sender@example.com',
+                dnsResolver: resolverThatShouldNeverBeUsed
+            });
+            assert(result?.desktop.startsWith('https://mail.proton.me/'));
+            assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
+            assert(result?.android.startsWith('intent:'));
+            assert(result?.android.includes('ch.protonmail.android'));
+            assert(result?.android.includes('browser_fallback_url'));
+        }));
+    });
+
+    it('handles iCloud emails', async function () {
+        const emails = [
+            'example@icloud.com',
+            'example@me.com',
+            'example@mac.com'
+        ];
+        await Promise.all(emails.map(async (recipient) => {
+            const result = await getSniperLinks({
+                recipient,
+                sender: 'sender@example.com',
+                dnsResolver: resolverThatShouldNeverBeUsed
+            });
+            assert.equal(result?.desktop, 'https://www.icloud.com/mail');
+            assert.equal(result?.android, 'https://www.icloud.com/mail');
+        }));
+    });
+
+    it('handles Hey emails', async function () {
+        const result = await getSniperLinks({
+            recipient: 'example@hey.com',
+            sender: 'sender@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert.equal(result?.desktop, 'https://app.hey.com/topics/everything');
+        assert(result?.android.startsWith('intent:'));
+        assert(result?.android.includes('com.basecamp.hey'));
+        assert(result?.android.includes('browser_fallback_url'));
+    });
+
+    it('handles AOL emails', async function () {
+        const result = await getSniperLinks({
+            recipient: 'example@aol.com',
+            sender: 'sender@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert(result?.desktop.startsWith('https://mail.aol.com/'));
+        assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
+        assert(result?.android.startsWith('intent:'));
+        assert(result?.android.includes('com.aol.mobile.aolapp'));
+        assert(result?.android.includes('browser_fallback_url'));
+    });
+
+    it('handles Mail.ru emails', async function () {
+        const result = await getSniperLinks({
+            recipient: 'example@mail.ru',
+            sender: 'sender@example.com',
+            dnsResolver: resolverThatShouldNeverBeUsed
+        });
+        assert(result?.desktop.startsWith('https://e.mail.ru/search/'));
+        assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
+        assert(result?.android.startsWith('intent:'));
+        assert(result?.android.includes('ru.mail.mailapp'));
+        assert(result?.android.includes('browser_fallback_url'));
     });
 
     describe('DNS lookups', function () {
