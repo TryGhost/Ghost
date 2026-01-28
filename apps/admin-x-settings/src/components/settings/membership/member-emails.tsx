@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import {Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Separator, SettingGroupContent, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -20,12 +20,16 @@ const EmailPreview: React.FC<{
     automatedEmail: AutomatedEmail,
     emailType: 'free' | 'paid',
     enabled: boolean,
-    onEdit: () => void
+    isLoading: boolean,
+    onEdit: () => void,
+    onToggle: () => void
 }> = ({
     automatedEmail,
     emailType,
     enabled,
-    onEdit
+    isLoading,
+    onEdit,
+    onToggle
 }) => {
     const {settings} = useGlobalData();
     const [accentColor, icon, siteTitle] = getSettingValues<string>(settings, ['accent_color', 'icon', 'title']);
@@ -35,12 +39,12 @@ const EmailPreview: React.FC<{
 
     return (
         <button
-            className='flex w-full items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 dark:border-grey-925 dark:bg-grey-975'
-            data-testid={`${emailType}-welcome-email-edit-button`}
+            className='flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-grey-100 bg-grey-50 p-5 text-left transition-all hover:border-grey-200 hover:shadow-sm dark:border-grey-925 dark:bg-grey-975 dark:hover:border-grey-800'
+            data-testid={`${emailType}-welcome-email-preview`}
             type='button'
             onClick={onEdit}
         >
-            <div className={`flex items-start gap-3 ${!enabled ? 'opacity-60' : ''}`}>
+            <div className='flex items-start gap-3'>
                 {icon ?
                     <div className='size-10 min-h-10 min-w-10 rounded-sm bg-cover bg-center' style={{
                         backgroundImage: `url(${icon})`
@@ -57,8 +61,38 @@ const EmailPreview: React.FC<{
                     <div className='text-sm'>{automatedEmail.subject}</div>
                 </div>
             </div>
-            <div className='green font-semibold'>Edit</div>
+            <div onClick={e => e.stopPropagation()}>
+                <Toggle
+                    checked={enabled}
+                    disabled={isLoading}
+                    onChange={onToggle}
+                />
+            </div>
         </button>
+    );
+};
+
+const EmailSettingRow: React.FC<{
+    title: string,
+    description: string,
+    onEdit: () => void,
+    testId: string
+}> = ({title, description, onEdit, testId}) => {
+    return (
+        <div className='flex items-center justify-between py-4'>
+            <div>
+                <div className='font-medium'>{title}</div>
+                <div className='text-sm text-grey-700 dark:text-grey-600'>{description}</div>
+            </div>
+            <button
+                className='font-semibold text-green'
+                data-testid={testId}
+                type='button'
+                onClick={onEdit}
+            >
+                Edit
+            </button>
+        </div>
     );
 };
 
@@ -110,14 +144,18 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleToggle = async (emailType: 'free' | 'paid') => {
         const slug = `member-welcome-email-${emailType}`;
         const existing = automatedEmails.find(email => email.slug === slug);
+        const label = emailType === 'free' ? 'Free members' : 'Paid members';
 
         try {
             if (!existing) {
                 await createAutomatedEmail(emailType, 'active');
+                showToast({type: 'success', title: `${label} welcome email enabled`});
             } else if (existing.status === 'active') {
                 await editAutomatedEmail({...existing, status: 'inactive'});
+                showToast({type: 'success', title: `${label} welcome email disabled`});
             } else {
                 await editAutomatedEmail({...existing, status: 'active'});
+                showToast({type: 'success', title: `${label} welcome email enabled`});
             }
         } catch (e) {
             handleError(e);
@@ -158,43 +196,35 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <SettingGroupContent className="!gap-y-0" columns={1}>
                 <Separator />
-                <Toggle
-                    key={`free-${isLoading ? 'loading' : freeWelcomeEmail?.status ?? 'none'}`}
-                    checked={Boolean(freeWelcomeEmailEnabled)}
-                    containerClasses='items-center'
-                    direction='rtl'
-                    disabled={isLoading}
-                    gap='gap-0'
-                    hint='Sent to new free members right after they join your site.'
-                    label='Free members'
-                    labelClasses='py-4 w-full'
-                    onChange={() => handleToggle('free')}
+                <EmailSettingRow
+                    description='Email new free members receive when they join your site.'
+                    testId='free-welcome-email-edit-button'
+                    title='Free members welcome email'
+                    onEdit={() => handleEditClick('free')}
                 />
                 <EmailPreview
                     automatedEmail={freeEmailForDisplay}
                     emailType='free'
                     enabled={freeWelcomeEmailEnabled}
+                    isLoading={isLoading}
                     onEdit={() => handleEditClick('free')}
+                    onToggle={() => handleToggle('free')}
                 />
                 {checkStripeEnabled(settings, config) && (
                     <div className='mt-4'>
-                        <Toggle
-                            key={`paid-${isLoading ? 'loading' : paidWelcomeEmail?.status ?? 'none'}`}
-                            checked={Boolean(paidWelcomeEmailEnabled)}
-                            containerClasses='items-center'
-                            direction='rtl'
-                            disabled={isLoading}
-                            gap='gap-0'
-                            hint='Sent to new paid members right after they start their subscription.'
-                            label='Paid members'
-                            labelClasses='py-4 w-full'
-                            onChange={() => handleToggle('paid')}
+                        <EmailSettingRow
+                            description='Sent to new paid members as soon as they start their subscription.'
+                            testId='paid-welcome-email-edit-button'
+                            title='Paid members welcome email'
+                            onEdit={() => handleEditClick('paid')}
                         />
                         <EmailPreview
                             automatedEmail={paidEmailForDisplay}
                             emailType='paid'
                             enabled={paidWelcomeEmailEnabled}
+                            isLoading={isLoading}
                             onEdit={() => handleEditClick('paid')}
+                            onToggle={() => handleToggle('paid')}
                         />
                     </div>
                 )}
