@@ -124,6 +124,7 @@
     "Not receiving emails?": "Ei saa e-kirju?",
     "Now check your email!": "Nüüd kontrollige oma e-posti!",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "Kui olete uuesti tellinud ja te ikka ei näe e-kirju oma postkastis, kontrollige oma rämpsposti kausta. Mõned postkasti teenusepakkujad säilitavad varasemaid rämpspostikaebusi ja jätkavad e-kirjade märkimist. Kui see juhtub, märkige viimane uudiskiri 'Mitte rämpspost', et see liiguks tagasi teie põhipostkasti.",
+    "Open email": "",
     "Permanent failure (bounce)": "Püsiv tõrge (tagasipõrge)",
     "Phone number": "Telefoninumber",
     "Plan": "Pakett",

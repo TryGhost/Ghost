@@ -124,6 +124,7 @@
     "Not receiving emails?": "ไม่ได้รับอีเมล?",
     "Now check your email!": "ตรวจสอบอีเมลของคุณตอนนี้!",
     "Once resubscribed, if you still don't see emails in your inbox, check your spam folder. Some inbox providers keep a record of previous spam complaints and will continue to flag emails. If this happens, mark the latest newsletter as 'Not spam' to move it back to your primary inbox.": "เมื่อรับสมัครข้อมูลใหม่แล้ว, หากคุณยังคงไม่เห็นอีเมลในกล่องจดหมายของคุณ ให้ตรวจสอบโฟลเดอร์สแปมของคุณ. ผู้ให้บริการกล่องจดหมายบางราย เก็บบันทึกการร้องเรียนเกี่ยวกับสแปมก่อนหน้านี้ และจะทำการตั้งค่าสถานะอีเมลต่อไป หากเกิดเหตุการณ์เช่นนี้ ให้ทำเครื่องหมายจดหมายข่าวล่าสุดว่า 'ไม่ใช่สแปม' เพื่อย้ายกลับไปยังกล่องจดหมายหลักของคุณ",
+    "Open email": "",
     "Permanent failure (bounce)": "ความล้มเหลวอย่างถาวร (อีเมลถูกตีกลับ)",
     "Phone number": "",
     "Plan": "แผน",

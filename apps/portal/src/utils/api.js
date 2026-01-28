@@ -265,6 +265,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
+        /**
+         * @returns {{
+         *     sniperLinks?: {
+         *         desktop: string;
+         *         android: string;
+         *     };
+         *     otc_ref?: string;
+         * }}
+         */
         async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
@@ -306,7 +315,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                         // fall through to response used pre-OTC
                     }
                 }
-                return 'Success';
+                return {};
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {

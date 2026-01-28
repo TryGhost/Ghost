@@ -1,9 +1,11 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
+import SniperLinkButton from '../common/sniper-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
+import {isAndroidChrome} from '../../utils/is-android-chrome';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -161,15 +163,26 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const label = t('Close');
-        return (
-            <ActionButton
-                style={{width: '100%'}}
-                onClick={e => this.handleClose(e)}
-                brandColor={this.context.brandColor}
-                label={label}
-            />
-        );
+        const {site, sniperLinks} = this.context;
+        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        if (isSniperLinksEnabled && sniperLinks) {
+            return (
+                <SniperLinkButton
+                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                    label={t('Open email')}
+                    brandColor={this.context.brandColor}
+                />
+            );
+        } else {
+            return (
+                <ActionButton
+                    style={{width: '100%'}}
+                    onClick={e => this.handleClose(e)}
+                    brandColor={this.context.brandColor}
+                    label={t('Close')}
+                />
+            );
+        }
     }
 
     handleSubmit(e) {
