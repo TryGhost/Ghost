@@ -48,7 +48,7 @@ function finaliseStructuredData(meta) {
     return head;
 }
 
-function getMembersHelper(data, frontendKey, excludeList) {
+function getMembersHelper(frontendKey, excludeList) {
     // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
@@ -57,18 +57,13 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
-        const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
-        const attributes = {
+        const dataAttributes = getDataAttributes({
             i18n: labs.isSet('i18n'),
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
             locale: settingsCache.get('locale') || 'en'
-        };
-        if (colorString) {
-            attributes['accent-color'] = colorString;
-        }
-        const dataAttributes = getDataAttributes(attributes);
+        });
         membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
@@ -302,7 +297,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             escapeExpression(meta.site.title) + '" href="' +
             escapeExpression(meta.rssUrl) + '">');
 
-        head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
+        head.push(getMembersHelper(frontendKey, excludeList)); // controlling for excludes within the function
         if (!excludeList.has('search')) {
             head.push(getSearchHelper(frontendKey));
         }
