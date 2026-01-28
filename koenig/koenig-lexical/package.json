@@ -42,7 +42,6 @@
     "lint": "yarn run lint:js && yarn run lint:css",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --ext .js,.cjs,.jsx --cache demo src test",
-    "preversion": "node check-publish-env.js",
     "prepare": "NODE_ENV=production yarn build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
