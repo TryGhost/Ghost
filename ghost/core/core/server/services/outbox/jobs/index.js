@@ -1,6 +1,5 @@
 const path = require('path');
 const jobsService = require('../../jobs');
-const config = require('../../../../shared/config');
 
 let hasScheduled = {
     processOutbox: false
