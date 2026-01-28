@@ -66,16 +66,8 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
         <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             {date && <div className="mb-1 text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
             <div className='flex flex-col gap-1'>
-                <div className='flex items-center gap-2'>
-                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-purple))'}}></span>
-                    <div className='flex grow items-center justify-between gap-5'>
-                        {label && <div className="text-sm text-muted-foreground">{label}</div>}
-                        <div className="font-mono font-medium">{formattedValue}</div>
-                    </div>
-                </div>
                 {showBreakdown && (
                     <>
-                        <Separator />
                         <div className='flex items-center gap-2'>
                             <div className='flex grow items-center justify-between gap-5'>
                                 <div className="text-sm text-muted-foreground">Paid subscriptions</div>
@@ -88,8 +80,16 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                                 <div className="font-mono text-sm">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
                             </div>
                         </div>
+                        <Separator />
                     </>
                 )}
+                <div className='flex items-center gap-2'>
+                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-purple))'}}></span>
+                    <div className='flex grow items-center justify-between gap-5'>
+                        {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                        <div className="font-mono font-medium">{formattedValue}</div>
+                    </div>
+                </div>
             </div>
         </div>
     );
