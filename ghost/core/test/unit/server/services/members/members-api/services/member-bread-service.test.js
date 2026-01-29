@@ -88,7 +88,7 @@ describe('MemberBreadService', function () {
                 name: 'Test User',
                 stripe_customer_id: 'cus_123'
             }, {
-                context: {user: true}  // Admin context
+                context: {user: true} // Admin context
             });
 
             // Verify linkStripeCustomer was called
