@@ -284,7 +284,8 @@ describe('MemberRepository', function () {
                     related: (relation) => {
                         return {
                             query: sinon.stub().returns({
-                                fetchOne: sinon.stub().resolves({})
+                                fetchOne: sinon.stub().resolves({}),
+                                fetch: sinon.stub().resolves({models: []})
                             }),
                             toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
                             fetch: sinon.stub().resolves({
@@ -1199,7 +1200,8 @@ describe('MemberRepository', function () {
                     related: (relation) => {
                         return {
                             query: sinon.stub().returns({
-                                fetchOne: sinon.stub().resolves({})
+                                fetchOne: sinon.stub().resolves({}),
+                                fetch: sinon.stub().resolves({models: []})
                             }),
                             toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
                             fetch: sinon.stub().resolves({

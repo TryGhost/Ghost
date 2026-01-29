@@ -1361,6 +1361,11 @@ module.exports = class MemberRepository {
                 }
             }
 
+            // Remove any complimentary access now that a paid subscription is linked
+            if (status === 'paid') {
+                memberProducts = await this.removeComplimentaryAccess(memberModel, memberProducts, options);
+            }
+
             if (ghostProduct) {
                 // Note: we add the product here
                 // We don't override the products because in an edge case a member can have multiple subscriptions
@@ -2020,6 +2025,58 @@ module.exports = class MemberRepository {
             }
         }
         return true;
+    }
+
+    /**
+     * Removes all complimentary access for a member when they become paid.
+     * Handles two types of complimentary access:
+     * 1. Stripe-backed: Subscriptions with plan_nickname = 'Complimentary' — cancelled via Stripe API
+     * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — filtered out
+     *
+     * @param {Object} memberModel - Bookshelf member model
+     * @param {Object[]} memberProducts - Current member products (JSON)
+     * @param {Object} options
+     * @returns {Promise<Object[]>} Filtered member products with comp products removed
+     */
+    async removeComplimentaryAccess(memberModel, memberProducts, options = {}) {
+        const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
+
+        // Cancel any Stripe-backed complimentary subscriptions
+        for (const sub of subscriptions.models) {
+            const isComp = this.isComplimentarySubscription({plan: {nickname: sub.get('plan_nickname')}});
+            const isActive = this.isActiveSubscriptionStatus(sub.get('status'));
+
+            if (isActive && isComp) {
+                try {
+                    const cancelledSub = await this._stripeAPIService.cancelSubscription(
+                        sub.get('subscription_id')
+                    );
+
+                    const existingSubModel = await this.getSubscriptionByStripeID(sub.get('subscription_id'), options);
+                    if (existingSubModel) {
+                        await this._StripeCustomerSubscription.edit({
+                            status: cancelledSub.status,
+                            cancel_at_period_end: cancelledSub.cancel_at_period_end,
+                            mrr: 0
+                        }, {...options, id: existingSubModel.id});
+                    }
+                } catch (err) {
+                    logging.error({err}, `Error cancelling complimentary subscription ${sub.get('subscription_id')}`);
+                }
+            }
+        }
+
+        // Remove Ghost-only comp products (products not backed by any active Stripe subscription)
+        const activeSubscriptions = await memberModel.related('stripeSubscriptions')
+            .query('whereIn', 'status', ['active', 'trialing', 'unpaid', 'past_due'])
+            .fetch({...options, withRelated: ['stripePrice.stripeProduct']});
+        const activeSubscriptionProductIds = new Set(
+            activeSubscriptions.models
+                .map(sub => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'))
+                .filter(Boolean)
+        );
+
+        return memberProducts.filter(product => activeSubscriptionProductIds.has(product.id));
     }
 
     /**
