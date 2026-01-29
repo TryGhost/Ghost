@@ -479,14 +479,9 @@ const getStripeAccountId = async () => {
     const stripe = new Stripe(secretKey, {
         apiVersion: '2020-08-27'
     });
-    const accounts = await stripe.accounts.list();
-    if (accounts.data.length > 0) {
-        const account = accounts.data.find(acc => acc.email === accountEmail);
-        if (account) {
-            await stripe.accounts.del(account.id);
-        }
-    }
 
+    // Each CI run has a unique GITHUB_RUN_ID, so we always create a fresh account
+    // Cleanup of old accounts is handled by the scheduled cleanup-stripe-test-accounts workflow
     const account = await stripe.accounts.create({
         type: 'standard',
         email: accountEmail,
