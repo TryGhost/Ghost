@@ -251,6 +251,12 @@ module.exports = class CheckoutSessionEventService {
                     });
                 }
             }
+
+            // If member is now paid, remove any complimentary access
+            const updatedMember = await memberRepository.get({id: member.id});
+            if (updatedMember && updatedMember.get('status') === 'paid') {
+                await memberRepository.removeComplimentarySubscription({id: member.id});
+            }
         }
 
         if (checkoutType !== 'upgrade') {

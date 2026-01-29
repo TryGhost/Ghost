@@ -49,6 +49,12 @@ module.exports = class SubscriptionEventService {
                 }
                 throw new errors.ConflictError({err});
             }
+
+            // If member is now paid, remove any complimentary access
+            const updatedMember = await memberRepository.get({id: member.id});
+            if (updatedMember && updatedMember.get('status') === 'paid') {
+                await memberRepository.removeComplimentarySubscription({id: member.id});
+            }
         }
     }
 };
