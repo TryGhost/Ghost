@@ -1310,7 +1310,7 @@ module.exports = class MemberRepository {
         }
 
         let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
-        const oldMemberProducts = memberModel.related('products').toJSON();
+        let oldMemberProducts = memberModel.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (!stripeCustomerSubscriptionModelShouldBeDeleted && this.isActiveSubscriptionStatus(stripeSubscriptionData.status)) {
             if (this.isComplimentarySubscription(stripeSubscriptionData)) {
@@ -1365,6 +1365,8 @@ module.exports = class MemberRepository {
             // Remove any complimentary access now that a paid subscription is linked
             if (status === 'paid') {
                 memberProducts = await this.removeComplimentaryAccess(memberModel, memberProducts, options);
+                // Re-baseline after recursive linkSubscription calls to avoid duplicate events (removeComplimentaryAccess calls linkSubscription)
+                oldMemberProducts = memberModel.related('products').toJSON();
             }
 
             if (ghostProduct) {
