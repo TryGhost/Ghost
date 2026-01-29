@@ -28,7 +28,10 @@ docker
 !docker/**/*.entrypoint.sh
 !docker/**/*entrypoint.sh
 
-ghost/core/core/built/admin
+# Note: ghost/core/core/built/admin is needed for E2E image, so not excluded
+
+# Exclude test directories
+ghost/core/test
 
 # Ignore local config files (.json and .jsonc)
 ghost/core/config.local.json*
