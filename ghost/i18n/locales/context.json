@@ -167,6 +167,7 @@
     "New reply to your comment on {siteTitle}": "Email subject when notifying user about reply to his comment",
     "Newest": "Text appears in the sorting selector for comments",
     "Newsletters can be disabled on your account for two reasons: A previous email was marked as spam, or attempting to send an email resulted in a permanent failure (bounce).": "A paragraph in the email suppression FAQ",
+    "Next payment": "",
     "No matches found": "Shown in search when 0 results",
     "No member exists with this e-mail address.": "Shown when trying to sign in.",
     "No member exists with this e-mail address. Please sign up first.": "Shown when trying to sign in.",
