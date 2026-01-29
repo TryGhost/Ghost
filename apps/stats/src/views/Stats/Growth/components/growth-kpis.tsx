@@ -40,6 +40,12 @@ type Totals = {
     };
 };
 
+type KpiTab = 'total-members' | 'free-members' | 'paid-members' | 'mrr';
+
+const isValidTab = (tab: string | null | undefined): tab is KpiTab => {
+    return tab === 'total-members' || tab === 'free-members' || tab === 'paid-members' || tab === 'mrr';
+};
+
 // Extended data type for paid members chart with additional tooltip fields
 type PaidMembersChartDataItem = GhAreaChartDataItem & {
     comped: number;
@@ -101,9 +107,10 @@ const GrowthKPIs: React.FC<{
     initialTab?: string;
     currencySymbol: string;
     isLoading: boolean;
-    onTabChange?: (tab: string) => void;
-}> = ({chartData: allChartData, totals, initialTab = 'total-members', currencySymbol, isLoading, onTabChange}) => {
-    const [currentTab, setCurrentTab] = useState(initialTab);
+    onTabChange?: (tab: KpiTab) => void;
+}> = ({chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange}) => {
+    const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
+    const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
@@ -112,11 +119,11 @@ const GrowthKPIs: React.FC<{
 
     // Update current tab if initialTab changes
     useEffect(() => {
-        setCurrentTab(initialTab);
-    }, [initialTab]);
+        setCurrentTab(validatedInitialTab);
+    }, [validatedInitialTab]);
 
     // Function to update tab and URL
-    const handleTabChange = (tabValue: string) => {
+    const handleTabChange = (tabValue: KpiTab) => {
         setCurrentTab(tabValue);
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('tab', tabValue);
@@ -234,7 +241,7 @@ const GrowthKPIs: React.FC<{
     const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-h-[180px]';
 
     return (
-        <Tabs defaultValue={initialTab} variant='kpis'>
+        <Tabs defaultValue={validatedInitialTab} variant='kpis'>
             <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:!visible lg:!grid' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
@@ -341,7 +348,7 @@ const GrowthKPIs: React.FC<{
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
                     className={areaChartClassname}
-                    color={tabConfig[currentTab as keyof typeof tabConfig]?.color ?? tabConfig['total-members'].color}
+                    color={tabConfig[currentTab].color}
                     data={chartData}
                     dataFormatter={currentTab === 'mrr'
                         ?
