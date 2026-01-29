@@ -72,7 +72,7 @@ export const test = base.extend<GhostInstanceFixture>({
     // Each test gets its own Ghost instance with isolated database
     ghostInstance: async ({config}, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
-        const environmentManager = await getEnvironmentManager();
+        const environmentManager = getEnvironmentManager();
         const ghostInstance = await environmentManager.perTestSetup({config});
 
         debug('Ghost instance ready for test:', {
