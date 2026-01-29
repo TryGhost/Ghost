@@ -71,10 +71,6 @@ const features: Feature[] = [{
     title: 'Sniper Links',
     description: 'Enable mail app links on signup/signin',
     flag: 'sniperlinks'
-}, {
-    title: 'Paid Breakdown Charts',
-    description: 'Show paid member change and subscription cadence breakdown charts on the Growth page',
-    flag: 'paidBreakdownCharts'
 }];
 
 const AlphaFeatures: React.FC = () => {
