@@ -303,9 +303,10 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
-        const sharedOptions = options.transacting ? {
-            transacting: options.transacting
-        } : {};
+        const sharedOptions = {
+            ...(options.transacting && {transacting: options.transacting}),
+            ...(options.context && {context: options.context})
+        };
 
         try {
             if (data.stripe_customer_id) {
