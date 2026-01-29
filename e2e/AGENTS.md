@@ -22,6 +22,18 @@ yarn test --debug                               # See browser during execution, 
 PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
 ```
 
+## Dev Environment Mode (Recommended)
+
+When `yarn dev` is running, e2e tests automatically use a more efficient execution mode:
+
+```bash
+# Terminal 1: Start dev environment
+yarn dev
+
+# Terminal 2: Run e2e tests (automatically uses dev environment)
+cd e2e && yarn test
+```
+
 ## Test Structure
 
 ### Naming Conventions
