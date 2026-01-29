@@ -139,6 +139,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(outboxEntries.length, 0);
         });
 
+
         it('creates outbox entry with correct timestamp', async function () {
             mockManager.mockLabsEnabled('welcomeEmails');
 
