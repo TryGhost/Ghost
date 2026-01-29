@@ -18,7 +18,9 @@ describe('CheckoutSessionEventService', function () {
 
         memberRepository = {
             get: sinon.stub(),
-            create: sinon.stub(),
+            create: sinon.stub().resolves({
+                id: 'created_member'
+            }),
             update: sinon.stub(),
             linkSubscription: sinon.stub(),
             upsertCustomer: sinon.stub()
