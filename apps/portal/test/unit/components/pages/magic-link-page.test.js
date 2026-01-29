@@ -6,7 +6,6 @@ const OTC_ERROR_REGEX = /Enter code/i;
 
 const setupTest = (options = {}) => {
     const {
-        labs = {},
         otcRef = null,
         action = 'init:success',
         ...contextOverrides
@@ -16,7 +15,6 @@ const setupTest = (options = {}) => {
         <MagicLinkPage />,
         {
             overrideContext: {
-                labs,
                 otcRef,
                 action,
                 ...contextOverrides
@@ -33,7 +31,6 @@ const setupTest = (options = {}) => {
 // Helper for OTC-enabled tests
 const setupOTCTest = (options = {}) => {
     return setupTest({
-        labs: {},
         otcRef: 'test-otc-ref',
         ...options
     });
@@ -85,16 +82,10 @@ describe('MagicLinkPage', () => {
         });
 
         test('does not render OTC form when conditions not met', () => {
-            const scenarios = [
-                {labs: {}, otcRef: null}
-            ];
+            const utils = setupTest({otcRef: null});
 
-            scenarios.forEach(({labs, otcRef}) => {
-                const utils = setupTest({labs, otcRef});
-
-                expect(utils.queryByLabelText(OTC_LABEL_REGEX)).not.toBeInTheDocument();
-                expect(utils.queryByRole('button', {name: 'Continue'})).not.toBeInTheDocument();
-            });
+            expect(utils.queryByLabelText(OTC_LABEL_REGEX)).not.toBeInTheDocument();
+            expect(utils.queryByRole('button', {name: 'Continue'})).not.toBeInTheDocument();
         });
     });
 
@@ -333,10 +324,7 @@ describe('MagicLinkPage', () => {
 
     describe('OTC flow edge cases', () => {
         test('does not render form without otcRef', () => {
-            const utils = setupTest({
-                labs: {},
-                otcRef: null
-            });
+            const utils = setupTest({otcRef: null});
 
             expect(utils.queryByText(/You can also use the one-time code to sign in here/i)).not.toBeInTheDocument();
             expect(utils.queryByRole('button', {name: 'Continue'})).not.toBeInTheDocument();
