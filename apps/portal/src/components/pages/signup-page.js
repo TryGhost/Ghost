@@ -94,7 +94,7 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
-    margin: 16px 0 0;
+    margin: 4px 0 0;
 }
 
 .gh-portal-signup-message,
@@ -137,6 +137,7 @@ footer.gh-portal-signin-footer {
     position: relative;
     padding-top: 24px;
     height: unset;
+    gap: 12px;
 }
 
 .gh-portal-content.signup,

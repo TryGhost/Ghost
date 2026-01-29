@@ -240,7 +240,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef} = this.context;
+        const {action, actionErrorMessage, otcRef, site, sniperLinks} = this.context;
+        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -293,6 +294,13 @@ export default class MagicLinkPage extends React.Component {
                         retry={isError}
                         disabled={isRunning}
                     />
+                    {isSniperLinksEnabled && sniperLinks ? (
+                        <SniperLinkButton
+                            href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                            label={t('Open email')}
+                            brandColor={this.context.brandColor}
+                        />
+                    ) : null}
                 </footer>
             </form>
         );
