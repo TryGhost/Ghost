@@ -39,16 +39,14 @@ function handleTokenUrl() {
     }
 }
 
-function setup() {
-    addRootDiv();
-    handleTokenUrl();
-}
-
 function init() {
     // const customSiteUrl = getSiteUrl();
     const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale, labs} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
-    setup({siteUrl});
+
+    addRootDiv();
+    handleTokenUrl();
+
     ReactDOM.render(
         <React.StrictMode>
             <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} locale={locale} labs={labs}/>
