@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const {MemberCommentingCodec} = require('../../commenting');
+const {byColumnValues, byIds} = require('../../../../models/base/plugins/bulk-filters');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -833,13 +834,20 @@ module.exports = class MemberRepository {
 
         const memberIds = memberRows.map(row => row.id);
 
-        const bulkDestroyResult = await this._Member.bulkDestroy(memberIds);
+        const affectedRows = await this._Member.bulkDelete('members', {
+            where: byIds(memberIds),
+            transacting: options.transacting
+        }, {
+            context: options.context,
+            actionIds: memberIds
+        });
 
-        bulkDestroyResult.unsuccessfulIds = bulkDestroyResult.unsuccessfulData;
-
-        delete bulkDestroyResult.unsuccessfulData;
-
-        return bulkDestroyResult;
+        return {
+            successful: affectedRows,
+            unsuccessful: 0,
+            errors: [],
+            unsuccessfulIds: []
+        };
     }
 
     async bulkEdit(data, options) {
@@ -878,10 +886,20 @@ module.exports = class MemberRepository {
                 });
                 const toUnsubscribe = unsubscribeRows.map(row => row.id);
 
-                return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
+                await this._MemberNewsletter.bulkDelete('members_newsletters', {
+                    where: byIds(toUnsubscribe),
+                    transacting: options.transacting
+                });
+                // Return count of members who had this newsletter subscription
+                return {successful: toUnsubscribe.length, unsuccessful: 0, errors: [], unsuccessfulData: []};
             }
             if (!hasNewsletterSelected) {
-                return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
+                await this._Member.bulkDelete('members_newsletters', {
+                    where: byColumnValues('member_id', memberIds),
+                    transacting: options.transacting
+                });
+                // Return member count for unsubscribe all
+                return {successful: memberIds.length, unsuccessful: 0, errors: [], unsuccessfulData: []};
             }
         }
         if (data.action === 'removeLabel') {
@@ -892,7 +910,12 @@ module.exports = class MemberRepository {
 
             const membersLabelsIds = membersLabelsRows.map(row => row.id);
 
-            return this._Member.bulkDestroy(membersLabelsIds, 'members_labels');
+            await this._Member.bulkDelete('members_labels', {
+                where: byIds(membersLabelsIds),
+                transacting: options.transacting
+            });
+            // Return count of members who had this label
+            return {successful: membersLabelsIds.length, unsuccessful: 0, errors: [], unsuccessfulData: []};
         }
 
         if (data.action === 'addLabel') {

@@ -1,5 +1,5 @@
 const FullPostLink = require('./full-post-link');
-const _ = require('lodash');
+const {byIds} = require('../../models/base/plugins/bulk-filters');
 
 /**
  * @typedef {import('bson-objectid').default} ObjectID
@@ -64,11 +64,10 @@ module.exports = class PostLinkRepository {
     }
 
     async updateLinks(linkIds, updateData, options) {
-        const bulkUpdateOptions = _.pick(options, ['transacting']);
-
-        const bulkActionResult = await this.#LinkRedirect.bulkEdit(linkIds, 'redirects', {
-            ...bulkUpdateOptions,
-            data: updateData
+        const affectedRows = await this.#LinkRedirect.bulkUpdate('redirects', {
+            data: updateData,
+            where: byIds(linkIds),
+            transacting: options.transacting
         });
 
         return {
@@ -76,11 +75,11 @@ module.exports = class PostLinkRepository {
                 action: 'updateLink',
                 meta: {
                     stats: {
-                        successful: bulkActionResult.successful,
-                        unsuccessful: bulkActionResult.unsuccessful
+                        successful: affectedRows,
+                        unsuccessful: 0
                     },
-                    errors: bulkActionResult.errors,
-                    unsuccessfulData: bulkActionResult.unsuccessfulData
+                    errors: [],
+                    unsuccessfulData: []
                 }
             }
         };

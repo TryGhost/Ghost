@@ -1,3 +1,5 @@
+import {byIds} from '../models/base/plugins/bulk-filters';
+
 type PostLike = {
     id: string;
     lexical: string;
@@ -143,13 +145,12 @@ export class PostRevisions {
             return;
         }
 
-        await this.model.bulkEdit(revisionIds, 'post_revisions', {
+        await this.model.bulkUpdate('post_revisions', {
             data: {
                 author_id: null
             },
-            column: 'id',
-            transacting: options.transacting,
-            throwErrors: true
+            where: byIds(revisionIds),
+            transacting: options.transacting
         });
     }
 }

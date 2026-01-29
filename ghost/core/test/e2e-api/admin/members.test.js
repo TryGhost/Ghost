@@ -3581,6 +3581,136 @@ describe('Members API Bulk operations', function () {
         should(updatedModel2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
     });
 
+    it('Can bulk add a label to members', async function () {
+        // Create a new label to add
+        const label = await models.Label.add({name: 'bulk-add-label'});
+
+        await agent
+            .put('/members/bulk/?all=true')
+            .body({bulk: {
+                action: 'addLabel',
+                meta: {
+                    label: {
+                        id: label.id
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 8,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Verify all members have the label
+        const members = await models.Member.findAll({withRelated: 'labels'});
+        for (const member of members) {
+            const labelIds = member.relations.labels.models.map(m => m.id);
+            should(labelIds).containEql(label.id);
+        }
+    });
+
+    it('Can bulk add a label to members with filter', async function () {
+        const member1 = fixtureManager.get('members', 0);
+        const member2 = fixtureManager.get('members', 1);
+
+        // Create a new label to add
+        const label = await models.Label.add({name: 'filtered-add-label'});
+
+        await agent
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
+            .body({bulk: {
+                action: 'addLabel',
+                meta: {
+                    label: {
+                        id: label.id
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Verify only member1 has the label
+        const updatedMember1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
+        should(updatedMember1.relations.labels.models.map(m => m.id)).containEql(label.id);
+
+        const updatedMember2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
+        should(updatedMember2.relations.labels.models.map(m => m.id)).not.containEql(label.id);
+    });
+
+    it('Handles duplicate labels gracefully when bulk adding', async function () {
+        const member1 = fixtureManager.get('members', 0);
+
+        // Create a label and add it to member1 (using name, as member model expects)
+        const label = await models.Label.add({name: 'duplicate-label-test'});
+        await models.Member.edit({labels: [{name: 'duplicate-label-test'}]}, {id: member1.id});
+
+        // Verify member1 has the label
+        const beforeMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
+        const beforeLabelCount = beforeMember.relations.labels.models.filter(m => m.id === label.id).length;
+        should(beforeLabelCount).equal(1);
+
+        // Try to add the same label again
+        await agent
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
+            .body({bulk: {
+                action: 'addLabel',
+                meta: {
+                    label: {
+                        id: label.id
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // Verify member1 still has only one instance of the label (not duplicated)
+        const afterMember = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
+        const afterLabelCount = afterMember.relations.labels.models.filter(m => m.id === label.id).length;
+        should(afterLabelCount).equal(1);
+    });
+
     it('Can bulk delete members', async function () {
         await agent
             .delete('/members?all=true')

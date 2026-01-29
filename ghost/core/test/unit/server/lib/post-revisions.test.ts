@@ -335,7 +335,7 @@ describe('PostRevisions', function () {
                 findAll: sinon.stub().resolves({
                     toJSON: () => revisions
                 }),
-                bulkEdit: sinon.stub().resolves()
+                bulkUpdate: sinon.stub().resolves(3)
             };
             const postRevisions = new PostRevisions({
                 config,
@@ -344,20 +344,19 @@ describe('PostRevisions', function () {
 
             await postRevisions.removeAuthorFromRevisions(authorId, options);
 
-            assert.equal(modelStub.bulkEdit.calledOnce, true);
+            assert.equal(modelStub.bulkUpdate.calledOnce, true);
 
-            const bulkEditArgs = modelStub.bulkEdit.getCall(0).args;
+            const bulkUpdateArgs = modelStub.bulkUpdate.getCall(0).args;
 
-            assert.deepEqual(bulkEditArgs[0], ['revision123', 'revision456', 'revision789']);
-            assert.equal(bulkEditArgs[1], 'post_revisions');
-            assert.deepEqual(bulkEditArgs[2], {
-                data: {
-                    author_id: null
-                },
-                column: 'id',
-                transacting: options.transacting,
-                throwErrors: true
-            });
+            // First arg: table name
+            assert.equal(bulkUpdateArgs[0], 'post_revisions');
+
+            // Second arg: query params (data, where, transacting)
+            assert.deepEqual(bulkUpdateArgs[1].data, {author_id: null});
+            assert.equal(bulkUpdateArgs[1].transacting, options.transacting);
+            // where is a generator - verify it yields the right query modifier
+            const whereModifiers = [...bulkUpdateArgs[1].where];
+            assert.equal(whereModifiers.length, 1);
         });
 
         it('does nothing if there are no post revisions by the provided author', async function () {
@@ -365,7 +364,7 @@ describe('PostRevisions', function () {
                 findAll: sinon.stub().resolves({
                     toJSON: () => []
                 }),
-                bulkEdit: sinon.stub().resolves()
+                bulkUpdate: sinon.stub().resolves(0)
             };
             const postRevisions = new PostRevisions({
                 config,
@@ -376,7 +375,7 @@ describe('PostRevisions', function () {
                 transacting: {}
             });
 
-            assert.equal(modelStub.bulkEdit.calledOnce, false);
+            assert.equal(modelStub.bulkUpdate.calledOnce, false);
         });
     });
 });

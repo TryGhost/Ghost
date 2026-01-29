@@ -14,12 +14,7 @@ describe('UNIT: PostLinkRepository class', function () {
                         distinct: sinon.stub().returns([])
                     })
                 }),
-                bulkEdit: sinon.stub().returns({
-                    successful: 0,
-                    unsuccessful: 0,
-                    errors: [],
-                    unsuccessfulData: []
-                })
+                bulkUpdate: sinon.stub().resolves(0)
             },
             linkRedirectRepository: {}
         });

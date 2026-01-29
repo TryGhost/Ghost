@@ -1,9 +1,5 @@
 const _ = require('lodash');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const nql = require('@tryghost/nql');
-
-const CHUNK_SIZE = 100;
+const {CHUNK_SIZE} = require('./bulk-filters');
 
 function createBulkOperation(singular, multiple) {
     return async function (knex, table, data, options) {
@@ -56,63 +52,32 @@ async function insertMultiple(knex, table, chunk, options) {
     await k.insert(chunk);
 }
 
-async function editSingle(knex, table, id, options) {
-    let k = knex(table);
-    if (options.transacting) {
-        k = k.transacting(options.transacting);
-    }
-    await k.where(options.column ?? 'id', id).update(options.data);
-}
-
-async function editMultiple(knex, table, chunk, options) {
-    let k = knex(table);
-    if (options.transacting) {
-        k = k.transacting(options.transacting);
-    }
-    await k.whereIn(options.column ?? 'id', chunk).update(options.data);
-}
-
-async function delSingle(knex, table, id, options) {
-    try {
-        let k = knex(table);
-        if (options.transacting) {
-            k = k.transacting(options.transacting);
-        }
-        await k.where(options.column ?? 'id', id).del();
-    } catch (err) {
-        const importError = new errors.DataImportError({
-            message: `Failed to remove entry from ${table}`,
-            context: `Entry id: ${id}`,
-            err: err
-        });
-        logging.error(importError);
-        throw importError;
-    }
-}
-
-async function delMultiple(knex, table, chunk, options) {
-    let k = knex(table);
-    if (options.transacting) {
-        k = k.transacting(options.transacting);
-    }
-    await k.whereIn(options.column ?? 'id', chunk).del();
-}
-
 const insert = createBulkOperation(insertSingle, insertMultiple);
-const edit = createBulkOperation(editSingle, editMultiple);
-const del = createBulkOperation(delSingle, delMultiple);
 
 /**
- * Creates a where strategy that applies an NQL filter to the query builder.
- * Yields a single query modifier — no chunking.
+ * Execute a bulk operation (update or delete) with a where strategy.
+ * Iterates over each query modifier yielded by the strategy, applies it to
+ * a fresh query builder, and executes the operation.
  *
- * @param {string} filter - NQL filter string (e.g. "member_id:'abc'+status:published")
- * @yields {(qb: import('knex').QueryBuilder) => void}
+ * @param {import('knex')} knex - Knex instance
+ * @param {string} tableName - Table to operate on
+ * @param {object} options
+ * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} options.where - Where strategy
+ * @param {object} [options.transacting] - Knex transaction
+ * @param {(qb: import('knex').QueryBuilder) => Promise<number>} operation - The operation to perform (update/delete)
+ * @returns {Promise<number>} Total affected rows
  */
-function* byNQL(filter) {
-    yield (qb) => {
-        nql(filter).querySQL(qb);
-    };
+async function bulkWhereOperation(knex, tableName, {where, transacting}, operation) {
+    let affectedRows = 0;
+    for (const applyWhere of where) {
+        let qb = knex(tableName);
+        if (transacting) {
+            qb = qb.transacting(transacting);
+        }
+        applyWhere(qb);
+        affectedRows += await operation(qb);
+    }
+    return affectedRows;
 }
 
 /**
@@ -127,72 +92,64 @@ module.exports = function (Bookshelf) {
         },
 
         /**
-         *
-         * @param {*} ids
-         * @param {*} tableName
-         * @param {object} options
-         * @param {object} [options.data] Data change you want to apply to the rows
-         * @param {string} [options.column] Update the rows where this column equals the ids (defaults to 'id')
-         * @returns
-         */
-        bulkEdit: async function bulkEdit(ids, tableName, options = {}) {
-            tableName = tableName || this.prototype.tableName;
-
-            const result = await edit(Bookshelf.knex, tableName, ids, options);
-
-            if (result.successful > 0 && tableName === this.prototype.tableName) {
-                await this.addActions('edited', ids, options);
-            }
-
-            return result;
-        },
-
-        /**
-         *
-         * @param {string[]} ids List of ids to delete
-         * @param {*} tableName
-         * @param {Object} [options]
-         * @param {string} [options.column] Delete the rows where this column equals the ids in `data` (defaults to 'id')
-         * @returns
-         */
-        bulkDestroy: async function bulkDestroy(ids, tableName, options = {}) {
-            tableName = tableName || this.prototype.tableName;
-
-            if (tableName === this.prototype.tableName) {
-                // Needs to happen before, otherwise we cannot fetch the names of the deleted items
-                await this.addActions('deleted', ids, options);
-            }
-
-            return await del(Bookshelf.knex, tableName, ids, options);
-        },
-
-        /**
-         * Update rows matching a where strategy (e.g. byNQL).
+         * Update rows matching a where strategy (e.g. byNQL, byIds, byColumnValues).
          * The `where` parameter is an iterable of query modifier functions,
          * each yielded value applies a WHERE clause to a fresh query.
          *
-         * @param {string} tableName
-         * @param {object} options
-         * @param {object} options.data - Column values to set
-         * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} options.where - Where strategy
-         * @param {object} [options.transacting] - Knex transaction
+         * @param {string} tableName - Table to update (defaults to model's table)
+         * @param {object} query - Query parameters
+         * @param {object} query.data - Column values to set
+         * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} query.where - Where strategy
+         * @param {object} [query.transacting] - Knex transaction
+         * @param {object} [actionOptions] - Action logging options
+         * @param {object} [actionOptions.context] - Context for action logging (contains actor info)
+         * @param {string} [actionOptions.actionName] - Custom action name for audit log
+         * @param {string[]} [actionOptions.actionIds] - If provided and tableName is the model's main table, log 'edited' actions for these IDs
+         * @returns {Promise<number>} Total affected rows
          */
-        bulkUpdate: async function bulkUpdate(tableName, {data, where, transacting}) {
+        bulkUpdate: async function bulkUpdate(tableName, {data, where, transacting}, actionOptions = {}) {
             tableName = tableName || this.prototype.tableName;
-
-            let affectedRows = 0;
-            for (const applyWhere of where) {
-                let qb = Bookshelf.knex(tableName);
-                if (transacting) {
-                    qb = qb.transacting(transacting);
-                }
-                applyWhere(qb);
-                affectedRows += await qb.update(data);
+            const affectedRows = await bulkWhereOperation(
+                Bookshelf.knex,
+                tableName,
+                {where, transacting},
+                qb => qb.update(data)
+            );
+            // Log actions if IDs provided and operating on main table
+            if (actionOptions.actionIds && affectedRows > 0 && tableName === this.prototype.tableName) {
+                await this.addActions('edited', actionOptions.actionIds, {...actionOptions, transacting});
             }
-
             return affectedRows;
+        },
+
+        /**
+         * Delete rows matching a where strategy (e.g. byNQL, byIds, byColumnValues).
+         * The `where` parameter is an iterable of query modifier functions,
+         * each yielded value applies a WHERE clause to a fresh query.
+         *
+         * @param {string} tableName - Table to delete from (defaults to model's table)
+         * @param {object} query - Query parameters
+         * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} query.where - Where strategy
+         * @param {object} [query.transacting] - Knex transaction
+         * @param {object} [actionOptions] - Action logging options
+         * @param {object} [actionOptions.context] - Context for action logging (contains actor info)
+         * @param {string} [actionOptions.actionName] - Custom action name for audit log
+         * @param {string[]} [actionOptions.actionIds] - If provided and tableName is the model's main table, log 'deleted' actions for these IDs (must be called before delete)
+         * @returns {Promise<number>} Total affected rows
+         */
+        bulkDelete: async function bulkDelete(tableName, {where, transacting}, actionOptions = {}) {
+            tableName = tableName || this.prototype.tableName;
+            // Log actions before deletion (needs to happen before, otherwise we cannot fetch the names of the deleted items)
+            if (actionOptions.actionIds && tableName === this.prototype.tableName) {
+                await this.addActions('deleted', actionOptions.actionIds, {...actionOptions, transacting});
+            }
+            return bulkWhereOperation(
+                Bookshelf.knex,
+                tableName,
+                {where, transacting},
+                qb => qb.del()
+            );
         }
     });
 };
 
-module.exports.byNQL = byNQL;
