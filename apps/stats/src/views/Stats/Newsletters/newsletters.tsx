@@ -364,7 +364,7 @@ const Newsletters: React.FC = () => {
     // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
     // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
-    if (!appSettings?.newslettersEnabled) {
+    if (appSettings && !appSettings.newslettersEnabled) {
         return (
             <Navigate to='/' />
         );
