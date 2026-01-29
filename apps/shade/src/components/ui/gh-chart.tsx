@@ -85,6 +85,7 @@ interface GhAreaChartProps {
     showHorizontalLines?: boolean;
     dataFormatter?: (value: number) => string;
     showHours?: boolean;
+    tooltipContent?: React.ReactElement;
 }
 
 const GhAreaChart: React.FC<GhAreaChartProps> = ({
@@ -99,7 +100,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     showYAxisValues = true,
     showHorizontalLines = true,
     dataFormatter = formatNumber,
-    showHours = false
+    showHours = false,
+    tooltipContent
 }) => {
     const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
     const chartConfig = {
@@ -155,7 +157,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     width={showYAxisValues ? calculateYAxisWidth(yRange, dataFormatter) : 0}
                 />
                 <ChartTooltip
-                    content={<GhCustomTooltipContent color={color} range={range} showHours={showHours} />}
+                    content={tooltipContent || <GhCustomTooltipContent color={color} range={range} showHours={showHours} />}
                     cursor={true}
                     isAnimationActive={false}
                     position={{y: 10}}
@@ -193,3 +195,5 @@ export {
     GhAreaChart,
     GhCustomTooltipContent
 };
+
+export type {TooltipProps};

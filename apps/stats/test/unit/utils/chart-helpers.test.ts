@@ -29,7 +29,7 @@ describe('chart-helpers', () => {
             const ranges = [
                 {value: 7, name: 'Last 7 days', expected: 'in the last 7 days'},
                 {value: 31, name: 'Last 30 days', expected: 'in the last 30 days'},
-                {value: 91, name: 'Last 3 months', expected: 'in the last 3 months'},
+                {value: 91, name: 'Last 90 days', expected: 'in the last 90 days'},
                 {value: 372, name: 'Last 12 months', expected: 'in the last 12 months'},
                 {value: 1000, name: 'All time', expected: '(all time)'}
             ];
@@ -154,7 +154,7 @@ describe('chart-helpers', () => {
                 ];
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
-                
+
                 // Should keep only end-of-month values
                 expect(result.length).toBe(2);
                 expect(result[0].date).toBe('2024-01-31');
@@ -174,7 +174,7 @@ describe('chart-helpers', () => {
                 ];
 
                 const result = sanitizeChartData(data, 400, 'value', 'exact');
-                
+
                 // Should keep only end-of-month values
                 expect(result.length).toBe(2);
                 expect(result[0].date).toBe('2024-01-31');
@@ -262,7 +262,7 @@ describe('chart-helpers', () => {
 
                 // Verify only end-of-month values are included
                 const points = new Map(result.map(item => [item.date, item.value]));
-                
+
                 // Check month boundaries
                 expect(points.get('2024-01-31')).toBe(155);
                 expect(points.get('2024-02-28')).toBe(205);
@@ -592,4 +592,4 @@ describe('chart-helpers', () => {
             });
         });
     });
-}); 
+});

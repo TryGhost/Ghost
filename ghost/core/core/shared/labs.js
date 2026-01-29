@@ -55,7 +55,8 @@ const PRIVATE_FEATURES = [
     'featurebaseFeedback',
     'transistor',
     'disableMemberCommenting',
-    'sniperlinks'
+    'sniperlinks',
+    'paidBreakdownCharts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

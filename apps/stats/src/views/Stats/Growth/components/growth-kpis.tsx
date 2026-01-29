@@ -1,11 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import moment from 'moment';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Recharts, Separator, Tabs, TabsContent, TabsList, TabsTrigger, centsToDollars, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
 import {DiffDirection} from '@hooks/use-growth-stats';
 import {STATS_RANGES} from '@src/utils/constants';
 import {determineAggregationStrategy, sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
+import {useLabsFlag} from '@src/hooks/use-labs-flag';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {
@@ -40,6 +41,67 @@ type Totals = {
     };
 };
 
+type KpiTab = 'total-members' | 'free-members' | 'paid-members' | 'mrr';
+
+const isValidTab = (tab: string | null | undefined): tab is KpiTab => {
+    return tab === 'total-members' || tab === 'free-members' || tab === 'paid-members' || tab === 'mrr';
+};
+
+// Extended data type for paid members chart with additional tooltip fields
+type PaidMembersChartDataItem = GhAreaChartDataItem & {
+    comped: number;
+    paid_subscribed?: number;
+};
+
+// Custom tooltip for paid members chart
+const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown}: {
+    active?: boolean;
+    payload?: Array<{value: number; payload: PaidMembersChartDataItem}>;
+    range?: number;
+    color?: string;
+    showBreakdown?: boolean;
+}) => {
+    if (!active || !payload?.length) {
+        return null;
+    }
+
+    const data = payload[0].payload;
+    const {date, formattedValue, label, comped} = data;
+    const paidSubscriptions = data.value - (comped || 0);
+
+    return (
+        <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
+            {date && <div className="mb-1 text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0)}</div>}
+            <div className='flex flex-col gap-1'>
+                {showBreakdown && (
+                    <>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Paid subscriptions</div>
+                                <div className="font-mono text-sm">{formatNumber(paidSubscriptions)}</div>
+                            </div>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Complimentary</div>
+                                <div className="font-mono text-sm">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
+                            </div>
+                        </div>
+                        <Separator />
+                    </>
+                )}
+                <div className='flex items-center gap-2'>
+                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-purple))'}}></span>
+                    <div className='flex grow items-center justify-between gap-5'>
+                        {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                        <div className="font-mono font-medium">{formattedValue}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const GrowthKPIs: React.FC<{
     chartData: ChartDataItem[];
     subscriptionData?: {date: string; signups: number; cancellations: number}[];
@@ -47,25 +109,32 @@ const GrowthKPIs: React.FC<{
     initialTab?: string;
     currencySymbol: string;
     isLoading: boolean;
-}> = ({chartData: allChartData, subscriptionData, totals, initialTab = 'total-members', currencySymbol, isLoading}) => {
-    const [currentTab, setCurrentTab] = useState(initialTab);
+    onTabChange?: (tab: KpiTab) => void;
+}> = ({chartData: allChartData, subscriptionData, totals, initialTab, currencySymbol, isLoading, onTabChange}) => {
+    const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
+    const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
     const [paidChartTab, setPaidChartTab] = useState('total');
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const showPaidBreakdown = useLabsFlag('paidBreakdownCharts');
 
     // Update current tab if initialTab changes
     useEffect(() => {
-        setCurrentTab(initialTab);
-    }, [initialTab]);
+        setCurrentTab(validatedInitialTab);
+    }, [validatedInitialTab]);
 
     // Function to update tab and URL
-    const handleTabChange = (tabValue: string) => {
+    const handleTabChange = (tabValue: KpiTab) => {
         setCurrentTab(tabValue);
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('tab', tabValue);
         navigate(`?${newSearchParams.toString()}`, {replace: true});
+        // Notify parent component of tab change
+        if (onTabChange) {
+            onTabChange(tabValue);
+        }
     };
 
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
@@ -177,7 +246,9 @@ const GrowthKPIs: React.FC<{
                     ...item,
                     value: item.paid,
                     formattedValue: formatNumber(item.paid),
-                    label: 'Paid members'
+                    label: 'Paid members',
+                    comped: item.comped,
+                    paid_subscribed: item.paid_subscribed
                 };
             });
             break;
@@ -222,8 +293,10 @@ const GrowthKPIs: React.FC<{
         }
     };
 
+    // Paid change chart data (only computed when flag is disabled)
     const paidChangeChartData = useMemo(() => {
-        if (currentTab !== 'paid-members') {
+        // Only compute when flag is disabled and we're on paid-members tab
+        if (showPaidBreakdown || currentTab !== 'paid-members') {
             return [];
         }
 
@@ -305,7 +378,8 @@ const GrowthKPIs: React.FC<{
                 };
             });
         }
-    }, [currentTab, allChartData, subscriptionData, range]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showPaidBreakdown, currentTab, allChartData, subscriptionData, range]);
 
     const paidChangeChartConfig = {
         new: {
@@ -329,7 +403,7 @@ const GrowthKPIs: React.FC<{
     const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-h-[180px]';
 
     return (
-        <Tabs defaultValue={initialTab} variant='kpis'>
+        <Tabs defaultValue={validatedInitialTab} variant='kpis'>
             <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:!visible lg:!grid' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
@@ -434,7 +508,8 @@ const GrowthKPIs: React.FC<{
                 </DropdownMenu>
             }
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {currentTab === 'paid-members' ?
+                {currentTab === 'paid-members' && !showPaidBreakdown ? (
+                    // Legacy behavior: Total/Change tabs with embedded bar chart
                     <Tabs
                         defaultValue={paidChartTab}
                         variant="button-sm"
@@ -455,7 +530,7 @@ const GrowthKPIs: React.FC<{
                         <TabsContent value="total">
                             <GhAreaChart
                                 className={areaChartClassname}
-                                color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                                color={tabConfig[currentTab].color}
                                 data={chartData}
                                 dataFormatter={formatNumber}
                                 id="paid-members"
@@ -596,10 +671,11 @@ const GrowthKPIs: React.FC<{
                             </div>
                         </TabsContent>
                     </Tabs>
-                    :
+                ) : (
+                    // New behavior (flag enabled) or non-paid-members tabs
                     <GhAreaChart
                         className={areaChartClassname}
-                        color={tabConfig[currentTab as keyof typeof tabConfig].color}
+                        color={tabConfig[currentTab].color}
                         data={chartData}
                         dataFormatter={currentTab === 'mrr'
                             ?
@@ -607,10 +683,11 @@ const GrowthKPIs: React.FC<{
                                 return `${currencySymbol}${formatNumber(value)}`;
                             } :
                             formatNumber}
-                        id="mrr"
+                        id={currentTab}
                         range={range}
+                        tooltipContent={currentTab === 'paid-members' && showPaidBreakdown ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={range} showBreakdown={showPaidBreakdown} /> : undefined}
                     />
-                }
+                )}
             </div>
         </Tabs>
     );

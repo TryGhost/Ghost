@@ -12,7 +12,7 @@ export const STATS_RANGES = {
         value: 30 + 1
     },
     last3Months: {
-        name: 'Last 3 months',
+        name: 'Last 90 days',
         value: 91
     },
     yearToDate: {

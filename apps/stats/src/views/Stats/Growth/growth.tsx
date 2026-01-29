@@ -2,7 +2,9 @@ import DateRangeSelect from '../components/date-range-select';
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
-import React, {useMemo, useState} from 'react';
+import NewSubscribersCadence from './components/new-subscribers-cadence';
+import PaidMembersChangeChart from './components/paid-subscription-change-chart';
+import React, {useEffect, useMemo, useState} from 'react';
 import SortButton from '../components/sort-button';
 import StatsHeader from '../layout/stats-header';
 import StatsLayout from '../layout/stats-layout';
@@ -14,6 +16,7 @@ import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useGrowthStats} from '@hooks/use-growth-stats';
+import {useLabsFlag} from '@hooks/use-labs-flag';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@hooks/use-top-posts-stats-with-range';
 import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
@@ -49,9 +52,21 @@ const Growth: React.FC = () => {
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
+    const paidBreakdownChartsEnabled = useLabsFlag('paidBreakdownCharts');
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-members';
+
+    // Track current KPI tab to conditionally show paid member charts
+    const [currentKpiTab, setCurrentKpiTab] = useState(initialTab);
+
+    // Sync currentKpiTab with URL changes (one-way: URL -> state only)
+    useEffect(() => {
+        if (initialTab !== currentKpiTab) {
+            setCurrentKpiTab(initialTab);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialTab]);
 
     // Get stats from custom hook once
     const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
@@ -143,9 +158,21 @@ const Growth: React.FC = () => {
                             isLoading={isPageLoading}
                             subscriptionData={subscriptionData}
                             totals={totals}
+                            onTabChange={setCurrentKpiTab}
                         />
                     </CardContent>
                 </Card>
+                {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && paidBreakdownChartsEnabled && (
+                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]'>
+                        <PaidMembersChangeChart
+                            isLoading={isPageLoading}
+                            memberData={chartData}
+                            range={range}
+                            subscriptionData={subscriptionData}
+                        />
+                        <NewSubscribersCadence isLoading={isPageLoading} range={range} />
+                    </div>
+                )}
                 <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
                         <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
