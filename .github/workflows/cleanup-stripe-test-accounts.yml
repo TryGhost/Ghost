@@ -15,6 +15,11 @@ jobs:
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: |
+          set -euo pipefail
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY is not set"
+            exit 1
+          fi
           # Delete test accounts older than 24 hours
           # Accounts are named like: test-{runId}-{parallelIndex}@example.com
 
