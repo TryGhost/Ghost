@@ -836,10 +836,6 @@ module.exports = class MemberRepository {
 
         const bulkDestroyResult = await this._Member.bulkDestroy(memberIds);
 
-        bulkDestroyResult.unsuccessfulIds = bulkDestroyResult.unsuccessfulData;
-
-        delete bulkDestroyResult.unsuccessfulData;
-
         return bulkDestroyResult;
     }
 

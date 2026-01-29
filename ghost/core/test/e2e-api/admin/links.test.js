@@ -75,9 +75,7 @@ describe('Links API', function () {
                         stats: {
                             successful: 2,
                             unsuccessful: 0
-                        },
-                        errors: [],
-                        unsuccessfulData: []
+                        }
                     }
                 }
             })
@@ -147,9 +145,7 @@ describe('Links API', function () {
                         stats: {
                             successful: 1,
                             unsuccessful: 0
-                        },
-                        errors: [],
-                        unsuccessfulData: []
+                        }
                     }
                 }
             })
@@ -208,9 +204,7 @@ describe('Links API', function () {
                         stats: {
                             successful: 0,
                             unsuccessful: 0
-                        },
-                        errors: [],
-                        unsuccessfulData: []
+                        }
                     }
                 }
             })
