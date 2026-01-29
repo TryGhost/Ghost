@@ -41,20 +41,47 @@ export class DevEnvironmentManager {
 
     /**
      * Global setup - creates database snapshot for test isolation.
-     * Mirrors the standalone environment: run migrations, then snapshot.
+     * 1. Create base database
+     * 2. Initialize Ghost containers
+     * 3. Start Ghost instance (migrations run automatically on startup)
+     * 4. Create snapshot of database
+     * 5. Keep instance running for reuse in per-test setup
+     * 
+     * Note: User onboarding happens in global.setup.ts using parameterized tests
      */
-    async globalSetup(): Promise<void> {
+    async globalSetup(): Promise<{baseUrl: string}> {
         logging.info('Starting dev environment global setup...');
 
         await this.cleanupResources();
         
-        // Create base database, run migrations, then snapshot
-        // This mirrors what docker-compose does with ghost-migrations service
+        // Create base database
         await this.mysql.recreateBaseDatabase('ghost_e2e_base');
-        await this.ghost.runMigrations('ghost_e2e_base');
-        await this.mysql.createSnapshot('ghost_e2e_base');
 
-        logging.info('Dev environment global setup complete');
+        // Initialize Ghost containers (will be reused by perTestSetup)
+        debug('Initializing Ghost containers for global setup');
+        await this.ghost.setup();
+        this.initialized = true;
+
+        // Start Ghost instance connected to base database (migrations run automatically)
+        const baseInstanceId = 'ghost_e2e_base';
+        await this.ghost.restartWithDatabase(baseInstanceId);
+        await this.ghost.waitForReady();
+
+        const port = this.ghost.getGatewayPort();
+        const baseUrl = `http://localhost:${port}`;
+
+        logging.info('Ghost instance ready');
+
+        return {baseUrl};
+    }
+
+    /**
+     * Create snapshot after user onboarding is complete
+     */
+    async createSnapshot(): Promise<void> {
+        logging.info('Creating database snapshot...');
+        await this.mysql.createSnapshot('ghost_e2e_base');
+        logging.info('Database snapshot created');
     }
 
     /**

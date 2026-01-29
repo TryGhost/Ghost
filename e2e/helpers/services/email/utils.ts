@@ -38,3 +38,36 @@ export function extractPasswordResetLink(message: EmailMessageDetailed): string 
 
     return match[1];
 }
+
+/**
+ * Extract invitation signup link from invitation email
+ * Pattern: /ghost/signup/{base64token}/ or /ghost/#/signup/{base64token}/ or full URL with that path
+ */
+export function extractInvitationLink(emailMessageBody: string): string {
+    // Try HTML first (more reliable) - match href attribute
+    // Pattern matches both /ghost/signup/ and /ghost/#/signup/
+    const htmlMatch = emailMessageBody.match(/href="([^"]*\/ghost\/(?:#\/)?signup\/[^"]+)"/i);
+    if (htmlMatch && htmlMatch[1]) {
+        const link = htmlMatch[1];
+        debug(`Found invitation link in HTML: ${link}`);
+        return link;
+    }
+
+    // Try text version - full URL
+    const textMatch = emailMessageBody.match(/(https?:\/\/[^\s]+\/ghost\/(?:#\/)?signup\/[^\s\/]+)/i);
+    if (textMatch && textMatch[1]) {
+        const link = textMatch[1];
+        debug(`Found invitation link in text: ${link}`);
+        return link;
+    }
+
+    // Try relative URL pattern
+    const relativeMatch = emailMessageBody.match(/(\/ghost\/(?:#\/)?signup\/[^\s\/]+)/i);
+    if (relativeMatch && relativeMatch[1]) {
+        const link = relativeMatch[1];
+        debug(`Found relative invitation link: ${link}`);
+        return link;
+    }
+
+    throw new Error('No invitation link found in email');
+}

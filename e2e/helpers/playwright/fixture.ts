@@ -1,17 +1,13 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import baseDebug from '@tryghost/debug';
 import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
 import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {faker} from '@faker-js/faker';
-import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
-import {setupUser} from '@/helpers/utils';
+import {User} from '@/data-factory';
+import {createContextWithRoute} from '@/helpers/playwright/context-with-route';
 
 const debug = baseDebug('e2e:ghost-fixture');
-export interface User {
-    name: string;
-    email: string;
-    password: string;
-}
 
 export interface GhostConfig {
     memberWelcomeEmailSendInstantly?: string;
@@ -25,31 +21,25 @@ export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
     labs?: Record<string, boolean>;
     config?: GhostConfig;
+    role?: 'owner' | 'administrator' | 'editor' | 'author' | 'contributor';
     stripeConnected?: boolean;
     ghostAccountOwner: User;
     pageWithAuthenticatedUser: {
         page: Page;
         context: BrowserContext;
-        ghostAccountOwner: User
     };
 }
 
-async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
-    debug('Setting up authenticated page for Ghost instance:', baseURL);
+async function setupNewAuthenticatedPage(browser: Browser, backendURL: string, role: string = 'owner') {
+    debug('Setting up authenticated page for Ghost instance:', backendURL, 'with role:', role);
 
-    // Create browser context with correct baseURL and extra HTTP headers
-    const context = await browser.newContext({
-        baseURL: baseURL,
-        extraHTTPHeaders: {
-            Origin: baseURL
-        }
+    const context = await createContextWithRoute(browser, backendURL, {
+        role
     });
+    
     const page = await context.newPage();
 
-    await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
-    debug('Authentication completed for Ghost instance');
-
-    return {page, context, ghostAccountOwner};
+    return {page, context};
 }
 
 /**
@@ -72,6 +62,7 @@ export const test = base.extend<GhostInstanceFixture>({
     // Define options that can be set per test or describe block
     config: [undefined, {option: true}],
     labs: [undefined, {option: true}],
+    role: ['owner', {option: true}],
     stripeConnected: [false, {option: true}],
 
     // Each test gets its own Ghost instance with isolated database
@@ -95,29 +86,23 @@ export const test = base.extend<GhostInstanceFixture>({
         await use(ghostInstance.baseUrl);
     },
 
-    // Create user credentials only (no authentication)
-    ghostAccountOwner: async ({baseURL}, use) => {
-        if (!baseURL) {
-            throw new Error('baseURL is not defined');
-        }
-
-        // Create user in this Ghost instance
-        const ghostAccountOwner: User = {
-            name: 'Test User',
-            email: `test${faker.string.uuid()}@ghost.org`,
-            password: 'test@123@test'
+    ghostAccountOwner: async ({}, use) => {
+        const owner: User = {
+            name: 'Test Owner',
+            email: 'owner@ghost.org',
+            password: 'test@123@test',
+            blogTitle: 'Test Blog'
         };
-        await setupUser(baseURL, ghostAccountOwner);
-        await use(ghostAccountOwner);
+        await use(owner);
     },
 
-    // Intermediate fixture that sets up the page and returns all setup data
-    pageWithAuthenticatedUser: async ({browser, baseURL, ghostAccountOwner}, use) => {
+    // Intermediate fixture that sets up the page using saved authentication state
+    pageWithAuthenticatedUser: async ({browser, baseURL, role}, use) => {
         if (!baseURL) {
             throw new Error('baseURL is not defined');
         }
 
-        const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, ghostAccountOwner);
+        const pageWithAuthenticatedUser = await setupNewAuthenticatedPage(browser, baseURL, role);
         await use(pageWithAuthenticatedUser);
         await pageWithAuthenticatedUser.context.close();
     },
