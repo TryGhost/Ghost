@@ -2040,36 +2040,41 @@ module.exports = class MemberRepository {
      * @returns {Promise<Object[]>} Filtered member products with comp products removed
      */
     async removeComplimentaryAccess(memberModel, memberProducts, options = {}) {
-        const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
-
-        // Cancel any Stripe-backed complimentary subscriptions
-        for (const sub of subscriptions.models) {
+        const activeSubscriptions = await memberModel.related('stripeSubscriptions')
+            .query(qb => qb.whereIn('status', ['active', 'trialing', 'unpaid', 'past_due']))
+            .fetch({...options, withRelated: ['stripePrice.stripeProduct']});
+        const activeCompedSubscriptions = [];
+        const activePaidSubscriptions = [];
+        
+        for (const sub of activeSubscriptions.models) {
             const isComp = this.isComplimentarySubscription({plan: {nickname: sub.get('plan_nickname')}});
-            const isActive = this.isActiveSubscriptionStatus(sub.get('status'));
-
-            if (isActive && isComp) {
-                try {
-                    const cancelledSub = await this._stripeAPIService.cancelSubscription(
-                        sub.get('subscription_id')
-                    );
-                    await this.linkSubscription({id: memberModel.id, subscription: cancelledSub}, options);
-                } catch (err) {
-                    logging.error({err}, `Error cancelling complimentary subscription ${sub.get('subscription_id')}`);
-                }
+            if (isComp) {
+                activeCompedSubscriptions.push(sub);
+            } else {
+                activePaidSubscriptions.push(sub);
             }
         }
 
-        // Remove Ghost-only comp products (products not backed by any active Stripe subscription)
-        const activeSubscriptions = await memberModel.related('stripeSubscriptions')
-            .query('whereIn', 'status', ['active', 'trialing', 'unpaid', 'past_due'])
-            .fetch({...options, withRelated: ['stripePrice.stripeProduct']});
-        const activeSubscriptionProductIds = new Set(
-            activeSubscriptions.models
+        // Cancel complimentary subscriptions backed by Stripe
+        for (const sub of activeCompedSubscriptions) {
+            try {
+                const cancelledSub = await this._stripeAPIService.cancelSubscription(
+                    sub.get('subscription_id')
+                );
+                await this.linkSubscription({id: memberModel.id, subscription: cancelledSub}, options);
+            } catch (err) {
+                logging.error({err}, `Error cancelling complimentary subscription ${sub.get('subscription_id')}`);
+            }
+        }
+
+        // Keep only products backed by an active paid subscription (those not backed by any Stripe subscription)
+        const paidProductIds = new Set(
+            activePaidSubscriptions
                 .map(sub => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'))
                 .filter(Boolean)
         );
 
-        return memberProducts.filter(product => activeSubscriptionProductIds.has(product.id));
+        return memberProducts.filter(product => paidProductIds.has(product.id));
     }
 
     /**
