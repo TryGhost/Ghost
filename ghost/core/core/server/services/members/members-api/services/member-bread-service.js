@@ -380,7 +380,7 @@ module.exports = class MemberBREADService {
                         transacting: options.transacting
                     });
                 } else if (!(data.comped) && hasCompedSubscription) {
-                    await this.memberRepository.cancelComplimentarySubscription(model, {
+                    await this.memberRepository.removeComplimentarySubscription(model, {
                         context: options.context,
                         transacting: options.transacting
                     });
