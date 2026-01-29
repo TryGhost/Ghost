@@ -21,7 +21,7 @@ yarn test
 
 ### Dev Environment Mode (Recommended for Development)
 
-When `yarn dev` is running from the repository root, e2e tests automatically detect it and use a more efficient execution mode:
+Dev mode is the default. Start the dev environment from the repository root (starts infra + dev servers):
 
 ```bash
 # Terminal 1: Start dev environment (from repository root)
@@ -29,6 +29,28 @@ yarn dev
 
 # Terminal 2: Run e2e tests (from e2e folder)
 yarn test
+```
+
+If infra is already running, `yarn workspace @tryghost/e2e infra:up` is safe to run again (noop).
+
+### Build Mode (Prebuilt Image)
+
+Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
+
+```bash
+# From repository root
+yarn build
+yarn workspace @tryghost/e2e build:e2e-image
+yarn workspace @tryghost/e2e infra:up
+
+# Run tests
+GHOST_E2E_MODE=build yarn test
+```
+
+To use a custom image:
+
+```bash
+GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> yarn test
 ```
 
 
@@ -149,43 +171,22 @@ For example, a `ghostInstance` fixture creates a new Ghost instance with its own
 
 Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database.
 
-#### Standalone Mode (Default)
+Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before tests start. Use `yarn dev` or `yarn workspace @tryghost/e2e infra:up`.
 
-When dev environment is not running, tests use full container isolation:
+Global setup (`tests/global.setup.ts`) does:
+- Cleans up e2e containers and test databases
+- Creates a base database, starts Ghost, waits for health, snapshots the DB
 
-- Global setup (`tests/global.setup.ts`):
-    - Starts shared services (MySQL, Tinybird, etc.)
-    - Runs Ghost migrations to create a template database
-    - Saves a snapshot of the template database using `mysqldump`
-- Before each test (`helpers/playwright/fixture.ts`):
-    - Creates a new database by restoring from the template snapshot
-    - Starts a new Ghost container connected to the new database
-- After each test (`helpers/playwright/fixture.ts`):
-    - Stops and removes the Ghost container
-    - Drops the test database
-- Global teardown (`tests/global.teardown.ts`):
-    - Stops and removes shared services
+Per-test (`helpers/playwright/fixture.ts`) does:
+- Clones a new database from the snapshot
+- Restarts Ghost with the new database and waits for readiness
 
-#### Dev Environment Mode (When `yarn dev` is running)
+Global teardown (`tests/global.teardown.ts`) does:
+- Cleans up e2e containers and test databases (infra services stay running)
 
-When dev environment is detected, tests use a more efficient approach:
-
-- Global setup:
-    - Creates a database snapshot in the existing `ghost-dev-mysql`
-- Worker setup (once per Playwright worker):
-    - Creates a Ghost container for the worker
-    - Creates a Caddy gateway container for routing
-- Before each test:
-    - Clones database from snapshot
-    - Restarts Ghost container with new database
-- After each test:
-    - Drops the test database
-- Worker teardown:
-    - Removes worker's Ghost and gateway containers
-- Global teardown:
-    - Cleans up all e2e containers (namespace: `ghost-dev-e2e`)
-
-All e2e containers use the `ghost-dev-e2e` project namespace for easy identification and cleanup.
+Modes:
+- Dev mode: Ghost mounts source code and proxies assets to host dev servers
+- Build mode: Ghost uses a prebuilt image and assets from `/content/files`
 
 ### Best Practices
 
@@ -202,13 +203,12 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 ### CI Process
 
-1. **Setup**: Ubuntu runner with Node.js and MySQL
-2. **Docker Build & Push**: Build Ghost image and push to GitHub Container Registry
-3. **Pull Images**: Pull Ghost, MySQL, Tinybird, etc. images
-4. **Test Execution**:
-   - Wait for Ghost to be ready
-   - Run Playwright tests
-   - Upload test artifacts
+1. **Setup**: Ubuntu runner with Node.js and Docker
+2. **Build Assets**: `yarn build` to generate admin and public app assets
+3. **Build E2E Image**: `docker build -f e2e/Dockerfile` (tagged as `ghost-e2e`)
+4. **Start Infra**: `docker compose -f compose.infra.yaml -f compose.analytics.yaml up -d --wait`
+5. **Test Execution**: `GHOST_E2E_MODE=build` with `GHOST_E2E_IMAGE` set
+6. **Artifacts**: Upload Playwright traces and reports on failure
 
 ## Available Scripts
 

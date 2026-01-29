@@ -26,6 +26,10 @@ COPY apps/sodo-search/umd ghost/core/content/files/sodo-search
 COPY apps/signup-form/umd ghost/core/content/files/signup-form
 COPY apps/announcement-bar/umd ghost/core/content/files/announcement-bar
 
+# Load Tinybird/Stripe config from shared-config (if available)
+COPY docker/ghost-dev/entrypoint.sh /home/ghost/entrypoint.sh
+RUN chmod +x /home/ghost/entrypoint.sh
+
 # Set environment variables for local asset URLs
 ENV portal__url=/content/files/portal/portal.min.js
 ENV comments__url=/content/files/comments-ui/comments-ui.min.js
@@ -37,4 +41,5 @@ ENV announcementBar__url=/content/files/announcement-bar/announcement-bar.min.js
 WORKDIR /home/ghost/ghost/core
 EXPOSE 2368
 
+ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["node", "--import=tsx", "index.js"]

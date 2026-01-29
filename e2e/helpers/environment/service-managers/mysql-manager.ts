@@ -1,6 +1,6 @@
+import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DockerCompose} from '@/helpers/environment/docker-compose';
 import {PassThrough} from 'stream';
 import type {Container} from 'dockerode';
 
@@ -13,20 +13,21 @@ interface ContainerWithModem extends Container {
 }
 
 /**
- * Encapsulates MySQL operations within the docker-compose environment.
+ * Manages MySQL operations for E2E tests.
  * Handles creating snapshots, creating/restoring/dropping databases, and
  * updating database settings needed by tests.
  */
 export class MySQLManager {
-    private readonly dockerCompose: DockerCompose;
+    private readonly docker: Docker;
     private readonly containerName: string;
 
-    constructor(dockerCompose: DockerCompose, containerName: string = 'mysql') {
-        this.dockerCompose = dockerCompose;
+    constructor(containerName: string = 'ghost-dev-mysql') {
+        this.docker = new Docker();
         this.containerName = containerName;
     }
 
     async setupTestDatabase(databaseName: string, siteUuid: string): Promise<void> {
+        debug('Setting up test database:', databaseName);
         try {
             await this.createDatabase(databaseName);
             await this.restoreDatabaseFromSnapshot(databaseName);
@@ -127,17 +128,12 @@ export class MySQLManager {
     }
 
     async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
-        try {
-            debug('Recreating base database:', database);
+        debug('Recreating base database:', database);
 
-            await this.dropDatabase(database);
-            await this.createDatabase(database);
+        await this.dropDatabase(database);
+        await this.createDatabase(database);
 
-            debug('Base database recreated:', database);
-        } catch (error) {
-            debug('Failed to recreate base database (MySQL may not be running):', error);
-            // Don't throw - we want to continue with setup even if database recreation fails
-        }
+        debug('Base database recreated:', database);
     }
 
     private parseDatabaseNames(text: string) {
@@ -171,7 +167,7 @@ export class MySQLManager {
     }
 
     private async exec(command: string) {
-        const container = await this.dockerCompose.getContainerForService(this.containerName);
+        const container = this.docker.getContainer(this.containerName);
         return await this.execInContainer(container, command);
     }
 
