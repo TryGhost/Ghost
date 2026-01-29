@@ -28,9 +28,9 @@
     "dev": "nx run ghost-monorepo:docker:dev",
     "dev:forward": "echo '***********************************************************************************************\n* Deprecation warning: This command will be removed in a future release, use yarn dev instead *\n***********************************************************************************************' && sleep 5 && yarn dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ yarn dev",
-    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.analytics.yaml' nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
-    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.analytics.yaml -f compose.dev.storage.yaml' nx run ghost-monorepo:docker:dev",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
     "dev:legacy": "node .github/scripts/dev.js",
     "dev:legacy:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev:legacy",
@@ -113,7 +113,7 @@
       "docker:up": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait"
+          "command": "docker compose -f compose.infra.yaml -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile dev up -d --force-recreate --wait"
         },
         "dependsOn": [
           "docker:build"
@@ -122,20 +122,20 @@
       "docker:down": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down"
+          "command": "docker compose -f compose.infra.yaml -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile dev down"
         }
       },
       "docker:build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
+          "command": "docker compose -f compose.infra.yaml -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile dev build"
         }
       },
       "docker:dev": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+          "command": "trap 'docker compose -f compose.infra.yaml -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile dev down' EXIT; docker compose -f compose.infra.yaml -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile dev logs -f"
         },
         "dependsOn": [
           "docker:up",

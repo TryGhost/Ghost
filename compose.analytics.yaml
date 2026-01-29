@@ -1,7 +1,9 @@
-# Analytics (Tinybird) configuration for Ghost development environment
-# Use with: docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up
+# Analytics (Tinybird) configuration for Ghost development and E2E testing
+# Use with: docker compose -f compose.infra.yaml -f compose.dev.yaml -f compose.analytics.yaml up
 #
-# This file adds Tinybird analytics services and configuration to ghost-dev.
+# This file adds Tinybird analytics services. Can be combined with:
+# - compose.dev.yaml for interactive development
+# - E2E tests (EnvironmentManager starts this automatically)
 
 services:
   analytics:
@@ -57,7 +59,11 @@ services:
       tinybird-local:
         condition: service_healthy
 
+  # ghost-dev extension - only applied when used with compose.dev.yaml
+  # For E2E tests, Ghost containers are managed dynamically by EnvironmentManager
   ghost-dev:
+    profiles:
+      - dev
     volumes:
       # Mount shared-config volume to access Tinybird tokens created by tb-cli
       - shared-config:/mnt/shared-config:ro

@@ -1,0 +1,68 @@
+# Shared infrastructure services for Ghost development and E2E testing
+# Used by: yarn dev, E2E tests (all modes)
+#
+# Usage:
+#   docker compose -f compose.infra.yaml up -d
+#   docker compose -f compose.infra.yaml -f compose.dev.yaml up  # For yarn dev
+#   docker compose -f compose.infra.yaml -f compose.analytics.yaml up  # For E2E tests
+
+name: ghost-dev
+
+services:
+  mysql:
+    image: mysql:8.4.5
+    container_name: ghost-dev-mysql
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost_dev}
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ghost
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}", "-e", "SELECT 1"]
+      interval: 1s
+      retries: 120
+      timeout: 5s
+      start_period: 10s
+
+  redis:
+    image: redis:7.0
+    container_name: ghost-dev-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      interval: 1s
+      retries: 120
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: ghost-dev-mailpit
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web interface
+      - "8026:8025"  # Web interface (for e2e tests)
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 1s
+      retries: 30
+
+volumes:
+  mysql-data:
+  redis-data:
+  shared-config:
+
+networks:
+  default:
+    name: ghost_dev
