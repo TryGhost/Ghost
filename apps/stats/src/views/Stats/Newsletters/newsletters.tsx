@@ -366,7 +366,7 @@ const Newsletters: React.FC = () => {
 
     if (appSettings && !appSettings.newslettersEnabled) {
         return (
-            <Navigate to='/' />
+            <Navigate to='/analytics' />
         );
     }
 
