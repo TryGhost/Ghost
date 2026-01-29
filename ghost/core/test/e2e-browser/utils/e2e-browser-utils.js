@@ -471,7 +471,9 @@ const getStripeAccountId = async () => {
     }
 
     const parallelIndex = process.env.TEST_PARALLEL_INDEX;
-    const accountEmail = `test${parallelIndex}@example.com`;
+    // Include GITHUB_RUN_ID to allow concurrent CI jobs without account conflicts
+    const runId = process.env.GITHUB_RUN_ID || 'local';
+    const accountEmail = `test-${runId}-${parallelIndex}@example.com`;
 
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const stripe = new Stripe(secretKey, {
@@ -490,7 +492,7 @@ const getStripeAccountId = async () => {
         email: accountEmail,
         business_type: 'company',
         company: {
-            name: `Test Company ${parallelIndex}`
+            name: `Test Company ${runId}-${parallelIndex}`
         }
     });
     stripeAccountId = account.id;
