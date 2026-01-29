@@ -704,7 +704,7 @@ module.exports = class RouterController {
 
             // Honeypot field is filled, this is a bot.
             // Pretend that the email was sent successfully.
-            res.writeHead(201);
+            res.writeHead(201, {'Content-Type': 'application/json'});
             return res.end('{}');
         }
 
