@@ -236,4 +236,56 @@ describe('NewSubscribersCadence Component', () => {
         expect(screen.getByText('Annual')).toBeInTheDocument();
         expect(screen.queryByText('Complimentary')).not.toBeInTheDocument();
     });
+
+    it('hides breakdown type dropdown when only one tier is available', () => {
+        // Single tier setup (from beforeEach default)
+        const mockSubscriptionData = {
+            stats: [
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 5, count: 100}
+            ],
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 100}
+                ]
+            }
+        };
+
+        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
+
+        render(<NewSubscribersCadence isLoading={false} range={30} />);
+
+        // Should not show the dropdown when there's only one tier
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    });
+
+    it('shows breakdown type dropdown when multiple tiers are available', () => {
+        const mockMultipleTiers = {
+            tiers: [
+                {id: 'tier-1', name: 'Premium', type: 'paid', active: true},
+                {id: 'tier-2', name: 'Pro', type: 'paid', active: true}
+            ]
+        };
+
+        mockSuccess(mockedUseBrowseTiers, mockMultipleTiers);
+
+        const mockSubscriptionData = {
+            stats: [
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 5, count: 100},
+                {date: '2024-01-15', tier: 'tier-2', cadence: 'month', signups: 25, cancellations: 2, count: 50}
+            ],
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 100},
+                    {tier: 'tier-2', cadence: 'month', count: 50}
+                ]
+            }
+        };
+
+        mockSuccess(mockedUseSubscriptionStats, mockSubscriptionData);
+
+        render(<NewSubscribersCadence isLoading={false} range={30} />);
+
+        // Should show the dropdown when there are multiple tiers
+        expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
 });

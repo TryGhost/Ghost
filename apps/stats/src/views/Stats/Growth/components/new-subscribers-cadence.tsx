@@ -269,17 +269,19 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                         <CardTitle>Paid subscription breakdown</CardTitle>
                         <CardDescription>New paid subscriptions {getPeriodText(range)}</CardDescription>
                     </div>
-                    <div>
-                        <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>
-                            <SelectTrigger className="w-full">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent align='end'>
-                                <SelectItem value="billing-period">Billing period</SelectItem>
-                                <SelectItem value="tiers">Tiers</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {availableTiers.length > 1 && (
+                        <div>
+                            <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent align='end'>
+                                    <SelectItem value="billing-period">Billing period</SelectItem>
+                                    <SelectItem value="tiers">Tiers</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
             </CardHeader>
             <CardContent>
