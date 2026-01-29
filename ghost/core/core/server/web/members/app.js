@@ -133,7 +133,6 @@ module.exports = function setupMembersApp() {
     // Announcement
     membersApp.use(
         '/api/announcement',
-        labs.enabledMiddleware('announcementBar'),
         middleware.loadMemberSession,
         announcementRouter()
     );
