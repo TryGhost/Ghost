@@ -5,6 +5,7 @@ const should = require('should');
 
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
+const config = configUtils.config;
 const asset = require('../../../../core/frontend/helpers/asset');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -106,6 +107,38 @@ describe('{{asset}} helper', function () {
             rendered = asset('public/ghost.css');
             should.exist(rendered);
             String(rendered).should.equal('http://127.0.0.1/public/ghost.css?v=abc');
+        });
+    });
+
+    describe('with contentBasedHash enabled', function () {
+        before(function () {
+            configUtils.set({assetHash: 'abc'});
+            configUtils.set({'caching:assets:contentBasedHash': true});
+        });
+
+        after(async function () {
+            await configUtils.restore();
+        });
+
+        it('uses file-based hash for ghost.css when it exists', function () {
+            rendered = asset('public/ghost.css');
+            should.exist(rendered);
+            // ghost.css exists in static public path, so it gets a 16-char base64url hash
+            String(rendered).should.match(/^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
+        });
+
+        it('falls back to global hash for non-existent public assets', function () {
+            rendered = asset('public/nonexistent.js');
+            should.exist(rendered);
+            // Non-existent files fall back to global hash (using config value)
+            String(rendered).should.equal('/public/nonexistent.js?v=' + config.get('assetHash'));
+        });
+
+        it('falls back to global hash for theme assets without active theme', function () {
+            rendered = asset('js/asset.js');
+            should.exist(rendered);
+            // No active theme, so falls back to global hash (using config value)
+            String(rendered).should.equal('/assets/js/asset.js?v=' + config.get('assetHash'));
         });
     });
 });

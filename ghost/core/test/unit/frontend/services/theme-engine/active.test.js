@@ -5,6 +5,7 @@ const config = require('../../../../../core/shared/config');
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const engine = require('../../../../../core/frontend/services/theme-engine/engine');
+const assetHash = require('../../../../../core/frontend/services/asset-hash');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -55,12 +56,18 @@ describe('Themes', function () {
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();
 
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
+
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
                 configStub.calledOnce.should.be.true();
                 configStub.calledWith('assetHash', null).should.be.true();
+
+                // Check the file-based asset hash cache is cleared
+                clearCacheSpy.calledOnce.should.be.true();
 
                 // Check te view cache was cleared
                 fakeBlogApp.cache.should.eql({});
@@ -86,12 +93,18 @@ describe('Themes', function () {
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();
 
+                // Spy on assetHash.clearCache
+                const clearCacheSpy = sinon.spy(assetHash, 'clearCache');
+
                 // Call mount!
                 theme.mount(fakeBlogApp);
 
                 // Check the asset hash gets reset
                 configStub.calledOnce.should.be.true();
                 configStub.calledWith('assetHash', null).should.be.true();
+
+                // Check the file-based asset hash cache is cleared
+                clearCacheSpy.calledOnce.should.be.true();
 
                 // Check te view cache was cleared
                 fakeBlogApp.cache.should.eql({});
