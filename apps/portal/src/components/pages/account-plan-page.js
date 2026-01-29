@@ -41,8 +41,13 @@ export const AccountPlanPageStyles = `
 
     .gh-portal-retention-offer-price {
         display: flex;
+        align-items: center;
         gap: 6px;
         margin-top: 20px;
+    }
+
+    .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
+        margin: 4px 0 0;
     }
 `;
 
