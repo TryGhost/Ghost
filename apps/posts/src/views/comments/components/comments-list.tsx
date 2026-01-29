@@ -29,6 +29,7 @@ import {
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import type {Filter} from '@tryghost/shade';
@@ -134,6 +135,7 @@ function CommentsList({
     onAddFilter,
     isLoading,
     commentPermalinksEnabled,
+    disableMemberCommentingEnabled,
     filters
 }: {
     items: Comment[];
@@ -144,6 +146,7 @@ function CommentsList({
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
+    disableMemberCommentingEnabled?: boolean;
     filters?: Filter[];
 }) {
     const navigate = useNavigate();

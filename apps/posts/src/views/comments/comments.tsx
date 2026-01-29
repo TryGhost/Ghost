@@ -16,6 +16,7 @@ const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
     const {data: configData} = useBrowseConfig();
     const commentPermalinksEnabled = configData?.config?.labs?.commentPermalinks === true;
+    const disableMemberCommentingEnabled = configData?.config?.labs?.disableMemberCommenting === true;
     const location = useLocation();
     const navigate = useNavigate();
 
