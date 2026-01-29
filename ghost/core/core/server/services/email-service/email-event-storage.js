@@ -195,6 +195,9 @@ class EmailEventStorage {
                 email_id: event.emailId,
                 email_address: event.email
             });
+
+            // Remove from Mailgun's suppression list so it doesn't affect other sites on the same domain
+            await this.#emailSuppressionList.removeComplaint(event.email);
         } catch (err) {
             if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                 logging.error(err);
