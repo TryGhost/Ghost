@@ -21,7 +21,7 @@ function checkMemberCommenting(req, res, next) {
     if (req.member && req.member.can_comment === false) {
         return next(new errors.NoPermissionError({
             message: tpl(messages.memberCommentingDisabled),
-            context: req.member.commenting?.disabledReason
+            context: req.member.commenting?.disabled_reason
         }));
     }
     next();

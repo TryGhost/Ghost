@@ -9,10 +9,10 @@ const CommentingDisabledBox: React.FC = () => {
 
     return (
         <>
-            <h1 className="mb-[8px] text-center font-sans text-2xl font-semibold tracking-tight text-black dark:text-[rgba(255,255,255,0.85)]">
+            <h1 className="mb-2 text-center font-sans text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white/85">
                 {t('Commenting disabled')}
             </h1>
-            <p className="mb-[28px] w-full px-0 text-center font-sans text-lg leading-normal text-neutral-600 sm:max-w-screen-sm sm:px-8 dark:text-[rgba(255,255,255,0.85)]">
+            <p className="w-full text-balance text-center text-lg leading-normal text-neutral-900 sm:px-8 dark:text-white/85">
                 {supportEmail ? (
                     <>
                         {t('You can\'t post comments in this publication.')}{' '}

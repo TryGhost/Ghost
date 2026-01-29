@@ -65,7 +65,6 @@ export default class FeatureService extends Service {
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
-    @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;

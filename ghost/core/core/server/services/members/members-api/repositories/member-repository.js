@@ -10,7 +10,6 @@ const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
-const {MemberCommentingCodec} = require('../../commenting');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -31,7 +30,8 @@ const messages = {
     offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
-    subscriptionHasOffer: 'Subscription already has an offer applied'
+    subscriptionHasOffer: 'Subscription already has an offer applied',
+    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -1715,6 +1715,14 @@ module.exports = class MemberRepository {
             });
         }
 
+        // Check subscription is not in a trial period
+        const trialEndAt = subscriptionModel.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionInTrial)
+            });
+        }
+
         // Get tier and cadence from subscription
         const stripePrice = subscriptionModel.related('stripePrice');
         const stripeProduct = stripePrice.related('stripeProduct');
@@ -2022,7 +2030,7 @@ module.exports = class MemberRepository {
      */
     async saveCommenting(memberId, commenting, actionName, context) {
         return this._Member.edit(
-            {commenting: MemberCommentingCodec.format(commenting)},
+            {commenting},
             {
                 id: memberId,
                 context,

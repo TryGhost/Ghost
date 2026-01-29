@@ -931,6 +931,11 @@ module.exports = class RouterController {
         const identity = req.body.identity;
         const redemptionType = req.body.redemption_type || 'retention';
 
+        function sendOffersResponse(offers = []) {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({offers}));
+        }
+
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
@@ -978,43 +983,47 @@ module.exports = class RouterController {
             return ['active', 'trialing', 'past_due', 'unpaid'].includes(status);
         });
 
+        // No active subscription - return empty offers
         if (activeSubscriptions.length === 0) {
-            // No active subscription - return empty offers
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
+        // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
         if (activeSubscriptions.length > 1) {
-            // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const activeSubscription = activeSubscriptions[0];
 
         // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
         if (activeSubscription.get('offer_id')) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
+        }
+
+        // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
+        const trialEndAt = activeSubscription.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            return sendOffersResponse();
         }
 
         // Get tier and cadence from the subscription
         const stripePrice = activeSubscription.related('stripePrice');
         if (!stripePrice || !stripePrice.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const stripeProduct = stripePrice.related('stripeProduct');
+
+        // If the stripe product is not found, return empty offers
         if (!stripeProduct || !stripeProduct.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const product = stripeProduct.related('product');
+
+        // If the product is not found, return empty offers
         if (!product || !product.id) {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({offers: []}));
+            return sendOffersResponse();
         }
 
         const tierId = product.id;
@@ -1033,8 +1042,7 @@ module.exports = class RouterController {
             logging.error('Failed to fetch offers:', err);
         }
 
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        return res.end(JSON.stringify({offers}));
+        return sendOffersResponse(offers);
     }
 };
 

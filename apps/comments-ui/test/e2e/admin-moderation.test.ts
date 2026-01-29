@@ -314,4 +314,53 @@ test.describe('Admin moderation', async () => {
         const {frame} = await initializeTest(page);
         await expect(frame.getByTestId('count')).toContainText('3 comments');
     });
+
+    test.describe('View in admin link', () => {
+        test('shows View in admin link when commentModeration flag is enabled', async ({page}) => {
+            mockedApi.addComment({id: 'test-comment-id', html: '<p>This is a comment</p>'});
+
+            await mockAdminAuthFrame({page, admin});
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                title: 'Member discussion',
+                count: true,
+                admin,
+                labs: {
+                    commentModeration: true
+                }
+            });
+
+            const moreButtons = frame.getByTestId('more-button');
+            await moreButtons.nth(0).click();
+
+            const viewInAdminLink = frame.getByTestId('view-in-admin-button');
+            await expect(viewInAdminLink).toBeVisible();
+            await expect(viewInAdminLink).toHaveAttribute('href', `${admin}#/comments/?id=is:test-comment-id`);
+            await expect(viewInAdminLink).toHaveAttribute('target', '_blank');
+        });
+
+        test('hides View in admin link when commentModeration flag is not set', async ({page}) => {
+            mockedApi.addComment({html: '<p>This is a comment</p>'});
+
+            await mockAdminAuthFrame({page, admin});
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                title: 'Member discussion',
+                count: true,
+                admin,
+                labs: {}
+            });
+
+            const moreButtons = frame.getByTestId('more-button');
+            await moreButtons.nth(0).click();
+
+            await expect(frame.getByTestId('view-in-admin-button')).not.toBeVisible();
+        });
+    });
 });

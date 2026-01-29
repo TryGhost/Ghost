@@ -18,7 +18,7 @@ const setup = (overrides) => {
 };
 
 describe('PaidAccountActions', () => {
-    describe('Next payment display', () => {
+    describe('Plan label', () => {
         test('displays regular price when no discount on next payment', () => {
             const products = getProductsData({numOfProducts: 1});
             const site = getSiteData({products, portalProducts: products.map(p => p.id)});
@@ -267,7 +267,7 @@ describe('PaidAccountActions', () => {
 
                         nextPayment: getNextPaymentData({
                             originalAmount: 500,
-                            amount: 500,
+                            amount: 400,
                             interval: 'month',
                             currency: 'USD',
                             discount: getDiscountData({
@@ -287,8 +287,8 @@ describe('PaidAccountActions', () => {
             expect(queryByText('$5.00/month')).toBeInTheDocument();
             // Should have the offer label
             expect(queryByTestId('offer-label')).toBeInTheDocument();
-            // Should show the discounted price with "Next payment"
-            expect(queryByText('$5.00/month — Next payment')).toBeInTheDocument();
+            // Should show the discounted price (without interval) with "Next payment"
+            expect(queryByText('$4.00 — Next payment')).toBeInTheDocument();
         });
 
         test('displays fixed amount discount correctly', () => {

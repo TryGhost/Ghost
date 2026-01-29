@@ -10,6 +10,12 @@ interface StoredCommenting {
  * Codec for bidirectional serialization of MemberCommenting.
  * Handles conversion between domain objects and persistence format.
  */
+interface SerializedCommenting {
+    disabled: boolean;
+    disabled_reason: string | null;
+    disabled_until: string | null;
+}
+
 export const MemberCommentingCodec = {
     /**
      * Parse a raw JSON string from storage into a MemberCommenting domain object.
@@ -47,5 +53,21 @@ export const MemberCommentingCodec = {
             disabledReason: commenting.disabledReason,
             disabledUntil: commenting.disabledUntil?.toISOString() ?? null
         });
+    },
+
+    /**
+     * Serialize a MemberCommenting domain object for API responses.
+     * Converts camelCase domain properties to snake_case API format.
+     */
+    toJSON(commenting: MemberCommenting | null): SerializedCommenting | null {
+        if (!commenting) {
+            return commenting;
+        }
+
+        return {
+            disabled: commenting.disabled,
+            disabled_reason: commenting.disabledReason,
+            disabled_until: commenting.disabledUntil?.toISOString() ?? null
+        };
     }
 };
