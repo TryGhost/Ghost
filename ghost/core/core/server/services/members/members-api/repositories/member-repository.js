@@ -1985,6 +1985,79 @@ module.exports = class MemberRepository {
     }
 
     /**
+     * Removes all complimentary access for a member.
+     * Called when a member becomes paid to ensure they can't have both paid and comped status.
+     *
+     * This handles two types of complimentary access:
+     * 1. Stripe-based: Subscriptions with plan_amount = 0 AND plan_nickname = 'Complimentary'
+     * 2. Direct tier assignments: Entries in members_products not backed by a paid subscription
+     *
+     * @param {Object} data
+     * @param {String} data.id - member ID
+     * @param {Object} options
+     * @param {Object} [options.transacting]
+     */
+    async removeComplimentaryAccess({id}, options = {}) {
+        const member = await this._Member.findOne({id}, options);
+        if (!member) {
+            return;
+        }
+
+        const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+
+        // 1. Cancel any complimentary Stripe subscriptions
+        // Must match BOTH conditions: plan_amount = 0 AND plan_nickname = 'Complimentary'
+        for (const sub of subscriptions.models) {
+            const planNickname = sub.get('plan_nickname') || '';
+            const isComplimentary = sub.get('plan_amount') === 0 &&
+                planNickname.toLowerCase() === 'complimentary';
+            const isActive = this.isActiveSubscriptionStatus(sub.get('status'));
+
+            if (isActive && isComplimentary) {
+                try {
+                    const cancelledSubscription = await this._stripeAPIService.cancelSubscription(
+                        sub.get('subscription_id')
+                    );
+                    await this.linkSubscription({id, subscription: cancelledSubscription}, options);
+                } catch (err) {
+                    logging.error({err}, `Error cancelling complimentary subscription ${sub.get('subscription_id')}`);
+                }
+            }
+        }
+
+        // 2. Get product IDs backed by active PAID subscriptions
+        const refreshedSubscriptions = await member.related('stripeSubscriptions').fetch(options);
+        const paidProductIds = new Set();
+
+        for (const sub of refreshedSubscriptions.models) {
+            if (this.isActiveSubscriptionStatus(sub.get('status')) && sub.get('plan_amount') > 0) {
+                try {
+                    const product = await this._productRepository.get({
+                        stripe_price_id: sub.get('stripe_price_id')
+                    }, options);
+                    if (product) {
+                        paidProductIds.add(product.id);
+                    }
+                } catch (err) {
+                    logging.error({err}, `Error fetching product for subscription ${sub.get('subscription_id')}`);
+                }
+            }
+        }
+
+        // 3. Remove products not backed by paid subscriptions (direct comped tier assignments)
+        const memberProducts = await member.related('products').fetch(options);
+        for (const product of memberProducts.models) {
+            if (!paidProductIds.has(product.id)) {
+                try {
+                    await member.products().detach(product.id);
+                } catch (err) {
+                    logging.error({err}, `Error removing comped product ${product.id} from member ${id}`);
+                }
+            }
+        }
+    }
+
+    /**
      *
      * @param {Object} data
      * @param {String} data.id - member ID
