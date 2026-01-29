@@ -15,9 +15,7 @@ const excludedNodes = [
     'tk',
     'at-link',
     'at-link-search',
-    'zwnj',
-    // in-development nodes
-    'transistor'
+    'zwnj'
 ];
 
 // remove nodes with the above type or that don't have a getType method
