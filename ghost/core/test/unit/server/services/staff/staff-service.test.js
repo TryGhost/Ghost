@@ -1,107 +1,125 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
+const assert = require('node:assert/strict');
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
 
-require('should');
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
-    getEmailAlertUsersStub.calledWith(
+    sinon.assert.calledWith(
+        getEmailAlertUsersStub,
         sinon.match.string,
         sinon.match({transacting: {}, forUpdate: true})
-    ).should.be.true();
+    );
 
     // has right from/to address
-    mailStub.calledWith(sinon.match({
+    sinon.assert.calledWith(mailStub, sinon.match({
         from: '"Default" <default@email.com>',
         to: 'owner@ghost.org'
-    })).should.be.true();
+    }));
 
     // Email HTML contains important bits
 
     // Has accent color
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('#ffffff'))
-    ).should.be.true();
+    );
 
     // Has email
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('member@example.com'))
-    ).should.be.true();
+    );
 
     // Has member url
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('https://admin.ghost.example/#/members/abc'))
-    ).should.be.true();
+    );
 
     // Has site url
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('https://ghost.example'))
-    ).should.be.true();
+    );
 
     // Has staff admin url
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('https://admin.ghost.example/#/settings/staff/ghost/email-notifications'))
-    ).should.be.true();
+    );
 }
 
 function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
-    getEmailAlertUsersStub.calledWith('paid-started').should.be.true();
+    sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-started');
 
     if (member?.name) {
-        mailStub.calledWith(
+        sinon.assert.calledWith(
+            mailStub,
             sinon.match({subject: '💸 Paid subscription started: Ghost'})
-        ).should.be.true();
+        );
 
-        mailStub.calledWith(
+        sinon.assert.calledWith(
+            mailStub,
             sinon.match.has('html', sinon.match('💸 Paid subscription started: Ghost'))
-        ).should.be.true();
+        );
     } else {
-        mailStub.calledWith(
+        sinon.assert.calledWith(
+            mailStub,
             sinon.match({subject: '💸 Paid subscription started: member@example.com'})
-        ).should.be.true();
+        );
 
-        mailStub.calledWith(
+        sinon.assert.calledWith(
+            mailStub,
             sinon.match.has('html', sinon.match('💸 Paid subscription started: member@example.com'))
-        ).should.be.true();
+        );
     }
 
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('Test Tier'))
-    ).should.be.true();
-    mailStub.calledWith(
+    );
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('$50.00/month'))
-    ).should.be.true();
+    );
 }
 
 function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
-    getEmailAlertUsersStub.calledWith('paid-canceled').should.be.true();
-    mailStub.calledWith(
+    sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-canceled');
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match({subject: '⚠️ Cancellation: Ghost'})
-    ).should.be.true();
+    );
 
-    mailStub.calledWith(
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('⚠️ Cancellation: Ghost'))
-    ).should.be.true();
-    mailStub.calledWith(
+    );
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('Test Tier'))
-    ).should.be.true();
-    mailStub.calledWith(
+    );
+    sinon.assert.calledWith(
+        mailStub,
         sinon.match.has('html', sinon.match('$50.00/month'))
-    ).should.be.true();
+    );
 }
 
 describe('StaffService', function () {
     describe('Constructor', function () {
         it('doesn\'t throw', function () {
-            new StaffService({});
+            assert.doesNotThrow(() => {
+                new StaffService({});
+            });
         });
     });
 
@@ -197,11 +215,11 @@ describe('StaffService', function () {
         describe('subscribeEvents', function () {
             it('subscribes to events', async function () {
                 service.subscribeEvents();
-                subscribeStub.callCount.should.eql(4);
-                subscribeStub.calledWith(SubscriptionActivatedEvent).should.be.true();
-                subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
-                subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
-                subscribeStub.calledWith(MilestoneCreatedEvent).should.be.true();
+                sinon.assert.callCount(subscribeStub, 4);
+                sinon.assert.calledWith(subscribeStub, SubscriptionActivatedEvent);
+                sinon.assert.calledWith(subscribeStub, SubscriptionCancelledEvent);
+                sinon.assert.calledWith(subscribeStub, MemberCreatedEvent);
+                sinon.assert.calledWith(subscribeStub, MilestoneCreatedEvent);
             });
 
             it('listens to events', async function () {
@@ -231,7 +249,7 @@ describe('StaffService', function () {
                     memberId: 'member-2'
                 }));
                 await DomainEvents.allSettled();
-                service.handleEvent.calledWith(MemberCreatedEvent).should.be.true();
+                sinon.assert.calledWith(service.handleEvent, MemberCreatedEvent);
 
                 DomainEvents.dispatch(SubscriptionActivatedEvent.create({
                     source: 'member',
@@ -241,7 +259,7 @@ describe('StaffService', function () {
                     tierId: 'tier-1'
                 }));
                 await DomainEvents.allSettled();
-                service.handleEvent.calledWith(SubscriptionActivatedEvent).should.be.true();
+                sinon.assert.calledWith(service.handleEvent, SubscriptionActivatedEvent);
 
                 DomainEvents.dispatch(SubscriptionCancelledEvent.create({
                     source: 'member',
@@ -250,7 +268,7 @@ describe('StaffService', function () {
                     tierId: 'tier-1'
                 }));
                 await DomainEvents.allSettled();
-                service.handleEvent.calledWith(SubscriptionCancelledEvent).should.be.true();
+                sinon.assert.calledWith(service.handleEvent, SubscriptionCancelledEvent);
 
                 DomainEvents.dispatch(MilestoneCreatedEvent.create({
                     milestone: {
@@ -260,7 +278,7 @@ describe('StaffService', function () {
                     }
                 }));
                 await DomainEvents.allSettled();
-                service.handleEvent.calledWith(MilestoneCreatedEvent).should.be.true();
+                sinon.assert.calledWith(service.handleEvent, MilestoneCreatedEvent);
             });
         });
 
@@ -370,11 +388,12 @@ describe('StaffService', function () {
                     }
                 });
 
-                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.true();
+                sinon.assert.called(service.memberAttributionService.getMemberCreatedAttribution);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '🥳 Free member signup: Jamie'})
-                ).should.be.true();
+                );
             });
             it('handles free member created event with provided attribution', async function () {
                 await service.handleEvent(MemberCreatedEvent, {
@@ -391,12 +410,13 @@ describe('StaffService', function () {
                 });
 
                 // provided attribution should be used instead of fetching it
-                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.false();
-                service.memberAttributionService.fetchResource.called.should.be.true();
+                sinon.assert.notCalled(service.memberAttributionService.getMemberCreatedAttribution);
+                sinon.assert.called(service.memberAttributionService.fetchResource);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '🥳 Free member signup: Jamie'})
-                ).should.be.true();
+                );
             });
 
             it('handles paid member created event', async function () {
@@ -410,11 +430,12 @@ describe('StaffService', function () {
                     }
                 });
 
-                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.true();
+                sinon.assert.called(service.memberAttributionService.getSubscriptionCreatedAttribution);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '💸 Paid subscription started: Jamie'})
-                ).should.be.true();
+                );
             });
 
             it('handles paid member created event with provided attribution', async function () {
@@ -435,20 +456,23 @@ describe('StaffService', function () {
                 });
 
                 // provided attribution should be used instead of fetching it
-                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.false();
-                service.memberAttributionService.fetchResource.called.should.be.true();
+                sinon.assert.notCalled(service.memberAttributionService.getSubscriptionCreatedAttribution);
+                sinon.assert.called(service.memberAttributionService.fetchResource);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '💸 Paid subscription started: Jamie'})
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Welcome Post'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Direct'))
-                ).should.be.true();
+                );
             });
 
             it('handles paid member cancellation event', async function () {
@@ -461,9 +485,10 @@ describe('StaffService', function () {
                     }
                 });
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '⚠️ Cancellation: Jamie'})
-                ).should.be.true();
+                );
             });
 
             it('handles milestone created event', async function () {
@@ -477,9 +502,10 @@ describe('StaffService', function () {
                         }
                     }
                 });
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: `Ghost Site hit $1,000 ARR`})
-                ).should.be.true();
+                );
             });
         });
 
@@ -495,16 +521,18 @@ describe('StaffService', function () {
 
                 await service.emails.notifyFreeMemberSignup({member}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonMailData(stubs);
-                getEmailAlertUsersStub.calledWith('free-signup').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'free-signup');
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '🥳 Free member signup: Ghost'})
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
-                ).should.be.true();
+                );
             });
 
             it('sends free member signup alert without member name', async function () {
@@ -517,16 +545,18 @@ describe('StaffService', function () {
 
                 await service.emails.notifyFreeMemberSignup({member}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonMailData(stubs);
-                getEmailAlertUsersStub.calledWith('free-signup').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'free-signup');
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '🥳 Free member signup: member@example.com'})
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('🥳 Free member signup: member@example.com'))
-                ).should.be.true();
+                );
             });
 
             it('sends free member signup alert with attribution', async function () {
@@ -544,34 +574,40 @@ describe('StaffService', function () {
 
                 await service.emails.notifyFreeMemberSignup({member, attribution}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonMailData(stubs);
-                getEmailAlertUsersStub.calledWith('free-signup').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'free-signup');
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match({subject: '🥳 Free member signup: Ghost'})
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('🥳 Free member signup: Ghost'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Source'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Twitter'))
-                ).should.be.true();
+                );
 
                 // check attribution page
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Welcome Post'))
-                ).should.be.true();
+                );
 
                 // check attribution url
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('https://example.com/welcome'))
-                ).should.be.true();
+                );
             });
         });
 
@@ -611,39 +647,44 @@ describe('StaffService', function () {
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription, attribution}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
                 // check attribution text
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Twitter'))
-                ).should.be.true();
+                );
 
                 // check attribution text
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Source'))
-                ).should.be.true();
+                );
 
                 // check attribution page
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Welcome Post'))
-                ).should.be.true();
+                );
 
                 // check attribution url
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('https://example.com/welcome'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription start alert without offer', async function () {
                 await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', 'Offer')
-                ).should.be.false();
+                );
             });
 
             it('sends paid subscription start alert without member name', async function () {
@@ -653,39 +694,45 @@ describe('StaffService', function () {
                 };
                 await service.emails.notifyPaidSubscriptionStarted({member: memberData, offer: null, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member: memberData});
 
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', 'Offer')
-                ).should.be.false();
+                );
 
                 // check preview text
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Test Tier: $50.00/month'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription start alert with percent offer - first payment', async function () {
                 await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Half price'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('50% off'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('first payment'))
-                ).should.be.true();
+                );
 
                 // check preview text
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Test Tier: $50.00/month - Offer: Half price - 50% off, first payment'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription start alert with fixed type offer - repeating duration', async function () {
@@ -700,18 +747,21 @@ describe('StaffService', function () {
 
                 await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Save ten'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('$10.00 off'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('first 3 months'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription start alert with fixed type offer - forever duration', async function () {
@@ -725,18 +775,21 @@ describe('StaffService', function () {
 
                 await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Save twenty'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('$20.00 off'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('forever'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription start alert with free trial offer', async function () {
@@ -749,15 +802,17 @@ describe('StaffService', function () {
 
                 await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubMailData({...stubs, member});
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Free week'))
-                ).should.be.true();
-                mailStub.calledWith(
+                );
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('7 days free'))
-                ).should.be.true();
+                );
             });
         });
 
@@ -798,46 +853,53 @@ describe('StaffService', function () {
                     cancellationReason: 'Changed my mind!'
                 }, expiryAt, canceledAt, cancelNow}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubCancelMailData(stubs);
 
                 // Expiration sentence is in the future tense
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Expires on'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('5 Sep 2024'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', 'Offer')
-                ).should.be.false();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Reason: Changed my mind!'))
-                ).should.be.true();
+                );
             });
 
             it('sends paid subscription cancel alert when sub is canceled without reason', async function () {
                 await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription, expiryAt, cancelNow}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubCancelMailData(stubs);
 
                 // Expiration sentence is in the future tense
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Expires on'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('5 Sep 2024'))
-                ).should.be.true();
+                );
 
                 // Cancellation reason block is hidden
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Reason: '))
-                ).should.be.false();
+                );
             });
 
             it('sends paid subscription cancel alert when subscription is canceled immediately', async function () {
@@ -847,30 +909,35 @@ describe('StaffService', function () {
                     cancellationReason: 'Payment failed'
                 }, expiryAt, canceledAt, cancelNow}, options);
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
                 testCommonPaidSubCancelMailData(stubs);
 
                 // We don't show "Canceled on" when subscription is canceled immediately
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Canceled on'))
-                ).should.be.false();
+                );
 
                 // Expiration sentence is in the past tense
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Expired on'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('5 Sep 2024'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.neverCalledWith(
+                    mailStub,
                     sinon.match.has('html', 'Offer')
-                ).should.be.false();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Reason: Payment failed'))
-                ).should.be.true();
+                );
             });
         });
 
@@ -884,30 +951,35 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'milestone-received');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Ghost Site now has 25k members'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Celebrating 25,000 signups'))
-                ).should.be.true();
+                );
 
                 // Correct image and NO height for Members milestone
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('src="https://static.ghost.org/v5.0.0/images/milestone-email-members-25k.png" width="580" align="center"'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Congrats, <strong>25k people</strong> have chosen to support and follow your work. That’s an audience big enough to sell out Madison Square Garden. What an incredible milestone!'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('View your dashboard'))
-                ).should.be.true();
+                );
             });
 
             it('send ARR milestone email', async function () {
@@ -920,30 +992,35 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'milestone-received');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Ghost Site hit $500,000 ARR'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Congrats! You reached $500k ARR'))
-                ).should.be.true();
+                );
 
                 // Correct image and height for ARR milestone
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('src="https://static.ghost.org/v5.0.0/images/milestone-email-usd-500k.png" width="580" height="348" align="center"'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('<strong>Ghost Site</strong> is now generating <strong>$500,000</strong> in annual recurring revenue. Congratulations &mdash; this is a significant milestone.'))
-                ).should.be.true();
+                );
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Login to your dashboard'))
-                ).should.be.true();
+                );
             });
 
             it('does not send email when no date provided', async function () {
@@ -954,9 +1031,9 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+                sinon.assert.neverCalledWith(getEmailAlertUsersStub, 'milestone-received');
 
-                mailStub.called.should.be.false();
+                sinon.assert.notCalled(mailStub);
             });
 
             it('does not send email when a reason not to send email was provided', async function () {
@@ -971,9 +1048,9 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+                sinon.assert.neverCalledWith(getEmailAlertUsersStub, 'milestone-received');
 
-                mailStub.called.should.be.false();
+                sinon.assert.notCalled(mailStub);
             });
 
             it('does not send email for a milestone without correct content', async function () {
@@ -985,11 +1062,11 @@ describe('StaffService', function () {
 
                 await service.emails.notifyMilestoneReceived({milestone});
 
-                getEmailAlertUsersStub.calledWith('milestone-received').should.be.false();
+                sinon.assert.neverCalledWith(getEmailAlertUsersStub, 'milestone-received');
 
-                loggingWarningStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(loggingWarningStub);
 
-                mailStub.called.should.be.false();
+                sinon.assert.notCalled(mailStub);
             });
         });
 
@@ -1005,13 +1082,14 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('One-time payment received: €15.00 from Simon'))
-                ).should.be.true();
+                );
             });
 
             it('has donation message in text', async function () {
@@ -1025,13 +1103,14 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('text', sinon.match('Thank you for the awesome newsletter!'))
-                ).should.be.true();
+                );
             });
 
             it('has donation message in html', async function () {
@@ -1045,13 +1124,14 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match('Thank you for the awesome newsletter!'))
-                ).should.be.true();
+                );
             });
 
             it('does not contain donation message in HTML if not provided', async function () {
@@ -1065,16 +1145,17 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
+                sinon.assert.calledOnce(mailStub);
 
                 // Check that the specific HTML block for the donation message is NOT present
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match(function (html) {
                         // Ensure that the block with `{{donation.donationMessage}}` does not exist in the rendered HTML
                         return !html.includes('“') && !html.includes('”');
                     }))
-                ).should.be.true();
+                );
             });
 
             // Not really a relevant test, but it's here to show that the donation message is wrapped in quotation marks
@@ -1090,14 +1171,15 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('html', sinon.match(function (html) {
                         return html.includes('“') && html.includes('”');
                     }))
-                ).should.be.true();
+                );
             });
 
             it('send donation email without message', async function () {
@@ -1111,13 +1193,14 @@ describe('StaffService', function () {
 
                 await service.emails.notifyDonationReceived({donationPaymentEvent});
 
-                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'donation');
 
-                mailStub.calledOnce.should.be.true();
+                sinon.assert.calledOnce(mailStub);
 
-                mailStub.calledWith(
+                sinon.assert.calledWith(
+                    mailStub,
                     sinon.match.has('text', sinon.match('No message provided'))
-                ).should.be.true();
+                );
             });
         });
 
@@ -1138,9 +1221,9 @@ describe('StaffService', function () {
                         }
                     ]
                 });
-                textTemplate.should.match(/- Webmentions \(https:\/\/webmention.io\/\)/);
-                textTemplate.should.match(/Ghost Demo \(https:\/\/demo.ghost.io\/\)/);
-                textTemplate.should.match(/Sent to jamie@example.com from ghost.org/);
+                assert.match(textTemplate, /- Webmentions \(https:\/\/webmention.io\/\)/);
+                assert.match(textTemplate, /Ghost Demo \(https:\/\/demo.ghost.io\/\)/);
+                assert.match(textTemplate, /Sent to jamie@example.com from ghost.org/);
             });
         });
     });

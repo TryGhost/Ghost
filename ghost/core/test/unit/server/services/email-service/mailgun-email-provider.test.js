@@ -1,6 +1,5 @@
 const MailgunEmailProvider = require('../../../../../core/server/services/email-service/mailgun-email-provider');
 const sinon = require('sinon');
-const should = require('should');
 const assert = require('assert/strict');
 
 describe('Mailgun Email Provider', function () {
@@ -62,9 +61,9 @@ describe('Mailgun Email Provider', function () {
                 openTrackingEnabled: true,
                 deliveryTime
             });
-            should(response.id).eql('provider-123');
-            should(sendStub.calledOnce).be.true();
-            sendStub.calledWith(
+            assert.equal(response.id, 'provider-123');
+            sinon.assert.calledOnce(sendStub);
+            sinon.assert.calledWith(sendStub,
                 {
                     subject: 'Hi',
                     html: '<html><body>Hi %recipient.name%</body></html>',
@@ -79,7 +78,7 @@ describe('Mailgun Email Provider', function () {
                 },
                 {'member@example.com': {name: 'John'}},
                 []
-            ).should.be.true();
+            );
         });
 
         it('handles mailgun client error correctly', async function () {
@@ -100,7 +99,7 @@ describe('Mailgun Email Provider', function () {
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -127,11 +126,11 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
+                assert.fail();
             } catch (e) {
-                should(e.message).eql('Bad Request: Invalid domain');
-                should(e.statusCode).eql(400);
-                should(e.errorDetails).eql('{"error":{"details":"Invalid domain","status":400},"messageData":{}}');
+                assert.equal(e.message, 'Bad Request: Invalid domain');
+                assert.equal(e.statusCode, 400);
+                assert.equal(e.errorDetails, '{"error":{"details":"Invalid domain","status":400},"messageData":{}}');
             }
         });
 
@@ -148,7 +147,7 @@ describe('Mailgun Email Provider', function () {
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -175,10 +174,10 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
+                assert.fail();
             } catch (e) {
-                should(e.message).eql('Unknown Error');
-                should(e.errorDetails).eql(undefined);
+                assert.equal(e.message, 'Unknown Error');
+                assert.equal(e.errorDetails, undefined);
             }
         });
 
@@ -195,7 +194,7 @@ describe('Mailgun Email Provider', function () {
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -222,10 +221,10 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
+                assert.fail();
             } catch (e) {
-                should(e.message).eql('Mailgun Error');
-                should(e.errorDetails).eql(undefined);
+                assert.equal(e.message, 'Mailgun Error');
+                assert.equal(e.errorDetails, undefined);
             }
         });
     });

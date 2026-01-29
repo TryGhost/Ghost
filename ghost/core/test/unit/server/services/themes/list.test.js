@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const themeList = require('../../../../../core/server/services/themes/list');
@@ -17,63 +17,64 @@ describe('Themes', function () {
         });
 
         it('get() allows getting a single theme', function () {
-            themeList.get('casper').should.eql({foo: 'bar'});
+            assert.deepEqual(themeList.get('casper'), {foo: 'bar'});
         });
 
         it('get() with no args should do nothing', function () {
-            should.not.exist(themeList.get());
+            assert.equal(themeList.get(), undefined);
         });
 
         it('getAll() returns all themes', function () {
-            themeList.getAll().should.be.an.Object().with.properties('casper', 'not-casper');
-            Object.keys(themeList.getAll()).should.have.length(2);
+            const result = themeList.getAll();
+            assert(result);
+            assert('casper' in result);
+            assert('not-casper' in result);
+            assert.equal(Object.keys(result).length, 2);
         });
 
         it('set() updates an existing theme', function () {
             const origCasper = _.cloneDeep(themeList.get('casper'));
             themeList.set('casper', {magic: 'update'});
 
-            themeList.get('casper').should.not.eql(origCasper);
-            themeList.get('casper').should.eql({magic: 'update'});
+            assert.notDeepEqual(themeList.get('casper'), origCasper);
+            assert.deepEqual(themeList.get('casper'), {magic: 'update'});
         });
 
         it('set() can add a new theme', function () {
             themeList.set('rasper', {color: 'red'});
-            themeList.get('rasper').should.eql({color: 'red'});
+            assert.deepEqual(themeList.get('rasper'), {color: 'red'});
         });
 
         it('del() removes a key from the list', function () {
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assert(themeList.get('casper'));
+            assert(themeList.get('not-casper'));
             themeList.del('casper');
-            should.not.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assert.equal(themeList.get('casper'), undefined);
+            assert(themeList.get('not-casper'));
         });
 
         it('del() with no argument does nothing', function () {
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assert(themeList.get('casper'));
+            assert(themeList.get('not-casper'));
             themeList.del();
-            should.exist(themeList.get('casper'));
-            should.exist(themeList.get('not-casper'));
+            assert(themeList.get('casper'));
+            assert(themeList.get('not-casper'));
         });
 
         it('init() calls set for each theme', function () {
             const setSpy = sinon.spy(themeList, 'set');
 
             themeList.init({test: {a: 'b'}, casper: {c: 'd'}});
-            setSpy.calledTwice.should.be.true();
-            setSpy.firstCall.calledWith('test', {a: 'b'}).should.be.true();
-            setSpy.secondCall.calledWith('casper', {c: 'd'}).should.be.true();
+            sinon.assert.calledTwice(setSpy);
+            sinon.assert.calledWith(setSpy.firstCall, 'test', {a: 'b'});
+            sinon.assert.calledWith(setSpy.secondCall, 'casper', {c: 'd'});
         });
 
         it('init() with empty object resets the list', function () {
             themeList.init();
             const result = themeList.getAll();
-            should.exist(result);
-            result.should.be.an.Object();
-            result.should.eql({});
-            Object.keys(result).should.have.length(0);
+            assert(result);
+            assert.deepEqual(result, {});
         });
     });
 });

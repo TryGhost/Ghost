@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const {validate} = require('../../../../../core/server/services/custom-redirects/validation');
 
@@ -21,9 +21,9 @@ describe('UNIT: custom redirects validation', function () {
 
         try {
             validate(config);
-            should.fail('should have thrown');
+            assert.fail('should have thrown');
         } catch (err) {
-            err.message.should.equal('Incorrect redirects file format.');
+            assert.equal(err.message, 'Incorrect redirects file format.');
         }
     });
 
@@ -36,9 +36,9 @@ describe('UNIT: custom redirects validation', function () {
 
         try {
             validate(config);
-            should.fail('should have thrown');
+            assert.fail('should have thrown');
         } catch (err) {
-            err.message.should.equal('Incorrect RegEx in redirects file.');
+            assert.equal(err.message, 'Incorrect RegEx in redirects file.');
         }
     });
 
@@ -50,9 +50,9 @@ describe('UNIT: custom redirects validation', function () {
 
         try {
             validate(config);
-            should.fail('should have thrown');
+            assert.fail('should have thrown');
         } catch (err) {
-            err.message.should.equal('Incorrect redirects file format.');
+            assert.equal(err.message, 'Incorrect redirects file format.');
         }
     });
 });

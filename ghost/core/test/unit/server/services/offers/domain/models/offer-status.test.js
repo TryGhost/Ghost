@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const OfferStatus = require('../../../../../../../core/server/services/offers/domain/models/offer-status');
 
@@ -8,26 +8,13 @@ describe('OfferStatus', function () {
             OfferStatus.create('active');
             OfferStatus.create('archived');
 
-            try {
+            assert.throws(() => {
                 OfferStatus.create('other');
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
-            }
+            }, OfferStatus.InvalidOfferStatus);
 
-            try {
+            assert.throws(() => {
                 OfferStatus.create();
-                should.fail();
-            } catch (err) {
-                should.ok(
-                    err instanceof OfferStatus.InvalidOfferStatus,
-                    'expected an InvalidOfferStatus error'
-                );
-            }
+            }, OfferStatus.InvalidOfferStatus);
         });
     });
 });
-

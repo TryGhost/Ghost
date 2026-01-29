@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const RequestIntegrityTokenProvider = require('../../../../../core/server/services/members/request-integrity-token-provider');
 
@@ -21,15 +21,16 @@ describe('RequestIntegrityTokenProvider', function () {
         it('should create a HMAC digest from the secret', function () {
             const token = tokenProvider.create();
 
-            token.should.be.a.String();
-            token.split(':').should.be.an.Array().with.lengthOf(3);
+            assert.equal(typeof token, 'string');
+            assert.deepEqual(token.split(':').length, 3);
             const [timestamp, nonce, digest] = token.split(':');
 
-            timestamp.should.equal((new Date('2021-01-01').valueOf() + 100).toString());
+            assert.equal(timestamp, (new Date('2021-01-01').valueOf() + 100).toString());
 
-            nonce.should.match(/[0-9a-f]{16}/);
+            assert.match(nonce, /[0-9a-f]{16}/);
 
-            digest.should.be.a.String().with.lengthOf(64);
+            assert.equal(typeof digest, 'string');
+            assert.equal(digest.length, 64);
         });
     });
 
@@ -38,7 +39,7 @@ describe('RequestIntegrityTokenProvider', function () {
             const token = tokenProvider.create();
             const result = tokenProvider.validate(token);
 
-            result.should.be.true();
+            assert.equal(result, true);
         });
 
         it('should fail to verify an expired token', function () {
@@ -46,14 +47,14 @@ describe('RequestIntegrityTokenProvider', function () {
             sinon.clock.tick(101);
             const result = tokenProvider.validate(token);
 
-            result.should.be.false();
+            assert.equal(result, false);
         });
 
         it('should fail to verify a malformed token', function () {
             const token = 'invalid_token';
             const result = tokenProvider.validate(token);
 
-            result.should.be.false();
+            assert.equal(result, false);
         });
 
         it('should fail to verify a token with an invalid signature', function () {
@@ -64,7 +65,7 @@ describe('RequestIntegrityTokenProvider', function () {
 
             const result = tokenProvider.validate(invalidToken);
 
-            result.should.be.false();
+            assert.equal(result, false);
         });
     });
 });

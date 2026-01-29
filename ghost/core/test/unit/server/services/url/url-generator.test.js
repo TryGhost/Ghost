@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
@@ -59,8 +59,8 @@ describe('Unit: services/url/UrlGenerator', function () {
     it('ensure listeners', function () {
         const urlGenerator = new UrlGenerator({router, queue});
 
-        queue.register.calledTwice.should.be.true();
-        should.not.exist(urlGenerator.filter);
+        sinon.assert.calledTwice(queue.register);
+        assert.equal(urlGenerator.filter, undefined);
     });
 
     it('routing type has filter', function () {
@@ -69,7 +69,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             filter: 'featured:true',
             queue
         });
-        urlGenerator.filter.should.eql('featured:true');
+        assert.equal(urlGenerator.filter, 'featured:true');
     });
 
     it('routing type has changed', function () {
@@ -97,10 +97,10 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         urlGenerator.regenerateResources();
 
-        urls.removeResourceId.calledTwice.should.be.true();
-        resource.release.calledOnce.should.be.true();
-        resource2.release.calledOnce.should.be.true();
-        urlGenerator._try.calledTwice.should.be.true();
+        sinon.assert.calledTwice(urls.removeResourceId);
+        sinon.assert.calledOnce(resource.release);
+        sinon.assert.calledOnce(resource2.release);
+        sinon.assert.calledTwice(urlGenerator._try);
     });
 
     describe('fn: _onInit', function () {
@@ -117,7 +117,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
-            urlGenerator._try.calledOnce.should.be.true();
+            sinon.assert.calledOnce(urlGenerator._try);
         });
 
         it('no resource', function () {
@@ -133,7 +133,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
-            urlGenerator._try.called.should.be.false();
+            sinon.assert.notCalled(urlGenerator._try);
         });
     });
 
@@ -151,7 +151,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
-            urlGenerator._try.calledOnce.should.be.true();
+            sinon.assert.calledOnce(urlGenerator._try);
         });
 
         it('type is not equal', function () {
@@ -165,7 +165,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
-            urlGenerator._try.called.should.be.false();
+            sinon.assert.notCalled(urlGenerator._try);
         });
     });
 
@@ -181,17 +181,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                     resources,
                     urls
                 });
-                should.not.exist(urlGenerator.nql);
+                assert.equal(urlGenerator.nql, undefined);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
                 sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
-                urlGenerator._resourceListeners.calledOnce.should.be.true();
-                urls.add.calledOnce.should.be.true();
-                resource.reserve.calledOnce.should.be.true();
+                sinon.assert.calledOnce(urlGenerator._generateUrl);
+                sinon.assert.calledOnce(urlGenerator._resourceListeners);
+                sinon.assert.calledOnce(urls.add);
+                sinon.assert.calledOnce(resource.reserve);
             });
 
             it('resource is taken', function () {
@@ -205,17 +205,17 @@ describe('Unit: services/url/UrlGenerator', function () {
                     resources,
                     urls
                 });
-                should.not.exist(urlGenerator.nql);
+                assert.equal(urlGenerator.nql, undefined);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
                 sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.called.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
+                sinon.assert.notCalled(urlGenerator._generateUrl);
+                sinon.assert.notCalled(urlGenerator._resourceListeners);
+                sinon.assert.notCalled(urls.add);
+                sinon.assert.notCalled(resource.reserve);
             });
         });
 
@@ -238,11 +238,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
-                urlGenerator._resourceListeners.calledOnce.should.be.true();
-                urls.add.calledOnce.should.be.true();
-                resource.reserve.calledOnce.should.be.true();
-                urlGenerator.nql.queryJSON.called.should.be.true();
+                sinon.assert.calledOnce(urlGenerator._generateUrl);
+                sinon.assert.calledOnce(urlGenerator._resourceListeners);
+                sinon.assert.calledOnce(urls.add);
+                sinon.assert.calledOnce(resource.reserve);
+                sinon.assert.called(urlGenerator.nql.queryJSON);
             });
 
             it('no match', function () {
@@ -263,11 +263,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
-                urlGenerator.nql.queryJSON.called.should.be.true();
+                sinon.assert.notCalled(urlGenerator._generateUrl);
+                sinon.assert.notCalled(urlGenerator._resourceListeners);
+                sinon.assert.notCalled(urls.add);
+                sinon.assert.notCalled(resource.reserve);
+                sinon.assert.called(urlGenerator.nql.queryJSON);
             });
 
             it('resource is taken', function () {
@@ -288,11 +288,11 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.called.should.be.false();
-                urlGenerator._resourceListeners.called.should.be.false();
-                urls.add.called.should.be.false();
-                resource.reserve.called.should.be.false();
-                urlGenerator.nql.queryJSON.called.should.be.false();
+                sinon.assert.notCalled(urlGenerator._generateUrl);
+                sinon.assert.notCalled(urlGenerator._resourceListeners);
+                sinon.assert.notCalled(urls.add);
+                sinon.assert.notCalled(resource.reserve);
+                sinon.assert.notCalled(urlGenerator.nql.queryJSON);
             });
 
             it('filter is malformed', function () {
@@ -312,11 +312,11 @@ describe('Unit: services/url/UrlGenerator', function () {
                 const queryJSONSpy = sinon.spy(urlGenerator.nql, 'queryJSON');
 
                 // When the filter is malformed, the resource should not be reserved
-                urlGenerator._try(resource).should.be.false();
+                assert.equal(urlGenerator._try(resource), false);
 
                 // Ensure the above false return is due to the malformed filter
-                queryJSONSpy.should.throw(new RegExp('Query Error: unexpected character in filter'));
-                queryJSONSpy.should.throw(new RegExp(malformedFilter));
+                assert.throws(() => queryJSONSpy(), new RegExp('Query Error: unexpected character in filter'));
+                assert.throws(() => queryJSONSpy(), new RegExp(malformedFilter));
             });
         });
     });
@@ -333,8 +333,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const replacePermalink = sinon.stub().returns('/url/');
             sinon.stub(urlUtils, 'replacePermalink').get(() => replacePermalink);
 
-            urlGenerator._generateUrl(resource).should.eql('/url/');
-            replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
+            assert.equal(urlGenerator._generateUrl(resource), '/url/');
+            sinon.assert.calledWith(replacePermalink, '/:slug/', resource.data);
         });
     });
 
@@ -343,8 +343,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             const urlGenerator = new UrlGenerator({router, queue, resources, urls});
 
             urlGenerator._resourceListeners(resource);
-            resource.removeAllListeners.calledOnce.should.be.true();
-            resource.addListener.calledTwice.should.be.true();
+            sinon.assert.calledOnce(resource.removeAllListeners);
+            sinon.assert.calledTwice(resource.addListener);
         });
 
         it('resource was updated', function () {
@@ -359,10 +359,10 @@ describe('Unit: services/url/UrlGenerator', function () {
             urlGenerator._resourceListeners(resource);
             resource.addListener.args[0][1](resource);
 
-            urlGenerator._try.called.should.be.false();
-            urls.removeResourceId.called.should.be.true();
-            resource.release.called.should.be.true();
-            queue.start.called.should.be.true();
+            sinon.assert.notCalled(urlGenerator._try);
+            sinon.assert.called(urls.removeResourceId);
+            sinon.assert.called(resource.release);
+            sinon.assert.called(queue.start);
         });
 
         it('resource got removed', function () {
@@ -374,8 +374,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             };
 
             resource.addListener.args[1][1](resource);
-            urls.removeResourceId.calledOnce.should.be.true();
-            resource.release.calledOnce.should.be.true();
+            sinon.assert.calledOnce(urls.removeResourceId);
+            sinon.assert.calledOnce(resource.release);
         });
     });
 });

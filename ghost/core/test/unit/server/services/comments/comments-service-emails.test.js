@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
 
@@ -34,7 +34,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
             const result = instance.getPostUrl('123', '456');
 
-            should(result).equal('https://example.com/my-post/#ghost-comments-456');
+            assert.equal(result, 'https://example.com/my-post/#ghost-comments-456');
         });
 
         it('returns post URL with ghost-comments-root when commentPermalinks lab flag is disabled', function () {
@@ -44,7 +44,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
             const result = instance.getPostUrl('123', '456');
 
-            should(result).equal('https://example.com/my-post/#ghost-comments-root');
+            assert.equal(result, 'https://example.com/my-post/#ghost-comments-root');
         });
     });
 });

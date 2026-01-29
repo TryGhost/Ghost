@@ -1,4 +1,3 @@
-require('should');
 const sinon = require('sinon');
 const nock = require('nock');
 const moment = require('moment');
@@ -79,7 +78,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert(scope.isDone());
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -101,7 +100,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            requestStub.called.should.equal(false);
+            assert(!requestStub.called);
         });
 
         it('update check will happen if it\'s time to check', async function () {
@@ -145,7 +144,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert(scope.isDone());
         });
     });
 
@@ -206,19 +205,19 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            scope.isDone().should.equal(true);
+            assert(scope.isDone());
 
-            capturedData.ghost_version.should.equal('4.0.0');
-            capturedData.node_version.should.equal(process.versions.node);
-            capturedData.env.should.equal(process.env.NODE_ENV);
-            capturedData.database_type.should.match(/sqlite3|mysql/);
-            capturedData.blog_id.should.be.a.String();
-            capturedData.blog_id.should.not.be.empty();
-            capturedData.theme.should.be.equal('casperito');
-            capturedData.blog_created_at.should.equal(819846900);
-            capturedData.user_count.should.be.equal(2);
-            capturedData.post_count.should.be.equal(13);
-            capturedData.npm_version.should.be.equal('10.8.2');
+            assert.equal(capturedData.ghost_version, '4.0.0');
+            assert.equal(capturedData.node_version, process.versions.node);
+            assert.equal(capturedData.env, process.env.NODE_ENV);
+            assert.match(capturedData.database_type, /sqlite3|mysql/);
+            assert.equal(typeof capturedData.blog_id, 'string');
+            assert(capturedData.blog_id.length > 0);
+            assert.equal(capturedData.theme, 'casperito');
+            assert.equal(capturedData.blog_created_at, 819846900);
+            assert.equal(capturedData.user_count, 2);
+            assert.equal(capturedData.post_count, 13);
+            assert.equal(capturedData.npm_version, '10.8.2');
         });
     });
 
@@ -281,20 +280,20 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.deepEqual(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
-            targetNotification.id.should.eql(notification.messages[0].id);
-            targetNotification.top.should.eql(notification.messages[0].top);
-            targetNotification.type.should.eql('info');
-            targetNotification.message.should.eql(notification.messages[0].content);
+            assert.deepEqual(targetNotification.dismissible, notification.messages[0].dismissible);
+            assert.deepEqual(targetNotification.id, notification.messages[0].id);
+            assert.deepEqual(targetNotification.top, notification.messages[0].top);
+            assert.deepEqual(targetNotification.type, 'info');
+            assert.deepEqual(targetNotification.message, notification.messages[0].content);
 
-            usersBrowseStub.calledTwice.should.eql(true);
+            sinon.assert.calledTwice(usersBrowseStub);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
-            usersBrowseStub.args[1][0].should.eql({
+            assert.deepEqual(usersBrowseStub.args[1][0], {
                 limit: 'all',
                 include: ['roles'],
                 filter: 'status:active',
@@ -362,14 +361,16 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            sendEmailStub.called.should.be.true();
-            sendEmailStub.args[0][0].to.should.equal('jbloggs@example.com');
-            sendEmailStub.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            sendEmailStub.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
-            sendEmailStub.args[0][0].forceTextContent.should.equal(true);
+            sinon.assert.called(sendEmailStub);
+            sinon.assert.calledWith(sendEmailStub, sinon.match({
+                to: 'jbloggs@example.com',
+                subject: 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369',
+                html: '<p>Critical message. Upgrade your site!</p>',
+                forceTextContent: true
+            }));
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.deepEqual(notificationsAPIAddStub.args[0][0].notifications.length, 1);
         });
 
         it('not create a notification if the check response has no messages', async function () {
@@ -417,7 +418,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(false);
+            sinon.assert.notCalled(notificationsAPIAddStub);
         });
     });
 
@@ -434,10 +435,12 @@ describe('Update Check', function () {
 
             updateCheckService.updateCheckError({});
 
-            settingsStub.called.should.be.true();
-            logging.error.called.should.be.true();
-            logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-            logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+            sinon.assert.called(settingsStub);
+            sinon.assert.called(logging.error);
+            sinon.assert.calledWith(logging.error, sinon.match({
+                context: 'Checking for updates failed, your site will continue to function.',
+                help: 'If you get this error repeatedly, please seek help from https://ghost.org/docs/'
+            }));
         });
 
         it('logs and rethrows an error when error with rethrow configuration', function () {
@@ -456,12 +459,14 @@ describe('Update Check', function () {
                 updateCheckService.updateCheckError({});
                 assert.fail('should have thrown');
             } catch (e) {
-                settingsStub.called.should.be.true();
-                logging.error.called.should.be.true();
-                logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-                logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+                sinon.assert.called(settingsStub);
+                sinon.assert.called(logging.error);
+                sinon.assert.calledWith(logging.error, sinon.match({
+                    context: 'Checking for updates failed, your site will continue to function.',
+                    help: 'If you get this error repeatedly, please seek help from https://ghost.org/docs/'
+                }));
 
-                e.context.should.equal('Checking for updates failed, your site will continue to function.');
+                assert.deepEqual(e.context, 'Checking for updates failed, your site will continue to function.');
             }
         });
     });

@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const {OfferPercentageAmount, OfferFixedAmount, OfferTrialAmount} = require('../../../../../../../core/server/services/offers/domain/models/offer-amount');
 
@@ -6,172 +6,100 @@ describe('OfferAmount', function () {
     describe('OfferPercentageAmount', function () {
         describe('OfferPercentageAmount.create factory', function () {
             it('Will only create an OfferPercentageAmount containing an integer between 1 & 100 (inclusive)', function () {
-                try {
+                assert.throws(() => {
                     OfferPercentageAmount.create();
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferPercentageAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferPercentageAmount.create('1');
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferPercentageAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferPercentageAmount.create(-1);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferPercentageAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferPercentageAmount.create(200);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferPercentageAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferPercentageAmount.create(3.14);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferPercentageAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferPercentageAmount.InvalidOfferAmount);
 
-                OfferPercentageAmount.create(69); // nice
+                assert.doesNotThrow(() => {
+                    OfferPercentageAmount.create(69);
+                });
             });
         });
 
         it('Exposes a number on the value property', function () {
             const cadence = OfferPercentageAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert.equal(typeof cadence.value, 'number');
         });
     });
 
     describe('OfferFixedAmount', function () {
         describe('OfferFixedAmount.create factory', function () {
             it('Will only create an OfferFixedAmount containing an integer greater than 0', function () {
-                try {
+                assert.throws(() => {
                     OfferFixedAmount.create();
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferFixedAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferFixedAmount.create('1');
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferFixedAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferFixedAmount.create(-1);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferFixedAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferFixedAmount.create(3.14);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferFixedAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferFixedAmount.InvalidOfferAmount);
 
-                OfferFixedAmount.create(200);
+                assert.doesNotThrow(() => {
+                    OfferFixedAmount.create(200);
+                });
             });
         });
 
         it('Exposes a number on the value property', function () {
             const cadence = OfferFixedAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert.equal(typeof cadence.value, 'number');
         });
     });
 
     describe('OfferTrialAmount', function () {
         describe('OfferTrialAmount.create factory', function () {
             it('Will only create an OfferTrialAmount containing an integer greater than 0', function () {
-                try {
+                assert.throws(() => {
                     OfferTrialAmount.create();
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferTrialAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferTrialAmount.create('1');
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferTrialAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferTrialAmount.create(-1);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferTrialAmount.InvalidOfferAmount);
 
-                try {
+                assert.throws(() => {
                     OfferTrialAmount.create(3.14);
-                    should.fail();
-                } catch (err) {
-                    should.ok(
-                        err instanceof OfferTrialAmount.InvalidOfferAmount,
-                        'expected an InvalidOfferAmount error'
-                    );
-                }
+                }, OfferTrialAmount.InvalidOfferAmount);
 
-                OfferTrialAmount.create(200);
+                assert.doesNotThrow(() => {
+                    OfferTrialAmount.create(200);
+                });
             });
         });
 
         it('Exposes a number on the value property', function () {
             const cadence = OfferTrialAmount.create(42);
 
-            should.ok(typeof cadence.value === 'number');
+            assert.equal(typeof cadence.value, 'number');
         });
     });
 });

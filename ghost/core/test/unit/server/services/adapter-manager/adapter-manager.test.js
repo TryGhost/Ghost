@@ -1,5 +1,5 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 const AdapterManager = require('../../../../../core/server/services/adapter-manager/adapter-manager');
 
 class BaseMailAdapter {
@@ -34,11 +34,11 @@ describe('AdapterManager', function () {
 
         try {
             adapterManager.getAdapter('mail');
-            should.fail(null, null, 'Should not have created');
+            assert.fail('Should not have created');
         } catch (err) {
-            should.exist(err);
-            should.equal(err.errorType, 'IncorrectUsageError');
-            should.equal(err.message, 'getAdapter must be called with a adapterName and a adapterClassName.');
+            assert(err);
+            assert.equal(err.errorType, 'IncorrectUsageError');
+            assert.equal(err.message, 'getAdapter must be called with a adapterName and a adapterClassName.');
         }
     });
 
@@ -57,11 +57,11 @@ describe('AdapterManager', function () {
 
         try {
             adapterManager.getAdapter('mail', 'custom');
-            should.fail(null, null, 'Should not have created');
+            assert.fail('Should not have created');
         } catch (err) {
-            should.exist(err);
-            should.equal(err.errorType, 'NotFoundError');
-            should.equal(err.message, 'Unknown adapter type mail. Please register adapter.');
+            assert(err);
+            assert.equal(err.errorType, 'NotFoundError');
+            assert.equal(err.message, 'Unknown adapter type mail. Please register adapter.');
         }
     });
 
@@ -82,10 +82,10 @@ describe('AdapterManager', function () {
         try {
             adapterManager.getAdapter('mail', 'some-node-module-adapter');
         } catch (err) {
-            should.ok(err); // We don't care about the error, we just want to check `loadAdapterFromPath`
+            assert(err); // We don't care about the error, we just want to check `loadAdapterFromPath`
         }
 
-        loadAdapterFromPath.calledWith('some-node-module-adapter').should.equal(true);
+        sinon.assert.calledWith(loadAdapterFromPath, 'some-node-module-adapter');
     });
 
     it('Loads registered adapters in the order defined by the paths', function () {
@@ -115,36 +115,36 @@ describe('AdapterManager', function () {
         try {
             const customAdapter = adapterManager.getAdapter('mail', 'custom', {});
 
-            should.ok(customAdapter instanceof BaseMailAdapter);
-            should.ok(customAdapter instanceof CustomMailAdapter);
+            assert(customAdapter instanceof BaseMailAdapter);
+            assert(customAdapter instanceof CustomMailAdapter);
         } catch (err) {
-            should.fail(err, null, 'Should not have errored');
+            assert.fail(err, null, 'Should not have errored');
         }
 
         try {
             const incompleteAdapter = adapterManager.getAdapter('mail', 'incomplete', {});
-            should.fail(incompleteAdapter, null, 'Should not have created');
+            assert.fail(incompleteAdapter, null, 'Should not have created');
         } catch (err) {
-            should.exist(err);
-            should.equal(err.errorType, 'IncorrectUsageError');
-            should.equal(err.message, 'mail adapter incomplete is missing the someMethod method.');
+            assert(err);
+            assert.equal(err.errorType, 'IncorrectUsageError');
+            assert.equal(err.message, 'mail adapter incomplete is missing the someMethod method.');
         }
 
         try {
             const defaultAdapter = adapterManager.getAdapter('mail', 'default', {});
 
-            should.ok(defaultAdapter instanceof BaseMailAdapter);
-            should.ok(defaultAdapter instanceof DefaultMailAdapter);
+            assert(defaultAdapter instanceof BaseMailAdapter);
+            assert(defaultAdapter instanceof DefaultMailAdapter);
         } catch (err) {
-            should.fail(err, null, 'Should not have errored');
+            assert.fail(err, null, 'Should not have errored');
         }
 
         try {
             const brokenAdapter = adapterManager.getAdapter('mail', 'broken', {});
-            should.fail(brokenAdapter, null, 'Should not have created');
+            assert.fail(brokenAdapter, null, 'Should not have created');
         } catch (err) {
-            should.exist(err);
-            should.equal(err.errorType, 'IncorrectUsageError');
+            assert(err);
+            assert.equal(err.errorType, 'IncorrectUsageError');
         }
     });
 
@@ -169,10 +169,10 @@ describe('AdapterManager', function () {
         try {
             const customAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
 
-            should.ok(customAdapter instanceof BaseMailAdapter);
-            should.ok(customAdapter instanceof CustomMailAdapter);
+            assert(customAdapter instanceof BaseMailAdapter);
+            assert(customAdapter instanceof CustomMailAdapter);
         } catch (err) {
-            should.fail(err, null, 'Should not have errored');
+            assert.fail(err, null, 'Should not have errored');
         }
     });
 
@@ -198,25 +198,25 @@ describe('AdapterManager', function () {
         try {
             mailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
 
-            should.ok(mailNewslettersAdapter instanceof BaseMailAdapter);
-            should.ok(mailNewslettersAdapter instanceof CustomMailAdapter);
+            assert(mailNewslettersAdapter instanceof BaseMailAdapter);
+            assert(mailNewslettersAdapter instanceof CustomMailAdapter);
         } catch (err) {
-            should.fail(err, null, 'Should not have errored');
+            assert.fail(err, null, 'Should not have errored');
         }
 
         let mailNotificationsAdapter;
         try {
             mailNotificationsAdapter = adapterManager.getAdapter('mail:notifications', 'custom');
 
-            should.ok(mailNotificationsAdapter instanceof BaseMailAdapter);
-            should.ok(mailNotificationsAdapter instanceof CustomMailAdapter);
+            assert(mailNotificationsAdapter instanceof BaseMailAdapter);
+            assert(mailNotificationsAdapter instanceof CustomMailAdapter);
         } catch (err) {
-            should.fail(err, null, 'Should not have errored');
+            assert.fail(err, null, 'Should not have errored');
         }
 
-        should.notEqual(mailNewslettersAdapter, mailNotificationsAdapter);
+        assert.notEqual(mailNewslettersAdapter, mailNotificationsAdapter);
 
         const secondMailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
-        should.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
+        assert.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
     });
 });

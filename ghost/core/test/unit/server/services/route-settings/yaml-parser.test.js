@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const should = require('should');
+const assert = require('node:assert/strict');
 const fs = require('fs-extra');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -21,23 +21,25 @@ describe('UNIT > Settings Service yaml parser:', function () {
             const file = fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/settings/', 'goodroutes.yaml'), 'utf8');
 
             const result = yamlParser(file);
-            should.exist(result);
-            result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            yamlSpy.calledOnce.should.be.true();
+            assert.deepEqual(
+                new Set(Object.keys(result)),
+                new Set(['routes', 'collections', 'taxonomies'])
+            );
+            sinon.assert.calledOnce(yamlSpy);
         });
 
         it('rejects with clear error when parsing fails', function () {
             const file = fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/settings/', 'badroutes.yaml'), 'utf8');
 
             try {
-                const result = yamlParser(file);
-                should.not.exist(result);
+                yamlParser(file);
+                assert.fail();
             } catch (error) {
-                should.exist(error);
-                error.message.should.eql('Could not parse provided YAML file: bad indentation of a mapping entry.');
-                error.context.should.containEql('bad indentation of a mapping entry (5:14)');
-                error.help.should.eql('Check provided file for typos and fix the named issues.');
-                yamlSpy.calledOnce.should.be.true();
+                assert(error);
+                assert.equal(error.message, 'Could not parse provided YAML file: bad indentation of a mapping entry.');
+                assert(error.context.includes('bad indentation of a mapping entry (5:14)'));
+                assert.equal(error.help, 'Check provided file for typos and fix the named issues.');
+                sinon.assert.calledOnce(yamlSpy);
             }
         });
     });
