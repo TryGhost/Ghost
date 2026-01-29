@@ -31,7 +31,8 @@ const messages = {
     offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
-    subscriptionHasOffer: 'Subscription already has an offer applied'
+    subscriptionHasOffer: 'Subscription already has an offer applied',
+    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -1712,6 +1713,14 @@ module.exports = class MemberRepository {
         if (subscriptionModel.get('offer_id')) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
+            });
+        }
+
+        // Check subscription is not in a trial period
+        const trialEndAt = subscriptionModel.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionInTrial)
             });
         }
 
