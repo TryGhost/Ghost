@@ -281,7 +281,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
 
     const originalPrice = formatNumber(price.amount / 100);
     const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
-    const currencySymbol = getCurrencySymbol(offer.currency || price.currency);
+    const currencySymbol = getCurrencySymbol(price.currency);
 
     const discountText = formatOfferDiscount(offer);
     const durationText = formatOfferDuration(offer);
