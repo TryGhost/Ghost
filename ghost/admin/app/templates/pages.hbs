@@ -56,19 +56,19 @@
     {{#if @model.scheduledInfinityModel}}
         <GhInfinityLoader
             @infinityModel={{@model.scheduledInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
     {{#if (and @model.draftInfinityModel (or (not @model.scheduledInfinityModel) (and @model.scheduledInfinityModel @model.scheduledInfinityModel.reachedInfinity)))}}
         <GhInfinityLoader
             @infinityModel={{@model.draftInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
     {{#if (and @model.publishedAndSentInfinityModel (and (or (not @model.scheduledInfinityModel) @model.scheduledInfinityModel.reachedInfinity) (or (not @model.draftInfinityModel) @model.draftInfinityModel.reachedInfinity)))}}
         <GhInfinityLoader
             @infinityModel={{@model.publishedAndSentInfinityModel}}
-            @scrollable=".gh-main"
+            @scrollable=".shade-admin main"
             @triggerOffset={{1000}} />
     {{/if}}
 
