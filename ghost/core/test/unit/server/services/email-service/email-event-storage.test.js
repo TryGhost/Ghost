@@ -576,13 +576,20 @@ describe('Email Event Storage', function () {
             add: sinon.stub().resolves()
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
+        assert(emailSuppressionList.removeComplaint.calledOnce);
+        assert(emailSuppressionList.removeComplaint.calledWith('example@example.com'));
     });
 
     it('Handles duplicate complaints', async function () {
@@ -597,10 +604,15 @@ describe('Email Event Storage', function () {
             add: sinon.stub().rejects({code: 'ER_DUP_ENTRY'})
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
@@ -619,10 +631,15 @@ describe('Email Event Storage', function () {
             add: sinon.stub().rejects(new Error('Some database error'))
         };
 
+        const emailSuppressionList = {
+            removeComplaint: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleComplained(event);
         assert(EmailSpamComplaintEvent.add.calledOnce);
