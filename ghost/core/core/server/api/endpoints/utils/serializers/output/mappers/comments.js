@@ -2,8 +2,6 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const {MemberCommentingCodec} = require('../../../../../../services/members/commenting');
-const {serializeCommenting} = require('../utils/member-commenting');
 
 const commentFields = [
     'id',
@@ -30,7 +28,9 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment',
+    'commenting'
 ];
 
 const postFields = [
@@ -73,14 +73,6 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.member) {
         response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
-
-        // For admin requests, always add computed commenting fields for consistent response shape
-        // MemberCommentingCodec.parse() handles null/undefined by returning enabled state
-        if (!isPublicRequest) {
-            const commenting = MemberCommentingCodec.parse(jsonModel.member.commenting);
-            response.member.can_comment = commenting.canComment;
-            response.member.commenting = serializeCommenting(commenting);
-        }
     } else {
         response.member = null;
     }
