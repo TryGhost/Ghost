@@ -197,6 +197,17 @@ const sentEmail = (matchers) => {
     return spyCall.args[0];
 };
 
+const sentEmailCount = (count) => {
+    if (!mocks.mail) {
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot assert on mail when mail has not been mocked'
+        });
+    }
+
+    const actualCount = mocks.mail.callCount;
+    assert.equal(actualCount, count, `Expected ${count} emails to be sent, but ${actualCount} were sent`);
+};
+
 /**
  * Events Mocks & Assertions
  */
@@ -391,6 +402,7 @@ module.exports = {
     stripeMocker,
     assert: {
         sentEmail,
+        sentEmailCount,
         emittedEvent
     },
     getMailgunCreateMessageStub: () => mailgunCreateMessageStub
