@@ -156,6 +156,7 @@ const Growth: React.FC = () => {
                             currencySymbol={currencySymbol}
                             initialTab={initialTab}
                             isLoading={isPageLoading}
+                            subscriptionData={subscriptionData}
                             totals={totals}
                             onTabChange={setCurrentKpiTab}
                         />
