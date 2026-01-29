@@ -187,24 +187,39 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 return acc;
             }, {} as Record<string, number>);
 
-        // Color palette for tiers
+        // Color palette for tiers (10 distinct colors)
         const tierColors = [
             {gradient: 'url(#gradientPurple)', solid: 'hsl(var(--chart-purple))'},
             {gradient: 'url(#gradientTeal)', solid: 'hsl(var(--chart-teal))'},
             {gradient: 'url(#gradientBlue)', solid: 'hsl(var(--chart-blue))'},
             {gradient: 'url(#gradientRose)', solid: 'hsl(var(--chart-rose))'},
-            {gradient: 'url(#gradientOrange)', solid: 'hsl(var(--chart-orange))'}
+            {gradient: 'url(#gradientOrange)', solid: 'hsl(var(--chart-orange))'},
+            {gradient: 'url(#gradientGreen)', solid: 'hsl(var(--chart-green))'},
+            {gradient: 'url(#gradientAmber)', solid: 'hsl(var(--chart-amber))'},
+            {gradient: 'url(#gradientYellow)', solid: 'hsl(var(--chart-yellow))'},
+            {gradient: 'url(#gradientDarkblue)', solid: 'hsl(var(--chart-darkblue))'},
+            {gradient: 'url(#gradientGray)', solid: 'hsl(var(--chart-darkgray))'}
         ];
 
         // Create chart data for ALL available tiers, including those with 0 signups
-        const chartData = availableTiers.map((tier, index) => {
-            const colorIndex = index % tierColors.length;
+        // First, create data with counts
+        const unsortedData = availableTiers.map((tier) => {
             const count = tierTotals[tier.id] || 0;
-
             return {
                 id: tier.id,
                 name: tier.name,
-                count,
+                count
+            };
+        });
+
+        // Sort by count descending (highest first)
+        const sortedData = [...unsortedData].sort((a, b) => b.count - a.count);
+
+        // Assign colors based on sorted order
+        const chartData = sortedData.map((tier, index) => {
+            const colorIndex = index % tierColors.length;
+            return {
+                ...tier,
                 fill: tierColors[colorIndex].gradient,
                 color: tierColors[colorIndex].solid
             };
@@ -312,6 +327,26 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                                     <linearGradient id="gradientOrange" x1="0" x2="0" y1="0" y2="1">
                                         <stop offset="0%" stopColor="hsl(var(--chart-orange))" stopOpacity={0.8} />
                                         <stop offset="100%" stopColor="hsl(var(--chart-orange))" stopOpacity={0.6} />
+                                    </linearGradient>
+                                    <linearGradient id="gradientGreen" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(var(--chart-green))" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="hsl(var(--chart-green))" stopOpacity={0.6} />
+                                    </linearGradient>
+                                    <linearGradient id="gradientAmber" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(var(--chart-amber))" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="hsl(var(--chart-amber))" stopOpacity={0.6} />
+                                    </linearGradient>
+                                    <linearGradient id="gradientYellow" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(var(--chart-yellow))" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="hsl(var(--chart-yellow))" stopOpacity={0.6} />
+                                    </linearGradient>
+                                    <linearGradient id="gradientDarkblue" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="hsl(var(--chart-darkblue))" stopOpacity={0.6} />
+                                    </linearGradient>
+                                    <linearGradient id="gradientGray" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(var(--chart-darkgray))" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="hsl(var(--chart-darkgray))" stopOpacity={0.6} />
                                     </linearGradient>
                                 </defs>
                                 <ChartTooltip
