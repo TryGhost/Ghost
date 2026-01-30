@@ -1196,7 +1196,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace/e2e \
             -e CI=true \
-            -e TEST_WORKERS_COUNT=2 \
+            -e TEST_WORKERS_COUNT=1 \
             -e GHOST_E2E_COMPOSE_RUNNING=true \
             -e GHOST_IMAGE_TAG=${{ steps.load.outputs.image-tag }} \
             mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble \
