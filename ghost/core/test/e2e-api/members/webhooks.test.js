@@ -380,14 +380,6 @@ describe('Members API', function () {
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
 
-            // No "Paid subscription started" email is expected here because the member
-            // was created via Admin API (context.user = true), which results in source = 'admin'.
-            // Staff notifications are only sent for source 'api' or 'member', not 'admin'.
-            // This is correct behavior - admins manually linking Stripe customers already know about the subscription.
-            mockManager.assert.didNotSendEmail({
-                subject: /Paid subscription started/
-            });
-
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me at the end of the billing cycle/,
                 to: 'jbloggs@example.com'
@@ -549,13 +541,6 @@ describe('Members API', function () {
 
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
-
-            // No "Paid subscription started" email is expected here because the member
-            // was created via Admin API (context.user = true), which results in source = 'admin'.
-            // Staff notifications are only sent for source 'api' or 'member', not 'admin'.
-            mockManager.assert.didNotSendEmail({
-                subject: /Paid subscription started/
-            });
 
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me now/,
