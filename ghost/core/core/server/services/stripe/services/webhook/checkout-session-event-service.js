@@ -256,5 +256,16 @@ module.exports = class CheckoutSessionEventService {
         if (checkoutType !== 'upgrade') {
             this.deps.sendSignupEmail(customer.email);
         }
+
+        // Remove any complimentary access now that a paid subscription has been linked.
+        // This handles both Stripe-based comp subscriptions and direct tier assignments.
+        // Check if the checkout included a paid subscription (non-zero amount)
+        const hasPaidSubscription = customer.subscriptions.data.some(
+            sub => sub.items?.data?.[0]?.price?.unit_amount > 0
+        );
+
+        if (hasPaidSubscription) {
+            await memberRepository.removeComplimentaryAccess({id: member.id});
+        }
     }
 };
