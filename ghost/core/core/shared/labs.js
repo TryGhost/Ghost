@@ -25,7 +25,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'explore'
+    'explore',
+    'welcomeEmails'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -46,7 +47,6 @@ const PRIVATE_FEATURES = [
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
-    'welcomeEmails',
     'themeTranslation',
     'commentModeration',
     'commentPermalinks',
