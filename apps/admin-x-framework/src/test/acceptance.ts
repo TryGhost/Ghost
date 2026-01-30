@@ -83,7 +83,6 @@ export const responseFixtures = {
 const defaultLabFlags = {
     audienceFeedback: false,
     collections: false,
-    themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
     members: false
