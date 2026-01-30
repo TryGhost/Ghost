@@ -208,6 +208,32 @@ const sentEmailCount = (count) => {
     assert.equal(actualCount, count, `Expected ${count} emails to be sent, but ${actualCount} were sent`);
 };
 
+const didNotSendEmail = (matchers) => {
+    if (!mocks.mail) {
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot assert on mail when mail has not been mocked'
+        });
+    }
+
+    const matcherKeys = Object.keys(matchers);
+
+    for (let i = 0; i < mocks.mail.callCount; i++) {
+        const email = mocks.mail.getCall(i).args[0];
+
+        const allMatch = matcherKeys.every((key) => {
+            const value = matchers[key];
+            if (value instanceof RegExp) {
+                return value.test(email[key]);
+            }
+            return email[key] === value;
+        });
+
+        if (allMatch) {
+            assert.fail(`Expected no email matching ${JSON.stringify(matchers)}, but found one: ${JSON.stringify(email)}`);
+        }
+    }
+};
+
 /**
  * Events Mocks & Assertions
  */
@@ -403,6 +429,7 @@ module.exports = {
     assert: {
         sentEmail,
         sentEmailCount,
+        didNotSendEmail,
         emittedEvent
     },
     getMailgunCreateMessageStub: () => mailgunCreateMessageStub

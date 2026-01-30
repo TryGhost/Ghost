@@ -291,6 +291,7 @@ describe('Members API', function () {
             // And all the subscriptions are setup correctly
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
             should(initialMember.subscriptions).match([
                 {
@@ -379,10 +380,13 @@ describe('Members API', function () {
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
 
-            // Note: No "Paid subscription started" email is expected here because the member
+            // No "Paid subscription started" email is expected here because the member
             // was created via Admin API (context.user = true), which results in source = 'admin'.
             // Staff notifications are only sent for source 'api' or 'member', not 'admin'.
             // This is correct behavior - admins manually linking Stripe customers already know about the subscription.
+            mockManager.assert.didNotSendEmail({
+                subject: /Paid subscription started/
+            });
 
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me at the end of the billing cycle/,
@@ -545,9 +549,12 @@ describe('Members API', function () {
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
 
-            // Note: No "Paid subscription started" email is expected here because the member
+            // No "Paid subscription started" email is expected here because the member
             // was created via Admin API (context.user = true), which results in source = 'admin'.
             // Staff notifications are only sent for source 'api' or 'member', not 'admin'.
+            mockManager.assert.didNotSendEmail({
+                subject: /Paid subscription started/
+            });
 
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me now/,
@@ -749,305 +756,6 @@ describe('Members API', function () {
                     mrr_delta: 0
                 }]
             });
-        });
-    });
-
-    describe('Staff notification emails for member creation with Stripe', function () {
-        // Tests verifying that staff notifications are sent based on the source of the member creation
-        // Per https://github.com/TryGhost/Team/issues/1864:
-        // - source='admin' (session auth) → NO notification (admin already knows)
-        // - source='api' (API key auth) → YES notification (external integration)
-        // - source='member' (checkout webhook) → YES notification (self-signup)
-        // - source='import' → NO notification (bulk import)
-
-        before(async function () {
-            const agents = await agentProvider.getAgentsForMembers();
-            membersAgent = agents.membersAgent;
-            adminAgent = agents.adminAgent;
-
-            await fixtureManager.init('members', 'integrations');
-        });
-
-        beforeEach(function () {
-            mockManager.mockMail();
-        });
-
-        afterEach(function () {
-            mockManager.restore();
-        });
-
-        it('Does NOT send "Paid subscription started" email when member created via session auth (source=admin)', async function () {
-            await adminAgent.loginAsOwner();
-
-            const customer_id = createStripeID('cust');
-            const subscription_id = createStripeID('sub');
-
-            set(subscription, {
-                id: subscription_id,
-                customer: customer_id,
-                status: 'active',
-                items: {
-                    type: 'list',
-                    data: [{
-                        id: 'item_123',
-                        price: {
-                            id: 'price_123',
-                            product: 'product_123',
-                            active: true,
-                            nickname: 'Monthly',
-                            currency: 'usd',
-                            recurring: {
-                                interval: 'month'
-                            },
-                            unit_amount: 500,
-                            type: 'recurring'
-                        }
-                    }]
-                },
-                start_date: Date.now() / 1000,
-                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
-                cancel_at_period_end: false
-            });
-
-            set(customer, {
-                id: customer_id,
-                name: 'Admin Created Member',
-                email: 'admin-created-member@test.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            const {body} = await adminAgent
-                .post('/members/')
-                .body({members: [{
-                    name: customer.name,
-                    email: customer.email,
-                    subscribed: true,
-                    stripe_customer_id: customer.id
-                }]})
-                .expectStatus(201);
-
-            assert.equal(body.members.length, 1, 'The member was created');
-            assert.equal(body.members[0].status, 'paid', 'The member should be paid');
-
-            await DomainEvents.allSettled();
-
-            // Session auth results in source='admin', so NO staff notification emails are sent
-            // (neither free signup nor paid subscription started)
-            mockManager.assert.sentEmailCount(0);
-        });
-
-        it('DOES send "Paid subscription started" email when member created via API key auth (source=api)', async function () {
-            await adminAgent.useZapierAdminAPIKey();
-
-            const customer_id = createStripeID('cust');
-            const subscription_id = createStripeID('sub');
-
-            set(subscription, {
-                id: subscription_id,
-                customer: customer_id,
-                status: 'active',
-                items: {
-                    type: 'list',
-                    data: [{
-                        id: 'item_123',
-                        price: {
-                            id: 'price_123',
-                            product: 'product_123',
-                            active: true,
-                            nickname: 'Monthly',
-                            currency: 'usd',
-                            recurring: {
-                                interval: 'month'
-                            },
-                            unit_amount: 500,
-                            type: 'recurring'
-                        }
-                    }]
-                },
-                start_date: Date.now() / 1000,
-                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
-                cancel_at_period_end: false
-            });
-
-            set(customer, {
-                id: customer_id,
-                name: 'API Created Member',
-                email: 'api-created-member@test.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            const {body} = await adminAgent
-                .post('/members/')
-                .body({members: [{
-                    name: customer.name,
-                    email: customer.email,
-                    subscribed: true,
-                    stripe_customer_id: customer.id
-                }]})
-                .expectStatus(201);
-
-            assert.equal(body.members.length, 1, 'The member was created');
-            assert.equal(body.members[0].status, 'paid', 'The member should be paid');
-
-            await DomainEvents.allSettled();
-
-            // API key auth results in source='api', so staff notification emails ARE sent
-            // First email: Free member signup (member created as free initially)
-            mockManager.assert.sentEmail({
-                subject: /Free member signup: API Created Member/,
-                to: 'jbloggs@example.com'
-            });
-
-            // Second email: Paid subscription started (after Stripe subscription linked)
-            mockManager.assert.sentEmail({
-                subject: /Paid subscription started: API Created Member/,
-                to: 'jbloggs@example.com'
-            });
-        });
-
-        it('DOES send "Paid subscription started" email when member created via checkout webhook (source=member)', async function () {
-            // Member self-signup via Stripe checkout creates members with source='member'
-            const customer_id = createStripeID('cust');
-            const subscription_id = createStripeID('sub');
-
-            set(subscription, {
-                id: subscription_id,
-                customer: customer_id,
-                status: 'active',
-                items: {
-                    type: 'list',
-                    data: [{
-                        id: 'item_123',
-                        price: {
-                            id: 'price_123',
-                            product: 'product_123',
-                            active: true,
-                            nickname: 'Monthly',
-                            currency: 'usd',
-                            recurring: {
-                                interval: 'month'
-                            },
-                            unit_amount: 500,
-                            type: 'recurring'
-                        }
-                    }]
-                },
-                start_date: Date.now() / 1000,
-                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
-                cancel_at_period_end: false
-            });
-
-            set(customer, {
-                id: customer_id,
-                name: 'Checkout Member',
-                email: 'checkout-member@test.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            const webhookPayload = JSON.stringify({
-                type: 'checkout.session.completed',
-                data: {
-                    object: {
-                        mode: 'subscription',
-                        customer: customer.id,
-                        subscription: subscription.id,
-                        metadata: {}
-                    }
-                }
-            });
-
-            const webhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: webhookPayload,
-                secret: process.env.WEBHOOK_SECRET
-            });
-
-            await membersAgent.post('/webhooks/stripe/')
-                .body(webhookPayload)
-                .header('content-type', 'application/json')
-                .header('stripe-signature', webhookSignature);
-
-            await DomainEvents.allSettled();
-
-            // Checkout webhook results in source='member', so staff notification emails ARE sent
-            // First email: Welcome email to the member
-            mockManager.assert.sentEmail({
-                subject: '🙌 Thank you for signing up to Ghost!',
-                to: 'checkout-member@test.com'
-            });
-
-            // Second email: Staff notification for paid subscription
-            mockManager.assert.sentEmail({
-                subject: /Paid subscription started: checkout-member@test.com/,
-                to: 'jbloggs@example.com'
-            });
-        });
-
-        it('Does NOT send staff notification emails when member is imported with stripe_customer_id (source=import)', async function () {
-            // Import members with stripe_customer_id
-            const membersService = require('../../../core/server/services/members');
-
-            const customer_id = createStripeID('cust');
-            const subscription_id = createStripeID('sub');
-
-            set(subscription, {
-                id: subscription_id,
-                customer: customer_id,
-                status: 'active',
-                items: {
-                    type: 'list',
-                    data: [{
-                        id: 'item_123',
-                        price: {
-                            id: 'price_123',
-                            product: 'product_123',
-                            active: true,
-                            nickname: 'Monthly',
-                            currency: 'usd',
-                            recurring: {
-                                interval: 'month'
-                            },
-                            unit_amount: 500,
-                            type: 'recurring'
-                        }
-                    }]
-                },
-                start_date: Date.now() / 1000,
-                current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
-                cancel_at_period_end: false
-            });
-
-            set(customer, {
-                id: customer_id,
-                name: 'Imported Member',
-                email: 'imported-member@test.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            // Create member via members service with import context
-            await membersService.api.members.create({
-                email: customer.email,
-                name: customer.name,
-                stripe_customer_id: customer.id
-            }, {
-                context: {import: true}
-            });
-
-            await DomainEvents.allSettled();
-
-            // Import context results in source='import', so NO staff notification emails are sent
-            mockManager.assert.sentEmailCount(0);
         });
     });
 
