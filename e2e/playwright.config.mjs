@@ -44,8 +44,17 @@ const config = {
         },
         {
             name: 'main',
-            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts'],
             testDir: './tests',
+            use: {
+                viewport: {width: 1920, height: 1080}
+            },
+            dependencies: ['global-setup']
+        },
+        {
+            name: 'analytics',
+            testDir: './tests',
+            testMatch: ['analytics/**/*.test.ts'],
             use: {
                 viewport: {width: 1920, height: 1080}
             },
