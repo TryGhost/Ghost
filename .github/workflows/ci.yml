@@ -1161,30 +1161,12 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      # needs to be in sync with what's in package.json
       - name: Get Playwright version
         id: playwright
         run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' e2e/package.json)" >> $GITHUB_OUTPUT
 
-      - name: Cache Playwright image
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/playwright.tar
-          key: playwright-image-${{ steps.playwright.outputs.version }}
-
-      - name: Load or pull Playwright image
-        run: |
-          IMAGE="mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble"
-          if [ -f /tmp/playwright.tar ]; then
-            echo "Loading cached image..."
-            docker load < /tmp/playwright.tar
-          else
-            echo "Pulling image..."
-            docker pull $IMAGE
-            echo "Saving to cache..."
-            docker save $IMAGE > /tmp/playwright.tar
-          fi
+      - name: Pull Playwright image
+        run: docker pull mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble
 
       - name: Start compose services
         env:
@@ -1214,7 +1196,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace/e2e \
             -e CI=true \
-            -e TEST_WORKERS_COUNT=1 \
+            -e TEST_WORKERS_COUNT=2 \
             -e GHOST_E2E_COMPOSE_RUNNING=true \
             -e GHOST_IMAGE_TAG=${{ steps.load.outputs.image-tag }} \
             mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble \
