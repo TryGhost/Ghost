@@ -1161,6 +1161,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
+      # needs to be in sync with what's in package.json
       - name: Get Playwright version
         id: playwright
         run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' e2e/package.json)" >> $GITHUB_OUTPUT
