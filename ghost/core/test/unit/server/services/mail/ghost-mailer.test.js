@@ -148,6 +148,32 @@ describe('Mail: Ghostmailer', function () {
     });
 
     describe('From address', function () {
+        it('should correctly use defaultFromEmail when no from address is provided', async function () {
+            // This test verifies the fix for the bug where defaultFromEmail (which returns an object)
+            // was passed directly to getAddressFromString (which expects a string).
+            // The fix ensures defaultFromEmail is stringified before being passed to getAddressFromString.
+            sandbox.stub(urlUtils, 'urlFor').returns('http://mysite.com');
+            sandbox.stub(settingsCache, 'get').returns('My Site Title');
+            configUtils.set({mail: {from: null}});
+
+            mailer = new mail.GhostMailer();
+
+            const sendMailSpy = sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transporter.name = 'NOT DIRECT';
+
+            // Send without a 'from' address - this should use defaultFromEmail
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'Verification code',
+                html: '<p>Your code is 123456</p>'
+            });
+
+            // Verify the from address was correctly derived from defaultFromEmail
+            sendMailSpy.calledOnce.should.be.true();
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            sentMessage.from.should.equal('"My Site Title" <noreply@mysite.com>');
+        });
+
         it('should use the config', async function () {
             configUtils.set({
                 mail: {
