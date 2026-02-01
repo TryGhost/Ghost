@@ -62,11 +62,11 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[600px]'>
-                <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 pb-4 backdrop-blur'>
+                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 pb-4 backdrop-blur'>
                     <SheetTitle className='mb-4'>Thread</SheetTitle>
                     {post && (
                         <a 
-                            className='hover:border-muted-foreground/40 flex items-stretch overflow-hidden rounded-md border transition-all' 
+                            className='flex items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' 
                             href={post.url} 
                             rel="noopener noreferrer" 
                             target='_blank'

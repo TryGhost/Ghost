@@ -46,7 +46,7 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
 
     return (
         <div 
-            className="from-muted-foreground/20 mb-2 h-full w-px grow rounded bg-gradient-to-b from-70% to-transparent" 
+            className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-muted-foreground/20 from-70% to-transparent" 
             data-testid="replies-line" 
         />
     );
@@ -88,12 +88,12 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
     const containerClassName = (!hasReplies || isReply) ? 'mb-7' : 'mb-0';
 
     const avatar = (
-        <div className={`bg-accent relative mb-3 flex size-6 min-w-6 shrink-0 items-center justify-center overflow-hidden rounded-full md:mb-4 md:size-8 md:min-w-8 ${comment.status === 'hidden' && 'opacity-50'}`}>
+        <div className={`relative mb-3 flex size-6 min-w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent md:mb-4 md:size-8 md:min-w-8 ${comment.status === 'hidden' && 'opacity-50'}`}>
             {comment.member?.id && comment.member.avatar_image && (
                 <div className='absolute inset-0'><img alt="Member avatar" className="size-full rounded-full object-cover" src={comment.member.avatar_image} /></div>
             )}
             <div>
-                <LucideIcon.User className='text-muted-foreground !size-3 md:!size-4' size={12} />
+                <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
             </div>
         </div>
     );
@@ -125,7 +125,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                                 <TooltipTrigger asChild>
                                                     <span data-testid="commenting-disabled-indicator">
                                                         <LucideIcon.MessageCircleOff
-                                                            className="text-muted-foreground size-3.5"
+                                                            className="size-3.5 text-muted-foreground"
                                                         />
                                                     </span>
                                                 </TooltipTrigger>
@@ -133,13 +133,13 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                             </Tooltip>
                                         </TooltipProvider>
                                     )}
-                                    <LucideIcon.Dot className='text-muted-foreground/50 shrink-0' size={16} />
+                                    <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
                                     <div className='shrink-0 whitespace-nowrap'>
                                         {comment.created_at && (
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <span className="text-muted-foreground cursor-default text-sm">
+                                                        <span className="cursor-default text-sm text-muted-foreground">
                                                             {formatTimestamp(comment.created_at)}
                                                         </span>
                                                     </TooltipTrigger>
@@ -160,7 +160,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                 <div className={`mb-1 line-clamp-1 text-sm ${comment.status === 'hidden' && 'opacity-50'}`}>
                                     <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                     <button
-                                        className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-normal"
+                                        className="cursor-pointer text-sm font-normal text-muted-foreground hover:text-foreground"
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -244,7 +244,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <div className={`flex items-center gap-1 text-xs ${comment.count?.reports ? 'text-red font-semibold' : 'text-gray-800'}`}>
+                                            <div className={`flex items-center gap-1 text-xs ${comment.count?.reports ? 'font-semibold text-red' : 'text-gray-800'}`}>
                                                 <LucideIcon.Flag size={16} strokeWidth={(comment.count?.reports ? 1.75 : 1.5)} />
                                                 <span>{formatNumber(comment.count?.reports || 0)}</span>
                                             </div>
@@ -258,7 +258,7 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button
-                                            className="hover:bg-secondary relative z-10 text-gray-800 [&_svg]:size-4"
+                                            className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
                                             size="sm"
                                             variant="ghost"
                                         >
