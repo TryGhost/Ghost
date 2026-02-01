@@ -30,7 +30,11 @@ export const useDisableMemberCommenting = createMutation<
         reason
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        filters: {
+            predicate: (query) => {
+                return query.queryKey[0] === 'CommentsResponseType' || query.queryKey[0] === 'CommentThreadResponseType';
+            }
+        }
     }
 });
 
@@ -42,6 +46,10 @@ export const useEnableMemberCommenting = createMutation<
     path: ({id}) => `/members/${id}/commenting/enable`,
     body: () => ({}),
     invalidateQueries: {
-        dataType: 'CommentsResponseType'
+        filters: {
+            predicate: (query) => {
+                return query.queryKey[0] === 'CommentsResponseType' || query.queryKey[0] === 'CommentThreadResponseType';
+            }
+        }
     }
 });
