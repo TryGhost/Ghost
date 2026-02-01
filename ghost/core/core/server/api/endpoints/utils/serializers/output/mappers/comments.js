@@ -38,7 +38,9 @@ const postFields = [
     'uuid',
     'title',
     'url',
-    'feature_image'
+    'feature_image',
+    'excerpt',
+    'plaintext'
 ];
 
 const countFields = [
@@ -57,9 +59,13 @@ const commentMapper = (model, frame) => {
 
     const isPublicRequest = utils.isMembersAPI(frame);
 
-    if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
-        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
-    } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
+    // For admin requests, we want to show a snippet for ALL replies
+    // Use inReplyTo if available, otherwise fall back to parent for first-level replies
+    const replyToComment = jsonModel.inReplyTo || (!isPublicRequest && jsonModel.parent_id && jsonModel.parent);
+
+    if (replyToComment && (replyToComment.status === 'published' || (!isPublicRequest && replyToComment.status === 'hidden'))) {
+        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(replyToComment.html);
+    } else if (replyToComment && replyToComment.status !== 'published') {
         jsonModel.in_reply_to_snippet = '[removed]';
     } else {
         jsonModel.in_reply_to_snippet = null;
@@ -88,7 +94,24 @@ const commentMapper = (model, frame) => {
     if (jsonModel.post) {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
-        response.post = _.pick(jsonModel.post, postFields);
+        const postData = _.pick(jsonModel.post, postFields);
+        
+        // Generate excerpt from plaintext if excerpt is not available (matches Posts API behavior)
+        // This matches what the Posts API does: use custom_excerpt if available, otherwise generate from plaintext (first 500 chars)
+        if (!postData.excerpt) {
+            // Check if custom_excerpt exists on the original post model (not in postFields, so check jsonModel)
+            if (jsonModel.post.custom_excerpt) {
+                postData.excerpt = jsonModel.post.custom_excerpt;
+            } else if (postData.plaintext) {
+                // Generate from plaintext (first 500 chars, matching Posts API)
+                postData.excerpt = postData.plaintext.substring(0, 500);
+            }
+        }
+        
+        // Remove plaintext from response (we only needed it to generate excerpt)
+        delete postData.plaintext;
+        
+        response.post = postData;
     }
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {
