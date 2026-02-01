@@ -29,10 +29,13 @@ import {
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
+import CommentThreadSidebar from './comment-thread-sidebar';
+import CommentContent from './comment-content';
 
 const SpacerRow = ({height}: { height: number }) => (
     <div aria-hidden="true" className="flex">
@@ -72,59 +75,6 @@ function formatDate(dateString: string): string {
     return formatted.replace(/(\d+),(\s+\d{4})/, '$1$2');
 }
 
-function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
-    return (
-        <Button
-            className="shrink-0 gap-0.5 self-start p-0 text-base hover:bg-transparent"
-            variant="ghost"
-            onClick={onClick}
-        >
-            {expanded ? 'Show less' : 'Show more'}
-            {expanded ? <LucideIcon.ChevronUp /> : <LucideIcon.ChevronDown />}
-        </Button>
-    );
-}
-
-function CommentContent({item}: {item: Comment}) {
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [isClamped, setIsClamped] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    useEffect(() => {
-        const checkIfClamped = () => {
-            if (contentRef.current) {
-                // Check if the content is clamped by comparing scrollHeight with clientHeight
-                setIsClamped(contentRef.current.scrollHeight > contentRef.current.clientHeight);
-            }
-        };
-
-        checkIfClamped();
-        // Recheck on window resize
-        window.addEventListener('resize', checkIfClamped);
-        return () => window.removeEventListener('resize', checkIfClamped);
-    }, [item.html]);
-
-    return (
-        <div className={`mt-1 flex flex-col gap-2`}>
-            <div className={`flex max-w-[720px] flex-col items-start ${item.status === 'hidden' && 'opacity-50'}`}>
-                <div
-                    dangerouslySetInnerHTML={{__html: item.html || ''}}
-                    ref={contentRef}
-                    className={cn(
-                        'prose flex-1 text-base leading-[1.5em] [&_*]:leading-[1.5em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
-                        (isExpanded ?
-                            '-mb-1 [&_p]:mb-[0.85em]'
-                            :
-                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1 mb-1')
-                    )}
-                />
-                {isClamped && (
-                    <ExpandButton expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)} />
-                )}
-            </div>
-        </div>
-    );
-}
 
 function CommentsList({
     items,
@@ -148,6 +98,58 @@ function CommentsList({
     disableMemberCommentingEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
+    const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
+
+    const handleOpenThread = (commentId: string) => {
+        // Update URL to open thread sidebar
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('thread', `is:${commentId}`);
+        setSearchParams(newParams, {replace: false});
+    };
+
+    const handleThreadClick = (commentId: string) => {
+        // Update URL to show the clicked thread
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('thread', `is:${commentId}`);
+        // Remove reply_to when navigating to a new thread
+        newParams.delete('reply_to');
+        setSearchParams(newParams, {replace: false});
+    };
+
+    const handleCloseSidebar = (open: boolean) => {
+        setThreadSidebarOpen(open);
+        if (!open) {
+            // Remove thread and reply_to params from URL when sidebar closes
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('thread');
+            newParams.delete('reply_to');
+            setSearchParams(newParams, {replace: true});
+        }
+    };
+
+    // Check for thread query parameter and open sidebar
+    useEffect(() => {
+        const threadParam = searchParams.get('thread');
+        if (threadParam) {
+            // Parse format: "is:comment-id"
+            const match = threadParam.match(/^is:(.+)$/);
+            if (match && match[1]) {
+                const threadId = match[1];
+                setSelectedThreadCommentId(threadId);
+                setThreadSidebarOpen(true);
+            } else {
+                // No valid thread param, close sidebar
+                setThreadSidebarOpen(false);
+                setSelectedThreadCommentId(null);
+            }
+        } else {
+            // No thread param, close sidebar
+            setThreadSidebarOpen(false);
+            setSelectedThreadCommentId(null);
+        }
+    }, [searchParams]);
 
     // Restore scroll position when navigating back from filtered views
     useScrollRestoration({parentRef, isLoading});
@@ -214,6 +216,12 @@ function CommentsList({
                                 {...props}
                                 className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                                 data-testid="comment-list-row"
+                                onClick={() => {
+                                    // Close sidebar when clicking on a comment in the main list
+                                    if (threadSidebarOpen) {
+                                        handleCloseSidebar(false);
+                                    }
+                                }}
                             >
                                 <div className='flex items-start gap-3'>
                                     <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
@@ -298,6 +306,29 @@ function CommentsList({
                                             )}
                                         </div>
 
+                                        {item.in_reply_to_snippet && (
+                                            <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                                                <Link
+                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                    to={(() => {
+                                                        // Preserve existing query params and add/update thread params
+                                                        const newParams = new URLSearchParams(searchParams);
+                                                        newParams.set('thread', `is:${item.parent_id}`);
+                                                        if (item.in_reply_to_id) {
+                                                            newParams.set('reply_to', `is:${item.in_reply_to_id}`);
+                                                        }
+                                                        return `?${newParams.toString()}`;
+                                                    })()}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                    }}
+                                                >
+                                                    {item.in_reply_to_snippet}
+                                                </Link>
+                                            </div>
+                                        )}
+
                                         <CommentContent item={item} />
 
                                         <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
@@ -314,19 +345,41 @@ function CommentsList({
                                                 </Button>
                                             )}
                                             <div className='flex items-center gap-4'>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
-                                                                <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                                                <span>{formatNumber(item.count?.replies)}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            Replies
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                                {item.count?.replies ? (
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <button
+                                                                    className='ml-2 flex items-center gap-1 text-xs text-gray-800 hover:opacity-70 cursor-pointer'
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation(); // Prevent closing sidebar
+                                                                        handleOpenThread(item.id);
+                                                                    }}
+                                                                >
+                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
+                                                                    <span>{formatNumber(item.count?.replies)}</span>
+                                                                </button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                View replies
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                ) : (
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
+                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
+                                                                    <span>{formatNumber(item.count?.replies)}</span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                Replies
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                )}
 
                                                 <TooltipProvider>
                                                     <Tooltip>
@@ -471,6 +524,15 @@ function CommentsList({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <CommentThreadSidebar
+                commentId={selectedThreadCommentId}
+                open={threadSidebarOpen}
+                onOpenChange={handleCloseSidebar}
+                onThreadClick={handleThreadClick}
+                commentPermalinksEnabled={commentPermalinksEnabled}
+                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
+            />
         </div>
     );
 }
