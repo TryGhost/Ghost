@@ -24,7 +24,6 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-    cn,
     formatNumber,
     formatTimestamp
 } from '@tryghost/shade';

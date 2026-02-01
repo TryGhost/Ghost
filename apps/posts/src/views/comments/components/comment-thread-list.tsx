@@ -11,13 +11,12 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-    cn,
     formatNumber,
     formatTimestamp
 } from '@tryghost/shade';
 import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
-import {useEffect, useRef, useState} from 'react';
+import {useState} from 'react';
 import CommentContent from './comment-content';
 import {
     Dialog,
@@ -50,19 +49,6 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
             className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-muted-foreground/20 from-70% to-transparent" 
             data-testid="replies-line" 
         />
-    );
-}
-
-function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
-    return (
-        <Button
-            className="shrink-0 gap-0.5 self-start p-0 text-base hover:bg-transparent"
-            variant="ghost"
-            onClick={onClick}
-        >
-            {expanded ? 'Show less' : 'Show more'}
-            {expanded ? <LucideIcon.ChevronUp /> : <LucideIcon.ChevronDown />}
-        </Button>
     );
 }
 
