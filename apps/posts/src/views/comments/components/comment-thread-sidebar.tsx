@@ -1,19 +1,19 @@
+import CommentThreadList from './comment-thread-list';
 import React from 'react';
 import {
+    Button,
+    EmptyIndicator,
+    H3,
+    LoadingIndicator,
+    LucideIcon,
     Sheet,
     SheetContent,
     SheetHeader,
     SheetTitle,
-    LoadingIndicator,
-    EmptyIndicator,
-    Button,
-    LucideIcon,
-    H3,
     cn
 } from '@tryghost/shade';
-import {useCommentReplies, useReadComment} from '@tryghost/admin-x-framework/api/comments';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import CommentThreadList from './comment-thread-list';
+import {useCommentReplies, useReadComment} from '@tryghost/admin-x-framework/api/comments';
 
 interface CommentThreadSidebarProps {
     commentId: string | null;
@@ -61,12 +61,12 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className='overflow-y-auto pt-0 px-6 sm:max-w-[600px]'>
-                <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 pb-4 backdrop-blur'>
+            <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[600px]'>
+                <SheetHeader className='bg-background/60 sticky top-0 z-40 -mx-6 p-6 pb-4 backdrop-blur'>
                     <SheetTitle className='mb-4'>Thread</SheetTitle>
                     {post && (
                         <a 
-                            className='flex items-stretch overflow-hidden rounded-md border transition-all hover:border-muted-foreground/40' 
+                            className='hover:border-muted-foreground/40 flex items-stretch overflow-hidden rounded-md border transition-all' 
                             href={post.url} 
                             rel="noopener noreferrer" 
                             target='_blank'
@@ -84,7 +84,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                                 {site && (
                                     <div className='mt-2 flex items-start gap-2'>
                                         {site.icon && (
-                                            <div className='mt-0.5 size-4 bg-cover bg-center shrink-0' style={{
+                                            <div className='mt-0.5 size-4 shrink-0 bg-cover bg-center' style={{
                                                 backgroundImage: `url(${site.icon})`
                                             }}></div>
                                         )}
@@ -105,24 +105,24 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                     ) : isError || !parentComment ? (
                         <div className="flex h-full items-center justify-center py-8">
                             <EmptyIndicator
-                                title="Thread not found"
-                                description="This thread may have been deleted or doesn't exist."
                                 actions={
                                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                                         Back to comments
                                     </Button>
                                 }
+                                description="This thread may have been deleted or doesn't exist."
+                                title="Thread not found"
                             >
                                 <LucideIcon.MessageSquare />
                             </EmptyIndicator>
                         </div>
                     ) : (
                         <CommentThreadList
+                            commentPermalinksEnabled={commentPermalinksEnabled}
+                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                             parentComment={parentComment}
                             replies={replies}
                             onThreadClick={onThreadClick}
-                            commentPermalinksEnabled={commentPermalinksEnabled}
-                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                         />
                     )}
                 </div>

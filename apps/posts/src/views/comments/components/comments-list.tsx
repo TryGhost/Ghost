@@ -1,3 +1,5 @@
+import CommentContent from './comment-content';
+import CommentThreadSidebar from './comment-thread-sidebar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,8 +35,6 @@ import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
-import CommentThreadSidebar from './comment-thread-sidebar';
-import CommentContent from './comment-content';
 
 const SpacerRow = ({height}: { height: number }) => (
     <div aria-hidden="true" className="flex">
@@ -55,7 +55,7 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
             className="relative flex flex-col"
         >
             <div className="relative z-10 h-24 animate-pulse">
-                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
+                <div className="bg-muted h-full rounded-md" data-testid="loading-placeholder" />
             </div>
         </div>
     );
@@ -73,7 +73,6 @@ function formatDate(dateString: string): string {
     // Remove comma between day and year (e.g., "Dec 17, 2025" -> "Dec 17 2025")
     return formatted.replace(/(\d+),(\s+\d{4})/, '$1$2');
 }
-
 
 function CommentsList({
     items,
@@ -213,7 +212,7 @@ function CommentsList({
                             <div
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                                className="hover:bg-muted/50 grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                                 data-testid="comment-list-row"
                                 onClick={() => {
                                     // Close sidebar when clicking on a comment in the main list
@@ -223,12 +222,12 @@ function CommentsList({
                                 }}
                             >
                                 <div className='flex items-start gap-3'>
-                                    <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
+                                    <div className={`bg-accent relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
                                         {item.member?.id && item.member.avatar_image && (
                                             <div className='absolute inset-0'><img alt="Member avatar" src={item.member.avatar_image} /></div>
                                         )}
                                         <div>
-                                            <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
+                                            <LucideIcon.User className='text-muted-foreground !size-3 md:!size-4' size={12} />
                                         </div>
                                     </div>
 
@@ -238,7 +237,7 @@ function CommentsList({
                                                 <div className='whitespace-nowrap'>
                                                     {item.member?.id ? (
                                                         <Button
-                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
+                                                            className={`text-primary flex h-auto items-center gap-1.5 truncate p-0 font-semibold hover:opacity-70`}
                                                             variant='link'
                                                             onClick={() => {
                                                                 onAddFilter('author', item.member!.id);
@@ -258,7 +257,7 @@ function CommentsList({
                                                             <TooltipTrigger asChild>
                                                                 <span data-testid="commenting-disabled-indicator">
                                                                     <LucideIcon.MessageCircleOff
-                                                                        className="size-3.5 text-muted-foreground"
+                                                                        className="text-muted-foreground size-3.5"
                                                                     />
                                                                 </span>
                                                             </TooltipTrigger>
@@ -266,13 +265,13 @@ function CommentsList({
                                                         </Tooltip>
                                                     </TooltipProvider>
                                                 )}
-                                                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
+                                                <LucideIcon.Dot className='text-muted-foreground/50 shrink-0' size={16} />
                                                 <div className='shrink-0 whitespace-nowrap'>
                                                     {item.created_at && (
                                                         <TooltipProvider>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <span className="cursor-default text-sm text-muted-foreground">
+                                                                    <span className="text-muted-foreground cursor-default text-sm">
                                                                         {formatTimestamp(item.created_at)}
                                                                     </span>
                                                                 </TooltipTrigger>
@@ -283,7 +282,7 @@ function CommentsList({
                                                         </TooltipProvider>
                                                     )}
                                                 </div>
-                                                <div className='shrink-0 text-muted-foreground'>on</div>
+                                                <div className='text-muted-foreground shrink-0'>on</div>
                                                 <div className='min-w-0 truncate'>
                                                     {item.post?.id && item.post?.title && onAddFilter ? (
                                                         <Button
@@ -309,7 +308,7 @@ function CommentsList({
                                             <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
                                                 <span className="text-muted-foreground">Replied to:</span>&nbsp;
                                                 <Link
-                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                    className="text-muted-foreground hover:text-foreground text-sm font-normal"
                                                     to={(() => {
                                                         // Preserve existing query params and add/update thread params
                                                         const newParams = new URLSearchParams(searchParams);
@@ -349,7 +348,8 @@ function CommentsList({
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <button
-                                                                    className='ml-2 flex items-center gap-1 text-xs text-gray-800 hover:opacity-70 cursor-pointer'
+                                                                    className='ml-2 flex cursor-pointer items-center gap-1 text-xs text-gray-800 hover:opacity-70'
+                                                                    type="button"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation(); // Prevent closing sidebar
                                                                         handleOpenThread(item.id);
@@ -397,7 +397,7 @@ function CommentsList({
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-semibold text-red' : 'text-gray-800'}`}>
+                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'text-red font-semibold' : 'text-gray-800'}`}>
                                                                 <LucideIcon.Flag size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
                                                                 <span>{formatNumber(item.count?.reports)}</span>
                                                             </div>
@@ -411,7 +411,7 @@ function CommentsList({
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
-                                                        className="relative z-10 ml-1 text-gray-800 hover:bg-secondary [&_svg]:size-4"
+                                                        className="hover:bg-secondary relative z-10 ml-1 text-gray-800 [&_svg]:size-4"
                                                         size="sm"
                                                         variant="ghost"
                                                     >
@@ -490,7 +490,7 @@ function CommentsList({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="hover:bg-red-700 bg-red-600 text-white"
+                            className="bg-red-600 text-white hover:bg-red-700"
                             onClick={confirmDelete}
                         >
                             Delete
@@ -526,11 +526,11 @@ function CommentsList({
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
+                commentPermalinksEnabled={commentPermalinksEnabled}
+                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
                 onThreadClick={handleThreadClick}
-                commentPermalinksEnabled={commentPermalinksEnabled}
-                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
             />
         </div>
     );

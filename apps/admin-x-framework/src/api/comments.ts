@@ -165,7 +165,7 @@ export const useCommentReplies = (commentId: string | null, options?: {enabled?:
             isLoading: false,
             isError: false,
             error: null,
-            refetch: () => Promise.resolve({} as any)
+            refetch: () => Promise.resolve({data: undefined, isLoading: false, isError: false, error: null} as unknown as ReturnType<typeof result.refetch>)
         };
     }
     
@@ -194,7 +194,7 @@ export const useReadComment = (commentId: string | null, options?: {enabled?: bo
             isLoading: false,
             isError: false,
             error: null,
-            refetch: () => Promise.resolve({} as any)
+            refetch: () => Promise.resolve({data: undefined, isLoading: false, isError: false, error: null} as unknown as ReturnType<typeof result.refetch>)
         };
     }
     

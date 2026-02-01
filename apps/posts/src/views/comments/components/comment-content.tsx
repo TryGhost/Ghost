@@ -1,6 +1,6 @@
-import {useEffect, useRef, useState} from 'react';
 import {Button, LucideIcon, cn} from '@tryghost/shade';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {useEffect, useRef, useState} from 'react';
 
 function ExpandButton({onClick, expanded}: {onClick: () => void; expanded: boolean}) {
     return (
