@@ -38,9 +38,7 @@ const postFields = [
     'uuid',
     'title',
     'url',
-    'feature_image',
-    'excerpt',
-    'plaintext'
+    'feature_image'
 ];
 
 const countFields = [
@@ -94,24 +92,7 @@ const commentMapper = (model, frame) => {
     if (jsonModel.post) {
         // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
-        const postData = _.pick(jsonModel.post, postFields);
-        
-        // Generate excerpt from plaintext if excerpt is not available (matches Posts API behavior)
-        // This matches what the Posts API does: use custom_excerpt if available, otherwise generate from plaintext (first 500 chars)
-        if (!postData.excerpt) {
-            // Check if custom_excerpt exists on the original post model (not in postFields, so check jsonModel)
-            if (jsonModel.post.custom_excerpt) {
-                postData.excerpt = jsonModel.post.custom_excerpt;
-            } else if (postData.plaintext) {
-                // Generate from plaintext (first 500 chars, matching Posts API)
-                postData.excerpt = postData.plaintext.substring(0, 500);
-            }
-        }
-        
-        // Remove plaintext from response (we only needed it to generate excerpt)
-        delete postData.plaintext;
-        
-        response.post = postData;
+        response.post = _.pick(jsonModel.post, postFields);
     }
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {
