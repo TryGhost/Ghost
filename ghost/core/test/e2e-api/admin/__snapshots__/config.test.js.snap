@@ -30,7 +30,6 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "tagsX": true,
-      "themeErrorsNotification": true,
       "themeTranslation": true,
       "transistor": true,
       "urlCache": true,
