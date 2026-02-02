@@ -379,7 +379,7 @@ const filterFieldLabelVariants = cva(
 
 const filterFieldValueVariants = cva(
     [
-        'focus-visible:z-1 relative flex shrink-0 items-center gap-1 text-foreground transition',
+        'focus-visible:z-1 relative flex min-w-0 max-w-[240px] shrink items-center gap-1 text-foreground transition',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
     ],
     {
@@ -1214,26 +1214,20 @@ function SelectOptionsPopover<T = unknown>({
                     cursorPointer: context.cursorPointer
                 })}
             >
-                <div className="flex items-center gap-1.5">
+                <div className="flex min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
                         field.customValueRenderer(values, field.options || [])
                     ) : (
                         <>
                             {selectedOptions.length > 0 && (
-                                <div className={cn('-space-x-0.5 flex items-center', field.selectedOptionsClassName)}>
+                                <div className={cn('-space-x-0.5 flex shrink-0 items-center', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].detail 
-                                    ? (
-                                        <>
-                                            <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
-                                            <span className="truncate text-sm text-muted-foreground" title={selectedOptions[0].detail}>{selectedOptions[0].detail}</span>
-                                        </>
-                                    ) : <span className="truncate text-accent-foreground" title={selectedOptions[0].label}>{selectedOptions[0].label}</span>
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -1689,20 +1683,20 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     cursorPointer: context.cursorPointer
                 })}
             >
-                <div className="flex items-center gap-1.5">
+                <div className="flex min-w-0 w-full items-center gap-1.5">
                     {field.customValueRenderer ? (
                         field.customValueRenderer(values, field.options || [])
                     ) : (
                         <>
                             {selectedOptions.length > 0 && (
-                                <div className="flex items-center -space-x-1.5">
+                                <div className="flex shrink-0 items-center -space-x-1.5">
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
                                 </div>
                             )}
                             {selectedOptions.length === 1
-                                ? selectedOptions[0].label
+                                ? <span className="min-w-0 truncate text-accent-foreground" title={selectedOptions[0].detail ? `${selectedOptions[0].label} - ${selectedOptions[0].detail}` : selectedOptions[0].label}>{selectedOptions[0].label}</span>
                                 : selectedOptions.length > 1
                                     ? `${selectedOptions.length} ${context.i18n.selectedCount}`
                                     : context.i18n.select}
@@ -2095,6 +2089,23 @@ export function Filters<T = unknown>({
             if (!field.key) {
                 return;
             }
+            // Check if this filter already exists
+            const existingFilter = filters.find(f => f.field === field.key);
+            if (existingFilter) {
+                // Update existing filter
+                const updatedFilters = filters.map(f =>
+                    f.id === existingFilter.id
+                        ? {...f, values: values as T[]}
+                        : f
+                );
+                onChange(updatedFilters);
+                if (closePopover) {
+                    setAddFilterOpen(false);
+                    setSelectedFieldKeyForOptions(null);
+                    setTempSelectedValues([]);
+                }
+                return;
+            }
 
             const defaultOperator = field.defaultOperator || (field.type === 'multiselect' ? 'is_any_of' : 'is');
 
@@ -2320,6 +2331,11 @@ export function Filters<T = unknown>({
                                             if (field.type === 'separator') {
                                                 const sepKey = field.key || `flat-separator-${field.label || index}`;
                                                 return <CommandSeparator key={sepKey} />;
+                                            }
+
+                                            // If allowMultiple is false, filter out fields that already have filters
+                                            if (!allowMultiple && filters.some(filter => filter.field === field.key)) {
+                                                return null;
                                             }
 
                                             // Regular field
