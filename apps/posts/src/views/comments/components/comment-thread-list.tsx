@@ -1,6 +1,9 @@
 import CommentContent from './comment-content';
 import React from 'react';
 import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
     Badge,
     Button,
     DropdownMenu,
@@ -83,19 +86,25 @@ function CommentRow({comment, isReply = false, onThreadClick, commentPermalinksE
         }
     };
 
-    // Check if this comment has replies (from the nested structure we'll build)
     const hasReplies = (comment.replies?.length ?? 0) > 0 || (comment.count?.replies ?? 0) > 0;
     const containerClassName = (!hasReplies || isReply) ? 'mb-7' : 'mb-0';
 
     const avatar = (
-        <div className={`relative mb-3 flex size-6 min-w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent md:mb-4 md:size-8 md:min-w-8 ${comment.status === 'hidden' && 'opacity-50'}`}>
-            {comment.member?.id && comment.member.avatar_image && (
-                <div className='absolute inset-0'><img alt="Member avatar" className="size-full rounded-full object-cover" src={comment.member.avatar_image} /></div>
+        <Avatar className={`mb-3 shrink-0 size-6 min-w-6 md:mb-4 md:size-8 md:min-w-8 ${comment.status === 'hidden' && 'opacity-50'}`}>
+            {comment.member?.id && comment.member.avatar_image && !comment.member.avatar_image.includes('d=blank') && (
+                <AvatarImage
+                    alt="Member avatar"
+                    src={comment.member.avatar_image}
+                    onError={(event) => {
+                        (event.target as HTMLImageElement).src = '';
+                        (event.target as HTMLImageElement).style.display = 'none';
+                    }}
+                />
             )}
-            <div>
+            <AvatarFallback className='bg-accent'>
                 <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
-            </div>
-        </div>
+            </AvatarFallback>
+        </Avatar>
     );
 
     return (

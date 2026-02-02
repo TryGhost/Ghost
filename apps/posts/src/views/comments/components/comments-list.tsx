@@ -9,6 +9,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
     Badge,
     Button,
     Dialog,
@@ -222,14 +225,21 @@ function CommentsList({
                                 }}
                             >
                                 <div className='flex items-start gap-3'>
-                                    <div className={`relative flex size-6 min-w-6 items-center justify-center overflow-hidden rounded-full bg-accent md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
-                                        {item.member?.id && item.member.avatar_image && (
-                                            <div className='absolute inset-0'><img alt="Member avatar" src={item.member.avatar_image} /></div>
+                                    <Avatar className={`size-6 min-w-6 md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
+                                        {item.member?.id && item.member.avatar_image && !item.member.avatar_image.includes('d=blank') && (
+                                            <AvatarImage
+                                                alt="Member avatar"
+                                                src={item.member.avatar_image}
+                                                onError={(event) => {
+                                                    (event.target as HTMLImageElement).src = '';
+                                                    (event.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                            />
                                         )}
-                                        <div>
+                                        <AvatarFallback className='bg-accent'>
                                             <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
-                                        </div>
-                                    </div>
+                                        </AvatarFallback>
+                                    </Avatar>
 
                                     <div className='flex min-w-0 flex-col'>
                                         <div className='flex items-baseline gap-4'>
