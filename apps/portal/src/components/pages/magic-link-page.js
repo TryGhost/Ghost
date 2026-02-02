@@ -165,22 +165,22 @@ export default class MagicLinkPage extends React.Component {
     renderCloseButton() {
         const {site, sniperLinks} = this.context;
         const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-        return (
-            <footer className='gh-portal-signin-footer gh-button-row'>
+        if (isSniperLinksEnabled && sniperLinks) {
+            return (
+                <SniperLinkButton
+                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                    provider={sniperLinks.provider}
+                />
+            );
+        } else {
+            return (
                 <ActionButton
                     style={{width: '100%'}}
                     onClick={e => this.handleClose(e)}
-                    brandColor={this.context.brandColor}
                     label={t('Close')}
                 />
-                {isSniperLinksEnabled && sniperLinks ? (
-                    <SniperLinkButton
-                        href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                        provider={sniperLinks.provider}
-                    />
-                ) : null}
-            </footer>
-        );
+            );
+        }
     }
 
     handleSubmit(e) {
@@ -283,21 +283,24 @@ export default class MagicLinkPage extends React.Component {
                 </section>
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
-                    <ActionButton
-                        style={{width: '100%'}}
-                        onClick={e => this.handleSubmit(e)}
-                        brandColor={this.context.brandColor}
-                        label={isRunning ? t('Verifying...') : t('Continue')}
-                        isRunning={isRunning}
-                        retry={isError}
-                        disabled={isRunning}
-                    />
-                    {isSniperLinksEnabled && sniperLinks ? (
+                    {isSniperLinksEnabled && sniperLinks && !this.state.otc ? (
                         <SniperLinkButton
                             href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
                             provider={sniperLinks.provider}
+                            className='full'
+                            brandColor={this.context.brandColor}
                         />
-                    ) : null}
+                    ) : (
+                        <ActionButton
+                            style={{width: '100%'}}
+                            onClick={e => this.handleSubmit(e)}
+                            brandColor={this.context.brandColor}
+                            label={isRunning ? t('Verifying...') : t('Continue')}
+                            isRunning={isRunning}
+                            retry={isError}
+                            disabled={isRunning}
+                        />
+                    )}
                 </footer>
             </form>
         );
