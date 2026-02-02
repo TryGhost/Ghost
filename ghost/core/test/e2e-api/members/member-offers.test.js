@@ -618,12 +618,27 @@ describe('Members API - Member Offers', function () {
             };
             mockManager.stripeMocker.prices.push(mockPrice);
 
+            // Add the customer to the stripe mocker so getCustomer works
+            const customerId = subscription.get('customer_id');
+            mockManager.stripeMocker.customers.push({
+                id: customerId,
+                object: 'customer',
+                email: 'paid@test.com',
+                invoice_settings: {
+                    default_payment_method: null
+                },
+                subscriptions: {
+                    type: 'list',
+                    data: []
+                }
+            });
+
             // Add the subscription to the stripe mocker so it can be updated
             mockManager.stripeMocker.subscriptions.push({
                 id: stripeSubscriptionId,
                 object: 'subscription',
                 status: 'active',
-                customer: subscription.get('customer_id'),
+                customer: customerId,
                 cancel_at_period_end: false,
                 current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
                 start_date: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,

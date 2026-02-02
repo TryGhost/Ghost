@@ -317,7 +317,14 @@ describe('MemberRepository', function () {
 
             stripeAPIService = {
                 configured: true,
-                getSubscription: sinon.stub().resolves(subscriptionData)
+                getSubscription: sinon.stub().resolves(subscriptionData),
+                getCustomer: sinon.stub().resolves({
+                    id: 'cus_123',
+                    invoice_settings: {
+                        default_payment_method: null
+                    },
+                    subscriptions: {data: []}
+                })
             };
 
             productRepository = {
@@ -836,6 +843,185 @@ describe('MemberRepository', function () {
             assert.equal(addedSubscriptionData.discount_end, null);
         });
 
+        it('falls back to customer default payment method when subscription has none', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: 'pm_customer_default'
+                        },
+                        subscriptions: {data: []}
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_customer_default',
+                        type: 'card',
+                        card: {
+                            last4: '8888'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '8888');
+        });
+
+        it('sets card last4 to null when neither subscription nor customer has a default payment method', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: null
+                        },
+                        subscriptions: {data: []}
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, null);
+        });
+
+        it('uses subscription default payment method when available', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        default_payment_method: 'pm_sub_default'
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_sub_default',
+                        type: 'card',
+                        card: {
+                            last4: '4242'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '4242');
+        });
+
+        it('handles expanded customer object on subscription when falling back', async function () {
+            const repo = new MemberRepository({
+                stripeAPIService: {
+                    ...stripeAPIService,
+                    getSubscription: sinon.stub().resolves({
+                        ...subscriptionData,
+                        customer: {id: 'cus_123', object: 'customer'},
+                        default_payment_method: null
+                    }),
+                    getCustomer: sinon.stub().resolves({
+                        id: 'cus_123',
+                        invoice_settings: {
+                            default_payment_method: {id: 'pm_expanded', type: 'card', card: {last4: '1234'}}
+                        },
+                        subscriptions: {data: []}
+                    }),
+                    getCardPaymentMethod: sinon.stub().resolves({
+                        id: 'pm_expanded',
+                        type: 'card',
+                        card: {
+                            last4: '1234'
+                        }
+                    })
+                },
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                productRepository,
+                labsService,
+                Member,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                subscription: {...subscriptionData, customer: {id: 'cus_123', object: 'customer'}}
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            StripeCustomerSubscription.add.calledOnce.should.be.true();
+            const addedData = StripeCustomerSubscription.add.firstCall.args[0];
+            assert.equal(addedData.default_payment_card_last4, '1234');
+        });
+
         it('handles discounts with no end date (e.g. forever discounts)', async function () {
             const discountStart = 1768940436;
 
@@ -1259,7 +1445,14 @@ describe('MemberRepository', function () {
 
             stripeAPIService = {
                 configured: true,
-                getSubscription: sinon.stub().resolves(subscriptionData)
+                getSubscription: sinon.stub().resolves(subscriptionData),
+                getCustomer: sinon.stub().resolves({
+                    id: 'cus_123',
+                    invoice_settings: {
+                        default_payment_method: null
+                    },
+                    subscriptions: {data: []}
+                })
             };
 
             productRepository = {
