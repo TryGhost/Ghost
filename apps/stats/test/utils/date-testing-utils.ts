@@ -34,7 +34,7 @@ export const restoreSystemDate = () => {
 export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) => {
     const startDate = new Date(baseDate);
     startDate.setDate(startDate.getDate() - (days - 1));
-    
+
     return {
         expectedDateFrom: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
         expectedDateTo: baseDate.toISOString().split('T')[0]
@@ -47,10 +47,10 @@ export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) 
 export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, baseDate: Date = FIXED_DATE) => {
     const startDate = new Date(baseDate);
     const endDate = new Date(baseDate);
-    
+
     startDate.setDate(startDate.getDate() - startDaysAgo);
     endDate.setDate(endDate.getDate() - endDaysAgo);
-    
+
     return {
         startDate,
         endDate,
@@ -89,7 +89,7 @@ export const DATE_TEST_SCENARIOS = {
     today: {range: 1, description: 'today'},
     lastWeek: {range: 7, description: 'last 7 days'},
     lastMonth: {range: 30, description: 'last 30 days'},
-    last3Months: {range: 90, description: 'last 3 months'},
+    last3Months: {range: 90, description: 'Last 90 days'},
     yearToDate: {range: -1, description: 'year to date'}
 } as const;
 
@@ -99,7 +99,7 @@ export const DATE_TEST_SCENARIOS = {
  */
 export const setupDateMocking = () => {
     const mockDate = mockSystemDate();
-    
+
     // Mock external date functions
     vi.mock('@tryghost/shade', async () => {
         const actual = await vi.importActual('@tryghost/shade') as Record<string, unknown>;
@@ -109,7 +109,7 @@ export const setupDateMocking = () => {
             formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
         };
     });
-    
+
     return {
         mockDate,
         cleanup: restoreSystemDate
@@ -126,7 +126,7 @@ export const expectApiCallWithDateRange = (
     additionalParams: Record<string, unknown> = {}
 ) => {
     const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
-    
+
     expect(mockApiCall).toHaveBeenCalledWith({
         searchParams: {
             date_from: expectedDateFrom,

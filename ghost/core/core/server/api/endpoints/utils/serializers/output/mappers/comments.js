@@ -28,7 +28,9 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'can_comment',
+    'commenting'
 ];
 
 const postFields = [

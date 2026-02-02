@@ -1,5 +1,6 @@
 import React, {useCallback} from 'react';
 import {KoenigEditorBase, type KoenigInstance, type NodeType} from '@tryghost/admin-x-design-system';
+import {cn} from '@tryghost/shade';
 
 export interface MemberEmailsEditorProps {
     value?: string;
@@ -18,6 +19,25 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     className,
     onChange
 }) => {
+    const baseEditorStyles = cn(
+        // Base typography
+        'text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
+        // Dark mode
+        'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
+        // Placeholder styling
+        '[&_.koenig-lexical-editor-input-placeholder]:font-inter [&_.koenig-lexical-editor-input-placeholder]:text-xl [&_.koenig-lexical-editor-input-placeholder]:tracking-tight',
+        // Headings dark mode
+        '[&_:is(h2,h3)]:dark:text-white',
+
+        // Content typography
+        '[&_:is(p,blockquote,aside,ul,ol)]:font-inter [&_:is(p,blockquote,aside,ul,ol)]:text-xl [&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
+        '[&_:is(h1)]:text-[36px] [&_:is(h2)]:text-[32px] [&_:is(h3)]:text-[26px] [&_:is(h4)]:text-[21px] [&_:is(h5)]:text-[19px] [&_:is(h6)]:text-[19px] [&_:is(h1,h2,h3,h4,h5,h6)]:mb-[0.5em]',
+        // Horizontal ruler
+        '[&_:is(hr)]:pt-0',
+        // Paragraph spacing & bold
+        '[&_p]:mb-4 [&_strong]:font-semibold'
+    );
+
     // Koenig's onChange passes the Lexical state as a plain object,
     // but the API expects a JSON string
     const handleChange = useCallback((data: unknown) => {
@@ -39,7 +59,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     return (
         <div onKeyDown={handleKeyDown}>
             <KoenigEditorBase
-                className={className}
+                className={cn(baseEditorStyles, className)}
                 emojiPicker={false}
                 inheritFontStyles={false}
                 initialEditorState={value}

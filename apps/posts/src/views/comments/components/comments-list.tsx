@@ -9,6 +9,12 @@ import {
     AlertDialogTitle,
     Badge,
     Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -24,6 +30,7 @@ import {
 } from '@tryghost/shade';
 import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
 import {forwardRef, useEffect, useRef, useState} from 'react';
+import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
@@ -127,7 +134,8 @@ function CommentsList({
     fetchNextPage,
     onAddFilter,
     isLoading,
-    commentPermalinksEnabled
+    commentPermalinksEnabled,
+    disableMemberCommentingEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -137,6 +145,7 @@ function CommentsList({
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
     commentPermalinksEnabled?: boolean;
+    disableMemberCommentingEnabled?: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
 
@@ -155,12 +164,31 @@ function CommentsList({
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: deleteComment} = useDeleteComment();
+    const {mutate: disableCommenting} = useDisableMemberCommenting();
+    const {mutate: enableCommenting} = useEnableMemberCommenting();
     const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+    const [memberToDisable, setMemberToDisable] = useState<{member: Comment['member']; commentId: string} | null>(null);
 
     const confirmDelete = () => {
         if (commentToDelete) {
             deleteComment({id: commentToDelete.id});
             setCommentToDelete(null);
+        }
+    };
+
+    const confirmDisableCommenting = () => {
+        if (memberToDisable?.member?.id) {
+            disableCommenting({
+                id: memberToDisable.member.id,
+                reason: `Disabled from comment ${memberToDisable.commentId}`
+            });
+            setMemberToDisable(null);
+        }
+    };
+
+    const handleEnableCommenting = (member: Comment['member']) => {
+        if (member?.id) {
+            enableCommenting({id: member.id});
         }
     };
 
@@ -202,23 +230,35 @@ function CommentsList({
                                             <div className={`mb-1 flex min-w-0 items-center gap-x-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
                                                 <div className='whitespace-nowrap'>
                                                     {item.member?.id ? (
-                                                        <>
-                                                            <Button
-                                                                className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
-                                                                variant='link'
-                                                                onClick={() => {
-                                                                    onAddFilter('author', item.member!.id);
-                                                                }}
-                                                            >
-                                                                {item.member.name || 'Unknown'}
-                                                            </Button>
-                                                        </>
+                                                        <Button
+                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
+                                                            variant='link'
+                                                            onClick={() => {
+                                                                onAddFilter('author', item.member!.id);
+                                                            }}
+                                                        >
+                                                            {item.member.name || 'Unknown'}
+                                                        </Button>
                                                     ) : (
                                                         <span className="block truncate font-semibold">
                                                             {item.member?.name || 'Unknown'}
                                                         </span>
                                                     )}
                                                 </div>
+                                                {disableMemberCommentingEnabled && item.member?.can_comment === false && (
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span data-testid="commenting-disabled-indicator">
+                                                                    <LucideIcon.MessageCircleOff
+                                                                        className="size-3.5 text-muted-foreground"
+                                                                    />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>Comments disabled</TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                )}
                                                 <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
                                                 <div className='shrink-0 whitespace-nowrap'>
                                                     {item.created_at && (
@@ -350,6 +390,21 @@ function CommentsList({
                                                             </a>
                                                         </DropdownMenuItem>
                                                     )}
+                                                    {disableMemberCommentingEnabled && item.member?.id && (
+                                                        item.member.can_comment !== false ? (
+                                                            <DropdownMenuItem onClick={() => {
+                                                                setMemberToDisable({member: item.member, commentId: item.id});
+                                                            }}>
+                                                                <LucideIcon.MessageCircleOff className="mr-2 size-4" />
+                                                                Disable commenting
+                                                            </DropdownMenuItem>
+                                                        ) : (
+                                                            <DropdownMenuItem onClick={() => handleEnableCommenting(item.member)}>
+                                                                <LucideIcon.MessageCircle className="mr-2 size-4" />
+                                                                Enable commenting
+                                                            </DropdownMenuItem>
+                                                        )
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
@@ -391,6 +446,31 @@ function CommentsList({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <Dialog open={!!memberToDisable} onOpenChange={(open) => {
+                if (!open) {
+                    setMemberToDisable(null);
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Disable comments</DialogTitle>
+                        <DialogDescription>
+                            {memberToDisable?.member?.name || 'This member'} won&apos;t be able to comment
+                            in the future. You can re-enable commenting anytime.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setMemberToDisable(null)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={confirmDisableCommenting}>
+                            Disable comments
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

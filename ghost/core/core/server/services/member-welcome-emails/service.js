@@ -77,10 +77,12 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const toEmail = config.get('memberWelcomeEmailTestInbox');
+        const testInbox = config.get('memberWelcomeEmailTestInbox');
+        const toEmail = testInbox || member.email;
+
         if (!toEmail) {
             throw new errors.IncorrectUsageError({
-                message: MESSAGES.MISSING_TEST_INBOX_CONFIG
+                message: MESSAGES.MISSING_RECIPIENT_EMAIL
             });
         }
 

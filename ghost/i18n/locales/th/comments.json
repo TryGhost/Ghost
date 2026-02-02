@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "ยกเลิก",
     "Comment": "ความคิดเห็น",
+    "Commenting disabled": "",
     "Complete your profile": "กรอกโปรไฟล์ของคุณให้สมบูรณ์",
+    "Contact support": "",
     "Delete": "ลบ",
     "Deleted": "",
     "Deleted member": "ผู้ใช้ที่ถูกลบ",
@@ -28,6 +30,7 @@
     "edited": "",
     "Enter your name": "ระบุชื่อของคุณ",
     "Expertise": "ความเชี่ยวชาญ",
+    "for more information.": "",
     "Founder @ Acme Inc": "ผู้ก่อตั้ง @ Acme Inc",
     "Full-time parent": "ผู้ปกครองเต็มเวลา",
     "Head of Marketing at Acme, Inc": "หัวหน้าฝ่ายการตลาด ณ Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "ความคิดเห็นนี้ถูกซ่อน",
     "This comment has been removed.": "ความคิดเห็นนี้ถูกลบ",
     "Upgrade now": "อัพเกรดตอนนี้เลย",
+    "View in admin": "",
     "Yesterday": "เมื่อวาน",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "คำขอของคุณจะถูกส่งไปยังผู้ดูแลเว็บไซต์"
 }

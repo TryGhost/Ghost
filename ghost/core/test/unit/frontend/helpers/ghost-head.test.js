@@ -1,4 +1,3 @@
-/* eslint-disable no-regex-spaces */
 const should = require('should');
 
 const sinon = require('sinon');
@@ -16,7 +15,7 @@ const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache, labs, settingsHelpers} = proxy;
+const {settingsCache, settingsHelpers} = proxy;
 
 /**
  * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
@@ -1271,9 +1270,7 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/sodo-search@/);
         });
 
-        it('includes locale in search when i18n is enabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('i18n').returns(true);
-
+        it('includes locale in search', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
@@ -1283,20 +1280,6 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
-        });
-
-        it('does not incldue locale in search when i18n is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('i18n').returns(false);
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.not.match(/sodo-search@[^>]*?data-locale="en"/);
         });
     });
 
@@ -1329,7 +1312,6 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('includes tinybird tracker script when config is set', function () {
-        let labsStub;
         let settingsHelpersStub;
 
         function setAnalyticsFlags({analytics = false} = {}) {
@@ -1352,9 +1334,6 @@ describe('{{ghost_head}} helper', function () {
                     }
                 }
             });
-            labsStub = sinon.stub(labs, 'isSet');
-            labsStub.withArgs('i18n').returns(true);
-
             settingsHelpersStub = sinon.stub(settingsHelpers, 'isWebAnalyticsEnabled');
             setAnalyticsFlags({analytics: true});
         });

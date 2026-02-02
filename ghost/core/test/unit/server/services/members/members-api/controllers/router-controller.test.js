@@ -15,6 +15,7 @@ describe('RouterController', function () {
     let getPaymentLinkSpy;
     let getDonationLinkSpy;
     let settingsCache;
+    let settingsHelpers;
 
     beforeEach(async function () {
         getPaymentLinkSpy = sinon.spy();
@@ -71,6 +72,9 @@ describe('RouterController', function () {
         settingsCache = {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
         };
+        settingsHelpers = {
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+        };
     });
 
     afterEach(function () {
@@ -85,7 +89,8 @@ describe('RouterController', function () {
                 offersAPI,
                 stripeAPIService,
                 labsService,
-                settingsCache
+                settingsCache,
+                settingsHelpers
             });
 
             await routerController.createCheckoutSession({
@@ -120,6 +125,7 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
+                settingsHelpers,
                 newslettersService: newslettersServiceStub
             });
             const newsletters = [
@@ -161,7 +167,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -180,7 +187,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -199,7 +207,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -218,7 +227,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -241,7 +251,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -267,7 +278,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -293,7 +305,8 @@ describe('RouterController', function () {
                     offersAPI,
                     stripeAPIService,
                     labsService,
-                    settingsCache
+                    settingsCache,
+                    settingsHelpers
                 });
 
                 try {
@@ -315,6 +328,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -362,6 +376,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -408,6 +423,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -454,6 +470,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -500,6 +517,7 @@ describe('RouterController', function () {
                     stripeAPIService,
                     labsService,
                     settingsCache,
+                    settingsHelpers,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -572,7 +590,8 @@ describe('RouterController', function () {
                 },
                 memberAttributionService: {
                     getAttribution: sinon.stub().resolves({})
-                }
+                },
+                settingsHelpers
             });
 
             const req = {
@@ -673,6 +692,7 @@ describe('RouterController', function () {
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
+                    settingsHelpers,
                     ...deps
                 });
             };
@@ -734,7 +754,7 @@ describe('RouterController', function () {
                 await controller.sendMagicLink(req, res);
 
                 res.writeHead.calledOnceWith(201).should.be.true();
-                res.end.calledOnceWith('Created.').should.be.true();
+                res.end.calledOnceWith('{}').should.be.true();
 
                 sendEmailWithMagicLinkStub.calledOnce.should.be.true();
                 sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
@@ -821,6 +841,7 @@ describe('RouterController', function () {
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
                     settingsCache,
+                    settingsHelpers,
                     ...deps
                 });
             };
@@ -893,6 +914,7 @@ describe('RouterController', function () {
                     stripeAPIService: {},
                     tokenService: {},
                     sendEmailWithMagicLink: sinon.stub(),
+                    settingsHelpers,
                     newslettersService: {},
                     sentry: {},
                     urlUtils: {}
@@ -916,7 +938,7 @@ describe('RouterController', function () {
                 await routerController.sendMagicLink(req, res);
 
                 res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('Created.').should.be.true();
+                res.end.calledWith('{}').should.be.true();
             });
 
             it('should not return otc_ref when otcRef is undefined', async function () {
@@ -925,7 +947,7 @@ describe('RouterController', function () {
                 await routerController.sendMagicLink(req, res);
 
                 res.writeHead.calledWith(201).should.be.true();
-                res.end.calledWith('Created.').should.be.true();
+                res.end.calledWith('{}').should.be.true();
             });
         });
     });
@@ -1351,12 +1373,58 @@ describe('RouterController', function () {
     });
 
     describe('getMemberOffers', function () {
-        it('returns empty offers array when offersAPI throws an error', async function () {
-            const offersAPIWithError = {
-                listOffersAvailableToSubscription: sinon.stub().rejects(new Error('Database error'))
+        let mockOffersAPI;
+        let tokenService;
+        let mockStripePrice;
+        let res;
+        let responseData;
+
+        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null} = {}) {
+            return {
+                id,
+                get: sinon.stub().callsFake((key) => {
+                    if (key === 'status') {
+                        return status;
+                    }
+                    if (key === 'offer_id') {
+                        return offerId;
+                    }
+                    if (key === 'trial_end_at') {
+                        return trialEndAt;
+                    }
+                    return null;
+                }),
+                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
+            };
+        }
+
+        function createMockMember(subscriptions) {
+            return {
+                get: sinon.stub().returns('paid'),
+                related: sinon.stub().withArgs('stripeSubscriptions').returns({
+                    models: Array.isArray(subscriptions) ? subscriptions : [subscriptions]
+                })
+            };
+        }
+
+        function createRouterController(overrides = {}) {
+            return new RouterController({
+                offersAPI: mockOffersAPI,
+                memberRepository: {
+                    get: sinon.stub().resolves(createMockMember(overrides.subscriptions || createMockSubscription()))
+                },
+                tokenService,
+                stripeAPIService: {configured: true},
+                ...overrides
+            });
+        }
+
+        beforeEach(function () {
+            mockOffersAPI = {
+                listOffersAvailableToSubscription: sinon.stub().resolves([])
             };
 
-            const tokenService = {
+            tokenService = {
                 decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
             };
 
@@ -1369,51 +1437,29 @@ describe('RouterController', function () {
                 related: sinon.stub().withArgs('product').returns(mockProduct)
             };
 
-            const mockStripePrice = {
+            mockStripePrice = {
                 id: 'price_123',
                 get: sinon.stub().withArgs('interval').returns('month'),
                 related: sinon.stub().withArgs('stripeProduct').returns(mockStripeProduct)
             };
 
-            const mockStripeSubscription = {
-                id: 'sub_123',
-                get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return 'active';
-                    }
-                    if (key === 'offer_id') {
-                        return null;
-                    }
-                    return null;
-                }),
-                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
-            };
-
-            const mockMember = {
-                get: sinon.stub().returns('paid'),
-                related: sinon.stub().withArgs('stripeSubscriptions').returns({
-                    models: [mockStripeSubscription]
-                })
-            };
-
-            const memberRepository = {
-                get: sinon.stub().resolves(mockMember)
-            };
-
-            const routerController = new RouterController({
-                offersAPI: offersAPIWithError,
-                memberRepository,
-                tokenService,
-                stripeAPIService: {configured: true}
-            });
-
-            let responseData;
-            const res = {
+            responseData = null;
+            res = {
                 writeHead: sinon.stub(),
                 end: sinon.stub().callsFake((data) => {
                     responseData = JSON.parse(data);
                 })
             };
+        });
+
+        it('returns empty offers when offersAPI throws an error', async function () {
+            const offersAPIWithError = {
+                listOffersAvailableToSubscription: sinon.stub().rejects(new Error('Database error'))
+            };
+
+            const routerController = createRouterController({
+                offersAPI: offersAPIWithError
+            });
 
             await routerController.getMemberOffers({
                 body: {identity: 'valid-token'}
@@ -1424,158 +1470,83 @@ describe('RouterController', function () {
         });
 
         it('returns empty offers when subscription already has an offer applied', async function () {
-            const mockOffersAPI = {
-                listOffersAvailableToSubscription: sinon.stub().resolves([])
-            };
-
-            const tokenService = {
-                decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
-            };
-
-            const mockProduct = {
-                id: 'product_123'
-            };
-
-            const mockStripeProduct = {
-                id: 'stripe_product_123',
-                related: sinon.stub().withArgs('product').returns(mockProduct)
-            };
-
-            const mockStripePrice = {
-                id: 'price_123',
-                get: sinon.stub().withArgs('interval').returns('month'),
-                related: sinon.stub().withArgs('stripeProduct').returns(mockStripeProduct)
-            };
-
-            const mockStripeSubscription = {
-                id: 'sub_123',
-                get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return 'active';
-                    }
-                    if (key === 'offer_id') {
-                        return 'existing_offer_123'; // Subscription has an offer
-                    }
-                    return null;
-                }),
-                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
-            };
-
-            const mockMember = {
-                get: sinon.stub().returns('paid'),
-                related: sinon.stub().withArgs('stripeSubscriptions').returns({
-                    models: [mockStripeSubscription]
-                })
-            };
-
-            const memberRepository = {
-                get: sinon.stub().resolves(mockMember)
-            };
-
-            const routerController = new RouterController({
-                offersAPI: mockOffersAPI,
-                memberRepository,
-                tokenService,
-                stripeAPIService: {configured: true}
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({offerId: 'existing_offer_123'})
             });
-
-            let responseData;
-            const res = {
-                writeHead: sinon.stub(),
-                end: sinon.stub().callsFake((data) => {
-                    responseData = JSON.parse(data);
-                })
-            };
 
             await routerController.getMemberOffers({
                 body: {identity: 'valid-token'}
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            // Should NOT call offersAPI because we return early
             assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
         });
 
         it('returns empty offers when member has multiple active subscriptions', async function () {
-            const mockOffersAPI = {
-                listOffersAvailableToSubscription: sinon.stub().resolves([])
-            };
-
-            const tokenService = {
-                decodeToken: sinon.stub().resolves({sub: 'test@example.com'})
-            };
-
-            const mockProduct = {
-                id: 'product_123'
-            };
-
-            const mockStripeProduct = {
-                id: 'stripe_product_123',
-                related: sinon.stub().withArgs('product').returns(mockProduct)
-            };
-
-            const mockStripePrice = {
-                id: 'price_123',
-                get: sinon.stub().withArgs('interval').returns('month'),
-                related: sinon.stub().withArgs('stripeProduct').returns(mockStripeProduct)
-            };
-
-            // Two active subscriptions
-            const mockStripeSubscription1 = {
-                id: 'sub_123',
-                get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return 'active';
-                    }
-                    return null;
-                }),
-                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
-            };
-
-            const mockStripeSubscription2 = {
-                id: 'sub_456',
-                get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return 'active';
-                    }
-                    return null;
-                }),
-                related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
-            };
-
-            const mockMember = {
-                get: sinon.stub().returns('paid'),
-                related: sinon.stub().withArgs('stripeSubscriptions').returns({
-                    models: [mockStripeSubscription1, mockStripeSubscription2]
-                })
-            };
-
-            const memberRepository = {
-                get: sinon.stub().resolves(mockMember)
-            };
-
-            const routerController = new RouterController({
-                offersAPI: mockOffersAPI,
-                memberRepository,
-                tokenService,
-                stripeAPIService: {configured: true}
+            const routerController = createRouterController({
+                subscriptions: [
+                    createMockSubscription({id: 'sub_123'}),
+                    createMockSubscription({id: 'sub_456'})
+                ]
             });
-
-            let responseData;
-            const res = {
-                writeHead: sinon.stub(),
-                end: sinon.stub().callsFake((data) => {
-                    responseData = JSON.parse(data);
-                })
-            };
 
             await routerController.getMemberOffers({
                 body: {identity: 'valid-token'}
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            // Should NOT call offersAPI because we return early due to multiple subscriptions
             assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+        });
+
+        it('returns empty offers when subscription has an active trial period', async function () {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 7);
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({trialEndAt: futureDate})
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: []});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+        });
+
+        it('returns offers when subscription trial has ended', async function () {
+            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 7);
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({trialEndAt: pastDate})
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+        });
+
+        it('returns offers when subscription has no trial period', async function () {
+            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({trialEndAt: null})
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
         });
     });
 });

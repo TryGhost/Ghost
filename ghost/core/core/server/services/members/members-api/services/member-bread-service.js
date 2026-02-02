@@ -5,7 +5,8 @@ const moment = require('moment');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
-    memberAlreadyExists: 'Member already exists.'
+    memberAlreadyExists: 'Member already exists.',
+    memberNotFound: 'Member not found.'
 };
 
 /**
@@ -38,8 +39,9 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
+     * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -55,6 +57,10 @@ module.exports = class MemberBREADService {
         this.emailSuppressionList = emailSuppressionList;
         /** @private */
         this.settingsHelpers = settingsHelpers;
+        /** @private */
+        this.nextPaymentCalculator = nextPaymentCalculator;
+        /** @private */
+        this.commentsService = commentsService;
     }
 
     /**
@@ -178,6 +184,19 @@ module.exports = class MemberBREADService {
 
     /**
      * @private
+     * Attaches next_payment information to each subscription
+     * Must be called after attachOffersToSubscriptions so that subscription.offer is available
+     * @param {Object} member JSON serialized member
+     */
+    attachNextPaymentToSubscriptions(member) {
+        member.subscriptions = member.subscriptions.map((subscription) => {
+            subscription.next_payment = this.nextPaymentCalculator.calculate(subscription);
+            return subscription;
+        });
+    }
+
+    /**
+     * @private
      * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
      */
     async attachAttributionsToMember(member, subscriptionIdMap) {
@@ -241,6 +260,7 @@ module.exports = class MemberBREADService {
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
         this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+        this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
@@ -285,9 +305,14 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
-        const sharedOptions = options.transacting ? {
-            transacting: options.transacting
-        } : {};
+        // Only pass specific options to downstream calls, filtering out options like
+        // `withRelated` that could cause errors in repositories that don't support them.
+        // - transacting: needed for database transaction consistency
+        // - context: needed to determine source (admin/api/member/import) for staff notifications
+        const sharedOptions = {
+            ...(options.transacting && {transacting: options.transacting}),
+            ...(options.context && {context: options.context})
+        };
 
         try {
             if (data.stripe_customer_id) {
@@ -371,6 +396,67 @@ module.exports = class MemberBREADService {
         return this.read({id: model.id}, options);
     }
 
+    /**
+     * @param {string} memberId
+     * @param {string} reason
+     * @param {Date|null} until
+     * @param {boolean} hideComments
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async disableCommenting(memberId, reason, until, hideComments, context) {
+        const model = await this.memberRepository.get({id: memberId});
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const commenting = model.get('commenting');
+        const updated = commenting.disable(reason, until);
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_disabled',
+            context
+        );
+
+        if (hideComments) {
+            await this.commentsService.api.bulkUpdateStatus(`member_id:'${memberId}'+status:published`, 'hidden');
+        }
+
+        return this.read({id: memberId});
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {Object} context
+     * @returns {Promise<Object>}
+     */
+    async enableCommenting(memberId, context) {
+        const model = await this.memberRepository.get({id: memberId});
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const commenting = model.get('commenting');
+        const updated = commenting.enable();
+
+        await this.memberRepository.saveCommenting(
+            memberId,
+            updated,
+            'commenting_enabled',
+            context
+        );
+
+        return this.read({id: memberId});
+    }
+
     async logout(options) {
         await this.memberRepository.cycleTransientId(options);
     }
@@ -425,6 +511,7 @@ module.exports = class MemberBREADService {
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             this.attachOffersToSubscriptions(member, offerMap);
+            this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
             }
@@ -433,6 +520,7 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
+
             return member;
         });
 

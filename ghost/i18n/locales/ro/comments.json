@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Anulează",
     "Comment": "Comentează",
+    "Commenting disabled": "",
     "Complete your profile": "Completează-ți profilul",
+    "Contact support": "",
     "Delete": "Șterge",
     "Deleted": "",
     "Deleted member": "Membru șters",
@@ -28,6 +30,7 @@
     "edited": "editat",
     "Enter your name": "Introduceți numele dumneavoastră",
     "Expertise": "Expertiză",
+    "for more information.": "",
     "Founder @ Acme Inc": "Fondator @ Acme Inc",
     "Full-time parent": "Părinte cu normă întreagă",
     "Head of Marketing at Acme, Inc": "Șef de Marketing la Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Acest comentariu a fost ascuns.",
     "This comment has been removed.": "Acest comentariu a fost eliminat.",
     "Upgrade now": "Actualizează acum",
+    "View in admin": "",
     "Yesterday": "Ieri",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Cererea dumneavoastră va fi trimisă proprietarului acestui site."
 }

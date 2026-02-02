@@ -1,4 +1,3 @@
-/* eslint-disable max-statements-per-line */
 import {Response} from 'miragejs';
 import {isArray} from '@ember/array';
 

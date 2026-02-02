@@ -131,13 +131,14 @@ describe('sendMagicLink', function () {
 
     it('Creates a valid magic link with tokenData, and without urlHistory', async function () {
         const email = 'newly-created-user-magic-link-test@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        const res = await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
             })
-            .expectEmptyBody()
             .expectStatus(201);
+
+        assert.deepEqual(res.body, {});
 
         // Check email is sent
         const mail = mockManager.assert.sentEmail({
@@ -159,10 +160,23 @@ describe('sendMagicLink', function () {
         assert.equal(data.attribution.type, null);
     });
 
+    it('Creates a valid magic link with sniper links for Gmail', async function () {
+        const email = 'test@gmail.com';
+        const res = await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(201);
+
+        assert(res.body.sniperLinks.desktop.startsWith('https://mail.google.com/'));
+        assert(res.body.sniperLinks.android.startsWith('intent:'));
+    });
+
     it('Creates a valid magic link from custom signup with redirection', async function () {
         const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
         const email = 'newly-created-user-magic-link-test@test.com';
-        await membersAgent
+        const res = await membersAgent
             .post('/api/send-magic-link')
             .header('Referer', customSignupUrl)
             .body({
@@ -170,8 +184,9 @@ describe('sendMagicLink', function () {
                 emailType: 'signup',
                 autoRedirect: true
             })
-            .expectEmptyBody()
             .expectStatus(201);
+
+        assert.deepEqual(res.body, {});
 
         const mail = await mockManager.assert.sentEmail({
             to: email,
@@ -186,7 +201,7 @@ describe('sendMagicLink', function () {
     it('Creates a valid magic link from custom signup with redirection disabled', async function () {
         const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
         const email = 'newly-created-user-magic-link-test@test.com';
-        await membersAgent
+        const res = await membersAgent
             .post('/api/send-magic-link')
             .header('Referer', customSignupUrl)
             .body({
@@ -194,8 +209,9 @@ describe('sendMagicLink', function () {
                 emailType: 'signup',
                 autoRedirect: false
             })
-            .expectEmptyBody()
             .expectStatus(201);
+
+        assert.deepEqual(res.body, {});
 
         const mail = await mockManager.assert.sentEmail({
             to: email,
@@ -209,13 +225,14 @@ describe('sendMagicLink', function () {
 
     it('triggers email alert for free member signup', async function () {
         const email = 'newly-created-user-magic-link-test@test.com';
-        await membersAgent.post('/api/send-magic-link')
+        const res = await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signup'
             })
-            .expectEmptyBody()
             .expectStatus(201);
+
+        assert.deepEqual(res.body, {});
 
         // Check email is sent
         const mail = mockManager.assert.sentEmail({
