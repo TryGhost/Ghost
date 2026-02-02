@@ -212,7 +212,7 @@ describe('BillingPortalManager', function () {
                 features: {
                     invoice_history: {enabled: true},
                     payment_method_update: {enabled: true},
-                    subscription_cancel: {enabled: true}
+                    subscription_cancel: {enabled: false}
                 },
                 default_return_url: 'https://example.com'
             });
@@ -240,7 +240,7 @@ describe('BillingPortalManager', function () {
                         enabled: true
                     },
                     subscription_cancel: {
-                        enabled: true
+                        enabled: false
                     }
                 }
             });
