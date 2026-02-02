@@ -1228,6 +1228,12 @@ describe('Members API', function () {
         sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
         sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
         sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getCustomer').resolves({
+            id: 'cus_1',
+            invoice_settings: {
+                default_payment_method: null
+            }
+        });
         const initialMember = {
             name: 'Name',
             email: 'compedtest@test.com',
