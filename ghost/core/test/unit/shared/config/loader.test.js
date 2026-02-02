@@ -30,6 +30,12 @@ describe('Config Loader', function () {
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
+
+            // Remove database env vars that may be set by test overrides for
+            // concurrent DB isolation — they would override config file values
+            // via nconf's env store and break priority assertions
+            delete process.env.database__connection__filename;
+            delete process.env.database__connection__database;
         });
 
         afterEach(function () {
