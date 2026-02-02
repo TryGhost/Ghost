@@ -54,6 +54,7 @@ const PRIVATE_FEATURES = [
     'featurebaseFeedback',
     'transistor',
     'disableMemberCommenting',
+    'disableMemberCommentingHideComments',
     'sniperlinks'
 ];
 
