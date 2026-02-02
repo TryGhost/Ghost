@@ -30,7 +30,7 @@
     "edited": "uređeno",
     "Enter your name": "Unesite svoje ime",
     "Expertise": "Ekspertiza",
-    "for more information.": "",
+    "for more information.": "za više informacija.",
     "Founder @ Acme Inc": "Osnivač @ Acme Inc",
     "Full-time parent": "Roditelj punim radnim vremenom",
     "Head of Marketing at Acme, Inc": "Šef marketinga u Acme, Inc",
@@ -74,6 +74,6 @@
     "Upgrade now": "Nadogradite sada",
     "View in admin": "Pogledajte u admin",
     "Yesterday": "Juče",
-    "You can't post comments in this publication.": "",
+    "You can't post comments in this publication.": "Ne možete objavljivati komentare u ovoj publikaciji.",
     "Your request will be sent to the owner of this site.": "Vaš zahtev će biti poslat vlasniku ovog sajta."
 }
