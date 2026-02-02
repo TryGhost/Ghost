@@ -92,7 +92,6 @@ async function signin({data, api, state}) {
             page: 'magiclink',
             lastPage: 'signin',
             ...(otcRef ? {otcRef} : {}),
-            // TODO: Display these sniperlinks in the UI. See NY-946.
             sniperLinks,
             pageData: {
                 ...(state.pageData || {}),
@@ -124,7 +123,6 @@ function startSigninOTCFromCustomForm({data, state}) {
         page: 'magiclink',
         lastPage: 'signin',
         otcRef,
-        // TODO: Display these sniperlinks in the UI. See NY-946.
         sniperLinks,
         pageData: {
             ...(state.pageData || {}),
