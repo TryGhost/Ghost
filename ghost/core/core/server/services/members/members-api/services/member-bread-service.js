@@ -305,9 +305,14 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
-        const sharedOptions = options.transacting ? {
-            transacting: options.transacting
-        } : {};
+        // Only pass specific options to downstream calls, filtering out options like
+        // `withRelated` that could cause errors in repositories that don't support them.
+        // - transacting: needed for database transaction consistency
+        // - context: needed to determine source (admin/api/member/import) for staff notifications
+        const sharedOptions = {
+            ...(options.transacting && {transacting: options.transacting}),
+            ...(options.context && {context: options.context})
+        };
 
         try {
             if (data.stripe_customer_id) {
