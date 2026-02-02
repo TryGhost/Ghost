@@ -171,6 +171,7 @@ export default class MagicLinkPage extends React.Component {
                 <ActionButton
                     style={{width: '100%'}}
                     onClick={e => this.handleClose(e)}
+                    brandColor={this.context.brandColor}
                     label={t('Close')}
                 />
             );
