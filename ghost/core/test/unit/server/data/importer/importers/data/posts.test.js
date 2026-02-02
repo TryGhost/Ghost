@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const find = require('lodash/find');
 const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/posts-importer');
@@ -134,7 +135,7 @@ describe('PostsImporter', function () {
 
             const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
             should.exist(post);
-            should.equal(post.mobiledoc, null);
+            assert.equal(post.mobiledoc, null);
         });
     });
 });

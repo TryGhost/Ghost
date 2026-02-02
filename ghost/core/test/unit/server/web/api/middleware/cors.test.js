@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -137,8 +138,8 @@ describe('cors', function () {
 
     it('should add origin value to the vary header', function (done) {
         corsCaching(req, res, function () {
-            should.equal(res.vary.called, true);
-            should.equal(res.vary.args[0], 'Origin');
+            assert.equal(res.vary.called, true);
+            assert.equal(res.vary.args[0], 'Origin');
             done();
         });
     });
@@ -146,7 +147,7 @@ describe('cors', function () {
     it('should NOT add origin value to the vary header when not an OPTIONS request', function (done) {
         req.method = 'GET';
         corsCaching(req, res, function () {
-            should.equal(res.vary.called, false);
+            assert.equal(res.vary.called, false);
             done();
         });
     });

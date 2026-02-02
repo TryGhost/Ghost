@@ -870,10 +870,10 @@ describe('Comments API', function () {
 
                 // Check last updated_at is not changed?
                 loggedInMember = await models.Member.findOne({id: loggedInMember.id});
-                should.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
+                assert.equal(loggedInMember.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
 
                 // Check last_commented_at changed?
-                should.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
+                assert.equal(loggedInMember.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
             });
 
             it('Can reply to a comment', async function () {
