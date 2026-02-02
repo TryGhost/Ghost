@@ -409,7 +409,13 @@
                     "memberSegment": "status:free,status:-free"
                   }
                 }
-              }
+              },
+            {
+                "type": "transistor",
+                "version": 1,
+                "accentColor": "#15171A",
+                "backgroundColor": "#FFFFFF"
+            }
         ],
         "direction": "ltr",
         "format": "",
