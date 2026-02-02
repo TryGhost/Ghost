@@ -139,10 +139,7 @@ function UserMenu(props: UserMenuProps) {
                     data-test-nav="whatsnew"
                     asChild={false}
                     onSelect={() => {
-                        // Workaround for Radix UI bug where opening Dialog from DropdownMenu
-                        // leaves pointer-events: none on body, freezing the UI
-                        // https://github.com/radix-ui/primitives/issues/3317
-                        queueMicrotask(() => props.onOpenWhatsNew?.());
+                        props.onOpenWhatsNew?.();
                     }}
                 >
                     <LucideIcon.Sparkles />
