@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Cancel·la",
     "Comment": "Comentari",
+    "Commenting disabled": "",
     "Complete your profile": "Completa el teu perfil",
+    "Contact support": "",
     "Delete": "Esborra",
     "Deleted": "Esborrat",
     "Deleted member": "Membre esborrat",
@@ -28,6 +30,7 @@
     "edited": "editat",
     "Enter your name": "Escriu el teu nom",
     "Expertise": "Expertesa",
+    "for more information.": "",
     "Founder @ Acme Inc": "Fundador @ Acme Inc",
     "Full-time parent": "Pare a temps complet",
     "Head of Marketing at Acme, Inc": "Cap de màrqueting a Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Aquest comentari s'ha ocultat.",
     "This comment has been removed.": "Aquest comentari s'ha esborrat.",
     "Upgrade now": "Actualitza ara",
+    "View in admin": "",
     "Yesterday": "Ahir",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "La teva sol·licitud s'enviarà al propietari d'aquest lloc."
 }

@@ -1,26 +1,29 @@
 {
-  "editor.quickSuggestions": {
-    "strings": true
-  },
-  "eslint.workingDirectories": [
-    {
-      "pattern": "./apps/*/"
+    "editor.quickSuggestions": {
+        "strings": true
     },
-    {
-      "pattern": "./ghost/*/"
+    "eslint.workingDirectories": [
+        {
+            "pattern": "./apps/*/"
+        },
+        {
+            "pattern": "./ghost/*/"
+        }
+    ],
+    "search.exclude": {
+        "**/.git": true,
+        "**/build/*": true,
+        "**/coverage/**": true,
+        "**/dist/**": true,
+        "**/ghost.map": true,
+        "**/node_modules": true,
+        "ghost/core/core/built/**": true
+    },
+    "tailwindCSS.experimental.classRegex": [
+        ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ],
+    "git.detectSubmodules": false,
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     }
-  ],
-  "search.exclude": {
-    "**/.git": true,
-    "**/build/*": true,
-    "**/coverage/**": true,
-    "**/dist/**": true,
-    "**/ghost.map": true,
-    "**/node_modules": true,
-    "ghost/core/core/built/**": true
-  },
-  "tailwindCSS.experimental.classRegex": [
-    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ],
-  "git.detectSubmodules": false
 }

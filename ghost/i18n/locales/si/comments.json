@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "අවලංගු කරන්\u200bන\u200b",
     "Comment": "අදහ\u200bස",
+    "Commenting disabled": "",
     "Complete your profile": "ඔබගේ ගිණුම සම්පූර්ණ කරන්\u200bන",
+    "Contact support": "",
     "Delete": "Delete කරන්\u200bන",
     "Deleted": "",
     "Deleted member": "සාමාජිකයාව delete කරන්\u200bන",
@@ -28,6 +30,7 @@
     "edited": "සංස්කරණය කරන ලද.",
     "Enter your name": "ඔබගේ නම සඳහන් කරන්\u200bන",
     "Expertise": "විශේෂඥතාව",
+    "for more information.": "",
     "Founder @ Acme Inc": "Acme Inc හි නිර්මාතෘ",
     "Full-time parent": "පූර්ණ කාලීන භාරකරුව\u200bන්",
     "Head of Marketing at Acme, Inc": "Acme, Inc හි අලෙවි ප්\u200dරධානී",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "මෙම අදහස සඟවා ඇත.",
     "This comment has been removed.": "මෙම අදහස ඉවත් කර ඇත.",
     "Upgrade now": "දැන් upgrade කරන්න",
+    "View in admin": "",
     "Yesterday": "ඊ\u200bයෙ",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "ඔබගේ ඉල්ලීම මෙම අඩවියේ හිමිකරු වෙත යවනු ලැබේ."
 }

@@ -19,6 +19,19 @@ yarn
 yarn test
 ```
 
+### Dev Environment Mode (Recommended for Development)
+
+When `yarn dev` is running from the repository root, e2e tests automatically detect it and use a more efficient execution mode:
+
+```bash
+# Terminal 1: Start dev environment (from repository root)
+yarn dev
+
+# Terminal 2: Run e2e tests (from e2e folder)
+yarn test
+```
+
+
 ### Running Specific Tests
 
 ```bash
@@ -31,18 +44,6 @@ yarn test --grep "homepage"
 # With browser visible (for debugging)
 yarn test --debug
 ```
-
-### Testing with React Admin Shell
-
-To run e2e tests against the new React admin shell instead of the Ember admin:
-
-From the repository root:
-
-```bash
-USE_REACT_SHELL=true yarn test
-```
-
-This builds the React admin (`apps/admin`) and configures Ghost to serve it at `/ghost/` instead of the Ember admin.
 
 ## Tests Development
 
@@ -146,7 +147,11 @@ For example, a `ghostInstance` fixture creates a new Ghost instance with its own
 
 ### Test Isolation 
 
-Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database:
+Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database.
+
+#### Standalone Mode (Default)
+
+When dev environment is not running, tests use full container isolation:
 
 - Global setup (`tests/global.setup.ts`):
     - Starts shared services (MySQL, Tinybird, etc.)
@@ -160,6 +165,27 @@ Test isolation is extremely important to avoid flaky tests that are hard to debu
     - Drops the test database
 - Global teardown (`tests/global.teardown.ts`):
     - Stops and removes shared services
+
+#### Dev Environment Mode (When `yarn dev` is running)
+
+When dev environment is detected, tests use a more efficient approach:
+
+- Global setup:
+    - Creates a database snapshot in the existing `ghost-dev-mysql`
+- Worker setup (once per Playwright worker):
+    - Creates a Ghost container for the worker
+    - Creates a Caddy gateway container for routing
+- Before each test:
+    - Clones database from snapshot
+    - Restarts Ghost container with new database
+- After each test:
+    - Drops the test database
+- Worker teardown:
+    - Removes worker's Ghost and gateway containers
+- Global teardown:
+    - Cleans up all e2e containers (namespace: `ghost-dev-e2e`)
+
+All e2e containers use the `ghost-dev-e2e` project namespace for easy identification and cleanup.
 
 ### Best Practices
 

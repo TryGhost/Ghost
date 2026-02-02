@@ -40,10 +40,6 @@ const features: Feature[] = [{
     description: 'Enables features related to sending welcome emails to new members',
     flag: 'welcomeEmails'
 }, {
-    title: 'New Admin Experience',
-    description: 'Preview the next version of the admin interface',
-    flag: 'adminForward'
-}, {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
@@ -67,6 +63,14 @@ const features: Feature[] = [{
     title: 'Transistor',
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
+}, {
+    title: 'Disable Member Commenting',
+    description: 'Allow staff to disable commenting for individual members',
+    flag: 'disableMemberCommenting'
+}, {
+    title: 'Sniper Links',
+    description: 'Enable mail app links on signup/signin',
+    flag: 'sniperlinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

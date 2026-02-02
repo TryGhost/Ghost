@@ -58,6 +58,15 @@
         "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
+        // Group NQL packages separately from other TryGhost packages
+        {
+            "groupName": "NQL packages",
+            "matchPackageNames": [
+                "@tryghost/nql",
+                "@tryghost/nql-lang"
+            ]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [

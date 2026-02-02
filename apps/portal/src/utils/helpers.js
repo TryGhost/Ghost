@@ -903,7 +903,6 @@ export function getUrlHistory() {
         // Failed to access sessionStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
 
-        /* eslint-disable no-console */
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
 }

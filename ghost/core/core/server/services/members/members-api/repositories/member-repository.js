@@ -8,7 +8,6 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const config = require('../../../../../shared/config');
 const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const messages = {
@@ -21,7 +20,18 @@ const messages = {
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
-    invalidEmail: 'Invalid Email'
+    invalidEmail: 'Invalid Email',
+    offerNotFound: 'Could not find Offer {id}',
+    offerNotActive: 'Offer is not active',
+    offerIsTrialOffer: 'Trial offers cannot be applied to existing subscriptions',
+    offerIsSignupOffer: 'Signup offers cannot be applied to existing subscriptions',
+    offerNoCoupon: 'Offer does not have a valid coupon',
+    offerTierMismatch: 'Offer is not valid for this subscription tier',
+    offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
+    offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
+    subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
+    subscriptionHasOffer: 'Subscription already has an offer applied',
+    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
@@ -343,8 +353,8 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const hasTestInbox = Boolean(config.get('memberWelcomeEmailTestInbox'));
-        if (hasTestInbox && WELCOME_EMAIL_SOURCES.includes(source)) {
+        const welcomeEmailsEnabled = this._labsService.isSet('welcomeEmails');
+        if (welcomeEmailsEnabled && WELCOME_EMAIL_SOURCES.includes(source)) {
             const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
             const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
             const isFreeSignup = !stripeCustomer;
@@ -367,6 +377,7 @@ module.exports = class MemberRepository {
                         event_type: MemberCreatedEvent.name,
                         payload: JSON.stringify({
                             memberId: newMember.id,
+                            uuid: newMember.get('uuid'),
                             email: newMember.get('email'),
                             name: newMember.get('name'),
                             source,
@@ -1097,7 +1108,9 @@ module.exports = class MemberRepository {
                 canceled: stripeSubscriptionData.cancel_at_period_end,
                 discount: stripeSubscriptionData.discount
             }),
-            offer_id: offerId
+            offer_id: offerId,
+            discount_start: stripeSubscriptionData.discount?.start ? new Date(stripeSubscriptionData.discount.start * 1000) : null,
+            discount_end: stripeSubscriptionData.discount?.end ? new Date(stripeSubscriptionData.discount.end * 1000) : null
         };
 
         const getStatus = (modelToCheck) => {
@@ -1437,7 +1450,7 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = config.get('memberWelcomeEmailTestInbox') && WELCOME_EMAIL_SOURCES.includes(source);
+            const shouldSendPaidWelcomeEmail = this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source);
             let isPaidWelcomeEmailActive = false;
             if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
                 const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
@@ -1452,6 +1465,7 @@ module.exports = class MemberRepository {
                     event_type: MemberCreatedEvent.name,
                     payload: JSON.stringify({
                         memberId: memberModel.id,
+                        uuid: memberModel.get('uuid'),
                         email: memberModel.get('email'),
                         name: memberModel.get('name'),
                         source,
@@ -1620,6 +1634,175 @@ module.exports = class MemberRepository {
                 subscription: updatedSubscription
             }, options);
         }
+    }
+
+    /**
+     * @param {Object} data
+     * @param {string} [data.id] - Member ID
+     * @param {string} [data.email] - Member email
+     * @param {Object} data.subscription
+     * @param {string} data.subscription.subscription_id - Stripe subscription ID
+     * @param {string} data.offerId - Offer ID to apply
+     * @param {string} data.couponId - Stripe coupon ID for the offer
+     * @param {Object} [options]
+     */
+    async applyOfferToSubscription(data, options = {}) {
+        if (!this._stripeAPIService.configured) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.noStripeConnection, {action: 'apply offer to Subscription'})
+            });
+        }
+
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.applyOfferToSubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        // Find member
+        let findQuery = null;
+        if (data.id) {
+            findQuery = {id: data.id};
+        } else if (data.email) {
+            findQuery = {email: data.email};
+        }
+
+        if (!findQuery) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: 'unknown'})
+            });
+        }
+
+        const member = await this._Member.findOne(findQuery, options);
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound, {id: data.id || data.email})
+            });
+        }
+
+        // Fetch subscription with related data
+        const subscriptionModel = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: data.subscription.subscription_id
+            }
+        }).fetchOne({
+            ...options,
+            forUpdate: true,
+            withRelated: ['stripePrice', 'stripePrice.stripeProduct', 'stripePrice.stripeProduct.product']
+        });
+
+        if (!subscriptionModel) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})
+            });
+        }
+
+        // Validate subscription is active
+        const subscriptionStatus = subscriptionModel.get('status');
+        if (!this.isActiveSubscriptionStatus(subscriptionStatus)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionNotActive)
+            });
+        }
+
+        // Check subscription doesn't already have an offer
+        if (subscriptionModel.get('offer_id')) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionHasOffer)
+            });
+        }
+
+        // Check subscription is not in a trial period
+        const trialEndAt = subscriptionModel.get('trial_end_at');
+        if (trialEndAt && trialEndAt > new Date()) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.subscriptionInTrial)
+            });
+        }
+
+        // Get tier and cadence from subscription
+        const stripePrice = subscriptionModel.related('stripePrice');
+        const stripeProduct = stripePrice.related('stripeProduct');
+        const product = stripeProduct.related('product');
+
+        const tierId = product.id;
+        const cadence = stripePrice.get('interval');
+
+        // Fetch and validate offer
+        const offer = await this._offersAPI.getOffer({id: data.offerId}, options);
+
+        if (!offer) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.offerNotFound, {id: data.offerId})
+            });
+        }
+
+        if (offer.status !== 'active') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNotActive)
+            });
+        }
+
+        if (offer.type === 'trial') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsTrialOffer)
+            });
+        }
+
+        if (offer.redemption_type === 'signup') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerIsSignupOffer)
+            });
+        }
+
+        if (offer.tier.id !== tierId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerTierMismatch)
+            });
+        }
+
+        if (offer.cadence !== cadence) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerCadenceMismatch)
+            });
+        }
+
+        // Check not already redeemed on this subscription
+        const existingRedemption = await this._OfferRedemption.findOne({
+            offer_id: data.offerId,
+            subscription_id: subscriptionModel.id
+        }, options);
+
+        if (existingRedemption) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerAlreadyRedeemed)
+            });
+        }
+
+        // Validate coupon was provided (getCouponForOffer returns null for trial offers or if offer has no stripe_coupon_id)
+        if (!data.couponId) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.offerNoCoupon)
+            });
+        }
+
+        const stripeSubscriptionId = subscriptionModel.get('subscription_id');
+
+        // Apply coupon to Stripe subscription
+        const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
+            stripeSubscriptionId,
+            data.couponId
+        );
+
+        // Sync local state with Stripe
+        await this.linkSubscription({
+            id: member.id,
+            subscription: updatedSubscription,
+            offerId: data.offerId
+        }, options);
     }
 
     async createSubscription(data, options) {
@@ -1837,5 +2020,22 @@ module.exports = class MemberRepository {
             }
         }
         return true;
+    }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
     }
 };

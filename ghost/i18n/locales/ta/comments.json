@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "ரத்து செய்",
     "Comment": "கருத்து",
+    "Commenting disabled": "",
     "Complete your profile": "உங்கள் சுயவிவரத்தை பூர்த்தி செய்யவும்",
+    "Contact support": "",
     "Delete": "நீக்கவும்",
     "Deleted": "",
     "Deleted member": "நீக்கப்பட்ட உறுப்பினர்",
@@ -28,6 +30,7 @@
     "edited": "திருத்தப்பட்டது",
     "Enter your name": "உங்கள் பெயரை உள்ளிடுக",
     "Expertise": "நிபுணத்துவம்",
+    "for more information.": "",
     "Founder @ Acme Inc": "நிறுவனர் @ Acme Inc",
     "Full-time parent": "முழுநேர பெற்றோர்",
     "Head of Marketing at Acme, Inc": "Acme Inc நிறுவனத்தின் சந்தைப்படுத்தல் தலைவர்",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "இந்தக் கருத்து மறைக்கப்பட்டது.",
     "This comment has been removed.": "இந்தக் கருத்து நீக்கப்பட்டது.",
     "Upgrade now": "இப்போதே மேம்படுத்தவும்",
+    "View in admin": "",
     "Yesterday": "நேற்று",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "உங்கள் கோரிக்கை இந்த தளத்தின் உரிமையாளருக்கு அனுப்பப்படும்."
 }

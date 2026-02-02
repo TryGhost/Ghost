@@ -68,5 +68,6 @@ describe('Stripe - config', function () {
         should.exist(config.checkoutSessionCancelUrl);
         should.exist(config.checkoutSetupSessionSuccessUrl);
         should.exist(config.checkoutSetupSessionCancelUrl);
+        should.exist(config.billingPortalReturnUrl);
     });
 });

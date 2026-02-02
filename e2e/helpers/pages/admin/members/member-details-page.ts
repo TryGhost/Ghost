@@ -42,6 +42,8 @@ export class MemberDetailsPage extends AdminPage {
     readonly confirmLeaveButton: Locator;
     readonly settingsSection: SettingsSection;
 
+    readonly activityHeading: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/members/';
@@ -60,6 +62,8 @@ export class MemberDetailsPage extends AdminPage {
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
+
+        this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
@@ -100,5 +104,9 @@ export class MemberDetailsPage extends AdminPage {
     async save(): Promise<void> {
         await this.saveButton.click();
         await this.savedButton.waitFor({state: 'visible'});
+    }
+
+    getActivityEventByText(text: string | RegExp): Locator {
+        return this.activityHeading.locator('..').getByText(text);
     }
 }

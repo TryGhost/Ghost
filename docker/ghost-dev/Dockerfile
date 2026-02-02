@@ -21,6 +21,7 @@ WORKDIR /home/ghost
 COPY package.json yarn.lock ./
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
+COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime

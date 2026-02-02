@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getNewsletterData} from '../../src/utils/fixtures-generator';
 
 export const transformTierFixture = [

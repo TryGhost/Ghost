@@ -3,11 +3,25 @@ import {AppContext} from '../../../../src/app-context';
 import {render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
+    const member = appContext?.member ?? null;
+    const commentsEnabled = appContext?.commentsEnabled ?? 'all';
+
+    // Compute tier values like app.tsx does
+    const isMember = !!member;
+    const isPaidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
+    const hasRequiredTier = isPaidMember || !isPaidOnly;
+    const isCommentingDisabled = member?.can_comment === false;
+
     const contextWithDefaults = {
-        commentsEnabled: 'all',
+        commentsEnabled,
         comments: [],
         openCommentForms: [],
-        member: null,
+        member,
+        isMember,
+        isPaidOnly,
+        hasRequiredTier,
+        isCommentingDisabled,
         t: str => str,
         ...appContext
     };

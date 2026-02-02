@@ -46,8 +46,8 @@ export default defineConfig(({ command }) => ({
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },
     server: {
+        host: '0.0.0.0',
         port: 5174,
-        host: true,
         allowedHosts: true
     },
     resolve: {

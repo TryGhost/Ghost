@@ -17,7 +17,9 @@
     "Best": "Parhaat",
     "Cancel": "Peruuta",
     "Comment": "Kommentti",
+    "Commenting disabled": "",
     "Complete your profile": "Täydennä profiilisi",
+    "Contact support": "",
     "Delete": "Poista",
     "Deleted": "Poistettu",
     "Deleted member": "Poista jäsen",
@@ -28,6 +30,7 @@
     "edited": "editoitu",
     "Enter your name": "Syötä nimesi",
     "Expertise": "Osaaminen",
+    "for more information.": "",
     "Founder @ Acme Inc": "Perustaja",
     "Full-time parent": "Kokoaikainen vanhempi",
     "Head of Marketing at Acme, Inc": "Markkinointijohtaja",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Tämä kommentti on piilotettu.",
     "This comment has been removed.": "Tämä kommentti on poistettu.",
     "Upgrade now": "Korota nyt",
+    "View in admin": "",
     "Yesterday": "Eilen",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Sinun pyyntösi lähetetään sivun omistajalle."
 }

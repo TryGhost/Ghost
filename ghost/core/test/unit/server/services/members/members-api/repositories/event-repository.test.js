@@ -294,4 +294,117 @@ describe('EventRepository', function () {
             });
         });
     });
+
+    describe('getAutomatedEmailSentEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{
+                get: (key) => {
+                    if (key === 'member_id') {
+                        return '123';
+                    }
+                    if (key === 'created_at') {
+                        return new Date('2024-01-01');
+                    }
+                },
+                related: (relation) => {
+                    if (relation === 'member') {
+                        return {toJSON: () => ({id: '123', email: 'test@example.com'})};
+                    }
+                    if (relation === 'automatedEmail') {
+                        return {
+                            toJSON: () => ({
+                                id: 'ae123',
+                                slug: 'member-welcome-email-free'
+                            })
+                        };
+                    }
+                },
+                id: 'aer123'
+            }]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null,
+                AutomatedEmailRecipient: {
+                    findPage: fake
+                }
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                filter: 'no used',
+                order: 'created_at desc, id desc'
+            }, {
+                type: 'unused'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {
+                'data.created_at': 'data.created_at:123'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('works when setting a combination of filters', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {
+                'data.created_at': 'data.created_at:123+data.created_at:<99999',
+                'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member', 'automatedEmail'],
+                filter: 'custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('returns correctly formatted automated_email_sent_event', async function () {
+            const result = await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {});
+
+            assert.equal(result.data.length, 1);
+            assert.deepEqual(result.data[0], {
+                type: 'automated_email_sent_event',
+                data: {
+                    id: 'aer123',
+                    member_id: '123',
+                    created_at: new Date('2024-01-01'),
+                    member: {id: '123', email: 'test@example.com'},
+                    automatedEmail: {
+                        id: 'ae123',
+                        slug: 'member-welcome-email-free'
+                    }
+                }
+            });
+        });
+    });
 });
