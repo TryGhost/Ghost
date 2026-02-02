@@ -8,7 +8,7 @@ const DEFAULT_FEATURES = {
         enabled: true
     },
     subscription_cancel: {
-        enabled: true
+        enabled: false
     }
 };
 
