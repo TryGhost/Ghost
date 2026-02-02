@@ -335,20 +335,6 @@ async function applyOffer({data, state, api}) {
     }
 }
 
-async function editBilling({data, state, api}) {
-    try {
-        await api.member.editBilling(data);
-    } catch (e) {
-        return {
-            action: 'editBilling:failed',
-            popupNotification: createPopupNotification({
-                type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: t('Failed to update billing information, please try again')
-            })
-        };
-    }
-}
-
 async function manageBilling({data, state, api}) {
     try {
         await api.member.manageBilling(data);
@@ -671,7 +657,6 @@ const Actions = {
     updateProfile,
     refreshMemberData,
     clearPopupNotification,
-    editBilling,
     manageBilling,
     checkoutPlan,
     updateNewsletterPreference,
