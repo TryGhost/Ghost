@@ -291,6 +291,7 @@ describe('Members API', function () {
             // And all the subscriptions are setup correctly
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
             should(initialMember.subscriptions).match([
                 {
@@ -380,11 +381,6 @@ describe('Members API', function () {
             await DomainEvents.allSettled();
 
             mockManager.assert.sentEmail({
-                subject: /Paid subscription started: Cancel me at the end of the billing cycle/,
-                to: 'jbloggs@example.com'
-            });
-
-            mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me at the end of the billing cycle/,
                 to: 'jbloggs@example.com'
             });
@@ -437,6 +433,7 @@ describe('Members API', function () {
             // And all the subscriptions are setup correctly
             const initialMember = await createMemberFromStripe();
             assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+            assert.equal(initialMember.attribution.referrer_medium, 'Ghost Admin', 'The member should have been created via Ghost Admin');
             assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
             should(initialMember.subscriptions).match([
                 {
@@ -544,11 +541,6 @@ describe('Members API', function () {
 
             // Check that the staff notifications has been sent
             await DomainEvents.allSettled();
-
-            mockManager.assert.sentEmail({
-                subject: /Paid subscription started: Cancel me now/,
-                to: 'jbloggs@example.com'
-            });
 
             mockManager.assert.sentEmail({
                 subject: /Cancellation: Cancel me now/,

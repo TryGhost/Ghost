@@ -211,6 +211,7 @@ describe('MembersCSVImporter', function () {
             membersRepositoryStub.linkStripeCustomer.calledOnce.should.be.true();
             should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
             should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
+            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][1].context.importer, true, 'linkStripeCustomer is called with importer context to prevent welcome emails');
 
             // complimentary_plan import
             membersRepositoryStub.update.calledOnce.should.be.true();
