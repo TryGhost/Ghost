@@ -3,6 +3,7 @@ import {useContext} from 'react';
 import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsletterSendingEnabled} from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
+import TransistorPodcastsAction from './transistor-podcasts-action';
 import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
 import {t} from '../../../../utils/i18n';
@@ -57,6 +58,7 @@ const AccountActions = () => {
                 </section>
 
                 <PaidAccountActions />
+                <TransistorPodcastsAction />
                 {showEmailPreferences && <EmailPreferencesAction />}
                 {showEmailNewsletterAction && <EmailNewsletterAction />}
             </div>
