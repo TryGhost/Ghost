@@ -719,7 +719,7 @@ module.exports = class RouterController {
         }
 
         try {
-            /** @type {{sniperLinks?: {desktop: string; android: string}; otc_ref?: string}} */
+            /** @type {{sniperLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
             const resBody = {};
 
             if (emailType === 'signup' || emailType === 'subscribe') {

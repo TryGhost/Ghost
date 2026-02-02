@@ -270,6 +270,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
          *     sniperLinks?: {
          *         desktop: string;
          *         android: string;
+         *         provider: 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru';
          *     };
          *     otc_ref?: string;
          * }}

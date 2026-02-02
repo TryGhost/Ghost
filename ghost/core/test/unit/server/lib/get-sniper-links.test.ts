@@ -40,6 +40,7 @@ describe('getSniperLinks', function () {
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
+            assert.equal(result?.provider, 'gmail');
             assert(result?.desktop.startsWith('https://mail.google.com/'));
             assert(result?.desktop.includes(encodeURIComponent(recipient)));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
@@ -65,6 +66,7 @@ describe('getSniperLinks', function () {
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
+            assert.equal(result?.provider, 'yahoo');
             assert(result?.desktop.startsWith('https://mail.yahoo.com/d/search/keyword=from:'));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
             assert(result?.android.startsWith('intent:'));
@@ -89,6 +91,7 @@ describe('getSniperLinks', function () {
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
+            assert.equal(result?.provider, 'outlook');
             assert.equal(result?.desktop, `https://outlook.live.com/mail/?login_hint=${encodeURIComponent(recipient)}`);
             assert(result?.android.startsWith('intent:'));
             assert(result?.android.includes('com.microsoft.office.outlook'));
@@ -108,6 +111,7 @@ describe('getSniperLinks', function () {
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
+            assert.equal(result?.provider, 'proton');
             assert(result?.desktop.startsWith('https://mail.proton.me/'));
             assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
             assert(result?.android.startsWith('intent:'));
@@ -128,6 +132,7 @@ describe('getSniperLinks', function () {
                 sender: 'sender@example.com',
                 dnsResolver: resolverThatShouldNeverBeUsed
             });
+            assert.equal(result?.provider, 'icloud');
             assert.equal(result?.desktop, 'https://www.icloud.com/mail');
             assert.equal(result?.android, 'https://www.icloud.com/mail');
         }));
@@ -139,6 +144,7 @@ describe('getSniperLinks', function () {
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
         });
+        assert.equal(result?.provider, 'hey');
         assert.equal(result?.desktop, 'https://app.hey.com/topics/everything');
         assert(result?.android.startsWith('intent:'));
         assert(result?.android.includes('com.basecamp.hey'));
@@ -151,6 +157,7 @@ describe('getSniperLinks', function () {
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
         });
+        assert.equal(result?.provider, 'aol');
         assert(result?.desktop.startsWith('https://mail.aol.com/'));
         assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
         assert(result?.android.startsWith('intent:'));
@@ -164,6 +171,7 @@ describe('getSniperLinks', function () {
             sender: 'sender@example.com',
             dnsResolver: resolverThatShouldNeverBeUsed
         });
+        assert.equal(result?.provider, 'mailru');
         assert(result?.desktop.startsWith('https://e.mail.ru/search/'));
         assert(result?.desktop.includes(encodeURIComponent('sender@example.com')));
         assert(result?.android.startsWith('intent:'));

@@ -19,8 +19,9 @@ const setup = async ({site, member = null}) => {
         if (email.endsWith('@test-sniper-link.example')) {
             return {
                 sniperLinks: {
-                    android: 'https://test.example/',
-                    desktop: 'https://test.example/'
+                    provider: 'proton',
+                    android: 'https://fake-proton.example/',
+                    desktop: 'https://fake-proton.example/'
                 }
             };
         } else {
@@ -251,9 +252,9 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('test@test-sniper-link.example');
             fireEvent.click(submitButton);
 
-            const sniperLinkButton = await within(popupIframeDocument).findByText(/open email/i);
+            const sniperLinkButton = await within(popupIframeDocument).findByRole('link', {name: /open proton mail/i});
             expect(sniperLinkButton).toBeInTheDocument();
-            expect(sniperLinkButton).toHaveAttribute('href', 'https://test.example/');
+            expect(sniperLinkButton).toHaveAttribute('href', 'https://fake-proton.example/');
             expect(sniperLinkButton).toHaveAttribute('target', '_blank');
 
             expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'test@test-sniper-link.example');
