@@ -119,6 +119,7 @@ services:
     ports:
       - "2368:80"
       - "80:80"
+      - "443:443"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
