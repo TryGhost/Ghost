@@ -4,7 +4,6 @@ exports[`Posts Bulk API Delete Can delete all posts 1: [body] 1`] = `
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 2,
         "unsuccessful": 0,
@@ -18,7 +17,6 @@ exports[`Posts Bulk API Delete Can delete posts that match a tag 1: [body] 1`] =
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 13,
         "unsuccessful": 0,
@@ -58,12 +56,10 @@ exports[`Posts Bulk API Edit Can change access of posts 1: [body] 1`] = `
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 15,
         "unsuccessful": 0,
       },
-      "unsuccessfulData": Array [],
     },
   },
 }
@@ -73,12 +69,10 @@ exports[`Posts Bulk API Edit Can change access of posts to tiers 1: [body] 1`] =
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 15,
         "unsuccessful": 0,
       },
-      "unsuccessfulData": Array [],
     },
   },
 }
@@ -88,12 +82,10 @@ exports[`Posts Bulk API Edit Can feature multiple posts 1: [body] 1`] = `
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 15,
         "unsuccessful": 0,
       },
-      "unsuccessfulData": Array [],
     },
   },
 }
@@ -103,12 +95,10 @@ exports[`Posts Bulk API Edit Can unfeature multiple posts 1: [body] 1`] = `
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 15,
         "unsuccessful": 0,
       },
-      "unsuccessfulData": Array [],
     },
   },
 }
@@ -118,12 +108,10 @@ exports[`Posts Bulk API Edit Can unpublish posts 1: [body] 1`] = `
 Object {
   "bulk": Object {
     "meta": Object {
-      "errors": Array [],
       "stats": Object {
         "successful": 13,
         "unsuccessful": 0,
       },
-      "unsuccessfulData": Array [],
     },
   },
 }

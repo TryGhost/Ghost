@@ -323,15 +323,12 @@ const controller = {
         async query(frame) {
             const bulkDestroyResult = await membersService.api.members.bulkDestroy(frame.options);
 
-            // shaped to match the importer response
             return {
                 meta: {
                     stats: {
                         successful: bulkDestroyResult.successful,
                         unsuccessful: bulkDestroyResult.unsuccessful
-                    },
-                    unsuccessfulIds: bulkDestroyResult.unsuccessfulIds,
-                    errors: bulkDestroyResult.errors
+                    }
                 }
             };
         }
