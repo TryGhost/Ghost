@@ -52,10 +52,6 @@ const features: Feature[] = [{
     description: 'Enable Transistor podcast integration',
     flag: 'transistor'
 }, {
-    title: 'Inbox Links',
-    description: 'Enable mail app links on signup/signin',
-    flag: 'inboxlinks'
-}, {
     title: 'Retention Offers',
     description: 'Enable retention offers for canceling members',
     flag: 'retentionOffers'

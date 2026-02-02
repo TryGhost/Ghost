@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'announcementBar',
     'customFonts',
     'explore',
-    'inboxlinks',
     'commentModeration',
     'featurebaseFeedback',
     'welcomeEmails'
