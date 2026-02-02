@@ -738,6 +738,9 @@ module.exports = class RouterController {
             });
             if (sniperLinks) {
                 resBody.sniperLinks = sniperLinks;
+                logging.info(`[Sniperlinks] Found sniper links for provider ${sniperLinks.provider}`);
+            } else {
+                logging.info('[Sniperlinks] Found no sniper links');
             }
 
             res.writeHead(201, {'Content-Type': 'application/json'});
