@@ -1683,7 +1683,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     cursorPointer: context.cursorPointer
                 })}
             >
-                <div className="flex min-w-0 w-full items-center gap-1.5">
+                <div className="flex w-full min-w-0 items-center gap-1.5">
                     {field.customValueRenderer ? (
                         field.customValueRenderer(values, field.options || [])
                     ) : (
@@ -2093,11 +2093,11 @@ export function Filters<T = unknown>({
             const existingFilter = filters.find(f => f.field === field.key);
             if (existingFilter) {
                 // Update existing filter
-                const updatedFilters = filters.map(f =>
+                const updatedFilters = filters.map(f => (
                     f.id === existingFilter.id
                         ? {...f, values: values as T[]}
                         : f
-                );
+                ));
                 onChange(updatedFilters);
                 if (closePopover) {
                     setAddFilterOpen(false);
