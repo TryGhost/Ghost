@@ -115,7 +115,7 @@ const PaidAccountActions = () => {
         const {action} = useContext(AppContext);
         const label = action === 'manageBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
-        ) : t('Manage');
+        ) : t('Update');
         if (isComplimentary) {
             return null;
         }

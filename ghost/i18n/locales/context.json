@@ -305,6 +305,7 @@
     "Unsubscribed": "Status of a newsletter which a user has not subscribed to",
     "Unsubscribed from all emails.": "Shown if a member unsubscribes from all emails",
     "Unsubscribing from emails will not cancel your paid subscription to {title}": "Portal - newsletter subscription management",
+    "Update": "A button to update the billing information",
     "Update your preferences": "A button for updating member preferences in their account area",
     "Upgrade": "An action button in the newsletter call-to-action",
     "Upgrade now": "Button text in the comments section, when you need to be a paid member in order to post a comment",
