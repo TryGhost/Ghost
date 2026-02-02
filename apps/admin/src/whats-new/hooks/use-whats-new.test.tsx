@@ -49,11 +49,6 @@ const fixtures = {
             createRawChangelogEntry({
                 published_at: dates.past,
             }),
-        featuredEntry: () =>
-            createRawChangelogEntry({
-                published_at: dates.current,
-                featured: "true",
-            }),
     },
     preferences: {
         empty: {},
@@ -321,54 +316,6 @@ describe("useWhatsNew", () => {
         });
     });
 
-    describe("hasNewFeatured", () => {
-        describe("returns true", () => {
-            queryTest("when entry is newer than lastSeenDate and featured", async ({ setup }) => {
-                const result = await setup({
-                    changelog: {
-                        posts: [fixtures.entries.featuredEntry()],
-                    },
-                    accessibility: JSON.stringify(fixtures.preferences.withLastSeen(dates.past)),
-                });
-
-                expect(result.current.data?.hasNewFeatured).toBe(true);
-            });
-        });
-
-        describe("returns false", () => {
-            [
-                {
-                    scenario: "when entry is older than lastSeenDate",
-                    input: {
-                        changelog: {
-                            posts: [fixtures.entries.featuredEntry()],
-                        },
-                        accessibility: JSON.stringify(fixtures.preferences.withLastSeen(dates.future)),
-                    },
-                },
-                {
-                    scenario: "when entry is newer but not featured",
-                    input: {
-                        changelog: {
-                            posts: [fixtures.entries.newEntry()],
-                        },
-                        accessibility: JSON.stringify(fixtures.preferences.withLastSeen(dates.past)),
-                    },
-                },
-                {
-                    scenario: "when no entries exist",
-                    input: {
-                        changelog: { posts: [] },
-                    },
-                },
-            ].forEach(({ scenario, input }) => {
-                queryTest(scenario, async ({ setup }) => {
-                    const result = await setup(input);
-                    expect(result.current.data?.hasNewFeatured).toBe(false);
-                });
-            });
-        });
-    });
 });
 
 describe("useDismissWhatsNew", () => {

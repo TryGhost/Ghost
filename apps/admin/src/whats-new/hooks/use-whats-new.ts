@@ -17,7 +17,6 @@ function getDefaultWhatsNewPreferences(): WhatsNewPreferences {
 
 interface WhatsNewData {
     hasNew: boolean;
-    hasNewFeatured: boolean;
 }
 
 const whatsNewQueryKey = (preferences: Preferences | undefined, latestEntry: ChangelogEntry | undefined) =>
@@ -45,7 +44,7 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
         queryKey: whatsNewQueryKey(preferences, latestEntry),
         queryFn: () => {
             if (!latestEntry) {
-                return { hasNew: false, hasNewFeatured: false };
+                return { hasNew: false };
             }
 
             // Safe to assert non-null because query is only enabled when hasWhatsNewPreferences is true,
@@ -53,9 +52,8 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
             const lastSeenDate = preferences!.whatsNew!.lastSeenDate!;
 
             const hasNew = latestEntry.publishedAt > lastSeenDate;
-            const hasNewFeatured = hasNew && latestEntry.featured === true;
 
-            return { hasNew, hasNewFeatured };
+            return { hasNew };
         },
         enabled: isChangelogLoaded && hasWhatsNewPreferences,
         staleTime: Infinity,

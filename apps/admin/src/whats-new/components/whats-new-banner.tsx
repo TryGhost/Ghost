@@ -9,8 +9,8 @@ function WhatsNewBanner() {
     const { mutate: dismissWhatsNew } = useDismissWhatsNew();
     const [isDismissed, setIsDismissed] = useState(false);
 
-    // Don't show if dismissed or no featured content
-    if (isDismissed || !whatsNewData?.hasNewFeatured) {
+    // Don't show if dismissed or no new content
+    if (isDismissed || !whatsNewData?.hasNew) {
         return null;
     }
 
