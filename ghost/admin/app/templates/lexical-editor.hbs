@@ -1,4 +1,5 @@
 {{#if this.post}}
+<div class="gh-editor-fullscreen-container">
     <div class="flex flex-row">
         <GhEditor
             @tagName="section"
@@ -161,6 +162,8 @@
             @close={{this.closePostHistory}}
             @modifier="total-overlay post-history" />
     {{/if}}
+
+</div>
 {{/if}}
 
 {{outlet}}
