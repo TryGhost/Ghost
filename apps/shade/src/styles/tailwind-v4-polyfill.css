@@ -1,0 +1,33 @@
+/* TailwindCSS v4 Polyfill - Temporary utilities for v4 classes not available in v3 */
+/* This file will be removed after upgrading to TailwindCSS v4 */
+
+/* Shadow utilities */
+.shadow-xs {
+    box-shadow: 0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1);
+}
+
+/* Drop shadow utilities */
+.drop-shadow-xs {
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.05));
+}
+
+/* Blur utilities */
+.blur-xs {
+    filter: blur(2px);
+}
+
+/* Backdrop blur utilities */
+.backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+}
+
+/* Border radius utilities */
+.rounded-xs {
+    border-radius: 0.125rem; /* 2px */
+}
+
+/* Outline utilities */
+.outline-hidden {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
