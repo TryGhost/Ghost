@@ -2,8 +2,8 @@ name: Cleanup Stripe Test Accounts
 
 on:
   schedule:
-    # Run daily at 3 AM UTC
-    - cron: '0 3 * * *'
+    # Run twice daily at 3 AM and 3 PM UTC
+    - cron: '0 3,15 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
               EMAIL=$(echo "$account" | jq -r '.email // ""')
               CREATED=$(echo "$account" | jq -r '.created')
 
-              # Check if this is a test account (matches our naming pattern)
+              # Check if this is a test account (matches our naming pattern: test-{runId}-{attempt}-{index}@example.com)
               if [[ "$EMAIL" =~ ^test-.*@example\.com$ ]]; then
                 AGE=$((NOW - CREATED))
                 if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
