@@ -393,10 +393,7 @@ function CommentsList({
                                                     {disableMemberCommentingEnabled && item.member?.id && (
                                                         item.member.can_comment !== false ? (
                                                             <DropdownMenuItem onClick={() => {
-                                                                // Workaround for Radix UI bug where opening Dialog from DropdownMenu
-                                                                // leaves pointer-events: none on body, freezing the UI
-                                                                // https://github.com/radix-ui/primitives/issues/3317
-                                                                queueMicrotask(() => setMemberToDisable({member: item.member, commentId: item.id}));
+                                                                setMemberToDisable({member: item.member, commentId: item.id});
                                                             }}>
                                                                 <LucideIcon.MessageCircleOff className="mr-2 size-4" />
                                                                 Disable commenting
