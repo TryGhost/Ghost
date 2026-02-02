@@ -1159,14 +1159,49 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
+      - name: Get Playwright version
+        id: playwright
+        run: echo "version=$(jq -r '.devDependencies["@playwright/test"]' e2e/package.json)" >> $GITHUB_OUTPUT
 
-      - name: Run e2e tests
+      - name: Pull Playwright image
+        run: docker pull mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble
+
+      - name: Start compose services
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-          TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: |
+          # Start compose on host where volume paths resolve correctly
+          # --wait may exit non-zero when one-shot services (ghost-migrations) exit with code 0
+          docker compose -f e2e/compose.yml -p ghost-e2e up -d --wait || true
+
+      - name: Fetch Tinybird config
+        run: |
+          mkdir -p e2e/data/state
+          raw_env=$(docker compose -f e2e/compose.yml -p ghost-e2e run --rm -T tb-cli \
+            cat /mnt/shared-config/.env.tinybird 2>/dev/null || true)
+          if [ -n "$raw_env" ]; then
+            workspace_id=$(echo "$raw_env" | grep TINYBIRD_WORKSPACE_ID | cut -d'=' -f2 | tr -d '\r')
+            admin_token=$(echo "$raw_env" | grep TINYBIRD_ADMIN_TOKEN | cut -d'=' -f2 | tr -d '\r')
+            tracker_token=$(echo "$raw_env" | grep TINYBIRD_TRACKER_TOKEN | cut -d'=' -f2 | tr -d '\r')
+            jq -n \
+              --arg wid "$workspace_id" \
+              --arg admin "$admin_token" \
+              --arg tracker "$tracker_token" \
+              '{workspaceId: $wid, adminToken: $admin, trackerToken: $tracker}' > e2e/data/state/tinybird.json
+          fi
+
+      - name: Run tests in Playwright container
+        run: |
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/e2e \
+            -e CI=true \
+            -e TEST_WORKERS_COUNT=1 \
+            -e GHOST_E2E_COMPOSE_RUNNING=true \
+            -e GHOST_IMAGE_TAG=${{ steps.load.outputs.image-tag }} \
+            mcr.microsoft.com/playwright:v${{ steps.playwright.outputs.version }}-noble \
+            yarn test:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
