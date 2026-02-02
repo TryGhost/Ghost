@@ -1,47 +1,29 @@
-import AppContext from '../../../../app-context';
-import {useContext, useEffect, useState} from 'react';
 import {t} from '../../../../utils/i18n';
 
-const TransistorPodcastsAction = () => {
-    const {member, site} = useContext(AppContext);
-    const [hasPodcasts, setHasPodcasts] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+export const TransistorPodcastsActionStyles = `
+    .gh-portal-action-transistor {
+        animation: fadeIn 0.3s ease-in-out;
+    }
 
-    const isTransistorEnabled = Boolean(site.labs?.transistor);
-    // TODO: Remove hardcoded UUID after testing
-    const memberUuid = '0897917f-5ef0-4caa-a44b-2f748c8e80da'; // member?.uuid;
-
-    useEffect(() => {
-        if (!isTransistorEnabled || !memberUuid) {
-            setIsLoading(false);
-            return;
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
         }
+        to {
+            opacity: 1;
+        }
+    }
+`;
 
-        const checkTransistorMembership = async () => {
-            try {
-                const response = await fetch(`https://partner.transistor.fm/ghost/member/${memberUuid}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setHasPodcasts(data.member === true);
-                }
-            } catch (e) {
-                // Silently fail - don't show the button if we can't reach Transistor
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkTransistorMembership();
-    }, [isTransistorEnabled, memberUuid]);
-
-    if (!isTransistorEnabled || isLoading || !hasPodcasts) {
+const TransistorPodcastsAction = ({hasPodcasts, memberUuid}) => {
+    if (!hasPodcasts || !memberUuid) {
         return null;
     }
 
     const transistorUrl = `https://partner.transistor.fm/ghost/${memberUuid}`;
 
     return (
-        <section>
+        <section className="gh-portal-action-transistor">
             <div className='gh-portal-list-detail'>
                 <h3>{t('Podcasts')}</h3>
             </div>
