@@ -226,12 +226,6 @@ const getProvider = async (
     return candidates?.size === 1 ? first(candidates) : undefined;
 };
 
-export type SniperLinks = {
-    android: string;
-    desktop: string;
-    provider: ProviderName;
-};
-
 /**
  * Given an email address, return "sniper links" to open the email app/inbox.
  *
@@ -244,7 +238,7 @@ export const getSniperLinks = async (
         sender: string;
         dnsResolver: Pick<dns.Resolver, 'resolveMx'>
     }>
-): Promise<undefined | SniperLinks> => {
+): Promise<undefined | {android: string; desktop: string; provider: ProviderName}> => {
     const {recipient, dnsResolver} = options;
 
     const domain = parseEmailAddress(recipient)?.domain;
