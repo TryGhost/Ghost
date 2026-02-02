@@ -12,7 +12,6 @@ export default class FooterBanner extends Component {
     @service membersUtils;
     @service modals;
     @service settings;
-    @service whatsNew;
 
     constructor() {
         super(...arguments);
@@ -47,10 +46,6 @@ export default class FooterBanner extends Component {
         return !this.args.hasThemeErrors && this.isAdminOrOwner && this.isReferralNotificationNotDismissed && this.stripeLiveModeEnabled && this.hasReachedMRR;
     }
 
-    get showWhatsNew() {
-        return !this.showReferralInvite && this.whatsNew.hasNewFeatured;
-    }
-
     @task
     *loadCurrentMRR() {
         if (this.isAdminOrOwnern) {
@@ -70,20 +65,5 @@ export default class FooterBanner extends Component {
         if (!this.feature.referralInviteDismissed) {
             this.feature.referralInviteDismissed = moment().tz(this.settings.timezone);
         }
-    }
-
-    @action
-    dismissWhatsNewToast(event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        // Dismiss
-        this.whatsNew.seen();
-    }
-
-    @action
-    openFeaturedWhatsNew(href) {
-        window.open(href, '_blank');
-        this.whatsNew.seen();
     }
 }
