@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
-import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -17,6 +17,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     children
 }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const {fromAnalytics, appSettings} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
     const handleError = useHandleError();
@@ -154,7 +155,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                     </a>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => {
-                                                    navigate(`/editor/post/${postId}`, {crossApp: true});
+                                                    navigate(`/editor/post/${postId}?fromAnalytics=${encodeURIComponent(location.pathname)}`, {crossApp: true});
                                                 }}>
                                                     <LucideIcon.Pen />
                                                 Edit post

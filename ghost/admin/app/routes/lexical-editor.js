@@ -17,13 +17,17 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name?.startsWith('posts-x') && transition.to?.name !== 'lexical-editor.new') {
-            // Extract the analytics path from window.location.href to preserve the exact tab
-            let currentUrl = window.location.href;
-            // Convert editor URL back to analytics URL and extract just the hash portion
-            let analyticsUrl = currentUrl.replace('/editor/', '/').replace(/\/edit$/, '');
-            let hashMatch = analyticsUrl.match(/#(.+)/);
-            controller.fromAnalytics = hashMatch ? hashMatch[1] : 'posts-x';
+        // Check for fromAnalytics query param to determine back navigation
+        // Note: Ghost uses hash-based routing, so query params are in the hash portion
+        const hash = window.location.hash;
+        const queryIndex = hash.indexOf('?');
+        if (queryIndex !== -1) {
+            const params = new URLSearchParams(hash.slice(queryIndex));
+            const fromAnalytics = params.get('fromAnalytics');
+
+            if (fromAnalytics && transition.to?.name !== 'lexical-editor.new') {
+                controller.fromAnalytics = fromAnalytics;
+            }
         }
     },
 

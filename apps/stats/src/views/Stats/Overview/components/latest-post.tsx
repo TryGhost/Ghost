@@ -46,6 +46,21 @@ const LatestPost: React.FC<LatestPostProps> = ({
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
+    // Determine if we should navigate to editor instead of post analytics
+    // Posts with no email data (never sent as newsletter) have no analytics when webAnalytics and membersTrackSources are disabled
+    // Posts that were emailed (email-only OR published+sent) have newsletter stats, so they should go to analytics
+    const hasEmailData = Boolean(latestPostStats?.email);
+    const shouldGoToEditor = !hasEmailData && 
+                             !appSettings?.analytics.webAnalytics && 
+                             !appSettings?.analytics.membersTrackSources;
+
+    const getPostDestination = (postId: string) => {
+        if (shouldGoToEditor) {
+            return `/editor/post/${postId}?fromAnalytics=${encodeURIComponent('/analytics')}`;
+        }
+        return `/posts/analytics/${postId}`;
+    };
+
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
@@ -99,7 +114,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                        navigate(getPostDestination(latestPostStats.id), {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
@@ -136,13 +151,22 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                            navigate(getPostDestination(latestPostStats.id), {crossApp: true});
                                         }}
                                     >
-                                        <LucideIcon.ChartNoAxesColumn />
-                                        <span className='hidden md:!visible md:!block'>
-                                            {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
-                                        </span>
+                                        {shouldGoToEditor ? (
+                                            <>
+                                                <LucideIcon.Pen />
+                                                <span className='hidden md:!visible md:!block'>Edit post</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LucideIcon.ChartNoAxesColumn />
+                                                <span className='hidden md:!visible md:!block'>
+                                                    {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
+                                                </span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>

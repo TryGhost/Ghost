@@ -606,10 +606,9 @@ describe('Acceptance: Editor', function () {
                 title: 'Published Post'
             });
 
-            // visit the analytics page for the post
-            await visit(`/posts/analytics/${post.id}`);
-            // now visit the editor for the same post
-            await visit(`/editor/post/${post.id}`);
+            const analyticsPath = `/posts/analytics/${post.id}`;
+            // visit the editor with fromAnalytics query param (as the real app does)
+            await visit(`/editor/post/${post.id}?fromAnalytics=${encodeURIComponent(analyticsPath)}`);
 
             // Breadcrumbs should point back to Analytics page
             expect(
@@ -620,22 +619,15 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`#posts-x`);
+            ).to.equal(`#${analyticsPath}`);
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {
-            const post = this.server.create('post', {
-                authors: [author],
-                status: 'published',
-                title: 'Published Post'
-            });
+            // Even with fromAnalytics param, new posts should not show Analytics breadcrumb
+            const analyticsPath = `/posts/analytics/some-id`;
+            await visit(`/editor/post?fromAnalytics=${encodeURIComponent(analyticsPath)}`);
 
-            // visit the analytics page for the post
-            await visit(`/posts/analytics/${post.id}`);
-            // start a new post
-            await visit('/editor/post');
-
-            // Breadcrumbs should not contain Analytics link
+            // Breadcrumbs should not contain Analytics link for new posts
             expect(find('[data-test-breadcrumb]'), 'breadcrumb text').to.contain.text('Posts');
             expect(find('[data-test-editor-post-status]')).to.contain.text('New');
         });
