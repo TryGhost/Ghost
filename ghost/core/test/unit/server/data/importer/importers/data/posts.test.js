@@ -135,7 +135,7 @@ describe('PostsImporter', function () {
 
             const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
             should.exist(post);
-            assert.equal(post.mobiledoc, null);
+            assert.equal(post.mobiledoc, undefined);
         });
     });
 });

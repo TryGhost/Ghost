@@ -166,7 +166,7 @@ describe('Auth Service SessionStore', function () {
             const session_data = {user_id: 100};
             store.set(sid, session_data, function (err, data) {
                 assert.equal(err, null);
-                assert.equal(data, null);
+                assert.equal(data, undefined);
                 done();
             });
         });

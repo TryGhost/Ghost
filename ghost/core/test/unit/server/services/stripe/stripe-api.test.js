@@ -267,7 +267,7 @@ describe('StripeAPI', function () {
             it('returns null if customer exists', async function () {
                 const stripeCustomerId = await api.getCustomerIdByEmail(mockCustomerEmail);
 
-                assert.equal(stripeCustomerId, null);
+                assert.equal(stripeCustomerId, undefined);
             });
         });
 
