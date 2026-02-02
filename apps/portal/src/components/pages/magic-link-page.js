@@ -5,7 +5,6 @@ import SniperLinkButton from '../common/sniper-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 import {t} from '../../utils/i18n';
-import {isAndroidChrome} from '../../utils/is-android-chrome';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -166,12 +165,7 @@ export default class MagicLinkPage extends React.Component {
         const {site, sniperLinks} = this.context;
         const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
         if (isSniperLinksEnabled && sniperLinks) {
-            return (
-                <SniperLinkButton
-                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                    provider={sniperLinks.provider}
-                />
-            );
+            return <SniperLinkButton sniperLinks={sniperLinks} />;
         } else {
             return (
                 <ActionButton
@@ -284,12 +278,7 @@ export default class MagicLinkPage extends React.Component {
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
                     {isSniperLinksEnabled && sniperLinks && !this.state.otc ? (
-                        <SniperLinkButton
-                            href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                            provider={sniperLinks.provider}
-                            className='full'
-                            brandColor={this.context.brandColor}
-                        />
+                        <SniperLinkButton sniperLinks={sniperLinks} />
                     ) : (
                         <ActionButton
                             style={{width: '100%'}}
