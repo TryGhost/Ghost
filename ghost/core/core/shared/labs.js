@@ -53,8 +53,7 @@ const PRIVATE_FEATURES = [
     'featurebaseFeedback',
     'transistor',
     'disableMemberCommenting',
-    'disableMemberCommentingHideComments',
-    'sniperlinks'
+    'disableMemberCommentingHideComments'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

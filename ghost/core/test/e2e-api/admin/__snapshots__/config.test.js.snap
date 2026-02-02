@@ -26,7 +26,6 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "members": true,
-      "sniperlinks": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
       "tagsX": true,

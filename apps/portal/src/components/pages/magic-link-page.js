@@ -162,9 +162,8 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const {site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-        if (isSniperLinksEnabled && sniperLinks) {
+        const {sniperLinks} = this.context;
+        if (sniperLinks) {
             return <SniperLinkButton sniperLinks={sniperLinks} />;
         } else {
             return (
@@ -233,8 +232,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef, site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        const {action, actionErrorMessage, otcRef, sniperLinks} = this.context;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -278,7 +276,7 @@ export default class MagicLinkPage extends React.Component {
                 </section>
 
                 <footer className='gh-portal-signin-footer gh-button-row'>
-                    {isSniperLinksEnabled && sniperLinks && !this.state.otc ? (
+                    {sniperLinks && !this.state.otc ? (
                         <SniperLinkButton sniperLinks={sniperLinks} />
                     ) : (
                         <ActionButton
