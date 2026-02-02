@@ -10,6 +10,7 @@ interface DisableFrame {
     data: {
         reason: string;
         expires_at: Date | null;
+        hide_comments: boolean;
     };
 }
 
@@ -33,7 +34,8 @@ const controller = {
         ],
         data: [
             'reason',
-            'expires_at'
+            'expires_at',
+            'hide_comments'
         ],
         validation: {
             options: {
@@ -51,6 +53,7 @@ const controller = {
                 frame.options.id,
                 frame.data.reason,
                 frame.data.expires_at || null,
+                frame.data.hide_comments || false,
                 frame.options.context
             );
         }

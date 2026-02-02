@@ -5,7 +5,7 @@ import setupGhostApi from '../src/utils/api.js';
 
 const OTC_LABEL_REGEX = /Code/i;
 
-const setup = async ({site, member = null, labs = {}}) => {
+const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
 
     ghostApi.init = vi.fn(() => {
@@ -15,8 +15,17 @@ const setup = async ({site, member = null, labs = {}}) => {
         });
     });
 
-    ghostApi.member.sendMagicLink = vi.fn(() => {
-        return Promise.resolve('success');
+    ghostApi.member.sendMagicLink = vi.fn(async ({email}) => {
+        if (email.endsWith('@test-sniper-link.example')) {
+            return {
+                sniperLinks: {
+                    android: 'https://test.example/',
+                    desktop: 'https://test.example/'
+                }
+            };
+        } else {
+            return {};
+        }
     });
 
     ghostApi.member.getIntegrityToken = vi.fn(() => {
@@ -28,7 +37,7 @@ const setup = async ({site, member = null, labs = {}}) => {
     });
 
     const utils = appRender(
-        <App api={ghostApi} labs={labs} />
+        <App api={ghostApi} />
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
@@ -223,6 +232,32 @@ describe('Signin', () => {
 
             expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'jamie@example.com');
         });
+
+        test('with sniper link', async () => {
+            const {
+                ghostApi,
+                emailInput,
+                popupIframeDocument,
+                submitButton
+            } = await setup({
+                site: {
+                    ...FixtureSite.singleTier.basic,
+                    labs: {sniperlinks: true}
+                }
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'test@test-sniper-link.example'}});
+
+            expect(emailInput).toHaveValue('test@test-sniper-link.example');
+            fireEvent.click(submitButton);
+
+            const sniperLinkButton = await within(popupIframeDocument).findByText(/open email/i);
+            expect(sniperLinkButton).toBeInTheDocument();
+            expect(sniperLinkButton).toHaveAttribute('href', 'https://test.example/');
+            expect(sniperLinkButton).toHaveAttribute('target', '_blank');
+
+            expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'test@test-sniper-link.example');
+        });
     });
 });
 
@@ -414,7 +449,7 @@ describe('OTC Integration Flow', () => {
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{}} />
+            <App api={ghostApi} />
         );
 
         await utils.findByTitle(/portal-trigger/i);

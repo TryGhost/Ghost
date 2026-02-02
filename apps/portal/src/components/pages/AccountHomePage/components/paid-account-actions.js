@@ -186,6 +186,28 @@ function FreeTrialLabel({subscription}) {
     return null;
 }
 
+/**
+ * Display discounted price if an offer is active
+ *
+ * Examples:
+ * - "$10.00 — Next payment" (once offer)
+ * - "$10.00/month — Forever" (forever offer)
+ * - "$10.00/month — Ends 2026-01-01" (repeating offer)
+ *
+ * @param {Object} nextPayment
+ * @param {number} nextPayment.originalAmount - Original amount
+ * @param {number} nextPayment.amount - Amount after discount. Same as original amount if no discount.
+ * @param {string} nextPayment.currency - Currency (e.g. USD, EUR)
+ * @param {'month'|'year'} nextPayment.interval
+ * @param {Object|null} nextPayment.discount
+ * @param {'once'|'repeating'|'forever'} nextPayment.discount.duration
+ * @param {string} nextPayment.discount.start - Discount start date (ISO 8601 date string)
+ * @param {string|null} nextPayment.discount.end - Discount end date (ISO 8601 date string), null for forever / once offers
+ * @param {'fixed'|'percent'} nextPayment.discount.type
+ * @param {number} nextPayment.discount.amount - Discount amount (e.g. 20 for 20% percent offer, or 2 for $2 fixed offer)
+
+ * @returns {string}
+ */
 function getOfferLabel({nextPayment}) {
     if (!nextPayment) {
         return '';
@@ -202,14 +224,21 @@ function getOfferLabel({nextPayment}) {
     if (discount.duration === 'forever') {
         durationLabel = t('Forever');
     } else if (discount.duration === 'once') {
-        durationLabel = 'Next payment';
+        durationLabel = t('Next payment');
     } else if (discount.duration === 'repeating' && discount.end) {
         durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(discount.end)});
     }
 
-    // Format the discounted price from next_payment.amount
     const formattedPrice = Intl.NumberFormat('en', {currency: nextPayment.currency, style: 'currency'}).format(nextPayment.amount / 100);
-    return `${formattedPrice}/${nextPayment.interval}${durationLabel ? ` — ${durationLabel}` : ''}`;
+
+    let displayedPrice = '';
+    if (discount.duration === 'once') {
+        displayedPrice = formattedPrice;
+    } else {
+        displayedPrice = `${formattedPrice}/${nextPayment.interval}`;
+    }
+
+    return `${displayedPrice}${durationLabel ? ` — ${durationLabel}` : ''}`;
 }
 
 export default PaidAccountActions;

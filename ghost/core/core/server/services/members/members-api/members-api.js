@@ -78,7 +78,8 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    urlUtils
+    urlUtils,
+    commentsService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -157,7 +158,8 @@ module.exports = function MembersAPI({
         memberAttributionService,
         emailSuppressionList,
         settingsHelpers,
-        nextPaymentCalculator
+        nextPaymentCalculator,
+        commentsService
     });
 
     const geolocationService = new GeolocationService();
