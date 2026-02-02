@@ -1686,19 +1686,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     }
 }
 
-
-/* What's new badges
-/* ---------------------------------------------------- */
-.gh-whats-new-badge-account {
-    top: -1px;
-    right: -3px;
-    border: 1px solid #fff;
-    width: 12px;
-    height: 12px;
-    background-color: var(--green);
-}
-
-
 /* Used on tags, settings, labs, design etc.
 /* TODO: remove and re-use gh-canvas...
 /* ---------------------------------------------------- */
