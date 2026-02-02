@@ -15,6 +15,9 @@ const LinkRedirect = require('./link-redirect');
 // %%{member_uuid}%% is substituted with the actual UUID at redirect time
 const MEMBER_UUID_PLACEHOLDER = '%%{member_uuid}%%';
 
+// UUID v4 pattern (8-4-4-4-12 hex format) for validating member UUIDs
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 class LinkRedirectsService {
     /** @type ILinkRedirectRepository */
     #linkRedirectRepository;
@@ -127,9 +130,10 @@ class LinkRedirectsService {
             const hasMemberUuidPlaceholder = decodedUrl.includes(MEMBER_UUID_PLACEHOLDER);
             if (hasMemberUuidPlaceholder) {
                 const memberUuid = url.searchParams.get('m');
-                if (memberUuid) { // assume valid if present as m={uuid}
+                if (memberUuid && UUID_REGEX.test(memberUuid)) {
                     redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join(memberUuid);
-                } else { // remove if no member UUID is present
+                } else {
+                    // Remove placeholder if no valid UUID (includes unsubstituted Mailgun variables)
                     redirectUrl = decodedUrl.split(MEMBER_UUID_PLACEHOLDER).join('');
                 }
             }

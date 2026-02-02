@@ -189,7 +189,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                originalUrl: '/r/abc?m=actual-member-uuid-123'
+                originalUrl: '/r/abc?m=a1b2c3d4-e5f6-4789-abcd-ef1234567890'
             };
             const res = {
                 redirect: sinon.fake(),
@@ -197,7 +197,7 @@ describe('LinkRedirectsService', function () {
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=actual-member-uuid-123');
+            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
         });
 
         it('substitutes multiple %%{member_uuid}%% placeholders in the same URL', async function () {
@@ -218,7 +218,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                originalUrl: '/r/abc?m=uuid-456'
+                originalUrl: '/r/abc?m=f47ac10b-58cc-4372-a567-0e02b2c3d479'
             };
             const res = {
                 redirect: sinon.fake(),
@@ -226,7 +226,7 @@ describe('LinkRedirectsService', function () {
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/path?id=uuid-456&verify=uuid-456');
+            assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/path?id=f47ac10b-58cc-4372-a567-0e02b2c3d479&verify=f47ac10b-58cc-4372-a567-0e02b2c3d479');
         });
 
         it('removes %%{member_uuid}%% placeholder when m param is missing', async function () {
@@ -258,7 +258,7 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
-        it('substitutes %%{member_uuid}%% placeholder with raw Mailgun variable if present', async function () {
+        it('removes %%{member_uuid}%% placeholder when m param contains invalid value like unsubstituted Mailgun variable', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
@@ -284,7 +284,8 @@ describe('LinkRedirectsService', function () {
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%');
+            // Invalid UUID (unsubstituted Mailgun variable) should result in empty string
+            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
         it('does not modify redirect URL when no %%{member_uuid}%% placeholder is present', async function () {
@@ -337,7 +338,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             const req = {
-                originalUrl: '/r/abc?m=actual-member-uuid-123'
+                originalUrl: '/r/abc?m=a1b2c3d4-e5f6-4789-abcd-ef1234567890'
             };
             const res = {
                 redirect: sinon.fake(),
@@ -345,7 +346,7 @@ describe('LinkRedirectsService', function () {
             };
             await instance.handleRequest(req, res);
             assert.equal(res.redirect.callCount, 1);
-            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=actual-member-uuid-123');
+            assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
         });
     });
 });
