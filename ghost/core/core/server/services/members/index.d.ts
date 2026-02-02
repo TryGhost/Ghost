@@ -3,6 +3,7 @@ interface MemberBREADService {
         memberId: string,
         reason: string,
         expiresAt: Date | null,
+        hideComments: boolean,
         context: unknown
     ): Promise<unknown>;
 

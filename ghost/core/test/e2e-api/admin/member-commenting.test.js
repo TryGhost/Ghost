@@ -140,6 +140,37 @@ describe('Member Commenting API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Can disable commenting and hide comments with hide_comments: true', async function () {
+            await agent
+                .post(`members/${member.id}/commenting/disable`)
+                .body({
+                    reason: 'Spam behavior',
+                    hide_comments: true
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Can disable commenting without hiding comments when hide_comments: false', async function () {
+            const {body} = await agent
+                .post(`members/${member.id}/commenting/disable`)
+                .body({
+                    reason: 'Warning',
+                    hide_comments: false
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            assert.equal(body.members[0].can_comment, false);
+            assert.equal(body.members[0].commenting.disabled, true);
+        });
     });
 
     describe('POST /members/:id/commenting/enable', function () {
@@ -672,6 +703,90 @@ describe('Member with Commenting Disabled - Comment Restriction', function () {
                 html: '<p>This comment should be allowed</p>'
             }]})
             .expectStatus(201);
+    });
+
+    it('Disabling with hide_comments hides member comments from the public API', async function () {
+        // Log in as the member
+        await membersAgent.loginAs(member.get('email'));
+
+        // Post two comments as the member
+        await membersAgent
+            .post('/api/comments/')
+            .body({comments: [{
+                post_id: postId,
+                html: '<p>First visible comment</p>'
+            }]})
+            .expectStatus(201);
+
+        await membersAgent
+            .post('/api/comments/')
+            .body({comments: [{
+                post_id: postId,
+                html: '<p>Second visible comment</p>'
+            }]})
+            .expectStatus(201);
+
+        // Verify comments are visible
+        const beforeResponse = await membersAgent
+            .get(`/api/comments/post/${postId}/`)
+            .expectStatus(200);
+
+        const commentsBefore = beforeResponse.body.comments.filter(
+            c => c.member?.id === member.id
+        );
+        assert.equal(commentsBefore.length, 2);
+
+        // Admin disables commenting with hide_comments: true
+        await adminAgent
+            .post(`members/${member.id}/commenting/disable`)
+            .body({
+                reason: 'Spam behavior',
+                hide_comments: true
+            })
+            .expectStatus(200);
+
+        // Verify comments are no longer visible via the public API
+        const afterResponse = await membersAgent
+            .get(`/api/comments/post/${postId}/`)
+            .expectStatus(200);
+
+        const commentsAfter = afterResponse.body.comments.filter(
+            c => c.member?.id === member.id
+        );
+        assert.equal(commentsAfter.length, 0);
+    });
+
+    it('Disabling without hide_comments keeps member comments visible', async function () {
+        // Log in as the member
+        await membersAgent.loginAs(member.get('email'));
+
+        // Post a comment as the member
+        await membersAgent
+            .post('/api/comments/')
+            .body({comments: [{
+                post_id: postId,
+                html: '<p>This should stay visible</p>'
+            }]})
+            .expectStatus(201);
+
+        // Admin disables commenting without hiding
+        await adminAgent
+            .post(`members/${member.id}/commenting/disable`)
+            .body({
+                reason: 'Warning',
+                hide_comments: false
+            })
+            .expectStatus(200);
+
+        // Verify comment is still visible via the public API
+        const response = await membersAgent
+            .get(`/api/comments/post/${postId}/`)
+            .expectStatus(200);
+
+        const memberComments = response.body.comments.filter(
+            c => c.member?.id === member.id
+        );
+        assert.equal(memberComments.length, 1);
     });
 
     it('Member with commenting re-enabled can comment again', async function () {
