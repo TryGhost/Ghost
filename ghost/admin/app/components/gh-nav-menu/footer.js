@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import ThemeErrorsModal from '../modals/design/theme-errors';
-import WhatsNew from '../modals/whats-new';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
@@ -12,7 +11,6 @@ import {inject as service} from '@ember/service';
 export default class Footer extends Component {
     @service session;
     @service router;
-    @service whatsNew;
     @service feature;
     @service modals;
     @service themeManagement;
@@ -57,11 +55,6 @@ export default class Footer extends Component {
         style['z-index'] = '1100';
 
         return {horizontalPosition, verticalPosition, style};
-    }
-
-    @action
-    openWhatsNew() {
-        return this.modals.open(WhatsNew);
     }
 
     @action
