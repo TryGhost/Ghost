@@ -165,24 +165,22 @@ export default class MagicLinkPage extends React.Component {
     renderCloseButton() {
         const {site, sniperLinks} = this.context;
         const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-        if (isSniperLinksEnabled && sniperLinks) {
-            return (
-                <SniperLinkButton
-                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                    label={t('Open email')}
-                    brandColor={this.context.brandColor}
-                />
-            );
-        } else {
-            return (
+        return (
+            <footer className='gh-portal-signin-footer gh-button-row'>
                 <ActionButton
                     style={{width: '100%'}}
                     onClick={e => this.handleClose(e)}
                     brandColor={this.context.brandColor}
                     label={t('Close')}
                 />
-            );
-        }
+                {isSniperLinksEnabled && sniperLinks ? (
+                    <SniperLinkButton
+                        href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
+                        provider={sniperLinks.provider}
+                    />
+                ) : null}
+            </footer>
+        );
     }
 
     handleSubmit(e) {
@@ -284,7 +282,7 @@ export default class MagicLinkPage extends React.Component {
                     }
                 </section>
 
-                <footer className='gh-portal-signin-footer'>
+                <footer className='gh-portal-signin-footer gh-button-row'>
                     <ActionButton
                         style={{width: '100%'}}
                         onClick={e => this.handleSubmit(e)}
@@ -297,8 +295,7 @@ export default class MagicLinkPage extends React.Component {
                     {isSniperLinksEnabled && sniperLinks ? (
                         <SniperLinkButton
                             href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                            label={t('Open email')}
-                            brandColor={this.context.brandColor}
+                            provider={sniperLinks.provider}
                         />
                     ) : null}
                 </footer>
