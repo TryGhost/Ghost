@@ -1,0 +1,69 @@
+name: Cleanup Stripe Test Accounts
+
+on:
+  schedule:
+    # Run twice daily at 3 AM and 3 PM UTC
+    - cron: '0 3,15 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  cleanup:
+    name: Delete old test accounts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup old Stripe Connect test accounts
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${STRIPE_SECRET_KEY:-}" ]; then
+            echo "STRIPE_SECRET_KEY is not set"
+            exit 1
+          fi
+          # Delete test accounts older than 24 hours
+          # Accounts are named like: test-{runId}-{parallelIndex}@example.com
+
+          MAX_AGE_HOURS=24
+          MAX_AGE_SECONDS=$((MAX_AGE_HOURS * 60 * 60))
+          NOW=$(date +%s)
+          DELETED=0
+
+          echo "Fetching Stripe Connect test accounts..."
+
+          # Paginate through all accounts
+          HAS_MORE=true
+          STARTING_AFTER=""
+
+          while [ "$HAS_MORE" = "true" ]; do
+            if [ -z "$STARTING_AFTER" ]; then
+              RESPONSE=$(curl -s -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100")
+            else
+              RESPONSE=$(curl -s -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts?limit=100&starting_after=$STARTING_AFTER")
+            fi
+
+            # Extract account data
+            ACCOUNTS=$(echo "$RESPONSE" | jq -c '.data[]')
+            HAS_MORE=$(echo "$RESPONSE" | jq -r '.has_more')
+
+            while IFS= read -r account; do
+              [ -z "$account" ] && continue
+
+              ID=$(echo "$account" | jq -r '.id')
+              EMAIL=$(echo "$account" | jq -r '.email // ""')
+              CREATED=$(echo "$account" | jq -r '.created')
+
+              # Check if this is a test account (matches our naming pattern: test-{runId}-{attempt}-{index}@example.com)
+              if [[ "$EMAIL" =~ ^test-.*@example\.com$ ]]; then
+                AGE=$((NOW - CREATED))
+                if [ "$AGE" -gt "$MAX_AGE_SECONDS" ]; then
+                  echo "Deleting $ID ($EMAIL) - age: $((AGE / 3600)) hours"
+                  curl -s -X DELETE -u "$STRIPE_SECRET_KEY:" "https://api.stripe.com/v1/accounts/$ID" > /dev/null
+                  DELETED=$((DELETED + 1))
+                fi
+              fi
+
+              STARTING_AFTER="$ID"
+            done <<< "$ACCOUNTS"
+          done
+
+          echo "Deleted $DELETED old test accounts"
