@@ -92,6 +92,7 @@ const SETTING_KEYS_BLOCKLIST = [
     'stripe_connect_account_id',
     'stripe_secret_key',
     'stripe_publishable_key',
+    'stripe_billing_portal_configuration_id',
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
     'email_verification_required',

@@ -178,7 +178,6 @@ export default function NewsletterManagement({
                             className="gh-portal-btn-text gh-email-faq-page-button"
                             onClick={() => doAction('switchPage', {page: 'emailReceivingFAQ', pageData: {direct: false}})}
                         >
-                            {/* eslint-disable-next-line i18next/no-literal-string */}
                             {t('Get help')} <span className="right-arrow">&rarr;</span>
                         </button>
                     </div>

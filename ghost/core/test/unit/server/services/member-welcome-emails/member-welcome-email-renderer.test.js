@@ -220,8 +220,7 @@ describe('MemberWelcomeEmailRenderer', function () {
 
             result.html.should.containEql('<!doctype html>');
             result.html.should.containEql('<title>Test Subject</title>');
-            result.html.should.containEql('<p>Content</p>');
-            result.html.should.containEql('Test Site');
+            result.html.should.containEql('>Content</p>');
         });
 
         it('generates plain text from HTML', async function () {

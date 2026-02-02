@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "منسوخ کریں",
     "Comment": "تبادلہ",
+    "Commenting disabled": "",
     "Complete your profile": "اپنا پروفائل مکمل کریں",
+    "Contact support": "",
     "Delete": "حذف کریں",
     "Deleted": "",
     "Deleted member": "حذف شدہ رکن",
@@ -28,6 +30,7 @@
     "edited": "",
     "Enter your name": "اپنا نام درج کریں",
     "Expertise": "اہلیت",
+    "for more information.": "",
     "Founder @ Acme Inc": "ناظم @ Acme Inc",
     "Full-time parent": "پورے وقت کا والد یا والدہ",
     "Head of Marketing at Acme, Inc": "Acme، Inc کے مارکیٹنگ کا سربراہ",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "یہ تبادلہ چھپا گیا ہے۔",
     "This comment has been removed.": "یہ تبادلہ ہٹا دیا گیا ہے۔",
     "Upgrade now": "اب اپ گریڈ کریں",
+    "View in admin": "",
     "Yesterday": "کل",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "آپ کا درخواست اس سائٹ کے مالک کو بھیجا جائے گا۔"
 }

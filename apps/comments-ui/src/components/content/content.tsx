@@ -1,5 +1,6 @@
 import CTABox from './cta-box';
 import Comment from './comment';
+import CommentingDisabledBox from './commenting-disabled-box';
 import ContentTitle from './content-title';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
@@ -72,7 +73,7 @@ function onIframeResize(
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo} = useAppContext();
+    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
@@ -140,19 +141,27 @@ const Content = () => {
         scrollToComment(element, commentIdToScrollTo);
     }, [commentIdToScrollTo, commentsIsLoading, comments, scrollToComment]);
 
-    const isPaidOnly = commentsEnabled === 'paid';
-    const isPaidMember = member && !!member.paid;
     const isFirst = pagination?.total === 0;
+    const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
 
-    const commentsComponents = comments.slice().map(comment => <Comment key={comment.id} comment={comment} />);
+    // Explicit form/box visibility states
+    const showMainForm = canComment;
+    const showDisabledBox = !canComment && isCommentingDisabled;
+    const showCtaBox = !canComment && !isCommentingDisabled;
+
+    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
 
     return (
         <>
             <ContentTitle count={commentCount} showCount={showCount} title={title}/>
             <div>
-                {(member && (isPaidMember || !isPaidOnly)) ? (
-                    <MainForm commentsCount={comments.length} />
-                ) : (
+                {showMainForm && <MainForm commentsCount={comments.length} />}
+                {showDisabledBox && (
+                    <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="commenting-disabled-box">
+                        <CommentingDisabledBox />
+                    </section>
+                )}
+                {showCtaBox && (
                     <section className="flex flex-col items-center py-6 sm:px-8 sm:py-10" data-testid="cta-box">
                         <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
                     </section>

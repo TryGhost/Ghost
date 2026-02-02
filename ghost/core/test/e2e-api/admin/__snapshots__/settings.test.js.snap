@@ -129,6 +129,10 @@ Object {
       "value": "noreply",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -936,6 +940,10 @@ Object {
       "value": "noreply",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -1326,6 +1334,10 @@ Object {
       "value": "support@example.com",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -1591,7 +1603,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4753",
+  "content-length": "4774",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1759,6 +1771,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "noreply",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -2148,6 +2164,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -2994,6 +3014,10 @@ Object {
       "value": "noreply",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -3384,6 +3408,10 @@ Object {
       "value": "default@email.com",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -3772,6 +3800,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@sendingdomain.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -4168,6 +4200,10 @@ Object {
       "value": "default@email.com",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -4555,6 +4591,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -4949,6 +4989,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -5701,6 +5745,10 @@ Object {
       "value": "support@customdomain.com",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -6089,6 +6137,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -6481,6 +6533,10 @@ Object {
       "value": "default@email.com",
     },
     Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
+    },
+    Object {
       "key": "stripe_secret_key",
       "value": null,
     },
@@ -6870,6 +6926,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -7324,6 +7384,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",

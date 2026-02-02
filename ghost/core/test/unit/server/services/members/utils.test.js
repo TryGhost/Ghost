@@ -24,6 +24,8 @@ describe('Members Service - utils', function () {
                 status: 'free',
                 extra: 'property',
                 enable_comment_notifications: true,
+                can_comment: true,
+                commenting: null,
                 email_suppression: {
                     suppressed: false,
                     info: null
@@ -43,6 +45,8 @@ describe('Members Service - utils', function () {
                 subscriptions: [],
                 paid: false,
                 enable_comment_notifications: true,
+                can_comment: true,
+                commenting: null,
                 email_suppression: {
                     suppressed: false,
                     info: null
@@ -71,6 +75,8 @@ describe('Members Service - utils', function () {
                     sort_order: 0
                 }],
                 enable_comment_notifications: false,
+                can_comment: true,
+                commenting: null,
                 unsubscribe_url: undefined,
                 created_at: '2020-01-01T00:00:00.000Z'
             });
@@ -92,6 +98,8 @@ describe('Members Service - utils', function () {
                     sort_order: 0
                 }],
                 enable_comment_notifications: false,
+                can_comment: true,
+                commenting: null,
                 unsubscribe_url: undefined,
                 created_at: '2020-01-01T00:00:00.000Z'
             });

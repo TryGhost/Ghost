@@ -87,12 +87,13 @@ async function signin({data, api, state}) {
             integrityToken,
             includeOTC: true
         };
-        const response = await api.member.sendMagicLink(payload);
-        const otcRef = response.otc_ref;
+        const {otc_ref: otcRef, sniperLinks} = await api.member.sendMagicLink(payload);
         return {
             page: 'magiclink',
             lastPage: 'signin',
             ...(otcRef ? {otcRef} : {}),
+            // TODO: Display these sniperlinks in the UI. See NY-946.
+            sniperLinks,
             pageData: {
                 ...(state.pageData || {}),
                 email: (data?.email || '').trim()
@@ -112,6 +113,7 @@ async function signin({data, api, state}) {
 function startSigninOTCFromCustomForm({data, state}) {
     const email = (data?.email || '').trim();
     const otcRef = data?.otcRef;
+    const sniperLinks = data?.sniperLinks;
 
     if (!otcRef) {
         return {};
@@ -122,6 +124,8 @@ function startSigninOTCFromCustomForm({data, state}) {
         page: 'magiclink',
         lastPage: 'signin',
         otcRef,
+        // TODO: Display these sniperlinks in the UI. See NY-946.
+        sniperLinks,
         pageData: {
             ...(state.pageData || {}),
             email
@@ -158,9 +162,10 @@ async function signup({data, state, api}) {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
         name = name?.trim();
 
+        let sniperLinks;
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name});
+            ({sniperLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -175,6 +180,7 @@ async function signup({data, state, api}) {
         return {
             page: 'magiclink',
             lastPage: 'signup',
+            sniperLinks,
             pageData: {
                 ...(state.pageData || {}),
                 email: (email || '').trim()
@@ -326,6 +332,20 @@ async function applyOffer({data, state, api}) {
             popupNotification: createPopupNotification({
                 type: 'applyOffer:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: 'Failed to apply offer, please try again'
+            })
+        };
+    }
+}
+
+async function editBilling({data, state, api}) {
+    try {
+        await api.member.editBilling(data);
+    } catch (e) {
+        return {
+            action: 'editBilling:failed',
+            popupNotification: createPopupNotification({
+                type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to update billing information, please try again')
             })
         };
     }
@@ -653,6 +673,7 @@ const Actions = {
     updateProfile,
     refreshMemberData,
     clearPopupNotification,
+    editBilling,
     manageBilling,
     checkoutPlan,
     updateNewsletterPreference,

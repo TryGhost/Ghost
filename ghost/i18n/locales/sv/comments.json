@@ -17,7 +17,9 @@
     "Best": "Mest populär",
     "Cancel": "Avbryt",
     "Comment": "Kommentar",
+    "Commenting disabled": "",
     "Complete your profile": "Fyll i hela din profil",
+    "Contact support": "",
     "Delete": "Ta bort",
     "Deleted": "Borttaget",
     "Deleted member": "Borttagen medlem",
@@ -28,6 +30,7 @@
     "edited": "Ändrad",
     "Enter your name": "Skriv ditt namn",
     "Expertise": "Expertis",
+    "for more information.": "",
     "Founder @ Acme Inc": "Grundare av Företaget AB",
     "Full-time parent": "Hemmaförälder",
     "Head of Marketing at Acme, Inc": "Marknadsföringschef på Företaget AB",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Denna kommentar har dolts",
     "This comment has been removed.": "Denna kommentar är borttagen",
     "Upgrade now": "Uppgradera nu",
+    "View in admin": "",
     "Yesterday": "I går",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Din anmälan skickas till ansvarig för webbplatsen"
 }

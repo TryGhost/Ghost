@@ -22,11 +22,9 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'i18n',
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility',
     'explore'
 ];
 
@@ -45,7 +43,6 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
-    'contentVisibilityAlpha',
     'emailCustomization',
     'tagsX',
     'emailUniqueid',
@@ -56,7 +53,9 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'featurebaseFeedback',
     'transistor',
-    'disableMemberCommenting'
+    'disableMemberCommenting',
+    'disableMemberCommentingHideComments',
+    'sniperlinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

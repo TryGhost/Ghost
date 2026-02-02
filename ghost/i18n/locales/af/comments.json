@@ -17,7 +17,9 @@
     "Best": "",
     "Cancel": "Kanselleer",
     "Comment": "Kommentaar",
+    "Commenting disabled": "",
     "Complete your profile": "Voltooi jou profiel",
+    "Contact support": "",
     "Delete": "Skrap",
     "Deleted": "",
     "Deleted member": "Geskrapte lid",
@@ -28,6 +30,7 @@
     "edited": "geredigeer",
     "Enter your name": "Voer jou naam in",
     "Expertise": "Kundigheid",
+    "for more information.": "",
     "Founder @ Acme Inc": "Stigter @ Acme Inc",
     "Full-time parent": "Voltydse ouer",
     "Head of Marketing at Acme, Inc": "Hoof van Bemarking by Acme, Inc",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Hierdie kommentaar is weggesteek.",
     "This comment has been removed.": "Hierdie kommentaar is verwyder.",
     "Upgrade now": "Gradeer nou op",
+    "View in admin": "",
     "Yesterday": "Gister",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Jou versoek sal aan die eienaar van hierdie webwerf gestuur word."
 }

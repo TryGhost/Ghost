@@ -15,6 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './app.css';
 import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
 const DEV_MODE_DATA = {
@@ -46,7 +47,7 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.setupCustomTriggerButton(props);
+        this.setupCustomTriggerButton();
 
         this.state = {
             site: null,
@@ -60,8 +61,7 @@ export default class App extends React.Component {
             lastPage: null,
             customSiteUrl: props.customSiteUrl,
             locale: props.locale,
-            scrollbarWidth: 0,
-            labs: props.labs || {}
+            scrollbarWidth: 0
         };
     }
 
@@ -109,7 +109,6 @@ export default class App extends React.Component {
                 siteUrl,
                 site: contextState.site,
                 member: contextState.member,
-                labs: contextState.labs,
                 doAction: contextState.doAction,
                 captureException: Sentry.captureException
             });
@@ -927,7 +926,7 @@ export default class App extends React.Component {
     /**Get Accent color from site data*/
     getAccentColor() {
         const {accent_color: accentColor} = this.state.site || {};
-        return accentColor;
+        return validateHexColor(accentColor);
     }
 
     /**Get final page set in App context from state data*/
@@ -963,7 +962,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, labs, otcRef} = this.state;
+        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, otcRef, sniperLinks} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -983,8 +982,8 @@ export default class App extends React.Component {
             customSiteUrl,
             dir,
             scrollbarWidth,
-            labs,
             otcRef,
+            sniperLinks,
             doAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }

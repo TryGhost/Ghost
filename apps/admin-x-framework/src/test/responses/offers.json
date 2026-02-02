@@ -15,6 +15,7 @@
             "currency": null,
             "status": "active",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
@@ -35,6 +36,7 @@
             "currency": null,
             "status": "active",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
@@ -55,6 +57,7 @@
             "currency": null,
             "status": "archived",
             "redemption_count": 0,
+            "redemption_type": "signup",
             "tier": {
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"

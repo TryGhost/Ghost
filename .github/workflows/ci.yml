@@ -44,6 +44,7 @@ jobs:
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
       IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
+      IS_FIVE: ${{ github.ref == 'refs/heads/5.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -215,8 +216,10 @@ jobs:
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
+      is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
+      has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -366,6 +369,8 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn knex-migrator init
+      env:
+        NODE_OPTIONS: "--import=tsx"
 
     - name: Setup Playwright
       uses: ./.github/actions/setup-playwright
@@ -401,7 +406,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true'
+    if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
@@ -1110,10 +1115,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [job_docker_build, job_setup]
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
+        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
+        shardTotal: [8]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1163,7 +1168,7 @@ jobs:
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
           TEST_WORKERS_COUNT: 1
-        run: yarn test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: yarn test:e2e:all --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
@@ -1410,7 +1415,7 @@ jobs:
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.is_five == 'true')
     permissions:
       id-token: write
     strategy:
@@ -1455,9 +1460,7 @@ jobs:
         working-directory: ${{ matrix.package_path }}
         run: |
           CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
           echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
 
           CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
           echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
@@ -1465,12 +1468,27 @@ jobs:
           CURRENT_MAJOR=$(cat package.json | jq -r .version | awk -F. '{print $1}')
           echo "current_major=$CURRENT_MAJOR" >> $GITHUB_OUTPUT
 
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_OUTPUT
+          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
+            # For 5.x branch, check if this exact version exists on npm
+            if npm show ${{ matrix.package_name }}@$CURRENT_VERSION version > /dev/null 2>&1; then
+              echo "Version $CURRENT_VERSION already exists on npm."
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Version $CURRENT_VERSION does not exist on npm."
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_OUTPUT
+            # For main branch, compare against latest
+            PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
+            echo "Published version (latest): $PUBLISHED_VERSION"
+
+            if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+              echo "Version is unchanged."
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Version has changed."
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Build the package
@@ -1490,7 +1508,12 @@ jobs:
       - name: Publish to npm
         if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
-        run: npm publish --access public
+        run: |
+          if [ "${{ needs.job_setup.outputs.is_five }}" = "true" ]; then
+            npm publish --access public --tag ghost-5x
+          else
+            npm publish --access public
+          fi
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths

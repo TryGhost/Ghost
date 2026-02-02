@@ -17,7 +17,9 @@
     "Best": "Най-добрите",
     "Cancel": "Отказ",
     "Comment": "Коментар",
+    "Commenting disabled": "",
     "Complete your profile": "Попълнете профила си",
+    "Contact support": "",
     "Delete": "Изтриване",
     "Deleted": "Изтрито",
     "Deleted member": "Изтрит абонат",
@@ -28,6 +30,7 @@
     "edited": "редактиран",
     "Enter your name": "Попълнете името си",
     "Expertise": "Компетенции",
+    "for more information.": "",
     "Founder @ Acme Inc": "Основател на Компания ООД",
     "Full-time parent": "Родител на пълно работно време",
     "Head of Marketing at Acme, Inc": "Директор маркетинг в Компания ООД",
@@ -69,6 +72,8 @@
     "This comment has been hidden.": "Този коментар е скрит.",
     "This comment has been removed.": "Този коментар е премахнат.",
     "Upgrade now": "Надградете сега",
+    "View in admin": "",
     "Yesterday": "Вчера",
+    "You can't post comments in this publication.": "",
     "Your request will be sent to the owner of this site.": "Искането ще бъде изпратено до собственика на сайта."
 }
