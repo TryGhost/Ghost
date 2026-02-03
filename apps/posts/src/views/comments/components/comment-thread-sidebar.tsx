@@ -3,16 +3,13 @@ import React from 'react';
 import {
     Button,
     EmptyIndicator,
-    H3,
     LoadingIndicator,
     LucideIcon,
     Sheet,
     SheetContent,
     SheetHeader,
-    SheetTitle,
-    cn
+    SheetTitle
 } from '@tryghost/shade';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useCommentReplies, useReadComment} from '@tryghost/admin-x-framework/api/comments';
 
 interface CommentThreadSidebarProps {
@@ -41,23 +38,16 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
         enabled: open && !!commentId
     });
 
-    // Fetch site data for post preview
-    const {data: siteData} = useBrowseSite();
-
     const isLoading = isLoadingReplies || isLoadingParent;
     // Only show error if both queries failed, or if parent failed (we need parent to render)
     // If only replies failed, we can still show the parent comment
     const isError = isParentError || (isRepliesError && !parentData);
-    
+
     // Get the parent comment from the read results
     const parentComment = parentData?.comments?.[0];
-    
+
     // Get all replies (empty array if replies query failed)
     const replies = repliesData?.comments || [];
-
-    // Get post data from parent comment
-    const post = parentComment?.post;
-    const site = siteData?.site;
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
