@@ -26,7 +26,7 @@
     "Become a paid member of {publication} to start commenting.": "Call to action in the comments app",
     "Become a paid member of {site} to get access to all premium content.": "Call to action for paid content",
     "Best": "Text appears in the sorting selector for comments",
-    "Billing info & receipts": "",
+    "Billing info & receipts": "Title in Portal for the section which links to Stripe's billing portal",
     "Black Friday": "An example offer name",
     "By {authors}": "Newsletter header text",
     "Cancel": "Button text",
