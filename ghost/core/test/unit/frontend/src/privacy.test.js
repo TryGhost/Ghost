@@ -65,7 +65,7 @@ describe('Privacy Utils', function () {
             const result = maskSensitiveData(payload);
             const parsed = JSON.parse(result);
             
-            should.deepEqual(parsed, {});
+            assert.deepEqual(parsed, {});
         });
     });
 
@@ -135,7 +135,7 @@ describe('Privacy Utils', function () {
             const result = processPayload(payload, globalAttributes);
             const parsed = JSON.parse(result);
             
-            should.deepEqual(parsed, {});
+            assert.deepEqual(parsed, {});
         });
     });
 }); 
