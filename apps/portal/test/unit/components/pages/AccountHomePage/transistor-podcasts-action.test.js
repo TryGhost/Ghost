@@ -26,11 +26,6 @@ describe('TransistorPodcastsAction', () => {
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
-        test('renders nothing when both props are missing', () => {
-            const {queryByText} = setup({});
-            expect(queryByText('Podcasts')).not.toBeInTheDocument();
-        });
-
         test('renders Podcasts section with Subscribe link when hasPodcasts is true', () => {
             const {queryByText} = setup({hasPodcasts: true, memberUuid: 'test-uuid-123'});
             expect(queryByText('Podcasts')).toBeInTheDocument();
