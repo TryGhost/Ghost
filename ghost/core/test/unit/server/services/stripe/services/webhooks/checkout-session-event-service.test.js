@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
 
 describe('CheckoutSessionEventService', function () {
-    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail;
+    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive;
 
     beforeEach(function () {
         api = {
@@ -36,6 +36,7 @@ describe('CheckoutSessionEventService', function () {
         };
 
         sendSignupEmail = sinon.stub();
+        isPaidWelcomeEmailActive = sinon.stub().resolves(false);
     });
 
     describe('handleEvent', function () {
@@ -541,7 +542,7 @@ describe('CheckoutSessionEventService', function () {
         let member;
 
         beforeEach(function () {
-            service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail});
+            service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive});
             session = {
                 customer: 'cust_123',
                 metadata: {
@@ -677,6 +678,78 @@ describe('CheckoutSessionEventService', function () {
             assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.newsletters, undefined);
+        });
+
+        describe('signup email logic', function () {
+            it('should send signup email when requestSrc is not portal (custom membership page)', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.requestSrc = undefined;
+                isPaidWelcomeEmailActive.resolves(true); // Even if welcome email is active
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+            });
+
+            it('should send signup email when requestSrc is portal but welcome email is not active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.requestSrc = 'portal';
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce);
+                assert(sendSignupEmail.calledWith('customer@example.com'));
+            });
+
+            it('should NOT send signup email when requestSrc is portal AND welcome email is active', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.requestSrc = 'portal';
+                isPaidWelcomeEmailActive.resolves(true);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
+
+            it('should always send signup email for custom membership pages regardless of welcome email status', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(null);
+                session.metadata.requestSrc = undefined; // Not portal (custom membership page)
+                isPaidWelcomeEmailActive.resolves(true); // Welcome email IS active
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(sendSignupEmail.calledOnce); // Still sent because user needs magic link
+            });
+
+            it('should NOT send signup email on upgrade regardless of requestSrc or welcome email', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(member);
+                session.metadata.checkoutType = 'upgrade';
+                session.metadata.requestSrc = 'portal';
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
+
+            it('should NOT send signup email on upgrade from custom membership page', async function () {
+                api.getCustomer.resolves(customer);
+                memberRepository.get.resolves(member);
+                session.metadata.checkoutType = 'upgrade';
+                session.metadata.requestSrc = undefined;
+                isPaidWelcomeEmailActive.resolves(false);
+
+                await service.handleSubscriptionEvent(session);
+
+                assert(!sendSignupEmail.called);
+            });
         });
     });
 });
