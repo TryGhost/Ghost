@@ -92,11 +92,7 @@ export const useHideComment = createMutation<CommentsResponseType, {id: string}>
         }]
     }),
     invalidateQueries: {
-        filters: {
-            predicate: (query) => {
-                return query.queryKey[0] === 'CommentsResponseType' || query.queryKey[0] === 'CommentThreadResponseType';
-            }
-        }
+        dataType
     }
 });
 
@@ -110,11 +106,7 @@ export const useShowComment = createMutation<CommentsResponseType, {id: string}>
         }]
     }),
     invalidateQueries: {
-        filters: {
-            predicate: (query) => {
-                return query.queryKey[0] === 'CommentsResponseType' || query.queryKey[0] === 'CommentThreadResponseType';
-            }
-        }
+        dataType
     }
 });
 
@@ -128,22 +120,12 @@ export const useDeleteComment = createMutation<CommentsResponseType, {id: string
         }]
     }),
     invalidateQueries: {
-        dataType: 'CommentsResponseType',
-        filters: {
-            predicate: (query) => {
-                return query.queryKey[0] === 'CommentsResponseType' || query.queryKey[0] === 'CommentThreadResponseType';
-            }
-        }
+        dataType
     }
 });
 
-export interface CommentThreadResponseType {
-    meta?: Meta;
-    comments: Comment[];
-}
-
-const useCommentRepliesQuery = createQueryWithId<CommentThreadResponseType>({
-    dataType: 'CommentThreadResponseType',
+export const useCommentReplies = createQueryWithId<CommentsResponseType>({
+    dataType,
     path: (id: string) => `/comments/${id}/replies/`,
     defaultSearchParams: {
         include: 'member,post,count.replies,count.likes,count.reports,parent',
@@ -151,52 +133,10 @@ const useCommentRepliesQuery = createQueryWithId<CommentThreadResponseType>({
     }
 });
 
-export const useCommentReplies = (commentId: string | null, options?: {enabled?: boolean}) => {
-    // Always call the hook to maintain hook order, but disable when commentId is null
-    // Use a placeholder ID to avoid invalid URLs in queryKey when commentId is null
-    const result = useCommentRepliesQuery(commentId || '__placeholder__', {
-        enabled: options?.enabled !== false && !!commentId
-    });
-    
-    // Return empty state when commentId is null to match previous behavior
-    if (!commentId) {
-        return {
-            data: undefined,
-            isLoading: false,
-            isError: false,
-            error: null,
-            refetch: () => Promise.resolve({data: undefined, isLoading: false, isError: false, error: null} as unknown as ReturnType<typeof result.refetch>)
-        };
-    }
-    
-    return result;
-};
-
-const useReadCommentQuery = createQueryWithId<CommentsResponseType>({
-    dataType: 'CommentsResponseType',
+export const useReadComment = createQueryWithId<CommentsResponseType>({
+    dataType,
     path: (id: string) => `/comments/${id}/`,
     defaultSearchParams: {
         include: 'member,post,count.replies,count.likes,count.reports,parent'
     }
 });
-
-export const useReadComment = (commentId: string | null, options?: {enabled?: boolean}) => {
-    // Always call the hook to maintain hook order, but disable when commentId is null
-    // Use a placeholder ID to avoid invalid URLs in queryKey when commentId is null
-    const result = useReadCommentQuery(commentId || '__placeholder__', {
-        enabled: options?.enabled !== false && !!commentId
-    });
-    
-    // Return empty state when commentId is null to match previous behavior
-    if (!commentId) {
-        return {
-            data: undefined,
-            isLoading: false,
-            isError: false,
-            error: null,
-            refetch: () => Promise.resolve({data: undefined, isLoading: false, isError: false, error: null} as unknown as ReturnType<typeof result.refetch>)
-        };
-    }
-    
-    return result;
-};
