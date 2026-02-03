@@ -98,6 +98,7 @@
     "If the spam complaint was accidental, or you would like to begin receiving emails again, you can resubscribe to emails by clicking the button on the previous screen.": "스팸 신고가 실수였거나 이메일을 다시 받기를 원하면, 이전 화면의 버튼을 클릭하여 이메일을 다시 구독할 수 있어요.",
     "If you cancel your subscription now, you will continue to have access until {periodEnd}.": "지금 구독을 취소하시면 {periodEnd}까지는 계속 이용하실 수 있어요.",
     "If you have a corporate or government email account, reach out to your IT department and ask them to allow emails to be received from {senderEmail}": "만약 회사나 정부 이메일 계정을 사용하고 있다면, IT 부서에 연락하여 {senderEmail}에서 이메일을 받을 수 있도록 요청해 주세요",
+    "If you have an account, a sign in link will be sent to you shortly. Please check your inbox and spam folder.": "",
     "If you would like to start receiving emails again, the best next steps are to check your email address on file for any issues and then click resubscribe on the previous screen.": "이메일을 다시 받기를 원한다면, 가장 좋은 방법은 문제가 있는지 확인한 다음 이전 화면의 다시 구독 버튼을 클릭하는 것이에요.",
     "If you're not receiving the email newsletter you've subscribed to, here are a few things to check.": "만약 구독한 이메일 뉴스레터를 받지 못하고 있다면, 확인해야 할 몇 가지 사항이 있어요.",
     "If you've completed all these checks and you're still not receiving emails, you can reach out to get support by contacting {supportAddress}.": "이 모든 확인을 완료했는데도 이메일을 받지 못하고 있다면, {supportAddress}에 연락하여 지원을 받을 수 있어요.",

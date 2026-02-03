@@ -77,7 +77,7 @@ describe('sendMagicLink', function () {
         assert.equal(member.email, email);
     });
 
-    it('Sends informational email when logging in to email that does not exist on invite-only site (prevents enumeration)', async function () {
+    it('Does not send email when logging in to email that does not exist on invite-only site', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist-invite@test.com';
@@ -89,17 +89,10 @@ describe('sendMagicLink', function () {
             .expectEmptyBody()
             .expectStatus(201);
 
-        // An informational email should be sent explaining no account exists
-        const mail = mockManager.assert.sentEmail({
-            to: email,
-            subject: /Sign in attempt for Ghost/
-        });
-
-        // Verify the email explains the situation
-        assert.ok(mail.text.includes('no account exists with this email'));
-        assert.ok(mail.text.includes('invite-only'));
-
-        assert.ok(!mail.text.includes('?token='), 'No magic link should be present in the email');
+        // No email should be sent for non-existent members on invite-only sites
+        assert.throws(() => {
+            mockManager.assert.sentEmail({to: email});
+        }, /Expected at least 1 emails sent/);
     });
 
     it('Throws an error when trying to sign up on an invite-only site', async function () {

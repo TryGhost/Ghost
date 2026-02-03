@@ -871,7 +871,7 @@ module.exports = class RouterController {
         if (!member) {
             // Member doesn't exist - to prevent enumeration, we don't reveal this
             // If self-signup is allowed, send a signup email so they can create an account
-            // If self-signup is disabled, send an informational email explaining no account exists
+            // If self-signup is disabled (invite-only), silently return to prevent enumeration
             if (this._allowSelfSignup()) {
                 const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
                 const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
@@ -892,14 +892,9 @@ module.exports = class RouterController {
                 });
             }
 
-            // Self-signup disabled: send informational email (no magic link)
-            return await this._sendEmailWithMagicLink({
-                email: normalizedEmail,
-                tokenData: {},
-                requestedType: 'signin-restricted',
-                referrer,
-                options: {forceEmailType: true}
-            });
+            // Self-signup disabled (invite-only): silently return empty response
+            // to prevent member enumeration
+            return {};
         }
 
         const tokenData = {};
