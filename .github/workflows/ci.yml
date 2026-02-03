@@ -188,7 +188,7 @@ jobs:
           echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -233,7 +233,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -270,7 +270,7 @@ jobs:
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -294,7 +294,7 @@ jobs:
       COVERAGE: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -344,7 +344,7 @@ jobs:
           echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
           exit 1
         fi
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       env:
         FORCE_COLOR: 0
       with:
@@ -410,7 +410,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -463,7 +463,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1000
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -519,7 +519,7 @@ jobs:
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -612,7 +612,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -667,7 +667,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -707,7 +707,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -747,7 +747,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -787,7 +787,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -859,7 +859,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -884,7 +884,7 @@ jobs:
         working-directory: ghost/core
 
       - name: Switch back to Node v16.14.0 (for v4)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -897,7 +897,7 @@ jobs:
           ghost install v4 --local -d $DIR
 
       - name: Switch back to ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
@@ -1150,7 +1150,7 @@ jobs:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
         run: docker compose -f e2e/compose.yml pull
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1202,7 +1202,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1444,7 +1444,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -1591,7 +1591,7 @@ jobs:
       && needs.job_required_tests.result == 'success'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         env:
           FORCE_COLOR: 0
         with:
