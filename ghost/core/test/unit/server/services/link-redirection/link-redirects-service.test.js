@@ -139,6 +139,9 @@ describe('LinkRedirectsService', function () {
 
         it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
             const instance = new LinkRedirectsService({
+                linkRedirectRepository: {
+                    getByURL: () => Promise.resolve(undefined)
+                },
                 config: {
                     baseURL: new URL('https://localhost:2368/')
                 }
@@ -156,6 +159,9 @@ describe('LinkRedirectsService', function () {
 
         it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
             const instance = new LinkRedirectsService({
+                linkRedirectRepository: {
+                    getByURL: () => Promise.resolve(undefined)
+                },
                 config: {
                     baseURL: new URL('https://localhost:2368/blog')
                 }
