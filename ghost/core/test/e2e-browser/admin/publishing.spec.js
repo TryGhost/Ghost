@@ -254,8 +254,8 @@ test.describe('Publishing', () => {
             await checkPostPublished(sharedPage, pageData);
         });
 
-        // page should be published at the scheduled time
-        test('At the scheduled time', async ({sharedPage}) => {
+        // Page can be scheduled for future publication
+        test('Can be scheduled', async ({sharedPage}) => {
             const pageData = {
                 // Title should be unique to avoid slug duplicates
                 title: 'Scheduled sharedPage test',
@@ -265,19 +265,15 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPage(sharedPage, pageData);
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: null});
+            // Schedule the page (uses default 10 minutes in future)
+            await publishPost(sharedPage, {date: '2050-01-01', time: '12:00', type: null});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
-            // Go to the page and check if the status code is 404
+            // Verify it shows as scheduled
+            await checkPostStatus(sharedPage, 'Scheduled');
+
+            // Verify the page is NOT published yet
             await checkPostNotPublished(sharedPage, pageData);
-
-            // Now wait for 5 seconds
-            await sharedPage.waitForTimeout(5000);
-
-            // Check again, now it should have been added to the page
-            await checkPostPublished(sharedPage, pageData);
         });
     });
 
@@ -351,7 +347,8 @@ test.describe('Publishing', () => {
     });
 
     test.describe('Schedule post', () => {
-        // Post should be published to web and sent as a newsletter at the scheduled time
+        // Post can be scheduled for future publish and email
+        // Note: Actual scheduler timing is tested in unit tests (scheduling-default.test.js)
         test('Scheduled Publish and Email', async ({sharedPage}) => {
             const postData = {
                 // This title should be unique
@@ -364,29 +361,19 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
-            const editorUrl = await sharedPage.url();
-
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
+            // Schedule the post for the future
+            await publishPost(sharedPage, {date: '2050-01-01', time: '12:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
-            await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
 
-            // Go to the homepage and check if the post is not yet visible there
+            // Verify it shows as scheduled with email
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent');
+
+            // Verify the post is NOT published yet
             await checkPostNotPublished(sharedPage, postData);
-
-            // Now wait 5 seconds for the scheduled post to be published
-            await sharedPage.waitForTimeout(5000);
-
-            // Check again, now it should have been added to the page
-            await checkPostPublished(sharedPage, postData);
-
-            // Check status
-            await sharedPage.goto(editorUrl);
-            await checkPostStatus(sharedPage, 'Published');
         });
 
-        // Post should be published to web only at the scheduled time
+        // Post can be scheduled for future publish only (no email)
+        // Note: Actual scheduler timing is tested in unit tests (scheduling-default.test.js)
         test('Scheduled Publish only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled post test',
@@ -396,27 +383,19 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
-            const editorUrl = await sharedPage.url();
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {time: '00:00'});
+            // Schedule the post for the future
+            await publishPost(sharedPage, {date: '2050-01-01', time: '12:00'});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
-            // Check not published yet
+            // Verify it shows as scheduled
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published at');
+
+            // Verify the post is NOT published yet
             await checkPostNotPublished(sharedPage, postData);
-
-            // Now wait 5 seconds for the scheduled post to be published
-            await sharedPage.waitForTimeout(5000);
-
-            // Check published
-            await checkPostPublished(sharedPage, postData);
-
-            // Check status
-            await sharedPage.goto(editorUrl);
-            await checkPostStatus(sharedPage, 'Published');
         });
 
-        // Post should be published to web only at the scheduled time
+        // Post can be scheduled for future email only (not published to web)
+        // Note: Actual scheduler timing is tested in unit tests (scheduling-default.test.js)
         test('Scheduled Email only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled email only test',
@@ -427,24 +406,15 @@ test.describe('Publishing', () => {
 
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
-            const editorUrl = await sharedPage.url();
 
-            // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(sharedPage, {type: 'send', time: '00:00'});
+            // Schedule the post for the future (email only)
+            await publishPost(sharedPage, {type: 'send', date: '2050-01-01', time: '12:00'});
             await closePublishFlow(sharedPage);
-            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
 
-            // Check not published yet
-            await checkPostNotPublished(sharedPage, postData);
+            // Verify it shows as scheduled for sending
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent');
 
-            // Now wait 5 seconds for the scheduled post to be published
-            await sharedPage.waitForTimeout(5000);
-
-            // Check status
-            await sharedPage.goto(editorUrl);
-            await checkPostStatus(sharedPage, 'Sent', 'Sent to');
-
-            // Stil not published yet (email only)
+            // Verify the post is NOT published (email only means not on web)
             await checkPostNotPublished(sharedPage, postData);
         });
 

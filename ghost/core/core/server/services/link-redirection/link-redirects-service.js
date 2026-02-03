@@ -12,8 +12,8 @@ const LinkRedirect = require('./link-redirect');
  */
 
 // Placeholder pattern for member UUID in redirect destinations
-// %%{member_uuid}%% is substituted with the actual UUID at redirect time
-const MEMBER_UUID_PLACEHOLDER = '%%{member_uuid}%%';
+// %%{uuid}%% is substituted with the actual UUID at redirect time
+const MEMBER_UUID_PLACEHOLDER = '%%{uuid}%%';
 
 // UUID v4 pattern (8-4-4-4-12 hex format) for validating member UUIDs
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -116,9 +116,9 @@ class LinkRedirectsService {
 
             DomainEvents.dispatch(event);
 
-            // Substitute %%{member_uuid}%% placeholder if present in the destination URL
+            // Substitute %%{uuid}%% placeholder if present in the destination URL
             // This allows tracked links to include dynamic member UUIDs (e.g., for Transistor embeds)
-            // Note: The URL may be stored with URL-encoded placeholder (%25%25%7Bmember_uuid%7D%25%25)
+            // Note: The URL may be stored with URL-encoded placeholder (%25%25%7Buuid%7D%25%25)
             // so we decode it first to check and perform substitution
             let redirectUrl = link.to.href;
             let decodedUrl;

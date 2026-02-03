@@ -1882,7 +1882,7 @@ describe('Email renderer', function () {
             response.replacements[3].id.should.eql('list_unsubscribe');
         });
 
-        it('tracks links containing %%{member_uuid}%% and preserves placeholder in destination', async function () {
+        it('tracks links containing %%{uuid}%% and preserves placeholder in destination', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
@@ -1896,8 +1896,7 @@ describe('Email renderer', function () {
                 clickTrackingEnabled: true
             };
 
-            // %%{member_uuid}%% should be tracked (unlike %%{uuid}%% which is skipped)
-            renderedPost = '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{member_uuid}%%">Listen to episode</a></p>';
+            renderedPost = '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%">Listen to episode</a></p>';
 
             let response = await emailRenderer.renderBody(
                 post,
@@ -1912,13 +1911,12 @@ describe('Email renderer', function () {
             );
             transistorCall.should.not.be.undefined();
 
-            // The %%{member_uuid}%% placeholder should survive in the tracked URL destination
-            // Note: When URL searchParams are manipulated, the placeholder gets URL-encoded
-            // So we check for either the original or encoded form
+            // The %%{uuid}%% placeholder should survive in the tracked URL destination
+            // When URL searchParams are manipulated, the placeholder gets URL-encoded
             const href = transistorCall.args[0].href;
-            const hasPlaceholder = href.includes('%%{member_uuid}%%') ||
-                href.includes('%25%25%7Bmember_uuid%7D%25%25');
-            hasPlaceholder.should.be.true('URL should contain member_uuid placeholder');
+            const hasPlaceholder = href.includes('%%{uuid}%%') ||
+                href.includes('%25%25%7Buuid%7D%25%25');
+            hasPlaceholder.should.be.true('URL should contain uuid placeholder');
 
             // The final tracked link should be in the HTML
             const $ = cheerio.load(response.html);
@@ -1928,44 +1926,9 @@ describe('Email renderer', function () {
                 links.push(linkHref);
             }
 
-            // The Transistor link should be tracked and destination should contain the placeholder
-            // The placeholder may be URL-encoded in the destination
-            const trackedTransistorLink = links.find(linkHref => linkHref.includes('tracked-link.com') && (
-                linkHref.includes('member_uuid') ||
-                    linkHref.includes('7Bmember_uuid%7D') // URL-encoded {member_uuid}
-            )
-            );
+            // The Transistor link should be tracked
+            const trackedTransistorLink = links.find(linkHref => linkHref.includes('tracked-link.com'));
             trackedTransistorLink.should.not.be.undefined();
-        });
-
-        it('skips tracking for links containing %%{uuid}%% (existing behavior)', async function () {
-            const post = createModel(basePost);
-            const newsletter = createModel({
-                header_image: null,
-                name: 'Test Newsletter',
-                show_badge: false,
-                feedback_enabled: false,
-                show_post_title_section: true
-            });
-            const segment = null;
-            const options = {
-                clickTrackingEnabled: true
-            };
-
-            // %%{uuid}%% should be skipped from tracking (for backward compatibility)
-            renderedPost = '<p>Lexical Test</p><p><a href="https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%">Listen to episode</a></p>';
-
-            await emailRenderer.renderBody(
-                post,
-                newsletter,
-                segment,
-                options
-            );
-
-            // Verify tracking was NOT called for the Transistor link (it should be skipped)
-            const transistorCall = addTrackingToUrlStub.getCalls().find(call => call.args[0].href.includes('transistor.fm')
-            );
-            assert.equal(transistorCall, undefined, 'Links with %%{uuid}%% should skip tracking');
         });
 
         it('removes data-gh-segment and renders paywall', async function () {

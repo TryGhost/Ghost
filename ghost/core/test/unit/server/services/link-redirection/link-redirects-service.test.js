@@ -171,12 +171,12 @@ describe('LinkRedirectsService', function () {
             assert.equal(next.callCount, 1);
         });
 
-        it('substitutes %%{member_uuid}%% placeholder with member UUID from query param', async function () {
+        it('substitutes %%{uuid}%% placeholder with member UUID from query param', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
                         return Promise.resolve({
-                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{member_uuid}%%')
+                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%')
                         });
                     }
                     return Promise.resolve(undefined);
@@ -200,12 +200,12 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=a1b2c3d4-e5f6-4789-abcd-ef1234567890');
         });
 
-        it('substitutes multiple %%{member_uuid}%% placeholders in the same URL', async function () {
+        it('substitutes multiple %%{uuid}%% placeholders in the same URL', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
                         return Promise.resolve({
-                            to: new URL('https://example.com/path?id=%%{member_uuid}%%&verify=%%{member_uuid}%%')
+                            to: new URL('https://example.com/path?id=%%{uuid}%%&verify=%%{uuid}%%')
                         });
                     }
                     return Promise.resolve(undefined);
@@ -229,12 +229,12 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/path?id=f47ac10b-58cc-4372-a567-0e02b2c3d479&verify=f47ac10b-58cc-4372-a567-0e02b2c3d479');
         });
 
-        it('removes %%{member_uuid}%% placeholder when m param is missing', async function () {
+        it('removes %%{uuid}%% placeholder when m param is missing', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
                         return Promise.resolve({
-                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{member_uuid}%%')
+                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%')
                         });
                     }
                     return Promise.resolve(undefined);
@@ -258,12 +258,12 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
-        it('removes %%{member_uuid}%% placeholder when m param contains invalid value like unsubstituted Mailgun variable', async function () {
+        it('removes %%{uuid}%% placeholder when m param contains invalid value like unsubstituted Mailgun variable', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
                         return Promise.resolve({
-                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{member_uuid}%%')
+                            to: new URL('https://share.transistor.fm/e/episode?subscriber_id=%%{uuid}%%')
                         });
                     }
                     return Promise.resolve(undefined);
@@ -288,7 +288,7 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://share.transistor.fm/e/episode?subscriber_id=');
         });
 
-        it('does not modify redirect URL when no %%{member_uuid}%% placeholder is present', async function () {
+        it('does not modify redirect URL when no %%{uuid}%% placeholder is present', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
@@ -317,15 +317,15 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.getCall(0).args[0], 'https://example.com/normal-link?foo=bar');
         });
 
-        it('substitutes URL-encoded %%{member_uuid}%% placeholder (as stored by email renderer)', async function () {
-            // When email-renderer stores URLs with %%{member_uuid}%%, URL manipulation may encode it
+        it('substitutes URL-encoded %%{uuid}%% placeholder (as stored by email renderer)', async function () {
+            // When email-renderer stores URLs with %%{uuid}%%, URL manipulation may encode it
             // The redirect service should decode and substitute correctly
             const linkRedirectRepository = {
                 getByURL: (url) => {
                     if (url.pathname === '/r/abc') {
                         // Simulate URL-encoded placeholder as stored in database
                         return Promise.resolve({
-                            to: {href: 'https://share.transistor.fm/e/episode?subscriber_id=%25%25%7Bmember_uuid%7D%25%25'}
+                            to: {href: 'https://share.transistor.fm/e/episode?subscriber_id=%25%25%7Buuid%7D%25%25'}
                         });
                     }
                     return Promise.resolve(undefined);
