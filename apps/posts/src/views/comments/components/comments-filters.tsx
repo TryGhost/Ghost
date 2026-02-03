@@ -1,6 +1,5 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {
-    Button,
     Filter,
     FilterFieldConfig,
     Filters,
@@ -139,14 +138,10 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
     const hasFilters = filters.length > 0;
 
-    const handleClearFilters = useCallback(() => {
-        onFiltersChange([]);
-    }, [onFiltersChange]);
-
     const className = cn(
-        'flex flex-row justify-between',
-        !hasFilters && '[grid-area:actions] ',
-        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-7 '
+        'flex flex-row',
+        !hasFilters && '[grid-area:actions] pt-5 justify-start sm:justify-end sm:pt-0',
+        hasFilters && 'col-start-1 col-end-4 row-start-3 pt-5'
     );
 
     return (
@@ -162,25 +157,19 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
                 addButtonText={hasFilters ? 'Add filter' : 'Filter'}
                 allowMultiple={false}
                 className={`[&>button]:order-last ${
-                    hasFilters && '[&>button]:border-none'
+                    hasFilters ? '[&>button]:border-none' : 'w-auto'
                 }`}
+                clearButtonClassName='font-normal text-muted-foreground'
+                clearButtonIcon={<LucideIcon.X />}
+                clearButtonText='Clear'
                 fields={filterFields}
                 filters={filters}
-                keyboardShortcut="f"
+                keyboardShortcut='f'
                 popoverAlign={hasFilters ? 'start' : 'end'}
+                showClearButton={hasFilters}
                 showSearchInput={false}
                 onChange={onFiltersChange}
             />
-            {hasFilters && (
-                <Button
-                    className="font-normal text-muted-foreground"
-                    variant="ghost"
-                    onClick={handleClearFilters}
-                >
-                    <LucideIcon.FunnelX />
-                    Clear
-                </Button>
-            )}
         </div>
     );
 };
