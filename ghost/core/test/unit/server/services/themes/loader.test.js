@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
@@ -41,7 +42,7 @@ describe('Themes', function () {
                         const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
-                        should.not.exist(result);
+                        assert.equal(result, undefined);
 
                         themeResult.should.eql({
                             casper: {
@@ -74,7 +75,7 @@ describe('Themes', function () {
                         const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
-                        should.not.exist(result);
+                        assert.equal(result, undefined);
 
                         themeResult.should.eql({
                             casper: {

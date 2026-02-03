@@ -52,7 +52,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -77,7 +77,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -102,7 +102,7 @@ describe('Admin API Key Auth', function () {
         const res = {};
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
-            should.not.exist(err);
+            assert.equal(err, undefined);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -130,7 +130,7 @@ describe('Admin API Key Auth', function () {
             should.exist(err);
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_JWT');
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -148,7 +148,7 @@ describe('Admin API Key Auth', function () {
             should.exist(err);
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_AUTH_HEADER');
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -166,7 +166,7 @@ describe('Admin API Key Auth', function () {
             should.exist(err);
             assert.equal(err instanceof errors.BadRequestError, true);
             err.code.should.eql('INVALID_JWT');
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -193,7 +193,7 @@ describe('Admin API Key Auth', function () {
             should.exist(err);
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('UNKNOWN_ADMIN_API_KEY');
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -223,7 +223,7 @@ describe('Admin API Key Auth', function () {
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_JWT');
             err.message.should.match(/jwt expired/);
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -253,7 +253,7 @@ describe('Admin API Key Auth', function () {
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_JWT');
             err.message.should.match(/maxAge exceeded/);
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });
@@ -282,7 +282,7 @@ describe('Admin API Key Auth', function () {
             should.exist(err);
             assert.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_API_KEY_TYPE');
-            should.not.exist(req.api_key);
+            assert.equal(req.api_key, undefined);
             done();
         });
     });

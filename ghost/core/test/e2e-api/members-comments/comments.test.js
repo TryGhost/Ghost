@@ -639,7 +639,7 @@ describe('Comments API', function () {
                     commentMatcher,
                     commentMatcherWithReplies({replies: 1})
                 ]);
-                should.not.exist(response.body.comments[0].unsubscribe_url);
+                assert.equal(response.body.comments[0].unsubscribe_url, undefined);
             });
 
             describe('browse by post', function () {
@@ -1435,8 +1435,8 @@ describe('Comments API', function () {
                         });
 
                         // in_reply_to is not set
-                        should.not.exist(newComment.in_reply_to_id);
-                        should.not.exist(newComment.in_reply_to_snippet);
+                        assert.equal(newComment.in_reply_to_id, null);
+                        assert.equal(newComment.in_reply_to_snippet, null);
 
                         // only author and parent email sent
                         emailMockReceiver.assertSentEmailCount(2);
@@ -1458,10 +1458,10 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is not set
-                    should.not.exist(newComment.in_reply_to_id);
-                    should.not.exist(newComment.in_reply_to_snippet);
+                    assert.equal(newComment.in_reply_to_id, null);
+                    assert.equal(newComment.in_reply_to_snippet, null);
 
-                    should.not.exist(newComment.parent_id);
+                    assert.equal(newComment.parent_id, null);
 
                     // only author email sent
                     emailMockReceiver.assertSentEmailCount(1);
@@ -1491,8 +1491,8 @@ describe('Comments API', function () {
                     });
 
                     // in_reply_to is not set
-                    should.not.exist(newComment.in_reply_to_id);
-                    should.not.exist(newComment.in_reply_to_snippet);
+                    assert.equal(newComment.in_reply_to_id, null);
+                    assert.equal(newComment.in_reply_to_snippet, null);
                 });
 
                 it('includes in_reply_to_snippet in response', async function () {

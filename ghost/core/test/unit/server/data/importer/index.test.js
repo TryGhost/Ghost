@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
@@ -391,13 +392,13 @@ describe('Importer', function () {
                 it('returns empty for no base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
-                    should.not.exist(ImportManager.getBaseDirectory(testDir));
+                    assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('returns empty for content handler directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
 
-                    should.not.exist(ImportManager.getBaseDirectory(testDir));
+                    assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('throws invalidZipFileBaseDirectory', function () {

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
@@ -155,7 +156,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 } else {
                     const [id, secret] = key.secret.split(':');
                     should.exist(id);
-                    should.not.exist(secret);
+                    assert.equal(secret, undefined);
                 }
             });
         });

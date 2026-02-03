@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
@@ -108,7 +109,7 @@ describe('Themes API', function () {
         const res = await uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
         const jsonResponse = res.body;
 
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
 
         should.exist(jsonResponse.themes);
         localUtils.API.checkResponse(jsonResponse, 'themes');
@@ -219,7 +220,7 @@ describe('Themes API', function () {
 
         // The deleted theme should not be here
         const deletedTheme = _.find(jsonResponse2.themes, {name: 'valid'});
-        should.not.exist(deletedTheme);
+        assert.equal(deletedTheme, undefined);
     });
 
     it('Can upload a theme, which has warnings', async function () {
@@ -277,7 +278,7 @@ describe('Themes API', function () {
         jsonResponse2.themes.length.should.eql(1);
 
         const sourceTheme2 = _.find(jsonResponse2.themes, {name: 'source'});
-        should.not.exist(sourceTheme2);
+        assert.equal(sourceTheme2, undefined);
 
         const testTheme2 = _.find(jsonResponse2.themes, {name: 'test-theme'});
         should.exist(testTheme2);

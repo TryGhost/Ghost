@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
@@ -33,7 +34,7 @@ describe('Webhooks API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 const jsonResponse = res.body;
 
                 should.exist(jsonResponse);

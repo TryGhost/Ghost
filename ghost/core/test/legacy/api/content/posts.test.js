@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -113,7 +114,7 @@ describe('api/endpoints/content/posts', function () {
 
                 res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
@@ -134,8 +135,8 @@ describe('api/endpoints/content/posts', function () {
                 jsonResponse.meta.pagination.total.should.eql(13);
                 jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                 jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-                should.not.exist(jsonResponse.meta.pagination.next);
-                should.not.exist(jsonResponse.meta.pagination.prev);
+                assert.equal(jsonResponse.meta.pagination.next, null);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
                 done();
             });
@@ -154,7 +155,7 @@ describe('api/endpoints/content/posts', function () {
 
                 res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
@@ -181,8 +182,8 @@ describe('api/endpoints/content/posts', function () {
                 jsonResponse.meta.pagination.total.should.eql(13);
                 jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                 jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-                should.not.exist(jsonResponse.meta.pagination.next);
-                should.not.exist(jsonResponse.meta.pagination.prev);
+                assert.equal(jsonResponse.meta.pagination.next, null);
+                assert.equal(jsonResponse.meta.pagination.prev, null);
 
                 done();
             });
@@ -260,7 +261,7 @@ describe('api/endpoints/content/posts', function () {
                 res.headers.vary.should.eql('Accept-Version, Accept, Accept-Encoding');
                 res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
+                assert.equal(res.headers['x-cache-invalidate'], undefined);
                 done();
             });
     });
@@ -435,7 +436,7 @@ describe('api/endpoints/content/posts', function () {
                 .then((res) => {
                     res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
                     should.exist(res.headers['access-control-allow-origin']);
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    assert.equal(res.headers['x-cache-invalidate'], undefined);
 
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
@@ -480,7 +481,7 @@ describe('api/endpoints/content/posts', function () {
                     jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                     jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                     jsonResponse.meta.pagination.next.should.eql(2);
-                    should.not.exist(jsonResponse.meta.pagination.prev);
+                    assert.equal(jsonResponse.meta.pagination.prev, null);
                 });
         });
     });
