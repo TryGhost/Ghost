@@ -213,6 +213,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comment-replies'), localUtils);
     },
 
+    get commentReports() {
+        return apiFramework.pipeline(require('./comment-reports'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
