@@ -32,12 +32,12 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentPermalinksEnabled,
     disableMemberCommentingEnabled
 }) => {
-    const {data: repliesData, isLoading: isLoadingReplies, isError: isRepliesError} = useCommentReplies(commentId, {
+    const {data: repliesData, isLoading: isLoadingReplies, isError: isRepliesError} = useCommentReplies(commentId ?? '', {
         enabled: open && !!commentId
     });
 
     // Fetch the parent comment separately using the read endpoint
-    const {data: parentData, isLoading: isLoadingParent, isError: isParentError} = useReadComment(commentId, {
+    const {data: parentData, isLoading: isLoadingParent, isError: isParentError} = useReadComment(commentId ?? '', {
         enabled: open && !!commentId
     });
 

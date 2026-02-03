@@ -9,33 +9,18 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-    Badge,
     Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    LucideIcon,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    formatNumber,
-    formatTimestamp
+    LucideIcon
 } from '@tryghost/shade';
-import {Comment, useDeleteComment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {CommentAvatar} from './comment-avatar';
+import {CommentHeader} from './comment-header';
+import {CommentMenu} from './comment-menu';
+import {CommentMetrics} from './comment-metrics';
+import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {forwardRef, useEffect, useRef, useState} from 'react';
-import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
+import {useCommentMutations} from './use-comment-mutations';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 
@@ -64,19 +49,6 @@ const PlaceholderRow = forwardRef<HTMLDivElement>(function PlaceholderRow(
     );
 });
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    const formatted = new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric'
-    }).format(date);
-    // Remove comma between day and year (e.g., "Dec 17, 2025" -> "Dec 17 2025")
-    return formatted.replace(/(\d+),(\s+\d{4})/, '$1$2');
-}
-
 function CommentsList({
     items,
     totalItems,
@@ -102,6 +74,18 @@ function CommentsList({
     const [searchParams, setSearchParams] = useSearchParams();
     const [threadSidebarOpen, setThreadSidebarOpen] = useState(false);
     const [selectedThreadCommentId, setSelectedThreadCommentId] = useState<string | null>(null);
+
+    const {
+        hideComment,
+        showComment,
+        commentToDelete,
+        setCommentToDelete,
+        confirmDelete,
+        memberToDisable,
+        setMemberToDisable,
+        confirmDisableCommenting,
+        handleEnableCommenting
+    } = useCommentMutations();
 
     const handleOpenThread = (commentId: string) => {
         // Update URL to open thread sidebar
@@ -164,37 +148,6 @@ function CommentsList({
         parentRef
     });
 
-    const {mutate: hideComment} = useHideComment();
-    const {mutate: showComment} = useShowComment();
-    const {mutate: deleteComment} = useDeleteComment();
-    const {mutate: disableCommenting} = useDisableMemberCommenting();
-    const {mutate: enableCommenting} = useEnableMemberCommenting();
-    const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
-    const [memberToDisable, setMemberToDisable] = useState<{member: Comment['member']; commentId: string} | null>(null);
-
-    const confirmDelete = () => {
-        if (commentToDelete) {
-            deleteComment({id: commentToDelete.id});
-            setCommentToDelete(null);
-        }
-    };
-
-    const confirmDisableCommenting = () => {
-        if (memberToDisable?.member?.id) {
-            disableCommenting({
-                id: memberToDisable.member.id,
-                reason: `Disabled from comment ${memberToDisable.commentId}`
-            });
-            setMemberToDisable(null);
-        }
-    };
-
-    const handleEnableCommenting = (member: Comment['member']) => {
-        if (member?.id) {
-            enableCommenting({id: member.id});
-        }
-    };
-
     return (
         <div ref={parentRef} className="overflow-hidden">
             <div
@@ -211,6 +164,8 @@ function CommentsList({
                             return <PlaceholderRow key={key} {...props} />;
                         }
 
+                        const hasReplies = (item.count?.replies ?? 0) > 0;
+
                         return (
                             <div
                                 key={key}
@@ -225,94 +180,24 @@ function CommentsList({
                                 }}
                             >
                                 <div className='flex items-start gap-3'>
-                                    <Avatar className={`size-6 min-w-6 md:size-8 md:min-w-8 ${item.status === 'hidden' && 'opacity-50'}`}>
-                                        {item.member?.id && item.member.avatar_image && !item.member.avatar_image.includes('d=blank') && (
-                                            <AvatarImage
-                                                alt="Member avatar"
-                                                src={item.member.avatar_image}
-                                                onError={(event) => {
-                                                    (event.target as HTMLImageElement).src = '';
-                                                    (event.target as HTMLImageElement).style.display = 'none';
-                                                }}
-                                            />
-                                        )}
-                                        <AvatarFallback className='bg-accent'>
-                                            <LucideIcon.User className='!size-3 text-muted-foreground md:!size-4' size={12} />
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <CommentAvatar
+                                        avatarImage={item.member?.avatar_image}
+                                        isHidden={item.status === 'hidden'}
+                                        memberId={item.member?.id}
+                                    />
 
                                     <div className='flex min-w-0 flex-col'>
-                                        <div className='flex items-baseline gap-4'>
-                                            <div className={`mb-1 flex min-w-0 items-center gap-x-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
-                                                <div className='whitespace-nowrap'>
-                                                    {item.member?.id ? (
-                                                        <Button
-                                                            className={`flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70`}
-                                                            variant='link'
-                                                            onClick={() => {
-                                                                onAddFilter('author', item.member!.id);
-                                                            }}
-                                                        >
-                                                            {item.member.name || 'Unknown'}
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="block truncate font-semibold">
-                                                            {item.member?.name || 'Unknown'}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {disableMemberCommentingEnabled && item.member?.can_comment === false && (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span data-testid="commenting-disabled-indicator">
-                                                                    <LucideIcon.MessageCircleOff
-                                                                        className="size-3.5 text-muted-foreground"
-                                                                    />
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>Comments disabled</TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                )}
-                                                <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
-                                                <div className='shrink-0 whitespace-nowrap'>
-                                                    {item.created_at && (
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <span className="cursor-default text-sm text-muted-foreground">
-                                                                        {formatTimestamp(item.created_at)}
-                                                                    </span>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    {formatDate(item.created_at)}
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    )}
-                                                </div>
-                                                <div className='shrink-0 text-muted-foreground'>on</div>
-                                                <div className='min-w-0 truncate'>
-                                                    {item.post?.id && item.post?.title && onAddFilter ? (
-                                                        <Button
-                                                            className="block h-auto w-full cursor-pointer truncate p-0 text-left font-medium text-gray-800 hover:opacity-70 dark:text-gray-400"
-                                                            variant='link'
-                                                            onClick={() => onAddFilter('post', item.post!.id)}
-                                                        >
-                                                            {item.post.title}
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="text-muted-foreground">
-                                                    Unknown post
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {item.status === 'hidden' && (
-                                                <Badge variant='secondary'>Hidden</Badge>
-                                            )}
-                                        </div>
+                                        <CommentHeader
+                                            canComment={item.member?.can_comment}
+                                            createdAt={item.created_at}
+                                            disableMemberCommentingEnabled={disableMemberCommentingEnabled}
+                                            isHidden={item.status === 'hidden'}
+                                            memberId={item.member?.id}
+                                            memberName={item.member?.name}
+                                            postTitle={item.post?.title}
+                                            onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
+                                            onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
+                                        />
 
                                         {item.in_reply_to_snippet && (
                                             <div className={`mb-1 line-clamp-1 text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
@@ -352,123 +237,24 @@ function CommentsList({
                                                     Show
                                                 </Button>
                                             )}
-                                            <div className='flex items-center gap-4'>
-                                                {item.count?.replies ? (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <button
-                                                                    className='ml-2 flex cursor-pointer items-center gap-1 text-xs text-gray-800 hover:opacity-70'
-                                                                    type="button"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation(); // Prevent closing sidebar
-                                                                        handleOpenThread(item.id);
-                                                                    }}
-                                                                >
-                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                                                    <span>{formatNumber(item.count?.replies)}</span>
-                                                                </button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                View replies
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                ) : (
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
-                                                                    <LucideIcon.Reply size={16} strokeWidth={1.5} />
-                                                                    <span>{formatNumber(item.count?.replies)}</span>
-                                                                </div>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                Replies
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                )}
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className='ml-2 flex items-center gap-1 text-xs text-gray-800'>
-                                                                <LucideIcon.Heart size={16} strokeWidth={1.5} />
-                                                                <span>{formatNumber(item.count?.likes)}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            Likes
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className={`ml-2 flex items-center gap-1 text-xs ${item.count?.reports ? 'font-semibold text-red' : 'text-gray-800'}`}>
-                                                                <LucideIcon.Flag size={16} strokeWidth={(item.count?.reports ? 1.75 : 1.5)} />
-                                                                <span>{formatNumber(item.count?.reports)}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            Reports
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        className="relative z-10 ml-1 text-gray-800 hover:bg-secondary [&_svg]:size-4"
-                                                        size="sm"
-                                                        variant="ghost"
-                                                    >
-                                                        <LucideIcon.Ellipsis />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="start">
-                                                    {commentPermalinksEnabled ? (
-                                                        <DropdownMenuItem asChild>
-                                                            <a href={`${item.post!.url}#ghost-comments-${item.id}`} rel="noopener noreferrer" target="_blank">
-                                                                <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                                            View on post
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                    ) : (
-                                                        <DropdownMenuItem asChild>
-                                                            <a href={item.post!.url} rel="noopener noreferrer" target="_blank">
-                                                                <LucideIcon.ExternalLink className="mr-2 size-4" />
-                                                            View post
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {item.member?.id && (
-                                                        <DropdownMenuItem asChild>
-                                                            <a href={`#/members/${item.member.id}`}>
-                                                                <LucideIcon.User className="mr-2 size-4" />
-                                                                View member
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {disableMemberCommentingEnabled && item.member?.id && (
-                                                        item.member.can_comment !== false ? (
-                                                            <DropdownMenuItem onClick={() => {
-                                                                setMemberToDisable({member: item.member, commentId: item.id});
-                                                            }}>
-                                                                <LucideIcon.MessageCircleOff className="mr-2 size-4" />
-                                                                Disable commenting
-                                                            </DropdownMenuItem>
-                                                        ) : (
-                                                            <DropdownMenuItem onClick={() => handleEnableCommenting(item.member)}>
-                                                                <LucideIcon.MessageCircle className="mr-2 size-4" />
-                                                                Enable commenting
-                                                            </DropdownMenuItem>
-                                                        )
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <CommentMetrics
+                                                className="ml-2"
+                                                hasReplies={hasReplies}
+                                                likesCount={item.count?.likes}
+                                                repliesCount={item.count?.replies}
+                                                reportsCount={item.count?.reports}
+                                                onRepliesClick={() => handleOpenThread(item.id)}
+                                            />
+                                            <CommentMenu
+                                                canComment={item.member?.can_comment}
+                                                commentId={item.id}
+                                                commentPermalinksEnabled={commentPermalinksEnabled}
+                                                disableMemberCommentingEnabled={disableMemberCommentingEnabled}
+                                                memberId={item.member?.id}
+                                                postUrl={item.post?.url}
+                                                onDisableCommenting={() => setMemberToDisable({member: item.member, commentId: item.id})}
+                                                onEnableCommenting={() => handleEnableCommenting(item.member)}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -509,30 +295,16 @@ function CommentsList({
                 </AlertDialogContent>
             </AlertDialog>
 
-            <Dialog open={!!memberToDisable} onOpenChange={(open) => {
-                if (!open) {
-                    setMemberToDisable(null);
-                }
-            }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Disable comments</DialogTitle>
-                        <DialogDescription>
-                            {memberToDisable?.member?.name || 'This member'} won&apos;t be able to comment
-                            in the future. You can re-enable commenting anytime.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setMemberToDisable(null)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={confirmDisableCommenting}>
-                            Disable comments
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <DisableCommentingDialog
+                memberName={memberToDisable?.member?.name}
+                open={!!memberToDisable}
+                onConfirm={confirmDisableCommenting}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setMemberToDisable(null);
+                    }
+                }}
+            />
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
