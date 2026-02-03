@@ -24,7 +24,8 @@ const GA_FEATURES = [
     'audienceFeedback',
     'announcementBar',
     'customFonts',
-    'explore'
+    'explore',
+    'sniperlinks'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -53,8 +54,7 @@ const PRIVATE_FEATURES = [
     'featurebaseFeedback',
     'transistor',
     'disableMemberCommenting',
-    'disableMemberCommentingHideComments',
-    'sniperlinks'
+    'disableMemberCommentingHideComments'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
