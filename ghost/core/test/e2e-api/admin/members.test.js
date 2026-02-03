@@ -2397,6 +2397,93 @@ describe('Members API', function () {
         });
     });
 
+    describe('deleteEmailSuppression', function () {
+        it('Can delete email suppression for a member', async function () {
+            const suppressedMember = await models.Member.add({
+                email: 'suppression-test@email.com',
+                name: 'Suppression Test',
+                email_disabled: true
+            });
+
+            const suppression = await models.Suppression.add({
+                email: 'suppression-test@email.com',
+                reason: 'bounce'
+            });
+
+            try {
+                await agent
+                    .delete(`/members/${suppressedMember.id}/suppression`)
+                    .expectStatus(204)
+                    .matchBodySnapshot()
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                await suppressedMember.refresh();
+                should(suppressedMember.get('email_disabled')).be.false();
+
+                const suppressionRecord = await models.Suppression.findOne({email: 'suppression-test@email.com'});
+                should(suppressionRecord).be.null();
+            } finally {
+                await models.Member.destroy({id: suppressedMember.id});
+                try {
+                    await models.Suppression.destroy({id: suppression.id});
+                } catch (e) {
+                    // Suppression was already deleted by the endpoint
+                }
+            }
+        });
+
+        it('Returns 404 for non-existent member', async function () {
+            await agent
+                .delete('/members/abcd1234abcd1234abcd1234/suppression')
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Returns 500 when suppression removal fails', async function () {
+            const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+            const removeEmailStub = sinon.stub(emailSuppressionList, 'removeEmail').resolves(false);
+
+            const suppressedMember = await models.Member.add({
+                email: 'suppression-fail-test@email.com',
+                name: 'Suppression Fail Test',
+                email_disabled: true
+            });
+
+            try {
+                await agent
+                    .delete(`/members/${suppressedMember.id}/suppression`)
+                    .expectStatus(500)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                // Verify email_disabled was NOT changed since the operation failed
+                await suppressedMember.refresh();
+                should(suppressedMember.get('email_disabled')).be.true();
+            } finally {
+                removeEmailStub.restore();
+                await models.Member.destroy({id: suppressedMember.id});
+            }
+        });
+    });
+
     // Log out
     it('Can log out', async function () {
         const member = await createMember({

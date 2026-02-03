@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -318,10 +319,10 @@ describe('Migration Fixture Utils', function () {
             addFixturesForRelationStub.callCount.should.eql(fixtures.relations.length);
 
             // NOTE: users and roles have to be initialized first for the post fixtures to work
-            should.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
-            should.equal(addFixturesForModelStub.secondCall.args[0].name, 'User');
+            assert.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
+            assert.equal(addFixturesForModelStub.secondCall.args[0].name, 'User');
 
-            should.equal(addFixturesForRelationStub.firstCall.args[0].from.relation, 'roles');
+            assert.equal(addFixturesForRelationStub.firstCall.args[0].from.relation, 'roles');
         });
     });
 
