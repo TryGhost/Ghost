@@ -47,14 +47,14 @@ describe('StripeAPI', function () {
         it('Sends card as payment method if labs flag not enabled', async function () {
             await api.createCheckoutSession('priceId', null, {});
 
-            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, ['card']);
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, ['card']);
         });
 
         it('Sends no payment methods if labs flag is enabled', async function () {
             mockLabsIsSet.withArgs('additionalPaymentMethods').returns(true);
             await api.createCheckoutSession('priceId', null, {});
 
-            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, undefined);
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, undefined);
         });
 
         it('sends success_url and cancel_url', async function () {
@@ -378,9 +378,9 @@ describe('StripeAPI', function () {
             assert.equal(mockStripe.subscriptions.update.callCount, 1);
 
             assert.equal(mockStripe.subscriptions.update.args[0][0], mockSubscription.id);
-            should.deepEqual(mockStripe.subscriptions.update.args[0][1], {trial_end: 'now'});
+            assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {trial_end: 'now'});
 
-            should.deepEqual(result, mockSubscription);
+            assert.deepEqual(result, mockSubscription);
         });
     });
 
@@ -417,9 +417,9 @@ describe('StripeAPI', function () {
 
             assert.equal(mockStripe.subscriptions.update.callCount, 1);
             assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_123');
-            should.deepEqual(mockStripe.subscriptions.update.args[0][1], {coupon: 'coupon_abc'});
+            assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {coupon: 'coupon_abc'});
 
-            should.deepEqual(result, mockSubscription);
+            assert.deepEqual(result, mockSubscription);
         });
     });
 
@@ -602,7 +602,7 @@ describe('StripeAPI', function () {
             });
 
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
-            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
         });
 
         it('passes custom fields correctly', async function () {
@@ -631,7 +631,7 @@ describe('StripeAPI', function () {
             });
 
             const customFields = mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields;
-            should.deepEqual(customFields[0], {
+            assert.deepEqual(customFields[0], {
                 key: 'donation_message',
                 label: {
                     type: 'custom',

@@ -33,7 +33,7 @@ describe('Unit: models/user', function () {
 
             const returnVal = models.User.prototype.updateLastSeen.call(instance);
 
-            should.deepEqual(instance.set.args[0][0], {
+            assert.deepEqual(instance.set.args[0][0], {
                 last_seen: now
             });
 

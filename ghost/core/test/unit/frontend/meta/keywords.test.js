@@ -23,7 +23,7 @@ describe('getKeywords', function () {
                 ]
             }
         });
-        should.deepEqual(keywords, ['one', 'two', 'three']);
+        assert.deepEqual(keywords, ['one', 'two', 'three']);
     });
 
     it('should only return visible tags', function () {
@@ -37,7 +37,7 @@ describe('getKeywords', function () {
                 ]
             }
         });
-        should.deepEqual(keywords, ['one', 'three']);
+        assert.deepEqual(keywords, ['one', 'three']);
     });
 
     it('should return null if post has tags is empty array', function () {

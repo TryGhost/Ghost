@@ -32,7 +32,7 @@ describe('Settings API', function () {
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, expectedValue);
+        assert.deepEqual(afterValue, expectedValue);
     }
 
     async function checkCantEdit(key, value) {
@@ -59,7 +59,7 @@ describe('Settings API', function () {
 
         // Check if not changed (also check internal ones)
         const afterValue = settingsCache.get(key);
-        should.deepEqual(afterValue, currentValue);
+        assert.deepEqual(afterValue, currentValue);
     }
 
     describe('As Owner', function () {

@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
@@ -23,12 +24,12 @@ describe('Unit: models/integration', function () {
 
         it('returns the base permittedOptions result', function () {
             const returnedOptions = models.Integration.permittedOptions();
-            should.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
+            assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
         });
 
         it('returns the base permittedOptions result plus "filter" when methodName is findOne', function () {
             const returnedOptions = models.Integration.permittedOptions('findOne');
-            should.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('filter'));
+            assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('filter'));
         });
     });
 

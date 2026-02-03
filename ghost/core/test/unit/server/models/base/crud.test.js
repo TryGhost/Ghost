@@ -32,7 +32,7 @@ describe('Models: crud', function () {
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
-                should.deepEqual(forgeStub.args[0][0], {
+                assert.deepEqual(forgeStub.args[0][0], {
                     prop: 'whatever'
                 });
 
@@ -59,7 +59,7 @@ describe('Models: crud', function () {
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
-                should.deepEqual(forgeStub.args[0][0], {
+                assert.deepEqual(forgeStub.args[0][0], {
                     id: 23
                 });
 
@@ -99,7 +99,7 @@ describe('Models: crud', function () {
                 assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredData = filterDataSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], filteredData);
+                assert.deepEqual(forgeStub.args[0][0], filteredData);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
                 assert.equal(fetchStub.args[0][0], filteredOptions);
@@ -158,7 +158,7 @@ describe('Models: crud', function () {
                 assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
+                assert.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
 
                 assert.equal(fetchStub.args[0][0], filteredOptions);
                 assert.equal(fetchStub.args[0][0].lock, undefined);
@@ -166,7 +166,7 @@ describe('Models: crud', function () {
                 const filteredData = filterDataSpy.returnValues[0];
                 assert.equal(saveStub.args[0][0], filteredData);
                 assert.equal(saveStub.args[0][1].method, 'update');
-                should.deepEqual(saveStub.args[0][1], filteredOptions);
+                assert.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });
 
@@ -251,12 +251,12 @@ describe('Models: crud', function () {
                 assert.equal(filterDataSpy.args[0][0], data);
 
                 const filteredData = filterDataSpy.returnValues[0];
-                should.deepEqual(forgeStub.args[0][0], filteredData);
+                assert.deepEqual(forgeStub.args[0][0], filteredData);
 
                 const filteredOptions = filterOptionsSpy.returnValues[0];
                 assert.equal(saveStub.args[0][0], null);
                 assert.equal(saveStub.args[0][1].method, 'insert');
-                should.deepEqual(saveStub.args[0][1], filteredOptions);
+                assert.deepEqual(saveStub.args[0][1], filteredOptions);
             });
         });
 

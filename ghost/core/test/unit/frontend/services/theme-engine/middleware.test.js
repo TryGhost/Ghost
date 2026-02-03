@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../../../core/frontend/services/theme-engine/engine');
@@ -163,9 +164,9 @@ describe('Themes middleware', function () {
                     data.config.posts_per_page.should.eql(2);
 
                     // Check labs config
-                    should.deepEqual(data.labs, fakeLabsData);
+                    assert.deepEqual(data.labs, fakeLabsData);
 
-                    should.deepEqual(data.site, {
+                    assert.deepEqual(data.site, {
                         ...fakeSiteData,
 
                         // signup_url should get added
@@ -176,7 +177,7 @@ describe('Themes middleware', function () {
                         comments_access: 'all'
                     });
 
-                    should.deepEqual(data.custom, fakeCustomThemeSettingsData);
+                    assert.deepEqual(data.custom, fakeCustomThemeSettingsData);
 
                     done();
                 } catch (error) {
