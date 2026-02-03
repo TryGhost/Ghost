@@ -304,5 +304,52 @@ describe('MemberWelcomeEmailRenderer', function () {
             result.html.should.not.containEql('}%%');
             result.subject.should.equal('Welcome !');
         });
+
+        it('strips code tags from replacement strings', async function () {
+            // Lexical editor wraps {name} in <code> tags because curly braces look like code
+            lexicalRenderStub.resolves('<p>Hello <code>{name}</code>!</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John Doe', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('Hello John Doe!');
+            result.html.should.not.containEql('<code>');
+        });
+
+        it('strips code tags from replacement strings with nested spans', async function () {
+            // Sometimes the editor nests spans inside code tags
+            lexicalRenderStub.resolves('<p>Hello <code><span>{first_name}</span></code>!</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John Doe', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('Hello <span>John</span>!');
+            result.html.should.not.containEql('<code>');
+        });
+
+        it('preserves code tags that do not contain replacement strings', async function () {
+            lexicalRenderStub.resolves('<p>Use <code>console.log()</code> to debug {name}</p>');
+            const renderer = new MemberWelcomeEmailRenderer();
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings
+            });
+
+            result.html.should.containEql('<code>console.log()</code>');
+            result.html.should.containEql('debug John');
+        });
     });
 });
