@@ -99,7 +99,7 @@
     "eslint-plugin-ghost": "3.4.4",
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
-    "inquirer": "8.2.7",
+    "inquirer": "13.2.2",
     "jsonc-parser": "3.3.1",
     "lint-staged": "15.5.2",
     "nx": "22.0.4",
